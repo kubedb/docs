@@ -29,6 +29,7 @@ import (
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
 	"github.com/pkg/errors"
+	"gomodules.xyz/pointer"
 	"gomodules.xyz/sets"
 	admission "k8s.io/api/admission/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -59,6 +60,12 @@ var forbiddenEnvVars = []string{
 	"node.ingest",
 	"node.master",
 	"node.data",
+	"node.ml",
+	"node.data_hot",
+	"node.data_warm",
+	"node.data_cold",
+	"node.data_frozen",
+	"node.data_content",
 }
 
 func (a *ElasticsearchValidator) Resource() (plural schema.GroupVersionResource, singular string) {
@@ -178,50 +185,32 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		if db.Spec.PodTemplate.Spec.Resources.Size() != 0 {
 			return errors.New("doesn't support spec.resources when spec.topology is set")
 		}
-
-		if topology.Ingest.Suffix == topology.Master.Suffix {
-			return errors.New("ingest & master node should not have same suffix")
-		}
-		if topology.Ingest.Suffix == topology.Data.Suffix {
-			return errors.New("ingest & data node should not have same suffix")
-		}
-		if topology.Master.Suffix == topology.Data.Suffix {
-			return errors.New("master & data node should not have same suffix")
-		}
-
-		if topology.Ingest.Replicas == nil || *topology.Ingest.Replicas < 1 {
-			return fmt.Errorf(`topology.ingest.replicas "%v" invalid. Must be greater than zero`, topology.Ingest.Replicas)
-		}
-		if err := amv.ValidateStorage(client, db.Spec.StorageType, topology.Ingest.Storage); err != nil {
+		err = validateNodeRoles(topology, esVersion)
+		if err != nil {
 			return err
 		}
-
-		if topology.Master.Replicas == nil || *topology.Master.Replicas < 1 {
-			return fmt.Errorf(`topology.master.replicas "%v" invalid. Must be greater than zero`, topology.Master.Replicas)
-		}
-		if err := amv.ValidateStorage(client, db.Spec.StorageType, topology.Master.Storage); err != nil {
+		// Check node name suffix
+		err = validateNodeSuffix(topology)
+		if err != nil {
 			return err
 		}
-
-		if topology.Data.Replicas == nil || *topology.Data.Replicas < 1 {
-			return fmt.Errorf(`topology.data.replicas "%v" invalid. Must be greater than zero`, topology.Data.Replicas)
-		}
-		if err := amv.ValidateStorage(client, db.Spec.StorageType, topology.Data.Storage); err != nil {
+		err = validateNodeReplicas(topology)
+		if err != nil {
 			return err
 		}
+		tMap := topology.ToMap()
+		for nodeRole, node := range tMap {
+			if err := amv.ValidateStorage(client, db.Spec.StorageType, node.Storage); err != nil {
+				return err
+			}
+			// Resources validation
+			// Heap size is the 50% of memory & it cannot be less than 128Mi(some say 97Mi)
+			// So, minimum memory request should be twice of 128Mi, i.e. 256Mi.
+			if value, ok := node.Resources.Requests[core.ResourceMemory]; ok && value.Value() < 2*api.ElasticsearchMinHeapSize {
+				return fmt.Errorf("%s.resources.reqeusts.memory cannot be less than %dMi, given %dMi", string(nodeRole), (2*api.ElasticsearchMinHeapSize)/(1024*1024), value.Value()/(1024*1024))
+			}
+		}
 
-		// Resources validation
-		// Heap size is the 50% of memory & it cannot be less than 128Mi(some say 97Mi)
-		// So, minimum memory request should be twice of 128Mi, i.e. 256Mi.
-		if value, ok := topology.Master.Resources.Requests[core.ResourceMemory]; ok && value.Value() < 2*api.ElasticsearchMinHeapSize {
-			return fmt.Errorf("master.resources.reqeusts.memory cannot be less than %dMi, given %dMi", (2*api.ElasticsearchMinHeapSize)/(1024*1024), value.Value()/(1024*1024))
-		}
-		if value, ok := topology.Data.Resources.Requests[core.ResourceMemory]; ok && value.Value() < 2*api.ElasticsearchMinHeapSize {
-			return fmt.Errorf("data.resources.reqeusts.memory cannot be less than %dMi, given %dMi", (2*api.ElasticsearchMinHeapSize)/(1024*1024), value.Value()/(1024*1024))
-		}
-		if value, ok := topology.Ingest.Resources.Requests[core.ResourceMemory]; ok && value.Value() < 2*api.ElasticsearchMinHeapSize {
-			return fmt.Errorf("ingest.resources.reqeusts.memory cannot be less than %dMi, given %dMi", (2*api.ElasticsearchMinHeapSize)/(1024*1024), value.Value()/(1024*1024))
-		}
 	} else {
 		if db.Spec.Replicas == nil || *db.Spec.Replicas < 1 {
 			return fmt.Errorf(`spec.replicas "%v" invalid. Must be greater than zero`, db.Spec.Replicas)
@@ -244,18 +233,39 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 	}
 
 	if strictValidation {
-		authSecret := db.Spec.AuthSecret
-		if authSecret != nil {
-			if _, err := client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
-				return err
-			}
-		}
-
 		// Check if elasticsearchVersion is deprecated.
 		// If deprecated, return error
 		elasticsearchVersion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
+		}
+
+		if elasticsearchVersion.Spec.Distribution == catalog.ElasticsearchDistroSearchGuard ||
+			elasticsearchVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenDistro {
+			// Check, spec.internalUsers[]
+			if db.Spec.InternalUsers != nil {
+				for username := range db.Spec.InternalUsers {
+					secretName, err := db.GetUserCredSecretName(username)
+					if err != nil {
+						return err
+					}
+					// If provided secret name doesn't match the default one.
+					// Check for the existence.
+					if secretName != db.DefaultUserCredSecretName(username) {
+						if _, err := client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{}); err != nil {
+							return err
+						}
+					}
+				}
+			}
+		} else {
+			// For ElasticStack check, db.spec.authSecret
+			authSecret := db.Spec.AuthSecret
+			if authSecret != nil {
+				if _, err := client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
+					return err
+				}
+			}
 		}
 
 		if elasticsearchVersion.Spec.Deprecated {
@@ -368,6 +378,50 @@ func validateContainerSecurityContext(sc *core.SecurityContext, esVersion *catal
 		if sc.RunAsUser != nil && *sc.RunAsUser == 0 {
 			return fmt.Errorf("not allowed to set containerSecurityContext.runAsUser to root (0) for ElasticsearchVersion: %s", esVersion.Name)
 		}
+	}
+
+	return nil
+}
+
+func validateNodeSuffix(topology *api.ElasticsearchClusterTopology) error {
+	tMap := topology.ToMap()
+	names := make(map[string]bool)
+	for _, value := range tMap {
+		names[value.Suffix] = true
+	}
+	if len(tMap) != len(names) {
+		return errors.New("two or more node cannot have same suffix")
+	}
+	return nil
+}
+
+func validateNodeReplicas(topology *api.ElasticsearchClusterTopology) error {
+	tMap := topology.ToMap()
+	for key, node := range tMap {
+		if pointer.Int32(node.Replicas) <= 0 {
+			return errors.Errorf("replicas for node role %s must be alteast 1", string(key))
+		}
+	}
+	return nil
+}
+
+func validateNodeRoles(topology *api.ElasticsearchClusterTopology, esVersion *catalog.ElasticsearchVersion) error {
+	if esVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenDistro ||
+		esVersion.Spec.Distribution == catalog.ElasticsearchDistroSearchGuard {
+		if topology.Data == nil {
+			return errors.New("topology.data cannot be empty")
+		}
+		if topology.ML != nil || topology.DataHot != nil || topology.DataContent != nil ||
+			topology.DataCold != nil || topology.DataWarm != nil || topology.DataFrozen != nil ||
+			topology.Coordinating != nil || topology.Transform != nil {
+			return errors.Errorf("node role: ml, data_hot, data_cold, data_warm, data_frozen, data_content, transform, coordinating are not supported for ElasticsearchVersion %s", esVersion.Name)
+		}
+	}
+
+	// all type of data nodes cannot be empty at once
+	if topology.Data == nil && topology.DataHot == nil && topology.DataWarm == nil &&
+		topology.DataCold == nil && topology.DataFrozen == nil && topology.DataContent == nil {
+		return errors.New("all types of data nodes cannot be empty at once; set topology.data")
 	}
 
 	return nil

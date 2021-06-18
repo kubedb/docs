@@ -19,30 +19,22 @@ package lib
 import (
 	api "go.bytebuilders.dev/audit/api/v1"
 
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"kmodules.xyz/client-go/discovery"
 	dynamicfactory "kmodules.xyz/client-go/dynamic/factory"
 	"kmodules.xyz/resource-metadata/pkg/graph"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type AuditEventCreator struct {
-	Graph     *graph.Graph
-	Finder    *graph.ObjectFinder
-	Factory   dynamicfactory.Factory
-	Mapper    discovery.ResourceMapper
-	LicenseID string
+	Graph   *graph.Graph
+	Finder  *graph.ObjectFinder
+	Factory dynamicfactory.Factory
+	Mapper  discovery.ResourceMapper
 }
 
-func (p *AuditEventCreator) CreateEvent(obj runtime.Object) (*api.Event, error) {
-	r := obj.DeepCopyObject()
-	m, err := meta.Accessor(r)
-	if err != nil {
-		return nil, err
-	}
-	m.SetManagedFields(nil)
-
+func (p *AuditEventCreator) CreateEvent(obj client.Object) (*api.Event, error) {
 	rid, err := p.Mapper.ResourceIDForGVK(obj.GetObjectKind().GroupVersionKind())
 	if err != nil {
 		return nil, err
@@ -66,9 +58,8 @@ func (p *AuditEventCreator) CreateEvent(obj runtime.Object) (*api.Event, error) 
 	}
 
 	return &api.Event{
-		Resource:    r,
+		Resource:    obj,
 		ResourceID:  *rid,
-		LicenseID:   p.LicenseID,
 		Connections: connections,
 	}, nil
 }

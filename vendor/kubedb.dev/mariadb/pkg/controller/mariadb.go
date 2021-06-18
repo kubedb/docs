@@ -31,11 +31,14 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
+	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
 func (c *Controller) create(db *api.MariaDB) error {
+
+	// validate MariaDB object
 	if err := validator.ValidateMariaDB(c.Client, c.DBClient, db, true); err != nil {
 		c.Recorder.Event(
 			db,
@@ -47,45 +50,48 @@ func (c *Controller) create(db *api.MariaDB) error {
 		return nil
 	}
 
-	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
+	// ensure service account, role, rolebinding, and PSP for database statefulsets
 	if err := c.ensureRBACStuff(db); err != nil {
-		return err
-
+		return fmt.Errorf(`failed to create RBAC's for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
 	// ensure Governing Service
 	if err := c.ensureGoverningService(db); err != nil {
-		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
+		return fmt.Errorf(`failed to create Governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
-	if err := c.ensureService(db); err != nil {
-		return err
+	vt1, err := c.ensureService(db)
+	if err != nil {
+		return fmt.Errorf(`failed to create Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
-	if err := c.ensureAuthSecret(db); err != nil {
-		return err
-	}
-
-	// wait for certificates
-	if db.Spec.TLS != nil && db.Spec.TLS.IssuerRef != nil {
-		ok, err := dynamic_util.ResourcesExists(
-			c.DynamicClient,
-			core.SchemeGroupVersion.WithResource("secrets"),
-			db.Namespace,
-			requiredSecretList(db)...,
-		)
-		if err != nil {
-			return err
-		}
-		if !ok {
-			klog.Infoln(fmt.Sprintf("wait for all necessary secrets for db %s/%s", db.Namespace, db.Name))
-			return nil
-		}
-	}
-
-	_, err := c.ensureStatefulSet(db)
+	reconciler := NewReconciler(c.Config, c.Controller)
+	db, vt2, err := reconciler.ReconcileNodes(db)
 	if err != nil {
 		return err
+	}
+
+	// If both err==nil & mariadb == nil,
+	// the object was dropped from the work-queue, to process later.
+	// return nil.
+	if db == nil {
+		return nil
+	}
+
+	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
+		c.Recorder.Event(
+			db,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully created MariaDB",
+		)
+	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
+		c.Recorder.Event(
+			db,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully patched MariaDB",
+		)
 	}
 
 	_, err = c.ensureAppBinding(db)
@@ -95,7 +101,7 @@ func (c *Controller) create(db *api.MariaDB) error {
 	}
 
 	if db.Spec.Init != nil {
-		// For MariaDB Cluster (px.spec.replicas > 1), Stash restores the data into some PVCs.
+		// For MariaDB Cluster (md.spec.replicas > 1), Stash restores the data into some PVCs.
 		// Then, KubeDB should create the StatefulSet using those PVCs. So, for clustering mode, we are going to
 		// wait for restore process to complete before creating the StatefulSet.
 		//======================== Wait for the initial restore =====================================

@@ -39,11 +39,11 @@ import (
 
 func (c *Controller) initWatcher() {
 	c.mgInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().MongoDBs().Informer()
-	c.mgQueue = queue.New("MongoDB", c.MaxNumRequeues, c.NumThreads, c.runMongoDB)
+	c.mgQueue = queue.New(api.ResourceKindMongoDB, c.MaxNumRequeues, c.NumThreads, c.runMongoDB)
 	c.mgLister = c.KubedbInformerFactory.Kubedb().V1alpha2().MongoDBs().Lister()
 	c.mgInformer.AddEventHandler(queue.NewChangeHandler(c.mgQueue.GetQueue()))
 	if c.Auditor != nil {
-		c.mgInformer.AddEventHandler(c.Auditor)
+		c.mgInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB)))
 	}
 
 	c.mgStsInformer = c.KubeInformerFactory.Apps().V1().StatefulSets().Informer()

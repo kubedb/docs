@@ -33,7 +33,7 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 	statefulSetName := es.db.MasterStatefulSetName()
 	masterNode := es.db.Spec.Topology.Master
 	labels := map[string]string{
-		api.ElasticsearchNodeRoleMaster: api.ElasticsearchNodeRoleSet,
+		es.db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeMaster): api.ElasticsearchNodeRoleSet,
 	}
 
 	// If replicas is not provided, default to 1.
@@ -43,8 +43,8 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 	}
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
-	if request, found := masterNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
-		heapSize = heap.GetHeapSizeFromMemory(request.Value())
+	if limit, found := masterNode.Resources.Limits[core.ResourceMemory]; found && limit.Value() > 0 {
+		heapSize = heap.GetHeapSizeFromMemory(limit.Value())
 	}
 
 	// Environment variable list for main container.
@@ -107,19 +107,23 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 		},
 	}
 
-	return es.ensureStatefulSet(&masterNode, statefulSetName, labels, replicas, api.ElasticsearchNodeRoleMaster, envList, initEnvList)
+	return es.ensureStatefulSet(&masterNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeMaster), envList, initEnvList)
 }
 
 func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
+	// Ignore, if nil
+	if es.db.Spec.Topology.Data == nil {
+		return kutil.VerbUnchanged, nil
+	}
 	statefulSetName := es.db.DataStatefulSetName()
 	dataNode := es.db.Spec.Topology.Data
 	labels := map[string]string{
-		api.ElasticsearchNodeRoleData: api.ElasticsearchNodeRoleSet,
+		es.db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeData): api.ElasticsearchNodeRoleSet,
 	}
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
-	if request, found := dataNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
-		heapSize = heap.GetHeapSizeFromMemory(request.Value())
+	if limit, found := dataNode.Resources.Limits[core.ResourceMemory]; found && limit.Value() > 0 {
+		heapSize = heap.GetHeapSizeFromMemory(limit.Value())
 	}
 
 	// Environment variable list for main container.
@@ -171,7 +175,7 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 		replicas = dataNode.Replicas
 	}
 
-	return es.ensureStatefulSet(&dataNode, statefulSetName, labels, replicas, api.ElasticsearchNodeRoleData, envList, initEnvList)
+	return es.ensureStatefulSet(dataNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeData), envList, initEnvList)
 
 }
 
@@ -179,12 +183,12 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 	statefulSetName := es.db.IngestStatefulSetName()
 	ingestNode := es.db.Spec.Topology.Ingest
 	labels := map[string]string{
-		api.ElasticsearchNodeRoleIngest: api.ElasticsearchNodeRoleSet,
+		es.db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeIngest): api.ElasticsearchNodeRoleSet,
 	}
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
-	if request, found := ingestNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
-		heapSize = heap.GetHeapSizeFromMemory(request.Value())
+	if limit, found := ingestNode.Resources.Limits[core.ResourceMemory]; found && limit.Value() > 0 {
+		heapSize = heap.GetHeapSizeFromMemory(limit.Value())
 	}
 
 	// Environment variable list for main container.
@@ -236,7 +240,7 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 		replicas = ingestNode.Replicas
 	}
 
-	return es.ensureStatefulSet(&ingestNode, statefulSetName, labels, replicas, api.ElasticsearchNodeRoleIngest, envList, initEnvList)
+	return es.ensureStatefulSet(&ingestNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeIngest), envList, initEnvList)
 }
 
 func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
@@ -245,9 +249,9 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 
 	// Each node performs all three roles; master, data, and ingest.
 	labels := map[string]string{
-		api.ElasticsearchNodeRoleMaster: api.ElasticsearchNodeRoleSet,
-		api.ElasticsearchNodeRoleData:   api.ElasticsearchNodeRoleSet,
-		api.ElasticsearchNodeRoleIngest: api.ElasticsearchNodeRoleSet,
+		es.db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeMaster): api.ElasticsearchNodeRoleSet,
+		es.db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeData):   api.ElasticsearchNodeRoleSet,
+		es.db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeIngest): api.ElasticsearchNodeRoleSet,
 	}
 
 	// If replicas is not provided, default to 1.
@@ -257,8 +261,8 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 	}
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
-	if request, found := combinedNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
-		heapSize = heap.GetHeapSizeFromMemory(request.Value())
+	if limit, found := combinedNode.Resources.Limits[core.ResourceMemory]; found && limit.Value() > 0 {
+		heapSize = heap.GetHeapSizeFromMemory(limit.Value())
 	}
 
 	// Environment variable list for main container.
@@ -322,7 +326,7 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 	}
 
 	// For affinity, NodeRoleIngest is used.
-	return es.ensureStatefulSet(combinedNode, statefulSetName, labels, replicas, api.ElasticsearchNodeRoleIngest, envList, initEnvList)
+	return es.ensureStatefulSet(combinedNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeIngest), envList, initEnvList)
 
 }
 
@@ -335,4 +339,30 @@ func (es *Elasticsearch) getCombinedNode() *api.ElasticsearchNode {
 		Resources:      es.db.Spec.PodTemplate.Spec.Resources,
 		MaxUnavailable: es.db.Spec.MaxUnavailable,
 	}
+}
+
+func (es *Elasticsearch) EnsureDataContentNode() (kutil.VerbType, error) {
+	return kutil.VerbUnchanged, nil
+}
+
+func (es *Elasticsearch) EnsureDataHotNode() (kutil.VerbType, error) {
+	return kutil.VerbUnchanged, nil
+}
+func (es *Elasticsearch) EnsureDataWarmNode() (kutil.VerbType, error) {
+	return kutil.VerbUnchanged, nil
+}
+func (es *Elasticsearch) EnsureDataColdNode() (kutil.VerbType, error) {
+	return kutil.VerbUnchanged, nil
+}
+func (es *Elasticsearch) EnsureDataFrozenNode() (kutil.VerbType, error) {
+	return kutil.VerbUnchanged, nil
+}
+func (es *Elasticsearch) EnsureMLNode() (kutil.VerbType, error) {
+	return kutil.VerbUnchanged, nil
+}
+func (es *Elasticsearch) EnsureTransformNode() (kutil.VerbType, error) {
+	return kutil.VerbUnchanged, nil
+}
+func (es *Elasticsearch) EnsureCoordinatingNode() (kutil.VerbType, error) {
+	return kutil.VerbUnchanged, nil
 }

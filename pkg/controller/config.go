@@ -46,6 +46,7 @@ import (
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
+	"kmodules.xyz/client-go/tools/cli"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
 
@@ -85,17 +86,22 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 
-	// audit event publisher
-	natscfg, err := auditlib.NewNatsConfig(c.KubeClient.CoreV1().Namespaces(), c.LicenseFile)
+	mapper, err := discovery.NewDynamicResourceMapper(c.ClientConfig)
 	if err != nil {
 		return nil, err
 	}
-	mapper := discovery.NewResourceMapper(discovery.NewRestMapper(c.KubeClient.Discovery()))
-	fn := auditlib.BillingEventCreator{
-		Mapper:    mapper,
-		LicenseID: natscfg.LicenseID,
+
+	// audit event auditor
+	// WARNING: https://stackoverflow.com/a/46275411/244009
+	var auditor *auditlib.EventPublisher
+	if c.LicenseFile != "" && cli.EnableAnalytics {
+		fn := auditlib.BillingEventCreator{
+			Mapper: mapper,
+		}
+		auditor = auditlib.NewResilientEventPublisher(func() (*auditlib.NatsConfig, error) {
+			return auditlib.NewNatsConfig(c.KubeClient.CoreV1().Namespaces(), c.LicenseFile)
+		}, mapper, fn.CreateEvent)
 	}
-	publisher := auditlib.NewEventPublisher(natscfg, mapper, fn.CreateEvent)
 
 	// define all the controllers
 	ctrl := New(
@@ -110,21 +116,21 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		topology,
 		c.Recorder,
 		mapper,
-		publisher,
+		auditor,
 	)
 
-	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, publisher)
-	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, publisher)
-	ctrl.mrCtrl = mrc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, publisher)
-	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, publisher)
-	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, publisher)
-	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, publisher)
-	ctrl.pxCtrl = pxc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, c.Recorder, mapper, publisher)
-	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, publisher)
+	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, auditor)
+	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, auditor)
+	ctrl.mrCtrl = mrc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, auditor)
+	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, auditor)
+	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, auditor)
+	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, auditor)
+	ctrl.pxCtrl = pxc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, c.Recorder, mapper, auditor)
+	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, auditor)
 
 	if sets.NewString(c.License.Features...).Has("kubedb-enterprise") {
-		ctrl.pgbCtrl = pgb.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, publisher)
-		ctrl.prCtrl = prc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config, c.Recorder, mapper, publisher)
+		ctrl.pgbCtrl = pgb.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder, mapper, auditor)
+		ctrl.prCtrl = prc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config, c.Recorder, mapper, auditor)
 	}
 
 	if err := ctrl.Init(); err != nil {

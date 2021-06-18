@@ -296,7 +296,6 @@ func getPreconditionFunc(db *api.MariaDB) []mergepatch.PreconditionFunc {
 
 var preconditionSpecFields = sets.NewString(
 	"spec.storageType",
-	"spec.storage",
 	"spec.authSecret",
 	"spec.podTemplate.spec.nodeSelector",
 )

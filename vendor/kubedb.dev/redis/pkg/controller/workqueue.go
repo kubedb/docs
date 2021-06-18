@@ -39,11 +39,11 @@ import (
 
 func (c *Controller) initWatcher() {
 	c.rdInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().Redises().Informer()
-	c.rdQueue = queue.New("Redis", c.MaxNumRequeues, c.NumThreads, c.runRedis)
+	c.rdQueue = queue.New(api.ResourceKindRedis, c.MaxNumRequeues, c.NumThreads, c.runRedis)
 	c.rdLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Redises().Lister()
 	c.rdInformer.AddEventHandler(queue.NewChangeHandler(c.rdQueue.GetQueue()))
 	if c.Auditor != nil {
-		c.rdInformer.AddEventHandler(c.Auditor)
+		c.rdInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindRedis)))
 	}
 	c.rdStsInformer = c.KubeInformerFactory.Apps().V1().StatefulSets().Informer()
 }

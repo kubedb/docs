@@ -71,12 +71,6 @@ const (
 	ElasticsearchTransportPort                   = 9300
 	ElasticsearchTransportPortName               = "transport"
 	ElasticsearchMetricsPort                     = 9600
-	ElasticsearchIngestNodeSuffix                = "ingest"
-	ElasticsearchDataNodeSuffix                  = "data"
-	ElasticsearchMasterNodeSuffix                = "master"
-	ElasticsearchNodeRoleMaster                  = kubedb.GroupName + "/" + "role-master"
-	ElasticsearchNodeRoleIngest                  = kubedb.GroupName + "/" + "role-ingest"
-	ElasticsearchNodeRoleData                    = kubedb.GroupName + "/" + "role-data"
 	ElasticsearchNodeRoleSet                     = "set"
 	ElasticsearchConfigDir                       = "/usr/share/elasticsearch/config"
 	ElasticsearchTempConfigDir                   = "/elasticsearch/temp-config"
@@ -202,8 +196,9 @@ const (
 	MariaDBDataMountPath                = "/var/lib/mysql"
 	MariaDBDataLostFoundPath            = MariaDBDataMountPath + "lost+found"
 	MariaDBInitDBMountPath              = "/docker-entrypoint-initdb.d"
-	MariaDBCustomConfigMountPath        = "/etc/percona-server.conf.d/"
-	MariaDBClusterCustomConfigMountPath = "/etc/percona-xtradb-cluster.conf.d/"
+	MariaDBCustomConfigMountPath        = "/etc/mysql/conf.d/"
+	MariaDBClusterCustomConfigMountPath = "/etc/mysql/custom.conf.d/"
+	MariaDBCustomConfigVolumeName       = "custom-config"
 	MariaDBTLSConfigCustom              = "custom"
 	MariaDBInitContainerName            = "mariadb-init"
 

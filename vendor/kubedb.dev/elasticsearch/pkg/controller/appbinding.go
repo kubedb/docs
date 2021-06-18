@@ -110,9 +110,7 @@ func (c *Controller) ensureAppBinding(db *api.Elasticsearch) (kutil.VerbType, er
 				},
 			}
 
-			in.Spec.Secret = &core.LocalObjectReference{
-				Name: db.Spec.AuthSecret.Name,
-			}
+			in.Spec.Secret = getAuthSecretRef(db)
 
 			return in
 		},
@@ -148,4 +146,12 @@ func (c *Controller) GetPrimaryServicePort(db *api.Elasticsearch) (int32, error)
 		}
 	}
 	return 0, fmt.Errorf("failed to detect primary port for Elasticsearch %s/%s", db.Namespace, db.Name)
+}
+
+// When db.disableSecurity is true, authSecret can be nil.
+func getAuthSecretRef(db *api.Elasticsearch) *core.LocalObjectReference {
+	if db.Spec.AuthSecret != nil && db.Spec.AuthSecret.Name != "" {
+		return db.Spec.AuthSecret
+	}
+	return nil
 }

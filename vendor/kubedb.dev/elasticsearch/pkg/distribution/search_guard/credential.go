@@ -33,6 +33,9 @@ import (
 )
 
 func (es *Elasticsearch) EnsureAuthSecret() error {
+	if es.db.Spec.DisableSecurity {
+		return nil
+	}
 	if len(es.db.Spec.InternalUsers) == 0 {
 		return errors.New("spec.internalUsers[] cannot be empty")
 	}

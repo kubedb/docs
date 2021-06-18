@@ -37,18 +37,18 @@ import (
 	"kmodules.xyz/client-go/tools/certholder"
 )
 
-func (c *Controller) GetMongoClient(db *api.MongoDB, url, repSetName string) (*mongo.Client, error) {
+func (c *Controller) GetMongoClient(ctx context.Context, db *api.MongoDB, url, repSetName string) (*mongo.Client, error) {
 	clientOpts, err := c.GetMongoDBClientOpts(db, url, repSetName)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := mongo.Connect(context.Background(), clientOpts)
+	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	err = client.Ping(context.TODO(), nil)
+	err = client.Ping(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,9 @@ func (c *Controller) CreateTLSUsers(db *api.MongoDB) error {
 }
 
 func (c *Controller) CreateTLSUser(db *api.MongoDB, url, repSetName, tlsUserName string) error {
-	dbClient, err := c.GetMongoClient(db, url, repSetName)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+	dbClient, err := c.GetMongoClient(ctx, db, url, repSetName)
 	if err != nil {
 		return err
 	}

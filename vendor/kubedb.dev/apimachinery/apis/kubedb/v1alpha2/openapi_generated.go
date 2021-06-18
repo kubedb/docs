@@ -20292,20 +20292,59 @@ func schema_apimachinery_apis_kubedb_v1alpha2_ElasticsearchClusterTopology(ref c
 							Ref:     ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
 						},
 					},
-					"data": {
-						SchemaProps: spec.SchemaProps{
-							Default: map[string]interface{}{},
-							Ref:     ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
-						},
-					},
 					"ingest": {
 						SchemaProps: spec.SchemaProps{
 							Default: map[string]interface{}{},
 							Ref:     ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
 						},
 					},
+					"data": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
+						},
+					},
+					"dataContent": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
+						},
+					},
+					"dataHot": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
+						},
+					},
+					"dataWarm": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
+						},
+					},
+					"dataCold": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
+						},
+					},
+					"dataFrozen": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
+						},
+					},
+					"ml": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
+						},
+					},
+					"transform": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
+						},
+					},
+					"coordinating": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha2.ElasticsearchNode"),
+						},
+					},
 				},
-				Required: []string{"master", "data", "ingest"},
+				Required: []string{"master", "ingest"},
 			},
 		},
 		Dependencies: []string{

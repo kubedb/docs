@@ -25,7 +25,6 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/pkg/errors"
-	"gomodules.xyz/pointer"
 	admission "k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -124,31 +123,12 @@ func setDefaultValues(extClient cs.Interface, db *api.Elasticsearch, clusterTopo
 		db.Spec.TerminationPolicy = api.TerminationPolicyHalt
 	}
 
-	topology := db.Spec.Topology
-	if topology != nil {
-		if topology.Ingest.Replicas == nil {
-			topology.Ingest.Replicas = pointer.Int32P(1)
-		}
-
-		if topology.Master.Replicas == nil {
-			topology.Master.Replicas = pointer.Int32P(1)
-		}
-
-		if topology.Data.Replicas == nil {
-			topology.Data.Replicas = pointer.Int32P(1)
-		}
-	} else {
-		if db.Spec.Replicas == nil {
-			db.Spec.Replicas = pointer.Int32P(1)
-		}
-	}
-
-	esversion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
+	esVersion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to get ElasticsearchVersion: %s", db.Spec.Version)
 	}
 
-	db.SetDefaults(esversion, clusterTopology)
+	db.SetDefaults(esVersion, clusterTopology)
 
 	return db, nil
 }
