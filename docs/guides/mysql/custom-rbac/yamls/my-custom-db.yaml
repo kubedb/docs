@@ -4,7 +4,7 @@ metadata:
   name: quick-mysql
   namespace: demo
 spec:
-  version: "8.0.21-v1"
+  version: "8.0.21-v2"
   storageType: Durable
   podTemplate:
     spec:

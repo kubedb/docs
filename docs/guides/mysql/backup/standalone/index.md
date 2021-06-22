@@ -56,7 +56,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.0.21-v1"
+  version: "8.0.21-v2"
   replicas: 1
   storageType: Durable
   storage:
@@ -416,7 +416,7 @@ metadata:
   name: restored-mysql
   namespace: demo
 spec:
-  version: "8.0.21-v1"
+  version: "8.0.21-v2"
   replicas: 1
   storageType: Durable
   storage:

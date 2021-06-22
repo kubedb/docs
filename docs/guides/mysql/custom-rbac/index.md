@@ -143,7 +143,7 @@ metadata:
   name: quick-mysql
   namespace: demo
 spec:
-  version: "8.0.23"
+  version: "8.0.23-v1"
   storageType: Durable
   podTemplate:
     spec:
@@ -209,7 +209,7 @@ metadata:
   name: minute-mysql
   namespace: demo
 spec:
-  version: "8.0.23"
+  version: "8.0.23-v1"
   storageType: Durable
   podTemplate:
     spec:

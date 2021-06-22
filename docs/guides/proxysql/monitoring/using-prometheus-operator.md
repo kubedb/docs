@@ -103,7 +103,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "5.7.33"
+  version: "5.7.33-v1"
   replicas: 3
   topology:
     mode: GroupReplication
