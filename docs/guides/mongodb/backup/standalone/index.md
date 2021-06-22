@@ -491,11 +491,11 @@ restored-mongodb-0   1/1     Running   0          106m
 Now, exec into the database pod and list available tables,
 
 ```console
-$ kubectl get secrets -n demo sample-mongodb-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo sample-mongodb-auth -o jsonpath='{.data.\password}' | base64 -d
-Tv1pSiLjGqZ9W4jE
+$ kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.\password}' | base64 -d
+3iO9iwpz=2*zFsJu
 
 $ kubectl exec -it -n demo restored-mongodb-0 bash
 
