@@ -54,13 +54,13 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 $ kubectl get mysqlversion
 NAME        VERSION   DB_IMAGE                  DEPRECATED   AGE
 5.7.25-v2   5.7.25    kubedb/mysql:5.7.25-v2                 98m
-5.7.29-v1   5.7.29    suaas21/mysql:5.7.29-v1                98m
-5.7.31-v1   5.7.31    suaas21/mysql:5.7.31-v1                98m
-5.7.33      5.7.33    suaas21/mysql:5.7.33                   98m
+5.7.29-v2   5.7.29    kubedb/mysql:5.7.29-v2                 98m
+5.7.31-v2   5.7.31    kubedb/mysql:5.7.31-v2                 98m
+5.7.33-v1   5.7.33    kubedb/mysql:5.7.33-v1                 98m
 8.0.14-v2   8.0.14    kubedb/mysql:8.0.14-v2                 98m
 8.0.20-v1   8.0.20    kubedb/mysql:8.0.20-v1                 98m
-8.0.21-v1   8.0.21    suaas21/mysql:8.0.21-v1                98m
-8.0.23      8.0.23    kubedb/mysql:8.0.23                    98m
+8.0.21-v2   8.0.21    kubedb/mysql:8.0.21-v2                 98m
+8.0.23-v1   8.0.23    kubedb/mysql:8.0.23-v1                 98m
 8.0.3-v2    8.0.3     kubedb/mysql:8.0.3-v2                  98m
 ```
 
@@ -68,10 +68,10 @@ The version above that does not show `DEPRECATED` true is supported by `KubeDB` 
 
 **Check Upgrade Constraints:**
 
-Database version upgrade constraints is a constraint that shows whether it is possible or not possible to upgrade from one version to another. Let's check the version upgrade constraints of `MySQL` `5.7.29-v1`,
+Database version upgrade constraints is a constraint that shows whether it is possible or not possible to upgrade from one version to another. Let's check the version upgrade constraints of `MySQL` `5.7.29-v2`,
 
 ```bash
-$ kubectl get mysqlversion 5.7.29-v1 -o yaml
+$ kubectl get mysqlversion 5.7.29-v2 -o yaml
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
@@ -84,10 +84,10 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v0.16.2
     helm.sh/chart: kubedb-catalog-v0.16.2
-  name: 5.7.29-v1
+  name: 5.7.29-v2
 spec:
   db:
-    image: suaas21/mysql:5.7.29-v1
+    image: kubedb/mysql:5.7.29-v2
   distribution: Oracle
   exporter:
     image: kubedb/mysqld-exporter:v0.11.0
@@ -112,7 +112,7 @@ spec:
   version: 5.7.29
 ```
 
-The above `spec.upgradeConstraints.denylist` of `5.7.29-v1` is showing that upgrading below version of `5.7.29-v1` is not possible for both group replication and standalone. That means, it is possible to upgrade any version above `5.7.29-v1`. Here, we are going to create a `MySQL` Group Replication using MySQL  `5.7.29-v1`. Then we are going to upgrade this version to `5.7.31-v1`.
+The above `spec.upgradeConstraints.denylist` of `5.7.29-v2` is showing that upgrading below version of `5.7.29-v2` is not possible for both group replication and standalone. That means, it is possible to upgrade any version above `5.7.29-v2`. Here, we are going to create a `MySQL` Group Replication using MySQL  `5.7.29-v2`. Then we are going to upgrade this version to `5.7.31-v2`.
 
 **Deploy MySQL Group Replication:**
 
@@ -125,7 +125,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "5.7.33"
+  version: "5.7.33-v1"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -159,7 +159,7 @@ $ watch -n 3 kubectl get my -n demo my-group
 Every 3.0s: kubectl get my -n demo my-group                      suaas-appscode: Thu Jun 18 14:30:24 2020
 
 NAME       VERSION   STATUS    AGE
-my-group   5.7.29-v1    Running   5m52s
+my-group   5.7.29-v2    Running   5m52s
 
 $ watch -n 3 kubectl get sts -n demo my-group
 Every 3.0s: kubectl get sts -n demo my-group                     suaas-appscode: Thu Jun 18 14:31:44 2020
@@ -180,15 +180,15 @@ Let's verify the `MySQL`, the `StatefulSet` and its `Pod` image version,
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-5.7.29-v1
+5.7.29-v2
 
 $ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
-"kubedb/my:5.7.29-v1"
+"kubedb/my:5.7.29-v2"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
-"kubedb/my:5.7.29-v1"
-"kubedb/my:5.7.29-v1"
-"kubedb/my:5.7.29-v1"
+"kubedb/my:5.7.29-v2"
+"kubedb/my:5.7.29-v2"
+"kubedb/my:5.7.29-v2"
 ```
 
 Let's also verify that the StatefulSet’s pods have joined into the group replication,
@@ -215,7 +215,7 @@ We are ready to apply upgrading on this `MySQL` group replication.
 
 #### Upgrade
 
-Here, we are going to upgrade the `MySQL` group replication from `5.7.29-v1` to `5.7.31-v1`.
+Here, we are going to upgrade the `MySQL` group replication from `5.7.29-v2` to `5.7.31-v2`.
 
 **Create MySQLOpsRequest:**
 
@@ -232,7 +232,7 @@ spec:
   databaseRef:
     name: my-group
   upgrade:
-    targetVersion: "5.7.31-v1"
+    targetVersion: "5.7.31-v2"
 ```
 
 Here,
@@ -299,7 +299,7 @@ Spec:
   Stateful Set Ordinal:  0
   Type:                  Upgrade
   Upgrade:
-    Target Version:  5.7.31-v1
+    Target Version:  5.7.31-v2
 Status:
   Conditions:
     Last Transition Time:  2021-03-10T06:42:13Z
@@ -348,15 +348,15 @@ Now, we are going to verify whether the `MySQL` and `StatefulSet` and it's `Pod`
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-5.7.31-v1
+5.7.31-v2
 
 $ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
-"kubedb/mysql:5.7.31-v1"
+"kubedb/mysql:5.7.31-v2"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
-"suaas21/mysql:5.7.31-v1"
-"suaas21/mysql:5.7.31-v1"
-"suaas21/mysql:5.7.31-v1"
+"kubedb/mysql:5.7.31-v2"
+"kubedb/mysql:5.7.31-v2"
+"kubedb/mysql:5.7.31-v2"
 ```
 
 Let's also check the StatefulSet pods have joined the `MySQL` group replication,

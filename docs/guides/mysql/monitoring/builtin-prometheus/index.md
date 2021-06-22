@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-mysql
   namespace: demo
 spec:
-  version: "8.0.23"
+  version: "8.0.23-v1"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -80,7 +80,7 @@ $ watch -n 3 kubectl get mysql -n demo builtin-prom-mysql
 Every 3.0s: kubectl get mysql -n demo builtin-prom-mysql        suaas-appscode: Tue Aug 25 16:07:29 2020
 
 NAME                 VERSION      STATUS    AGE
-builtin-prom-mysql   8.0.21-v1    Running   3m33s
+builtin-prom-mysql   8.0.21-v2    Running   3m33s
 ```
 
 KubeDB will create a separate stats service with name `{MySQL crd name}-stats` for monitoring purpose.
