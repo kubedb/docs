@@ -54,17 +54,17 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 $ kubectl get mysqlversion
 NAME        VERSION   DB_IMAGE                  DEPRECATED   AGE
 5.7.25-v2   5.7.25    kubedb/mysql:5.7.25-v2                 3h55m
-5.7.29-v1   5.7.29    suaas21/mysql:5.7.29-v1                3h55m
-5.7.31-v1   5.7.31    suaas21/mysql:5.7.31-v1                3h55m
-5.7.33      5.7.33    suaas21/mysql:5.7.33                   3h55m
+5.7.29-v2   5.7.29    kubedb/mysql:5.7.29-v2                 3h55m
+5.7.31-v2   5.7.31    kubedb/mysql:5.7.31-v2                 3h55m
+5.7.33-v1   5.7.33    kubedb/mysql:5.7.33-v1                 3h55m
 8.0.14-v2   8.0.14    kubedb/mysql:8.0.14-v2                 3h55m
 8.0.20-v1   8.0.20    kubedb/mysql:8.0.20-v1                 3h55m
-8.0.21-v1   8.0.21    suaas21/mysql:8.0.21-v1                3h55m
-8.0.23      8.0.23    kubedb/mysql:8.0.23                    3h55m
+8.0.21-v2   8.0.21    kubedb/mysql:8.0.21-v2                 3h55m
+8.0.23-v1      8.0.23-v1    kubedb/mysql:8.0.23-v1                    3h55m
 8.0.3-v2    8.0.3     kubedb/mysql:8.0.3-v2                  3h55m
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a standalone using non-deprecated `MySQL`  version `8.0.23`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a standalone using non-deprecated `MySQL`  version `8.0.23-v1`.
 
 **Deploy MySQL Standalone:**
 
@@ -77,7 +77,7 @@ metadata:
   name: my-standalone
   namespace: demo
 spec:
-  version: "8.0.23"
+  version: "8.0.23-v1"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -106,7 +106,7 @@ $ watch -n 3 kubectl get my -n demo my-standalone
 Every 3.0s: kubectl get my -n demo my-standalone                 suaas-appscode: Wed Jul  1 17:48:14 2020
 
 NAME            VERSION      STATUS    AGE
-my-standalone   8.0.23    Running   2m58s
+my-standalone   8.0.23-v1    Running   2m58s
 
 $ watch -n 3 kubectl get sts -n demo my-standalone
 Every 3.0s: kubectl get sts -n demo my-standalone                suaas-appscode: Wed Jul  1 17:48:52 2020

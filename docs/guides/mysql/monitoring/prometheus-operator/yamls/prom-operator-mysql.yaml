@@ -4,7 +4,7 @@ metadata:
   name: prom-operator-mysql
   namespace: demo
 spec:
-  version: "8.0.21-v1"
+  version: "8.0.21-v2"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"

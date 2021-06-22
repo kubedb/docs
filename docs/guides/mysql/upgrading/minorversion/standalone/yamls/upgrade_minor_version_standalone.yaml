@@ -8,4 +8,4 @@ spec:
     name: my-standalone
   type: Upgrade
   upgrade:
-    targetVersion: "5.7.31-v1"
+    targetVersion: "5.7.31-v2"
