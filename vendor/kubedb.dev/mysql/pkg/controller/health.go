@@ -35,7 +35,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -54,146 +53,127 @@ func (c *Controller) RunHealthChecker(stopCh <-chan struct{}) {
 
 func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 	klog.Info("Starting MySQL health checker...")
+	for {
+		select {
+		case <-stopCh:
+			klog.Info("Shutting down MySQL health checker...")
+			break
+		default:
+			c.CheckMySQLHealthOnce()
+			time.Sleep(api.HealthCheckInterval)
+		}
+	}
+}
 
-	go wait.Until(func() {
-		dbList, err := c.myLister.MySQLs(core.NamespaceAll).List(labels.Everything())
-		if err != nil {
-			klog.Errorf("Failed to list MySQL objects with: %s", err.Error())
-			return
+func (c *Controller) CheckMySQLHealthOnce() {
+	dbList, err := c.myLister.MySQLs(core.NamespaceAll).List(labels.Everything())
+	if err != nil {
+		klog.Errorf("Failed to list MySQL objects with: %s", err.Error())
+		return
+	}
+
+	var wg sync.WaitGroup
+	for idx := range dbList {
+		db := dbList[idx]
+
+		if db.DeletionTimestamp != nil || db.Spec.Halted {
+			continue
 		}
 
-		var wg sync.WaitGroup
-		for idx := range dbList {
-			db := dbList[idx]
+		wg.Add(1)
+		go func() {
+			defer func() {
+				wg.Done()
+			}()
 
-			if db.DeletionTimestamp != nil {
-				continue
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+			defer cancel()
+
+			// 1st insure all the pods are going to join the cluster(offline/online) to form a group replication
+			// then check if the db is going to accepting connection and in ready state.
+
+			// verifying all pods are going Online
+			podList, err := c.Client.CoreV1().Pods(db.Namespace).List(ctx, metav1.ListOptions{
+				LabelSelector: labels.Set(db.OffshootSelectors()).String(),
+			})
+			if err != nil {
+				klog.Warning("Failed to list DB pod with ", err.Error())
+				return
 			}
-			wg.Add(1)
-			go func() {
-				defer func() {
-					wg.Done()
-				}()
-				// 1st insure all the pods are going to join the cluster(offline/online) to form a group replication
-				// then check if the db is going to accepting connection and in ready state.
 
-				// verifying all pods are going Online
-				podList, err := c.Client.CoreV1().Pods(db.Namespace).List(context.TODO(), metav1.ListOptions{
-					LabelSelector: labels.Set(db.OffshootSelectors()).String(),
-				})
-				if err != nil {
-					klog.Warning("Failed to list DB pod with ", err.Error())
-					return
+			for _, pod := range podList.Items {
+				if core_util.IsPodConditionTrue(pod.Status.Conditions, core_util.PodConditionTypeReady) {
+					continue
 				}
 
-				for _, pod := range podList.Items {
-					if core_util.IsPodConditionTrue(pod.Status.Conditions, core_util.PodConditionTypeReady) {
-						continue
-					}
+				engine, err := c.getMySQLClient(ctx, db, HostDNS(db, pod.ObjectMeta), api.MySQLDatabasePort)
+				if err != nil {
+					klog.Warning("Failed to get db client for host ", pod.Namespace, "/", pod.Name)
+					continue
+				}
 
-					engine, err := c.getMySQLClient(db, HostDNS(db, pod.ObjectMeta), api.MySQLDatabasePort)
-					if err != nil {
-						klog.Warning("Failed to get db client for host ", pod.Namespace, "/", pod.Name)
-						continue
-					}
-
-					func(engine *xorm.Engine) {
-						defer func() {
-							if engine != nil {
-								err = engine.Close()
-								if err != nil {
-									klog.Errorf("Can't close the engine. error: %v", err)
-								}
-							}
-						}()
-
-						isHostOnline, err := c.isHostOnline(db, engine)
-						if err != nil {
-							klog.Warning("Host is not online ", err.Error())
-						}
-
-						if isHostOnline {
-							pod.Status.Conditions = core_util.SetPodCondition(pod.Status.Conditions, core.PodCondition{
-								Type:               core_util.PodConditionTypeReady,
-								Status:             core.ConditionTrue,
-								LastTransitionTime: metav1.Now(),
-								Reason:             "DBConditionTypeReadyAndServerOnline",
-								Message:            "DB is ready because of server getting Online and Running state",
-							})
-							_, err = c.Client.CoreV1().Pods(pod.Namespace).UpdateStatus(context.TODO(), &pod, metav1.UpdateOptions{})
+				func(engine *xorm.Engine) {
+					defer func() {
+						if engine != nil {
+							err = engine.Close()
 							if err != nil {
-								klog.Warning("Failed to update pod status with: ", err.Error())
+								klog.Errorf("Can't close the engine. error: %v", err)
 							}
 						}
-					}(engine)
-				}
+					}()
 
-				// verify db is going to accepting connection and in ready state
-				port, err := c.GetPrimaryServicePort(db)
-				if err != nil {
-					klog.Warning("Failed to primary service port with: ", err.Error())
-					return
-				}
-				engine, err := c.getMySQLClient(db, db.PrimaryServiceDNS(), port)
-				if err != nil {
-					// Since the client was unable to connect the database,
-					// update "AcceptingConnection" to "false".
-					// update "Ready" to "false"
-					_, err = util.UpdateMySQLStatus(
-						context.TODO(),
-						c.DBClient.KubedbV1alpha2(),
-						db.ObjectMeta,
-						func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
-							in.Conditions = kmapi.SetCondition(in.Conditions,
-								kmapi.Condition{
-									Type:               api.DatabaseAcceptingConnection,
-									Status:             core.ConditionFalse,
-									Reason:             api.DatabaseNotAcceptingConnectionRequest,
-									ObservedGeneration: db.Generation,
-									Message:            fmt.Sprintf("The MySQL: %s/%s is not accepting client requests, reason: %s", db.Namespace, db.Name, err.Error()),
-								})
-							in.Conditions = kmapi.SetCondition(in.Conditions,
-								kmapi.Condition{
-									Type:               api.DatabaseReady,
-									Status:             core.ConditionFalse,
-									Reason:             api.ReadinessCheckFailed,
-									ObservedGeneration: db.Generation,
-									Message:            fmt.Sprintf("The MySQL: %s/%s is not ready.", db.Namespace, db.Name),
-								})
-							return db.UID, in
-						},
-						metav1.UpdateOptions{},
-					)
+					isHostOnline, err := c.isHostOnline(ctx, db, engine)
 					if err != nil {
-						klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+						klog.Warning("Host is not online ", err.Error())
 					}
-					// Since the client isn't created, skip rest operations.
-					return
-				}
-				defer func() {
-					if engine != nil {
-						err = engine.Close()
+
+					if isHostOnline {
+						pod.Status.Conditions = core_util.SetPodCondition(pod.Status.Conditions, core.PodCondition{
+							Type:               core_util.PodConditionTypeReady,
+							Status:             core.ConditionTrue,
+							LastTransitionTime: metav1.Now(),
+							Reason:             "DBConditionTypeReadyAndServerOnline",
+							Message:            "DB is ready because of server getting Online and Running state",
+						})
+						_, err = c.Client.CoreV1().Pods(pod.Namespace).UpdateStatus(ctx, &pod, metav1.UpdateOptions{})
 						if err != nil {
-							klog.Errorf("Can't close the engine. error: %v", err)
+							klog.Warning("Failed to update pod status with: ", err.Error())
 						}
 					}
-				}()
-				// While creating the client, we perform a health check along with it.
-				// If the client is created without any error,
-				// the database is accepting connection.
-				// Update "AcceptingConnection" to "true".
+				}(engine)
+			}
+
+			// verify db is going to accepting connection and in ready state
+			port, err := c.GetPrimaryServicePort(db)
+			if err != nil {
+				klog.Warning("Failed to primary service port with: ", err.Error())
+				return
+			}
+			engine, err := c.getMySQLClient(ctx, db, db.PrimaryServiceDNS(), port)
+			if err != nil {
+				// Since the client was unable to connect the database,
+				// update "AcceptingConnection" to "false".
+				// update "Ready" to "false"
 				_, err = util.UpdateMySQLStatus(
-					context.TODO(),
+					ctx,
 					c.DBClient.KubedbV1alpha2(),
 					db.ObjectMeta,
 					func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
 						in.Conditions = kmapi.SetCondition(in.Conditions,
 							kmapi.Condition{
 								Type:               api.DatabaseAcceptingConnection,
-								Status:             core.ConditionTrue,
-								Reason:             api.DatabaseAcceptingConnectionRequest,
+								Status:             core.ConditionFalse,
+								Reason:             api.DatabaseNotAcceptingConnectionRequest,
 								ObservedGeneration: db.Generation,
-								Message:            fmt.Sprintf("The MySQL: %s/%s is accepting client requests.", db.Namespace, db.Name),
+								Message:            fmt.Sprintf("The MySQL: %s/%s is not accepting client requests, reason: %s", db.Namespace, db.Name, err.Error()),
+							})
+						in.Conditions = kmapi.SetCondition(in.Conditions,
+							kmapi.Condition{
+								Type:               api.DatabaseReady,
+								Status:             core.ConditionFalse,
+								Reason:             api.ReadinessCheckFailed,
+								ObservedGeneration: db.Generation,
+								Message:            fmt.Sprintf("The MySQL: %s/%s is not ready.", db.Namespace, db.Name),
 							})
 						return db.UID, in
 					},
@@ -201,84 +181,112 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 				)
 				if err != nil {
 					klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
-					// Since condition update failed, skip remaining operations.
-					return
 				}
-
-				// check MySQL database health
-				var isHealthy bool
-				if *db.Spec.Replicas > int32(1) && db.Spec.Topology != nil && db.Spec.Topology.Group != nil {
-					isHealthy, err = c.checkMySQLClusterHealth(len(podList.Items), engine)
+				// Since the client isn't created, skip rest operations.
+				return
+			}
+			defer func() {
+				if engine != nil {
+					err = engine.Close()
 					if err != nil {
-						klog.Errorf("MySQL Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
-					}
-				} else {
-					isHealthy, err = c.checkMySQLStandaloneHealth(engine)
-					if err != nil {
-						klog.Errorf("MySQL standalone %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
-					}
-				}
-
-				if isHealthy {
-					// database is healthy. So update to "Ready" condition to "true"
-					_, err = util.UpdateMySQLStatus(
-						context.TODO(),
-						c.DBClient.KubedbV1alpha2(),
-						db.ObjectMeta,
-						func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
-							in.Conditions = kmapi.SetCondition(in.Conditions,
-								kmapi.Condition{
-									Type:               api.DatabaseReady,
-									Status:             core.ConditionTrue,
-									Reason:             api.ReadinessCheckSucceeded,
-									ObservedGeneration: db.Generation,
-									Message:            fmt.Sprintf("The MySQL: %s/%s is ready.", db.Namespace, db.Name),
-								})
-							return db.UID, in
-						},
-						metav1.UpdateOptions{},
-					)
-					if err != nil {
-						klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
-					}
-				} else {
-					// database is not healthy. So update to "Ready" condition to "false"
-					_, err = util.UpdateMySQLStatus(
-						context.TODO(),
-						c.DBClient.KubedbV1alpha2(),
-						db.ObjectMeta,
-						func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
-							in.Conditions = kmapi.SetCondition(in.Conditions,
-								kmapi.Condition{
-									Type:               api.DatabaseReady,
-									Status:             core.ConditionFalse,
-									Reason:             api.ReadinessCheckFailed,
-									ObservedGeneration: db.Generation,
-									Message:            fmt.Sprintf("The MySQL: %s/%s is not ready.", db.Namespace, db.Name),
-								})
-							return db.UID, in
-						},
-						metav1.UpdateOptions{},
-					)
-					if err != nil {
-						klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+						klog.Errorf("Can't close the engine. error: %v", err)
 					}
 				}
 			}()
-		}
-		wg.Wait()
-	}, c.ReadinessProbeInterval, stopCh)
+			// While creating the client, we perform a health check along with it.
+			// If the client is created without any error,
+			// the database is accepting connection.
+			// Update "AcceptingConnection" to "true".
+			_, err = util.UpdateMySQLStatus(
+				ctx,
+				c.DBClient.KubedbV1alpha2(),
+				db.ObjectMeta,
+				func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
+					in.Conditions = kmapi.SetCondition(in.Conditions,
+						kmapi.Condition{
+							Type:               api.DatabaseAcceptingConnection,
+							Status:             core.ConditionTrue,
+							Reason:             api.DatabaseAcceptingConnectionRequest,
+							ObservedGeneration: db.Generation,
+							Message:            fmt.Sprintf("The MySQL: %s/%s is accepting client requests.", db.Namespace, db.Name),
+						})
+					return db.UID, in
+				},
+				metav1.UpdateOptions{},
+			)
+			if err != nil {
+				klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+				// Since condition update failed, skip remaining operations.
+				return
+			}
 
-	// will wait here until stopCh is closed.
-	<-stopCh
-	klog.Info("Shutting down MySQL health checker...")
+			// check MySQL database health
+			var isHealthy bool
+			if *db.Spec.Replicas > int32(1) && db.Spec.Topology != nil && db.Spec.Topology.Group != nil {
+				isHealthy, err = c.checkMySQLClusterHealth(ctx, len(podList.Items), engine)
+				if err != nil {
+					klog.Errorf("MySQL Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
+				}
+			} else {
+				isHealthy, err = c.checkMySQLStandaloneHealth(ctx, engine)
+				if err != nil {
+					klog.Errorf("MySQL standalone %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
+				}
+			}
+
+			if isHealthy {
+				// database is healthy. So update to "Ready" condition to "true"
+				_, err = util.UpdateMySQLStatus(
+					ctx,
+					c.DBClient.KubedbV1alpha2(),
+					db.ObjectMeta,
+					func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
+						in.Conditions = kmapi.SetCondition(in.Conditions,
+							kmapi.Condition{
+								Type:               api.DatabaseReady,
+								Status:             core.ConditionTrue,
+								Reason:             api.ReadinessCheckSucceeded,
+								ObservedGeneration: db.Generation,
+								Message:            fmt.Sprintf("The MySQL: %s/%s is ready.", db.Namespace, db.Name),
+							})
+						return db.UID, in
+					},
+					metav1.UpdateOptions{},
+				)
+				if err != nil {
+					klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+				}
+			} else {
+				// database is not healthy. So update to "Ready" condition to "false"
+				_, err = util.UpdateMySQLStatus(
+					ctx,
+					c.DBClient.KubedbV1alpha2(),
+					db.ObjectMeta,
+					func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
+						in.Conditions = kmapi.SetCondition(in.Conditions,
+							kmapi.Condition{
+								Type:               api.DatabaseReady,
+								Status:             core.ConditionFalse,
+								Reason:             api.ReadinessCheckFailed,
+								ObservedGeneration: db.Generation,
+								Message:            fmt.Sprintf("The MySQL: %s/%s is not ready.", db.Namespace, db.Name),
+							})
+						return db.UID, in
+					},
+					metav1.UpdateOptions{},
+				)
+				if err != nil {
+					klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+				}
+			}
+		}()
+	}
+	wg.Wait()
 }
 
-func (c *Controller) checkMySQLClusterHealth(members int, engine *xorm.Engine) (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (c *Controller) checkMySQLClusterHealth(ctx context.Context, members int, engine *xorm.Engine) (bool, error) {
 	session := engine.NewSession()
 	session.Context(ctx)
-	defer cancel()
 	defer session.Close()
 	// sql queries for checking cluster healthiness
 	// 1. ping database
@@ -313,11 +321,9 @@ func (c *Controller) checkMySQLClusterHealth(members int, engine *xorm.Engine) (
 	return true, nil
 }
 
-func (c *Controller) checkMySQLStandaloneHealth(engine *xorm.Engine) (bool, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+func (c *Controller) checkMySQLStandaloneHealth(ctx context.Context, engine *xorm.Engine) (bool, error) {
 	session := engine.NewSession()
 	session.Context(ctx)
-	defer cancel()
 	defer session.Close()
 	// sql queries for checking standalone healthiness
 	// 1. ping database
@@ -328,12 +334,10 @@ func (c *Controller) checkMySQLStandaloneHealth(engine *xorm.Engine) (bool, erro
 	return true, nil
 }
 
-func (c *Controller) isHostOnline(db *api.MySQL, engine *xorm.Engine) (bool, error) {
+func (c *Controller) isHostOnline(ctx context.Context, db *api.MySQL, engine *xorm.Engine) (bool, error) {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	session := engine.NewSession()
 	session.Context(ctx)
-	defer cancel()
 	defer session.Close()
 	// 1. ping for both standalone and group replication member
 	_, err := session.QueryString("SELECT 1;")
@@ -358,14 +362,14 @@ func (c *Controller) isHostOnline(db *api.MySQL, engine *xorm.Engine) (bool, err
 	return true, nil
 }
 
-func (c *Controller) getMySQLClient(db *api.MySQL, dns string, port int32) (*xorm.Engine, error) {
-	user, pass, err := c.getDBRootCredential(db)
+func (c *Controller) getMySQLClient(ctx context.Context, db *api.MySQL, dns string, port int32) (*xorm.Engine, error) {
+	user, pass, err := c.getDBRootCredential(ctx, db)
 	if err != nil {
 		return nil, fmt.Errorf("DB basic auth is not found for MySQL %v/%v", db.Namespace, db.Name)
 	}
 	tlsParam := ""
 	if db.Spec.TLS != nil {
-		serverSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.MustCertSecretName(api.MySQLServerCert), metav1.GetOptions{})
+		serverSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(ctx, db.MustCertSecretName(api.MySQLServerCert), metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
@@ -388,20 +392,20 @@ func (c *Controller) getMySQLClient(db *api.MySQL, dns string, port int32) (*xor
 	}
 
 	cnnstr := fmt.Sprintf("%v:%v@tcp(%s:%d)/%s?%s", user, pass, dns, port, api.ResourceSingularMySQL, tlsParam)
-	engine, err := xorm.NewEngine(api.ResourceSingularMySQL, cnnstr)
+	engine, err := xorm.NewEngine("mysql", cnnstr)
 	if err != nil {
-		return engine, err
+		return nil, fmt.Errorf("failed to create xorm engine")
 	}
-
+	engine.SetDefaultContext(ctx)
 	return engine, nil
 }
 
-func (c *Controller) getDBRootCredential(db *api.MySQL) (string, string, error) {
+func (c *Controller) getDBRootCredential(ctx context.Context, db *api.MySQL) (string, string, error) {
 	var secretName string
 	if db.Spec.AuthSecret != nil {
 		secretName = db.GetAuthSecretName()
 	}
-	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
+	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(ctx, secretName, metav1.GetOptions{})
 	if err != nil {
 		return "", "", err
 	}

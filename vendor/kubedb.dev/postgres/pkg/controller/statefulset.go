@@ -1,12 +1,9 @@
 /*
 Copyright AppsCode Inc. and Contributors
-
 Licensed under the AppsCode Community License 1.0.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     https://github.com/appscode/licenses/raw/1.0.0/AppsCode-Community-1.0.0.md
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,22 +41,24 @@ import (
 
 const (
 	PostgresInitContainerName = "postgres-init-container"
+	sharedTlsVolumeMountPath  = "/tls/certs"
 
-	sharedTlsVolumeMountPath = "/tls/certs"
-	clientTlsVolumeMountPath = "/certs/client"
-	serverTlsVolumeMountPath = "/certs/server"
-	serverTlsVolumeName      = "tls-volume-server"
-	clientTlsVolumeName      = "tls-volume-client"
-	coordinatorTlsVolumeName = "coordinator-tls-volume"
-	sharedTlsVolumeName      = "certs"
-	exporterTlsVolumeName    = "exporter-tls-volume"
-	TLS_CERT                 = "tls.crt"
-	TLS_KEY                  = "tls.key"
-	TLS_CA_CERT              = "ca.crt"
-	CLIENT_CERT              = "client.crt"
-	CLIENT_KEY               = "client.key"
-	SERVER_CERT              = "server.crt"
-	SERVER_KEY               = "server.key"
+	clientTlsVolumeMountPath   = "/certs/client"
+	serverTlsVolumeMountPath   = "/certs/server"
+	exporterTlsVolumeMountPath = "/certs/exporter"
+
+	serverTlsVolumeName   = "tls-volume-server"
+	clientTlsVolumeName   = "tls-volume-client"
+	sharedTlsVolumeName   = "certs"
+	exporterTlsVolumeName = "tls-volume-exporter"
+
+	TLS_CERT    = "tls.crt"
+	TLS_KEY     = "tls.key"
+	TLS_CA_CERT = "ca.crt"
+	CLIENT_CERT = "client.crt"
+	CLIENT_KEY  = "client.key"
+	SERVER_CERT = "server.crt"
+	SERVER_KEY  = "server.key"
 )
 
 func getMajorPgVersion(postgresVersion *catalog.PostgresVersion) (uint64, error) {
@@ -148,7 +147,6 @@ func (c *Reconciler) ensureStatefulSet(
 			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
 				Type: apps.OnDeleteStatefulSetStrategyType,
 			}
-
 			return in
 		},
 		metav1.PatchOptions{},
@@ -430,11 +428,11 @@ func (c *Reconciler) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db
 
 		if db.Spec.TLS != nil {
 			if db.Spec.SSLMode == api.PostgresSSLModeVerifyCA || db.Spec.SSLMode == api.PostgresSSLModeVerifyFull {
-				cnnstr = fmt.Sprintf("%s sslrootcert=%s/ca.crt", cnnstr, clientTlsVolumeMountPath)
+				cnnstr = fmt.Sprintf("%s sslrootcert=%s/exporter/ca.crt", cnnstr, sharedTlsVolumeMountPath)
 			}
 			if db.Spec.ClientAuthMode == api.ClientAuthModeCert {
-				cnnstr = fmt.Sprintf("%s sslcert=%s/tls.crt sslkey=%s/tls.key", cnnstr,
-					clientTlsVolumeMountPath, clientTlsVolumeMountPath)
+				cnnstr = fmt.Sprintf("%s sslcert=%s/exporter/tls.crt sslkey=%s/exporter/tls.key", cnnstr,
+					sharedTlsVolumeMountPath, sharedTlsVolumeMountPath)
 			}
 		}
 
@@ -469,20 +467,12 @@ func (c *Reconciler) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db
 			},
 			Env:       db.Spec.Monitor.Prometheus.Exporter.Env,
 			Resources: db.Spec.Monitor.Prometheus.Exporter.Resources,
-			// Run the container with default User as root user. As when we mount secret it's default owner is root and
-			// it has default mode(0600) we can't change that mode to global or higher than 0600.
-			// As postgres server don't allow certs file have the global permission.
-			// So User must need to be root to have read permission for the certs files. For this reason, We have set UID = 0, 0 is for root user.
-			SecurityContext: &core.SecurityContext{
-				RunAsUser: pointer.Int64P(0),
-			},
 		}
 		var volumeMounts []core.VolumeMount
 		if db.Spec.TLS != nil {
 			volumeMount := core.VolumeMount{
-
-				Name:      exporterTlsVolumeName,
-				MountPath: clientTlsVolumeMountPath,
+				Name:      sharedTlsVolumeName,
+				MountPath: sharedTlsVolumeMountPath,
 			}
 
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
@@ -630,7 +620,7 @@ func upsertSharedScriptsVolume(volumes []core.Volume) []core.Volume {
 
 	return volumes
 }
-func upsertCertificatesVolume(volumes []core.Volume) []core.Volume {
+func upsertSharedCertificatesVolume(volumes []core.Volume) []core.Volume {
 
 	configVolume := core.Volume{
 		Name: sharedTlsVolumeName,
@@ -669,12 +659,14 @@ func getInitContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgres
 			{
 				Name:      serverTlsVolumeName,
 				MountPath: serverTlsVolumeMountPath,
-				ReadOnly:  false,
 			},
 			{
 				Name:      clientTlsVolumeName,
 				MountPath: clientTlsVolumeMountPath,
-				ReadOnly:  false,
+			},
+			{
+				Name:      exporterTlsVolumeName,
+				MountPath: exporterTlsVolumeMountPath,
 			},
 		}
 		volumeMounts = core_util.UpsertVolumeMount(volumeMounts, tlsVolumeMounts...)
@@ -783,8 +775,8 @@ func getContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVers
 	}
 	if db.Spec.TLS != nil {
 		volumeMount := core.VolumeMount{
-			Name:      coordinatorTlsVolumeName,
-			MountPath: clientTlsVolumeMountPath,
+			Name:      sharedTlsVolumeName,
+			MountPath: sharedTlsVolumeMountPath,
 		}
 		coordinatorVolumeMounts = core_util.UpsertVolumeMount(coordinatorVolumeMounts, volumeMount)
 	}
@@ -826,7 +818,7 @@ func getVolumes(db *api.Postgres) ([]core.Volume, *core.PersistentVolumeClaim) {
 	volumes = upsertSharedScriptsVolume(volumes)
 	if db.Spec.TLS != nil {
 		volumes = upsertTLSVolume(volumes, db)
-		volumes = upsertCertificatesVolume(volumes)
+		volumes = upsertSharedCertificatesVolume(volumes)
 
 	}
 	return volumes, pvc
@@ -883,8 +875,7 @@ func upsertTLSVolume(volumes []core.Volume, db *api.Postgres) []core.Volume {
 		Name: exporterTlsVolumeName,
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
-				DefaultMode: pointer.Int32P(0600),
-				SecretName:  db.GetCertSecretName(api.PostgresMetricsExporterCert),
+				SecretName: db.GetCertSecretName(api.PostgresMetricsExporterCert),
 				Items: []core.KeyToPath{
 					{
 						Key:  TLS_CA_CERT,
@@ -902,36 +893,12 @@ func upsertTLSVolume(volumes []core.Volume, db *api.Postgres) []core.Volume {
 			},
 		},
 	}
-	coordinatorTLSVolume := core.Volume{
-		Name: coordinatorTlsVolumeName,
-		VolumeSource: core.VolumeSource{
-			Secret: &core.SecretVolumeSource{
-				DefaultMode: pointer.Int32P(0600),
-				SecretName:  db.GetCertSecretName(api.PostgresClientCert),
-				Items: []core.KeyToPath{
-					{
-						Key:  TLS_CA_CERT,
-						Path: TLS_CA_CERT,
-					},
-					{
-						Key:  TLS_CERT,
-						Path: CLIENT_CERT,
-					},
-					{
-						Key:  TLS_KEY,
-						Path: CLIENT_KEY,
-					},
-				},
-			},
-		},
-	}
 
 	volumes = core_util.UpsertVolume(
 		volumes,
 		serverVolume,
 		clientVolume,
 		exporterTLSVolume,
-		coordinatorTLSVolume,
 	)
 
 	return volumes
