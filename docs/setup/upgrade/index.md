@@ -16,16 +16,16 @@ section_menu_id: setup
 
 This guide will show you how to upgrade various KubeDB components. Here, we are going to show how to upgrade from an old KubeDB version to the new version, how to migrate between the enterprise edition and community edition, and how to update the license, etc.
 
-## Upgrading KubeDB from `v2021.03.17` to `v2021.04.16`
+## Upgrading KubeDB from `v2021.xx.xx` to `v2021.06.23`
 
-In order to upgrade from KubeDB `v2021.03.17` to `v2021.04.6`, please follow the following steps.
+In order to upgrade from KubeDB `v2021.xx.xx` to `v2021.06.23`, please follow the following steps.
 
 #### 1. Update KubeDB Catalog CRDs
 
-KubeDB `v2021.04.16` has added some new fields in the `***Version` CRDs. Unfortunatley, Helm [does not upgrade the CRDs](https://github.com/helm/helm/issues/6581) bundled in a Helm chart if the CRDs already exist. So, to upgrde the KubeDB catalog CRD, please run the command below:
+KubeDB `v2021.06.23` has added some new fields in the `***Version` CRDs. Unfortunatley, Helm [does not upgrade the CRDs](https://github.com/helm/helm/issues/6581) bundled in a Helm chart if the CRDs already exist. So, to upgrde the KubeDB catalog CRD, please run the command below:
 
 ```bash
-kubectl apply -f https://github.com/kubedb/installer/raw/v2021.04.16/kubedb-catalog-crds.yaml
+kubectl apply -f https://github.com/kubedb/installer/raw/v2021.06.23/kubedb-catalog-crds.yaml
 ```
 
 #### 2. Upgrade KubeDB Operator
@@ -50,7 +50,7 @@ $ helm upgrade kubedb appscode/kubedb \
 
 #### 3. Install/Upgrade Stash Operator
 
-Now, upgrade Stash if had previously installed Stash following the instructions [here](https://stash.run/docs/v2021.04.12/setup/upgrade/). If you had not installed Stash before, please install Stash Enterprise Edition following the instructions [here](https://stash.run/docs/v2021.04.12/setup/).
+Now, upgrade Stash if had previously installed Stash following the instructions [here](https://stash.run/docs/v2021.06.23/setup/upgrade/). If you had not installed Stash before, please install Stash Enterprise Edition following the instructions [here](https://stash.run/docs/v2021.06.23/setup/).
 
 
 ## Upgrading KubeDB from `v2021.01.26`(`v0.16.x`) and older to `v2021.03.17`(`v0.17.x`)
@@ -84,7 +84,7 @@ Now, upgrade Stash if had previously installed Stash following the instructions 
 
 ## Migration Between Community Edition and Enterprise Edition
 
-KubeDB `v2021.03.17`(`v0.17.x`) supports seamless migration between community edition and enterprise edition. You can run the following commands to migrate between them.
+KubeDB `v2021.06.23` supports seamless migration between community edition and enterprise edition. You can run the following commands to migrate between them.
 
 <ul class="nav nav-tabs" id="migrationTab" role="tablist">
   <li class="nav-item">
