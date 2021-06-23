@@ -27,8 +27,10 @@ import (
 	"github.com/spf13/pflag"
 	license "go.bytebuilders.dev/license-verifier/kubernetes"
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
+	"k8s.io/apiserver/pkg/features"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
+	"k8s.io/apiserver/pkg/util/feature"
 	"kmodules.xyz/client-go/tools/clientcmd"
 )
 
@@ -43,6 +45,7 @@ type KubeDBServerOptions struct {
 }
 
 func NewKubeDBServerOptions(out, errOut io.Writer) *KubeDBServerOptions {
+	_ = feature.DefaultMutableFeatureGate.Set(fmt.Sprintf("%s=false", features.APIPriorityAndFairness))
 	o := &KubeDBServerOptions{
 		// TODO we will nil out the etcd storage options.  This requires a later level of k8s.io/apiserver
 		RecommendedOptions: genericoptions.NewRecommendedOptions(
