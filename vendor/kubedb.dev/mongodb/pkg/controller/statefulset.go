@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
@@ -1208,12 +1207,6 @@ func upsertEnv(template core.PodTemplateSpec, db *api.MongoDB) core.PodTemplateS
 }
 
 func getExporterContainer(db *api.MongoDB, mongodbVersion *v1alpha1.MongoDBVersion) core.Container {
-	metricsPath := fmt.Sprintf("--web.metrics-path=%v", db.StatsService().Path())
-	// change metric path for percona-mongodb-exporter
-	if strings.Contains(mongodbVersion.Spec.Exporter.Image, "percona") {
-		metricsPath = fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path())
-	}
-
 	uri := "--mongodb.uri=mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@localhost:27017/admin"
 	if db.Spec.SSLMode != api.SSLModeDisabled && db.Spec.TLS != nil {
 		clientPEM := fmt.Sprintf("%s/%s", api.MongoCertDirectory, api.MongoClientFileName)
@@ -1224,7 +1217,7 @@ func getExporterContainer(db *api.MongoDB, mongodbVersion *v1alpha1.MongoDBVersi
 	args := append([]string{
 		uri,
 		fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
-		metricsPath,
+		fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
 	}, db.Spec.Monitor.Prometheus.Exporter.Args...)
 
 	return core.Container{

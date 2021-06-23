@@ -23,17 +23,17 @@ require (
 	kmodules.xyz/client-go v0.0.0-20210617233340-13d22e91512b
 	kmodules.xyz/custom-resources v0.0.0-20210618003440-c6bb400da153
 	kmodules.xyz/webhook-runtime v0.0.0-20210618013329-0accb929102b
-	kubedb.dev/apimachinery v0.19.0-rc.0
-	kubedb.dev/elasticsearch v0.19.0-rc.0
-	kubedb.dev/mariadb v0.3.0-rc.0
-	kubedb.dev/memcached v0.12.0-rc.0
-	kubedb.dev/mongodb v0.12.0-rc.0
-	kubedb.dev/mysql v0.12.0-rc.0
-	kubedb.dev/percona-xtradb v0.6.0-rc.0
-	kubedb.dev/pgbouncer v0.6.0-rc.0
-	kubedb.dev/postgres v0.19.0-rc.0
-	kubedb.dev/proxysql v0.6.0-rc.0
-	kubedb.dev/redis v0.12.0-rc.0
+	kubedb.dev/apimachinery v0.19.0
+	kubedb.dev/elasticsearch v0.19.0
+	kubedb.dev/mariadb v0.3.0
+	kubedb.dev/memcached v0.12.0
+	kubedb.dev/mongodb v0.12.0
+	kubedb.dev/mysql v0.12.0
+	kubedb.dev/percona-xtradb v0.6.0
+	kubedb.dev/pgbouncer v0.6.0
+	kubedb.dev/postgres v0.19.0
+	kubedb.dev/proxysql v0.6.0
+	kubedb.dev/redis v0.12.0
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
