@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: es-custom-config
+  namespace: demo
+stringData:
+  jvm.options: |-
+    ## G1GC Configuration
+
+    10-:-XX:+UseG1GC
+    10-13:-XX:-UseConcMarkSweepGC
+    10-13:-XX:-UseCMSInitiatingOccupancyOnly
+    10-:-XX:G1ReservePercent=25
+    10-:-XX:InitiatingHeapOccupancyPercent=30
+
+    ## JVM temporary directory
+    -Djava.io.tmpdir=${ES_TMPDIR}
+
+    ## heap dumps
+
+    # generate a heap dump when an allocation from the Java heap fails
+    # heap dumps are created in the working directory of the JVM
+    -XX:+HeapDumpOnOutOfMemoryError
+
+    # specify an alternative path for heap dumps; ensure the directory exists and
+    # has sufficient space
+    -XX:HeapDumpPath=data
+
+    # specify an alternative path for JVM fatal error logs
+    -XX:ErrorFile=logs/hs_err_pid%p.log
+
+    # JDK 9+ GC logging
+    9-:-Xlog:gc*,gc+age=trace,safepoint:file=logs/gc.log:utctime,pid,tags:filecount=32,filesize=64m
