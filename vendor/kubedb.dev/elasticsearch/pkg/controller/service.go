@@ -28,6 +28,7 @@ import (
 	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
@@ -206,9 +207,9 @@ func (c *Controller) ensureStatsService(db *api.Elasticsearch) (kutil.VerbType, 
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.StatsServiceLabels()
-		in.Annotations = svcTemplate.Annotations
+		in.Annotations = meta_util.OverwriteKeys(in.Annotations, svcTemplate.Annotations)
 
-		in.Spec.Selector = db.OffshootSelectors()
+		in.Spec.Selector = db.IngestSelectors()
 		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{

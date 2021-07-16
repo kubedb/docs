@@ -533,6 +533,8 @@ gomodules.xyz/jsonpath/third_party/forked/golang/template
 # gomodules.xyz/logs v0.0.2
 ## explicit
 gomodules.xyz/logs
+# gomodules.xyz/mergo v0.3.13-0.20210702100041-9d62ff8ece4d
+gomodules.xyz/mergo
 # gomodules.xyz/password-generator v0.2.7
 gomodules.xyz/password-generator
 # gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209
@@ -1236,15 +1238,16 @@ k8s.io/utils/pointer
 k8s.io/utils/trace
 # kmodules.xyz/apiversion v0.2.0
 kmodules.xyz/apiversion
-# kmodules.xyz/client-go v0.0.0-20210617233340-13d22e91512b
+# kmodules.xyz/client-go v0.0.0-20210715065708-d4f0cc74ead1
 ## explicit
 kmodules.xyz/client-go
-kmodules.xyz/client-go/admissionregistration/v1beta1
+kmodules.xyz/client-go/admissionregistration
+kmodules.xyz/client-go/admissionregistration/v1
 kmodules.xyz/client-go/api/v1
 kmodules.xyz/client-go/apiextensions
 kmodules.xyz/client-go/apiextensions/v1
 kmodules.xyz/client-go/apiextensions/v1beta1
-kmodules.xyz/client-go/apiregistration/v1beta1
+kmodules.xyz/client-go/apiregistration/v1
 kmodules.xyz/client-go/apps/v1
 kmodules.xyz/client-go/core/v1
 kmodules.xyz/client-go/discovery
@@ -1262,7 +1265,7 @@ kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/client-go/tools/clusterid
 kmodules.xyz/client-go/tools/exec
 kmodules.xyz/client-go/tools/queue
-# kmodules.xyz/custom-resources v0.0.0-20210618003440-c6bb400da153
+# kmodules.xyz/custom-resources v0.0.0-20210715200638-d7eae69a48fb
 ## explicit
 kmodules.xyz/custom-resources/apis/appcatalog
 kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
@@ -1310,7 +1313,7 @@ kmodules.xyz/resource-metadata/pkg/graph
 ## explicit
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.19.0
+# kubedb.dev/apimachinery v0.19.1-0.20210716040829-24bc990a1ae3
 ## explicit
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
@@ -1353,7 +1356,7 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.19.0
+# kubedb.dev/elasticsearch v0.19.1-0.20210716061158-f472c1ea614c
 ## explicit
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
@@ -1368,39 +1371,39 @@ kubedb.dev/elasticsearch/pkg/lib/heap
 kubedb.dev/elasticsearch/pkg/lib/kernel
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/mariadb v0.3.0
+# kubedb.dev/mariadb v0.3.1-0.20210716062349-24fe8f762f7b
 ## explicit
 kubedb.dev/mariadb/pkg/admission
 kubedb.dev/mariadb/pkg/controller
-# kubedb.dev/memcached v0.12.0
+# kubedb.dev/memcached v0.12.1-0.20210716063154-2d3550fc6396
 ## explicit
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.12.0
+# kubedb.dev/mongodb v0.12.1-0.20210716063643-fb5f52578440
 ## explicit
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.12.0
+# kubedb.dev/mysql v0.12.1-0.20210716064032-99bcc275b181
 ## explicit
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.6.0
+# kubedb.dev/percona-xtradb v0.6.1-0.20210716064754-1a0aa3851813
 ## explicit
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pgbouncer v0.6.0
+# kubedb.dev/pgbouncer v0.6.1-0.20210716065556-e452aef329d1
 ## explicit
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.19.0
+# kubedb.dev/postgres v0.19.1-0.20210716070024-39f294df996c
 ## explicit
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.6.0
+# kubedb.dev/proxysql v0.6.1-0.20210716070442-44f352d023ef
 ## explicit
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.12.0
+# kubedb.dev/redis v0.12.1-0.20210716071458-d941d122054c
 ## explicit
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
@@ -1513,7 +1516,7 @@ sigs.k8s.io/structured-merge-diff/v4/typed
 sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
-# stash.appscode.dev/apimachinery v0.14.1
+# stash.appscode.dev/apimachinery v0.14.2-0.20210715200631-5399637188c0
 stash.appscode.dev/apimachinery/apis
 stash.appscode.dev/apimachinery/apis/repositories
 stash.appscode.dev/apimachinery/apis/repositories/v1alpha1

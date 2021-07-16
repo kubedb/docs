@@ -27,7 +27,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
-	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
 	"kmodules.xyz/client-go/discovery"
 	"kmodules.xyz/client-go/tools/cli"
 )

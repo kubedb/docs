@@ -111,9 +111,8 @@ func (c *Reconciler) ensureStatefulSet(
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, db.Spec.PodTemplate.Spec.InitContainers)
 			in.Spec.Template.Spec.InitContainers = getInitContainers(in, db, postgresVersion)
 
-			in.Spec.Template.Spec.Containers = getContainers(in, db, postgresVersion)
+			in.Spec.Template.Spec.Containers = getContainers(in, db, postgresVersion, envList)
 
-			in = upsertEnv(in, db, postgresVersion, envList)
 			in = upsertUserEnv(in, db)
 			in = upsertPort(in)
 
@@ -137,7 +136,7 @@ func (c *Reconciler) ensureStatefulSet(
 			// so it will contain all required volumes. As there is no support for user provided volume for now,
 			// we don't need to use upsert here.
 			volumes, pvc := getVolumes(db)
-			in.Spec.Template.Spec.Volumes = volumes
+			in.Spec.Template.Spec.Volumes = core_util.MustReplaceVolumes(in.Spec.Template.Spec.Volumes, volumes...)
 			// Upsert volumeClaimTemplates if any
 			if pvc != nil {
 				in.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(in.Spec.VolumeClaimTemplates, *pvc)
@@ -222,7 +221,8 @@ func (c *Reconciler) checkStatefulSet(db *api.Postgres) error {
 	return nil
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion *catalog.PostgresVersion, envs []core.EnvVar) *apps.StatefulSet {
+func getEnvForPostgres(db *api.Postgres, postgresVersion *catalog.PostgresVersion, envs []core.EnvVar) []core.EnvVar {
+
 	majorPGVersion, err := getMajorPgVersion(postgresVersion)
 	if err != nil {
 		klog.Error("couldn't get version's major part")
@@ -257,18 +257,6 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion 
 			Value: strconv.FormatUint(db.Spec.LeaderElection.MaximumLagBeforeFailover, 10),
 		},
 		{
-			Name:  "PERIOD",
-			Value: db.Spec.LeaderElection.Period.Duration.String(),
-		},
-		{
-			Name:  "ELECTION_TICK",
-			Value: strconv.Itoa(int(db.Spec.LeaderElection.ElectionTick)),
-		},
-		{
-			Name:  "HEARTBEAT_TICK",
-			Value: strconv.Itoa(int(db.Spec.LeaderElection.HeartbeatTick)),
-		},
-		{
 			Name: EnvPostgresUser,
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
@@ -289,6 +277,10 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion 
 					Key: core.BasicAuthPasswordKey,
 				},
 			},
+		},
+		{
+			Name:  "SHARED_BUFFERS",
+			Value: api.GetSharedBufferSizeForPostgres(db.Spec.PodTemplate.Spec.Resources.Requests.Memory()),
 		},
 		{
 			Name:  "PG_VERSION",
@@ -347,26 +339,88 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion 
 		}
 		envList = append(envList, tlEnv...)
 	}
+	return envList
+}
 
-	// To do this, Upsert Container first
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres || container.Name == api.PostgresCoordinatorContainerName {
-			if container.Name == api.ResourceSingularPostgres {
-				env := core.EnvVar{
-					Name:  "SHARED_BUFFERS",
-					Value: api.GetSharedBufferSizeForPostgres(db.Spec.PodTemplate.Spec.Resources.Requests.Memory()),
-				}
-				container.Env = core_util.UpsertEnvVars(container.Env, env)
-			}
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
+func getEnvForCoordinator(db *api.Postgres, postgresVersion *catalog.PostgresVersion) []core.EnvVar {
+
+	majorPGVersion, err := getMajorPgVersion(postgresVersion)
+	if err != nil {
+		klog.Error("couldn't get version's major part")
+	}
+	sslMode := db.Spec.SSLMode
+	if sslMode == "" {
+		if db.Spec.TLS != nil {
+			sslMode = api.PostgresSSLModeVerifyFull
+		} else {
+			sslMode = api.PostgresSSLModeDisable
 		}
 	}
-	for i, initContainer := range statefulSet.Spec.Template.Spec.InitContainers {
-		if initContainer.Name == PostgresInitContainerName {
-			statefulSet.Spec.Template.Spec.InitContainers[i].Env = core_util.UpsertEnvVars(initContainer.Env, envList...)
-		}
+	clientAuthMode := db.Spec.ClientAuthMode
+	if clientAuthMode == "" {
+		clientAuthMode = api.ClientAuthModeMD5
 	}
-	return statefulSet
+	envList := []core.EnvVar{
+		{
+			Name: "NAMESPACE",
+			ValueFrom: &core.EnvVarSource{
+				FieldRef: &core.ObjectFieldSelector{
+					FieldPath: "metadata.namespace",
+				},
+			},
+		},
+		{
+			Name:  "PRIMARY_HOST",
+			Value: db.ServiceName(),
+		},
+		{
+			Name:  "MAX_LAG_BEFORE_FAILOVER",
+			Value: strconv.FormatUint(db.Spec.LeaderElection.MaximumLagBeforeFailover, 10),
+		},
+		{
+			Name:  "PERIOD",
+			Value: db.Spec.LeaderElection.Period.Duration.String(),
+		},
+		{
+			Name:  "ELECTION_TICK",
+			Value: strconv.Itoa(int(db.Spec.LeaderElection.ElectionTick)),
+		},
+		{
+			Name:  "HEARTBEAT_TICK",
+			Value: strconv.Itoa(int(db.Spec.LeaderElection.HeartbeatTick)),
+		},
+		{
+			Name:  "MAJOR_PG_VERSION",
+			Value: strconv.Itoa(int(majorPGVersion)),
+		},
+		{
+			Name:  "CLIENT_AUTH_MODE",
+			Value: string(clientAuthMode),
+		},
+		{
+			Name:  "SSL_MODE",
+			Value: string(sslMode),
+		},
+	}
+	if db.Spec.TLS != nil {
+		tlEnv := []core.EnvVar{
+			{
+				Name:  "SSL",
+				Value: "ON",
+			},
+		}
+		envList = append(envList, tlEnv...)
+	} else {
+		tlEnv := []core.EnvVar{
+			{
+				Name:  "SSL",
+				Value: "OFF",
+			},
+		}
+		envList = append(envList, tlEnv...)
+	}
+
+	return envList
 }
 
 // upsertUserEnv add/overwrite env from user provided env in crd spec
@@ -512,9 +566,7 @@ func (c *Reconciler) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db
 			},
 		}
 		container.Env = core_util.UpsertEnvVars(container.Env, envList...)
-		containers := statefulSet.Spec.Template.Spec.Containers
-		containers = core_util.UpsertContainer(containers, container)
-		statefulSet.Spec.Template.Spec.Containers = containers
+		statefulSet.Spec.Template.Spec.Containers = core_util.UpsertContainer(statefulSet.Spec.Template.Spec.Containers, container)
 	}
 	return statefulSet
 }
@@ -635,6 +687,35 @@ func upsertSharedCertificatesVolume(volumes []core.Volume) []core.Volume {
 }
 
 func getInitContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion *catalog.PostgresVersion) []core.Container {
+	majorPGVersion, err := getMajorPgVersion(postgresVersion)
+	if err != nil {
+		klog.Error("couldn't get version's major part")
+	}
+
+	var envList []core.EnvVar
+	envList = []core.EnvVar{
+		{
+			Name:  "MAJOR_PG_VERSION",
+			Value: strconv.Itoa(int(majorPGVersion)),
+		},
+	}
+	if db.Spec.TLS != nil {
+		tlEnv := []core.EnvVar{
+			{
+				Name:  "SSL",
+				Value: "ON",
+			},
+		}
+		envList = append(envList, tlEnv...)
+	} else {
+		tlEnv := []core.EnvVar{
+			{
+				Name:  "SSL",
+				Value: "OFF",
+			},
+		}
+		envList = append(envList, tlEnv...)
+	}
 
 	volumeMounts := []core.VolumeMount{
 		{
@@ -688,11 +769,12 @@ func getInitContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgres
 				},
 			},
 			VolumeMounts: volumeMounts,
+			Env:          envList,
 		})
 	return statefulSet.Spec.Template.Spec.InitContainers
 }
 
-func getContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion *catalog.PostgresVersion) []core.Container {
+func getContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion *catalog.PostgresVersion, envs []core.EnvVar) []core.Container {
 	pgLifeCycle := &core.Lifecycle{
 		PreStop: &core.Handler{
 			Exec: &core.ExecAction{
@@ -761,8 +843,10 @@ func getContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVers
 			ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
 			Lifecycle:       pgLifeCycle,
 			VolumeMounts:    volumeMounts,
+			Env:             getEnvForPostgres(db, postgresVersion, envs),
 		})
 
+	// Here Upsert the Sidecar PG-Coordinator
 	coordinatorVolumeMounts := []core.VolumeMount{
 		{
 			Name:      "data",
@@ -796,6 +880,7 @@ func getContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVers
 				},
 			},
 			VolumeMounts: coordinatorVolumeMounts,
+			Env:          getEnvForCoordinator(db, postgresVersion),
 		})
 	return statefulSet.Spec.Template.Spec.Containers
 }

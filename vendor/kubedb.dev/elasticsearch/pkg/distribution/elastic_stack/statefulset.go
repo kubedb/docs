@@ -168,7 +168,7 @@ func (es *Elasticsearch) ensureStatefulSet(
 		// Everytime the volume list is generated from the YAML file,
 		// so it will contain all required volumes. As there is no support for user provided volume for now,
 		// we don't need to use upsert here.
-		in.Spec.Template.Spec.Volumes = volumes
+		in.Spec.Template.Spec.Volumes = core_util.MustReplaceVolumes(in.Spec.Template.Spec.Volumes, volumes...)
 
 		// Statefulset update strategy is set default to "OnDelete".
 		// Any kind of modification on Elasticsearch will be performed via ElasticsearchModificationRequest CRD.

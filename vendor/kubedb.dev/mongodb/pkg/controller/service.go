@@ -28,6 +28,7 @@ import (
 	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
@@ -42,7 +43,7 @@ func (c *Controller) ensureService(db *api.MongoDB) (kutil.VerbType, error) {
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully %s Service",
+			"Successfully %s Primary Service",
 			vt,
 		)
 	}
@@ -126,7 +127,7 @@ func (c *Controller) ensureStatsService(db *api.MongoDB) (kutil.VerbType, error)
 		func(in *core.Service) *core.Service {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = db.StatsServiceLabels()
-			in.Annotations = svcTemplate.Annotations
+			in.Annotations = meta_util.OverwriteKeys(in.Annotations, svcTemplate.Annotations)
 
 			in.Spec.Selector = db.OffshootSelectors()
 			in.Spec.Ports = ofst.PatchServicePorts(
@@ -208,12 +209,12 @@ func (c *Reconciler) EnsureGoverningService(db *api.MongoDB) error {
 			metav1.PatchOptions{},
 		)
 
-		if err == nil {
+		if err == nil && vt != kutil.VerbUnchanged {
 			c.Recorder.Eventf(
 				db,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,
-				"Successfully %s stats service",
+				"Successfully %s governing service",
 				vt,
 			)
 		}

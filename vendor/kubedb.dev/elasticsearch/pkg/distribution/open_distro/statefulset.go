@@ -57,9 +57,9 @@ var (
 		ContainerPort: api.ElasticsearchTransportPort,
 		Protocol:      core.ProtocolTCP,
 	}
-	defaultMetricsPort = core.ContainerPort{
-		Name:          mona.PrometheusExporterPortName,
-		ContainerPort: api.ElasticsearchMetricsPort,
+	defaultPerformanceAnalyzerPort = core.ContainerPort{
+		Name:          api.ElasticsearchPerformanceAnalyzerPortName,
+		ContainerPort: api.ElasticsearchPerformanceAnalyzerPort,
 		Protocol:      core.ProtocolTCP,
 	}
 )
@@ -172,7 +172,7 @@ func (es *Elasticsearch) ensureStatefulSet(
 		// Everytime the volume list is generated from the YAML file,
 		// so it will contain all required volumes. As there is no support for user provided volume for now,
 		// we don't need to use upsert here.
-		in.Spec.Template.Spec.Volumes = volumes
+		in.Spec.Template.Spec.Volumes = core_util.MustReplaceVolumes(in.Spec.Template.Spec.Volumes, volumes...)
 
 		// Statefulset update strategy is set default to "OnDelete".
 		// Any kind of modification on Elasticsearch will be performed via ElasticsearchModificationRequest CRD.
@@ -441,7 +441,7 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 			// But it is set for all type of nodes, so that our controller can
 			// communicate with each nodes specifically.
 			// The DBA controller uses the restPort to check health of a node.
-			Ports:           []core.ContainerPort{defaultRestPort, defaultTransportPort, defaultMetricsPort},
+			Ports:           []core.ContainerPort{defaultRestPort, defaultTransportPort, defaultPerformanceAnalyzerPort},
 			SecurityContext: es.db.Spec.PodTemplate.Spec.ContainerSecurityContext,
 			Resources:       esNode.Resources,
 			VolumeMounts:    volumeMount,

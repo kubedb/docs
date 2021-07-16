@@ -21,7 +21,7 @@ import (
 
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/klog/v2"
-	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
 )
 
 // Blocks caller. Intended to be called as a Go routine.

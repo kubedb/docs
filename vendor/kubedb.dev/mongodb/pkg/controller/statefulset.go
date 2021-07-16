@@ -903,7 +903,11 @@ func (c *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 			in.Spec.Template.Spec.HostNetwork = pt.Spec.HostNetwork
 			in.Spec.Template.Spec.HostPID = pt.Spec.HostPID
 			in.Spec.Template.Spec.HostIPC = pt.Spec.HostIPC
+			if pt.Spec.SecurityContext == nil {
+				pt.Spec.SecurityContext = &core.PodSecurityContext{}
+			}
 			in.Spec.Template.Spec.SecurityContext = pt.Spec.SecurityContext
+
 			in.Spec.Template.Spec.ServiceAccountName = pt.Spec.ServiceAccountName
 			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
 				Type: apps.OnDeleteStatefulSetStrategyType,
