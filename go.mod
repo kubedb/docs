@@ -110,6 +110,8 @@ replace github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring =
 
 replace github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.10.0
 
+replace github.com/satori/go.uuid => github.com/gofrs/uuid v4.0.0+incompatible
+
 replace go.etcd.io/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
 
 replace google.golang.org/api => google.golang.org/api v0.20.0
@@ -118,7 +120,7 @@ replace google.golang.org/genproto => google.golang.org/genproto v0.0.0-20201110
 
 replace google.golang.org/grpc => google.golang.org/grpc v1.27.1
 
-replace helm.sh/helm/v3 => github.com/kubepack/helm/v3 v3.1.0-rc.1.0.20210503022716-7e2d4913a125
+replace helm.sh/helm/v3 => github.com/kubepack/helm/v3 v3.6.1-0.20210518225915-c3e0ce48dd1b
 
 replace k8s.io/api => k8s.io/api v0.21.1
 
