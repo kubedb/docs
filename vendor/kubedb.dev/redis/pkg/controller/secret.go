@@ -39,9 +39,9 @@ func (c *Controller) RedisForSecret(s *core.Secret) cache.ExplicitKey {
 func (c *Controller) GetRedisSecrets(db *api.Redis) []string {
 	if db.Spec.TLS != nil {
 		return []string{
-			db.MustCertSecretName(api.RedisServerCert),
-			db.MustCertSecretName(api.RedisClientCert),
-			db.MustCertSecretName(api.RedisMetricsExporterCert),
+			db.GetCertSecretName(api.RedisServerCert),
+			db.GetCertSecretName(api.RedisClientCert),
+			db.GetCertSecretName(api.RedisMetricsExporterCert),
 		}
 	}
 	return nil

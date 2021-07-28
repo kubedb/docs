@@ -75,9 +75,9 @@ func (c *Controller) create(db *api.Redis) error {
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			db.Namespace,
-			db.MustCertSecretName(api.RedisServerCert),
-			db.MustCertSecretName(api.RedisClientCert),
-			db.MustCertSecretName(api.RedisMetricsExporterCert),
+			db.GetCertSecretName(api.RedisServerCert),
+			db.GetCertSecretName(api.RedisClientCert),
+			db.GetCertSecretName(api.RedisMetricsExporterCert),
 		)
 		if err != nil {
 			return err
