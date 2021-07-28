@@ -398,7 +398,9 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 		in.Spec.Template.Spec.HostNetwork = db.Spec.PodTemplate.Spec.HostNetwork
 		in.Spec.Template.Spec.HostPID = db.Spec.PodTemplate.Spec.HostPID
 		in.Spec.Template.Spec.HostIPC = db.Spec.PodTemplate.Spec.HostIPC
-		in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
+		if in.Spec.Template.Spec.SecurityContext == nil {
+			in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
+		}
 		in.Spec.Template.Spec.ServiceAccountName = db.Spec.PodTemplate.Spec.ServiceAccountName
 		in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
 			Type: apps.OnDeleteStatefulSetStrategyType,
@@ -506,7 +508,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 						{
 							Secret: &core.SecretProjection{
 								LocalObjectReference: core.LocalObjectReference{
-									Name: db.MustCertSecretName(api.RedisServerCert),
+									Name: db.GetCertSecretName(api.RedisServerCert),
 								},
 								Items: []core.KeyToPath{
 									{
@@ -527,7 +529,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 						{
 							Secret: &core.SecretProjection{
 								LocalObjectReference: core.LocalObjectReference{
-									Name: db.MustCertSecretName(api.RedisClientCert),
+									Name: db.GetCertSecretName(api.RedisClientCert),
 								},
 								Items: []core.KeyToPath{
 									{
@@ -554,7 +556,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 						{
 							Secret: &core.SecretProjection{
 								LocalObjectReference: core.LocalObjectReference{
-									Name: db.MustCertSecretName(api.RedisMetricsExporterCert),
+									Name: db.GetCertSecretName(api.RedisMetricsExporterCert),
 								},
 								Items: []core.KeyToPath{
 									{
