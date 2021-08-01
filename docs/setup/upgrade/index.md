@@ -91,9 +91,6 @@ KubeDB `v2021.06.23` supports seamless migration between community edition and e
     <a class="nav-link active" id="mgr-helm3-tab" data-toggle="tab" href="#mgr-helm3" role="tab" aria-controls="mgr-helm3" aria-selected="true">Helm 3</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" id="mgr-helm2-tab" data-toggle="tab" href="#mgr-helm2" role="tab" aria-controls="mgr-helm2" aria-selected="false">Helm 2</a>
-  </li>
-  <li class="nav-item">
     <a class="nav-link" id="mgr-yaml-tab" data-toggle="tab" href="#mgr-yaml" role="tab" aria-controls="mgr-yaml" aria-selected="false">YAML</a>
   </li>
 </ul>
@@ -121,37 +118,6 @@ In order to migrate from KubeDB enterprise edition to KubeDB community edition, 
 
 ```bash
 helm upgrade kubedb -n kube-system appscode/kubedb \
-  --reuse-values \
-  --set kubedb-enterprise.enabled=false \
-  --set kubedb-autoscaler.enabled=false \
-  --set kubedb-catalog.skipDeprecated=false \
-  --set-file global.license=/path/to/kubedb-community-license.txt
-```
-
-</div>
-<div class="tab-pane fade" id="mgr-helm2" role="tabpanel" aria-labelledby="mgr-helm2">
-
-**Using Helm 2**
-
-**From Community Edition to Enterprise Edition:**
-
-To migrate from KubeDB community edition to KubeDB enterprise edition, please run the following command,
-
-```bash
-helm upgrade kubedb appscode/kubedb \
-  --reuse-values \
-  --set kubedb-enterprise.enabled=true \
-  --set kubedb-autoscaler.enabled=true \
-  --set kubedb-catalog.skipDeprecated=false \
-  --set-file global.license=/path/to/kubedb-enterprise-license.txt
-```
-
-**From Enterprise Edition to Community Edition:**
-
-To migrate from KubeDB enterprise edition to KubeDB community edition, please run the following command,
-
-```bash
-helm upgrade kubedb appscode/kubedb \
   --reuse-values \
   --set kubedb-enterprise.enabled=false \
   --set kubedb-autoscaler.enabled=false \
@@ -211,9 +177,6 @@ Follow the below instructions to update the license:
     <a class="nav-link active" id="lu-helm3-tab" data-toggle="tab" href="#lu-helm3" role="tab" aria-controls="lu-helm3" aria-selected="true">Helm 3</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" id="lu-helm2-tab" data-toggle="tab" href="#lu-helm2" role="tab" aria-controls="lu-helm2" aria-selected="false">Helm 2</a>
-  </li>
-  <li class="nav-item">
     <a class="nav-link" id="lu-yaml-tab" data-toggle="tab" href="#lu-yaml" role="tab" aria-controls="lu-yaml" aria-selected="false">YAML</a>
   </li>
 </ul>
@@ -226,17 +189,6 @@ Follow the below instructions to update the license:
 helm upgrade kubedb -n kube-system appscode/kubedb \
   --reuse-values \
   --set-file global.license=/path/to/new/license.txt
-```
-
-</div>
-<div class="tab-pane fade" id="lu-helm2" role="tabpanel" aria-labelledby="lu-helm2">
-
-#### Using Helm 2
-
-```bash
-helm upgrade kubedb appscode/kubedb \
-  --reuse-values \
-  --set-file license=/path/to/new/license.txt
 ```
 
 </div>

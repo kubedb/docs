@@ -55,9 +55,6 @@ KubeDB operator can be installed as a Helm chart or simply as Kubernetes manifes
     <a class="nav-link active" id="helm3-tab" data-toggle="tab" href="#helm3" role="tab" aria-controls="helm3" aria-selected="true">Helm 3 (Recommended)</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" id="helm2-tab" data-toggle="tab" href="#helm2" role="tab" aria-controls="helm2" aria-selected="false">Helm 2</a>
-  </li>
-  <li class="nav-item">
     <a class="nav-link" id="script-tab" data-toggle="tab" href="#script" role="tab" aria-controls="script" aria-selected="false">YAML</a>
   </li>
 </ul>
@@ -83,35 +80,6 @@ appscode/kubedb-enterprise  {{< param "info.enterprise" >}}        {{< param "in
 
 # Install KubeDB Community operator chart
 $ helm install kubedb appscode/kubedb \
-  --version {{< param "info.version" >}} \
-  --namespace kube-system \
-  --set-file global.license=/path/to/the/license.txt
-```
-
-To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
-
-</div>
-<div class="tab-pane fade" id="helm2" role="tabpanel" aria-labelledby="helm2-tab">
-
-## Using Helm 2
-
-KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install, follow the steps below:
-
-```bash
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-
-$ helm search appscode/kubedb
-NAME                        CHART VERSION APP VERSION DESCRIPTION
-appscode/kubedb             {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB by AppsCode - Production ready databases...
-appscode/kubedb-autoscaler  {{< param "info.autoscaler" >}}        {{< param "info.autoscaler" >}}      KubeDB Autoscaler by AppsCode - Autoscale KubeD...
-appscode/kubedb-catalog     {{< param "info.community" >}}       {{< param "info.community" >}}     KubeDB Catalog by AppsCode - Catalog for databa...
-appscode/kubedb-community   {{< param "info.community" >}}       {{< param "info.community" >}}     KubeDB Community by AppsCode - Community featur...
-appscode/kubedb-crds        {{< param "info.community" >}}       {{< param "info.community" >}}     KubeDB Custom Resource Definitions
-appscode/kubedb-enterprise  {{< param "info.enterprise" >}}        {{< param "info.enterprise" >}}      KubeDB Enterprise by AppsCode - Enterprise feat...
-
-# Install KubeDB Community operator chart
-$ helm install appscode/kubedb --name kubedb \
   --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set-file global.license=/path/to/the/license.txt

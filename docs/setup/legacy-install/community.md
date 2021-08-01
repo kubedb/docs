@@ -55,9 +55,6 @@ KubeDB operator can be installed as a Helm chart or simply as Kubernetes manifes
     <a class="nav-link active" id="helm3-tab" data-toggle="tab" href="#helm3" role="tab" aria-controls="helm3" aria-selected="true">Helm 3 (Recommended)</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" id="helm2-tab" data-toggle="tab" href="#helm2" role="tab" aria-controls="helm2" aria-selected="false">Helm 2</a>
-  </li>
-  <li class="nav-item">
     <a class="nav-link" id="script-tab" data-toggle="tab" href="#script" role="tab" aria-controls="script" aria-selected="false">YAML</a>
   </li>
 </ul>
@@ -108,58 +105,6 @@ $ helm install kubedb-catalog appscode/kubedb-catalog   \
 # Step 3(b): Or, if previously installed, upgrade KubeDB catalog of database versions
 $ helm upgrade kubedb-catalog appscode/kubedb-catalog   \
   --version {{< param "info.community" >}}              \
-  --namespace kube-system
-```
-
-To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
-
-</div>
-<div class="tab-pane fade" id="helm2" role="tabpanel" aria-labelledby="helm2-tab">
-
-## Using Helm 2
-
-KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install, follow the steps below:
-
-```bash
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-$ helm search appscode/kubedb --version {{< param "info.community" >}}
-NAME                        CHART VERSION APP VERSION   DESCRIPTION
-appscode/kubedb-catalog   	{{< param "info.community" >}}  {{< param "info.community" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
-appscode/kubedb-community 	{{< param "info.community" >}}  {{< param "info.community" >}}    	KubeDB Community by AppsCode - Community featur...               
-
-# Step 1: Install KubeDB Community operator chart
-$ helm install appscode/kubedb-community --name kubedb-community \
-  --version {{< param "info.community" >}}     \
-  --namespace kube-system                      \
-  --set-file license=/path/to/the/license.txt
-
-# Step 2: wait until crds are registered
-$ kubectl get crds -l app.kubernetes.io/name=kubedb -w
-NAME                               AGE
-elasticsearches.kubedb.com         12s
-elasticsearchversions.kubedb.com   8s
-etcds.kubedb.com                   8s
-etcdversions.kubedb.com            8s
-memcacheds.kubedb.com              6s
-memcachedversions.kubedb.com       6s
-mongodbs.kubedb.com                7s
-mongodbversions.kubedb.com         6s
-mysqls.kubedb.com                  7s
-mysqlversions.kubedb.com           7s
-postgreses.kubedb.com              8s
-postgresversions.kubedb.com        7s
-redises.kubedb.com                 6s
-redisversions.kubedb.com           6s
-
-# Step 3(a): Install KubeDB catalog of database versions
-$ helm install appscode/kubedb-catalog --name kubedb-catalog   \
-  --version {{< param "info.community" >}}                     \
-  --namespace kube-system
-
-# Step 3(b): Or, if previously installed, upgrade KubeDB catalog of database versions
-$ helm upgrade kubedb-catalog appscode/kubedb-catalog          \
-  --version {{< param "info.community" >}}                     \
   --namespace kube-system
 ```
 

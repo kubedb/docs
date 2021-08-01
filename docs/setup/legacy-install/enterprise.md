@@ -70,9 +70,6 @@ To activate the Enterprise features, you need to install both KubeDB Community o
     <a class="nav-link active" id="helm3-tab" data-toggle="tab" href="#helm3" role="tab" aria-controls="helm3" aria-selected="true">Helm 3 (Recommended)</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" id="helm2-tab" data-toggle="tab" href="#helm2" role="tab" aria-controls="helm2" aria-selected="false">Helm 2</a>
-  </li>
-  <li class="nav-item">
     <a class="nav-link" id="script-tab" data-toggle="tab" href="#script" role="tab" aria-controls="script" aria-selected="false">YAML</a>
   </li>
 </ul>
@@ -145,80 +142,6 @@ $ helm install kubedb-enterprise appscode/kubedb-enterprise  \
 $ helm install kubedb-autoscaler appscode/kubedb-autoscaler  \
   --version {{< param "info.autoscaler" >}}                  \
   --namespace kube-system                                    \
-  --set-file license=/path/to/the/license.txt
-```
-
-To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb-enterprise).
-
-</div>
-<div class="tab-pane fade" id="helm2" role="tabpanel" aria-labelledby="helm2-tab">
-
-## Using Helm 2
-
-KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb-enterprise) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `kubedb`:
-
-```bash
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-
-$ helm search repo appscode/kubedb --version {{< param "info.community" >}}
-NAME                     	CHART VERSION	APP VERSION	DESCRIPTION                                       
-appscode/kubedb-catalog  	{{< param "info.community" >}}    {{< param "info.community" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
-appscode/kubedb-community	{{< param "info.community" >}}    {{< param "info.community" >}}    	KubeDB Community by AppsCode - Community featur...
-
-$ helm search repo appscode/kubedb-enterprise --version {{< param "info.enterprise" >}}
-NAME                        CHART VERSION APP VERSION DESCRIPTION
-appscode/kubedb-enterprise  {{< param "info.enterprise" >}}   {{< param "info.enterprise" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
-
-$ helm search repo appscode/kubedb-autoscaler --version {{< param "info.autoscaler" >}}
-NAME                     	CHART VERSION	APP VERSION	DESCRIPTION  
-appscode/kubedb-autoscaler	{{< param "info.autoscaler" >}}  {{< param "info.autoscaler" >}}     	KubeDB Autoscaler by AppsCode - Autoscale KubeD...
-
-# Step 1: Install KubeDB Community operator chart
-$ helm install appscode/kubedb-community --name kubedb-community \
-  --version {{< param "info.community" >}}     \
-  --namespace kube-system                      \
-  --set-file license=/path/to/the/license.txt
-
-# Step 2: wait until crds are registered
-$ kubectl get crds -l app.kubernetes.io/name=kubedb -w
-NAME                               AGE
-elasticsearches.kubedb.com         12s
-elasticsearchversions.kubedb.com   8s
-etcds.kubedb.com                   8s
-etcdversions.kubedb.com            8s
-memcacheds.kubedb.com              6s
-memcachedversions.kubedb.com       6s
-mongodbs.kubedb.com                7s
-mongodbversions.kubedb.com         6s
-mysqls.kubedb.com                  7s
-mysqlversions.kubedb.com           7s
-postgreses.kubedb.com              8s
-postgresversions.kubedb.com        7s
-redises.kubedb.com                 6s
-redisversions.kubedb.com           6s
-
-# Step 3(a): Install KubeDB catalog of database versions
-$ helm install appscode/kubedb-catalog --name kubedb-catalog   \
-  --version {{< param "info.community" >}}                     \
-  --namespace kube-system
-
-# Step 3(b): Or, if previously installed, upgrade KubeDB catalog of database versions
-$ helm upgrade kubedb-catalog appscode/kubedb-catalog          \
-  --version {{< param "info.community" >}}                     \
-  --namespace kube-system
-
-# Step 4: Install KubeDB Enterprise operator chart
-$ helm install appscode/kubedb-enterprise --name kubedb-enterprise   \
-  --version {{< param "info.enterprise" >}}                          \
-  --namespace kube-system                                            \
-  --set-file license=/path/to/the/license.txt
-
-# Step 5 (Optional): Install KubeDB Autoscaler chart
-# Kubernetes [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation) must be pre-installed separately.
-$ helm install appscode/kubedb-autoscaler --name kubedb-autoscaler   \
-  --version {{< param "info.autoscaler" >}}                          \
-  --namespace kube-system                                            \
   --set-file license=/path/to/the/license.txt
 ```
 
