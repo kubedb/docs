@@ -47,17 +47,6 @@ $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus
 ```
 
-**Helm 2:**
-
-```bash
-$ helm install appscode/kubedb --name kubedb --version {{< param "info.version" >}} \
-  --namespace kube-system \
-  --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/operator \
-  --set monitoring.prometheus.namespace=monitoring \
-  --set monitoring.serviceMonitor.labels.k8s-app=prometheus
-```
-
 **YAML (with Helm 3):**
 
 ```bash
