@@ -76,7 +76,3 @@ To join public discussions with the KubeDB community, join us in the [Kubernetes
 To receive product announcements, follow us on [Twitter](https://twitter.com/KubeDB).
 
 If you have found a bug with KubeDB or want to request for new features, please [file an issue](https://github.com/kubedb/project/issues/new).
-
-## License
-
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fkubedb%2Foperator.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fkubedb%2Foperator?ref=badge_large)
