@@ -61,7 +61,7 @@ apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: postgres-demo
-  namespace: default
+  namespace: demo
 spec:
   authSecret:
     name: postgres-demo-auth

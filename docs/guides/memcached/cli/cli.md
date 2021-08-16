@@ -67,7 +67,7 @@ metadata:
   labels:
     kubedb: cli-demo
   name: memcached-demo
-  namespace: default
+  namespace: demo
   resourceVersion: "6883"
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/memcacheds/memcached-demo
   uid: 953df4d1-c79a-11e8-bb11-0800272ad446

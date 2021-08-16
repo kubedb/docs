@@ -67,7 +67,7 @@ metadata:
   labels:
     kubedb: cli-demo
   name: redis-demo
-  namespace: default
+  namespace: demo
   resourceVersion: "18201"
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/redises/redis-demo
   uid: 039aeaa1-c552-11e8-9ba7-0800274bef12
