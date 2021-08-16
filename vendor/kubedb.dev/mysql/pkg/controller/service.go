@@ -28,6 +28,7 @@ import (
 	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
@@ -143,7 +144,7 @@ func (c *Controller) ensurePrimaryService(db *api.MySQL) (kutil.VerbType, error)
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
-		in.Annotations = svcTemplate.Annotations
+		in.Annotations = meta_util.OverwriteKeys(in.Annotations, svcTemplate.Annotations)
 
 		in.Spec.Selector = db.OffshootSelectors()
 		//add extra selector to select only primary pod for group replication
@@ -192,7 +193,7 @@ func (c *Controller) ensureStandbyService(db *api.MySQL) (kutil.VerbType, error)
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
-		in.Annotations = svcTemplate.Annotations
+		in.Annotations = meta_util.OverwriteKeys(in.Annotations, svcTemplate.Annotations)
 		in.Spec.Selector = db.OffshootSelectors()
 		//add extra selector to select only secondary pod
 		in.Spec.Selector[api.LabelRole] = api.DatabasePodStandby
@@ -244,7 +245,7 @@ func (c *Controller) ensureStatsService(db *api.MySQL) (kutil.VerbType, error) {
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.StatsServiceLabels()
-		in.Annotations = svcTemplate.Annotations
+		in.Annotations = meta_util.OverwriteKeys(in.Annotations, svcTemplate.Annotations)
 
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Ports = ofst.PatchServicePorts(

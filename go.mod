@@ -11,29 +11,30 @@ require (
 	go.bytebuilders.dev/audit v0.0.7
 	go.bytebuilders.dev/license-verifier v0.9.2
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.2
-	gomodules.xyz/logs v0.0.3
+	gomodules.xyz/logs v0.0.4
 	gomodules.xyz/runtime v0.2.0
-	gomodules.xyz/x v0.0.5
+	gomodules.xyz/x v0.0.7
 	k8s.io/api v0.21.1
 	k8s.io/apiextensions-apiserver v0.21.1
 	k8s.io/apimachinery v0.21.1
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20210719120358-dd0503cf99cf
-	kmodules.xyz/custom-resources v0.0.0-20210727045435-83db827677cf
+	kmodules.xyz/client-go v0.0.0-20210816193105-1158390a19cd
+	kmodules.xyz/custom-resources v0.0.0-20210812193424-1631fae03a1a
+	kmodules.xyz/objectstore-api v0.0.0-20210817052835-df749235585e // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20210716205500-e489faf01981
-	kubedb.dev/apimachinery v0.19.1-0.20210727050623-2c8e7ea7a215
-	kubedb.dev/elasticsearch v0.19.1-0.20210716061158-f472c1ea614c
-	kubedb.dev/mariadb v0.3.1-0.20210716062349-24fe8f762f7b
-	kubedb.dev/memcached v0.12.1-0.20210716063154-2d3550fc6396
-	kubedb.dev/mongodb v0.12.1-0.20210716063643-fb5f52578440
-	kubedb.dev/mysql v0.12.1-0.20210716064032-99bcc275b181
-	kubedb.dev/percona-xtradb v0.6.1-0.20210716064754-1a0aa3851813
-	kubedb.dev/pgbouncer v0.6.1-0.20210716065556-e452aef329d1
-	kubedb.dev/postgres v0.19.1-0.20210716070024-39f294df996c
-	kubedb.dev/proxysql v0.6.1-0.20210716070442-44f352d023ef
-	kubedb.dev/redis v0.12.1-0.20210728031204-bbe8a4feb6e2
+	kubedb.dev/apimachinery v0.19.1-0.20210816225014-a8eb885ccaa2
+	kubedb.dev/elasticsearch v0.19.1-0.20210816235750-e9478903c6c8
+	kubedb.dev/mariadb v0.3.1-0.20210816235351-355da6ee273d
+	kubedb.dev/memcached v0.12.1-0.20210816235118-5ab5673d50e8
+	kubedb.dev/mongodb v0.12.1-0.20210816234802-9dadff035a8c
+	kubedb.dev/mysql v0.12.1-0.20210817055013-83b1b7e92245
+	kubedb.dev/percona-xtradb v0.6.1-0.20210816233153-5c94a9b04184
+	kubedb.dev/pgbouncer v0.6.1-0.20210816235009-38e7bbef35c7
+	kubedb.dev/postgres v0.19.1-0.20210816230638-ea11e98dd8a0
+	kubedb.dev/proxysql v0.6.1-0.20210816231714-8c569877d260
+	kubedb.dev/redis v0.12.1-0.20210816231321-b412a86289ab
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d

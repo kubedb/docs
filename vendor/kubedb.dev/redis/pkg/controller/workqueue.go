@@ -41,7 +41,7 @@ func (c *Controller) initWatcher() {
 	c.rdInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().Redises().Informer()
 	c.rdQueue = queue.New(api.ResourceKindRedis, c.MaxNumRequeues, c.NumThreads, c.runRedis)
 	c.rdLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Redises().Lister()
-	c.rdInformer.AddEventHandler(queue.NewChangeHandler(c.rdQueue.GetQueue()))
+	c.rdInformer.AddEventHandler(queue.NewChangeHandler(c.rdQueue.GetQueue(), c.RestrictToNamespace))
 	if c.Auditor != nil {
 		c.rdInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindRedis)))
 	}

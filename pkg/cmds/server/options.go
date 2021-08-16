@@ -18,6 +18,7 @@ package server
 
 import (
 	"flag"
+	"fmt"
 	"time"
 
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
@@ -28,9 +29,11 @@ import (
 
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/spf13/pflag"
+	licenseapi "go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1"
 	license "go.bytebuilders.dev/license-verifier/kubernetes"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	coreinformers "k8s.io/client-go/informers/core/v1"
@@ -38,6 +41,7 @@ import (
 	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"kmodules.xyz/client-go/tools/cli"
+	"kmodules.xyz/client-go/tools/queue"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	appcatinformers "kmodules.xyz/custom-resources/client/informers/externalversions"
 )
@@ -102,9 +106,21 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	cfg.ReadinessProbeInterval = s.ReadinessProbeInterval
 	cfg.MaxNumRequeues = s.MaxNumRequeues
 	cfg.NumThreads = s.NumThreads
-	cfg.WatchNamespace = core.NamespaceAll
 	cfg.EnableMutatingWebhook = s.EnableMutatingWebhook
 	cfg.EnableValidatingWebhook = s.EnableValidatingWebhook
+
+	cfg.RestrictToNamespace = queue.NamespaceDemo
+	if cfg.LicenseFile != "" {
+		info := license.NewLicenseEnforcer(cfg.ClientConfig, cfg.LicenseFile).LoadLicense()
+		if info.Status != licenseapi.LicenseActive {
+			return fmt.Errorf("license status %s", info.Status)
+		}
+		if sets.NewString(info.Features...).Has("kubedb-enterprise") {
+			cfg.RestrictToNamespace = core.NamespaceAll
+		} else if !sets.NewString(info.Features...).Has("kubedb-community") {
+			return fmt.Errorf("not a valid license for this product")
+		}
+	}
 
 	if cfg.KubeClient, err = kubernetes.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
@@ -131,7 +147,7 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	cfg.SecretInformer = cfg.KubeInformerFactory.InformerFor(&core.Secret{}, func(client kubernetes.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
 		return coreinformers.NewSecretInformer(
 			client,
-			cfg.WatchNamespace,
+			cfg.RestrictToNamespace,
 			resyncPeriod,
 			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 		)

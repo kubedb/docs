@@ -39,7 +39,7 @@ func (c *Controller) initWatcher() {
 	c.pbInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().PgBouncers().Informer()
 	c.pbQueue = queue.New(api.ResourceKindPgBouncer, c.MaxNumRequeues, c.NumThreads, c.runPgBouncer)
 	c.pbLister = c.KubedbInformerFactory.Kubedb().V1alpha2().PgBouncers().Lister()
-	c.pbInformer.AddEventHandler(queue.NewChangeHandler(c.pbQueue.GetQueue()))
+	c.pbInformer.AddEventHandler(queue.NewChangeHandler(c.pbQueue.GetQueue(), c.RestrictToNamespace))
 	if c.Auditor != nil {
 		c.pbInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer)))
 	}
@@ -49,7 +49,7 @@ func (c *Controller) initAppBindingWatcher() {
 	c.appBindingInformer = c.AppCatInformerFactory.Appcatalog().V1alpha1().AppBindings().Informer()
 	c.appBindingQueue = queue.New("AppBinding", c.MaxNumRequeues, c.NumThreads, c.manageAppBindingEvent)
 	c.appBindingLister = c.AppCatInformerFactory.Appcatalog().V1alpha1().AppBindings().Lister()
-	c.appBindingInformer.AddEventHandler(queue.DefaultEventHandler(c.appBindingQueue.GetQueue()))
+	c.appBindingInformer.AddEventHandler(queue.DefaultEventHandler(c.appBindingQueue.GetQueue(), c.RestrictToNamespace))
 }
 
 func (c *Controller) initSecretWatcher() {

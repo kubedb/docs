@@ -87,13 +87,14 @@ type Config struct {
 	StsInformer cache.SharedIndexInformer
 	StsLister   appslister.StatefulSetLister
 
+	// Only watch or reconcile objects in this namespace (usually for license reasons)
+	RestrictToNamespace     string
 	ResyncPeriod            time.Duration
 	ReadinessProbeInterval  time.Duration
 	MaxNumRequeues          int
 	NumThreads              int
 	EnableAnalytics         bool
 	AnalyticsClientID       string
-	WatchNamespace          string
 	EnableValidatingWebhook bool
 	EnableMutatingWebhook   bool
 }

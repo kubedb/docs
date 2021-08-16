@@ -31,7 +31,7 @@ func (c *Controller) restoreBatchInformer(tweakListOptions func(options *metav1.
 	return c.StashInformerFactory.InformerFor(&v1beta1.RestoreBatch{}, func(client scs.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
 		return stashinformers.NewFilteredRestoreBatchInformer(
 			client,
-			c.watchNamespace,
+			c.restrictToNamespace,
 			resyncPeriod,
 			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 			tweakListOptions,

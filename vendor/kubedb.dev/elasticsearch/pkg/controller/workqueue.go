@@ -40,7 +40,7 @@ func (c *Controller) initWatcher() {
 	c.esQueue = queue.New(api.ResourceKindElasticsearch, c.MaxNumRequeues, c.NumThreads, c.runElasticsearch)
 	c.esLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Elasticsearches().Lister()
 	c.esVersionLister = c.KubedbInformerFactory.Catalog().V1alpha1().ElasticsearchVersions().Lister()
-	c.esInformer.AddEventHandler(queue.NewChangeHandler(c.esQueue.GetQueue()))
+	c.esInformer.AddEventHandler(queue.NewChangeHandler(c.esQueue.GetQueue(), c.RestrictToNamespace))
 	if c.Auditor != nil {
 		c.esInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch)))
 	}
