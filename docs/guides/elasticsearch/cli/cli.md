@@ -62,7 +62,7 @@ metadata:
   - kubedb.com
   generation: 3
   name: elasticsearch-demo
-  namespace: default
+  namespace: demo
   resourceVersion: "51660"
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/elasticsearches/elasticsearch-demo
   uid: 90a54c9e-cb05-11e8-8d51-9eed48c5e947

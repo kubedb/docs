@@ -65,7 +65,7 @@ metadata:
   - kubedb.com
   generation: 2
   name: mongodb-demo
-  namespace: default
+  namespace: demo
   resourceVersion: "94703"
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/mongodbs/mongodb-demo
   uid: 4eaaba0e-29fa-11e9-aebf-080027875192
