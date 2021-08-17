@@ -95,7 +95,7 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 		statefulSetMeta,
 		func(in *apps.StatefulSet) *apps.StatefulSet {
 			in.Labels = db.OffshootLabels()
-			in.Annotations = db.Spec.PodTemplate.Controller.Annotations
+			in.Annotations = meta_util.OverwriteKeys(in.Annotations, db.Spec.PodTemplate.Controller.Annotations)
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 			in.Spec.Replicas = db.Spec.Replicas
@@ -104,7 +104,7 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 				MatchLabels: db.OffshootSelectors(),
 			}
 			in.Spec.Template.Labels = db.OffshootSelectors()
-			in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
+			in.Spec.Template.Annotations = meta_util.OverwriteKeys(in.Spec.Template.Annotations, db.Spec.PodTemplate.Annotations)
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 				in.Spec.Template.Spec.InitContainers,
 				append(getInitContainers(in, mysqlVersion), db.Spec.PodTemplate.Spec.InitContainers...),
@@ -281,7 +281,7 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 							ContainerPort: db.Spec.Monitor.Prometheus.Exporter.Port,
 						},
 					},
-					Env:             db.Spec.Monitor.Prometheus.Exporter.Env,
+					Env:             core_util.UpsertEnvVars(container.Env, db.Spec.Monitor.Prometheus.Exporter.Env...),
 					Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
 					SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 				})
@@ -306,10 +306,14 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 			in.Spec.Template.Spec.PriorityClassName = db.Spec.PodTemplate.Spec.PriorityClassName
 			in.Spec.Template.Spec.Priority = db.Spec.PodTemplate.Spec.Priority
 			in.Spec.Template.Spec.HostNetwork = db.Spec.PodTemplate.Spec.HostNetwork
-			in.Spec.Template.Spec.DNSPolicy = db.Spec.PodTemplate.Spec.DNSPolicy
+			if in.Spec.Template.Spec.DNSPolicy == "" {
+				in.Spec.Template.Spec.DNSPolicy = db.Spec.PodTemplate.Spec.DNSPolicy
+			}
 			in.Spec.Template.Spec.HostPID = db.Spec.PodTemplate.Spec.HostPID
 			in.Spec.Template.Spec.HostIPC = db.Spec.PodTemplate.Spec.HostIPC
-			in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
+			if in.Spec.Template.Spec.SecurityContext == nil {
+				in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
+			}
 			in.Spec.Template.Spec.ServiceAccountName = db.Spec.PodTemplate.Spec.ServiceAccountName
 			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
 				Type: apps.OnDeleteStatefulSetStrategyType,
@@ -431,9 +435,10 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.Statef
 					Spec: *pvcSpec,
 				}
 				if pvcSpec.StorageClassName != nil {
-					claim.Annotations = map[string]string{
+					pvcAnnotation := map[string]string{
 						"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
 					}
+					claim.Annotations = meta_util.OverwriteKeys(claim.Annotations, pvcAnnotation)
 				}
 				statefulSet.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(statefulSet.Spec.VolumeClaimTemplates, claim)
 			}

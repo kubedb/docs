@@ -25,8 +25,10 @@ import (
 	amc "kubedb.dev/apimachinery/pkg/controller"
 
 	apps "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
@@ -36,8 +38,14 @@ import (
 )
 
 type Controller struct {
-	*amc.Controller
 	*amc.Config
+
+	// Kubernetes client
+	Client kubernetes.Interface
+	// KubeDB client
+	DBClient db_cs.Interface
+	// Dynamic client
+	DynamicClient dynamic.Interface
 }
 
 func NewController(
@@ -47,12 +55,10 @@ func NewController(
 	dmClient dynamic.Interface,
 ) *Controller {
 	return &Controller{
-		Controller: &amc.Controller{
-			Client:        client,
-			DBClient:      dbClient,
-			DynamicClient: dmClient,
-		},
-		Config: config,
+		Config:        config,
+		Client:        client,
+		DBClient:      dbClient,
+		DynamicClient: dmClient,
 	}
 }
 
@@ -65,33 +71,68 @@ func (c *Controller) InitStsWatcher() {
 	c.StsInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if sts, ok := obj.(*apps.StatefulSet); ok {
+				if c.RestrictToNamespace != core.NamespaceAll {
+					if sts.GetNamespace() != c.RestrictToNamespace {
+						klog.Info("Skipping StatefulSet %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", sts.GetNamespace(), sts.GetName(), c.RestrictToNamespace)
+						return
+					}
+				}
+
 				c.enqueueOnlyKubeDBSts(sts)
 			}
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			if sts, ok := newObj.(*apps.StatefulSet); ok {
+				if c.RestrictToNamespace != core.NamespaceAll {
+					if sts.GetNamespace() != c.RestrictToNamespace {
+						klog.Info("Skipping StatefulSet %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", sts.GetNamespace(), sts.GetName(), c.RestrictToNamespace)
+						return
+					}
+				}
+
 				c.enqueueOnlyKubeDBSts(sts)
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
-			if sts, ok := obj.(*apps.StatefulSet); ok {
-				ok, _, err := core_util.IsOwnerOfGroup(metav1.GetControllerOf(sts), kubedb.GroupName)
-				if err != nil || !ok {
-					klog.Warningln(err)
+			var sts *apps.StatefulSet
+			var ok bool
+			if sts, ok = obj.(*apps.StatefulSet); !ok {
+				tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
+				if !ok {
+					klog.V(5).Info("error decoding object, invalid type")
 					return
 				}
-				dbInfo, err := c.extractDatabaseInfo(sts)
-				if err != nil {
-					if !kerr.IsNotFound(err) {
-						klog.Warningf("failed to extract database info from StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
-					}
+				sts, ok = tombstone.Obj.(*apps.StatefulSet)
+				if !ok {
+					utilruntime.HandleError(fmt.Errorf("error decoding object tombstone, invalid type"))
 					return
 				}
-				err = c.ensureReadyReplicasCond(dbInfo)
-				if err != nil {
-					klog.Warningf("failed to update ReadyReplicas condition. Reason: %v", err)
+				klog.V(5).Infof("Recovered deleted object '%v' from tombstone", tombstone.Obj.(metav1.Object).GetName())
+			}
+
+			if c.RestrictToNamespace != core.NamespaceAll {
+				if sts.GetNamespace() != c.RestrictToNamespace {
+					klog.Info("Skipping StatefulSet %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", sts.GetNamespace(), sts.GetName(), c.RestrictToNamespace)
 					return
 				}
+			}
+
+			ok, _, err := core_util.IsOwnerOfGroup(metav1.GetControllerOf(sts), kubedb.GroupName)
+			if err != nil || !ok {
+				klog.Warningln(err)
+				return
+			}
+			dbInfo, err := c.extractDatabaseInfo(sts)
+			if err != nil {
+				if !kerr.IsNotFound(err) {
+					klog.Warningf("failed to extract database info from StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
+				}
+				return
+			}
+			err = c.ensureReadyReplicasCond(dbInfo)
+			if err != nil {
+				klog.Warningf("failed to update ReadyReplicas condition. Reason: %v", err)
+				return
 			}
 		},
 	})

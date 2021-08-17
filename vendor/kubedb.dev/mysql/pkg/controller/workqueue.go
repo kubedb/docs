@@ -39,7 +39,7 @@ func (c *Controller) initWatcher() {
 	c.myInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().MySQLs().Informer()
 	c.myQueue = queue.New(api.ResourceKindMySQL, c.MaxNumRequeues, c.NumThreads, c.runMySQL)
 	c.myLister = c.KubedbInformerFactory.Kubedb().V1alpha2().MySQLs().Lister()
-	c.myInformer.AddEventHandler(queue.NewChangeHandler(c.myQueue.GetQueue()))
+	c.myInformer.AddEventHandler(queue.NewChangeHandler(c.myQueue.GetQueue(), c.RestrictToNamespace))
 	if c.Auditor != nil {
 		c.myInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL)))
 	}

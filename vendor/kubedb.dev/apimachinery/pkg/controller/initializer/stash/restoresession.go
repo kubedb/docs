@@ -31,7 +31,7 @@ func (c *Controller) restoreSessionInformer(tweakListOptions func(options *metav
 	return c.StashInformerFactory.InformerFor(&v1beta1.RestoreSession{}, func(client scs.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
 		return stashinformers.NewFilteredRestoreSessionInformer(
 			client,
-			c.watchNamespace,
+			c.restrictToNamespace,
 			resyncPeriod,
 			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 			tweakListOptions,

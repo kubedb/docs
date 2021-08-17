@@ -39,7 +39,7 @@ func (c *Controller) initWatcher() {
 	c.mdInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().MariaDBs().Informer()
 	c.mdQueue = queue.New(api.ResourceKindMariaDB, c.MaxNumRequeues, c.NumThreads, c.runMariaDB)
 	c.mdLister = c.KubedbInformerFactory.Kubedb().V1alpha2().MariaDBs().Lister()
-	c.mdInformer.AddEventHandler(queue.NewChangeHandler(c.mdQueue.GetQueue()))
+	c.mdInformer.AddEventHandler(queue.NewChangeHandler(c.mdQueue.GetQueue(), c.RestrictToNamespace))
 	if c.Auditor != nil {
 		c.mdInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindMariaDB)))
 	}

@@ -41,7 +41,7 @@ func (c *Controller) initWatcher() {
 	c.mgInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().MongoDBs().Informer()
 	c.mgQueue = queue.New(api.ResourceKindMongoDB, c.MaxNumRequeues, c.NumThreads, c.runMongoDB)
 	c.mgLister = c.KubedbInformerFactory.Kubedb().V1alpha2().MongoDBs().Lister()
-	c.mgInformer.AddEventHandler(queue.NewChangeHandler(c.mgQueue.GetQueue()))
+	c.mgInformer.AddEventHandler(queue.NewChangeHandler(c.mgQueue.GetQueue(), c.RestrictToNamespace))
 	if c.Auditor != nil {
 		c.mgInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB)))
 	}

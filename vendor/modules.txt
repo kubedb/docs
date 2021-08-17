@@ -257,7 +257,7 @@ github.com/jetstack/cert-manager/pkg/client/listers/certmanager/v1beta1
 github.com/jmespath/go-jmespath
 # github.com/jpillora/go-ogle-analytics v0.0.0-20161213085824-14b04e0594ef
 github.com/jpillora/go-ogle-analytics
-# github.com/json-iterator/go v1.1.10
+# github.com/json-iterator/go v1.1.11
 github.com/json-iterator/go
 # github.com/lib/pq v1.10.2
 github.com/lib/pq
@@ -519,7 +519,7 @@ gomodules.xyz/clock
 gomodules.xyz/envsubst
 gomodules.xyz/envsubst/parse
 gomodules.xyz/envsubst/path
-# gomodules.xyz/flags v0.1.0
+# gomodules.xyz/flags v0.1.2
 gomodules.xyz/flags
 # gomodules.xyz/go-sh v0.1.0
 gomodules.xyz/go-sh
@@ -530,19 +530,19 @@ gomodules.xyz/jsonpatch/v2
 # gomodules.xyz/jsonpath v0.0.1
 gomodules.xyz/jsonpath
 gomodules.xyz/jsonpath/third_party/forked/golang/template
-# gomodules.xyz/logs v0.0.3
+# gomodules.xyz/logs v0.0.4
 ## explicit
 gomodules.xyz/logs
 # gomodules.xyz/mergo v0.3.13-0.20210702100041-9d62ff8ece4d
 gomodules.xyz/mergo
 # gomodules.xyz/password-generator v0.2.7
 gomodules.xyz/password-generator
-# gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209
+# gomodules.xyz/pointer v0.1.0
 gomodules.xyz/pointer
 # gomodules.xyz/runtime v0.2.0
 ## explicit
 gomodules.xyz/runtime
-# gomodules.xyz/sets v0.0.0-20210218105342-2efe2fb519a2
+# gomodules.xyz/sets v0.2.0
 gomodules.xyz/sets
 # gomodules.xyz/stow v0.2.4
 gomodules.xyz/stow
@@ -553,7 +553,7 @@ gomodules.xyz/stow/s3
 gomodules.xyz/sync
 # gomodules.xyz/wait v0.0.0-20210218105358-639bd9211545
 gomodules.xyz/wait
-# gomodules.xyz/x v0.0.5
+# gomodules.xyz/x v0.0.7
 ## explicit
 gomodules.xyz/x/analytics
 gomodules.xyz/x/arrays
@@ -1238,7 +1238,7 @@ k8s.io/utils/pointer
 k8s.io/utils/trace
 # kmodules.xyz/apiversion v0.2.0
 kmodules.xyz/apiversion
-# kmodules.xyz/client-go v0.0.0-20210719120358-dd0503cf99cf
+# kmodules.xyz/client-go v0.0.0-20210816193105-1158390a19cd
 ## explicit
 kmodules.xyz/client-go
 kmodules.xyz/client-go/admissionregistration
@@ -1265,7 +1265,7 @@ kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/client-go/tools/clusterid
 kmodules.xyz/client-go/tools/exec
 kmodules.xyz/client-go/tools/queue
-# kmodules.xyz/custom-resources v0.0.0-20210727045435-83db827677cf
+# kmodules.xyz/custom-resources v0.0.0-20210812193424-1631fae03a1a
 ## explicit
 kmodules.xyz/custom-resources/apis/appcatalog
 kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
@@ -1295,13 +1295,14 @@ kmodules.xyz/monitoring-agent-api/agents/prometheusbuiltin
 kmodules.xyz/monitoring-agent-api/agents/prometheusoperator
 kmodules.xyz/monitoring-agent-api/api/v1
 kmodules.xyz/monitoring-agent-api/prometheus/v1
-# kmodules.xyz/objectstore-api v0.0.0-20210618005912-71f8a80f48f9
+# kmodules.xyz/objectstore-api v0.0.0-20210817052835-df749235585e
+## explicit
 kmodules.xyz/objectstore-api/api/v1
-# kmodules.xyz/offshoot-api v0.0.0-20210618005544-5217a24765da
+# kmodules.xyz/offshoot-api v0.0.0-20210804100837-d0388be3e60d
 kmodules.xyz/offshoot-api/api/v1
 # kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027
 kmodules.xyz/prober/api/v1
-# kmodules.xyz/resource-metadata v0.5.8-0.20210722055301-dcc1abc08aa0
+# kmodules.xyz/resource-metadata v0.5.8-0.20210812062826-71d20972a852
 kmodules.xyz/resource-metadata/apis/meta
 kmodules.xyz/resource-metadata/apis/meta/v1alpha1
 kmodules.xyz/resource-metadata/crds
@@ -1313,7 +1314,7 @@ kmodules.xyz/resource-metadata/pkg/graph
 ## explicit
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.19.1-0.20210727050623-2c8e7ea7a215
+# kubedb.dev/apimachinery v0.19.1-0.20210816225014-a8eb885ccaa2
 ## explicit
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
@@ -1356,7 +1357,7 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.19.1-0.20210716061158-f472c1ea614c
+# kubedb.dev/elasticsearch v0.19.1-0.20210816235750-e9478903c6c8
 ## explicit
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
@@ -1371,39 +1372,39 @@ kubedb.dev/elasticsearch/pkg/lib/heap
 kubedb.dev/elasticsearch/pkg/lib/kernel
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/mariadb v0.3.1-0.20210716062349-24fe8f762f7b
+# kubedb.dev/mariadb v0.3.1-0.20210816235351-355da6ee273d
 ## explicit
 kubedb.dev/mariadb/pkg/admission
 kubedb.dev/mariadb/pkg/controller
-# kubedb.dev/memcached v0.12.1-0.20210716063154-2d3550fc6396
+# kubedb.dev/memcached v0.12.1-0.20210816235118-5ab5673d50e8
 ## explicit
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.12.1-0.20210716063643-fb5f52578440
+# kubedb.dev/mongodb v0.12.1-0.20210816234802-9dadff035a8c
 ## explicit
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.12.1-0.20210716064032-99bcc275b181
+# kubedb.dev/mysql v0.12.1-0.20210817055013-83b1b7e92245
 ## explicit
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.6.1-0.20210716064754-1a0aa3851813
+# kubedb.dev/percona-xtradb v0.6.1-0.20210816233153-5c94a9b04184
 ## explicit
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pgbouncer v0.6.1-0.20210716065556-e452aef329d1
+# kubedb.dev/pgbouncer v0.6.1-0.20210816235009-38e7bbef35c7
 ## explicit
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.19.1-0.20210716070024-39f294df996c
+# kubedb.dev/postgres v0.19.1-0.20210816230638-ea11e98dd8a0
 ## explicit
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.6.1-0.20210716070442-44f352d023ef
+# kubedb.dev/proxysql v0.6.1-0.20210816231714-8c569877d260
 ## explicit
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.12.1-0.20210728031204-bbe8a4feb6e2
+# kubedb.dev/redis v0.12.1-0.20210816231321-b412a86289ab
 ## explicit
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster

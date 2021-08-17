@@ -39,7 +39,7 @@ func (c *Controller) initWatcher() {
 	c.pgInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().Postgreses().Informer()
 	c.pgQueue = queue.New(api.ResourceKindPostgres, c.MaxNumRequeues, c.NumThreads, c.runPostgres)
 	c.pgLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Postgreses().Lister()
-	c.pgInformer.AddEventHandler(queue.NewChangeHandler(c.pgQueue.GetQueue()))
+	c.pgInformer.AddEventHandler(queue.NewChangeHandler(c.pgQueue.GetQueue(), c.RestrictToNamespace))
 	if c.Auditor != nil {
 		c.pgInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres)))
 	}

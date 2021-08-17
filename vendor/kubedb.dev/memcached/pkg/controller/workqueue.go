@@ -34,7 +34,7 @@ func (c *Controller) initWatcher() {
 	c.mcInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().Memcacheds().Informer()
 	c.mcQueue = queue.New(api.ResourceKindMemcached, c.MaxNumRequeues, c.NumThreads, c.runMemcached)
 	c.mcLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Memcacheds().Lister()
-	c.mcInformer.AddEventHandler(queue.NewChangeHandler(c.mcQueue.GetQueue()))
+	c.mcInformer.AddEventHandler(queue.NewChangeHandler(c.mcQueue.GetQueue(), c.RestrictToNamespace))
 	if c.Auditor != nil {
 		c.mcInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached)))
 	}
