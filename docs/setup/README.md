@@ -20,7 +20,7 @@ aliases:
 <div style="text-align: center;">
   <a class="button is-link is-medium is-active has-text-weight-normal" href="/docs/setup/install/community.md" style="background:#00A651; width: 18rem;">Install Community Edition</a>
   <a class="button is-info is-medium is-active has-text-weight-normal" href="/docs/setup/install/enterprise.md"  style="background:#FC6011; width: 18rem;">Try Enterprise Edition</a>
-  <a style="margin-top: 10px; display: block;" href="/docs/overview/README.md">Compare Editions</a>
+  <a style="margin-top: 10px; display: block;" href="https://kubedb.com/pricing/">Compare Editions</a>
 </div>
 <br>
 
