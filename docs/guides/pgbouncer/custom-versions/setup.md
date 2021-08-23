@@ -40,7 +40,7 @@ From there, we would define a PgBouncerVersion that contains this new image. Let
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PgBouncerVersion
 metadata:
-  name: "1.11.0-dev"
+  name: "1.11.0"
 spec:
   deprecated: false
   version: "1.11.0"
@@ -59,7 +59,7 @@ metadata:
   name: pgbouncer-server
   namespace: demo
 spec:
-  version: "1.11.0-dev"
+  version: "1.11.0"
   replicas: 1
   connectionPool:
     adminUsers:

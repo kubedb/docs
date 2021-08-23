@@ -1,7 +1,7 @@
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PgBouncerVersion
 metadata:
-  name: "1.11.0-dev"
+  name: "1.11.0"
 spec:
   deprecated: false
   version: "1.11.0"
