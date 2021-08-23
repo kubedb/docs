@@ -224,6 +224,19 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 		},
 	})
 
+	// For Elasticsearch secure settings:
+	// 	- https://www.elastic.co/guide/en/elasticsearch/reference/7.14/secure-settings.html
+	if es.db.Spec.SecureConfigSecret != nil {
+		volumes = core_util.UpsertVolume(volumes, core.Volume{
+			Name: "secure-settings",
+			VolumeSource: core.VolumeSource{
+				Secret: &core.SecretVolumeSource{
+					SecretName: es.db.Spec.SecureConfigSecret.Name,
+				},
+			},
+		})
+	}
+
 	// Upsert Volume for user provided custom configuration.
 	// These configuration will be merged to default config yaml (ie. elasticsearch.yaml)
 	// from config-merger initContainer.
@@ -507,6 +520,15 @@ func (es *Elasticsearch) upsertConfigMergerInitContainer(initCon []core.Containe
 		},
 	}
 
+	// For Elasticsearch secure settings:
+	// 	- https://www.elastic.co/guide/en/elasticsearch/reference/7.14/secure-settings.html
+	if es.db.Spec.SecureConfigSecret != nil {
+		volumeMounts = core_util.UpsertVolumeMount(volumeMounts, core.VolumeMount{
+			Name:      "secure-settings",
+			MountPath: api.ElasticsearchSecureSettingsDir,
+		})
+	}
+
 	// mount path for custom configuration
 	if es.db.Spec.ConfigSecret != nil {
 		volumeMounts = core_util.UpsertVolumeMount(volumeMounts, core.VolumeMount{
@@ -519,6 +541,7 @@ func (es *Elasticsearch) upsertConfigMergerInitContainer(initCon []core.Containe
 		Name:            api.ElasticsearchInitConfigMergerContainerName,
 		Image:           es.esVersion.Spec.InitContainer.YQImage,
 		ImagePullPolicy: core.PullIfNotPresent,
+		Command:         []string{"/usr/local/bin/config-merger.sh"},
 		Env:             envList,
 		VolumeMounts:    volumeMounts,
 	}
@@ -546,7 +569,7 @@ func (es *Elasticsearch) checkStatefulSet(sName string) error {
 	return nil
 }
 
-func (es *Elasticsearch) upsertContainerEnv(envList []core.EnvVar) []core.EnvVar {
+func (es *Elasticsearch) upsertContainerEnv(envList []core.EnvVar) ([]core.EnvVar, error) {
 
 	envList = core_util.UpsertEnvVars(envList, []core.EnvVar{
 		{
@@ -594,6 +617,27 @@ func (es *Elasticsearch) upsertContainerEnv(envList []core.EnvVar) []core.EnvVar
 		}...)
 	}
 
+	if es.db.Spec.SecureConfigSecret != nil {
+		secureSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), es.db.Spec.SecureConfigSecret.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		// Add "KEYSTORE_PASSWORD" to container env, only if the secure settings contain "password".
+		if pass, exists := secureSecret.Data[core.BasicAuthPasswordKey]; exists && len(pass) != 0 {
+			envList = core_util.UpsertEnvVars(envList, core.EnvVar{
+				Name: "KEYSTORE_PASSWORD",
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: es.db.Spec.SecureConfigSecret.Name,
+						},
+						Key: core.BasicAuthPasswordKey,
+					},
+				},
+			})
+		}
+	}
+
 	if strings.HasPrefix(es.esVersion.Spec.Version, "7.") {
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "discovery.seed_hosts",
@@ -606,7 +650,7 @@ func (es *Elasticsearch) upsertContainerEnv(envList []core.EnvVar) []core.EnvVar
 		})
 	}
 
-	return envList
+	return envList, nil
 }
 
 func parseAffinityTemplate(affinity *core.Affinity, nodeRole string) (*core.Affinity, error) {

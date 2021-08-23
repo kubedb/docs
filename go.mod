@@ -24,17 +24,17 @@ require (
 	kmodules.xyz/custom-resources v0.0.0-20210812193424-1631fae03a1a
 	kmodules.xyz/objectstore-api v0.0.0-20210817052835-df749235585e // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20210716205500-e489faf01981
-	kubedb.dev/apimachinery v0.19.1-0.20210816225014-a8eb885ccaa2
-	kubedb.dev/elasticsearch v0.19.1-0.20210816235750-e9478903c6c8
-	kubedb.dev/mariadb v0.3.1-0.20210816235351-355da6ee273d
-	kubedb.dev/memcached v0.12.1-0.20210816235118-5ab5673d50e8
-	kubedb.dev/mongodb v0.12.1-0.20210816234802-9dadff035a8c
-	kubedb.dev/mysql v0.12.1-0.20210817055013-83b1b7e92245
-	kubedb.dev/percona-xtradb v0.6.1-0.20210816233153-5c94a9b04184
-	kubedb.dev/pgbouncer v0.6.1-0.20210816235009-38e7bbef35c7
-	kubedb.dev/postgres v0.19.1-0.20210816230638-ea11e98dd8a0
-	kubedb.dev/proxysql v0.6.1-0.20210816231714-8c569877d260
-	kubedb.dev/redis v0.12.1-0.20210816231321-b412a86289ab
+	kubedb.dev/apimachinery v0.20.0
+	kubedb.dev/elasticsearch v0.20.0
+	kubedb.dev/mariadb v0.4.0
+	kubedb.dev/memcached v0.13.0
+	kubedb.dev/mongodb v0.13.0
+	kubedb.dev/mysql v0.13.0
+	kubedb.dev/percona-xtradb v0.7.0
+	kubedb.dev/pgbouncer v0.7.0
+	kubedb.dev/postgres v0.20.0
+	kubedb.dev/proxysql v0.7.0
+	kubedb.dev/redis v0.13.0
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d

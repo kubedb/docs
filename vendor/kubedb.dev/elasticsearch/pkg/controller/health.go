@@ -80,7 +80,11 @@ func (c *Controller) CheckElasticsearchHealthOnce() {
 			// Create database client
 			dbClient, err := c.GetElasticsearchClient(db)
 			if err != nil {
-				klog.Warningf("The Elasticsearch: %s/%s client is not ready with %s", db.Namespace, db.Name, err.Error())
+				// Only print warning log, once the database is provisioned.
+				// Because it is obvious to get errors before the database is provisioned.
+				if kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
+					klog.Warningf("The Elasticsearch: %s/%s client is not ready with %s", db.Namespace, db.Name, err.Error())
+				}
 				// Since the client was unable to connect the database,
 				// update "AcceptingConnection" to "false".
 				// update "Ready" to "false"

@@ -28,6 +28,7 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	configure_cluster "kubedb.dev/redis/pkg/configure-cluster"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	"gomodules.xyz/envsubst"
 	"gomodules.xyz/pointer"
@@ -200,6 +201,10 @@ func (c *Controller) checkStatefulSet(db *api.Redis, statefulSetName string) err
 }
 
 func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, removeSlave bool) (*apps.StatefulSet, kutil.VerbType, error) {
+	authSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Name+"-auth", metav1.GetOptions{})
+	if err != nil {
+		return nil, "", err
+	}
 	statefulSetMeta := metav1.ObjectMeta{
 		Name:      statefulSetName,
 		Namespace: db.Namespace,
@@ -212,6 +217,10 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 		return nil, kutil.VerbUnchanged, err
 	}
 
+	curVersion, err := semver.NewVersion(redisVersion.Spec.Version)
+	if err != nil {
+		return nil, kutil.VerbUnchanged, fmt.Errorf("can't get the version from RedisVersion spec")
+	}
 	var affinity *core.Affinity
 
 	if db.Spec.Mode == api.RedisModeCluster {
@@ -303,6 +312,26 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 			Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
 		}
 
+		if curVersion.Major() > 4 {
+			container.Args = append(container.Args, []string{
+				fmt.Sprintf("--requirepass %s", authSecret.Data[core.BasicAuthPasswordKey]),
+				fmt.Sprintf("--masterauth %s", authSecret.Data[core.BasicAuthPasswordKey]),
+			}...)
+			container.Env = core_util.UpsertEnvVars(container.Env, []core.EnvVar{
+				{
+					Name: api.EnvRedisPassword,
+					ValueFrom: &core.EnvVarSource{
+						SecretKeyRef: &core.SecretKeySelector{
+							LocalObjectReference: core.LocalObjectReference{
+								Name: db.Spec.AuthSecret.Name,
+							},
+							Key: core.BasicAuthPasswordKey,
+						},
+					},
+				},
+			}...)
+		}
+
 		if db.Spec.Mode == api.RedisModeStandalone {
 
 			args := container.Args
@@ -356,6 +385,11 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 			args := []string{
 				fmt.Sprintf("--web.listen-address=:%v", db.Spec.Monitor.Prometheus.Exporter.Port),
 				fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
+			}
+			if curVersion.Major() > 4 {
+				args = append(args, []string{
+					fmt.Sprintf("--redis.password=%s", authSecret.Data[core.BasicAuthPasswordKey]),
+				}...)
 			}
 			if db.Spec.TLS != nil {
 				tlsArgs := []string{

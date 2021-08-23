@@ -1314,7 +1314,7 @@ kmodules.xyz/resource-metadata/pkg/graph
 ## explicit
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.19.1-0.20210816225014-a8eb885ccaa2
+# kubedb.dev/apimachinery v0.20.0
 ## explicit
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
@@ -1357,7 +1357,7 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.19.1-0.20210816235750-e9478903c6c8
+# kubedb.dev/elasticsearch v0.20.0
 ## explicit
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
@@ -1372,39 +1372,39 @@ kubedb.dev/elasticsearch/pkg/lib/heap
 kubedb.dev/elasticsearch/pkg/lib/kernel
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/mariadb v0.3.1-0.20210816235351-355da6ee273d
+# kubedb.dev/mariadb v0.4.0
 ## explicit
 kubedb.dev/mariadb/pkg/admission
 kubedb.dev/mariadb/pkg/controller
-# kubedb.dev/memcached v0.12.1-0.20210816235118-5ab5673d50e8
+# kubedb.dev/memcached v0.13.0
 ## explicit
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.12.1-0.20210816234802-9dadff035a8c
+# kubedb.dev/mongodb v0.13.0
 ## explicit
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.12.1-0.20210817055013-83b1b7e92245
+# kubedb.dev/mysql v0.13.0
 ## explicit
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.6.1-0.20210816233153-5c94a9b04184
+# kubedb.dev/percona-xtradb v0.7.0
 ## explicit
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pgbouncer v0.6.1-0.20210816235009-38e7bbef35c7
+# kubedb.dev/pgbouncer v0.7.0
 ## explicit
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.19.1-0.20210816230638-ea11e98dd8a0
+# kubedb.dev/postgres v0.20.0
 ## explicit
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.6.1-0.20210816231714-8c569877d260
+# kubedb.dev/proxysql v0.7.0
 ## explicit
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.12.1-0.20210816231321-b412a86289ab
+# kubedb.dev/redis v0.13.0
 ## explicit
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster

@@ -20,6 +20,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -28,6 +29,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
+	"github.com/Masterminds/semver/v3"
 	rd "github.com/go-redis/redis"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -135,11 +137,30 @@ func (c *Controller) CheckRedisHealthOnce() {
 }
 
 func (c *Controller) getRedisClient(db *api.Redis) (*rd.Client, error) {
+	if db.Spec.AuthSecret == nil {
+		return nil, errors.New("no database secret")
+	}
+	redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	curVersion, err := semver.NewVersion(redisVersion.Spec.Version)
+	if err != nil {
+		return nil, fmt.Errorf("can't get the version from RedisVersion spec")
+	}
+
 	rdOpts := &rd.Options{
 		DialTimeout: 15 * time.Second,
 		IdleTimeout: 3 * time.Second,
 		PoolSize:    1,
 		Addr:        db.Address(),
+	}
+	if curVersion.Major() > 4 {
+		authSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		rdOpts.Password = string(authSecret.Data[core.BasicAuthPasswordKey])
 	}
 	if db.Spec.TLS != nil {
 		sec, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.CertificateName(api.RedisClientCert), metav1.GetOptions{})

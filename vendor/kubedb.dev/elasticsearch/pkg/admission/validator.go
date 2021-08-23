@@ -28,6 +28,7 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
 	"gomodules.xyz/sets"
@@ -124,6 +125,7 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 				return hookapi.StatusBadRequest(fmt.Errorf(`elasticsearch "%v/%v" can't be terminated. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
+
 	default:
 		obj, err := meta_util.UnmarshalFromJSON(req.Object.Raw, api.SchemeGroupVersion)
 		if err != nil {
@@ -137,6 +139,11 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 			}
 
 			elasticsearch := obj.(*api.Elasticsearch).DeepCopy()
+			// Skip validation, if UPDATE operation is called after deletion.
+			// Case: Removing Finalizer
+			if elasticsearch.DeletionTimestamp != nil {
+				break
+			}
 			oldElasticsearch := oldObject.(*api.Elasticsearch).DeepCopy()
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldElasticsearch.Spec.AuthSecret == nil {
@@ -172,6 +179,11 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 	}
 	if db.Spec.StorageType != api.StorageTypeDurable && db.Spec.StorageType != api.StorageTypeEphemeral {
 		return fmt.Errorf(`'spec.storageType' %s is invalid`, db.Spec.StorageType)
+	}
+
+	err = validateSecureConfig(db, esVersion)
+	if err != nil {
+		return err
 	}
 
 	topology := db.Spec.Topology
@@ -238,34 +250,6 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		elasticsearchVersion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
-		}
-
-		if elasticsearchVersion.Spec.Distribution == catalog.ElasticsearchDistroSearchGuard ||
-			elasticsearchVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenDistro {
-			// Check, spec.internalUsers[]
-			if db.Spec.InternalUsers != nil {
-				for username := range db.Spec.InternalUsers {
-					secretName, err := db.GetUserCredSecretName(username)
-					if err != nil {
-						return err
-					}
-					// If provided secret name doesn't match the default one.
-					// Check for the existence.
-					if secretName != db.DefaultUserCredSecretName(username) {
-						if _, err := client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{}); err != nil {
-							return err
-						}
-					}
-				}
-			}
-		} else {
-			// For ElasticStack check, db.spec.authSecret
-			authSecret := db.Spec.AuthSecret
-			if authSecret != nil {
-				if _, err := client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
-					return err
-				}
-			}
 		}
 
 		if elasticsearchVersion.Spec.Deprecated {
@@ -406,8 +390,12 @@ func validateNodeReplicas(topology *api.ElasticsearchClusterTopology) error {
 }
 
 func validateNodeRoles(topology *api.ElasticsearchClusterTopology, esVersion *catalog.ElasticsearchVersion) error {
-	if esVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenDistro ||
-		esVersion.Spec.Distribution == catalog.ElasticsearchDistroSearchGuard {
+	if esVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenDistro {
+		if topology.ML != nil || topology.DataContent != nil || topology.DataCold != nil || topology.DataFrozen != nil ||
+			topology.Coordinating != nil || topology.Transform != nil {
+			return errors.Errorf("node role: ml, data_cold, data_frozen, data_content, transform, coordinating are not supported for ElasticsearchVersion %s", esVersion.Name)
+		}
+	} else if esVersion.Spec.Distribution == catalog.ElasticsearchDistroSearchGuard {
 		if topology.Data == nil {
 			return errors.New("topology.data cannot be empty")
 		}
@@ -418,11 +406,30 @@ func validateNodeRoles(topology *api.ElasticsearchClusterTopology, esVersion *ca
 		}
 	}
 
-	// all type of data nodes cannot be empty at once
-	if topology.Data == nil && topology.DataHot == nil && topology.DataWarm == nil &&
-		topology.DataCold == nil && topology.DataFrozen == nil && topology.DataContent == nil {
-		return errors.New("all types of data nodes cannot be empty at once; set topology.data")
+	// Every cluster requires the following node roles:
+	//	- (data_content and data_hot) OR (data)
+	//	- ref: https://www.elastic.co/guide/en/elasticsearch/reference/7.14/modules-node.html#node-roles
+	if topology.Data == nil && (topology.DataHot == nil || topology.DataContent == nil) {
+		return errors.New("when data node is empty, you need to have both dataHot and dataContent nodes")
 	}
 
+	return nil
+}
+
+func validateSecureConfig(db *api.Elasticsearch, esVersion *catalog.ElasticsearchVersion) error {
+	dbVersion, err := semver.NewVersion(esVersion.Spec.Version)
+	if err != nil {
+		return err
+	}
+	if db.Spec.SecureConfigSecret != nil {
+		// Elasticsearch keystore is not supported for OpenDistro
+		if esVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenDistro {
+			return errors.New("secureConfigSecret is not supported for Opendistro of Elasticsearch")
+		}
+		// KEYSTORE_PASSWORD is supported since ES version 7.9
+		if dbVersion.Major() < 7 || (dbVersion.Major() == 7 && dbVersion.Minor() < 9) {
+			return errors.Errorf("secureConfigSecret is not supported for ElasticsearchVersion %s, try with latest versions", esVersion.Name)
+		}
+	}
 	return nil
 }
