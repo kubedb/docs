@@ -1,33 +1,42 @@
 ---
-title: Kubectl-Dba
+title: Kubectl-Dba Exec Mongodb
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba
-    name: Kubectl-Dba
+    identifier: kubectl-dba-exec-mongodb
+    name: Kubectl-Dba Exec Mongodb
     parent: reference-cli
-    weight: 0
-
 menu_name: docs_{{ .version }}
 section_menu_id: reference
-url: /docs/{{ .version }}/reference/cli/
-aliases:
-- /docs/{{ .version }}/reference/cli/kubectl-dba/
 ---
-## kubectl-dba
+## kubectl-dba exec mongodb
 
-kubectl plugin for KubeDB
+Execute commands to a mongodb resource
 
 ### Synopsis
 
-kubectl plugin for KubeDB by AppsCode - Kubernetes ready production-grade Databases
+Use this cmd to execute mongodb commands to a mongodb object's primary pod.
 
- Find more information at https://kubedb.com
+Examples:
+  # Execute a script named 'mongo.js' in 'mg-rs' mongodb database in 'demo' namespace
+  kubectl dba exec mg mg-rs -n demo -f mongo.js
+
+  # Execute a command in 'mg-rs' mongodb database in 'demo' namespace
+  kubectl dba exec mg mg-rs -n demo -c "printjson(db.getCollectionNames())"
+				
 
 ```
-kubectl-dba [flags]
+kubectl-dba exec mongodb [flags]
 ```
 
 ### Options
+
+```
+  -c, --command string   command to execute
+  -f, --file string      path of the script file
+  -h, --help             help for mongodb
+```
+
+### Options inherited from parent commands
 
 ```
       --as string                      Username to impersonate for the operation
@@ -39,7 +48,6 @@ kubectl-dba [flags]
       --cluster string                 The name of the kubeconfig cluster to use
       --context string                 The name of the kubeconfig context to use
       --enable-analytics               Send analytical events to Google Analytics (default true)
-  -h, --help                           help for kubectl-dba
       --insecure-skip-tls-verify       If true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
       --kubeconfig string              Path to the kubeconfig file to use for CLI requests.
       --match-server-version           Require server version to match client version
@@ -53,13 +61,5 @@ kubectl-dba [flags]
 
 ### SEE ALSO
 
-* [kubectl-dba completion](/docs/reference/cli/kubectl-dba_completion.md)	 - Generate completion script
-* [kubectl-dba connect](/docs/reference/cli/kubectl-dba_connect.md)	 - Connect to a database.
-* [kubectl-dba describe](/docs/reference/cli/kubectl-dba_describe.md)	 - Show details of a specific resource or group of resources
 * [kubectl-dba exec](/docs/reference/cli/kubectl-dba_exec.md)	 - Execute script or command to a database.
-* [kubectl-dba pause](/docs/reference/cli/kubectl-dba_pause.md)	 - Pause the processing of an object.
-* [kubectl-dba restart](/docs/reference/cli/kubectl-dba_restart.md)	 - Smartly restart the pods of the database.
-* [kubectl-dba resume](/docs/reference/cli/kubectl-dba_resume.md)	 - Resume processing of an object.
-* [kubectl-dba show-credentials](/docs/reference/cli/kubectl-dba_show-credentials.md)	 - Prints credentials of the database.
-* [kubectl-dba version](/docs/reference/cli/kubectl-dba_version.md)	 - Prints binary version number.
 
