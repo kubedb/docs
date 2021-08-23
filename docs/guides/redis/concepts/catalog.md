@@ -30,15 +30,15 @@ As with all other Kubernetes objects, a RedisVersion needs `apiVersion`, `kind`,
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: RedisVersion
 metadata:
-  name: "4.0-v1"
+  name: 6.0.6
   labels:
     app: kubedb
 spec:
   version: 6.0.6
   db:
-    image: "${KUBEDB_DOCKER_REGISTRY}/redis:4.0-v1"
+    image: "${KUBEDB_DOCKER_REGISTRY}/redis:6.0.6"
   exporter:
-    image: "${KUBEDB_DOCKER_REGISTRY}/redis_exporter:v0.21.1"
+    image: "${KUBEDB_DOCKER_REGISTRY}/redis_exporter:1.9.0"
   podSecurityPolicies:
     databasePolicyName: "redis-db"
 ```

@@ -43,9 +43,9 @@ spec:
   stash:
     addon:
       backupTask:
-        name: perconaxtradb-backup-5.7.0
+        name: perconaxtradb-backup-5.7
       restoreTask:
-        name: perconaxtradb-restore-5.7.0
+        name: perconaxtradb-restore-5.7
   version: "5.7"
 ```
 
