@@ -22,7 +22,7 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
-	"github.com/blang/semver"
+	"github.com/Masterminds/semver/v3"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -90,11 +90,11 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 	// For Elasticsearch version >= 7.9.x
 	// The legacy node role setting (ie. node.master=true) is deprecated,
 	// So, for newer versions, node roles will be managed by elasticsearch.yml file.
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return err
 	}
-	if dbVersion.Major > 7 || (dbVersion.Major == 7 && dbVersion.Minor >= 9) {
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
 		config += elasticsearch_node_roles
 	}
 

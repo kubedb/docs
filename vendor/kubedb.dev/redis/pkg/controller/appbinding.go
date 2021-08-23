@@ -62,6 +62,7 @@ func (c *Controller) ensureAppBinding(db *api.Redis) (kutil.VerbType, error) {
 
 		in.Spec.Type = appmeta.Type()
 		in.Spec.Version = redisVersion.Spec.Version
+		in.Spec.Secret = db.Spec.AuthSecret
 
 		scheme := "redis"
 		if db.Spec.TLS != nil {

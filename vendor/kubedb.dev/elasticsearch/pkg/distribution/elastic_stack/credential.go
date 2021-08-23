@@ -34,59 +34,63 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 	if es.db.Spec.DisableSecurity {
 		return nil
 	}
-	authSecret := es.db.Spec.AuthSecret
-	if authSecret == nil {
-		var err error
-		if authSecret, err = es.createAdminCredSecret(); err != nil {
-			return err
-		}
-		newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.db, func(in *api.Elasticsearch) *api.Elasticsearch {
-			in.Spec.AuthSecret = authSecret
-			return in
-		}, metav1.PatchOptions{})
-		if err != nil {
-			return err
-		}
-		// Note: Instead of updating the whole DB object,
-		// we've just updated the spec.AuthSecret part.
-		// We are making this package independent of current state of DB object,
-		// it will only depend on the given (input) DB object, and make decision based on that.
-		// Necessary for, KubeDB enterprise, will reconcile based on the given DB object instead of the current DB object.
-		es.db.Spec.AuthSecret = newES.Spec.AuthSecret
-	} else {
-		// Get the secret and validate it.
-		dbSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{})
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to get credential secret: %s/%s", es.db.Namespace, authSecret.Name))
-		}
 
-		err = es.validateAndSyncLabels(dbSecret)
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to validate/sync secret: %s/%s", dbSecret.Namespace, dbSecret.Name))
-		}
+	// Cases:
+	//	1. If user doesn't provide anything: Create secret with default name and random password
+	//	2. If user provides secret name:
+	//		- If secret exists: use this
+	//		- If secret doesn't exist: create secret with the given name and random password
+
+	// Algo:
+	//	If secretName is empty:
+	//		- set default secret name to `db.spec.authSecret`: <db-name>-elastic-cred
+	//	end if
+	//	Get the secret with the given name
+	//	If secret is found:
+	//		- validate: username(== elastic), password exist
+	//		- If secret is owned by DB, Sync the labels
+	//	else
+	//		# secret not found
+	//		- Create secret with the given name, random generated password
+	//	end if
+	//	Patch Elasticsearch `db.spec.authSecret`
+
+	authSecret, err := es.createOrSyncAdminCredSecret()
+	if err != nil {
+		return err
 	}
-	return nil
+	_, _, err = util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.db, func(in *api.Elasticsearch) *api.Elasticsearch {
+		in.Spec.AuthSecret = authSecret
+		return in
+	}, metav1.PatchOptions{})
+	return err
 }
 
-func (es *Elasticsearch) createAdminCredSecret() (*core.LocalObjectReference, error) {
-	dbSecret, err := es.findSecret(es.db.DefaultUserCredSecretName(string(api.ElasticsearchInternalUserElastic)))
+func (es *Elasticsearch) createOrSyncAdminCredSecret() (*core.LocalObjectReference, error) {
+	// If secret name is not provided:
+	//		set default secretName
+	if es.db.Spec.AuthSecret == nil || (es.db.Spec.AuthSecret != nil && len(es.db.Spec.AuthSecret.Name) == 0) {
+		es.db.Spec.AuthSecret = &core.LocalObjectReference{
+			Name: es.db.DefaultUserCredSecretName(string(api.ElasticsearchInternalUserElastic)),
+		}
+	}
+
+	dbSecret, err := es.findSecret(es.db.Spec.AuthSecret.Name)
 	if err != nil {
 		return nil, err
 	}
 
 	// if a secret already exist with the given name.
 	// Validate it, whether it contains the following keys:
-	//	- username
+	//	- username & (username == given username)
 	// 	- password
 	// If the secret is owned by this object, sync the labels.
 	if dbSecret != nil {
-		err = es.validateAndSyncLabels(dbSecret)
+		err = es.validateAndSyncLabels(dbSecret, string(api.ElasticsearchInternalUserElastic))
 		if err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("failed to validate/sync secret: %s/%s", dbSecret.Namespace, dbSecret.Name))
 		}
-		return &core.LocalObjectReference{
-			Name: dbSecret.Name,
-		}, nil
+		return es.db.Spec.AuthSecret, nil
 	}
 
 	// Create new secret new random password
@@ -98,7 +102,7 @@ func (es *Elasticsearch) createAdminCredSecret() (*core.LocalObjectReference, er
 
 	secret := &core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   es.db.DefaultUserCredSecretName(string(api.ElasticsearchInternalUserElastic)),
+			Name:   es.db.Spec.AuthSecret.Name,
 			Labels: es.db.OffshootLabels(),
 		},
 		Type: core.SecretTypeBasicAuth,
@@ -113,32 +117,28 @@ func (es *Elasticsearch) createAdminCredSecret() (*core.LocalObjectReference, er
 		return nil, err
 	}
 
-	return &core.LocalObjectReference{
-		Name: secret.Name,
-	}, nil
+	return es.db.Spec.AuthSecret, nil
 }
 
-func (es *Elasticsearch) validateAndSyncLabels(secret *core.Secret) error {
+func (es *Elasticsearch) validateAndSyncLabels(secret *core.Secret, username string) error {
 	if secret == nil {
 		return errors.New("secret is empty")
 	}
 
 	if value, exist := secret.Data[core.BasicAuthUsernameKey]; !exist || len(value) == 0 {
 		return errors.New("username is missing")
+	} else if username != "" && string(value) != username {
+		return errors.Errorf("username must be %s", username)
 	}
 
 	if value, exist := secret.Data[core.BasicAuthPasswordKey]; !exist || len(value) == 0 {
 		return errors.New("password is missing")
 	}
 
-	// If secret is owned by this elasticsearch object,
-	// update the labels.
-	// Labels hold information like elasticsearch version,
-	// should be synced.
-	ctrl := metav1.GetControllerOf(secret)
-	if ctrl != nil &&
-		ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.db.Name {
-
+	// If secret is owned by this elasticsearch object, update the labels.
+	// Labels may hold important information, should be synced.
+	owned, _ := core_util.IsOwnedBy(secret, es.db)
+	if owned {
 		// sync labels
 		if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secret.ObjectMeta, func(in *core.Secret) *core.Secret {
 			in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
@@ -147,6 +147,5 @@ func (es *Elasticsearch) validateAndSyncLabels(secret *core.Secret) error {
 			return err
 		}
 	}
-
 	return nil
 }

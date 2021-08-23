@@ -24,7 +24,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/elasticsearch/pkg/lib/heap"
 
-	"github.com/blang/semver"
+	"github.com/Masterminds/semver/v3"
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	kutil "kmodules.xyz/client-go"
@@ -58,13 +58,13 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
 		},
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	// For Elasticsearch version 7.x.x
-	if dbVersion.Major >= 7 {
+	if dbVersion.Major() >= 7 {
 		// This Env is only required for master nodes to bootstrap
 		// for the vary first time. Need to remove from EnvList as
 		// soon as the cluster is up and running.
@@ -82,7 +82,7 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 
 	// For Elasticsearch version >= 7.9.x
 	// The legacy node role setting is deprecated.
-	if dbVersion.Major > 7 || (dbVersion.Major == 7 && dbVersion.Minor >= 9) {
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
 		// Set "NODE_ROLES" env,
 		// It is used while generating elasticsearch.yml file.
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
@@ -115,7 +115,10 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -172,14 +175,14 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
 		},
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	// For Elasticsearch version >= 7.9.x
 	// The legacy node role setting is deprecated.
-	if dbVersion.Major > 7 || (dbVersion.Major == 7 && dbVersion.Minor >= 9) {
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
 		// Set "NODE_ROLES" env,
 		// It is used while generating elasticsearch.yml file.
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
@@ -212,7 +215,10 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -270,14 +276,14 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
 		},
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	// For Elasticsearch version >= 7.9.x
 	// The legacy node role setting is deprecated.
-	if dbVersion.Major > 7 || (dbVersion.Major == 7 && dbVersion.Minor >= 9) {
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
 		// Set "NODE_ROLES" env,
 		// It is used in elasticsearch.yml file.
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
@@ -310,7 +316,10 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -377,7 +386,7 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
 		},
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -385,7 +394,7 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 	// These Env are only required for master nodes to bootstrap
 	// for the vary first time. Need to remove from EnvList as
 	// soon as the cluster is up and running.
-	if dbVersion.Major >= 7 {
+	if dbVersion.Major() >= 7 {
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "cluster.initial_master_nodes",
 			Value: strings.Join(es.db.InitialMasterNodes(), ","),
@@ -399,7 +408,7 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 
 	// For Elasticsearch version >= 7.9.x
 	// The legacy node role setting is deprecated.
-	if dbVersion.Major > 7 || (dbVersion.Major == 7 && dbVersion.Minor >= 9) {
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
 		// Set "NODE_ROLES" env,
 		// It is used in elasticsearch.yml file.
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
@@ -427,7 +436,10 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -465,13 +477,13 @@ func (es *Elasticsearch) EnsureDataContentNode() (kutil.VerbType, error) {
 	if es.db.Spec.Topology.DataContent == nil {
 		return kutil.VerbUnchanged, nil
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 	// Data-Content node is introduced at ES version 7.10
 	// Otherwise return error
-	if !(dbVersion.Major >= 7 && dbVersion.Minor >= 10) {
+	if !(dbVersion.Major() >= 7 && dbVersion.Minor() >= 10) {
 		return kutil.VerbUnchanged, errors.New("data-content node isn't supported; The data-content node is introduced at version 7.10")
 	}
 
@@ -505,7 +517,10 @@ func (es *Elasticsearch) EnsureDataContentNode() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -531,13 +546,13 @@ func (es *Elasticsearch) EnsureDataHotNode() (kutil.VerbType, error) {
 	if es.db.Spec.Topology.DataHot == nil {
 		return kutil.VerbUnchanged, nil
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 	// Data-Hot node is introduced at ES version 7.10
 	// Otherwise return error
-	if !(dbVersion.Major >= 7 && dbVersion.Minor >= 10) {
+	if !(dbVersion.Major() >= 7 && dbVersion.Minor() >= 10) {
 		return kutil.VerbUnchanged, errors.New("data-hot node isn't supported; The data-hot node is introduced at version 7.10")
 	}
 
@@ -571,7 +586,10 @@ func (es *Elasticsearch) EnsureDataHotNode() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -597,13 +615,13 @@ func (es *Elasticsearch) EnsureDataWarmNode() (kutil.VerbType, error) {
 	if es.db.Spec.Topology.DataWarm == nil {
 		return kutil.VerbUnchanged, nil
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 	// Data-Hot node is introduced at ES version 7.10
 	// Otherwise return error
-	if !(dbVersion.Major >= 7 && dbVersion.Minor >= 10) {
+	if !(dbVersion.Major() >= 7 && dbVersion.Minor() >= 10) {
 		return kutil.VerbUnchanged, errors.New("data-warm node isn't supported; The data-warm node is introduced at version 7.10")
 	}
 
@@ -637,7 +655,10 @@ func (es *Elasticsearch) EnsureDataWarmNode() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -663,13 +684,13 @@ func (es *Elasticsearch) EnsureDataColdNode() (kutil.VerbType, error) {
 	if es.db.Spec.Topology.DataCold == nil {
 		return kutil.VerbUnchanged, nil
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 	// Data-Hot node is introduced at ES version 7.10
 	// Otherwise return error
-	if !(dbVersion.Major >= 7 && dbVersion.Minor >= 10) {
+	if !(dbVersion.Major() >= 7 && dbVersion.Minor() >= 10) {
 		return kutil.VerbUnchanged, errors.New("data-cold node isn't supported; The data-cold node is introduced at version 7.10")
 	}
 
@@ -703,7 +724,10 @@ func (es *Elasticsearch) EnsureDataColdNode() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -729,13 +753,13 @@ func (es *Elasticsearch) EnsureDataFrozenNode() (kutil.VerbType, error) {
 	if es.db.Spec.Topology.DataFrozen == nil {
 		return kutil.VerbUnchanged, nil
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 	// Data-Frozen node is introduced at ES version 7.12
 	// Otherwise return error
-	if !(dbVersion.Major >= 7 && dbVersion.Minor >= 12) {
+	if !(dbVersion.Major() >= 7 && dbVersion.Minor() >= 12) {
 		return kutil.VerbUnchanged, errors.New("data-frozen node isn't supported; The data-frozen node is introduced at version 7.12")
 	}
 
@@ -769,7 +793,10 @@ func (es *Elasticsearch) EnsureDataFrozenNode() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -795,7 +822,7 @@ func (es *Elasticsearch) EnsureMLNode() (kutil.VerbType, error) {
 	if es.db.Spec.Topology.ML == nil {
 		return kutil.VerbUnchanged, nil
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -823,7 +850,7 @@ func (es *Elasticsearch) EnsureMLNode() (kutil.VerbType, error) {
 
 	// For Elasticsearch version >= 7.9.x
 	// The legacy node role setting is deprecated.
-	if dbVersion.Major > 7 || (dbVersion.Major == 7 && dbVersion.Minor >= 9) {
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
 		// Set "NODE_ROLES" env,
 		// It is used while generating elasticsearch.yml file.
 		// The remote_cluster_client role is optional but strongly recommended.
@@ -859,7 +886,10 @@ func (es *Elasticsearch) EnsureMLNode() (kutil.VerbType, error) {
 	}
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -885,13 +915,13 @@ func (es *Elasticsearch) EnsureTransformNode() (kutil.VerbType, error) {
 	if es.db.Spec.Topology.Transform == nil {
 		return kutil.VerbUnchanged, nil
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 	// Transform node is introduced at ES version 7.11
 	// Otherwise return error
-	if !(dbVersion.Major >= 7 && dbVersion.Minor >= 11) {
+	if !(dbVersion.Major() >= 7 && dbVersion.Minor() >= 11) {
 		return kutil.VerbUnchanged, errors.New("transform node isn't supported; The transform node is introduced at version 7.11")
 	}
 
@@ -927,7 +957,10 @@ func (es *Elasticsearch) EnsureTransformNode() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -957,13 +990,13 @@ func (es *Elasticsearch) EnsureCoordinatingNode() (kutil.VerbType, error) {
 	if es.db.Spec.Topology.Coordinating == nil {
 		return kutil.VerbUnchanged, nil
 	}
-	dbVersion, err := semver.Parse(es.esVersion.Spec.Version)
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 	// Transform node is introduced at ES version 7.11
 	// Otherwise return error
-	if !(dbVersion.Major >= 7 && dbVersion.Minor >= 11) {
+	if !(dbVersion.Major() >= 7 && dbVersion.Minor() >= 11) {
 		return kutil.VerbUnchanged, errors.New("transform node isn't supported; The transform node is introduced at version 7.11")
 	}
 
@@ -990,7 +1023,7 @@ func (es *Elasticsearch) EnsureCoordinatingNode() (kutil.VerbType, error) {
 
 	// For Elasticsearch version >= 7.9.x
 	// The legacy node role setting is deprecated.
-	if dbVersion.Major > 7 || (dbVersion.Major == 7 && dbVersion.Minor >= 9) {
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
 		// Set "NODE_ROLES" env,
 		// It is used while generating elasticsearch.yml file.
 		// Every node is implicitly a coordinating node. This means that a node that has
@@ -1027,7 +1060,10 @@ func (es *Elasticsearch) EnsureCoordinatingNode() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)

@@ -93,7 +93,15 @@ func (a *ElasticsearchMutator) Admit(req *admission.AdmissionRequest) *admission
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mod, err := setDefaultValues(a.extClient, obj.(*api.Elasticsearch).DeepCopy(), a.ClusterTopology)
+	dbCopy := obj.(*api.Elasticsearch).DeepCopy()
+	// When object is being deleted, the next called is UPDATE operation
+	// To remove the finalizer.
+	// Skip if the DeletionTimeStamp is set.
+	if dbCopy.DeletionTimestamp != nil {
+		status.Allowed = true
+		return status
+	}
+	mod, err := setDefaultValues(a.extClient, dbCopy, a.ClusterTopology)
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mod != nil {

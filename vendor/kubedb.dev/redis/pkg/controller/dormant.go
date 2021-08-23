@@ -123,6 +123,7 @@ func (c *Controller) secretsUsedByPeers(meta metav1.ObjectMeta) (sets.String, er
 	}
 	for _, rd := range dbList {
 		if rd.Name != meta.Name {
+			secretUsed.Insert(rd.Spec.GetPersistentSecrets()...)
 			secretUsed.Insert(c.GetRedisSecrets(rd)...)
 		}
 	}

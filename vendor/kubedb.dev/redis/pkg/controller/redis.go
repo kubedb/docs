@@ -53,6 +53,10 @@ func (c *Controller) create(db *api.Redis) error {
 		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
+	// ensure auth require for redis
+	if err := c.ensureAuthSecret(db); err != nil {
+		return err
+	}
 	// ensure ConfigMap for redis configuration file (i.e. redis.conf)
 	if err := c.ensureRedisConfig(db); err != nil {
 		return err
@@ -268,17 +272,21 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.Redis) error {
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
 	if db.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := c.wipeOutDatabase(db.ObjectMeta, c.GetRedisSecrets(db), owner); err != nil {
+		secrets := db.Spec.GetPersistentSecrets()
+		secrets = append(secrets, c.GetRedisSecrets(db)...)
+		if err := c.wipeOutDatabase(db.ObjectMeta, secrets, owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
+		secrets := db.Spec.GetPersistentSecrets()
+		secrets = append(secrets, c.GetRedisSecrets(db)...)
 		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
 			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			db.Namespace,
-			c.GetRedisSecrets(db),
+			secrets,
 			db); err != nil {
 			return err
 		}
@@ -295,6 +303,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.Redis) error {
 }
 
 func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.Redis) error {
+
+	secrets := db.Spec.GetPersistentSecrets()
+	secrets = append(secrets, c.GetRedisSecrets(db)...)
+
 	// First, Get LabelSelector for Other Components
 	labelSelector := labels.SelectorFromSet(db.OffshootSelectors())
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
@@ -302,7 +314,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.Redis) error {
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		db.Namespace,
-		c.GetRedisSecrets(db),
+		secrets,
 		db); err != nil {
 		return err
 	}

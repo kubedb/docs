@@ -94,6 +94,14 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
 		{
+			Name:  "NODE_ROLES",
+			Value: "master",
+		},
+		// TODO:
+		// 		For supporting old config-merger version,
+		// 		Should be removed soon.
+		//
+		{
 			Name:  "NODE_MASTER",
 			Value: "true",
 		},
@@ -156,6 +164,14 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
+		{
+			Name:  "NODE_ROLES",
+			Value: "data",
+		},
+		// TODO:
+		// 		For supporting old config-merger version,
+		// 		Should be removed soon.
+		//
 		{
 			Name:  "NODE_MASTER",
 			Value: "false",
@@ -222,6 +238,14 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
 		{
+			Name:  "NODE_ROLES",
+			Value: "ingest",
+		},
+		// TODO:
+		// 		For supporting old config-merger version,
+		// 		Should be removed soon.
+		//
+		{
 			Name:  "NODE_MASTER",
 			Value: "false",
 		},
@@ -287,8 +311,8 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 		},
 	}
 
-	// These Env are only required for master nodes to bootstrap
-	// for the vary first time. Need to remove from EnvList as
+	// These Envs are only required for master nodes to bootstrap
+	// for the very first time. Need to remove from EnvList as
 	// soon as the cluster is up and running.
 	if strings.HasPrefix(es.esVersion.Spec.Version, "7.") {
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
@@ -311,6 +335,14 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
+		{
+			Name:  "NODE_ROLES",
+			Value: "master,data,ingest",
+		},
+		// TODO:
+		// 		For supporting old config-merger version,
+		// 		Should be removed soon.
+		//
 		{
 			Name:  "NODE_MASTER",
 			Value: "true",
@@ -346,10 +378,168 @@ func (es *Elasticsearch) EnsureDataContentNode() (kutil.VerbType, error) {
 }
 
 func (es *Elasticsearch) EnsureDataHotNode() (kutil.VerbType, error) {
-	return kutil.VerbUnchanged, nil
+	if es.db.Spec.Topology.DataHot == nil {
+		return kutil.VerbUnchanged, nil
+	}
+	statefulSetName := es.db.DataHotStatefulSetName()
+	dataHotNode := es.db.Spec.Topology.DataHot
+	labels := map[string]string{
+		es.db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeDataHot): api.ElasticsearchNodeRoleSet,
+	}
+
+	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
+	if limit, found := dataHotNode.Resources.Limits[core.ResourceMemory]; found && limit.Value() > 0 {
+		heapSize = heap.GetHeapSizeFromMemory(limit.Value())
+	}
+
+	// Environment variable list for main container.
+	// These are node specific, i.e. changes depending on node type.
+	// Following are for Data node:
+	envList := []core.EnvVar{
+		{
+			Name:  "ES_JAVA_OPTS",
+			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
+		},
+		{
+			Name:  "node.ingest",
+			Value: "false",
+		},
+		{
+			Name:  "node.master",
+			Value: "false",
+		},
+		// OpenDistro doesn't have any data_hot node role type.
+		// We will use node role "data" along with "node.attr.temp: hot" feature to mock data_hot feature.
+		// Ref:
+		// 		- https://opendistro.github.io/for-elasticsearch-docs/docs/elasticsearch/cluster/#advanced-step-7-set-up-a-hot-warm-architecture
+		{
+			Name:  "node.data",
+			Value: "true",
+		},
+		{
+			Name:  "node.attr.temp",
+			Value: "hot",
+		},
+	}
+	// Upsert common environment variables.
+	// These are same for all type of node.
+	envList = es.upsertContainerEnv(envList)
+
+	// add/overwrite user provided env; these are provided via crd spec
+	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
+
+	// Environment variables for init container (i.e. config-merger)
+	initEnvList := []core.EnvVar{
+		{
+			Name:  "NODE_ROLES",
+			Value: "data_hot",
+		},
+		// TODO:
+		// 		For supporting old config-merger version,
+		// 		Should be removed soon.
+		//
+		{
+			Name:  "NODE_MASTER",
+			Value: "false",
+		},
+		{
+			Name:  "NODE_DATA",
+			Value: "true",
+		},
+		{
+			Name:  "NODE_INGEST",
+			Value: "false",
+		},
+	}
+
+	replicas := pointer.Int32P(1)
+	if dataHotNode.Replicas != nil {
+		replicas = dataHotNode.Replicas
+	}
+
+	return es.ensureStatefulSet(dataHotNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeDataHot), envList, initEnvList)
 }
 func (es *Elasticsearch) EnsureDataWarmNode() (kutil.VerbType, error) {
-	return kutil.VerbUnchanged, nil
+	if es.db.Spec.Topology.DataWarm == nil {
+		return kutil.VerbUnchanged, nil
+	}
+	statefulSetName := es.db.DataWarmStatefulSetName()
+	dataWarmNode := es.db.Spec.Topology.DataWarm
+	labels := map[string]string{
+		es.db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeDataWarm): api.ElasticsearchNodeRoleSet,
+	}
+
+	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
+	if limit, found := dataWarmNode.Resources.Limits[core.ResourceMemory]; found && limit.Value() > 0 {
+		heapSize = heap.GetHeapSizeFromMemory(limit.Value())
+	}
+
+	// Environment variable list for main container.
+	// These are node specific, i.e. changes depending on node type.
+	// Following are for Data node:
+	envList := []core.EnvVar{
+		{
+			Name:  "ES_JAVA_OPTS",
+			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
+		},
+		{
+			Name:  "node.ingest",
+			Value: "false",
+		},
+		{
+			Name:  "node.master",
+			Value: "false",
+		},
+		// OpenDistro doesn't have any data_warm node role type.
+		// We will use node role "data" along with "node.attr.temp: warm" feature to mock the data_warm feature.
+		// Ref:
+		// 		- https://opendistro.github.io/for-elasticsearch-docs/docs/elasticsearch/cluster/#advanced-step-7-set-up-a-hot-warm-architecture
+		{
+			Name:  "node.data",
+			Value: "true",
+		},
+		{
+			Name:  "node.attr.temp",
+			Value: "warm",
+		},
+	}
+	// Upsert common environment variables.
+	// These are same for all type of node.
+	envList = es.upsertContainerEnv(envList)
+
+	// add/overwrite user provided env; these are provided via crd spec
+	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
+
+	// Environment variables for init container (i.e. config-merger)
+	initEnvList := []core.EnvVar{
+		{
+			Name:  "NODE_ROLES",
+			Value: "data_warm",
+		},
+		// TODO:
+		// 		For supporting old config-merger version,
+		// 		Should be removed soon.
+		//
+		{
+			Name:  "NODE_MASTER",
+			Value: "false",
+		},
+		{
+			Name:  "NODE_DATA",
+			Value: "true",
+		},
+		{
+			Name:  "NODE_INGEST",
+			Value: "false",
+		},
+	}
+
+	replicas := pointer.Int32P(1)
+	if dataWarmNode.Replicas != nil {
+		replicas = dataWarmNode.Replicas
+	}
+
+	return es.ensureStatefulSet(dataWarmNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeDataWarm), envList, initEnvList)
 }
 func (es *Elasticsearch) EnsureDataColdNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
