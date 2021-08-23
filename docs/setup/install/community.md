@@ -14,7 +14,7 @@ section_menu_id: setup
 
 # Install KubeDB Community Edition
 
-KubeDB Community edition is available under [AppsCode-Community-1.0.0](https://github.com/appscode/licenses/raw/1.0.0/AppsCode-Community-1.0.0.md) license and free to use for both commercial and non-commercial purposes. It comes with the cluster provisioning functionalities. However, it lacks some advanced features such as database backup/recovery, upgrading version, horizontal and vertical scaling, TLS/SSL support via [cert-manager](https://cert-manager.io/), updating configuration post provisioning, connection pooling, etc. compared to the Enterprise edition. A full features comparison between the KubeDB Community edition and Enterprise edition can be found [here](/docs/overview/README.md).
+KubeDB Community edition is available under [AppsCode-Community-1.0.0](https://github.com/appscode/licenses/raw/1.0.0/AppsCode-Community-1.0.0.md) license and free to use for both commercial and non-commercial purposes. `Community Edition` only manages KubeDB custom resources in the `demo` Kubernetes namespace. It comes with the cluster provisioning functionalities. However, it lacks some advanced features such as database backup/recovery, upgrading version, horizontal and vertical scaling, TLS/SSL support via [cert-manager](https://cert-manager.io/), updating configuration post provisioning, connection pooling, etc. compared to the Enterprise edition. A full features comparison between the KubeDB Community edition and Enterprise edition can be found [here](/docs/overview/README.md).
 
 To use the KubeDB Community edition, you can grab **1 year** free license from [here](https://license-issuer.appscode.com/?p=kubedb-community). After that, you can issue another license for one more year. Typically we release a new version of the operator at least quarterly. So, you can just grab a new license every time you upgrade the operator.
 
@@ -81,7 +81,7 @@ appscode/kubedb-enterprise  {{< param "info.enterprise" >}}        {{< param "in
 # Install KubeDB Community operator chart
 $ helm install kubedb appscode/kubedb \
   --version {{< param "info.version" >}} \
-  --namespace kube-system \
+  --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt
 ```
 
@@ -109,9 +109,9 @@ appscode/kubedb-enterprise  {{< param "info.enterprise" >}}        {{< param "in
 
 #  Install KubeDB Community operator chart
 $ helm template kubedb appscode/kubedb \
-  --version {{< param "info.version" >}}       \
-  --namespace kube-system                        \
-  --set-file global.license=/path/to/the/license.txt    \
+  --version {{< param "info.version" >}} \
+  --namespace kubedb --create-namespace \
+  --set-file global.license=/path/to/the/license.txt \
   --set global.skipCleaner=true | kubectl apply -f -
 ```
 
@@ -127,7 +127,7 @@ To check if KubeDB operator pods have started, run the following command:
 ```bash
 $ watch kubectl get pods --all-namespaces -l "app.kubernetes.io/instance=kubedb"
 NAMESPACE     NAME                                        READY   STATUS    RESTARTS   AGE
-kube-system   kubedb-kubedb-community-7f4dc7c49c-l6ddf    1/1     Running   0          48s
+kubedb   kubedb-kubedb-community-7f4dc7c49c-l6ddf    1/1     Running   0          48s
 ```
 
 Once the operator pod is running, you can cancel the above command by typing `Ctrl+C`.

@@ -14,7 +14,7 @@ section_menu_id: setup
 
 # Install KubeDB Enterprise Edition
 
-KubeDB Enterprise edition is the open core version of [KubeDB](https://github.com/kubedb/operator). It includes all the features (clustering, etc.) of KubeDB Community Edition and extends it by automating Day 2 operations, improving security and productivity.
+KubeDB Enterprise edition is the open core version of [KubeDB](https://github.com/kubedb/operator). It includes all the features (clustering, etc.) of KubeDB Community Edition and extends it by automating Day 2 operations, improving security and productivity. `Enterprise Edition` can be used to manage KubeDB custom resources in any Kubernetes namespace.
 
 - Back and recovery - KubeDB will provide backup & recovery of databases using Stash.
 - Upgrade and Scaling - KubeDB will provide operator managed human-in-the-loop patch and minor upgrade, downgrade and scaling operations
@@ -99,8 +99,8 @@ appscode/kubedb-autoscaler	{{< param "info.autoscaler" >}}  {{< param "info.auto
 
 # Step 1: Install KubeDB Community operator chart
 $ helm install kubedb-community appscode/kubedb-community \
-  --version {{< param "info.community" >}}      \
-  --namespace kube-system                       \
+  --version {{< param "info.community" >}} \
+  --namespace kubedb --create-namespace \
   --set-file license=/path/to/the/license.txt
 
 # Step 2: wait until crds are registered
@@ -122,26 +122,26 @@ redises.kubedb.com                 6s
 redisversions.kubedb.com           6s
 
 # Step 3(a): Install KubeDB catalog of database versions
-$ helm install kubedb-catalog appscode/kubedb-catalog   \
-  --version {{< param "info.community" >}}              \
-  --namespace kube-system
+$ helm install kubedb-catalog appscode/kubedb-catalog \
+  --version {{< param "info.community" >}} \
+  --namespace kubedb --create-namespace
 
 # Step 3(b): Or, if previously installed, upgrade KubeDB catalog of database versions
-$ helm upgrade kubedb-catalog appscode/kubedb-catalog   \
-  --version {{< param "info.community" >}}              \
-  --namespace kube-system
+$ helm upgrade kubedb-catalog appscode/kubedb-catalog \
+  --version {{< param "info.community" >}} \
+  --namespace kubedb
 
 # Step 4: Install KubeDB Enterprise operator chart
-$ helm install kubedb-enterprise appscode/kubedb-enterprise  \
-  --version {{< param "info.enterprise" >}}                  \
-  --namespace kube-system                                    \
+$ helm install kubedb-enterprise appscode/kubedb-enterprise \
+  --version {{< param "info.enterprise" >}} \
+  --namespace kubedb --create-namespace \
   --set-file license=/path/to/the/license.txt
 
 # Step 5 (Optional): Install KubeDB Autoscaler chart
 # Kubernetes [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation) must be pre-installed separately.
-$ helm install kubedb-autoscaler appscode/kubedb-autoscaler  \
-  --version {{< param "info.autoscaler" >}}                  \
-  --namespace kube-system                                    \
+$ helm install kubedb-autoscaler appscode/kubedb-autoscaler \
+  --version {{< param "info.autoscaler" >}} \
+  --namespace kubedb --create-namespace \
   --set-file license=/path/to/the/license.txt
 ```
 
@@ -169,9 +169,9 @@ appscode/kubedb-enterprise  {{< param "info.enterprise" >}}  {{< param "info.ent
 
 # Step 1: Install KubeDB Community operator chart
 $ helm template kubedb-community appscode/kubedb-community \
-  --version {{< param "info.community" >}}      \
-  --namespace kube-system                       \
-  --set-file license=/path/to/the/license.txt   \
+  --version {{< param "info.community" >}} \
+  --namespace kubedb --create-namespace \
+  --set-file license=/path/to/the/license.txt \
   --set cleaner.skip=true | kubectl apply -f -
 
 # Step 2: wait until crds are registered
@@ -191,23 +191,23 @@ redises.kubedb.com                 6s
 redisversions.kubedb.com           6s
 
 # Step 3: Install/Upgrade KubeDB catalog of database versions
-$ helm template kubedb-catalog appscode/kubedb-catalog   \
-  --version {{< param "info.community" >}}               \
-  --namespace kube-system | kubectl apply -f -
+$ helm template kubedb-catalog appscode/kubedb-catalog \
+  --version {{< param "info.community" >}} \
+  --namespace kubedb --create-namespace | kubectl apply -f -
 
 # Step 4: Install KubeDB Enterprise operator chart
-$ helm template kubedb-enterprise appscode/kubedb-enterprise   \
-  --version {{< param "info.enterprise" >}}                    \
-  --namespace kube-system                                      \
-  --set-file license=/path/to/the/license.txt                  \
+$ helm template kubedb-enterprise appscode/kubedb-enterprise \
+  --version {{< param "info.enterprise" >}} \
+  --namespace kubedb --create-namespace \
+  --set-file license=/path/to/the/license.txt \
   --set cleaner.skip=true | kubectl apply -f -
 
 # Step 5 (Optional): Install KubeDB Autoscaler chart
 # Kubernetes [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation) must be pre-installed separately.
-$ helm template kubedb-autoscaler appscode/kubedb-autoscaler   \
-  --version {{< param "info.autoscaler" >}}                    \
-  --namespace kube-system                                      \
-  --set-file license=/path/to/the/license.txt                  \
+$ helm template kubedb-autoscaler appscode/kubedb-autoscaler \
+  --version {{< param "info.autoscaler" >}} \
+  --namespace kubedb --create-namespace \
+  --set-file license=/path/to/the/license.txt \
   --set cleaner.skip=true | kubectl apply -f -
 ```
 
@@ -224,12 +224,12 @@ To check if KubeDB operator pods have started, run the following command:
 $ kubectl get pods --all-namespaces -l app.kubernetes.io/name=kubedb-community --watch
 
 NAMESPACE     NAME                               READY     STATUS    RESTARTS   AGE
-kube-system   kubedb-community-859d6bdb56-m9br5  1/1       Running   0          5s
+kubedb   kubedb-community-859d6bdb56-m9br5  1/1       Running   0          5s
 
 $ kubectl get pods --all-namespaces -l app.kubernetes.io/name=kubedb-enterprise --watch
 
 NAMESPACE     NAME                                READY   STATUS    RESTARTS   AGE
-kube-system   kubedb-enterprise-568c884795-hzbgg  2/2     Running   0          5h35m
+kubedb   kubedb-enterprise-568c884795-hzbgg  2/2     Running   0          5h35m
 ```
 
 Once the operator pod is running, you can cancel the above command by typing `Ctrl+C`.

@@ -39,7 +39,7 @@ Let's install KubeDB with operator monitoring enabled.
 
 ```bash
 $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
-  --namespace kube-system \
+  --namespace kubedb --create-namespace \
   --set kubedb-community.monitoring.enabled=true \
   --set kubedb-community.monitoring.agent=prometheus.io/builtin \
   --set kubedb-community.monitoring.prometheus.namespace=monitoring \
@@ -50,23 +50,23 @@ $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
 
 ```bash
 $ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
-  --namespace kube-system \
+  --namespace kubedb --create-namespace \
   --set kubedb-community.monitoring.enabled=true \
   --set kubedb-community.monitoring.agent=prometheus.io/builtin \
   --set kubedb-community.monitoring.prometheus.namespace=monitoring \
   --set kubedb-community.monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
 ```
 
-This will add necessary annotations to `kubedb` service created in `kube-system` namespace. Prometheus server will scrape metrics using those annotations. Let's check which annotations are added to the service,
+This will add necessary annotations to `kubedb` service created in `kubedb` namespace. Prometheus server will scrape metrics using those annotations. Let's check which annotations are added to the service,
 
 ```yaml
-$ kubectl get service -n kube-system kubedb -o yaml
+$ kubectl get service -n kubedb kubedb -o yaml
 apiVersion: v1
 kind: Service
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"kubedb"},"name":"kubedb","namespace":"kube-system"},"spec":{"ports":[{"name":"api","port":443,"targetPort":8443}],"selector":{"app":"kubedb"}}}
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"kubedb"},"name":"kubedb","namespace":"kubedb"},"spec":{"ports":[{"name":"api","port":443,"targetPort":8443}],"selector":{"app":"kubedb"}}}
     prometheus.io/path: /metrics
     prometheus.io/port: "8443"
     prometheus.io/scheme: https
@@ -75,9 +75,9 @@ metadata:
   labels:
     app: kubedb
   name: kubedb
-  namespace: kube-system
+  namespace: kubedb
   resourceVersion: "22287"
-  selfLink: /api/v1/namespaces/kube-system/services/kubedb
+  selfLink: /api/v1/namespaces/kubedb/services/kubedb
   uid: 3af092c3-0cd8-11e9-9662-080027e8eafe
 spec:
   clusterIP: 10.108.131.64
@@ -135,7 +135,7 @@ Let's configure a Prometheus scraping job to collect the operator metrics.
     # public certificate of the extension apiserver that has been mounted in "/etc/prometheus/secret/<tls secret name>" directory of prometheus server
     ca_file: /etc/prometheus/secret/kubedb-apiserver-cert/tls.crt
     # dns name for which the certificate is valid
-    server_name: kubedb.kube-system.svc
+    server_name: kubedb.kubedb.svc
   # bearer_token_file is required for authorizing prometheus server to extension apiserver
   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
   # by default Prometheus server select all kubernetes services as possible target.
@@ -245,7 +245,7 @@ data:
         # public certificate of the extension apiserver that has been mounted in "/etc/prometheus/secret/<tls secret name>" directory of prometheus server
         ca_file: /etc/prometheus/secret/kubedb-apiserver-cert/tls.crt
         # dns name for which the certificate is valid
-        server_name: kubedb.kube-system.svc
+        server_name: kubedb.kubedb.svc
       # bearer_token_file is required for authorizing prometheus server to extension apiserver
       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
       # by default Prometheus server select all kubernetes services as possible target.

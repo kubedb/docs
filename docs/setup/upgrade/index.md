@@ -20,6 +20,8 @@ This guide will show you how to upgrade various KubeDB components. Here, we are 
 
 In order to upgrade from KubeDB `v2021.xx.xx` to `{{< param "info.version" >}}`, please follow the following steps.
 
+{{< notice type="warning" message="Please note that since v2021.08.23, we recommend installing KubeDB operator in the `kubedb` namespace. The upgrade instructions on this page assumes so. If you have currently installed the operator in a different namespace like `kube-system`, either follow the instructions with appropriate updates, or first uninstall the existing operator and then reinstall in the `kubedb` namespace." >}}
+
 #### 1. Update KubeDB Catalog CRDs
 
 Helm [does not upgrade the CRDs](https://github.com/helm/helm/issues/6581) bundled in a Helm chart if the CRDs already exist. So, to upgrde the KubeDB catalog CRD, please run the command below:
@@ -36,13 +38,13 @@ Now, upgrade the KubeDB helm chart using the following command. You can find the
 # Upgrade KubeDB Community operator chart
 $ helm upgrade kubedb appscode/kubedb \
   --version {{< param "info.version" >}} \
-  --namespace kube-system \
+  --namespace kubedb \
   --set-file global.license=/path/to/the/license.txt
 
 # Upgrade KubeDB Enterprise operator chart
 $ helm upgrade kubedb appscode/kubedb \
     --version {{< param "info.version" >}} \
-    --namespace kube-system \
+    --namespace kubedb \
     --set-file global.license=/path/to/the/license.txt \
     --set kubedb-enterprise.enabled=true \
     --set kubedb-autoscaler.enabled=true
@@ -104,7 +106,7 @@ KubeDB supports seamless migration between community edition and enterprise edit
 In order to migrate from KubeDB community edition to KubeDB enterprise edition, please run the following command,
 
 ```bash
-helm upgrade kubedb -n kube-system appscode/kubedb \
+helm upgrade kubedb -n kubedb appscode/kubedb \
   --reuse-values \
   --set kubedb-enterprise.enabled=true \
   --set kubedb-autoscaler.enabled=true \
@@ -117,7 +119,7 @@ helm upgrade kubedb -n kube-system appscode/kubedb \
 In order to migrate from KubeDB enterprise edition to KubeDB community edition, please run the following command,
 
 ```bash
-helm upgrade kubedb -n kube-system appscode/kubedb \
+helm upgrade kubedb -n kubedb appscode/kubedb \
   --reuse-values \
   --set kubedb-enterprise.enabled=false \
   --set kubedb-autoscaler.enabled=false \
@@ -136,7 +138,8 @@ In order to migrate from KubeDB community edition to KubeDB enterprise edition, 
 
 ```bash
 # Install KubeDB enterprise edition
-helm template kubedb -n kube-system appscode/kubedb \
+helm template kubedb appscode/kubedb \
+  --namespace kubedb --create-namespace \
   --version {{< param "info.version" >}} \
   --set kubedb-enterprise.enabled=true \
   --set kubedb-autoscaler.enabled=true \
@@ -151,7 +154,8 @@ In order to migrate from KubeDB enterprise edition to KubeDB community edition, 
 
 ```bash
 # Install KubeDB community edition
-helm template kubedb -n kube-system appscode/kubedb \
+helm template kubedb appscode/kubedb \
+  --namespace kubedb --create-namespace \
   --version {{< param "info.version" >}} \
   --set kubedb-enterprise.enabled=false \
   --set kubedb-autoscaler.enabled=false \
@@ -186,7 +190,7 @@ Follow the below instructions to update the license:
 #### Using Helm 3
 
 ```bash
-helm upgrade kubedb -n kube-system appscode/kubedb \
+helm upgrade kubedb -n kubedb appscode/kubedb \
   --reuse-values \
   --set-file global.license=/path/to/new/license.txt
 ```
@@ -199,7 +203,8 @@ helm upgrade kubedb -n kube-system appscode/kubedb \
 **Update License of Community Edition:**
 
 ```bash
-helm template kubedb -n kube-system appscode/kubedb \
+helm template kubedb appscode/kubedb \
+  --namespace kubedb --create-namespace \
   --set kubedb-enterprise.enabled=false \
   --set kubedb-autoscaler.enabled=false \
   --set global.skipCleaner=true \
@@ -210,7 +215,8 @@ helm template kubedb -n kube-system appscode/kubedb \
 **Update License of Enterprise Edition:**
 
 ```bash
-helm template kubedb appscode/kubedb -n kube-system \
+helm template kubedb appscode/kubedb \
+  --namespace kubedb --create-namespace \
   --set kubedb-enterprise.enabled=true \
   --set kubedb-autoscaler.enabled=true \
   --set global.skipCleaner=true \
