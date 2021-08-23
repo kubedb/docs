@@ -30,19 +30,16 @@ To detect KubeDB version, exec into the operator pod and run `kubedb version` co
 
 ```bash
 $ POD_NAMESPACE=kubedb
-$ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app.kubernetes.io/name=kubedb -o jsonpath={.items[0].metadata.name})
-$ kubectl exec $POD_NAME -c operator -n $POD_NAMESPACE -- /kubedb version
+$ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app.kubernetes.io/name=kubedb-community -o jsonpath={.items[0].metadata.name})
+$ kubectl exec $POD_NAME -c operator -n $POD_NAMESPACE -- /operator version
 
-Version = {{< param "info.version" >}}
+Version = v0.20.0
 VersionStrategy = tag
-Os = alpine
-Arch = amd64
-CommitHash = 85b0f16ab1b915633e968aac0ee23f877808ef49
-GitBranch = release-0.5
-GitTag = {{< param "info.version" >}}
-CommitTimestamp = 2020-08-10T05:24:23
-
-$ kubectl exec -it $POD_NAME -c operator -n $POD_NAMESPACE restic version
-restic 0.9.6
-compiled with go1.9 on linux/amd64
+GitTag = v0.20.0
+GitBranch = HEAD
+CommitHash = c24b636ea015b1f4e7be84ec206f123501fa148a
+CommitTimestamp = 2021-08-23T11:15:37
+GoVersion = go1.16.7
+Compiler = gcc
+Platform = linux/amd64
 ```
