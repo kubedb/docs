@@ -29,7 +29,7 @@ In addition, if your GKE cluster is a [private cluster](https://cloud.google.com
 To detect KubeDB version, exec into the operator pod and run `kubedb version` command.
 
 ```bash
-$ POD_NAMESPACE=kube-system
+$ POD_NAMESPACE=kubedb
 $ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app.kubernetes.io/name=kubedb -o jsonpath={.items[0].metadata.name})
 $ kubectl exec $POD_NAME -c operator -n $POD_NAMESPACE -- /kubedb version
 

@@ -14,7 +14,7 @@ section_menu_id: setup
 
 # Install KubeDB Enterprise Edition
 
-KubeDB Enterprise edition is the open core version of [KubeDB](https://github.com/kubedb/operator). It includes all the features (clustering, etc.) of KubeDB Community Edition and extends it by automating Day 2 operations, improving security and productivity.
+KubeDB Enterprise edition is the open core version of [KubeDB](https://github.com/kubedb/operator). It includes all the features (clustering, etc.) of KubeDB Community Edition and extends it by automating Day 2 operations, improving security and productivity. `Enterprise Edition` can be used to manage KubeDB custom resources in any Kubernetes namespace.
 
 - Back and recovery - KubeDB will provide backup & recovery of databases using Stash.
 - Upgrade and Scaling - KubeDB will provide operator managed human-in-the-loop patch and minor upgrade, downgrade and scaling operations
@@ -96,7 +96,7 @@ appscode/kubedb-enterprise  {{< param "info.enterprise" >}}        {{< param "in
 # Install KubeDB Enterprise operator chart
 $ helm install kubedb appscode/kubedb \
     --version {{< param "info.version" >}} \
-    --namespace kube-system \
+    --namespace kubedb --create-namespace \
     --set-file global.license=/path/to/the/license.txt \
     --set kubedb-enterprise.enabled=true \
     --set kubedb-autoscaler.enabled=true
@@ -127,7 +127,7 @@ appscode/kubedb-enterprise  {{< param "info.enterprise" >}}        {{< param "in
 # Install KubeDB Enterprise operator chart
 $ helm template kubedb appscode/kubedb \
     --version {{< param "info.version" >}} \
-    --namespace kube-system \
+    --namespace kubedb --create-namespace \
     --set-file global.license=/path/to/the/license.txt  \
     --set kubedb-enterprise.enabled=true \
     --set kubedb-autoscaler.enabled=true \
@@ -146,9 +146,9 @@ To check if KubeDB operator pods have started, run the following command:
 ```bash
 $ watch kubectl get pods --all-namespaces -l "app.kubernetes.io/instance=kubedb"
 NAMESPACE     NAME                                        READY   STATUS    RESTARTS   AGE
-kube-system   kubedb-kubedb-autoscaler-59d8fcddb8-nqxbn   1/1     Running   0          48s
-kube-system   kubedb-kubedb-community-7f4dc7c49c-l6ddf    1/1     Running   0          48s
-kube-system   kubedb-kubedb-enterprise-56f5c9657d-wc2tl   1/1     Running   0          48s
+kubedb   kubedb-kubedb-autoscaler-59d8fcddb8-nqxbn   1/1     Running   0          48s
+kubedb   kubedb-kubedb-community-7f4dc7c49c-l6ddf    1/1     Running   0          48s
+kubedb   kubedb-kubedb-enterprise-56f5c9657d-wc2tl   1/1     Running   0          48s
 ```
 
 Once the operator pod is running, you can cancel the above command by typing `Ctrl+C`.

@@ -32,9 +32,9 @@ To uninstall KubeDB Enterprise edition, run the following command:
 In Helm 3, release names are [scoped to a namespace](https://v3.helm.sh/docs/faq/#release-names-are-now-scoped-to-the-namespace). So, provide the namespace you used to install the operator when installing.
 
 ```bash
-$ helm uninstall kubedb-enterprise --namespace kube-system
-$ helm uninstall kubedb-autoscaler --namespace kube-system
-$ helm uninstall kubedb-community  --namespace kube-system
+$ helm uninstall kubedb-enterprise --namespace kubedb
+$ helm uninstall kubedb-autoscaler --namespace kubedb
+$ helm uninstall kubedb-community  --namespace kubedb
 ```
 
 </div>
@@ -45,9 +45,9 @@ $ helm uninstall kubedb-community  --namespace kube-system
 If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and uninstall using `kubectl`.
 
 ```bash
-$ helm template kubedb-enterprise appscode/kubedb-enterprise --namespace kube-system | kubectl delete -f -
-$ helm template kubedb-autoscaler appscode/kubedb-autoscaler --namespace kube-system | kubectl delete -f -
-$ helm template kubedb-community  appscode/kubedb-community  --namespace kube-system | kubectl delete -f -
+$ helm template kubedb-enterprise appscode/kubedb-enterprise --namespace kubedb | kubectl delete -f -
+$ helm template kubedb-autoscaler appscode/kubedb-autoscaler --namespace kubedb | kubectl delete -f -
+$ helm template kubedb-community  appscode/kubedb-community  --namespace kubedb | kubectl delete -f -
 ```
 
 </div>
