@@ -94,7 +94,7 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 			// update the ES object,
 			// Add admin credential secret name to Spec.AuthSecret.
 			if username == string(api.ElasticsearchInternalUserAdmin) && es.db.Spec.AuthSecret == nil {
-				newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.db, func(in *api.Elasticsearch) *api.Elasticsearch {
+				newES, _, err := util.CreateOrPatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.db.ObjectMeta, func(in *api.Elasticsearch) *api.Elasticsearch {
 					in.Spec.AuthSecret = &core.LocalObjectReference{
 						Name: secretName,
 					}

@@ -25,7 +25,7 @@ require (
 	kmodules.xyz/objectstore-api v0.0.0-20210817052835-df749235585e // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20210716205500-e489faf01981
 	kubedb.dev/apimachinery v0.20.0
-	kubedb.dev/elasticsearch v0.20.0
+	kubedb.dev/elasticsearch v0.20.1-0.20210824193932-c9c993ec17bd
 	kubedb.dev/mariadb v0.4.0
 	kubedb.dev/memcached v0.13.0
 	kubedb.dev/mongodb v0.13.0

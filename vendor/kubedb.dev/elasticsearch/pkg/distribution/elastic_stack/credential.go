@@ -59,7 +59,7 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 	if err != nil {
 		return err
 	}
-	_, _, err = util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.db, func(in *api.Elasticsearch) *api.Elasticsearch {
+	_, _, err = util.CreateOrPatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.db.ObjectMeta, func(in *api.Elasticsearch) *api.Elasticsearch {
 		in.Spec.AuthSecret = authSecret
 		return in
 	}, metav1.PatchOptions{})

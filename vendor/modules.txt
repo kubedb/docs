@@ -1357,7 +1357,7 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.20.0
+# kubedb.dev/elasticsearch v0.20.1-0.20210824193932-c9c993ec17bd
 ## explicit
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
