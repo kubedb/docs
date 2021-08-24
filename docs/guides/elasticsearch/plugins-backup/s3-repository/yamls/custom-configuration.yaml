@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: es-custom-config
+  namespace: demo
+stringData:
+  elasticsearch.yml: |-
+    s3.client.default.endpoint: us-east-1.linodeobjects.com
