@@ -72,6 +72,10 @@ func ValidateMonitorSpec(agent *mona.AgentSpec) error {
 		return fmt.Errorf(`object 'Agent' is missing in '%+v'`, agent)
 	}
 
+	if !mona.IsKnownAgentType(agent.Agent) {
+		return fmt.Errorf("unknown monitoring agent type %s", agent.Agent)
+	}
+
 	if agent.Agent.Vendor() == mona.VendorPrometheus {
 		if agent.Prometheus != nil &&
 			agent.Prometheus.Exporter.Port >= 1024 &&

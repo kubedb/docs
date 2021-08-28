@@ -298,9 +298,6 @@ spec:
     name: postgreses
     scope: Namespaced
     version: v1alpha2
-  resourceRequirements:
-  - resources: spec.podTemplate.spec.resources
-    units: spec.replicas
   status:
     danger:
     - NotReady

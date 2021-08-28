@@ -73,7 +73,7 @@ func (c *Controller) InitStsWatcher() {
 			if sts, ok := obj.(*apps.StatefulSet); ok {
 				if c.RestrictToNamespace != core.NamespaceAll {
 					if sts.GetNamespace() != c.RestrictToNamespace {
-						klog.Info("Skipping StatefulSet %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", sts.GetNamespace(), sts.GetName(), c.RestrictToNamespace)
+						klog.Infof("Skipping StatefulSet %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", sts.GetNamespace(), sts.GetName(), c.RestrictToNamespace)
 						return
 					}
 				}
@@ -85,7 +85,7 @@ func (c *Controller) InitStsWatcher() {
 			if sts, ok := newObj.(*apps.StatefulSet); ok {
 				if c.RestrictToNamespace != core.NamespaceAll {
 					if sts.GetNamespace() != c.RestrictToNamespace {
-						klog.Info("Skipping StatefulSet %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", sts.GetNamespace(), sts.GetName(), c.RestrictToNamespace)
+						klog.Infof("Skipping StatefulSet %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", sts.GetNamespace(), sts.GetName(), c.RestrictToNamespace)
 						return
 					}
 				}
@@ -112,7 +112,7 @@ func (c *Controller) InitStsWatcher() {
 
 			if c.RestrictToNamespace != core.NamespaceAll {
 				if sts.GetNamespace() != c.RestrictToNamespace {
-					klog.Info("Skipping StatefulSet %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", sts.GetNamespace(), sts.GetName(), c.RestrictToNamespace)
+					klog.Infof("Skipping StatefulSet %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", sts.GetNamespace(), sts.GetName(), c.RestrictToNamespace)
 					return
 				}
 			}
