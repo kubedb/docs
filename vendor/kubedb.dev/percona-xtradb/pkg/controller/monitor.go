@@ -40,7 +40,7 @@ func (c *Controller) newMonitorController(db *api.PerconaXtraDB) (mona.Agent, er
 	}
 
 	if monitorSpec.Prometheus != nil {
-		return agents.New(monitorSpec.Agent, c.Client, c.promClient), nil
+		return agents.New(monitorSpec.Agent, c.Client, c.promClient)
 	}
 
 	return nil, fmt.Errorf("monitoring controller not found for PerconaXtraDB %v/%v in %v", db.Namespace, db.Name, monitorSpec)
@@ -69,7 +69,8 @@ func (c *Controller) getOldAgent(db *api.PerconaXtraDB) mona.Agent {
 		return nil
 	}
 	oldAgentType, _ := meta_util.GetStringValue(service.Annotations, mona.KeyAgent)
-	return agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
+	agent, _ := agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
+	return agent
 }
 
 func (c *Controller) setNewAgent(db *api.PerconaXtraDB) error {

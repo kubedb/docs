@@ -17,6 +17,8 @@ limitations under the License.
 package agents
 
 import (
+	"fmt"
+
 	"kmodules.xyz/monitoring-agent-api/agents/prometheus"
 	"kmodules.xyz/monitoring-agent-api/agents/prometheusbuiltin"
 	"kmodules.xyz/monitoring-agent-api/agents/prometheusoperator"
@@ -26,14 +28,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func New(at api.AgentType, k8sClient kubernetes.Interface, promClient prom.MonitoringV1Interface) api.Agent {
+func New(at api.AgentType, k8sClient kubernetes.Interface, promClient prom.MonitoringV1Interface) (api.Agent, error) {
 	switch at {
 	case api.AgentPrometheus:
-		return prometheus.New()
+		return prometheus.New(), nil
 	case api.AgentPrometheusOperator:
-		return prometheusoperator.New(at, k8sClient, promClient)
+		return prometheusoperator.New(at, k8sClient, promClient), nil
 	case api.AgentPrometheusBuiltin:
-		return prometheusbuiltin.New(k8sClient)
+		return prometheusbuiltin.New(k8sClient), nil
 	}
-	return nil
+	return nil, fmt.Errorf("unknown agent type %s", at)
 }

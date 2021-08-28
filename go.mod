@@ -9,8 +9,8 @@ require (
 	github.com/xdg/scram v1.0.3 // indirect
 	github.com/xdg/stringprep v1.0.3 // indirect
 	go.bytebuilders.dev/audit v0.0.7
-	go.bytebuilders.dev/license-verifier v0.9.2
-	go.bytebuilders.dev/license-verifier/kubernetes v0.9.2
+	go.bytebuilders.dev/license-verifier v0.9.3
+	go.bytebuilders.dev/license-verifier/kubernetes v0.9.3
 	gomodules.xyz/logs v0.0.4
 	gomodules.xyz/runtime v0.2.0
 	gomodules.xyz/x v0.0.7
@@ -20,21 +20,20 @@ require (
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20210816193105-1158390a19cd
-	kmodules.xyz/custom-resources v0.0.0-20210812193424-1631fae03a1a
-	kmodules.xyz/objectstore-api v0.0.0-20210817052835-df749235585e // indirect
-	kmodules.xyz/webhook-runtime v0.0.0-20210716205500-e489faf01981
-	kubedb.dev/apimachinery v0.20.0
-	kubedb.dev/elasticsearch v0.20.1-0.20210824193932-c9c993ec17bd
-	kubedb.dev/mariadb v0.4.0
-	kubedb.dev/memcached v0.13.0
-	kubedb.dev/mongodb v0.13.0
-	kubedb.dev/mysql v0.13.0
-	kubedb.dev/percona-xtradb v0.7.0
-	kubedb.dev/pgbouncer v0.7.0
-	kubedb.dev/postgres v0.20.0
-	kubedb.dev/proxysql v0.7.0
-	kubedb.dev/redis v0.13.0
+	kmodules.xyz/client-go v0.0.0-20210827153326-54ead9c6225f
+	kmodules.xyz/custom-resources v0.0.0-20210824055127-e5a3d2d6c161
+	kmodules.xyz/webhook-runtime v0.0.0-20210804101750-5c602fd5cf06
+	kubedb.dev/apimachinery v0.20.1-0.20210828044334-f6c8213638d7
+	kubedb.dev/elasticsearch v0.20.1-0.20210828021319-b670f85ed29d
+	kubedb.dev/mariadb v0.4.1-0.20210828021709-69d22af2c847
+	kubedb.dev/memcached v0.13.1-0.20210828022700-f3d4edb9fa8f
+	kubedb.dev/mongodb v0.13.1-0.20210828031332-f9caff04c97c
+	kubedb.dev/mysql v0.13.1-0.20210828023239-8cfc97e0a189
+	kubedb.dev/percona-xtradb v0.7.1-0.20210828030557-df6b7a929a40
+	kubedb.dev/pgbouncer v0.7.1-0.20210828031341-7efab716d0df
+	kubedb.dev/postgres v0.20.1-0.20210828030858-9ea604b896a4
+	kubedb.dev/proxysql v0.7.1-0.20210828030943-87f33dde562d
+	kubedb.dev/redis v0.13.1-0.20210828020205-0225194327cb
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d

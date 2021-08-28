@@ -57,9 +57,6 @@ spec:
     name: repositories
     scope: Namespaced
     version: v1alpha1
-  resourceRequirements:
-  - resources: spec.podTemplate.spec.resources
-    units: spec.replicas
   ui:
     editor:
       name: stashappscodecom-repository-editor

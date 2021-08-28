@@ -38,6 +38,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
+	kutilapi "kmodules.xyz/client-go/api/v1"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -105,11 +106,11 @@ func (c *Reconciler) ensureTopologyCluster(db *api.MongoDB) (kutil.VerbType, err
 
 	// before running mongos, wait for config servers and shard servers to come up
 	sts = append(sts, st)
-	if vt1 != kutil.VerbUnchanged || vt2 != kutil.VerbUnchanged {
-		for _, st := range sts {
-			if !app_util.IsStatefulSetReady(st) {
-				return "", ErrStsNotReady
-			}
+	for _, st := range sts {
+		if !kutilapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) && !app_util.IsStatefulSetReady(st) {
+			return "", ErrStsNotReady
+		}
+		if vt1 != kutil.VerbUnchanged || vt2 != kutil.VerbUnchanged {
 			c.Recorder.Eventf(
 				db,
 				core.EventTypeNormal,

@@ -40,7 +40,7 @@ func (c *Controller) newMonitorController(db *api.MariaDB) (mona.Agent, error) {
 	}
 
 	if monitorSpec.Prometheus != nil {
-		return agents.New(monitorSpec.Agent, c.Client, c.promClient), nil
+		return agents.New(monitorSpec.Agent, c.Client, c.promClient)
 	}
 
 	return nil, fmt.Errorf("monitoring controller not found for MariaDB %v/%v in %v", db.Namespace, db.Name, monitorSpec)
@@ -69,7 +69,8 @@ func (c *Controller) getOldAgent(db *api.MariaDB) mona.Agent {
 		return nil
 	}
 	oldAgentType, _ := meta_util.GetStringValue(service.Annotations, mona.KeyAgent)
-	return agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
+	agent, _ := agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
+	return agent
 }
 
 func (c *Controller) setNewAgent(db *api.MariaDB) error {

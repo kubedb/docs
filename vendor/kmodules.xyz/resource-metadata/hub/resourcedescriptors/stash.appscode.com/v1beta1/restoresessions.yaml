@@ -122,9 +122,6 @@ spec:
     name: restoresessions
     scope: Namespaced
     version: v1beta1
-  resourceRequirements:
-  - resources: spec.podTemplate.spec.resources
-    units: spec.replicas
   ui:
     editor:
       name: stashappscodecom-restoresession-editor
