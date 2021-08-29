@@ -1339,9 +1339,8 @@ kmodules.xyz/resource-metadata v0.5.8-0.20210827075808-ed8d9b48f916/go.mod h1:Fp
 kmodules.xyz/resource-metrics v0.0.1/go.mod h1:5nlhi7MPPr09m7VblezHSz9cE1fuUypOSLlo+aN5mrA=
 kmodules.xyz/webhook-runtime v0.0.0-20210804101750-5c602fd5cf06 h1:+7vdaIsvuiSXA4Yr7A3lFIXD8oC2Rrgmd6Y2bF+jCY8=
 kmodules.xyz/webhook-runtime v0.0.0-20210804101750-5c602fd5cf06/go.mod h1:MFZFmJk9IXNHwq8JlF/mukwBDbopFQj4swaB2MWHc/U=
+kubedb.dev/apimachinery v0.20.1-0.20210828012852-356e942f35d1 h1:DgmqvLRrkqqUM2Qa9iozOB6vc/KT6Lu4Q8EnwVVz0gs=
 kubedb.dev/apimachinery v0.20.1-0.20210828012852-356e942f35d1/go.mod h1:YY9jtPmQKnAHd11v79NKk2zWW5KBvIW4a3syGKWvlkU=
-kubedb.dev/apimachinery v0.20.1-0.20210828044334-f6c8213638d7 h1:yCcSd33o1TUtvElAsJulyU8QEHa2l3w2Sp7NqGa4UBU=
-kubedb.dev/apimachinery v0.20.1-0.20210828044334-f6c8213638d7/go.mod h1:YY9jtPmQKnAHd11v79NKk2zWW5KBvIW4a3syGKWvlkU=
 kubedb.dev/elasticsearch v0.20.1-0.20210828021319-b670f85ed29d h1:azSKv5xGaaTJmkRlZmVCiYQFup93cBS9vndvi2y7CbA=
 kubedb.dev/elasticsearch v0.20.1-0.20210828021319-b670f85ed29d/go.mod h1:du3u9mMT7FQdBV6XjC0WY+rMFvNtVAiJHsc5NjZ/j6M=
 kubedb.dev/mariadb v0.4.1-0.20210828021709-69d22af2c847 h1:m+eIu6LbPKTTXK86341ULYpXYmPs+ipOrl4mOYuCyPg=
