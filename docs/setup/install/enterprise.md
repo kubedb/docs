@@ -97,9 +97,9 @@ appscode/kubedb-enterprise  {{< param "info.enterprise" >}}        {{< param "in
 $ helm install kubedb appscode/kubedb \
     --version {{< param "info.version" >}} \
     --namespace kubedb --create-namespace \
-    --set-file global.license=/path/to/the/license.txt \
     --set kubedb-enterprise.enabled=true \
-    --set kubedb-autoscaler.enabled=true
+    --set kubedb-autoscaler.enabled=true \
+    --set-file global.license=/path/to/the/license.txt
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
