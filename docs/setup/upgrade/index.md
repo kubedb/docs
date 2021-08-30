@@ -39,15 +39,17 @@ Now, upgrade the KubeDB helm chart using the following command. You can find the
 $ helm upgrade kubedb appscode/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb \
+  --set kubedb-catalog.skipDeprecated=false \
   --set-file global.license=/path/to/the/license.txt
 
 # Upgrade KubeDB Enterprise operator chart
 $ helm upgrade kubedb appscode/kubedb \
     --version {{< param "info.version" >}} \
     --namespace kubedb \
-    --set-file global.license=/path/to/the/license.txt \
+    --set kubedb-catalog.skipDeprecated=false \
     --set kubedb-enterprise.enabled=true \
-    --set kubedb-autoscaler.enabled=true
+    --set kubedb-autoscaler.enabled=true \
+    --set-file global.license=/path/to/the/license.txt
 ```
 
 #### 3. Install/Upgrade Stash Operator
