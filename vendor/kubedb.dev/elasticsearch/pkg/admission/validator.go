@@ -291,7 +291,7 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 
 func validateUpdate(obj, oldObj *api.Elasticsearch) error {
 	preconditions := getPreconditionFunc(oldObj)
-	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
+	_, err := meta_util.CreateJSONMergePatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
 			return fmt.Errorf("%v.%v", err, preconditionFailedError())
@@ -323,7 +323,7 @@ func getPreconditionFunc(db *api.Elasticsearch) []mergepatch.PreconditionFunc {
 }
 
 var preconditionSpecFields = sets.NewString(
-	"spec.topology.*.prefix",
+	"spec.topology.*.suffix",
 	"spec.authSecret",
 	"spec.storageType",
 	"spec.podTemplate.spec.nodeSelector",

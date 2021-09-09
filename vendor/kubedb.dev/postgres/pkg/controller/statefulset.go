@@ -257,7 +257,7 @@ func getEnvForPostgres(db *api.Postgres, postgresVersion *catalog.PostgresVersio
 			Value: strconv.FormatUint(db.Spec.LeaderElection.MaximumLagBeforeFailover, 10),
 		},
 		{
-			Name: EnvPostgresUser,
+			Name: api.EnvPostgresUser,
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
@@ -268,7 +268,7 @@ func getEnvForPostgres(db *api.Postgres, postgresVersion *catalog.PostgresVersio
 			},
 		},
 		{
-			Name: EnvPostgresPassword,
+			Name: api.EnvPostgresPassword,
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
@@ -400,6 +400,28 @@ func getEnvForCoordinator(db *api.Postgres, postgresVersion *catalog.PostgresVer
 		{
 			Name:  "SSL_MODE",
 			Value: string(sslMode),
+		},
+		{
+			Name: api.EnvPostgresUser,
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: db.Spec.AuthSecret.Name,
+					},
+					Key: core.BasicAuthUsernameKey,
+				},
+			},
+		},
+		{
+			Name: api.EnvPostgresPassword,
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: db.Spec.AuthSecret.Name,
+					},
+					Key: core.BasicAuthPasswordKey,
+				},
+			},
 		},
 	}
 	if db.Spec.TLS != nil {
@@ -864,23 +886,18 @@ func getContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVers
 		}
 		coordinatorVolumeMounts = core_util.UpsertVolumeMount(coordinatorVolumeMounts, volumeMount)
 	}
+	// TODO: This defaulting should be removed once https://github.com/kubedb/apimachinery/pull/798 change is applied to existing CRDs
+	api.SetDefaultResourceLimits(&db.Spec.Coordinator.Resources, api.CoordinatorDefaultResources)
 	statefulSet.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 		statefulSet.Spec.Template.Spec.Containers,
 		core.Container{
-			Name:  api.PostgresCoordinatorContainerName,
-			Image: postgresVersion.Spec.Coordinator.Image,
-			Resources: core.ResourceRequirements{
-				Limits: core.ResourceList{
-					core.ResourceCPU:    resource.MustParse(".500"),
-					core.ResourceMemory: resource.MustParse("256Mi"),
-				},
-				Requests: core.ResourceList{
-					core.ResourceCPU:    resource.MustParse(".500"),
-					core.ResourceMemory: resource.MustParse("256Mi"),
-				},
-			},
-			VolumeMounts: coordinatorVolumeMounts,
-			Env:          getEnvForCoordinator(db, postgresVersion),
+			Name:            api.PostgresCoordinatorContainerName,
+			Image:           postgresVersion.Spec.Coordinator.Image,
+			ImagePullPolicy: core.PullIfNotPresent,
+			Resources:       db.Spec.Coordinator.Resources,
+			SecurityContext: db.Spec.Coordinator.SecurityContext,
+			VolumeMounts:    coordinatorVolumeMounts,
+			Env:             getEnvForCoordinator(db, postgresVersion),
 		})
 	return statefulSet.Spec.Template.Spec.Containers
 }
