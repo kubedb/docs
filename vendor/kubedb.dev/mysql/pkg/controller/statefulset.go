@@ -163,6 +163,8 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 						fmt.Sprintf("--db-name=%s", db.Name),
 						fmt.Sprintf("--db-kind=%s", api.ResourceKindMySQL),
 					}, flags.LoggerOptions.ToFlags()...),
+					Resources:       db.Spec.Coordinator.Resources,
+					SecurityContext: db.Spec.Coordinator.SecurityContext,
 				}
 
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)

@@ -33,11 +33,6 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 )
 
-const (
-	EnvPostgresUser     = "POSTGRES_USER"
-	EnvPostgresPassword = "POSTGRES_PASSWORD"
-)
-
 func (c *Reconciler) ensureAuthSecret(db *api.Postgres) error {
 	authSecret := db.Spec.AuthSecret
 	if authSecret == nil {
@@ -122,18 +117,18 @@ func (c *Reconciler) upgradeAuthSecret(db *api.Postgres) error {
 			if in.Data == nil {
 				in.Data = map[string][]byte{}
 			}
-			if _, ok := in.Data[EnvPostgresUser]; ok {
-				in.Data[core.BasicAuthUsernameKey] = in.Data[EnvPostgresUser]
+			if _, ok := in.Data[api.EnvPostgresUser]; ok {
+				in.Data[core.BasicAuthUsernameKey] = in.Data[api.EnvPostgresUser]
 			} else {
 				in.Data[core.BasicAuthUsernameKey] = []byte("postgres")
 			}
 		}
 		if _, ok := in.Data[core.BasicAuthPasswordKey]; !ok {
-			if _, ok := in.Data[EnvPostgresPassword]; ok {
+			if _, ok := in.Data[api.EnvPostgresPassword]; ok {
 				if in.Data == nil {
 					in.Data = map[string][]byte{}
 				}
-				in.Data[core.BasicAuthPasswordKey] = in.Data[EnvPostgresPassword]
+				in.Data[core.BasicAuthPasswordKey] = in.Data[api.EnvPostgresPassword]
 			}
 		}
 		return in

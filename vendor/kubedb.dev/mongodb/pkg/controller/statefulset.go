@@ -863,6 +863,8 @@ func (c *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 					Image:           mongodbVersion.Spec.ReplicationModeDetector.Image,
 					ImagePullPolicy: core.PullIfNotPresent,
 					Args:            append([]string{"run", fmt.Sprintf("--db-name=%s", db.Name), fmt.Sprintf("--db-kind=%s", api.ResourceKindMongoDB)}, flags.LoggerOptions.ToFlags()...),
+					Resources:       db.Spec.Coordinator.Resources,
+					SecurityContext: db.Spec.Coordinator.SecurityContext,
 				}
 
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)
