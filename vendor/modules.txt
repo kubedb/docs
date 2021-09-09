@@ -515,6 +515,9 @@ golang.org/x/time/rate
 gomodules.xyz/cert
 # gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f
 gomodules.xyz/clock
+# gomodules.xyz/encoding v0.0.2
+gomodules.xyz/encoding/json
+gomodules.xyz/encoding/json/types
 # gomodules.xyz/envsubst v0.1.0
 gomodules.xyz/envsubst
 gomodules.xyz/envsubst/parse
@@ -523,7 +526,7 @@ gomodules.xyz/envsubst/path
 gomodules.xyz/flags
 # gomodules.xyz/go-sh v0.1.0
 gomodules.xyz/go-sh
-# gomodules.xyz/homedir v0.0.0-20201104190528-bcd4d5d94b84
+# gomodules.xyz/homedir v0.1.0
 gomodules.xyz/homedir
 # gomodules.xyz/jsonpatch/v2 v2.2.0
 gomodules.xyz/jsonpatch/v2
@@ -553,7 +556,7 @@ gomodules.xyz/stow/s3
 gomodules.xyz/sync
 # gomodules.xyz/wait v0.0.0-20210218105358-639bd9211545
 gomodules.xyz/wait
-# gomodules.xyz/x v0.0.7
+# gomodules.xyz/x v0.0.8
 ## explicit
 gomodules.xyz/x/analytics
 gomodules.xyz/x/arrays
@@ -1238,7 +1241,7 @@ k8s.io/utils/pointer
 k8s.io/utils/trace
 # kmodules.xyz/apiversion v0.2.0
 kmodules.xyz/apiversion
-# kmodules.xyz/client-go v0.0.0-20210827153326-54ead9c6225f
+# kmodules.xyz/client-go v0.0.0-20210909114628-15cac6c74063
 ## explicit
 kmodules.xyz/client-go
 kmodules.xyz/client-go/admissionregistration
@@ -1265,7 +1268,7 @@ kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/client-go/tools/clusterid
 kmodules.xyz/client-go/tools/exec
 kmodules.xyz/client-go/tools/queue
-# kmodules.xyz/custom-resources v0.0.0-20210824055127-e5a3d2d6c161
+# kmodules.xyz/custom-resources v0.0.0-20210829135624-c63be82e13c0
 ## explicit
 kmodules.xyz/custom-resources/apis/appcatalog
 kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
@@ -1288,20 +1291,21 @@ kmodules.xyz/custom-resources/client/informers/externalversions/metrics/v1alpha1
 kmodules.xyz/custom-resources/client/listers/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/client/listers/metrics/v1alpha1
 kmodules.xyz/custom-resources/crds
-# kmodules.xyz/monitoring-agent-api v0.0.0-20210828012421-78a792a84818
+# kmodules.xyz/monitoring-agent-api v0.0.0-20210902163558-0323c6034f70
 kmodules.xyz/monitoring-agent-api/agents
 kmodules.xyz/monitoring-agent-api/agents/prometheus
 kmodules.xyz/monitoring-agent-api/agents/prometheusbuiltin
 kmodules.xyz/monitoring-agent-api/agents/prometheusoperator
 kmodules.xyz/monitoring-agent-api/api/v1
+kmodules.xyz/monitoring-agent-api/api/v1alpha1
 kmodules.xyz/monitoring-agent-api/prometheus/v1
-# kmodules.xyz/objectstore-api v0.0.0-20210817052835-df749235585e
+# kmodules.xyz/objectstore-api v0.0.0-20210829122106-d39859fc2d56
 kmodules.xyz/objectstore-api/api/v1
 # kmodules.xyz/offshoot-api v0.0.0-20210804100837-d0388be3e60d
 kmodules.xyz/offshoot-api/api/v1
 # kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027
 kmodules.xyz/prober/api/v1
-# kmodules.xyz/resource-metadata v0.5.8-0.20210827075808-ed8d9b48f916
+# kmodules.xyz/resource-metadata v0.5.8-0.20210829123359-8f6a3d706da5
 kmodules.xyz/resource-metadata/apis/meta
 kmodules.xyz/resource-metadata/apis/meta/v1alpha1
 kmodules.xyz/resource-metadata/crds
@@ -1309,11 +1313,11 @@ kmodules.xyz/resource-metadata/hub
 kmodules.xyz/resource-metadata/hub/resourceclasses
 kmodules.xyz/resource-metadata/hub/resourcedescriptors
 kmodules.xyz/resource-metadata/pkg/graph
-# kmodules.xyz/webhook-runtime v0.0.0-20210804101750-5c602fd5cf06
+# kmodules.xyz/webhook-runtime v0.0.0-20210829120758-f6ab57afa7e4
 ## explicit
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.20.1-0.20210828044334-f6c8213638d7
+# kubedb.dev/apimachinery v0.20.1-0.20210909120507-76460f615ab2
 ## explicit
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
@@ -1323,6 +1327,7 @@ kubedb.dev/apimachinery/apis/catalog/v1alpha1
 kubedb.dev/apimachinery/apis/config
 kubedb.dev/apimachinery/apis/config/v1alpha1
 kubedb.dev/apimachinery/apis/kubedb
+kubedb.dev/apimachinery/apis/kubedb/v1alpha1
 kubedb.dev/apimachinery/apis/kubedb/v1alpha2
 kubedb.dev/apimachinery/apis/ops
 kubedb.dev/apimachinery/apis/ops/v1alpha1
@@ -1331,6 +1336,7 @@ kubedb.dev/apimachinery/client/clientset/versioned/scheme
 kubedb.dev/apimachinery/client/clientset/versioned/typed/autoscaling/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/catalog/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/config/v1alpha1
+kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2
 kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util
 kubedb.dev/apimachinery/client/clientset/versioned/typed/ops/v1alpha1
@@ -1371,7 +1377,7 @@ kubedb.dev/elasticsearch/pkg/lib/heap
 kubedb.dev/elasticsearch/pkg/lib/kernel
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/mariadb v0.4.1-0.20210828021709-69d22af2c847
+# kubedb.dev/mariadb v0.4.1-0.20210909125110-ce261d96d7cc
 ## explicit
 kubedb.dev/mariadb/pkg/admission
 kubedb.dev/mariadb/pkg/controller

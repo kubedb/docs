@@ -257,7 +257,7 @@ func (c *Controller) halt(db *api.MariaDB) error {
 					Status:             core.ConditionFalse,
 					Reason:             api.DatabaseHaltedSuccessfully,
 					ObservedGeneration: db.Generation,
-					Message:            fmt.Sprintf("The MySQL: %s/%s is not accepting client requests.", db.Namespace, db.Name),
+					Message:            fmt.Sprintf("The MariaDB: %s/%s is not accepting client requests.", db.Namespace, db.Name),
 				})
 			in.Conditions = kmapi.SetCondition(in.Conditions,
 				kmapi.Condition{
@@ -265,7 +265,7 @@ func (c *Controller) halt(db *api.MariaDB) error {
 					Status:             core.ConditionFalse,
 					Reason:             api.DatabaseHaltedSuccessfully,
 					ObservedGeneration: db.Generation,
-					Message:            fmt.Sprintf("The MySQL: %s/%s is not ready.", db.Namespace, db.Name),
+					Message:            fmt.Sprintf("The MariaDB: %s/%s is not ready.", db.Namespace, db.Name),
 				})
 			return db.UID, in
 		},

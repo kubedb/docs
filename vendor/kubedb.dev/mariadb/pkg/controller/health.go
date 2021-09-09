@@ -38,7 +38,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
-	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 const (
@@ -91,58 +90,11 @@ func (c *Controller) CheckMariaDBHealthOnce() {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 			defer cancel()
 
-			// 1st insure all the pods are going to join the cluster(offline/online) to form a group replication
-			// then check if the db is going to accepting connection and in ready state.
-
-			// verifying all pods are going Online
-
-			podList, err := c.Client.CoreV1().Pods(db.Namespace).List(ctx, metav1.ListOptions{
-				LabelSelector: labels.Set(db.OffshootSelectors()).String(),
-			})
-
 			if err != nil {
 				klog.Warning("failed to list DB pod with ", err.Error())
 				return
 			}
-			for _, pod := range podList.Items {
-				if core_util.IsPodConditionTrue(pod.Status.Conditions, core_util.PodConditionTypeReady) {
-					continue
-				}
-				engine, err := c.getMariaDBClient(ctx, db, getMariaDBHostDNS(db, pod.ObjectMeta), api.MySQLDatabasePort)
 
-				if err != nil {
-					klog.Warning("failed to get db client for host ", pod.Namespace, "/", pod.Name)
-					return
-				}
-				func(engine *xorm.Engine) {
-					defer func() {
-						if engine != nil {
-							err = engine.Close()
-							if err != nil {
-								klog.Errorf("can't close the engine. error: %v,", err)
-							}
-						}
-					}()
-					isHostOnline, err := c.isHostOnline(db, engine)
-					if err != nil {
-						klog.Warning("host is not online ", err.Error())
-					}
-					// update pod status if specific host get online
-					if isHostOnline {
-						pod.Status.Conditions = core_util.SetPodCondition(pod.Status.Conditions, core.PodCondition{
-							Type:               core_util.PodConditionTypeReady,
-							Status:             core.ConditionTrue,
-							LastTransitionTime: metav1.Now(),
-							Reason:             "DBConditionTypeReadyAndServerOnline",
-							Message:            "DB is ready because of server getting Online and Running state",
-						})
-						_, err = c.Client.CoreV1().Pods(pod.Namespace).UpdateStatus(ctx, &pod, metav1.UpdateOptions{})
-						if err != nil {
-							klog.Warning("failed to update pod status with: ", err.Error())
-						}
-					}
-				}(engine)
-			}
 			// Create database client
 			port, err := c.GetPrimaryServicePort(db)
 			if err != nil {
@@ -227,12 +179,54 @@ func (c *Controller) CheckMariaDBHealthOnce() {
 				err = c.checkMariaDBClusterHealth(db, engine)
 				if err != nil {
 					klog.Errorf("MariaDB Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
+					_, err = util.UpdateMariaDBStatus(
+						ctx,
+						c.DBClient.KubedbV1alpha2(),
+						db.ObjectMeta,
+						func(in *api.MariaDBStatus) (types.UID, *api.MariaDBStatus) {
+							in.Conditions = kmapi.SetCondition(in.Conditions,
+								kmapi.Condition{
+									Type:               api.DatabaseReady,
+									Status:             core.ConditionFalse,
+									Reason:             api.ReadinessCheckFailed,
+									ObservedGeneration: db.Generation,
+									Message:            fmt.Sprintf("The MariaDB: %s/%s cluster is not healthy.", db.Namespace, db.Name),
+								})
+							return db.UID, in
+						},
+						metav1.UpdateOptions{},
+					)
+					if err != nil {
+						klog.Errorf("Failed to update status for MariaDB: %s/%s", db.Namespace, db.Name)
+						return
+					}
 					return
 				}
 			} else {
 				err = c.checkMariaDBStandaloneHealth(engine)
 				if err != nil {
 					klog.Errorf("MariaDB standalone %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
+					_, err = util.UpdateMariaDBStatus(
+						ctx,
+						c.DBClient.KubedbV1alpha2(),
+						db.ObjectMeta,
+						func(in *api.MariaDBStatus) (types.UID, *api.MariaDBStatus) {
+							in.Conditions = kmapi.SetCondition(in.Conditions,
+								kmapi.Condition{
+									Type:               api.DatabaseReady,
+									Status:             core.ConditionFalse,
+									Reason:             api.ReadinessCheckFailed,
+									ObservedGeneration: db.Generation,
+									Message:            fmt.Sprintf("The MariaDB: %s/%s standalone is not healthy.", db.Namespace, db.Name),
+								})
+							return db.UID, in
+						},
+						metav1.UpdateOptions{},
+					)
+					if err != nil {
+						klog.Errorf("Failed to update status for MariaDB: %s/%s", db.Namespace, db.Name)
+						return
+					}
 					return
 				}
 			}
@@ -385,84 +379,6 @@ func (c *Controller) checkMariaDBStandaloneHealth(engine *xorm.Engine) error {
 	return nil
 }
 
-func (c *Controller) isHostOnline(db *api.MariaDB, engine *xorm.Engine) (bool, error) {
-	// 1. ping database
-	_, err := engine.QueryString("SELECT 1;")
-	if err != nil {
-		return false, fmt.Errorf("can't ping to mariadb server, reason: %v", err)
-	}
-
-	if !db.IsCluster() {
-		return true, nil
-	}
-
-	// 2. wsrep_local_state
-	result, err := engine.QueryString("SHOW STATUS LIKE 'wsrep_local_state';")
-	if err != nil {
-		return false, err
-	}
-	if result == nil {
-		return false, fmt.Errorf("empty result on query: \"SHOW STATUS LIKE 'wsrep_local_state';\"")
-	}
-	dbStatus, ok := result[0]["Value"]
-	if !ok {
-		return false, fmt.Errorf("can not read status from QueryString map")
-	}
-	if strings.Compare(dbStatus, "2") != 0 && strings.Compare(dbStatus, "4") != 0 {
-		return false, fmt.Errorf("expected 2 or 4 in wsrep_local_state, got: %s", dbStatus)
-	}
-
-	// 3. auto-eviction - https://galeracluster.com/library/documentation/auto-eviction.html
-	result, err = engine.QueryString("SHOW STATUS LIKE 'wsrep_evs_state';")
-	if err != nil {
-		return false, err
-	}
-	if result == nil {
-		return false, fmt.Errorf("empty result on query: \"SHOW STATUS LIKE 'wsrep_evs_state';\"")
-	}
-	dbStatus, ok = result[0]["Value"]
-	if !ok {
-		return false, fmt.Errorf("can not read status from QueryString map")
-	}
-	if strings.Compare(dbStatus, "OPERATIONAL") != 0 {
-		return false, fmt.Errorf("expected OPERATIONAL in wsrep_evs_state, got: %s", dbStatus)
-	}
-
-	// 4. wsrep_connected
-	result, err = engine.QueryString("SHOW STATUS LIKE 'wsrep_connected';")
-	if err != nil {
-		return false, err
-	}
-	if result == nil {
-		return false, fmt.Errorf("empty result on query: \"SHOW STATUS LIKE 'wsrep_connected';\"")
-	}
-	dbStatus, ok = result[0]["Value"]
-	if !ok {
-		return false, fmt.Errorf("can not read status from QueryString map")
-	}
-	if strings.Compare(dbStatus, "ON") != 0 {
-		return false, fmt.Errorf("expected ON in wsrep_connected, got: %s", dbStatus)
-	}
-
-	//5. wsrep_ready
-	result, err = engine.QueryString("SHOW STATUS LIKE 'wsrep_ready';")
-	if err != nil {
-		return false, err
-	}
-	if result == nil {
-		return false, fmt.Errorf("empty result on query: \"SHOW STATUS LIKE 'wsrep_ready';\"")
-	}
-	dbStatus, ok = result[0]["Value"]
-	if !ok {
-		return false, fmt.Errorf("can not read status from QueryString map")
-	}
-	if strings.Compare(dbStatus, "ON") != 0 {
-		return false, fmt.Errorf("expected ON in wsrep_ready, got: %s", dbStatus)
-	}
-	return true, nil
-
-}
-
 func (c *Controller) getMariaDBClient(ctx context.Context, db *api.MariaDB, dns string, port int32) (*xorm.Engine, error) {
 	user, pass, err := c.getMariaDBRootCredential(ctx, db)
 	if err != nil {
@@ -520,8 +436,4 @@ func (c *Controller) getMariaDBRootCredential(ctx context.Context, db *api.Maria
 		return "", "", fmt.Errorf("DB root password is not set")
 	}
 	return string(user), string(pass), nil
-}
-
-func getMariaDBHostDNS(db *api.MariaDB, podMeta metav1.ObjectMeta) string {
-	return fmt.Sprintf("%v.%v.%v.svc", podMeta.Name, db.GoverningServiceName(), podMeta.Namespace)
 }
