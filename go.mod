@@ -13,17 +13,19 @@ require (
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.3
 	gomodules.xyz/logs v0.0.4
 	gomodules.xyz/runtime v0.2.0
-	gomodules.xyz/x v0.0.7
+	gomodules.xyz/x v0.0.8
 	k8s.io/api v0.21.1
 	k8s.io/apiextensions-apiserver v0.21.1
 	k8s.io/apimachinery v0.21.1
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20210827153326-54ead9c6225f
-	kmodules.xyz/custom-resources v0.0.0-20210824055127-e5a3d2d6c161
-	kmodules.xyz/webhook-runtime v0.0.0-20210804101750-5c602fd5cf06
-	kubedb.dev/apimachinery v0.20.1-0.20210828044334-f6c8213638d7
+	kmodules.xyz/client-go v0.0.0-20210909114628-15cac6c74063
+	kmodules.xyz/custom-resources v0.0.0-20210829135624-c63be82e13c0
+	kmodules.xyz/objectstore-api v0.0.0-20210829122106-d39859fc2d56 // indirect
+	kmodules.xyz/resource-metadata v0.5.8-0.20210829123359-8f6a3d706da5 // indirect
+	kmodules.xyz/webhook-runtime v0.0.0-20210829120758-f6ab57afa7e4
+	kubedb.dev/apimachinery v0.20.1-0.20210909120507-76460f615ab2
 	kubedb.dev/elasticsearch v0.20.1-0.20210828021319-b670f85ed29d
 	kubedb.dev/mariadb v0.4.1-0.20210828021709-69d22af2c847
 	kubedb.dev/memcached v0.13.1-0.20210828022700-f3d4edb9fa8f
