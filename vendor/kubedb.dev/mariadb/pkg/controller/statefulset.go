@@ -61,6 +61,7 @@ func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 			in.Spec.Selector = &metav1.LabelSelector{
 				MatchLabels: db.OffshootSelectors(),
 			}
+			in.Spec.PodManagementPolicy = apps.ParallelPodManagement
 			in.Spec.Template.Labels = db.OffshootSelectors()
 			in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
@@ -72,6 +73,12 @@ func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 				in.Spec.Template.Spec.Containers,
 				mariaDBContainer(db, dbVersion),
 			)
+			if db.IsCluster() {
+				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+					in.Spec.Template.Spec.Containers,
+					mariaDBCoordinatorContainer(db, dbVersion),
+				)
+			}
 			if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 					in.Spec.Template.Spec.Containers,
@@ -79,10 +86,11 @@ func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 				)
 			}
 
-			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, initScriptVolume(db)...)
+			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, dbInitScriptVolume(db)...)
 			in = upsertEnv(in, db)
 			in = upsertVolumes(in, db)
 			in = upsertSharedScriptsVolume(in)
+			in = upsertSharedRunScriptsVolume(in)
 
 			if db.Spec.ConfigSecret != nil {
 				in.Spec.Template = upsertCustomConfig(in.Spec.Template, db.Spec.ConfigSecret, db.IsCluster())
@@ -105,7 +113,6 @@ func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
 				Type: apps.OnDeleteStatefulSetStrategyType,
 			}
-			in.Spec.Template.Spec.ReadinessGates = core_util.UpsertPodReadinessGateConditionType(in.Spec.Template.Spec.ReadinessGates, core_util.PodConditionTypeReady)
 
 			return in
 		},
@@ -127,7 +134,7 @@ func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 		if err := c.CreateStatefulSetPodDisruptionBudget(stsNew); err != nil {
 			return kutil.VerbUnchanged, err
 		}
-		klog.Info("successfully created/patched PodDisruptonBudget")
+		klog.Info("successfully created/patched PodDisruptionBudget")
 	}
 
 	return vt, nil
@@ -207,9 +214,21 @@ func mariaDBContainer(db *api.MariaDB, dbVersion *v1alpha1.MariaDBVersion) core.
 		LivenessProbe:   db.Spec.PodTemplate.Spec.LivenessProbe,
 		ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
 		Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
-		VolumeMounts:    initScriptVolumeMount(db),
+		VolumeMounts:    dbInitScriptVolumeMount(db),
 	}
 }
+
+func mariaDBCoordinatorContainer(db *api.MariaDB, dbVersion *v1alpha1.MariaDBVersion) core.Container {
+	return core.Container{
+		Name:            api.MariaDBCoordinatorContainerName,
+		Image:           dbVersion.Spec.Coordinator.Image,
+		ImagePullPolicy: core.PullIfNotPresent,
+		Env:             core_util.UpsertEnvVars(db.Spec.PodTemplate.Spec.Env, getEnvsForMariaDBCoordinatorContainer(db)...),
+		Resources:       db.Spec.Coordinator.Resources,
+		SecurityContext: db.Spec.Coordinator.SecurityContext,
+	}
+}
+
 func exporterContainer(db *api.MariaDB, dbVersion *v1alpha1.MariaDBVersion) core.Container {
 	var commands []string
 	// pass config.my-cnf flag into exporter to configure TLS
@@ -269,7 +288,8 @@ func getTLSArgsForMariaDBContainer(db *api.MariaDB) []string {
 		"--ssl-key=/etc/mysql/certs/server/tls.key",
 	}
 	if db.IsCluster() {
-		args = append(args, "--wsrep-provider-options='socket.ssl_key=/etc/mysql/certs/server/tls.key;socket.ssl_cert=/etc/mysql/certs/server/tls.crt;socket.ssl_ca=/etc/mysql/certs/server/ca.crt'")
+		args = append(args, "--wsrep-provider-options")
+		args = append(args, "socket.ssl_key=/etc/mysql/certs/server/tls.key;socket.ssl_cert=/etc/mysql/certs/server/tls.crt;socket.ssl_ca=/etc/mysql/certs/server/ca.crt")
 	}
 	if db.Spec.RequireSSL {
 		args = append(args, "--require-secure-transport=ON")
@@ -281,10 +301,8 @@ func getArgsForMariaDBContainer(db *api.MariaDB) []string {
 	var args, tempArgs []string
 	if db.IsCluster() {
 		args = []string{
-			fmt.Sprintf("-service=%s", db.GoverningServiceName()),
-			"-on-start",
+			"/scripts/run.sh",
 		}
-		tempArgs = append(tempArgs, "scripts/on-start.sh")
 	}
 	// adding user provided arguments
 	tempArgs = append(tempArgs, db.Spec.PodTemplate.Spec.Args...)
@@ -305,9 +323,13 @@ func getArgsForMariaDBContainer(db *api.MariaDB) []string {
 
 func getCmdsForMariaDBContainer(db *api.MariaDB) []string {
 	var cmds []string
+	// By default, Tini only kills its immediate child process
+	// With the -g option, Tini kills the child process group , so that every process in the group gets the signal.
 	if db.IsCluster() {
 		cmds = []string{
-			"/scripts/peer-finder",
+			"/scripts/tini",
+			"-g",
+			"--",
 		}
 	}
 	return cmds
@@ -320,26 +342,69 @@ func getEnvsForMariaDBContainer(db *api.MariaDB) []core.EnvVar {
 			Name:  "CLUSTER_NAME",
 			Value: db.OffshootName(),
 		})
+		envList = append(envList, core.EnvVar{
+			Name:  "GOVERNING_SERVICE_NAME",
+			Value: db.GoverningServiceName(),
+		})
+
 	}
 	return envList
 }
 
-func initScriptVolume(db *api.MariaDB) []core.Volume {
+//getEnvsForMariaDBCoordinatorContainer
+
+func getEnvsForMariaDBCoordinatorContainer(db *api.MariaDB) []core.EnvVar {
+	var envList []core.EnvVar
+	envList = append(envList, core.EnvVar{
+		Name:  "DB_NAME",
+		Value: db.OffshootName(),
+	})
+	envList = append(envList, core.EnvVar{
+		Name: "NAMESPACE",
+		ValueFrom: &core.EnvVarSource{
+			FieldRef: &core.ObjectFieldSelector{
+				FieldPath: "metadata.namespace",
+			},
+		},
+	})
+	envList = append(envList, core.EnvVar{
+		Name:  "GOVERNING_SERVICE_NAME",
+		Value: db.GoverningServiceName(),
+	})
+
+	if db.Spec.TLS != nil {
+		envList = append(envList, core.EnvVar{
+			Name:  "SSL_ENABLED",
+			Value: "TRUE",
+		})
+		envList = append(envList, core.EnvVar{
+			Name:  "REQUIRE_SSL",
+			Value: "TRUE",
+		})
+		envList = append(envList, core.EnvVar{
+			Name:  "SERVER_SECRET_NAME",
+			Value: db.GetCertSecretName(api.MariaDBServerCert),
+		})
+	}
+	return envList
+}
+
+func dbInitScriptVolume(db *api.MariaDB) []core.Volume {
 	var volumes []core.Volume
 	if !db.IsCluster() && db.Spec.Init != nil && db.Spec.Init.Script != nil {
 		volumes = append(volumes, core.Volume{
-			Name:         "initial-script",
+			Name:         api.MariaDBInitDBVolumeName,
 			VolumeSource: db.Spec.Init.Script.VolumeSource,
 		})
 	}
 	return volumes
 }
 
-func initScriptVolumeMount(db *api.MariaDB) []core.VolumeMount {
+func dbInitScriptVolumeMount(db *api.MariaDB) []core.VolumeMount {
 	var volumeMounts []core.VolumeMount
 	if !db.IsCluster() && db.Spec.Init != nil && db.Spec.Init.Script != nil {
 		volumeMounts = append(volumeMounts, core.VolumeMount{
-			Name:      "initial-script",
+			Name:      api.MariaDBInitDBVolumeName,
 			MountPath: api.MariaDBInitDBMountPath,
 		})
 	}
@@ -393,6 +458,16 @@ func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.Statefu
 			break
 		}
 	}
+
+	// upsert data volume claim in mariadb-coordinator container
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.MariaDBCoordinatorContainerName {
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.UpsertVolumeMount(statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts, core.VolumeMount{
+				Name:      api.DefaultVolumeClaimTemplateName,
+				MountPath: api.MariaDBDataMountPath,
+			})
+		}
+	}
 	// upsert TLSConfig volumes
 	if db.Spec.TLS != nil {
 		statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
@@ -424,7 +499,7 @@ func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.Statefu
 					Name: "tls-client-config",
 					VolumeSource: core.VolumeSource{
 						Secret: &core.SecretVolumeSource{
-							SecretName: db.GetCertSecretName(api.MariaDBArchiverCert),
+							SecretName: db.GetCertSecretName(api.MariaDBClientCert),
 							Items: []core.KeyToPath{
 								{
 									Key:  "ca.crt",
@@ -509,28 +584,85 @@ func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.Statefu
 			}
 		}
 	}
-
 	return statefulSet
 }
 
 func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMariaDB {
-			configVolumeMount := core.VolumeMount{
-				Name:      "init-scripts",
-				MountPath: "/scripts",
+		if container.Name == api.MariaDBCoordinatorContainerName {
+			initScriptVolumeMount := core.VolumeMount{
+				Name:      api.MariaDBInitScriptVolumeName,
+				MountPath: api.MariaDBInitScriptVolumeMountPath,
 			}
 			volumeMounts := container.VolumeMounts
-			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, initScriptVolumeMount)
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+		}
+		if container.Name == api.ResourceSingularMariaDB {
+			initScriptVolumeMount := core.VolumeMount{
+				Name:      api.MariaDBInitScriptVolumeName,
+				MountPath: api.MariaDBInitScriptVolumeMountPath,
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, initScriptVolumeMount)
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 		}
 	}
 	for i, initContainer := range statefulSet.Spec.Template.Spec.InitContainers {
 		if initContainer.Name == "mariadb-init" {
+			initScriptVolumeMount := core.VolumeMount{
+				Name:      api.MariaDBInitScriptVolumeName,
+				MountPath: api.MariaDBInitScriptVolumeMountPath,
+			}
+			volumeMounts := initContainer.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, initScriptVolumeMount)
+			statefulSet.Spec.Template.Spec.InitContainers[i].VolumeMounts = volumeMounts
+
+		}
+	}
+
+	initScriptVolume := core.Volume{
+		Name: api.MariaDBInitScriptVolumeName,
+		VolumeSource: core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
+		},
+	}
+
+	volumes := statefulSet.Spec.Template.Spec.Volumes
+	volumes = core_util.UpsertVolume(volumes, initScriptVolume)
+	statefulSet.Spec.Template.Spec.Volumes = volumes
+	return statefulSet
+}
+
+func upsertSharedRunScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularMariaDB {
 			configVolumeMount := core.VolumeMount{
-				Name:      "init-scripts",
-				MountPath: "/scripts",
+				Name:      api.MariaDBRunScriptVolumeName,
+				MountPath: api.MariaDBRunScriptVolumeMountPath,
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+		}
+		if container.Name == api.MariaDBCoordinatorContainerName {
+			configVolumeMount := core.VolumeMount{
+				Name:      api.MariaDBRunScriptVolumeName,
+				MountPath: api.MariaDBRunScriptVolumeMountPath,
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+		}
+
+	}
+	for i, initContainer := range statefulSet.Spec.Template.Spec.InitContainers {
+		if initContainer.Name == api.MariaDBInitContainerName {
+			configVolumeMount := core.VolumeMount{
+				Name:      api.MariaDBRunScriptVolumeName,
+				MountPath: api.MariaDBRunScriptVolumeMountPath,
 			}
 			volumeMounts := initContainer.VolumeMounts
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
@@ -539,15 +671,15 @@ func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet 
 		}
 	}
 
-	configVolume := core.Volume{
-		Name: "init-scripts",
+	runScriptVolume := core.Volume{
+		Name: api.MariaDBRunScriptVolumeName,
 		VolumeSource: core.VolumeSource{
 			EmptyDir: &core.EmptyDirVolumeSource{},
 		},
 	}
 
 	volumes := statefulSet.Spec.Template.Spec.Volumes
-	volumes = core_util.UpsertVolume(volumes, configVolume)
+	volumes = core_util.UpsertVolume(volumes, runScriptVolume)
 	statefulSet.Spec.Template.Spec.Volumes = volumes
 	return statefulSet
 }

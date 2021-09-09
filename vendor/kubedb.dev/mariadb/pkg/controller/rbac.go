@@ -21,6 +21,7 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	policy_v1beta1 "k8s.io/api/policy/v1beta1"
 	rbac "k8s.io/api/rbac/v1"
@@ -75,6 +76,30 @@ func (c *Controller) ensureRole(db *api.MariaDB, name string, pspName string) er
 				}
 				in.Rules = append(in.Rules, pspRule)
 			}
+			resourceRule := []rbac.PolicyRule{
+				{
+					APIGroups: []string{core.GroupName},
+					Resources: []string{"pods"},
+					Verbs:     []string{"*"},
+				},
+				{
+					APIGroups:     []string{apps.GroupName},
+					Resources:     []string{"statefulsets"},
+					Verbs:         []string{"get"},
+					ResourceNames: []string{db.OffshootName()},
+				},
+				{
+					APIGroups: []string{core.GroupName},
+					Resources: []string{"secrets"},
+					Verbs:     []string{"get"},
+				},
+				{
+					APIGroups: []string{core.GroupName},
+					Resources: []string{"pods/exec"},
+					Verbs:     []string{"create"},
+				},
+			}
+			in.Rules = append(in.Rules, resourceRule...)
 			return in
 		},
 		metav1.PatchOptions{},

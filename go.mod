@@ -22,12 +22,10 @@ require (
 	k8s.io/klog/v2 v2.8.0
 	kmodules.xyz/client-go v0.0.0-20210909114628-15cac6c74063
 	kmodules.xyz/custom-resources v0.0.0-20210829135624-c63be82e13c0
-	kmodules.xyz/objectstore-api v0.0.0-20210829122106-d39859fc2d56 // indirect
-	kmodules.xyz/resource-metadata v0.5.8-0.20210829123359-8f6a3d706da5 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20210829120758-f6ab57afa7e4
 	kubedb.dev/apimachinery v0.20.1-0.20210909120507-76460f615ab2
 	kubedb.dev/elasticsearch v0.20.1-0.20210828021319-b670f85ed29d
-	kubedb.dev/mariadb v0.4.1-0.20210828021709-69d22af2c847
+	kubedb.dev/mariadb v0.4.1-0.20210909125110-ce261d96d7cc
 	kubedb.dev/memcached v0.13.1-0.20210828022700-f3d4edb9fa8f
 	kubedb.dev/mongodb v0.13.1-0.20210828031332-f9caff04c97c
 	kubedb.dev/mysql v0.13.1-0.20210828023239-8cfc97e0a189

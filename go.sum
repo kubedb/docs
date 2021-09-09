@@ -1354,8 +1354,8 @@ kubedb.dev/apimachinery v0.20.1-0.20210909120507-76460f615ab2 h1:diMKgSjSik+ingX
 kubedb.dev/apimachinery v0.20.1-0.20210909120507-76460f615ab2/go.mod h1:FbzIcqyzHhTEZIlp2ndAhjr2qw/UcEvZEJKU1xicWPc=
 kubedb.dev/elasticsearch v0.20.1-0.20210828021319-b670f85ed29d h1:azSKv5xGaaTJmkRlZmVCiYQFup93cBS9vndvi2y7CbA=
 kubedb.dev/elasticsearch v0.20.1-0.20210828021319-b670f85ed29d/go.mod h1:du3u9mMT7FQdBV6XjC0WY+rMFvNtVAiJHsc5NjZ/j6M=
-kubedb.dev/mariadb v0.4.1-0.20210828021709-69d22af2c847 h1:m+eIu6LbPKTTXK86341ULYpXYmPs+ipOrl4mOYuCyPg=
-kubedb.dev/mariadb v0.4.1-0.20210828021709-69d22af2c847/go.mod h1:WkHZbCJbnIoAiBG9iXhrSvm8KJGWForCcYGUESShshM=
+kubedb.dev/mariadb v0.4.1-0.20210909125110-ce261d96d7cc h1:jxpZVo8gffxKnnAzdO+tqOvvPqywodBxBXgfF6Wu+f8=
+kubedb.dev/mariadb v0.4.1-0.20210909125110-ce261d96d7cc/go.mod h1:QGrsVWjrTOAGi4l+/W2LWm7cQawDB0p2G8y8c5jJ3lg=
 kubedb.dev/memcached v0.13.1-0.20210828022700-f3d4edb9fa8f h1:Gwp//1vx6w6O9ljHcdMU4WObIoaKAkSxzyHdcyOvEOM=
 kubedb.dev/memcached v0.13.1-0.20210828022700-f3d4edb9fa8f/go.mod h1:tTjEfQrvvatIxewm3Oo62jeQt8LiOB2nuj/qCTVEBYU=
 kubedb.dev/mongodb v0.13.1-0.20210828031332-f9caff04c97c h1:aQ5pmBnyK9F3jbvFYB0gnUS4FwqTeJM94bsaTG10QXI=

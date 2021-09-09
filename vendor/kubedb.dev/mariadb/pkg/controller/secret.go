@@ -59,6 +59,7 @@ func (c *Reconciler) ensureAuthSecret(db *api.MariaDB) error {
 func (c *Reconciler) createAuthSecret(db *api.MariaDB) (*core.LocalObjectReference, error) {
 	authSecretName := db.AuthSecretName()
 
+	// custom-auth secret
 	sc, err := c.checkSecret(authSecretName, db)
 	if err != nil {
 		return nil, err
