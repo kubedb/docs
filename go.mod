@@ -25,7 +25,7 @@ require (
 	kmodules.xyz/webhook-runtime v0.0.0-20210829120758-f6ab57afa7e4
 	kubedb.dev/apimachinery v0.21.0
 	kubedb.dev/elasticsearch v0.21.0
-	kubedb.dev/mariadb v0.5.0
+	kubedb.dev/mariadb v0.5.1-0.20210913063041-1dc9b573706d
 	kubedb.dev/memcached v0.14.0
 	kubedb.dev/mongodb v0.14.0
 	kubedb.dev/mysql v0.14.0

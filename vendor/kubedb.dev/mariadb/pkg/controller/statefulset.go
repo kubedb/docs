@@ -223,6 +223,7 @@ func mariaDBCoordinatorContainer(db *api.MariaDB, dbVersion *v1alpha1.MariaDBVer
 		Name:            api.MariaDBCoordinatorContainerName,
 		Image:           dbVersion.Spec.Coordinator.Image,
 		ImagePullPolicy: core.PullIfNotPresent,
+		Args:            []string{"run"},
 		Env:             core_util.UpsertEnvVars(db.Spec.PodTemplate.Spec.Env, getEnvsForMariaDBCoordinatorContainer(db)...),
 		Resources:       db.Spec.Coordinator.Resources,
 		SecurityContext: db.Spec.Coordinator.SecurityContext,
