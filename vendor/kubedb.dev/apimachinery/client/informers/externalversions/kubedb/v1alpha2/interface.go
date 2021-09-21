@@ -46,6 +46,8 @@ type Interface interface {
 	ProxySQLs() ProxySQLInformer
 	// Redises returns a RedisInformer.
 	Redises() RedisInformer
+	// RedisSentinels returns a RedisSentinelInformer.
+	RedisSentinels() RedisSentinelInformer
 }
 
 type version struct {
@@ -112,4 +114,9 @@ func (v *version) ProxySQLs() ProxySQLInformer {
 // Redises returns a RedisInformer.
 func (v *version) Redises() RedisInformer {
 	return &redisInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// RedisSentinels returns a RedisSentinelInformer.
+func (v *version) RedisSentinels() RedisSentinelInformer {
+	return &redisSentinelInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

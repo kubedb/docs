@@ -136,6 +136,17 @@ func (c *Controller) extractDatabaseInfo(sts *apps.StatefulSet) (*databaseInfo, 
 			return nil, err
 		}
 
+	case api.ResourceKindRedisSentinel:
+		dbInfo.opts.GVR.Resource = api.ResourcePluralRedisSentinel
+		rd, err := c.DBClient.KubedbV1alpha2().RedisSentinels(dbInfo.opts.Namespace).Get(context.TODO(), dbInfo.opts.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		dbInfo.replicasReady, dbInfo.msg, err = rd.ReplicasAreReady(c.StsLister)
+		if err != nil {
+			return nil, err
+		}
+
 	case api.ResourceKindMemcached:
 		dbInfo.opts.GVR.Resource = api.ResourcePluralMemcached
 		mc, err := c.DBClient.KubedbV1alpha2().Memcacheds(dbInfo.opts.Namespace).Get(context.TODO(), dbInfo.opts.Name, metav1.GetOptions{})

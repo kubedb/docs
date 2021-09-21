@@ -20,10 +20,10 @@ require (
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20210909114628-15cac6c74063
+	kmodules.xyz/client-go v0.0.0-20210921150324-f005c6dfcb32
 	kmodules.xyz/custom-resources v0.0.0-20210829135624-c63be82e13c0
 	kmodules.xyz/webhook-runtime v0.0.0-20210829120758-f6ab57afa7e4
-	kubedb.dev/apimachinery v0.21.0
+	kubedb.dev/apimachinery v0.21.1-0.20210915153024-84659c4a8fca
 	kubedb.dev/elasticsearch v0.21.0
 	kubedb.dev/mariadb v0.5.1-0.20210913063041-1dc9b573706d
 	kubedb.dev/memcached v0.14.0
