@@ -1,6 +1,7 @@
 package pool
 
 import (
+	"context"
 	"fmt"
 	"sync/atomic"
 )
@@ -11,28 +12,16 @@ const (
 	stateClosed  = 2
 )
 
-type BadConnError struct {
-	wrapped error
-}
-
-var _ error = (*BadConnError)(nil)
-
-func (e BadConnError) Error() string {
-	return "pg: Conn is in a bad state"
-}
-
-func (e BadConnError) Unwrap() error {
-	return e.wrapped
-}
+var ErrBadConn = fmt.Errorf("pg: Conn is in a bad state")
 
 type SingleConnPool struct {
-	pool  Pooler
-	level int32 // atomic
+	pool Pooler
 
 	state uint32 // atomic
 	ch    chan *Conn
 
-	_badConnError atomic.Value
+	level       int32  // atomic
+	_hasBadConn uint32 // atomic
 }
 
 var _ Pooler = (*SingleConnPool)(nil)
@@ -57,30 +46,30 @@ func (p *SingleConnPool) SetConn(cn *Conn) {
 	}
 }
 
-func (p *SingleConnPool) NewConn() (*Conn, error) {
-	return p.pool.NewConn()
+func (p *SingleConnPool) NewConn(c context.Context) (*Conn, error) {
+	return p.pool.NewConn(c)
 }
 
 func (p *SingleConnPool) CloseConn(cn *Conn) error {
 	return p.pool.CloseConn(cn)
 }
 
-func (p *SingleConnPool) Get() (*Conn, error) {
+func (p *SingleConnPool) Get(c context.Context) (*Conn, error) {
 	// In worst case this races with Close which is not a very common operation.
 	for i := 0; i < 1000; i++ {
 		switch atomic.LoadUint32(&p.state) {
 		case stateDefault:
-			cn, err := p.pool.Get()
+			cn, err := p.pool.Get(c)
 			if err != nil {
 				return nil, err
 			}
 			if atomic.CompareAndSwapUint32(&p.state, stateDefault, stateInited) {
 				return cn, nil
 			}
-			p.pool.Remove(cn, ErrClosed)
+			p.pool.Remove(cn)
 		case stateInited:
-			if err := p.badConnError(); err != nil {
-				return nil, err
+			if p.hasBadConn() {
+				return nil, ErrBadConn
 			}
 			cn, ok := <-p.ch
 			if !ok {
@@ -106,20 +95,20 @@ func (p *SingleConnPool) Put(cn *Conn) {
 }
 
 func (p *SingleConnPool) freeConn(cn *Conn) {
-	if err := p.badConnError(); err != nil {
-		p.pool.Remove(cn, err)
+	if p.hasBadConn() {
+		p.pool.Remove(cn)
 	} else {
 		p.pool.Put(cn)
 	}
 }
 
-func (p *SingleConnPool) Remove(cn *Conn, reason error) {
+func (p *SingleConnPool) Remove(cn *Conn) {
 	defer func() {
 		if recover() != nil {
-			p.pool.Remove(cn, ErrClosed)
+			p.pool.Remove(cn)
 		}
 	}()
-	p._badConnError.Store(BadConnError{wrapped: reason})
+	atomic.StoreUint32(&p._hasBadConn, 1)
 	p.ch <- cn
 }
 
@@ -169,7 +158,7 @@ func (p *SingleConnPool) Close() error {
 }
 
 func (p *SingleConnPool) Reset() error {
-	if p.badConnError() == nil {
+	if !atomic.CompareAndSwapUint32(&p._hasBadConn, 1, 0) {
 		return nil
 	}
 
@@ -178,8 +167,7 @@ func (p *SingleConnPool) Reset() error {
 		if !ok {
 			return ErrClosed
 		}
-		p.pool.Remove(cn, ErrClosed)
-		p._badConnError.Store(BadConnError{wrapped: nil})
+		p.pool.Remove(cn)
 	default:
 		return fmt.Errorf("pg: SingleConnPool does not have a Conn")
 	}
@@ -192,12 +180,6 @@ func (p *SingleConnPool) Reset() error {
 	return nil
 }
 
-func (p *SingleConnPool) badConnError() error {
-	if v := p._badConnError.Load(); v != nil {
-		err := v.(BadConnError)
-		if err.wrapped != nil {
-			return err
-		}
-	}
-	return nil
+func (p *SingleConnPool) hasBadConn() bool {
+	return atomic.LoadUint32(&p._hasBadConn) == 1
 }

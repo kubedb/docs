@@ -19,7 +19,6 @@ package admission
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
@@ -27,9 +26,7 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
-	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
-	"gomodules.xyz/sets"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,7 +39,7 @@ import (
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
-type RedisValidator struct {
+type RedisSentinelValidator struct {
 	ClusterTopology *core_util.Topology
 
 	client      kubernetes.Interface
@@ -51,22 +48,17 @@ type RedisValidator struct {
 	initialized bool
 }
 
-var _ hookapi.AdmissionHook = &RedisValidator{}
+var _ hookapi.AdmissionHook = &RedisSentinelValidator{}
 
-var forbiddenEnvVars = []string{
-	// No forbidden envs yet
-}
-
-func (a *RedisValidator) Resource() (plural schema.GroupVersionResource, singular string) {
+func (a *RedisSentinelValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
 			Group:    kubedb.ValidatorGroupName,
 			Version:  "v1alpha1",
-			Resource: api.ResourcePluralRedis,
+			Resource: api.ResourcePluralRedisSentinel,
 		},
-		api.ResourceSingularRedis
+		api.ResourceSingularRedisSentinel
 }
-
-func (a *RedisValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
+func (a *RedisSentinelValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
 	a.lock.Lock()
 	defer a.lock.Unlock()
 
@@ -82,13 +74,13 @@ func (a *RedisValidator) Initialize(config *rest.Config, stopCh <-chan struct{})
 	return err
 }
 
-func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
+func (a *RedisSentinelValidator) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
 	status := &admission.AdmissionResponse{}
 
 	if (req.Operation != admission.Create && req.Operation != admission.Update && req.Operation != admission.Delete) ||
 		len(req.SubResource) != 0 ||
 		req.Kind.Group != api.SchemeGroupVersion.Group ||
-		req.Kind.Kind != api.ResourceKindRedis {
+		req.Kind.Kind != api.ResourceKindRedisSentinel {
 		status.Allowed = true
 		return status
 	}
@@ -103,7 +95,7 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha2().Redises(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha2().RedisSentinels(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
@@ -121,15 +113,15 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			if err != nil {
 				return hookapi.StatusBadRequest(err)
 			}
-			redis := obj.(*api.Redis).DeepCopy()
-			oldRedis := oldObject.(*api.Redis).DeepCopy()
-			oldRedis.SetDefaults(a.ClusterTopology)
-			if err := validateUpdate(redis, oldRedis); err != nil {
+			sentinel := obj.(*api.RedisSentinel).DeepCopy()
+			oldSentinel := oldObject.(*api.RedisSentinel).DeepCopy()
+			oldSentinel.SetDefaults(a.ClusterTopology)
+			if err := validateSentinelUpdate(sentinel, oldSentinel); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
 		// validate database specs
-		if err = ValidateRedis(a.client, a.extClient, obj.(*api.Redis), false); err != nil {
+		if err = ValidateRedisSentinel(a.client, a.extClient, obj.(*api.RedisSentinel), false); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -137,71 +129,54 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 	return status
 }
 
-// ValidateRedis checks if the object satisfies all the requirements.
+// ValidateRedisSentinel checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *api.Redis, strictValidation bool) error {
-	if redis.Spec.Version == "" {
+func ValidateRedisSentinel(client kubernetes.Interface, extClient cs.Interface, sentinel *api.RedisSentinel, strictValidation bool) error {
+	if sentinel.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(sentinel.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
-	if redis.Spec.Mode != api.RedisModeStandalone && redis.Spec.Mode != api.RedisModeCluster && redis.Spec.Mode != api.RedisModeSentinel {
-		return fmt.Errorf(`spec.mode "%v" invalid. Value must be one of "%v", "%v" or "%v"`,
-			redis.Spec.Mode, api.RedisModeStandalone, api.RedisModeCluster, api.RedisModeSentinel)
-	}
-
-	if redis.Spec.Mode == api.RedisModeStandalone && *redis.Spec.Replicas != 1 {
-		return fmt.Errorf(`spec.replicas "%v" invalid for standalone mode. Value must be one`, redis.Spec.Replicas)
-	}
-
-	if redis.Spec.Mode == api.RedisModeCluster && *redis.Spec.Cluster.Master < 3 {
-		return fmt.Errorf(`spec.cluster.master "%v" invalid. Value must be >= 3`, redis.Spec.Cluster.Master)
-	}
-
-	if redis.Spec.Mode == api.RedisModeCluster && *redis.Spec.Cluster.Replicas == 0 {
-		return fmt.Errorf(`spec.cluster.replicas "%v" invalid. Value must be > 0`, redis.Spec.Cluster.Replicas)
-	}
-
-	if redis.Spec.StorageType == "" {
+	if sentinel.Spec.StorageType == "" {
 		return fmt.Errorf(`'spec.storageType' is missing`)
 	}
-	if redis.Spec.StorageType != api.StorageTypeDurable && redis.Spec.StorageType != api.StorageTypeEphemeral {
-		return fmt.Errorf(`'spec.storageType' %s is invalid`, redis.Spec.StorageType)
+	if sentinel.Spec.StorageType != api.StorageTypeDurable && sentinel.Spec.StorageType != api.StorageTypeEphemeral {
+		return fmt.Errorf(`'spec.storageType' %s is invalid`, sentinel.Spec.StorageType)
 	}
-	if err := amv.ValidateStorage(client, redis.Spec.StorageType, redis.Spec.Storage); err != nil {
+	if err := amv.ValidateStorage(client, sentinel.Spec.StorageType, sentinel.Spec.Storage); err != nil {
 		return err
 	}
 
 	if strictValidation {
 		// Check if redisVersion is deprecated.
 		// If deprecated, return error
-		redisVersion, err := extClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
+		redisVersion, err := extClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(sentinel.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 		if redisVersion.Spec.Deprecated {
-			return fmt.Errorf("redis %s/%s is using deprecated version %v. Skipped processing",
-				redis.Namespace, redis.Name, redisVersion.Name)
+			return fmt.Errorf("redis Sentinel %s/%s is using deprecated version %v. Skipped processing",
+				sentinel.Namespace, sentinel.Name, redisVersion.Name)
 		}
 
 		if err := redisVersion.ValidateSpecs(); err != nil {
-			return fmt.Errorf("redis %s/%s is using invalid redisVersion %v. Skipped processing. reason: %v", redis.Namespace,
-				redis.Name, redisVersion.Name, err)
+			return fmt.Errorf("redis Sentinel %s/%s is using invalid redisVersion %v. Skipped processing. reason: %v", sentinel.Namespace,
+				sentinel.Name, redisVersion.Name, err)
 		}
 	}
 
-	if redis.Spec.TerminationPolicy == "" {
+	if sentinel.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
-	if redis.Spec.StorageType == api.StorageTypeEphemeral && redis.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+	if sentinel.Spec.StorageType == api.StorageTypeEphemeral && sentinel.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		return fmt.Errorf(`'spec.terminationPolicy: Halt' can not be used for 'Ephemeral' storage`)
 	}
 
-	if redis.Spec.TLS != nil {
-		redisVersion, err := extClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
+	if sentinel.Spec.TLS != nil {
+		redisVersion, err := extClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(sentinel.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
@@ -210,11 +185,11 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 		}
 	}
 
-	if err := amv.ValidateEnvVar(redis.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindRedis); err != nil {
+	if err := amv.ValidateEnvVar(sentinel.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindRedis); err != nil {
 		return err
 	}
 
-	monitorSpec := redis.Spec.Monitor
+	monitorSpec := sentinel.Spec.Monitor
 	if monitorSpec != nil {
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err
@@ -224,8 +199,8 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 	return nil
 }
 
-func validateUpdate(obj, oldObj *api.Redis) error {
-	preconditions := getPreconditionFunc(oldObj)
+func validateSentinelUpdate(obj, oldObj *api.RedisSentinel) error {
+	preconditions := getSentinelPreconditionFunc()
 	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
@@ -236,17 +211,12 @@ func validateUpdate(obj, oldObj *api.Redis) error {
 	return nil
 }
 
-func getPreconditionFunc(rd *api.Redis) []mergepatch.PreconditionFunc {
+func getSentinelPreconditionFunc() []mergepatch.PreconditionFunc {
 	preconditions := []mergepatch.PreconditionFunc{
 		mergepatch.RequireKeyUnchanged("apiVersion"),
 		mergepatch.RequireKeyUnchanged("kind"),
 		mergepatch.RequireMetadataKeyUnchanged("name"),
 		mergepatch.RequireMetadataKeyUnchanged("namespace"),
-	}
-
-	// Once the database has been initialized, don't let update the "spec.init" section
-	if rd.Spec.Init != nil && rd.Spec.Init.Initialized {
-		preconditionSpecFields.Insert("spec.init")
 	}
 
 	for _, field := range preconditionSpecFields.List() {
@@ -255,31 +225,4 @@ func getPreconditionFunc(rd *api.Redis) []mergepatch.PreconditionFunc {
 		)
 	}
 	return preconditions
-}
-
-var preconditionSpecFields = sets.NewString(
-	"spec.storageType",
-	"spec.storage",
-	"spec.podTemplate.spec.nodeSelector",
-)
-
-func preconditionFailedError() error {
-	str := preconditionSpecFields.List()
-	strList := strings.Join(str, "\n\t")
-	return fmt.Errorf(strings.Join([]string{`At least one of the following was changed:
-	apiVersion
-	kind
-	name
-	namespace`, strList}, "\n\t"))
-}
-
-func checkTLSSupport(v string) error {
-	rdVersion, err := semver.NewVersion(v)
-	if err != nil {
-		return err
-	}
-	if rdVersion.Major() < 6 {
-		return fmt.Errorf("ssl support is available only for v6 or later versions")
-	}
-	return nil
 }

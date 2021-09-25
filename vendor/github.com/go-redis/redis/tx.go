@@ -1,6 +1,8 @@
 package redis
 
 import (
+	"context"
+
 	"github.com/go-redis/redis/internal/pool"
 	"github.com/go-redis/redis/internal/proto"
 )
@@ -13,20 +15,49 @@ const TxFailedErr = proto.RedisError("redis: transaction failed")
 // by multiple goroutines, because Exec resets list of watched keys.
 // If you don't need WATCH it is better to use Pipeline.
 type Tx struct {
+	cmdable
 	statefulCmdable
 	baseClient
+
+	ctx context.Context
 }
 
-func (c *Client) newTx() *Tx {
+func (c *Client) newTx(ctx context.Context) *Tx {
 	tx := Tx{
 		baseClient: baseClient{
 			opt:      c.opt,
 			connPool: pool.NewStickyConnPool(c.connPool.(*pool.ConnPool), true),
 		},
+		ctx: ctx,
 	}
-	tx.baseClient.init()
-	tx.statefulCmdable.setProcessor(tx.Process)
+	tx.init()
 	return &tx
+}
+
+func (c *Tx) init() {
+	c.cmdable = c.Process
+	c.statefulCmdable = c.Process
+}
+
+func (c *Tx) Context() context.Context {
+	return c.ctx
+}
+
+func (c *Tx) WithContext(ctx context.Context) *Tx {
+	if ctx == nil {
+		panic("nil context")
+	}
+	clone := *c
+	clone.ctx = ctx
+	return &clone
+}
+
+func (c *Tx) Process(cmd Cmder) error {
+	return c.ProcessContext(c.ctx, cmd)
+}
+
+func (c *Tx) ProcessContext(ctx context.Context, cmd Cmder) error {
+	return c.baseClient.process(ctx, cmd)
 }
 
 // Watch prepares a transaction and marks the keys to be watched
@@ -34,7 +65,11 @@ func (c *Client) newTx() *Tx {
 //
 // The transaction is automatically closed when fn exits.
 func (c *Client) Watch(fn func(*Tx) error, keys ...string) error {
-	tx := c.newTx()
+	return c.WatchContext(c.ctx, fn, keys...)
+}
+
+func (c *Client) WatchContext(ctx context.Context, fn func(*Tx) error, keys ...string) error {
+	tx := c.newTx(ctx)
 	if len(keys) > 0 {
 		if err := tx.Watch(keys...).Err(); err != nil {
 			_ = tx.Close()
@@ -62,7 +97,7 @@ func (c *Tx) Watch(keys ...string) *StatusCmd {
 		args[1+i] = key
 	}
 	cmd := NewStatusCmd(args...)
-	c.Process(cmd)
+	_ = c.Process(cmd)
 	return cmd
 }
 
@@ -74,16 +109,17 @@ func (c *Tx) Unwatch(keys ...string) *StatusCmd {
 		args[1+i] = key
 	}
 	cmd := NewStatusCmd(args...)
-	c.Process(cmd)
+	_ = c.Process(cmd)
 	return cmd
 }
 
 // Pipeline creates a new pipeline. It is more convenient to use Pipelined.
 func (c *Tx) Pipeline() Pipeliner {
 	pipe := Pipeline{
+		ctx:  c.ctx,
 		exec: c.processTxPipeline,
 	}
-	pipe.statefulCmdable.setProcessor(pipe.Process)
+	pipe.init()
 	return &pipe
 }
 

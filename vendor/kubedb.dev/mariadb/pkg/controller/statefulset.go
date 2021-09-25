@@ -108,7 +108,9 @@ func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 			in.Spec.Template.Spec.HostNetwork = db.Spec.PodTemplate.Spec.HostNetwork
 			in.Spec.Template.Spec.HostPID = db.Spec.PodTemplate.Spec.HostPID
 			in.Spec.Template.Spec.HostIPC = db.Spec.PodTemplate.Spec.HostIPC
-			in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
+			if in.Spec.Template.Spec.SecurityContext == nil {
+				in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
+			}
 			in.Spec.Template.Spec.ServiceAccountName = db.OffshootName()
 			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
 				Type: apps.OnDeleteStatefulSetStrategyType,

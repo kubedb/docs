@@ -22,9 +22,11 @@ import (
 	"strings"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -60,11 +62,14 @@ maxclient 500										.
 var redisConfig = `dir /data
 appendonly yes
 protected-mode no
+port 6379
 `
 var clusterConfig = `cluster-enabled yes
 cluster-config-file /data/nodes.conf
 cluster-node-timeout 5000
 cluster-migration-barrier 1
+`
+var redisSentinelConfig = `replica-announce-port 6379
 `
 
 func (c *Controller) ensureRedisConfig(db *api.Redis) error {
@@ -76,7 +81,7 @@ func (c *Controller) ensureRedisConfig(db *api.Redis) error {
 		}
 
 		// create secret for redis
-		configSecret, vt, err := CreateSecret(c.Client, db, db.ConfigSecretName(), "")
+		configSecret, vt, err := CreateConfigSecret(c.Client, c.DBClient, db, db.ConfigSecretName(), "")
 		if err != nil {
 			return errors.Wrap(err, "Failed to CreateOrPatch secret")
 		} else if vt != kutil.VerbUnchanged {
@@ -110,7 +115,7 @@ func (c *Controller) ensureRedisConfig(db *api.Redis) error {
 		}
 
 		// create secret for redis
-		_, _, err = CreateSecret(c.Client, db, db.Spec.ConfigSecret.Name, data)
+		_, _, err = CreateConfigSecret(c.Client, c.DBClient, db, db.Spec.ConfigSecret.Name, data)
 		if err != nil {
 			return errors.Wrap(err, "Failed to CreateOrPatch secret")
 		}
@@ -152,10 +157,16 @@ func (c *Controller) checkUsedSecret(db *api.Redis) (string, error) {
 	return "", nil
 }
 
-func CreateSecret(client kubernetes.Interface, db *api.Redis, name, data string) (*core.Secret, kutil.VerbType, error) {
+func CreateConfigSecret(kubeClient kubernetes.Interface, dbClient cs.Interface, db *api.Redis, name, data string) (*core.Secret, kutil.VerbType, error) {
 	dataArray := []string{redisConfig}
 	if db.Spec.Mode == api.RedisModeCluster {
 		dataArray = append(dataArray, clusterConfig)
+	} else if db.Spec.Mode == api.RedisModeSentinel {
+		dataArray = append(dataArray, redisSentinelConfig)
+	}
+	data, err := AddAuthParamsInConfigSecret(kubeClient, dbClient, db, data)
+	if err != nil {
+		return nil, kutil.VerbUnchanged, err
 	}
 	dataArray = append(dataArray, data)
 	finalConfig := strings.Join(dataArray, "\n")
@@ -167,7 +178,7 @@ func CreateSecret(client kubernetes.Interface, db *api.Redis, name, data string)
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
-	return core_util.CreateOrPatchSecret(context.TODO(), client, meta, func(in *core.Secret) *core.Secret {
+	return core_util.CreateOrPatchSecret(context.TODO(), kubeClient, meta, func(in *core.Secret) *core.Secret {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootSelectors()
 
@@ -177,4 +188,28 @@ func CreateSecret(client kubernetes.Interface, db *api.Redis, name, data string)
 
 		return in
 	}, metav1.PatchOptions{})
+}
+func AddAuthParamsInConfigSecret(kubeClient kubernetes.Interface, dbClient cs.Interface, db *api.Redis, data string) (finalData string, err error) {
+	redisVersion, err := dbClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+
+	curVersion, err := semver.NewVersion(redisVersion.Spec.Version)
+	if err != nil {
+		return "", fmt.Errorf("can't get the version from RedisVersion spec")
+	}
+	if curVersion.Major() > 4 {
+		authSecret, err := kubeClient.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
+		if err != nil {
+			return "", err
+		}
+		dataArray := []string{data}
+		dataArray = append(dataArray, data)
+		dataArray = append(dataArray, fmt.Sprintf("requirepass %s\n", string(authSecret.Data[core.BasicAuthPasswordKey])))
+		dataArray = append(dataArray, fmt.Sprintf("masterauth %s\n", string(authSecret.Data[core.BasicAuthPasswordKey])))
+		finalData = strings.Join(dataArray, "\n")
+	}
+
+	return finalData, nil
 }

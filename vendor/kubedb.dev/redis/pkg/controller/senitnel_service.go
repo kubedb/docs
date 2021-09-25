@@ -33,13 +33,13 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-func (c *Controller) ensureGoverningService(db *api.MariaDB) error {
+func (c *Controller) ensureSentinelGoverningService(db *api.RedisSentinel) error {
 	meta := metav1.ObjectMeta{
 		Name:      db.GoverningServiceName(),
 		Namespace: db.Namespace,
 	}
 
-	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMariaDB))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedisSentinel))
 
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
@@ -54,9 +54,9 @@ func (c *Controller) ensureGoverningService(db *api.MariaDB) error {
 		// create SRV records with pod DNS name as service provider
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
-				Name:       api.MySQLDatabasePortName,
-				Port:       api.MySQLDatabasePort,
-				TargetPort: intstr.FromString(api.MySQLDatabasePortName),
+				Name:       api.RedisSentinelPortName,
+				Port:       api.RedisSentinelPort,
+				TargetPort: intstr.FromString(api.RedisSentinelPortName),
 			},
 		})
 
@@ -67,7 +67,7 @@ func (c *Controller) ensureGoverningService(db *api.MariaDB) error {
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully %s governing service",
+			"Successfully %s Sentinel governing service",
 			vt,
 		)
 	}
@@ -75,67 +75,7 @@ func (c *Controller) ensureGoverningService(db *api.MariaDB) error {
 	return err
 }
 
-func (c *Controller) ensureService(db *api.MariaDB) (kutil.VerbType, error) {
-	// create database Service
-	vt, err := c.createPrimaryService(db)
-	if err != nil {
-		return kutil.VerbUnchanged, err
-	} else if vt != kutil.VerbUnchanged {
-		c.Recorder.Eventf(
-			db,
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully %s Service",
-			vt,
-		)
-	}
-	return vt, nil
-}
-
-func (c *Controller) createPrimaryService(db *api.MariaDB) (kutil.VerbType, error) {
-	meta := metav1.ObjectMeta{
-		Name:      db.OffshootName(),
-		Namespace: db.Namespace,
-	}
-	svcTemplate := api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias)
-	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMariaDB))
-
-	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = db.OffshootLabels()
-		in.Annotations = svcTemplate.Annotations
-
-		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Ports = ofst.PatchServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-				{
-					Name:       api.MySQLPrimaryServicePortName,
-					Port:       api.MySQLDatabasePort,
-					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
-				},
-			}),
-			svcTemplate.Spec.Ports,
-		)
-		if svcTemplate.Spec.ClusterIP != "" {
-			in.Spec.ClusterIP = svcTemplate.Spec.ClusterIP
-		}
-		if svcTemplate.Spec.Type != "" {
-			in.Spec.Type = svcTemplate.Spec.Type
-		}
-		in.Spec.ExternalIPs = svcTemplate.Spec.ExternalIPs
-		in.Spec.LoadBalancerIP = svcTemplate.Spec.LoadBalancerIP
-		in.Spec.LoadBalancerSourceRanges = svcTemplate.Spec.LoadBalancerSourceRanges
-		in.Spec.ExternalTrafficPolicy = svcTemplate.Spec.ExternalTrafficPolicy
-		if svcTemplate.Spec.HealthCheckNodePort > 0 {
-			in.Spec.HealthCheckNodePort = svcTemplate.Spec.HealthCheckNodePort
-		}
-
-		return in
-	}, metav1.PatchOptions{})
-	return ok, err
-}
-
-func (c *Controller) ensureStatsService(db *api.MariaDB) (kutil.VerbType, error) {
+func (c *Controller) ensureSentinelStatsService(db *api.RedisSentinel) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
 	if db.Spec.Monitor == nil || db.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
 		klog.Infoln("spec.monitor.agent is not provided by prometheus.io")
@@ -148,7 +88,7 @@ func (c *Controller) ensureStatsService(db *api.MariaDB) (kutil.VerbType, error)
 		Namespace: db.Namespace,
 	}
 	svcTemplate := api.GetServiceTemplate(db.Spec.ServiceTemplates, api.StatsServiceAlias)
-	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMariaDB))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceCodeRedisSentinel))
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.StatsServiceLabels()
@@ -165,6 +105,7 @@ func (c *Controller) ensureStatsService(db *api.MariaDB) (kutil.VerbType, error)
 			}),
 			svcTemplate.Spec.Ports,
 		)
+
 		if svcTemplate.Spec.ClusterIP != "" {
 			in.Spec.ClusterIP = svcTemplate.Spec.ClusterIP
 		}
@@ -178,8 +119,8 @@ func (c *Controller) ensureStatsService(db *api.MariaDB) (kutil.VerbType, error)
 		if svcTemplate.Spec.HealthCheckNodePort > 0 {
 			in.Spec.HealthCheckNodePort = svcTemplate.Spec.HealthCheckNodePort
 		}
-
 		return in
+
 	}, metav1.PatchOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
@@ -188,9 +129,53 @@ func (c *Controller) ensureStatsService(db *api.MariaDB) (kutil.VerbType, error)
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully %s stats service",
+			"Successfully %s Sentinel stats service",
 			vt,
 		)
 	}
 	return vt, nil
+}
+
+func (c *Controller) ensureSentinelService(db *api.RedisSentinel) (kutil.VerbType, error) {
+	meta := metav1.ObjectMeta{
+		Name:      db.OffshootName(),
+		Namespace: db.Namespace,
+	}
+	svcTemplate := api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias)
+
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedisSentinel))
+
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+		in.Labels = db.OffshootSelectors()
+		in.Annotations = svcTemplate.Annotations
+		in.Spec.Selector = db.OffshootSelectors()
+
+		in.Spec.Ports = ofst.PatchServicePorts(
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       api.RedisPrimaryServicePortName,
+					Port:       api.RedisSentinelPort,
+					TargetPort: intstr.FromString(api.RedisSentinelPortName),
+				},
+			}),
+			svcTemplate.Spec.Ports,
+		)
+
+		if svcTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = svcTemplate.Spec.ClusterIP
+		}
+		if svcTemplate.Spec.Type != "" {
+			in.Spec.Type = svcTemplate.Spec.Type
+		}
+		in.Spec.ExternalIPs = svcTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = svcTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = svcTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = svcTemplate.Spec.ExternalTrafficPolicy
+		if svcTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = svcTemplate.Spec.HealthCheckNodePort
+		}
+		return in
+	}, metav1.PatchOptions{})
+	return ok, err
 }

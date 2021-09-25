@@ -1,6 +1,8 @@
 package redis
 
-import "sync"
+import (
+	"sync"
+)
 
 // ScanIterator is used to incrementally iterate over a collection of elements.
 // It's safe for concurrent use by multiple goroutines.
@@ -41,10 +43,9 @@ func (it *ScanIterator) Next() bool {
 		}
 
 		// Fetch next page.
-		switch it.cmd._args[0] {
-		case "scan", "qscan":
+		if it.cmd._args[0] == "scan" {
 			it.cmd._args[1] = it.cmd.cursor
-		default:
+		} else {
 			it.cmd._args[2] = it.cmd.cursor
 		}
 

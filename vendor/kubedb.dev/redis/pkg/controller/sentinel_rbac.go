@@ -31,8 +31,8 @@ import (
 	rbac_util "kmodules.xyz/client-go/rbac/v1"
 )
 
-func (c *Controller) createServiceAccount(db *api.Redis, saName string) error {
-	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
+func (c *Controller) createSentinelServiceAccount(db *api.RedisSentinel, saName string) error {
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedisSentinel))
 
 	// Create new ServiceAccount
 	_, _, err := core_util.CreateOrPatchServiceAccount(
@@ -52,8 +52,8 @@ func (c *Controller) createServiceAccount(db *api.Redis, saName string) error {
 	return err
 }
 
-func (c *Controller) ensureRole(db *api.Redis, name string, pspName string) error {
-	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
+func (c *Controller) ensureSentinelRole(db *api.RedisSentinel, name string, pspName string) error {
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedisSentinel))
 
 	// Create new Role for Redis and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRole(
@@ -77,11 +77,6 @@ func (c *Controller) ensureRole(db *api.Redis, name string, pspName string) erro
 					Resources: []string{"pods"},
 					Verbs:     []string{"get", "list", "patch", "delete"},
 				},
-				{
-					APIGroups: []string{core.GroupName},
-					Resources: []string{"secrets"},
-					Verbs:     []string{"get", "list"},
-				},
 			}
 			if pspName != "" {
 				pspRule := rbac.PolicyRule{
@@ -99,8 +94,8 @@ func (c *Controller) ensureRole(db *api.Redis, name string, pspName string) erro
 	return err
 }
 
-func (c *Controller) createRoleBinding(db *api.Redis, roleName string, saName string) error {
-	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
+func (c *Controller) createSentinelRoleBinding(db *api.RedisSentinel, roleName string, saName string) error {
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedisSentinel))
 
 	// Ensure new RoleBindings for Redis and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRoleBinding(
@@ -132,7 +127,7 @@ func (c *Controller) createRoleBinding(db *api.Redis, roleName string, saName st
 	return err
 }
 
-func (c *Controller) getPolicyNames(db *api.Redis) (string, error) {
+func (c *Controller) getSentinelPolicyNames(db *api.RedisSentinel) (string, error) {
 	dbVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return "", err
@@ -142,7 +137,7 @@ func (c *Controller) getPolicyNames(db *api.Redis) (string, error) {
 	return dbPolicyName, nil
 }
 
-func (c *Controller) ensureRBACStuff(db *api.Redis) error {
+func (c *Controller) ensureSentinelRBACStuff(db *api.RedisSentinel) error {
 	saName := db.Spec.PodTemplate.Spec.ServiceAccountName
 	if saName == "" {
 		saName = db.OffshootName()
@@ -152,7 +147,7 @@ func (c *Controller) ensureRBACStuff(db *api.Redis) error {
 	sa, err := c.Client.CoreV1().ServiceAccounts(db.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		// create service account, since it does not exist
-		if err = c.createServiceAccount(db, saName); err != nil {
+		if err = c.createSentinelServiceAccount(db, saName); err != nil {
 			if !kerr.IsAlreadyExists(err) {
 				return err
 			}
@@ -165,16 +160,16 @@ func (c *Controller) ensureRBACStuff(db *api.Redis) error {
 	}
 
 	// Create New Role
-	pspName, err := c.getPolicyNames(db)
+	pspName, err := c.getSentinelPolicyNames(db)
 	if err != nil {
 		return err
 	}
-	if err := c.ensureRole(db, db.OffshootName(), pspName); err != nil {
+	if err := c.ensureSentinelRole(db, db.OffshootName(), pspName); err != nil {
 		return err
 	}
 
 	// Create New RoleBinding
-	if err := c.createRoleBinding(db, db.OffshootName(), saName); err != nil {
+	if err := c.createSentinelRoleBinding(db, db.OffshootName(), saName); err != nil {
 		return err
 	}
 
