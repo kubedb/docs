@@ -24,6 +24,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	configure_cluster "kubedb.dev/redis/pkg/configure-cluster"
@@ -97,7 +98,7 @@ func (c *Controller) ensureRedisNodes(db *api.Redis) (kutil.VerbType, error) {
 		if err != nil {
 			return vt, err
 		}
-	} else {
+	} else if db.Spec.Mode == api.RedisModeCluster {
 		for i := 0; i < int(*db.Spec.Cluster.Master); i++ {
 			vt, err = c.ensureStatefulSet(db, db.StatefulSetNameWithShard(i), false)
 			if err != nil {
@@ -177,6 +178,11 @@ func (c *Controller) ensureRedisNodes(db *api.Redis) (kutil.VerbType, error) {
 				}
 			}
 		}
+	} else if db.Spec.Mode == api.RedisModeSentinel {
+		vt, err = c.ensureStatefulSet(db, db.OffshootName(), true)
+		if err != nil {
+			return vt, err
+		}
 	}
 
 	return vt, nil
@@ -201,7 +207,7 @@ func (c *Controller) checkStatefulSet(db *api.Redis, statefulSetName string) err
 }
 
 func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, removeSlave bool) (*apps.StatefulSet, kutil.VerbType, error) {
-	authSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Name+"-auth", metav1.GetOptions{})
+	authSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, "", err
 	}
@@ -221,7 +227,10 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 	if err != nil {
 		return nil, kutil.VerbUnchanged, fmt.Errorf("can't get the version from RedisVersion spec")
 	}
-	var affinity *core.Affinity
+	var (
+		affinity      *core.Affinity
+		redisModeEnvs []core.EnvVar
+	)
 
 	if db.Spec.Mode == api.RedisModeCluster {
 		// https://play.golang.org/p/TZPjGg8T0Zn
@@ -234,6 +243,37 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
+	} else if db.Spec.Mode == api.RedisModeSentinel {
+		sentinel, err := c.DBClient.KubedbV1alpha2().RedisSentinels(db.Spec.SentinelRef.Namespace).Get(context.TODO(), db.Spec.SentinelRef.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, kutil.VerbUnchanged, err
+		}
+		sentinelEnvs := []core.EnvVar{
+			{
+				Name: "SENTINEL_PASSWORD",
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: sentinel.Spec.AuthSecret.Name,
+						},
+						Key: core.BasicAuthPasswordKey,
+					},
+				},
+			},
+			{
+				Name:  "SENTINEL_GOVERNING_SERVICE",
+				Value: fmt.Sprintf("%s.%s.svc", sentinel.GoverningServiceName(), db.Namespace),
+			},
+			{
+				Name:  "SENTINEL_NAME",
+				Value: sentinel.Name,
+			},
+			{
+				Name:  "SENTINEL_REPLICAS",
+				Value: strconv.Itoa(int(pointer.Int32(sentinel.Spec.Replicas))),
+			},
+		}
+		redisModeEnvs = core_util.UpsertEnvVars(redisModeEnvs, sentinelEnvs...)
 	}
 
 	return app_util.CreateOrPatchStatefulSet(context.TODO(), c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
@@ -251,6 +291,11 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 				// removeSlave is true only after deleting slave node(s) in the stage of configuring redis cluster
 				removeSlave {
 				in.Spec.Replicas = pointer.Int32P(*db.Spec.Cluster.Replicas + 1)
+			}
+		} else if db.Spec.Mode == api.RedisModeSentinel {
+			in.Spec.Replicas = pointer.Int32P(1)
+			if db.Spec.Replicas != nil {
+				in.Spec.Replicas = pointer.Int32P(*db.Spec.Replicas)
 			}
 		}
 		in.Spec.ServiceName = db.GoverningServiceName()
@@ -272,153 +317,25 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 			db.Spec.PodTemplate.Spec.InitContainers,
 		)
 
-		var (
-			ports = []core.ContainerPort{
-				{
-					Name:          api.RedisDatabasePortName,
-					ContainerPort: api.RedisDatabasePort,
-					Protocol:      core.ProtocolTCP,
-				},
-			}
-		)
-		if db.Spec.Mode == api.RedisModeCluster {
-			ports = append(ports, core.ContainerPort{
-				Name:          api.RedisGossipPortName,
-				ContainerPort: api.RedisGossipPort,
-				Protocol:      core.ProtocolTCP,
-			})
-		}
-
-		container := core.Container{
-			Name:            api.ResourceSingularRedis,
-			Image:           redisVersion.Spec.DB.Image,
-			ImagePullPolicy: core.PullIfNotPresent,
-			Args:            db.Spec.PodTemplate.Spec.Args,
-			Ports:           ports,
-			Env: []core.EnvVar{
-				{
-					Name: "POD_IP",
-					ValueFrom: &core.EnvVarSource{
-						FieldRef: &core.ObjectFieldSelector{
-							FieldPath: "status.podIP",
-						},
-					},
-				},
-			},
-			Resources:       db.Spec.PodTemplate.Spec.Resources,
-			SecurityContext: db.Spec.PodTemplate.Spec.ContainerSecurityContext,
-			LivenessProbe:   db.Spec.PodTemplate.Spec.LivenessProbe,
-			ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
-			Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
-		}
-
-		if curVersion.Major() > 4 {
-			container.Args = append(container.Args, []string{
-				fmt.Sprintf("--requirepass %s", authSecret.Data[core.BasicAuthPasswordKey]),
-				fmt.Sprintf("--masterauth %s", authSecret.Data[core.BasicAuthPasswordKey]),
-			}...)
-			container.Env = core_util.UpsertEnvVars(container.Env, []core.EnvVar{
-				{
-					Name: api.EnvRedisPassword,
-					ValueFrom: &core.EnvVarSource{
-						SecretKeyRef: &core.SecretKeySelector{
-							LocalObjectReference: core.LocalObjectReference{
-								Name: db.Spec.AuthSecret.Name,
-							},
-							Key: core.BasicAuthPasswordKey,
-						},
-					},
-				},
-			}...)
-		}
-
-		if db.Spec.Mode == api.RedisModeStandalone {
-
-			args := container.Args
-			// for backup redis data
-			customArgs := []string{
-				"--appendonly yes",
-			}
-			args = append(args, customArgs...)
-
-			if db.Spec.TLS != nil {
-				// tls arguments for redis standalone
-				tlsArgs := []string{
-					"--tls-port 6379",
-					"--port 0",
-					"--tls-cert-file /certs/server.crt",
-					"--tls-key-file /certs/server.key",
-					"--tls-ca-cert-file /certs/ca.crt",
-				}
-				args = append(args, tlsArgs...)
-			}
-			container.Args = args
-
-		} else if db.Spec.Mode == api.RedisModeCluster {
-			args := container.Args
-			// for enabling redis cluster
-			customArgs := []string{
-				"--cluster-enabled yes",
-			}
-			args = append(args, customArgs...)
-			if db.Spec.TLS != nil {
-				// tls arguments for redis cluster
-				tlsArgs := []string{
-					"--tls-port 6379",
-					"--port 0",
-					"--tls-cert-file /certs/server.crt",
-					"--tls-key-file /certs/server.key",
-					"--tls-ca-cert-file /certs/ca.crt",
-					"--tls-replication yes",
-					"--tls-cluster yes",
-				}
-				args = append(args, tlsArgs...)
-			}
-
-			container.Args = args
+		if db.Spec.Mode == api.RedisModeSentinel {
+			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainer(
+				in.Spec.Template.Spec.InitContainers,
+				getRedisInitContainer(redisVersion))
+			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers,
+				getCoordinatorContainer(redisVersion, curVersion, db, redisModeEnvs))
 		}
 
 		//upsert the container
-		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, container)
+		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, getRedisContainer(db, redisVersion, curVersion, redisModeEnvs))
 
 		if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
-			args := []string{
-				fmt.Sprintf("--web.listen-address=:%v", db.Spec.Monitor.Prometheus.Exporter.Port),
-				fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
-			}
-			if curVersion.Major() > 4 {
-				args = append(args, []string{
-					fmt.Sprintf("--redis.password=%s", authSecret.Data[core.BasicAuthPasswordKey]),
-				}...)
-			}
-			if db.Spec.TLS != nil {
-				tlsArgs := []string{
-					"--redis.addr=rediss://localhost:6379",
-					"--tls-client-cert-file=/certs/exporter.crt",
-					"--tls-client-key-file=/certs/exporter.key",
-					"--tls-ca-cert-file=/certs/ca.crt",
-				}
-				args = append(args, tlsArgs...)
-			}
-			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
-				Name:            "exporter",
-				Args:            append(args, db.Spec.Monitor.Prometheus.Exporter.Args...),
-				Image:           redisVersion.Spec.Exporter.Image,
-				ImagePullPolicy: core.PullIfNotPresent,
-				Ports: []core.ContainerPort{
-					{
-						Name:          mona.PrometheusExporterPortName,
-						Protocol:      core.ProtocolTCP,
-						ContainerPort: db.Spec.Monitor.Prometheus.Exporter.Port,
-					},
-				},
-				Env:             db.Spec.Monitor.Prometheus.Exporter.Env,
-				Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
-				SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
-			})
+			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, getMonitorContainer(db, redisVersion, curVersion, authSecret))
 		}
 
 		in = upsertDataVolume(in, db)
+		if db.Spec.Mode == api.RedisModeSentinel {
+			in = upsertRedisSentinelVolume(in)
+		}
 
 		in.Spec.Template.Spec.NodeSelector = db.Spec.PodTemplate.Spec.NodeSelector
 		in.Spec.Template.Spec.Affinity = affinity
@@ -452,88 +369,377 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 	}, metav1.PatchOptions{})
 }
 
-func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularRedis {
-			volumeMount := core.VolumeMount{
-				Name:      "data",
-				MountPath: "/data",
-			}
-			volumeMounts := container.VolumeMounts
-			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+func getMonitorContainer(db *api.Redis, redisVersion *v1alpha1.RedisVersion, curVersion *semver.Version, authSecret *core.Secret) core.Container {
 
-			pvcSpec := db.Spec.Storage
-			if db.Spec.StorageType == api.StorageTypeEphemeral {
-				ed := core.EmptyDirVolumeSource{}
-				if pvcSpec != nil {
-					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
-						ed.SizeLimit = &sz
-					}
-				}
-				statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
-					statefulSet.Spec.Template.Spec.Volumes,
-					core.Volume{
-						Name: "data",
-						VolumeSource: core.VolumeSource{
-							EmptyDir: &ed,
-						},
-					})
-			} else {
-				if len(pvcSpec.AccessModes) == 0 {
-					pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
-						core.ReadWriteOnce,
-					}
-					klog.Infof(`Using "%v" as AccessModes in redis.spec.storage`, core.ReadWriteOnce)
-				}
-
-				claim := core.PersistentVolumeClaim{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "data",
-					},
-					Spec: *pvcSpec,
-				}
-				if pvcSpec.StorageClassName != nil {
-					claim.Annotations = map[string]string{
-						"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
-					}
-				}
-				statefulSet.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(statefulSet.Spec.VolumeClaimTemplates, claim)
-			}
-
-			break
-		}
+	args := []string{
+		fmt.Sprintf("--web.listen-address=:%v", db.Spec.Monitor.Prometheus.Exporter.Port),
+		fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
 	}
+	if curVersion.Major() > 4 {
+		args = append(args, []string{
+			fmt.Sprintf("--redis.password=%s", authSecret.Data[core.BasicAuthPasswordKey]),
+		}...)
+	}
+	if db.Spec.TLS != nil {
+		tlsArgs := []string{
+			"--redis.addr=rediss://localhost:26379",
+			"--tls-client-cert-file=/certs/exporter.crt",
+			"--tls-client-key-file=/certs/exporter.key",
+			"--tls-ca-cert-file=/certs/ca.crt",
+		}
+		args = append(args, tlsArgs...)
+	}
+	var volumeMounts []core.VolumeMount
+	if db.Spec.TLS != nil {
+		volumeMount := core.VolumeMount{
+			Name:      "exporter-tls-volume",
+			MountPath: "/certs",
+		}
+
+		volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
+	}
+
+	container := core.Container{
+		Name:            "exporter",
+		Args:            append(args, db.Spec.Monitor.Prometheus.Exporter.Args...),
+		Image:           redisVersion.Spec.Exporter.Image,
+		ImagePullPolicy: core.PullIfNotPresent,
+		Ports: []core.ContainerPort{
+			{
+				Name:          mona.PrometheusExporterPortName,
+				Protocol:      core.ProtocolTCP,
+				ContainerPort: db.Spec.Monitor.Prometheus.Exporter.Port,
+			},
+		},
+		Env:             db.Spec.Monitor.Prometheus.Exporter.Env,
+		VolumeMounts:    volumeMounts,
+		Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
+		SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
+	}
+	return container
+}
+func getRedisInitContainer(redisVersion *v1alpha1.RedisVersion) core.Container {
+	container := core.Container{
+		Name:            "redis-init",
+		Image:           redisVersion.Spec.InitContainer.Image,
+		ImagePullPolicy: "IfNotPresent",
+		VolumeMounts: []core.VolumeMount{
+			{
+				Name:      api.RedisScriptVolumeName,
+				MountPath: api.RedisScriptVolumePath,
+			},
+		},
+	}
+	return container
+}
+func getRedisContainer(db *api.Redis, redisVersion *v1alpha1.RedisVersion, curVersion *semver.Version, redisEnvs []core.EnvVar) core.Container {
+	var (
+		ports = []core.ContainerPort{
+			{
+				Name:          api.RedisDatabasePortName,
+				ContainerPort: api.RedisDatabasePort,
+				Protocol:      core.ProtocolTCP,
+			},
+		}
+	)
+	if db.Spec.Mode == api.RedisModeCluster {
+		ports = append(ports, core.ContainerPort{
+			Name:          api.RedisGossipPortName,
+			ContainerPort: api.RedisGossipPort,
+			Protocol:      core.ProtocolTCP,
+		})
+	}
+	volumeMounts := []core.VolumeMount{
+		{
+			Name:      "data",
+			MountPath: "/data",
+		},
+	}
+
+	if db.Spec.Mode == api.RedisModeSentinel {
+		volumeMounts = core_util.UpsertVolumeMount(volumeMounts,
+			[]core.VolumeMount{
+				{
+					Name:      api.RedisScriptVolumeName,
+					MountPath: api.RedisScriptVolumePath,
+				},
+			}...)
+	}
+
+	if db.Spec.TLS != nil {
+		volumeMounts = core_util.UpsertVolumeMount(volumeMounts,
+			core.VolumeMount{
+				Name:      "tls-volume",
+				MountPath: "/certs",
+			})
+	}
+
+	container := core.Container{
+		Name:            api.ResourceSingularRedis,
+		Image:           redisVersion.Spec.DB.Image,
+		ImagePullPolicy: core.PullIfNotPresent,
+		Args:            db.Spec.PodTemplate.Spec.Args,
+		Ports:           ports,
+		Env: []core.EnvVar{
+			{
+				Name: "POD_IP",
+				ValueFrom: &core.EnvVarSource{
+					FieldRef: &core.ObjectFieldSelector{
+						FieldPath: "status.podIP",
+					},
+				},
+			},
+		},
+		VolumeMounts:    volumeMounts,
+		Resources:       db.Spec.PodTemplate.Spec.Resources,
+		SecurityContext: db.Spec.PodTemplate.Spec.ContainerSecurityContext,
+		LivenessProbe:   db.Spec.PodTemplate.Spec.LivenessProbe,
+		ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
+		Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
+	}
+	if curVersion.Major() > 4 {
+		container.Env = core_util.UpsertEnvVars(container.Env, []core.EnvVar{
+			{
+				Name: api.EnvRedisPassword,
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: db.Spec.AuthSecret.Name,
+						},
+						Key: core.BasicAuthPasswordKey,
+					},
+				},
+			},
+		}...)
+	}
+	if db.Spec.Mode == api.RedisModeStandalone {
+
+		args := container.Args
+		// for backup redis data
+		customArgs := []string{
+			"--appendonly yes",
+		}
+		args = append(args, customArgs...)
+
+		if db.Spec.TLS != nil {
+			// tls arguments for redis standalone
+			tlsArgs := GetTLSArgs(curVersion, true, api.RedisDatabasePort)
+			args = append(args, tlsArgs...)
+		}
+		container.Args = args
+
+	} else if db.Spec.Mode == api.RedisModeCluster {
+		args := container.Args
+		// for enabling redis cluster
+		customArgs := []string{
+			"--cluster-enabled yes",
+		}
+		args = append(args, customArgs...)
+		if db.Spec.TLS != nil {
+			// tls arguments for redis cluster
+			tlsArgs := GetTLSArgs(curVersion, false, api.RedisDatabasePort)
+			tlsArgs = append(tlsArgs, "--tls-cluster yes")
+			args = append(args, tlsArgs...)
+		}
+
+		container.Args = args
+	} else if db.Spec.Mode == api.RedisModeSentinel {
+		args := container.Args
+		tlsValue := TlsOff
+		if db.Spec.TLS != nil {
+			tlsValue = "ON"
+			// tls arguments for redis cluster
+			tlsArgs := GetTLSArgs(curVersion, false, api.RedisDatabasePort)
+			args = append(args, tlsArgs...)
+		}
+		envs := []core.EnvVar{
+			{
+				Name: "NAMESPACE",
+				ValueFrom: &core.EnvVarSource{
+					FieldRef: &core.ObjectFieldSelector{
+						FieldPath: "metadata.namespace",
+					},
+				},
+			},
+			{
+				Name:  "TLS",
+				Value: tlsValue,
+			},
+			{
+				Name:  "STATEFULSET_NAME",
+				Value: db.Name,
+			},
+			{
+				Name:  "REDIS_GOVERNING_SERVICE",
+				Value: fmt.Sprintf("%s.%s.svc", db.GoverningServiceName(), db.Namespace),
+			},
+		}
+		container.Env = core_util.UpsertEnvVars(container.Env, envs...)
+		container.Command = []string{
+			"/scripts/on-start.sh",
+		}
+		container.Args = args
+
+	}
+	container.Env = core_util.UpsertEnvVars(container.Env, redisEnvs...)
+	return container
+}
+func getCoordinatorContainer(redisVersion *v1alpha1.RedisVersion, curVersion *semver.Version, db *api.Redis, redisEnvs []core.EnvVar) core.Container {
+	var volumeMounts []core.VolumeMount
+
+	if db.Spec.TLS != nil {
+		volumeMounts = core_util.UpsertVolumeMount(volumeMounts,
+			core.VolumeMount{
+				Name:      "tls-volume",
+				MountPath: "/certs",
+			})
+	}
+
+	container := core.Container{
+		Name:  "rd-coordinator",
+		Image: redisVersion.Spec.Coordinator.Image,
+		Args: []string{
+			"run",
+		},
+		ImagePullPolicy: core.PullIfNotPresent,
+		VolumeMounts:    volumeMounts,
+		Resources:       db.Spec.Coordinator.Resources,
+		SecurityContext: db.Spec.Coordinator.SecurityContext,
+	}
+	if db.Spec.Mode == api.RedisModeSentinel {
+		tlsValue := TlsOff
+		if db.Spec.TLS != nil {
+			tlsValue = "ON"
+		}
+		envs := []core.EnvVar{
+			{
+				Name: "NAMESPACE",
+				ValueFrom: &core.EnvVarSource{
+					FieldRef: &core.ObjectFieldSelector{
+						FieldPath: "metadata.namespace",
+					},
+				},
+			},
+			{
+				Name:  "REDIS_NAME",
+				Value: db.Name,
+			},
+			{
+				Name:  "REDIS_TLS",
+				Value: tlsValue,
+			},
+			{
+				Name:  "REDIS_GOVERNING_SERVICE",
+				Value: fmt.Sprintf("%s.%s.svc", db.GoverningServiceName(), db.Namespace),
+			},
+			{
+				Name:  "SENTINEL_NAME",
+				Value: db.Spec.SentinelRef.Name,
+			},
+			{
+				Name:  "SENTINEL_NAMESPACE",
+				Value: db.Spec.SentinelRef.Namespace,
+			},
+			{
+				Name:  "SENTINEL_TLS",
+				Value: tlsValue,
+			},
+			{
+				Name:  "SENTINEL_GOVERNING_SERVICE",
+				Value: fmt.Sprintf("%s.%s.svc", db.Spec.SentinelRef.Name, db.Spec.SentinelRef.Namespace),
+			},
+			{
+				Name: api.EnvRedisPassword,
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: db.Spec.AuthSecret.Name,
+						},
+						Key: core.BasicAuthPasswordKey,
+					},
+				},
+			},
+		}
+
+		container.Env = core_util.UpsertEnvVars(container.Env, envs...)
+
+	}
+	container.Env = core_util.UpsertEnvVars(container.Env, redisEnvs...)
+
+	if curVersion.Major() > 4 {
+
+		container.Env = core_util.UpsertEnvVars(container.Env, []core.EnvVar{
+			{
+				Name: api.EnvRedisPassword,
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: db.Spec.AuthSecret.Name,
+						},
+						Key: core.BasicAuthPasswordKey,
+					},
+				},
+			},
+		}...)
+	}
+	return container
+}
+func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
+	pvcSpec := db.Spec.Storage
+	if db.Spec.StorageType == api.StorageTypeEphemeral {
+		ed := core.EmptyDirVolumeSource{}
+		if pvcSpec != nil {
+			if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
+				ed.SizeLimit = &sz
+			}
+		}
+		statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+			statefulSet.Spec.Template.Spec.Volumes,
+			core.Volume{
+				Name: "data",
+				VolumeSource: core.VolumeSource{
+					EmptyDir: &ed,
+				},
+			})
+	} else {
+		if len(pvcSpec.AccessModes) == 0 {
+			pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
+				core.ReadWriteOnce,
+			}
+			klog.Infof(`Using "%v" as AccessModes in redis.spec.storage`, core.ReadWriteOnce)
+		}
+
+		claim := core.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "data",
+			},
+			Spec: *pvcSpec,
+		}
+		if pvcSpec.StorageClassName != nil {
+			claim.Annotations = map[string]string{
+				"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+			}
+		}
+		statefulSet.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(statefulSet.Spec.VolumeClaimTemplates, claim)
+	}
+	return statefulSet
+}
+func upsertRedisSentinelVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
+	Volumes := []core.Volume{
+		{
+			Name: api.RedisScriptVolumeName,
+			VolumeSource: core.VolumeSource{
+				EmptyDir: &core.EmptyDirVolumeSource{},
+			},
+		},
+	}
+	statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(statefulSet.Spec.Template.Spec.Volumes, Volumes...)
 	return statefulSet
 }
 
 // adding tls key , cert and ca-cert
 func upsertTLSVolume(sts *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 	if db.Spec.TLS != nil {
-		for i, container := range sts.Spec.Template.Spec.Containers {
-			if container.Name == api.ResourceSingularRedis {
-				volumeMount := core.VolumeMount{
-					Name:      "tls-volume",
-					MountPath: "/certs",
-				}
-				volumeMounts := container.VolumeMounts
-				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-				sts.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
-
-			}
-
-			if container.Name == "exporter" {
-				volumeMount := core.VolumeMount{
-					Name:      "exporter-tls-volume",
-					MountPath: "/certs",
-				}
-				volumeMounts := container.VolumeMounts
-				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-				sts.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
-
-			}
-		}
-
 		volume := core.Volume{
 			Name: "tls-volume",
 			VolumeSource: core.VolumeSource{
@@ -619,14 +825,6 @@ func upsertTLSVolume(sts *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 			exporterTLSVolume,
 		)
 	} else {
-		for i, container := range sts.Spec.Template.Spec.Containers {
-			if container.Name == api.ResourceSingularRedis {
-				sts.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.EnsureVolumeMountDeleted(sts.Spec.Template.Spec.Containers[i].VolumeMounts, "tls-volume")
-			}
-			if container.Name == api.ContainerExporterName {
-				sts.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.EnsureVolumeMountDeleted(sts.Spec.Template.Spec.Containers[i].VolumeMounts, "exporter-tls-volume")
-			}
-		}
 		sts.Spec.Template.Spec.Volumes = core_util.EnsureVolumeDeleted(sts.Spec.Template.Spec.Volumes, "tls-volume")
 		sts.Spec.Template.Spec.Volumes = core_util.EnsureVolumeDeleted(sts.Spec.Template.Spec.Volumes, "exporter-tls-volume")
 	}
@@ -671,12 +869,15 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, db *api.Redis) *apps.Stat
 				volumes = core_util.UpsertVolume(volumes, configVolume)
 				statefulSet.Spec.Template.Spec.Volumes = volumes
 
-				// send custom config file path as argument
-				configPath := filepath.Join(CONFIG_MOUNT_PATH, RedisConfigRelativePath)
 				args := statefulSet.Spec.Template.Spec.Containers[i].Args
-				if len(args) == 0 || args[0] != configPath {
-					args = append([]string{configPath}, args...)
+				if db.Spec.Mode != api.RedisModeSentinel {
+					// send custom config file path as argument
+					configPath := filepath.Join(CONFIG_MOUNT_PATH, RedisConfigRelativePath)
+					if len(args) == 0 || args[0] != configPath {
+						args = append([]string{configPath}, args...)
+					}
 				}
+
 				statefulSet.Spec.Template.Spec.Containers[i].Args = args
 				break
 			}

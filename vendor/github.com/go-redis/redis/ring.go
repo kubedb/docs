@@ -27,6 +27,10 @@ type RingOptions struct {
 	// Map of name => host:port addresses of ring shards.
 	Addrs map[string]string
 
+	// Map of name => password of ring shards, to allow different shards to have
+	// different passwords. It will be ignored if the Password field is set.
+	Passwords map[string]string
+
 	// Frequency of PING commands sent to check shards availability.
 	// Shard is considered down after 3 subsequent failed checks.
 	HeartbeatFrequency time.Duration
@@ -98,12 +102,12 @@ func (opt *RingOptions) init() {
 	}
 }
 
-func (opt *RingOptions) clientOptions() *Options {
+func (opt *RingOptions) clientOptions(shard string) *Options {
 	return &Options{
 		OnConnect: opt.OnConnect,
 
 		DB:       opt.DB,
-		Password: opt.Password,
+		Password: opt.getPassword(shard),
 
 		DialTimeout:  opt.DialTimeout,
 		ReadTimeout:  opt.ReadTimeout,
@@ -116,6 +120,13 @@ func (opt *RingOptions) clientOptions() *Options {
 		IdleTimeout:        opt.IdleTimeout,
 		IdleCheckFrequency: opt.IdleCheckFrequency,
 	}
+}
+
+func (opt *RingOptions) getPassword(shard string) string {
+	if opt.Password == "" {
+		return opt.Passwords[shard]
+	}
+	return opt.Password
 }
 
 //------------------------------------------------------------------------------
@@ -260,7 +271,7 @@ func (c *ringShards) Heartbeat(frequency time.Duration) {
 		for _, shard := range shards {
 			err := shard.Client.Ping().Err()
 			if shard.Vote(err == nil || err == pool.ErrPoolTimeout) {
-				internal.Logf("ring shard state changed: %s", shard)
+				internal.Logger.Printf("ring shard state changed: %s", shard)
 				rebalance = true
 			}
 		}
@@ -323,6 +334,14 @@ func (c *ringShards) Close() error {
 
 //------------------------------------------------------------------------------
 
+type ring struct {
+	cmdable
+	hooks
+	opt           *RingOptions
+	shards        *ringShards
+	cmdsInfoCache *cmdsInfoCache //nolint:structcheck
+}
+
 // Ring is a Redis client that uses consistent hashing to distribute
 // keys across multiple Redis servers (shards). It's safe for
 // concurrent use by multiple goroutines.
@@ -338,68 +357,70 @@ func (c *ringShards) Close() error {
 // and can tolerate losing data when one of the servers dies.
 // Otherwise you should use Redis Cluster.
 type Ring struct {
-	cmdable
-
+	*ring
 	ctx context.Context
-
-	opt           *RingOptions
-	shards        *ringShards
-	cmdsInfoCache *cmdsInfoCache
-
-	process         func(Cmder) error
-	processPipeline func([]Cmder) error
 }
 
 func NewRing(opt *RingOptions) *Ring {
 	opt.init()
 
-	ring := &Ring{
-		opt:    opt,
-		shards: newRingShards(opt),
+	ring := Ring{
+		ring: &ring{
+			opt:    opt,
+			shards: newRingShards(opt),
+		},
+		ctx: context.Background(),
 	}
-	ring.cmdsInfoCache = newCmdsInfoCache(ring.cmdsInfo)
-
-	ring.process = ring.defaultProcess
-	ring.processPipeline = ring.defaultProcessPipeline
-
 	ring.init()
 
+	ring.cmdsInfoCache = newCmdsInfoCache(ring.cmdsInfo)
+
 	for name, addr := range opt.Addrs {
-		clopt := opt.clientOptions()
+		clopt := opt.clientOptions(name)
 		clopt.Addr = addr
 		ring.shards.Add(name, NewClient(clopt))
 	}
 
 	go ring.shards.Heartbeat(opt.HeartbeatFrequency)
 
-	return ring
+	return &ring
 }
 
 func (c *Ring) init() {
-	c.cmdable.setProcessor(c.Process)
+	c.cmdable = c.Process
 }
 
 func (c *Ring) Context() context.Context {
-	if c.ctx != nil {
-		return c.ctx
-	}
-	return context.Background()
+	return c.ctx
 }
 
 func (c *Ring) WithContext(ctx context.Context) *Ring {
 	if ctx == nil {
 		panic("nil context")
 	}
-	c2 := c.clone()
-	c2.ctx = ctx
-	return c2
+	clone := *c
+	clone.ctx = ctx
+	clone.init()
+	return &clone
 }
 
-func (c *Ring) clone() *Ring {
-	cp := *c
-	cp.init()
+// Do creates a Cmd from the args and processes the cmd.
+func (c *Ring) Do(args ...interface{}) *Cmd {
+	return c.DoContext(c.ctx, args...)
+}
 
-	return &cp
+func (c *Ring) DoContext(ctx context.Context, args ...interface{}) *Cmd {
+	cmd := NewCmd(args...)
+	_ = c.ProcessContext(ctx, cmd)
+	return cmd
+}
+
+func (c *Ring) Process(cmd Cmder) error {
+	return c.ProcessContext(c.ctx, cmd)
+}
+
+func (c *Ring) ProcessContext(ctx context.Context, cmd Cmder) error {
+	return c.hooks.process(ctx, cmd, c.process)
 }
 
 // Options returns read-only Options that were used to create the client.
@@ -514,7 +535,7 @@ func (c *Ring) cmdInfo(name string) *CommandInfo {
 	}
 	info := cmdsInfo[name]
 	if info == nil {
-		internal.Logf("info for cmd=%s not found", name)
+		internal.Logger.Printf("info for cmd=%s not found", name)
 	}
 	return info
 }
@@ -529,27 +550,12 @@ func (c *Ring) cmdShard(cmd Cmder) (*ringShard, error) {
 	return c.shards.GetByKey(firstKey)
 }
 
-// Do creates a Cmd from the args and processes the cmd.
-func (c *Ring) Do(args ...interface{}) *Cmd {
-	cmd := NewCmd(args...)
-	c.Process(cmd)
-	return cmd
-}
-
-func (c *Ring) WrapProcess(
-	fn func(oldProcess func(cmd Cmder) error) func(cmd Cmder) error,
-) {
-	c.process = fn(c.process)
-}
-
-func (c *Ring) Process(cmd Cmder) error {
-	return c.process(cmd)
-}
-
-func (c *Ring) defaultProcess(cmd Cmder) error {
+func (c *Ring) process(ctx context.Context, cmd Cmder) error {
 	for attempt := 0; attempt <= c.opt.MaxRetries; attempt++ {
 		if attempt > 0 {
-			time.Sleep(c.retryBackoff(attempt))
+			if err := internal.Sleep(ctx, c.retryBackoff(attempt)); err != nil {
+				return err
+			}
 		}
 
 		shard, err := c.cmdShard(cmd)
@@ -558,36 +564,58 @@ func (c *Ring) defaultProcess(cmd Cmder) error {
 			return err
 		}
 
-		err = shard.Client.Process(cmd)
+		err = shard.Client.ProcessContext(ctx, cmd)
 		if err == nil {
 			return nil
 		}
-		if !internal.IsRetryableError(err, cmd.readTimeout() == nil) {
+		if !isRetryableError(err, cmd.readTimeout() == nil) {
 			return err
 		}
 	}
 	return cmd.Err()
 }
 
-func (c *Ring) Pipeline() Pipeliner {
-	pipe := Pipeline{
-		exec: c.processPipeline,
-	}
-	pipe.cmdable.setProcessor(pipe.Process)
-	return &pipe
-}
-
 func (c *Ring) Pipelined(fn func(Pipeliner) error) ([]Cmder, error) {
 	return c.Pipeline().Pipelined(fn)
 }
 
-func (c *Ring) WrapProcessPipeline(
-	fn func(oldProcess func([]Cmder) error) func([]Cmder) error,
-) {
-	c.processPipeline = fn(c.processPipeline)
+func (c *Ring) Pipeline() Pipeliner {
+	pipe := Pipeline{
+		ctx:  c.ctx,
+		exec: c.processPipeline,
+	}
+	pipe.init()
+	return &pipe
 }
 
-func (c *Ring) defaultProcessPipeline(cmds []Cmder) error {
+func (c *Ring) processPipeline(ctx context.Context, cmds []Cmder) error {
+	return c.hooks.processPipeline(ctx, cmds, func(ctx context.Context, cmds []Cmder) error {
+		return c.generalProcessPipeline(ctx, cmds, false)
+	})
+}
+
+func (c *Ring) TxPipelined(fn func(Pipeliner) error) ([]Cmder, error) {
+	return c.TxPipeline().Pipelined(fn)
+}
+
+func (c *Ring) TxPipeline() Pipeliner {
+	pipe := Pipeline{
+		ctx:  c.ctx,
+		exec: c.processTxPipeline,
+	}
+	pipe.init()
+	return &pipe
+}
+
+func (c *Ring) processTxPipeline(ctx context.Context, cmds []Cmder) error {
+	return c.hooks.processPipeline(ctx, cmds, func(ctx context.Context, cmds []Cmder) error {
+		return c.generalProcessPipeline(ctx, cmds, true)
+	})
+}
+
+func (c *Ring) generalProcessPipeline(
+	ctx context.Context, cmds []Cmder, tx bool,
+) error {
 	cmdsMap := make(map[string][]Cmder)
 	for _, cmd := range cmds {
 		cmdInfo := c.cmdInfo(cmd.Name())
@@ -600,7 +628,9 @@ func (c *Ring) defaultProcessPipeline(cmds []Cmder) error {
 
 	for attempt := 0; attempt <= c.opt.MaxRetries; attempt++ {
 		if attempt > 0 {
-			time.Sleep(c.retryBackoff(attempt))
+			if err := internal.Sleep(ctx, c.retryBackoff(attempt)); err != nil {
+				return err
+			}
 		}
 
 		var mu sync.Mutex
@@ -618,16 +648,21 @@ func (c *Ring) defaultProcessPipeline(cmds []Cmder) error {
 					return
 				}
 
-				cn, err := shard.Client.getConn()
+				cn, err := shard.Client.getConn(ctx)
 				if err != nil {
 					setCmdsErr(cmds, err)
 					return
 				}
 
-				canRetry, err := shard.Client.pipelineProcessCmds(cn, cmds)
+				var canRetry bool
+				if tx {
+					canRetry, err = shard.Client.txPipelineProcessCmds(ctx, cn, cmds)
+				} else {
+					canRetry, err = shard.Client.pipelineProcessCmds(ctx, cn, cmds)
+				}
 				shard.Client.releaseConnStrict(cn, err)
 
-				if canRetry && internal.IsRetryableError(err, true) {
+				if canRetry && isRetryableError(err, true) {
 					mu.Lock()
 					if failedCmdsMap == nil {
 						failedCmdsMap = make(map[string][]Cmder)
@@ -646,14 +681,6 @@ func (c *Ring) defaultProcessPipeline(cmds []Cmder) error {
 	}
 
 	return cmdsFirstErr(cmds)
-}
-
-func (c *Ring) TxPipeline() Pipeliner {
-	panic("not implemented")
-}
-
-func (c *Ring) TxPipelined(fn func(Pipeliner) error) ([]Cmder, error) {
-	panic("not implemented")
 }
 
 // Close closes the ring client, releasing any open resources.

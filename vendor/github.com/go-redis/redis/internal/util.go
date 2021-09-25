@@ -1,6 +1,23 @@
 package internal
 
-import "github.com/go-redis/redis/internal/util"
+import (
+	"context"
+	"time"
+
+	"github.com/go-redis/redis/internal/util"
+)
+
+func Sleep(ctx context.Context, dur time.Duration) error {
+	t := time.NewTimer(dur)
+	defer t.Stop()
+
+	select {
+	case <-t.C:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
 
 func ToLower(s string) string {
 	if isLower(s) {
@@ -26,14 +43,4 @@ func isLower(s string) bool {
 		}
 	}
 	return true
-}
-
-func Unwrap(err error) error {
-	u, ok := err.(interface {
-		Unwrap() error
-	})
-	if !ok {
-		return nil
-	}
-	return u.Unwrap()
 }

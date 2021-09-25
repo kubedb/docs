@@ -62,7 +62,12 @@ type Controller struct {
 	rdInformer cache.SharedIndexInformer
 	rdLister   api_listers.RedisLister
 
-	//StatefulSet Informer
+	// Redis Sentinel
+	rsQueue    *queue.Worker
+	rsInformer cache.SharedIndexInformer
+	rsLister   api_listers.RedisSentinelLister
+
+	//Redis StatefulSet Informer
 	rdStsInformer cache.SharedIndexInformer
 }
 
@@ -111,6 +116,8 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		api.Redis{}.CustomResourceDefinition(),
 		catalog.RedisVersion{}.CustomResourceDefinition(),
 		appcat.AppBinding{}.CustomResourceDefinition(),
+
+		api.RedisSentinel{}.CustomResourceDefinition(),
 	}
 	return apiextensions.RegisterCRDs(c.CRDClient, crds)
 }
@@ -120,6 +127,8 @@ func (c *Controller) Init() error {
 	c.initWatcher()
 	c.initSecretWatcher()
 	c.stsWatcher()
+
+	c.initSentinelWatcher()
 	return nil
 }
 
@@ -128,8 +137,11 @@ func (c *Controller) RunControllers(stopCh <-chan struct{}) {
 	// Start Redis controller
 	c.rdQueue.Run(stopCh)
 
+	c.rsQueue.Run(stopCh)
+
 	// Start Redis health checker
 	c.RunHealthChecker(stopCh)
+	c.RunSentinelHealthChecker(stopCh)
 }
 
 // Blocks caller. Intended to be called as a Go routine.
@@ -182,6 +194,16 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) pushFailureEvent(db *api.Redis, reason string) {
+	c.Recorder.Eventf(
+		db,
+		core.EventTypeWarning,
+		eventer.EventReasonFailedToStart,
+		`Fail to be ready Redis: "%v". Reason: %v`,
+		db.Name,
+		reason,
+	)
+}
+func (c *Controller) pushSentinelFailureEvent(db *api.RedisSentinel, reason string) {
 	c.Recorder.Eventf(
 		db,
 		core.EventTypeWarning,

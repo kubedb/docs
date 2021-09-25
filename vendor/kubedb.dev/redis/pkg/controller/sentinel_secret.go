@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 
-	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
@@ -28,19 +27,18 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/tools/cache"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 )
 
-func (c *Controller) ensureAuthSecret(db *api.Redis) error {
+func (c *Controller) ensureSentinelAuthSecret(db *api.RedisSentinel) error {
 	authSecret := db.Spec.AuthSecret
 	if authSecret == nil {
 		var err error
-		if authSecret, err = c.createAuthSecret(db); err != nil {
+		if authSecret, err = c.createSentinelAuthSecret(db); err != nil {
 			return err
 		}
-		pg, _, err := util.PatchRedis(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.Redis) *api.Redis {
+		pg, _, err := util.PatchRedisSentinel(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.RedisSentinel) *api.RedisSentinel {
 			in.Spec.AuthSecret = authSecret
 			return in
 		}, metav1.PatchOptions{})
@@ -49,7 +47,7 @@ func (c *Controller) ensureAuthSecret(db *api.Redis) error {
 		}
 		db.Spec.AuthSecret = pg.Spec.AuthSecret
 	} else {
-		err := c.upgradeAuthSecret(db)
+		err := c.upgradeSentinelAuthSecret(db)
 		if err != nil {
 			return err
 		}
@@ -57,7 +55,7 @@ func (c *Controller) ensureAuthSecret(db *api.Redis) error {
 	return nil
 }
 
-func (c *Controller) findAuthSecret(db *api.Redis) (*core.Secret, error) {
+func (c *Controller) findSentinelAuthSecret(db *api.RedisSentinel) (*core.Secret, error) {
 	name := db.OffshootName() + "-auth"
 
 	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
@@ -76,8 +74,8 @@ func (c *Controller) findAuthSecret(db *api.Redis) (*core.Secret, error) {
 	return secret, nil
 }
 
-func (c *Controller) createAuthSecret(db *api.Redis) (*core.LocalObjectReference, error) {
-	databaseSecret, err := c.findAuthSecret(db)
+func (c *Controller) createSentinelAuthSecret(db *api.RedisSentinel) (*core.LocalObjectReference, error) {
+	databaseSecret, err := c.findSentinelAuthSecret(db)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +106,7 @@ func (c *Controller) createAuthSecret(db *api.Redis) (*core.LocalObjectReference
 	}, nil
 }
 
-func (c *Controller) upgradeAuthSecret(db *api.Redis) error {
+func (c *Controller) upgradeSentinelAuthSecret(db *api.RedisSentinel) error {
 	meta := metav1.ObjectMeta{
 		Name:      db.Spec.AuthSecret.Name,
 		Namespace: db.Namespace,
@@ -127,46 +125,4 @@ func (c *Controller) upgradeAuthSecret(db *api.Redis) error {
 		return in
 	}, metav1.PatchOptions{})
 	return err
-}
-
-func (c *Controller) RedisForSecret(s *core.Secret) cache.ExplicitKey {
-	ctrl := metav1.GetControllerOf(s)
-	ok, err := core_util.IsOwnerOfGroupKind(ctrl, kubedb.GroupName, api.ResourceKindRedis)
-	if err != nil || !ok {
-		return ""
-	}
-	// Owner ref is set by the enterprise operator
-	return cache.ExplicitKey(s.Namespace + "/" + ctrl.Name)
-}
-
-func (c *Controller) RedisSentinelForSecret(s *core.Secret) cache.ExplicitKey {
-	ctrl := metav1.GetControllerOf(s)
-	ok, err := core_util.IsOwnerOfGroupKind(ctrl, kubedb.GroupName, api.ResourceKindRedisSentinel)
-	if err != nil || !ok {
-		return ""
-	}
-	// Owner ref is set by the enterprise operator
-	return cache.ExplicitKey(s.Namespace + "/" + ctrl.Name)
-}
-
-func (c *Controller) GetRedisSecrets(db *api.Redis) []string {
-	if db.Spec.TLS != nil {
-		return []string{
-			db.GetCertSecretName(api.RedisServerCert),
-			db.GetCertSecretName(api.RedisClientCert),
-			db.GetCertSecretName(api.RedisMetricsExporterCert),
-		}
-	}
-	return nil
-}
-
-func (c *Controller) GetRedisSentinelSecrets(db *api.RedisSentinel) []string {
-	if db.Spec.TLS != nil {
-		return []string{
-			db.GetCertSecretName(api.RedisServerCert),
-			db.GetCertSecretName(api.RedisClientCert),
-			db.GetCertSecretName(api.RedisMetricsExporterCert),
-		}
-	}
-	return nil
 }

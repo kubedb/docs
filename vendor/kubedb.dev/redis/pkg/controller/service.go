@@ -22,6 +22,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
+	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -77,19 +78,46 @@ func (c *Controller) ensureGoverningService(db *api.Redis) error {
 
 func (c *Controller) ensureService(db *api.Redis) (kutil.VerbType, error) {
 	// create database Service
-	vt, err := c.ensurePrimaryService(db)
+	vt1, err := c.ensurePrimaryService(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
-	} else if vt != kutil.VerbUnchanged {
+	} else if vt1 != kutil.VerbUnchanged {
 		c.Recorder.Eventf(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s Service",
-			vt,
+			vt1,
 		)
 	}
-	return vt, nil
+	// create standby database Service
+	vt2 := kutil.VerbUnchanged
+	replicas := int32(1)
+	if db.Spec.Replicas != nil {
+		replicas = pointer.Int32(db.Spec.Replicas)
+	}
+	if replicas > 1 && db.Spec.Mode == api.RedisModeSentinel {
+		vt2, err = c.ensureStandbyService(db)
+		if err != nil {
+			return kutil.VerbUnchanged, err
+		} else if vt2 != kutil.VerbUnchanged {
+			c.Recorder.Eventf(
+				db,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully %s Service",
+				vt2,
+			)
+		}
+	}
+
+	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
+		return kutil.VerbCreated, nil
+	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
+		return kutil.VerbPatched, nil
+	}
+
+	return kutil.VerbUnchanged, nil
 }
 
 func (c *Controller) ensurePrimaryService(db *api.Redis) (kutil.VerbType, error) {
@@ -98,20 +126,68 @@ func (c *Controller) ensurePrimaryService(db *api.Redis) (kutil.VerbType, error)
 		Namespace: db.Namespace,
 	}
 	svcTemplate := api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias)
+
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootSelectors()
 		in.Annotations = svcTemplate.Annotations
-
 		in.Spec.Selector = db.OffshootSelectors()
+		if db.Spec.Mode == api.RedisModeSentinel {
+			in.Spec.Selector[api.LabelRole] = api.DatabasePodPrimary
+		}
 		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       api.RedisPrimaryServicePortName,
 					Port:       api.RedisDatabasePort,
-					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
+					TargetPort: intstr.FromString(api.RedisDatabasePortName),
+				},
+			}),
+			svcTemplate.Spec.Ports,
+		)
+
+		if svcTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = svcTemplate.Spec.ClusterIP
+		}
+		if svcTemplate.Spec.Type != "" {
+			in.Spec.Type = svcTemplate.Spec.Type
+		}
+		in.Spec.ExternalIPs = svcTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = svcTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = svcTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = svcTemplate.Spec.ExternalTrafficPolicy
+		if svcTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = svcTemplate.Spec.HealthCheckNodePort
+		}
+		return in
+	}, metav1.PatchOptions{})
+	return ok, err
+}
+func (c *Controller) ensureStandbyService(db *api.Redis) (kutil.VerbType, error) {
+	meta := metav1.ObjectMeta{
+		Name:      db.StandbyServiceName(),
+		Namespace: db.Namespace,
+	}
+	svcTemplate := api.GetServiceTemplate(db.Spec.ServiceTemplates, api.StandbyServiceAlias)
+
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
+
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+		in.Labels = db.OffshootSelectors()
+		in.Annotations = svcTemplate.Annotations
+		in.Spec.Selector = db.OffshootSelectors()
+		if db.Spec.Mode == api.RedisModeSentinel {
+			in.Spec.Selector[api.LabelRole] = api.DatabasePodStandby
+		}
+		in.Spec.Ports = ofst.PatchServicePorts(
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       api.DatabasePodStandby,
+					Port:       api.RedisDatabasePort,
+					TargetPort: intstr.FromString(api.RedisDatabasePortName),
 				},
 			}),
 			svcTemplate.Spec.Ports,

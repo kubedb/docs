@@ -1,6 +1,9 @@
 package pool
 
-import "sync"
+import (
+	"context"
+	"sync"
+)
 
 type StickyConnPool struct {
 	pool     *ConnPool
@@ -20,7 +23,7 @@ func NewStickyConnPool(pool *ConnPool, reusable bool) *StickyConnPool {
 	}
 }
 
-func (p *StickyConnPool) NewConn() (*Conn, error) {
+func (p *StickyConnPool) NewConn(context.Context) (*Conn, error) {
 	panic("not implemented")
 }
 
@@ -28,7 +31,7 @@ func (p *StickyConnPool) CloseConn(*Conn) error {
 	panic("not implemented")
 }
 
-func (p *StickyConnPool) Get() (*Conn, error) {
+func (p *StickyConnPool) Get(ctx context.Context) (*Conn, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -39,7 +42,7 @@ func (p *StickyConnPool) Get() (*Conn, error) {
 		return p.cn, nil
 	}
 
-	cn, err := p.pool.Get()
+	cn, err := p.pool.Get(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -55,13 +58,13 @@ func (p *StickyConnPool) putUpstream() {
 
 func (p *StickyConnPool) Put(cn *Conn) {}
 
-func (p *StickyConnPool) removeUpstream(reason error) {
-	p.pool.Remove(p.cn, reason)
+func (p *StickyConnPool) removeUpstream() {
+	p.pool.Remove(p.cn)
 	p.cn = nil
 }
 
-func (p *StickyConnPool) Remove(cn *Conn, reason error) {
-	p.removeUpstream(reason)
+func (p *StickyConnPool) Remove(cn *Conn) {
+	p.removeUpstream()
 }
 
 func (p *StickyConnPool) Len() int {
@@ -101,7 +104,7 @@ func (p *StickyConnPool) Close() error {
 		if p.reusable {
 			p.putUpstream()
 		} else {
-			p.removeUpstream(ErrClosed)
+			p.removeUpstream()
 		}
 	}
 
