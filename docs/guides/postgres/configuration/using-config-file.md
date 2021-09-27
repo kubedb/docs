@@ -37,7 +37,7 @@ PostgreSQL allows to configure database via **Configuration File**, **SQL** and 
 
 At first, you have to create a config file named `user.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Postgres crd. KubeDB will mount this volume into `/etc/config/` directory of the database pod which will be referenced by `include_if_exists` directive.
 
-In this tutorial, we will configure `max_connections` and `shared_buffers` via a custom config file. We will use configMap as volume source.
+In this tutorial, we will configure `max_connections` and `shared_buffers` via a custom config file. We will use Secret as volume source.
 
 ## Custom Configuration
 
@@ -51,29 +51,29 @@ shared_buffers=256MB
 
 > Note that config file name must be `user.conf`
 
-Now, create a configMap with this configuration file.
+Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create configmap -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/configuration/user.conf)"
-configmap/pg-configuration created
+$ kubectl create secret generic -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/configuration/user.conf)"
+secret/pg-configuration created
 ```
 
-Verify the config map has the configuration file.
+Verify the Secret has the configuration file.
 
 ```yaml
-$ kubectl get configmap -n demo pg-configuration -o yaml
+$ kubectl get secret -n demo pg-configuration -o yaml
 apiVersion: v1
-data:
+stringData:
   user.conf: |-
     max_connections=300
     shared_buffers=256MB
-kind: ConfigMap
+kind: Secret
 metadata:
   creationTimestamp: "2019-02-07T12:08:26Z"
   name: pg-configuration
   namespace: demo
   resourceVersion: "44214"
-  selfLink: /api/v1/namespaces/demo/configmaps/pg-configuration
+  selfLink: /api/v1/namespaces/demo/secrets/pg-configuration
   uid: 131b321f-2ad1-11e9-9d44-080027154f61
 ```
 
@@ -195,7 +195,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 kubectl patch -n demo pg/custom-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/custom-postgres
 
-kubectl delete -n demo configmap pg-configuration
+kubectl delete -n demo secret pg-configuration
 kubectl delete ns demo
 ```
 

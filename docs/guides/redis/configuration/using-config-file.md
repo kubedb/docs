@@ -27,7 +27,7 @@ KubeDB supports providing custom configuration for Redis. This tutorial will sho
   ```bash
   $ kubectl create ns demo
   namespace/demo created
-  
+
   $ kubectl get ns demo
   NAME    STATUS  AGE
   demo    Active  5s
@@ -41,7 +41,7 @@ Redis allows configuration via a config file. When redis docker image starts, it
 
 At first, you have to create a config file named `redis.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Redis crd. KubeDB will mount this volume into `/usr/local/etc/redis` directory of the pod and the `redis.conf` file path will be sent as an argument of `redis-server` command.
 
-In this tutorial, we will configure `databases` and `maxclients` via a custom config file. We will use configMap as volume source.
+In this tutorial, we will configure `databases` and `maxclients` via a custom config file. We will use Secret as volume source.
 
 ## Custom Configuration
 
@@ -60,23 +60,24 @@ maxclients 500
 
 > Note that config file name must be `redis.conf`
 
-Now, create a configMap with this configuration file.
+Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create configmap -n demo rd-configuration --from-file=./redis.conf
-configmap/rd-configuration created
+$ kubectl create secret generic -n demo rd-configuration --from-file=./redis.conf
+secret/rd-configuration created
 ```
 
-Verify the config map has the configuration file.
+Verify the Secret has the configuration file.
 
 ```yaml
-$ kubectl get configmap -n demo rd-configuration -o yaml
+$ kubectl get secret -n demo rd-configuration -o yaml
+
 apiVersion: v1
-data:
+stringData:
   redis.conf: |
     databases 10
     maxclients 500
-kind: ConfigMap
+kind: Secret
 metadata:
   name: rd-configuration
   namespace: demo
@@ -163,7 +164,7 @@ kubectl delete -n demo rd/custom-redis
 kubectl patch -n demo drmn/custom-redis -p '{"spec":{"wipeOut":true}}' --type="merge"
 kubectl delete -n demo drmn/custom-redis
 
-kubectl delete -n demo configmap rd-configuration
+kubectl delete -n demo secret rd-configuration
 
 kubectl delete ns demo
 ```

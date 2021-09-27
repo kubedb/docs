@@ -98,7 +98,7 @@ spec:
 Let's create the `Elasticsearch` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}//docs/guides/elasticsearch/autoscaler/computetopology/yamls/es-topology.yaml 
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/computetopology/yamls/es-topology.yaml
 elasticsearch.kubedb.com/es-topology created
 ```
 

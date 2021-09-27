@@ -79,17 +79,6 @@ data:
 kind: Secret
 metadata:
   creationTimestamp: "2021-03-11T05:06:07Z"
-  managedFields:
-  - apiVersion: v1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:data:
-        .: {}
-        f:my-config.cnf: {}
-      f:type: {}
-    manager: kubectl-create
-    operation: Update
-    time: "2021-03-11T05:06:07Z"
   name: my-configuration
   namespace: demo
   resourceVersion: "15421"

@@ -242,7 +242,7 @@ In this tutorial we will use a standard userlist text file to create a secret fo
 We will need user `myuser` with password  `mypass` later in this tutorial.
 
 ```bash
-$ kubectl create secret -n demo generic db-user-pass --from-file=https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/userlist.txt
+$ kubectl create secret generic -n demo db-user-pass --from-file=https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/userlist.txt
 
 secret/db-user-pass created
 ```

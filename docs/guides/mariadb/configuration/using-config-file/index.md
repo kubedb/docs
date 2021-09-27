@@ -27,7 +27,7 @@ KubeDB supports providing custom configuration for MariaDB. This tutorial will s
   ```bash
   $ kubectl create ns demo
   namespace/demo created
-  
+
   $ kubectl get ns demo
   NAME    STATUS  AGE
   demo    Active  5s
@@ -41,7 +41,7 @@ MariaDB allows to configure database via configuration file. The default configu
 
 At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSecret` section while creating MariaDB crd. KubeDB will mount this volume into `/etc/mysql/conf.d` directory of the database pod.
 
-In this tutorial, we will configure [max_connections](https://mariadb.com/docs/reference/mdb/system-variables/max_connections/) and [read_buffer_size](https://mariadb.com/docs/reference/mdb/system-variables/read_buffer_size/) via a custom config file. We will use configMap as volume source.
+In this tutorial, we will configure [max_connections](https://mariadb.com/docs/reference/mdb/system-variables/max_connections/) and [read_buffer_size](https://mariadb.com/docs/reference/mdb/system-variables/read_buffer_size/) via a custom config file. We will use Secret as volume source.
 
 ## Custom Configuration
 
@@ -62,24 +62,24 @@ read_buffer_size = 1048576
 
 Here, `read_buffer_size` is set to 1MB in bytes.
 
-Now, create a configMap with this configuration file.
+Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo md-configuration --from-file=./md-config.cnf 
+$ kubectl create secret generic -n demo md-configuration --from-file=./md-config.cnf
 secret/md-configuration created
 ```
 
-Verify the config map has the configuration file.
+Verify the Secret has the configuration file.
 
 ```yaml
-$ kubectl get configmap -n demo md-configuration -o yaml
+$ kubectl get secret -n demo md-configuration -o yaml
 apiVersion: v1
-data:
+stringData:
   md-config.cnf: |
     [mysqld]
     max_connections = 200
     read_buffer_size = 1048576
-kind: ConfigMap
+kind: Secret
 metadata:
   name: md-configuration
   namespace: demo
@@ -89,7 +89,7 @@ metadata:
 Now, create MariaDB crd specifying `spec.configSecret` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}//docs/guides/mariadb/configuration/using-config-file/examples/md-custom.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-config-file/examples/md-custom.yaml
 mysql.kubedb.com/custom-mysql created
 ```
 

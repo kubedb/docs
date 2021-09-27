@@ -43,7 +43,7 @@ To know more about configuring Memcached server see [here](https://github.com/me
 
 At first, you have to create a config file named `memcached.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Memcached crd. KubeDB will mount this volume into `/usr/config` directory of the database pod.
 
-In this tutorial, we will configure [max_connections](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L672) and [limit_maxbytes](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L720) via a custom config file. We will use a ConfigMap as volume source.
+In this tutorial, we will configure [max_connections](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L672) and [limit_maxbytes](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L720) via a custom config file. We will use a Secret as volume source.
 
 **Configuration File Format:**
 KubeDB support providing `memcached.conf` file in the following formats,
@@ -90,30 +90,30 @@ $ cat memcached.conf
 
 > Note that config file name must be `memcached.conf`
 
-Now, create a configMap with this configuration file.
+Now, create a Secret with this configuration file.
 
 ```bash
- $ kubectl create configmap -n demo mc-configuration --from-file=./memcached.conf
-configmap/mc-configuration created
+ $ kubectl create secret generic -n demo mc-configuration --from-file=./memcached.conf
+secret/mc-configuration created
 ```
 
-Verify the config map has the configuration file.
+Verify the Secret has the configuration file.
 
 ```yaml
-$ kubectl get configmaps -n demo mc-configuration -o yaml
+$ kubectl get secrets -n demo mc-configuration -o yaml
 apiVersion: v1
-data:
+stringData:
   memcached.conf: |
     -c 500
     # maximum allowed memory in MB
     -m 128
-kind: ConfigMap
+kind: Secret
 metadata:
   creationTimestamp: 2018-10-04T05:29:37Z
   name: mc-configuration
   namespace: demo
   resourceVersion: "4505"
-  selfLink: /api/v1/namespaces/demo/configmaps/mc-configuration
+  selfLink: /api/v1/namespaces/demo/secrets/mc-configuration
   uid: 7c38b5fd-c796-11e8-bb11-0800272ad446
 ```
 
@@ -197,7 +197,7 @@ kubectl delete -n demo mc/custom-memcached
 kubectl patch -n demo drmn/custom-memcached -p '{"spec":{"wipeOut":true}}' --type="merge"
 kubectl delete -n demo drmn/custom-memcached
 
-kubectl delete -n demo configmap mc-configuration
+kubectl delete -n demo secret mc-configuration
 
 kubectl delete ns demo
 ```

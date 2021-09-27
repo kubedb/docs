@@ -157,7 +157,7 @@ If you want to provide your own password, you need to create a secret that conta
 
 ```bash
 $ export ADMIN_PASSWORD=admin-password
-$ kubectl create secret -n demo generic config-elasticsearch-auth \
+$ kubectl create secret generic -n demo config-elasticsearch-auth \
                 --from-literal=ADMIN_USERNAME=elastic \
                 --from-literal=ADMIN_PASSWORD=harderPASSWORD \
 secret/config-elasticsearch-auth created

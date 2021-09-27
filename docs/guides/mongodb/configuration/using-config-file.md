@@ -70,17 +70,6 @@ data:
 kind: Secret
 metadata:
   creationTimestamp: "2021-02-09T12:59:50Z"
-  managedFields:
-    - apiVersion: v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        f:data:
-          .: {}
-          f:mongod.conf: {}
-        f:type: {}
-      manager: kubectl-create
-      operation: Update
-      time: "2021-02-09T12:59:50Z"
   name: mg-configuration
   namespace: demo
   resourceVersion: "52495"

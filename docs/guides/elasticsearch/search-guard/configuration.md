@@ -318,7 +318,7 @@ sg_readall:
 Now create a Secret with these files to use in your Elasticsearch object.
 
 ```bash
-$ kubectl create secret -n demo generic config-elasticsearch-auth \
+$ kubectl create secret generic -n demo config-elasticsearch-auth \
                 --from-file=sg_config.yml \
                 --from-file=sg_internal_users.yml \
                 --from-file=sg_action_groups.yml \
