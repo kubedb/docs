@@ -39,7 +39,7 @@ PerconaXtraDB allows to configure database via configuration file. The default c
 
 At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `.spec.configSecret` section while creating PerconaXtraDB object. KubeDB will mount this volume into the directory (specified above) of the database Pod.
 
-In this tutorial, we will configure [max_connections](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_connections) and [read_buffer_size](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_read_buffer_size) via a custom config file for a standalone percona server. We will use ConfigMap as volume source.
+In this tutorial, we will configure [max_connections](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_connections) and [read_buffer_size](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_read_buffer_size) via a custom config file for a standalone percona server. We will use Secret as volume source.
 
 ## Custom Configuration
 
@@ -60,29 +60,29 @@ read_buffer_size = 1048576
 
 Here, `read_buffer_size` is set to 1MB in bytes.
 
-Now, create a ConfigMap with this configuration file.
+Now, create a Secret with this configuration file.
 
 ```bash
- $ kubectl create configmap -n demo my-custom-config --from-file=./my-config.cnf
-configmap/my-custom-config created
+ $ kubectl create secret generic -n demo my-custom-config --from-file=./my-config.cnf
+secret/my-custom-config created
 ```
 
-Verify the ConfigMap has the configuration file.
+Verify the Secret has the configuration file.
 
 ```bash
-$ kubectl get configmap -n demo my-custom-config -o yaml
+$ kubectl get secret -n demo my-custom-config -o yaml
 ```
 
 And the output is,
 
 ```yaml
 apiVersion: v1
-data:
+stringData:
   my-config.cnf: |
     [mysqld]
     max_connections = 200
     read_buffer_size = 1048576
-kind: ConfigMap
+kind: Secret
 metadata:
   name: my-custom-config
   namespace: demo
@@ -174,7 +174,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 $ kubectl patch -n demo px/custom-px -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo px/custom-px
 
-$ kubectl delete -n demo configmap my-custom-config
+$ kubectl delete -n demo secret my-custom-config
 $ rm ./my-config.cnf
 
 $ kubectl delete ns demo

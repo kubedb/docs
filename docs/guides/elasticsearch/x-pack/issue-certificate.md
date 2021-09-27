@@ -281,7 +281,7 @@ Generated `client.jks` will be used as keystore for http layer TLS.
 Now create a Secret with these certificates to use in your Elasticsearch object.
 
 ```bash
-$ kubectl create secret -n demo generic custom-certificate-es-ssl-cert \
+$ kubectl create secret generic -n demo custom-certificate-es-ssl-cert \
                 --from-file=root.pem \
                 --from-file=root.jks \
                 --from-file=node.jks \

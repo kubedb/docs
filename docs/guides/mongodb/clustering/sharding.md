@@ -70,7 +70,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}//docs/examples/mongodb/clustering/mongo-sharding.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/mongo-sharding.yaml
 mongodb.kubedb.com/mongo-sh created
 ```
 

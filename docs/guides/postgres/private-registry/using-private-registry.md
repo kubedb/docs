@@ -85,7 +85,7 @@ ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret -n demo docker-registry myregistrykey \
+$ kubectl create secret generic -n demo docker-registry myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \

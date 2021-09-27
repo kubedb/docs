@@ -326,7 +326,7 @@ Generated `sgadmin.pkcs12` will be used as keystore for admin usage.
 Now create a Secret with these certificates to use in your Elasticsearch object.
 
 ```bash
-$ kubectl create secret -n demo generic sg-elasticsearch-cert \
+$ kubectl create secret generic -n demo sg-elasticsearch-cert \
                 --from-file=root.pem \
                 --from-file=root.jks \
                 --from-file=node.jks \

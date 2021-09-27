@@ -47,7 +47,7 @@ To know more about configuring ProxySQL see [configuration file](https://github.
 
 At first, you have to create a config file with name `custom-proxysql.cnf` containing your desired configurations. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `.spec.configSecret` section while creating ProxySQL object. KubeDB will mount this volume into `/etc/custom-config` directory of the ProxySQL Pod.
 
-In this tutorial, we will configure [mysql-connect_timeout_server](https://github.com/sysown/proxysql/wiki/Global-variables#mysql-connect_timeout_server) via the `custom-proxysql.cnf` file. We will use configMap as volume source.
+In this tutorial, we will configure [mysql-connect_timeout_server](https://github.com/sysown/proxysql/wiki/Global-variables#mysql-connect_timeout_server) via the `custom-proxysql.cnf` file. We will use Secret as volume source.
 
 ## Custom Configuration
 
@@ -75,30 +75,30 @@ mysql_variables=
 
 Here, `connect_timeout_server` is set to 20 secondes in mili-second.
 
-Now, create a configMap with this configuration file.
+Now, create a Secret with this configuration file.
 
 ```bash
- $ kubectl create configmap -n demo my-custom-config --from-file=./custom-proxysql.cnf
-configmap/my-custom-config created
+$ kubectl create secret generic -n demo my-custom-config --from-file=./custom-proxysql.cnf
+secret/my-custom-config created
 ```
 
-Verify the config map has the configuration file.
+Verify the Secret has the configuration file.
 
 ```yaml
-$ kubectl get configmap -n demo my-custom-config -o yaml
+$ kubectl get secret -n demo my-custom-config -o yaml
+
 apiVersion: v1
-data:
+stringData:
   my-config.cnf: |
     mysql_variables=
     {
       interfaces="0.0.0.0:6033"
       connect_timeout_server=20000
     }
-kind: ConfigMap
+kind: Secret
 metadata:
   name: my-custom-config
   namespace: demo
-  ...
 ```
 
 > **Note:** For this tutorial there must be a MySQL object with name `my-group` (Group Replication supported) running in the `demo` namespace in the cluster. You can deploy one by following section [create MySQL object with Group Replication](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md#Create-MySQL-Object).
@@ -197,7 +197,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 
 $ kubectl delete proxysql -n demo custom-proxysql
 
-$ kubectl delete configmap my-custom-config -n demo
+$ kubectl delete secret my-custom-config -n demo
 $ rm ./custom-proxysql.cnf
 $ kubectl delete my -n demo my-group
 
