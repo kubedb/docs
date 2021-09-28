@@ -1409,7 +1409,7 @@ kubedb.dev/postgres/pkg/controller
 ## explicit
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.15.0
+# kubedb.dev/redis v0.15.1-0.20210928092115-a14cd6302bf9
 ## explicit
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster

@@ -33,7 +33,7 @@ require (
 	kubedb.dev/pgbouncer v0.9.0
 	kubedb.dev/postgres v0.22.0
 	kubedb.dev/proxysql v0.9.0
-	kubedb.dev/redis v0.15.0
+	kubedb.dev/redis v0.15.1-0.20210928092115-a14cd6302bf9
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d

@@ -382,7 +382,7 @@ func getMonitorContainer(db *api.Redis, redisVersion *v1alpha1.RedisVersion, cur
 	}
 	if db.Spec.TLS != nil {
 		tlsArgs := []string{
-			"--redis.addr=rediss://localhost:26379",
+			"--redis.addr=rediss://localhost:6379",
 			"--tls-client-cert-file=/certs/exporter.crt",
 			"--tls-client-key-file=/certs/exporter.key",
 			"--tls-ca-cert-file=/certs/ca.crt",
