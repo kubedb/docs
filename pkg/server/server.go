@@ -168,6 +168,9 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 			&rdAdmsn.RedisMutator{
 				ClusterTopology: ctrl.ClusterTopology,
 			},
+			&rdAdmsn.RedisSentinelMutator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
 		}
 	}
 	if c.OperatorConfig.EnableValidatingWebhook {
@@ -192,6 +195,9 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 			},
 			&prAdmsn.ProxySQLValidator{},
 			&rdAdmsn.RedisValidator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
+			&rdAdmsn.RedisSentinelValidator{
 				ClusterTopology: ctrl.ClusterTopology,
 			},
 			&namespace.NamespaceValidator{
