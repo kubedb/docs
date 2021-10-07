@@ -8,7 +8,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/xdg/scram v1.0.3 // indirect
 	github.com/xdg/stringprep v1.0.3 // indirect
-	go.bytebuilders.dev/audit v0.0.7
+	go.bytebuilders.dev/audit v0.0.9
 	go.bytebuilders.dev/license-verifier v0.9.3
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.3
 	gomodules.xyz/logs v0.0.4
@@ -20,10 +20,10 @@ require (
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20210921150324-f005c6dfcb32
-	kmodules.xyz/custom-resources v0.0.0-20210829135624-c63be82e13c0
-	kmodules.xyz/webhook-runtime v0.0.0-20210829120758-f6ab57afa7e4
-	kubedb.dev/apimachinery v0.22.0
+	kmodules.xyz/client-go v0.0.0-20210928133955-8df5bb467db6
+	kmodules.xyz/custom-resources v0.0.0-20211007080833-72bd9e8cae6e
+	kmodules.xyz/webhook-runtime v0.0.0-20210928141616-7f73c2ab318a
+	kubedb.dev/apimachinery v0.22.1-0.20211006103425-47b42be0bc35
 	kubedb.dev/elasticsearch v0.22.0
 	kubedb.dev/mariadb v0.6.0
 	kubedb.dev/memcached v0.15.0
@@ -31,7 +31,7 @@ require (
 	kubedb.dev/mysql v0.15.0
 	kubedb.dev/percona-xtradb v0.9.0
 	kubedb.dev/pgbouncer v0.9.0
-	kubedb.dev/postgres v0.22.0
+	kubedb.dev/postgres v0.22.1-0.20211007203332-8755bde270d3
 	kubedb.dev/proxysql v0.9.0
 	kubedb.dev/redis v0.15.1-0.20210928092115-a14cd6302bf9
 )
@@ -141,3 +141,5 @@ replace k8s.io/kubernetes => github.com/kmodules/kubernetes v1.22.0-alpha.0.0.20
 replace k8s.io/utils => k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 
 replace sigs.k8s.io/application => github.com/kmodules/application v0.8.4-0.20210427030912-90eeee3bc4ad
+
+replace github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt v3.2.1+incompatible
