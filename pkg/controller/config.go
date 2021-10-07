@@ -137,6 +137,12 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 
+	if auditor != nil {
+		if err := auditor.SetupSiteInfoPublisher(ctrl.ClientConfig, ctrl.Client, ctrl.KubeInformerFactory); err != nil {
+			return nil, err
+		}
+	}
+
 	return ctrl, nil
 }
 
