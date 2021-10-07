@@ -145,7 +145,7 @@ func (c *Controller) ensurePrimaryService(db *api.Postgres) (kutil.VerbType, err
 		in.Annotations = svcTemplate.Annotations
 
 		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Selector[api.PostgresLabelRole] = api.PostgresPodPrimary
+		in.Spec.Selector[api.LabelRole] = api.PostgresPodPrimary
 		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
@@ -188,7 +188,7 @@ func (c *Controller) ensureStandbyService(db *api.Postgres) (kutil.VerbType, err
 		in.Annotations = svcTemplate.Annotations
 
 		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Selector[api.PostgresLabelRole] = api.PostgresPodStandby
+		in.Spec.Selector[api.LabelRole] = api.PostgresPodStandby
 		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
