@@ -8,7 +8,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/xdg/scram v1.0.3 // indirect
 	github.com/xdg/stringprep v1.0.3 // indirect
-	go.bytebuilders.dev/audit v0.0.9
+	go.bytebuilders.dev/audit v0.0.10
 	go.bytebuilders.dev/license-verifier v0.9.3
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.3
 	gomodules.xyz/logs v0.0.4
