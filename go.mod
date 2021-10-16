@@ -11,7 +11,7 @@ require (
 	go.bytebuilders.dev/audit v0.0.10
 	go.bytebuilders.dev/license-verifier v0.9.3
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.3
-	gomodules.xyz/logs v0.0.4
+	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/runtime v0.2.0
 	gomodules.xyz/x v0.0.8
 	k8s.io/api v0.21.1
