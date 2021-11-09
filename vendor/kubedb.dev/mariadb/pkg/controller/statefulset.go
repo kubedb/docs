@@ -53,7 +53,7 @@ func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 		c.Client,
 		statefulSetMeta,
 		func(in *apps.StatefulSet) *apps.StatefulSet {
-			in.Labels = db.OffshootLabels()
+			in.Labels = db.PodControllerLabels()
 			in.Annotations = db.Spec.PodTemplate.Controller.Annotations
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Spec.Replicas = db.Spec.Replicas
@@ -62,7 +62,7 @@ func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 				MatchLabels: db.OffshootSelectors(),
 			}
 			in.Spec.PodManagementPolicy = apps.ParallelPodManagement
-			in.Spec.Template.Labels = db.OffshootSelectors()
+			in.Spec.Template.Labels = db.PodLabels()
 			in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 				in.Spec.Template.Spec.InitContainers,

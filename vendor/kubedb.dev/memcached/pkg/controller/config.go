@@ -33,6 +33,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
 	"kmodules.xyz/client-go/tools/cli"
+	"kmodules.xyz/client-go/tools/clusterid"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
 
@@ -82,8 +83,12 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		fn := auditlib.BillingEventCreator{
 			Mapper: mapper,
 		}
+		cid, err := clusterid.ClusterUID(c.KubeClient.CoreV1().Namespaces())
+		if err != nil {
+			return nil, err
+		}
 		auditor = auditlib.NewResilientEventPublisher(func() (*auditlib.NatsConfig, error) {
-			return auditlib.NewNatsConfig(c.KubeClient.CoreV1().Namespaces(), c.LicenseFile)
+			return auditlib.NewNatsConfig(cid, c.LicenseFile)
 		}, mapper, fn.CreateEvent)
 	}
 

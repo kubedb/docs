@@ -31,9 +31,9 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
+	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
-	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (c *Controller) create(db *api.MySQL) error {
@@ -63,37 +63,47 @@ func (c *Controller) create(db *api.MySQL) error {
 		return err
 	}
 
-	if err := c.ensureAuthSecret(db); err != nil {
+	reconclier := NewReconciler(c.Config, c.Controller)
+	db, vt, err := reconclier.ReconcileNodes(db)
+	if err != nil {
 		return err
 	}
 
-	// wait for certificates
-	if db.Spec.TLS != nil && db.Spec.TLS.IssuerRef != nil {
-		ok, err := dynamic_util.ResourcesExists(
-			c.DynamicClient,
-			core.SchemeGroupVersion.WithResource("secrets"),
-			db.Namespace,
-			db.MustCertSecretName(api.MySQLServerCert),
-			db.MustCertSecretName(api.MySQLClientCert),
-			db.MustCertSecretName(api.MySQLMetricsExporterCert),
-			meta_util.NameWithSuffix(db.Name, api.MySQLMetricsExporterConfigSecretSuffix),
+	// If both err==nil & mysql == nil,
+	// the object was dropped from the work-queue, to process later.
+	// return nil.
+	if db == nil {
+		return nil
+	}
+
+	if vt == kutil.VerbCreated {
+		c.Recorder.Event(
+			db,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully created MySQL",
 		)
-		if err != nil {
+	} else if vt == kutil.VerbPatched {
+		c.Recorder.Event(
+			db,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully patched MySQL",
+		)
+	}
+
+	//ensure Router configuration if db uses innodb cluster
+	if db.IsInnoDBCluster() {
+		if err := c.ensureRouter(db); err != nil {
 			return err
 		}
-		if !ok {
-			klog.Infoln(fmt.Sprintf("wait for all necessary secrets for db %s/%s", db.Namespace, db.Name))
-			return nil
+		if err := c.ensureRouterConfigSecret(db); err != nil {
+			return err
 		}
-	}
-
-	// ensure database StatefulSet
-	if err := c.ensureStatefulSet(db); err != nil {
-		return err
 	}
 
 	// ensure appbinding before ensuring Restic scheduler and restore
-	_, err := c.ensureAppBinding(db)
+	_, err = c.ensureAppBinding(db)
 	if err != nil {
 		klog.Errorln(err)
 		return err
@@ -158,7 +168,6 @@ func (c *Controller) create(db *api.MySQL) error {
 		klog.Errorln(err)
 		return nil
 	}
-
 	if err := c.manageMonitor(db); err != nil {
 		c.Recorder.Eventf(
 			db,

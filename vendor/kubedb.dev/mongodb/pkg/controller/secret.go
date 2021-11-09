@@ -83,6 +83,9 @@ func (c *Reconciler) ensureKeyFileSecret(db *api.MongoDB) error {
 				api.MongoDBKeyForKeyFile: base64Token,
 			},
 		}
+
+		core_util.EnsureOwnerReference(&secret.ObjectMeta, metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB)))
+
 		if _, err := c.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return err
 		}
@@ -122,6 +125,9 @@ func (c *Reconciler) createAuthSecret(db *api.MongoDB) (*core.LocalObjectReferen
 				core.BasicAuthPasswordKey: passgen.Generate(api.DefaultPasswordLength),
 			},
 		}
+
+		core_util.EnsureOwnerReference(&secret.ObjectMeta, metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB)))
+
 		if _, err := c.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return nil, err
 		}

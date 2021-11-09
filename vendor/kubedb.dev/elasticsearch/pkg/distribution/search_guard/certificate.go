@@ -86,17 +86,26 @@ func (es *Elasticsearch) EnsureCertSecrets() error {
 		return errors.Wrap(err, "failed to create/sync transport-cert secret")
 	}
 
+	// The securityadmin.sh tool can be run from any machine
+	// that has access to the transport port of your Elasticsearch cluster (the default is 9300).
+	// You can change the security plugin configuration without having to access your nodes through SSH.
+	// script path: plugins/search-guard-7/tools/sgadmin.sh
+	//				plugins/search-guard-6/tools/sgadmin.sh
+	//	ref: https://docs.search-guard.com/latest/sgadmin-basic-usage
+
+	// To load configuration changes to the security plugin, you must provide your admin certificate to the tool.
+	// So we must create the admin certificate even if the HTTP layer (db.Spec.EnableSSL=false) is disabled.
+	// create certificate for searchguard admin
+	err = es.createAdminCertSecret(caKey, caCert, certPath)
+	if err != nil {
+		return errors.Wrap(err, "failed to create/sync admin-cert secret")
+	}
+
 	if es.db.Spec.EnableSSL {
 		// When SSL is enabled, create certificates for HTTP layer
 		err = es.createHTTPCertSecret(caKey, caCert, certPath)
 		if err != nil {
 			return errors.Wrap(err, "failed to create/sync http-cert secret")
-		}
-
-		// create certificate for searchguard admin
-		err = es.createAdminCertSecret(caKey, caCert, certPath)
-		if err != nil {
-			return errors.Wrap(err, "failed to create/sync admin-cert secret")
 		}
 
 		// create certificate for metrics-exporter, if monitoring is enabled

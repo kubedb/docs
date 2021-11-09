@@ -91,6 +91,19 @@ func (c *Controller) create(db *api.Redis) error {
 			return nil
 		}
 	}
+	// If the db mode is sentinel then we need to ensure that the sentinel with which DB is going to be monitored by, is provisioned.
+	if db.Spec.Mode == api.RedisModeSentinel {
+		if db.Spec.SentinelRef == nil || db.Spec.SentinelRef.Name == "" || db.Spec.SentinelRef.Namespace == "" {
+			return fmt.Errorf("need to provide sentinelRef Name and Namespace while redis Mode set to Sentinel for redis %s/%s", db.Namespace, db.Name)
+		}
+		sentinel, err := c.DBClient.KubedbV1alpha2().RedisSentinels(db.Spec.SentinelRef.Namespace).Get(context.TODO(), db.Spec.SentinelRef.Name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		if !kmapi.IsConditionTrue(sentinel.Status.Conditions, api.DatabaseProvisioned) {
+			return fmt.Errorf("redis %s/%s is waiting for the sentinel %s/%s to be provisioned", db.Namespace, db.Name, sentinel.Namespace, sentinel.Name)
+		}
+	}
 
 	// ensure database StatefulSet
 	vt2, err := c.ensureRedisNodes(db)

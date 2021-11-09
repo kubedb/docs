@@ -122,11 +122,10 @@ func (c *Controller) createService(db *api.Elasticsearch) (kutil.VerbType, error
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = db.OffshootLabels()
+		in.Labels = db.ServiceLabels(api.PrimaryServiceAlias)
 		in.Annotations = svcTemplate.Annotations
 
-		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Selector[db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeIngest)] = api.ElasticsearchNodeRoleSet
+		in.Spec.Selector = db.OffshootSelectors(map[string]string{db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeIngest): api.ElasticsearchNodeRoleSet})
 		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
@@ -172,8 +171,7 @@ func (c *Controller) createMasterDiscoveryService(db *api.Elasticsearch) (kutil.
 		// create headless service
 		in.Spec.ClusterIP = core.ClusterIPNone
 		// create pod dns records
-		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Selector[db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeMaster)] = api.ElasticsearchNodeRoleSet
+		in.Spec.Selector = db.OffshootSelectors(map[string]string{db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeMaster): api.ElasticsearchNodeRoleSet})
 		// TODO: Uncomment if needed
 		// in.Spec.PublishNotReadyAddresses = true
 		// create SRV records with pod DNS name as service provider
@@ -209,7 +207,7 @@ func (c *Controller) ensureStatsService(db *api.Elasticsearch) (kutil.VerbType, 
 		in.Labels = db.StatsServiceLabels()
 		in.Annotations = meta_util.OverwriteKeys(in.Annotations, svcTemplate.Annotations)
 
-		in.Spec.Selector = db.IngestSelectors()
+		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{

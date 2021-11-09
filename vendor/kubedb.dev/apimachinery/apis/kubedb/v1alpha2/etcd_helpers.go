@@ -51,9 +51,25 @@ func (e Etcd) OffshootSelectors() map[string]string {
 }
 
 func (e Etcd) OffshootLabels() map[string]string {
-	out := e.OffshootSelectors()
-	out[meta_util.ComponentLabelKey] = ComponentDatabase
-	return meta_util.FilterKeys(kubedb.GroupName, out, e.Labels)
+	return e.offshootLabels(e.OffshootSelectors(), nil)
+}
+
+func (e Etcd) PodLabels() map[string]string {
+	return e.offshootLabels(e.OffshootSelectors(), e.Spec.PodTemplate.Labels)
+}
+
+func (e Etcd) PodControllerLabels() map[string]string {
+	return e.offshootLabels(e.OffshootSelectors(), e.Spec.PodTemplate.Controller.Labels)
+}
+
+func (e Etcd) ServiceLabels(alias ServiceAlias, extraLabels ...map[string]string) map[string]string {
+	svcTemplate := GetServiceTemplate(e.Spec.ServiceTemplates, alias)
+	return e.offshootLabels(meta_util.OverwriteKeys(e.OffshootSelectors(), extraLabels...), svcTemplate.Labels)
+}
+
+func (e Etcd) offshootLabels(selector, override map[string]string) map[string]string {
+	selector[meta_util.ComponentLabelKey] = ComponentDatabase
+	return meta_util.FilterKeys(kubedb.GroupName, selector, meta_util.OverwriteKeys(nil, e.Labels, override))
 }
 
 func (e Etcd) ResourceFQN() string {
@@ -133,9 +149,7 @@ func (e Etcd) StatsService() mona.StatsAccessor {
 }
 
 func (e Etcd) StatsServiceLabels() map[string]string {
-	lbl := meta_util.FilterKeys(kubedb.GroupName, e.OffshootSelectors(), e.Labels)
-	lbl[LabelRole] = RoleStats
-	return lbl
+	return e.ServiceLabels(StatsServiceAlias, map[string]string{LabelRole: RoleStats})
 }
 
 func (e *Etcd) SetDefaults() {

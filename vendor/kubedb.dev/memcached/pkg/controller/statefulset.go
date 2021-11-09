@@ -102,7 +102,7 @@ func (c *Controller) createStatefulSet(db *api.Memcached) (*apps.StatefulSet, ku
 	}
 
 	return app_util.CreateOrPatchStatefulSet(context.TODO(), c.Client, stsMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
-		in.Labels = db.OffshootLabels()
+		in.Labels = db.PodControllerLabels()
 		in.Annotations = db.Spec.PodTemplate.Controller.Annotations
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
@@ -111,7 +111,7 @@ func (c *Controller) createStatefulSet(db *api.Memcached) (*apps.StatefulSet, ku
 		in.Spec.Selector = &metav1.LabelSelector{
 			MatchLabels: db.OffshootSelectors(),
 		}
-		in.Spec.Template.Labels = db.OffshootSelectors()
+		in.Spec.Template.Labels = db.PodLabels()
 		in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, db.Spec.PodTemplate.Spec.InitContainers)
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{

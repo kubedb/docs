@@ -79,7 +79,7 @@ func (c *Controller) setNewAgent(db *api.MySQL) error {
 		return err
 	}
 	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
-		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
+		in.Annotations = meta_util.OverwriteKeys(in.Annotations, map[string]string{
 			mona.KeyAgent: string(db.Spec.Monitor.Agent),
 		})
 		return in

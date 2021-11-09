@@ -223,7 +223,7 @@ func (c *Controller) GetElasticsearchClient(db *api.Elasticsearch) (go_es.ESClie
 		return nil, errors.Wrap(err, "failed to get elasticsearchVersion")
 	}
 
-	dbClient, err := go_es.GetElasticClient(c.Client, db, esVersion.Spec.Version, url)
+	dbClient, err := go_es.GetElasticClient(c.Client, db, esVersion, url)
 	if err != nil {
 		return nil, err
 	}

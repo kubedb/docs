@@ -277,7 +277,7 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 	}
 
 	return app_util.CreateOrPatchStatefulSet(context.TODO(), c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
-		in.Labels = db.OffshootLabels()
+		in.Labels = db.PodControllerLabels()
 		in.Annotations = db.Spec.PodTemplate.Controller.Annotations
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
@@ -300,16 +300,16 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 		}
 		in.Spec.ServiceName = db.GoverningServiceName()
 
-		labels := db.OffshootSelectors()
+		var clusterLabels map[string]string
 		if db.Spec.Mode == api.RedisModeCluster {
-			labels = core_util.UpsertMap(labels, map[string]string{
+			clusterLabels = map[string]string{
 				api.RedisShardKey: statefulSetName[len(db.BaseNameForShard()):],
-			})
+			}
 		}
 		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: labels,
+			MatchLabels: db.OffshootSelectors(clusterLabels),
 		}
-		in.Spec.Template.Labels = labels
+		in.Spec.Template.Labels = db.PodLabels(clusterLabels)
 
 		in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
@@ -360,7 +360,7 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 			in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
 		}
 		in = upsertUserEnv(in, db)
-		in = upsertCustomConfig(in, db)
+		in = upsertRedisConfig(in, db)
 
 		// configure tls volume
 		in = upsertTLSVolume(in, db)
@@ -843,46 +843,46 @@ func upsertUserEnv(statefulset *apps.StatefulSet, db *api.Redis) *apps.StatefulS
 	return statefulset
 }
 
-func upsertCustomConfig(statefulSet *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
-	if db.Spec.ConfigSecret != nil {
-		for i, container := range statefulSet.Spec.Template.Spec.Containers {
-			if container.Name == api.ResourceSingularRedis {
-				configVolumeMount := core.VolumeMount{
-					Name:      "custom-config",
-					MountPath: CONFIG_MOUNT_PATH,
-				}
-				volumeMounts := container.VolumeMounts
-				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
-				statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+func upsertRedisConfig(statefulSet *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 
-				configVolume := core.Volume{
-					Name: "custom-config",
-					VolumeSource: core.VolumeSource{
-						Secret: &core.SecretVolumeSource{
-							SecretName:  db.Spec.ConfigSecret.Name,
-							DefaultMode: pointer.Int32P(0777),
-						},
-					},
-				}
-
-				volumes := statefulSet.Spec.Template.Spec.Volumes
-				volumes = core_util.UpsertVolume(volumes, configVolume)
-				statefulSet.Spec.Template.Spec.Volumes = volumes
-
-				args := statefulSet.Spec.Template.Spec.Containers[i].Args
-				if db.Spec.Mode != api.RedisModeSentinel {
-					// send custom config file path as argument
-					configPath := filepath.Join(CONFIG_MOUNT_PATH, RedisConfigRelativePath)
-					if len(args) == 0 || args[0] != configPath {
-						args = append([]string{configPath}, args...)
-					}
-				}
-
-				statefulSet.Spec.Template.Spec.Containers[i].Args = args
-				break
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularRedis {
+			configVolumeMount := core.VolumeMount{
+				Name:      "redis-config",
+				MountPath: CONFIG_MOUNT_PATH,
 			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+			configVolume := core.Volume{
+				Name: "redis-config",
+				VolumeSource: core.VolumeSource{
+					Secret: &core.SecretVolumeSource{
+						SecretName:  db.ConfigSecretName(),
+						DefaultMode: pointer.Int32P(0777),
+					},
+				},
+			}
+
+			volumes := statefulSet.Spec.Template.Spec.Volumes
+			volumes = core_util.UpsertVolume(volumes, configVolume)
+			statefulSet.Spec.Template.Spec.Volumes = volumes
+
+			args := statefulSet.Spec.Template.Spec.Containers[i].Args
+			if db.Spec.Mode != api.RedisModeSentinel {
+				// send custom config file path as argument
+				configPath := filepath.Join(CONFIG_MOUNT_PATH, api.DefaultConfigKey)
+				if len(args) == 0 || args[0] != configPath {
+					args = append([]string{configPath}, args...)
+				}
+			}
+
+			statefulSet.Spec.Template.Spec.Containers[i].Args = args
+			break
 		}
 	}
+
 	return statefulSet
 }
 

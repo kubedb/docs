@@ -194,10 +194,15 @@ func (c *Controller) create(db *api.MongoDB) error {
 
 	// Create TLS user with Certificate subject name
 	if db.Spec.TLS != nil {
-		err = c.CreateTLSUsers(db)
+		err = nc.CreateTLSUsers(db)
 		if err != nil {
 			return err
 		}
+	}
+
+	err = nc.SetupReplicaSetsConfig(db)
+	if err != nil {
+		return err
 	}
 
 	// If the database is successfully provisioned,

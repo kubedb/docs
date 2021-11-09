@@ -275,6 +275,14 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		return fmt.Errorf(`to enable 'spec.enableSSL', 'spec.disableSecurity' needs to be set to false`)
 	}
 
+	// TODO:
+	//		- OpenSearch provision fails with security plugin disabled.
+	//		- Remove the validation, once the issue is fixed.
+	//		- Issue Ref: https://github.com/opensearch-project/security/issues/1481
+	if db.Spec.DisableSecurity && esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginOpenSearch {
+		return fmt.Errorf(`'spec.disableSecurity' cannot be 'true' for opensearch`)
+	}
+
 	monitorSpec := db.Spec.Monitor
 	if monitorSpec != nil {
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
@@ -390,7 +398,7 @@ func validateNodeReplicas(topology *api.ElasticsearchClusterTopology) error {
 }
 
 func validateNodeRoles(topology *api.ElasticsearchClusterTopology, esVersion *catalog.ElasticsearchVersion) error {
-	if esVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenDistro {
+	if esVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenDistro || esVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenSearch {
 		if topology.ML != nil || topology.DataContent != nil || topology.DataCold != nil || topology.DataFrozen != nil ||
 			topology.Coordinating != nil || topology.Transform != nil {
 			return errors.Errorf("node role: ml, data_cold, data_frozen, data_content, transform, coordinating are not supported for ElasticsearchVersion %s", esVersion.Name)
@@ -423,8 +431,8 @@ func validateSecureConfig(db *api.Elasticsearch, esVersion *catalog.Elasticsearc
 	}
 	if db.Spec.SecureConfigSecret != nil {
 		// Elasticsearch keystore is not supported for OpenDistro
-		if esVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenDistro {
-			return errors.New("secureConfigSecret is not supported for Opendistro of Elasticsearch")
+		if esVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenDistro || esVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenSearch {
+			return errors.New("secureConfigSecret is not supported for Opendistro/OpenSearch of Elasticsearch")
 		}
 		// KEYSTORE_PASSWORD is supported since ES version 7.9
 		if dbVersion.Major() < 7 || (dbVersion.Major() == 7 && dbVersion.Minor() < 9) {

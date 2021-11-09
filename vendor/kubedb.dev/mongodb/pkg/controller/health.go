@@ -25,8 +25,8 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
+	"kubedb.dev/db-client-go/mongodb"
 
-	"go.mongodb.org/mongo-driver/mongo"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -76,7 +76,7 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 				wg.Done()
 			}()
 			var err error
-			var dbClient, configSvrClient, mongosClient *mongo.Client
+			var dbClient, configSvrClient, mongosClient *mongodb.Client
 			var shardPingErrors []error
 
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
@@ -84,7 +84,11 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 
 			// Create database client
 			if db.Spec.ShardTopology == nil {
-				dbClient, err = c.GetMongoClient(ctx, db, strings.Join(db.Hosts(), ","), db.RepSetName())
+				dbClient, err = mongodb.NewKubeDBClientBuilder(db, c.Client).
+					WithContext(ctx).
+					WithURL(strings.Join(db.Hosts(), ",")).
+					WithReplSet(db.RepSetName()).
+					GetMongoClient()
 				if err != nil {
 					// Since the client was unable to connect the database,
 					// update "AcceptingConnection" to "false".
@@ -94,13 +98,14 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 					return
 				}
 				defer func() {
-					err = dbClient.Disconnect(ctx)
-					if err != nil {
-						klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
-					}
+					dbClient.Close()
 				}()
 			} else {
-				configSvrClient, err = c.GetMongoClient(ctx, db, strings.Join(db.ConfigSvrHosts(), ","), db.ConfigSvrRepSetName())
+				configSvrClient, err = mongodb.NewKubeDBClientBuilder(db, c.Client).
+					WithContext(ctx).
+					WithURL(strings.Join(db.ConfigSvrHosts(), ",")).
+					WithReplSet(db.ConfigSvrRepSetName()).
+					GetMongoClient()
 				if err != nil {
 					// Since the client was unable to connect to the config server,
 					// update "AcceptingConnection" to "false".
@@ -110,15 +115,16 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 					return
 				}
 				defer func() {
-					err = configSvrClient.Disconnect(ctx)
-					if err != nil {
-						klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
-					}
+					configSvrClient.Close()
 				}()
 
 				shardPingErrors = make([]error, db.Spec.ShardTopology.Shard.Shards)
 				for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
-					shardClient, err := c.GetMongoClient(ctx, db, strings.Join(db.ShardHosts(i), ","), db.ShardRepSetName(i))
+					shardClient, err := mongodb.NewKubeDBClientBuilder(db, c.Client).
+						WithContext(ctx).
+						WithURL(strings.Join(db.ShardHosts(i), ",")).
+						WithReplSet(db.ShardRepSetName(i)).
+						GetMongoClient()
 					if err != nil {
 						// Since the client was unable to connect to the shard nodes,
 						// update "AcceptingConnection" to "false".
@@ -127,12 +133,9 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 						// Since the client isn't created, skip rest operations.
 						return
 					}
-					func(client *mongo.Client) {
+					func(client *mongodb.Client) {
 						defer func() {
-							err = client.Disconnect(ctx)
-							if err != nil {
-								klog.Errorf("Failed to disconnect client for shard %s/%s. error: %v", db.Namespace, db.Name, err)
-							}
+							client.Close()
 						}()
 						err = client.Ping(ctx, nil)
 						if err != nil {
@@ -144,7 +147,11 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 					}(shardClient)
 				}
 
-				mongosClient, err = c.GetMongoClient(ctx, db, strings.Join(db.MongosHosts(), ","), "")
+				mongosClient, err = mongodb.NewKubeDBClientBuilder(db, c.Client).
+					WithContext(ctx).
+					WithURL(strings.Join(db.MongosHosts(), ",")).
+					WithReplSet("").
+					GetMongoClient()
 				if err != nil {
 					// Since the client was unable to connect to the mongos,
 					// update "AcceptingConnection" to "false".
@@ -154,10 +161,7 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 					return
 				}
 				defer func() {
-					err = mongosClient.Disconnect(ctx)
-					if err != nil {
-						klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
-					}
+					mongosClient.Close()
 				}()
 			}
 

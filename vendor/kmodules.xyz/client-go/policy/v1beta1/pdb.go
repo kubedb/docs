@@ -18,12 +18,12 @@ package v1beta1
 
 import (
 	"context"
-	"reflect"
 
 	"kmodules.xyz/client-go/discovery"
 
 	"github.com/pkg/errors"
 	policy "k8s.io/api/policy/v1beta1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -54,7 +54,7 @@ func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interfac
 	}
 
 	mod := transform(cur.DeepCopy())
-	if !reflect.DeepEqual(cur.Spec, mod.Spec) {
+	if !apiequality.Semantic.DeepEqual(cur.Spec, mod.Spec) {
 		// ref: https://github.com/kubernetes/kubernetes/issues/45398
 		if ok, err := discovery.CheckAPIVersion(c.Discovery(), ">= 1.15"); err == nil && ok {
 			return PatchPodDisruptionBudget(ctx, c, cur, transform, opts)

@@ -101,7 +101,7 @@ func (c *Controller) ensurePrimaryService(db *api.Memcached) (kutil.VerbType, er
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = db.OffshootLabels()
+		in.Labels = db.ServiceLabels(api.PrimaryServiceAlias)
 		in.Annotations = svcTemplate.Annotations
 
 		in.Spec.Selector = db.OffshootSelectors()

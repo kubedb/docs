@@ -122,8 +122,7 @@ func setDefaultValues(mysql *api.MySQL, ClusterTopology *core_util.Topology) (ru
 		mysql.Spec.TerminationPolicy = api.TerminationPolicyHalt
 	}
 
-	if mysql.Spec.Topology != nil && mysql.Spec.Topology.Mode != nil &&
-		*mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup {
+	if mysql.UsesGroupReplication() {
 		if mysql.Spec.Topology.Group == nil {
 			mysql.Spec.Topology.Group = &api.MySQLGroupSpec{}
 		}
@@ -135,7 +134,6 @@ func setDefaultValues(mysql *api.MySQL, ClusterTopology *core_util.Topology) (ru
 			}
 			mysql.Spec.Topology.Group.Name = grName.String()
 		}
-
 	}
 
 	mysql.SetDefaults(ClusterTopology)

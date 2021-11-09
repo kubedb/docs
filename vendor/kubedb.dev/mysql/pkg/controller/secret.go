@@ -38,7 +38,7 @@ const (
 	mysqlUser = "root"
 )
 
-func (c *Controller) ensureAuthSecret(db *api.MySQL) error {
+func (c *Reconciler) ensureAuthSecret(db *api.MySQL) error {
 	if db.Spec.AuthSecret == nil {
 		authSecretName, err := c.createAuthSecret(db)
 		if err != nil {
@@ -60,7 +60,7 @@ func (c *Controller) ensureAuthSecret(db *api.MySQL) error {
 	return c.upgradeAuthSecret(db)
 }
 
-func (c *Controller) createAuthSecret(db *api.MySQL) (string, error) {
+func (c *Reconciler) createAuthSecret(db *api.MySQL) (string, error) {
 	authSecretName := db.Name + "-auth"
 
 	sc, err := c.checkSecret(authSecretName, db)
@@ -95,7 +95,7 @@ func (c *Controller) createAuthSecret(db *api.MySQL) (string, error) {
 
 // This is done to fix 0.8.0 -> 0.9.0 upgrade due to
 // https://github.com/kubedb/mysql/pull/115/files#diff-10ddaf307bbebafda149db10a28b9c24R17 commit
-func (c *Controller) upgradeAuthSecret(db *api.MySQL) error {
+func (c *Reconciler) upgradeAuthSecret(db *api.MySQL) error {
 	meta := metav1.ObjectMeta{
 		Name:      db.Spec.AuthSecret.Name,
 		Namespace: db.Namespace,
@@ -112,7 +112,7 @@ func (c *Controller) upgradeAuthSecret(db *api.MySQL) error {
 	return err
 }
 
-func (c *Controller) checkSecret(secretName string, db *api.MySQL) (*core.Secret, error) {
+func (c *Reconciler) checkSecret(secretName string, db *api.MySQL) (*core.Secret, error) {
 	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {

@@ -113,7 +113,7 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	if cfg.LicenseFile != "" {
 		info := license.NewLicenseEnforcer(cfg.ClientConfig, cfg.LicenseFile).LoadLicense()
 		if info.Status != licenseapi.LicenseActive {
-			return fmt.Errorf("license status %s", info.Status)
+			return fmt.Errorf("license status %s, reason: %s", info.Status, info.Reason)
 		}
 		if sets.NewString(info.Features...).Has("kubedb-enterprise") {
 			cfg.RestrictToNamespace = core.NamespaceAll

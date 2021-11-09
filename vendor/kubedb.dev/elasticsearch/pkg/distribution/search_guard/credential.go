@@ -30,6 +30,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (es *Elasticsearch) EnsureAuthSecret() error {
@@ -137,7 +138,7 @@ func (es *Elasticsearch) validateAndSyncCredSecret(secret *core.Secret, userName
 	if owned, _ := core_util.IsOwnedBy(secret, es.db); owned {
 		// sync labels
 		if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secret.ObjectMeta, func(in *core.Secret) *core.Secret {
-			in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
+			in.Labels = meta_util.OverwriteKeys(in.Labels, es.db.OffshootLabels())
 			return in
 		}, metav1.PatchOptions{}); err != nil {
 			return err

@@ -30,6 +30,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api_util "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 const (
@@ -79,6 +80,8 @@ opendistro_security.ssl.http.pemcert_filepath: certs/http/tls.crt
 opendistro_security.ssl.http.pemkey_filepath: certs/http/tls.key
 opendistro_security.ssl.http.pemtrustedcas_filepath: certs/http/ca.crt
 
+`
+var authcz_admin_dn = `
 # opendistro_security.authcz.admin_dn:
 %s
 `
@@ -173,41 +176,50 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 
 		config = fmt.Sprintf(opendistro_security_enabled, nodesDN)
 
-		// If rest layer is secured with certs
-		// Calculate the adminDN
+		// If the HTTP layer is secured with Certificate,
+		// Update the configuration with certificate paths.
 		if es.db.Spec.EnableSSL {
-			// Get openDistro admin cert secret.
-			// Parse the tls.cert to extract the adminDNs.
-			sName, exist = api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchAdminCert))
-			if !exist {
-				return errors.New("admin-cert secret is missing")
-			}
-
-			cSecret, err = es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
-			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
-			}
-
-			adminDN := ""
-			if value, ok := cSecret.Data[certlib.TLSCert]; ok {
-				subj, err := certlib.ExtractSubjectFromCertificate(value)
-				if err != nil {
-					return err
-				}
-				adminDN = fmt.Sprintf(adminDNTemplate, subj.String())
-			}
-
-			config += fmt.Sprintf(https_enabled, adminDN)
+			config += https_enabled
 		} else {
+			// If the HTTP layer (i.e. Rest layer) is disabled,
+			// update the configuration.
+			//	- opendistro_security.ssl.http.enabled: false
 			config += https_disabled
 		}
+
+		// To load configuration changes to the security plugin, you must provide your admin certificate to the tool.
+		// So we must create the admin certificate even if the HTTP layer (db.Spec.EnableSSL=false) is disabled.
+		// Which will provide us the opportunity to run securityadmin.sh command.
+		// Let's calculate the adminDN from the admin certificate.
+
+		// Get openDistro admin cert secret.
+		// Parse the tls.cert to extract the adminDNs.
+		sName, exist = api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchAdminCert))
+		if !exist {
+			return errors.New("admin-cert secret is missing")
+		}
+
+		cSecret, err = es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
+		}
+
+		adminDN := ""
+		if value, ok := cSecret.Data[certlib.TLSCert]; ok {
+			subj, err := certlib.ExtractSubjectFromCertificate(value)
+			if err != nil {
+				return err
+			}
+			adminDN = fmt.Sprintf(adminDNTemplate, subj.String())
+		}
+		config += fmt.Sprintf(authcz_admin_dn, adminDN)
 
 	} else {
 		config = opendistro_security_disabled
 	}
 
 	if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secretMeta, func(in *core.Secret) *core.Secret {
-		in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
+		in.Labels = meta_util.OverwriteKeys(in.Labels, es.db.OffshootLabels())
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		if in.Data == nil {
 			in.Data = make(map[string][]byte)

@@ -27,12 +27,10 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/Masterminds/semver/v3"
-	"gomodules.xyz/flags"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
@@ -47,16 +45,11 @@ const (
 	keyFile  = "/etc/mysql/certs/server.key"
 )
 
-func (c *Controller) ensureStatefulSet(db *api.MySQL) error {
-	stsName, _, err := c.findStatefulSet(db)
-	if err != nil {
-		return err
-	}
-
+func (c *Reconciler) ensureStatefulSet(db *api.MySQL) (kutil.VerbType, error) {
 	// Create statefulSet for MySQL database
-	stsNew, vt, err := c.createOrPatchStatefulSet(db, stsName)
+	stsNew, vt, err := c.createOrPatchStatefulSet(db)
 	if err != nil {
-		return err
+		return kutil.VerbUnchanged, err
 	}
 	// Check StatefulSet Pod status
 	if vt != kutil.VerbUnchanged {
@@ -69,17 +62,17 @@ func (c *Controller) ensureStatefulSet(db *api.MySQL) error {
 		)
 		// ensure pdb
 		if err := c.CreateStatefulSetPodDisruptionBudget(stsNew); err != nil {
-			return err
+			return kutil.VerbUnchanged, err
 		}
 		klog.Info("Successfully created/patched PodDisruptionBudget")
 	}
 
-	return nil
+	return vt, nil
 }
 
-func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*apps.StatefulSet, kutil.VerbType, error) {
+func (c *Reconciler) createOrPatchStatefulSet(db *api.MySQL) (*apps.StatefulSet, kutil.VerbType, error) {
 	statefulSetMeta := metav1.ObjectMeta{
-		Name:      stsName,
+		Name:      db.OffshootName(),
 		Namespace: db.Namespace,
 	}
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
@@ -94,142 +87,33 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 		c.Client,
 		statefulSetMeta,
 		func(in *apps.StatefulSet) *apps.StatefulSet {
-			in.Labels = db.OffshootLabels()
-			in.Annotations = meta_util.OverwriteKeys(in.Annotations, db.Spec.PodTemplate.Controller.Annotations)
+			in.Labels = db.PodControllerLabels()
+			in.Annotations = db.Spec.PodTemplate.Controller.Annotations
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-
 			in.Spec.Replicas = db.Spec.Replicas
 			in.Spec.ServiceName = db.GoverningServiceName()
 			in.Spec.Selector = &metav1.LabelSelector{
 				MatchLabels: db.OffshootSelectors(),
 			}
-			in.Spec.Template.Labels = db.OffshootSelectors()
-			in.Spec.Template.Annotations = meta_util.OverwriteKeys(in.Spec.Template.Annotations, db.Spec.PodTemplate.Annotations)
+
+			in.Spec.Template.Labels = db.PodLabels()
+			in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 				in.Spec.Template.Spec.InitContainers,
 				append(getInitContainers(in, mysqlVersion), db.Spec.PodTemplate.Spec.InitContainers...),
 			)
 
-			container := core.Container{
-				Name:            api.ResourceSingularMySQL,
-				Image:           mysqlVersion.Spec.DB.Image,
-				ImagePullPolicy: core.PullIfNotPresent,
-				Args:            db.Spec.PodTemplate.Spec.Args,
-				Resources:       db.Spec.PodTemplate.Spec.Resources,
-				SecurityContext: db.Spec.PodTemplate.Spec.ContainerSecurityContext,
-				LivenessProbe:   db.Spec.PodTemplate.Spec.LivenessProbe,
-				ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
-				Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
-				Ports: []core.ContainerPort{
-					{
-						Name:          api.MySQLDatabasePortName,
-						ContainerPort: api.MySQLDatabasePort,
-						Protocol:      core.ProtocolTCP,
-					},
-				},
-				VolumeMounts: []core.VolumeMount{
-					{
-						Name:      "tmp",
-						MountPath: "/tmp",
-					},
-				},
+			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+				nil, getMySQLContainer(db, mysqlVersion))
+
+			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+				in.Spec.Template.Spec.Containers, getMySQLCoordinatorContainer(db, mysqlVersion))
+
+			if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
+				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+					in.Spec.Template.Spec.Containers, getMySQLExporterContainer(db, mysqlVersion))
 			}
 
-			// add ssl certs flag into args to configure TLS for standalone
-			if db.Spec.Topology == nil && db.Spec.TLS != nil {
-				args := container.Args
-				tlsArgs := []string{
-					"--ssl-capath=/etc/mysql/certs",
-					"--ssl-ca=" + caFile,
-					"--ssl-cert=" + certFile,
-					"--ssl-key=" + keyFile,
-				}
-				args = append(args, tlsArgs...)
-				if db.Spec.RequireSSL {
-					args = append(args, "--require-secure-transport=ON")
-				}
-				container.Args = args
-			}
-
-			if db.UsesGroupReplication() {
-				// replicationModeDetector is used to continuous select primary pod
-				// and add label as primary
-				replicationModeDetector := core.Container{
-					Name:            api.ReplicationModeDetectorContainerName,
-					Image:           mysqlVersion.Spec.ReplicationModeDetector.Image,
-					ImagePullPolicy: core.PullIfNotPresent,
-					Args: append([]string{
-						"run",
-						fmt.Sprintf("--db-name=%s", db.Name),
-						fmt.Sprintf("--db-kind=%s", api.ResourceKindMySQL),
-					}, flags.LoggerOptions.ToFlags()...),
-					Resources:       db.Spec.Coordinator.Resources,
-					SecurityContext: db.Spec.Coordinator.SecurityContext,
-				}
-
-				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)
-
-				container.Command = []string{
-					"/scripts/peer-finder",
-				}
-
-				userArgs := meta_util.ParseArgumentListToMap(db.Spec.PodTemplate.Spec.Args)
-
-				specArgs := map[string]string{}
-				// add ssl certs flag into args in peer-finder to configure TLS for group replication
-				if db.Spec.TLS != nil {
-					// https://dev.mysql.com/doc/refman/8.0/en/group-replication-secure-socket-layer-support-ssl.html
-					// Host name identity verification with VERIFY_IDENTITY does not work with self-signed certificate
-					//specArgs["loose-group_replication_ssl_mode"] = "VERIFY_IDENTITY"
-					specArgs["loose-group_replication_ssl_mode"] = "VERIFY_CA"
-					// the configuration for Group Replication's group communication connections is taken from the server's SSL configuration
-					// https://dev.mysql.com/doc/refman/8.0/en/group-replication-secure-socket-layer-support-ssl.html
-					specArgs["ssl-capath"] = "/etc/mysql/certs"
-					specArgs["ssl-ca"] = caFile
-					specArgs["ssl-cert"] = certFile
-					specArgs["ssl-key"] = keyFile
-					// By default, distributed recovery connections do not use SSL, even if we activated SSL for group communication connections,
-					// and the server SSL options are not applied for distributed recovery connections. we must configure these connections separately
-					// https://dev.mysql.com/doc/refman/8.0/en/group-replication-configuring-ssl-for-recovery.html
-					specArgs["loose-group_replication_recovery_ssl_ca"] = caFile
-					specArgs["loose-group_replication_recovery_ssl_cert"] = certFile
-					specArgs["loose-group_replication_recovery_ssl_key"] = keyFile
-
-					refVersion := semver.MustParse("8.0.17")
-					curVersion := semver.MustParse(mysqlVersion.Spec.Version)
-					if curVersion.Compare(refVersion) != -1 {
-						// https://dev.mysql.com/doc/refman/8.0/en/clone-plugin-remote.html
-						specArgs["loose-clone_ssl_ca"] = caFile
-						specArgs["loose-clone_ssl_cert"] = certFile
-						specArgs["loose-clone_ssl_key"] = keyFile
-					}
-
-					if db.Spec.RequireSSL {
-						specArgs["require-secure-transport"] = "ON"
-					}
-				}
-				// Argument priority (lowest to highest): recommendedArgs, userArgs, specArgs
-				args := meta_util.BuildArgumentListFromMap(meta_util.OverwriteKeys(recommendedArgs(db, mysqlVersion), userArgs), specArgs)
-				sort.Strings(args)
-
-				// in peer-finder, we have to form peers either using pod IP or DNS. if podIdentity is set to `IP` then we have to use pod IP from pod status
-				// otherwise, we have to use pod `DNS` using govern service.
-				// That's why we have to pass either `selector` to select IP's of the pod or `service` to find the DNS of the pod.
-				peerFinderArgs := []string{
-					fmt.Sprintf("-address-type=%s", db.Spec.UseAddressType),
-				}
-				if db.Spec.UseAddressType.IsIP() {
-					peerFinderArgs = append(peerFinderArgs, fmt.Sprintf("-selector=%s", labels.Set(db.OffshootSelectors()).String()))
-				} else {
-					peerFinderArgs = append(peerFinderArgs, fmt.Sprintf("-service=%s", db.GoverningServiceName()))
-				}
-
-				container.Args = append(peerFinderArgs,
-					"-on-start",
-					strings.Join(append([]string{"scripts/on-start.sh"}, args...), " "),
-				)
-			}
-			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, container)
 			in.Spec.Template.Spec.Volumes = []core.Volume{
 				{
 					Name: "tmp",
@@ -239,57 +123,8 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 				},
 			}
 
-			if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
-				var commands []string
-				// pass config.my-cnf flag into exporter to configure TLS
-				if db.Spec.TLS != nil {
-					// ref: https://github.com/prometheus/mysqld_exporter#general-flags
-					// https://github.com/prometheus/mysqld_exporter#customizing-configuration-for-a-ssl-connection
-					cmd := strings.Join(append([]string{
-						"/bin/mysqld_exporter",
-						fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
-						fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
-						"--config.my-cnf=/etc/mysql/certs/exporter.cnf",
-					}, db.Spec.Monitor.Prometheus.Exporter.Args...), " ")
-					commands = []string{cmd}
-				} else {
-					// DATA_SOURCE_NAME=user:password@tcp(localhost:5555)/dbname
-					// ref: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
-					cmd := strings.Join(append([]string{
-						"/bin/mysqld_exporter",
-						fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
-						fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
-					}, db.Spec.Monitor.Prometheus.Exporter.Args...), " ")
-					commands = []string{
-						`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"`,
-						cmd,
-					}
-				}
-				script := strings.Join(commands, ";")
-				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
-					Name: api.ContainerExporterName,
-					Command: []string{
-						"/bin/sh",
-					},
-					Args: []string{
-						"-c",
-						script,
-					},
-					Image: mysqlVersion.Spec.Exporter.Image,
-					Ports: []core.ContainerPort{
-						{
-							Name:          mona.PrometheusExporterPortName,
-							Protocol:      core.ProtocolTCP,
-							ContainerPort: db.Spec.Monitor.Prometheus.Exporter.Port,
-						},
-					},
-					Env:             core_util.UpsertEnvVars(container.Env, db.Spec.Monitor.Prometheus.Exporter.Env...),
-					Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
-					SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
-				})
-			}
 			// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
-			in = upsertEnv(in, db, stsName)
+			in = upsertEnv(in, db)
 			in = upsertSharedScriptsVolume(in)
 			in = upsertDataVolume(in, db)
 			in = upsertCustomConfig(in, db)
@@ -333,11 +168,232 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 
 			// configure tls if configured in DB
 			in = upsertTLSVolume(in, db)
-
-			in.Spec.Template.Spec.ReadinessGates = core_util.UpsertPodReadinessGateConditionType(in.Spec.Template.Spec.ReadinessGates, core_util.PodConditionTypeReady)
-
+			//in.Spec.PodManagementPolicy = apps.ParallelPodManagement
+			in.Spec.Template.Spec.ReadinessGates = nil
 			return in
 		}, metav1.PatchOptions{})
+}
+
+func getMySQLExporterContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion) core.Container {
+	var commands []string
+	// pass config.my-cnf flag into exporter to configure TLS
+	if db.Spec.TLS != nil {
+		// ref: https://github.com/prometheus/mysqld_exporter#general-flags
+		// https://github.com/prometheus/mysqld_exporter#customizing-configuration-for-a-ssl-connection
+		cmd := strings.Join(append([]string{
+			"/bin/mysqld_exporter",
+			fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
+			fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
+			"--config.my-cnf=/etc/mysql/certs/exporter.cnf",
+		}, db.Spec.Monitor.Prometheus.Exporter.Args...), " ")
+		commands = []string{cmd}
+	} else {
+		// DATA_SOURCE_NAME=user:password@tcp(localhost:5555)/dbname
+		// ref: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
+		cmd := strings.Join(append([]string{
+			"/bin/mysqld_exporter",
+			fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
+			fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
+		}, db.Spec.Monitor.Prometheus.Exporter.Args...), " ")
+		commands = []string{
+			`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"`,
+			cmd,
+		}
+	}
+	script := strings.Join(commands, ";")
+	return core.Container{
+		Name: api.ContainerExporterName,
+		Command: []string{
+			"/bin/sh",
+		},
+		Args: []string{
+			"-c",
+			script,
+		},
+		Image: mysqlVersion.Spec.Exporter.Image,
+		Ports: []core.ContainerPort{
+			{
+				Name:          mona.PrometheusExporterPortName,
+				Protocol:      core.ProtocolTCP,
+				ContainerPort: db.Spec.Monitor.Prometheus.Exporter.Port,
+			},
+		},
+		Env:             db.Spec.Monitor.Prometheus.Exporter.Env,
+		Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
+		SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
+	}
+}
+
+func getMySQLCoordinatorContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion) core.Container {
+	return core.Container{
+		Name:            "mysql-coordinator",
+		Image:           mysqlVersion.Spec.Coordinator.Image,
+		ImagePullPolicy: core.PullIfNotPresent,
+		Env:             core_util.UpsertEnvVars(db.Spec.PodTemplate.Spec.Env, getEnvsForMySQLCoordinatorContainer(db)...),
+		Args:            []string{"run"},
+		Resources:       db.Spec.Coordinator.Resources,
+		SecurityContext: db.Spec.Coordinator.SecurityContext,
+	}
+}
+
+func getEnvsForMySQLCoordinatorContainer(db *api.MySQL) []core.EnvVar {
+	var envList []core.EnvVar
+	envList = append(envList, core.EnvVar{
+		Name:  "DB_NAME",
+		Value: db.OffshootName(),
+	})
+	envList = append(envList, core.EnvVar{
+		Name:  "NAMESPACE",
+		Value: db.Namespace,
+	})
+	envList = append(envList, core.EnvVar{
+		Name:  "GOVERNING_SERVICE_NAME",
+		Value: db.GoverningServiceName(),
+	})
+	if db.UsesGroupReplication() {
+		envList = append(envList, core.EnvVar{
+			Name:  "TOPOLOGY",
+			Value: string(api.MySQLClusterModeGroupReplication),
+		})
+	} else if db.IsInnoDBCluster() {
+		envList = append(envList, core.EnvVar{
+			Name:  "TOPOLOGY",
+			Value: string(api.MySQLClusterModeInnoDBCluster),
+		})
+	}
+
+	if db.Spec.TLS != nil {
+		envList = append(envList, core.EnvVar{
+			Name:  "SSL_ENABLED",
+			Value: "ENABLED",
+		})
+	}
+	return envList
+}
+
+func getMySQLContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion) core.Container {
+	container := core.Container{
+		Name:            api.ResourceSingularMySQL,
+		Image:           mysqlVersion.Spec.DB.Image,
+		ImagePullPolicy: core.PullIfNotPresent,
+		Command:         getCmdsForMySQLContainer(db),
+		Args:            getArgsForMysqlContainer(db, mysqlVersion),
+		Resources:       db.Spec.PodTemplate.Spec.Resources,
+		SecurityContext: db.Spec.PodTemplate.Spec.ContainerSecurityContext,
+		LivenessProbe:   db.Spec.PodTemplate.Spec.LivenessProbe,
+		ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
+		Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
+		Ports: []core.ContainerPort{
+			{
+				Name:          api.MySQLDatabasePortName,
+				ContainerPort: api.MySQLDatabasePort,
+				Protocol:      core.ProtocolTCP,
+			},
+		},
+		VolumeMounts: []core.VolumeMount{
+			{
+				Name:      "tmp",
+				MountPath: "/tmp",
+			},
+		},
+	}
+
+	return container
+
+}
+
+func getCmdsForMySQLContainer(db *api.MySQL) []string {
+	var cmds []string
+	if db.UsesGroupReplication() || db.IsInnoDBCluster() {
+		cmds = []string{
+			"/scripts/tini",
+			"-g",
+			"--",
+		}
+	}
+	return cmds
+}
+
+func getArgsForMysqlContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion) []string {
+
+	// add ssl certs flag into args to configure TLS for standalone
+	if db.Spec.Topology == nil && db.Spec.TLS != nil {
+		args := db.Spec.PodTemplate.Spec.Args
+		tlsArgs := []string{
+			"--ssl-capath=/etc/mysql/certs",
+			"--ssl-ca=" + caFile,
+			"--ssl-cert=" + certFile,
+			"--ssl-key=" + keyFile,
+		}
+		args = append(args, tlsArgs...)
+		if db.Spec.RequireSSL {
+			args = append(args, "--require-secure-transport=ON")
+		}
+		return args
+	}
+
+	if db.UsesGroupReplication() || db.IsInnoDBCluster() {
+
+		userArgs := meta_util.ParseArgumentListToMap(db.Spec.PodTemplate.Spec.Args)
+
+		specArgs := map[string]string{}
+		// add ssl certs flag into args in peer-finder to configure TLS for group replication
+		if db.Spec.TLS != nil {
+			// https://dev.mysql.com/doc/refman/8.0/en/group-replication-secure-socket-layer-support-ssl.html
+			// Host name identity verification with VERIFY_IDENTITY does not work with self-signed certificate
+			//specArgs["loose-group_replication_ssl_mode"] = "VERIFY_IDENTITY"
+			specArgs["loose-group_replication_ssl_mode"] = "VERIFY_CA"
+			// the configuration for Group Replication's group communication connections is taken from the server's SSL configuration
+			// https://dev.mysql.com/doc/refman/8.0/en/group-replication-secure-socket-layer-support-ssl.html
+			specArgs["ssl-capath"] = "/etc/mysql/certs"
+			specArgs["ssl-ca"] = caFile
+			specArgs["ssl-cert"] = certFile
+			specArgs["ssl-key"] = keyFile
+			// By default, distributed recovery connections do not use SSL, even if we activated SSL for group communication connections,
+			// and the server SSL options are not applied for distributed recovery connections. we must configure these connections separately
+			// https://dev.mysql.com/doc/refman/8.0/en/group-replication-configuring-ssl-for-recovery.html
+			specArgs["loose-group_replication_recovery_ssl_ca"] = caFile
+			specArgs["loose-group_replication_recovery_ssl_cert"] = certFile
+			specArgs["loose-group_replication_recovery_ssl_key"] = keyFile
+
+			refVersion := semver.MustParse("8.0.17")
+
+			curVersion := semver.MustParse(mysqlVersion.Spec.Version)
+			if curVersion.Compare(refVersion) != -1 {
+				// https://dev.mysql.com/doc/refman/8.0/en/clone-plugin-remote.html
+				specArgs["loose-clone_ssl_ca"] = caFile
+				specArgs["loose-clone_ssl_cert"] = certFile
+				specArgs["loose-clone_ssl_key"] = keyFile
+			}
+
+			if db.Spec.RequireSSL {
+				specArgs["require-secure-transport"] = "ON"
+			}
+		}
+		// Argument priority (lowest to highest): recommendedArgs, userArgs, specArgs
+		args := meta_util.BuildArgumentListFromMap(meta_util.OverwriteKeys(recommendedArgs(db, mysqlVersion), userArgs), specArgs)
+		sort.Strings(args)
+
+		// in peer-finder, we have to form peers either using pod IP or DNS. if podIdentity is set to `IP` then we have to use pod IP from pod status
+		// otherwise, we have to use pod `DNS` using govern service.
+		// That's why we have to pass either `selector` to select IP's of the pod or `service` to find the DNS of the pod.
+		//peerFinderArgs := []string{
+		//	fmt.Sprintf("-address-type=%s", db.Spec.UseAddressType),
+		//}
+		//if db.Spec.UseAddressType.IsIP() {
+		//	peerFinderArgs = append(peerFinderArgs, fmt.Sprintf("-selector=%s", labels.Set(db.OffshootSelectors()).String()))
+		//} else {
+		//	peerFinderArgs = append(peerFinderArgs, fmt.Sprintf("-service=%s", db.GoverningServiceName()))
+		//}
+
+		if db.IsInnoDBCluster() {
+			args = append([]string{"scripts/run_innodb.sh"}, args...)
+		} else {
+			args = append([]string{"scripts/run.sh"}, args...)
+		}
+		return args
+	}
+	return nil
 }
 
 func getInitContainers(statefulSet *apps.StatefulSet, mysqlVersion *v1alpha1.MySQLVersion) []core.Container {
@@ -359,6 +415,16 @@ func getInitContainers(statefulSet *apps.StatefulSet, mysqlVersion *v1alpha1.MyS
 func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMySQL {
+			configVolumeMount := core.VolumeMount{
+				Name:      "init-scripts",
+				MountPath: "/scripts",
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+		}
+		if container.Name == "mysql-coordinator" {
 			configVolumeMount := core.VolumeMount{
 				Name:      "init-scripts",
 				MountPath: "/scripts",
@@ -397,6 +463,17 @@ func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet 
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+
+		// upsert data volume claim in mysql-coordinator container
+		for i, container := range statefulSet.Spec.Template.Spec.Containers {
+			if container.Name == "mysql-coordinator" {
+				statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.UpsertVolumeMount(statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts, core.VolumeMount{
+					Name:      "data",
+					MountPath: "var/lib/mysql",
+				})
+			}
+		}
+
 		if container.Name == api.ResourceSingularMySQL {
 			volumeMount := core.VolumeMount{
 				Name:      "data",
@@ -450,7 +527,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.Statef
 	return statefulSet
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL, stsName string) *apps.StatefulSet {
+func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMySQL || container.Name == api.ContainerExporterName || container.Name == api.ReplicationModeDetectorContainerName {
 			envs := []core.EnvVar{
@@ -477,12 +554,12 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL, stsName string) *ap
 					},
 				},
 			}
-			if db.UsesGroupReplication() &&
+			if (db.UsesGroupReplication() || db.IsInnoDBCluster()) &&
 				container.Name == api.ResourceSingularMySQL {
 				envs = append(envs, []core.EnvVar{
 					{
 						Name:  "BASE_NAME",
-						Value: stsName,
+						Value: db.OffshootName(),
 					},
 					{
 						Name:  "GOV_SVC",
@@ -497,10 +574,6 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL, stsName string) *ap
 						},
 					},
 					{
-						Name:  "GROUP_NAME",
-						Value: db.Spec.Topology.Group.Name,
-					},
-					{
 						Name:  "DB_NAME",
 						Value: db.GetName(),
 					},
@@ -511,6 +584,14 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL, stsName string) *ap
 								FieldPath: "status.podIP",
 							},
 						},
+					},
+				}...)
+			}
+			if db.UsesGroupReplication() && container.Name == api.ResourceSingularMySQL {
+				envs = append(envs, []core.EnvVar{
+					{
+						Name:  "GROUP_NAME",
+						Value: db.Spec.Topology.Group.Name,
 					},
 				}...)
 			}
@@ -599,32 +680,6 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.Stat
 		}
 	}
 	return statefulSet
-}
-
-func (c *Controller) findStatefulSet(db *api.MySQL) (string, *apps.StatefulSet, error) {
-	stsList, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String(),
-	})
-	if err != nil {
-		return "", nil, err
-	}
-
-	count := 0
-	var cur *apps.StatefulSet
-	for i, sts := range stsList.Items {
-		if metav1.IsControlledBy(&sts, db) {
-			count++
-			cur = &stsList.Items[i]
-		}
-	}
-
-	switch count {
-	case 0:
-		return db.OffshootName(), nil, nil
-	case 1:
-		return cur.Name, cur, nil
-	}
-	return "", nil, fmt.Errorf("more then one StatefulSet found for MySQL %s/%s", db.Namespace, db.Name)
 }
 
 func upsertTLSVolume(sts *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
@@ -770,16 +825,26 @@ func recommendedArgs(db *api.MySQL, myVersion *v1alpha1.MySQLVersion) map[string
 
 	available := db.Spec.PodTemplate.Spec.Resources.Limits.Memory()
 
-	// reserved memory for performance schema and other processes
-	reserved := resource.MustParse("256Mi")
-	available.Sub(reserved)
-	allocableBytes := available.Value()
-
-	// allocate 75% of the available memory for innodb buffer pool size
-	innoDBChunkSize := float64(128 * 1024 * 1024) // 128Mi
-	maxNumberOfChunk := int64((float64(allocableBytes) * 0.75) / innoDBChunkSize)
-	innoDBPoolSize := maxNumberOfChunk * int64(innoDBChunkSize)
-	recommendedArgs["innodb-buffer-pool-size"] = fmt.Sprintf("%d", innoDBPoolSize)
+	var innodbBufferPoolSize, groupReplicationMessageSize int64
+	const mb = 1024 * 1024
+	if available.Cmp(resource.MustParse("0.75Gi")) <= 0 {
+		innodbBufferPoolSize = 128 * mb
+		groupReplicationMessageSize = 128 * mb
+	} else if available.Cmp(resource.MustParse("1.5Gi")) <= 0 {
+		innodbBufferPoolSize = 256 * mb
+		groupReplicationMessageSize = 256 * mb
+	} else if available.Cmp(resource.MustParse("4Gi")) <= 0 {
+		allocateAbleBytes := available.Value()
+		allocateAbleBytes -= 1024 * mb
+		innodbBufferPoolSize = (allocateAbleBytes / (128 * mb)) * (128 * mb)
+		groupReplicationMessageSize = 256 * mb
+	} else {
+		allocateAbleBytes := float64(available.Value())
+		// allocate 70% of the available memory for innodb buffer pool size
+		innodbBufferPoolSize = int64((allocateAbleBytes*0.70)/(128*mb)) * 128 * mb
+		groupReplicationMessageSize = int64((allocateAbleBytes*.25-256*mb)*0.40/(128*mb)) * 128 * mb
+	}
+	recommendedArgs["innodb-buffer-pool-size"] = fmt.Sprintf("%d", innodbBufferPoolSize)
 
 	// allocate rest of the memory for group replication cache size
 	// https://dev.mysql.com/doc/refman/8.0/en/group-replication-options.html#sysvar_group_replication_message_cache_size
@@ -787,7 +852,7 @@ func recommendedArgs(db *api.MySQL, myVersion *v1alpha1.MySQLVersion) map[string
 	refVersion := semver.MustParse("8.0.21")
 	curVersion := semver.MustParse(myVersion.Spec.Version)
 	if curVersion.Compare(refVersion) != -1 {
-		recommendedArgs["loose-group-replication-message-cache-size"] = fmt.Sprintf("%d", allocableBytes-innoDBPoolSize)
+		recommendedArgs["loose-group-replication-message-cache-size"] = fmt.Sprintf("%d", groupReplicationMessageSize)
 	}
 
 	// Sets the binary log expiration period in seconds. After their expiration period ends, binary log files can be automatically removed.
@@ -797,9 +862,9 @@ func recommendedArgs(db *api.MySQL, myVersion *v1alpha1.MySQLVersion) map[string
 	refVersion = semver.MustParse("8.0.1")
 	curVersion = semver.MustParse(myVersion.Spec.Version)
 	if curVersion.Compare(refVersion) != -1 {
-		recommendedArgs["binlog-expire-logs-seconds"] = fmt.Sprintf("%d", 3*24*60*60) // 3 days
+		recommendedArgs["binlog-expire-logs-seconds"] = fmt.Sprintf("%d", 7*24*60*60) // 7 days
 	} else {
-		recommendedArgs["expire-logs-days"] = fmt.Sprintf("%d", 3) // 3 days
+		recommendedArgs["expire-logs-days"] = fmt.Sprintf("%d", 7) // 7 days
 	}
 
 	return recommendedArgs

@@ -107,7 +107,7 @@ func (c *Controller) ensureService(db *api.MySQL) error {
 	// it will be used only for selecting the replicas/secondaries
 	// Check if service name exists with different db kind, name
 	// the create/patch the service
-	if db.UsesGroupReplication() {
+	if db.UsesGroupReplication() || db.IsInnoDBCluster() {
 		vt, err := c.ensureStandbyService(db)
 		if err != nil {
 			return err
@@ -129,7 +129,6 @@ func (c *Controller) ensureService(db *api.MySQL) error {
 			)
 		}
 	}
-
 	return err
 }
 
@@ -143,13 +142,19 @@ func (c *Controller) ensurePrimaryService(db *api.MySQL) (kutil.VerbType, error)
 
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = db.OffshootLabels()
-		in.Annotations = meta_util.OverwriteKeys(in.Annotations, svcTemplate.Annotations)
-
+		in.Labels = db.ServiceLabels(api.PrimaryServiceAlias)
+		in.Annotations = svcTemplate.Annotations
 		in.Spec.Selector = db.OffshootSelectors()
+
 		//add extra selector to select only primary pod for group replication
 		if db.UsesGroupReplication() {
 			in.Spec.Selector[api.LabelRole] = api.DatabasePodPrimary
+		}
+
+		targetPortName := api.MySQLDatabasePortName
+		if db.IsInnoDBCluster() {
+			in.Spec.Selector = db.RouterOffshootSelectors()
+			targetPortName = api.MySQLRouterReadWritePortName
 		}
 
 		in.Spec.Ports = ofst.PatchServicePorts(
@@ -157,11 +162,12 @@ func (c *Controller) ensurePrimaryService(db *api.MySQL) (kutil.VerbType, error)
 				{
 					Name:       api.MySQLPrimaryServicePortName,
 					Port:       api.MySQLDatabasePort,
-					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
+					TargetPort: intstr.FromString(targetPortName),
 				},
 			}),
 			svcTemplate.Spec.Ports,
 		)
+
 		if svcTemplate.Spec.ClusterIP != "" {
 			in.Spec.ClusterIP = svcTemplate.Spec.ClusterIP
 		}
@@ -192,18 +198,24 @@ func (c *Controller) ensureStandbyService(db *api.MySQL) (kutil.VerbType, error)
 
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = db.OffshootLabels()
-		in.Annotations = meta_util.OverwriteKeys(in.Annotations, svcTemplate.Annotations)
+		in.Labels = db.ServiceLabels(api.StandbyServiceAlias)
+		in.Annotations = svcTemplate.Annotations
 		in.Spec.Selector = db.OffshootSelectors()
 		//add extra selector to select only secondary pod
 		in.Spec.Selector[api.LabelRole] = api.DatabasePodStandby
+
+		targetPortName := api.MySQLDatabasePortName
+		if db.IsInnoDBCluster() {
+			in.Spec.Selector = db.RouterOffshootSelectors()
+			targetPortName = api.MySQLRouterReadOnlyPortName
+		}
 
 		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       api.MySQLStandbyServicePortName,
 					Port:       api.MySQLDatabasePort,
-					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
+					TargetPort: intstr.FromString(targetPortName),
 				},
 			}),
 			svcTemplate.Spec.Ports,
@@ -246,7 +258,6 @@ func (c *Controller) ensureStatsService(db *api.MySQL) (kutil.VerbType, error) {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.StatsServiceLabels()
 		in.Annotations = meta_util.OverwriteKeys(in.Annotations, svcTemplate.Annotations)
-
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{

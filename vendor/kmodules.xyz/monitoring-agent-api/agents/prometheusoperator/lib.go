@@ -22,6 +22,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
+	meta_util "kmodules.xyz/client-go/meta"
 	api "kmodules.xyz/monitoring-agent-api/api/v1"
 	prom_util "kmodules.xyz/monitoring-agent-api/prometheus/v1"
 
@@ -82,7 +83,7 @@ func (agent *PrometheusOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.A
 	owner := metav1.NewControllerRef(svc, corev1.SchemeGroupVersion.WithKind("Service"))
 
 	_, vt, err := prom_util.CreateOrPatchServiceMonitor(context.TODO(), agent.promClient, smMeta, func(in *promapi.ServiceMonitor) *promapi.ServiceMonitor {
-		in.Labels = core_util.UpsertMap(sp.ServiceMonitorAdditionalLabels(), new.Prometheus.ServiceMonitor.Labels)
+		in.Labels = meta_util.OverwriteKeys(sp.ServiceMonitorAdditionalLabels(), new.Prometheus.ServiceMonitor.Labels)
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 		in.Spec.NamespaceSelector = promapi.NamespaceSelector{

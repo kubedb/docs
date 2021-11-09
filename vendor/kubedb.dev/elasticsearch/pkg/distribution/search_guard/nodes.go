@@ -86,7 +86,10 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err := es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
@@ -150,8 +153,10 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 	}
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
-
+	envList, err := es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
 
@@ -215,8 +220,10 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 	}
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
-
+	envList, err := es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
 
@@ -305,7 +312,10 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList = es.upsertContainerEnv(envList)
+	envList, err := es.upsertContainerEnv(envList)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	// add/overwrite user provided env; these are provided via crd spec
 	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)

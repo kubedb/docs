@@ -22,6 +22,7 @@ import (
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	policy_v1beta1 "k8s.io/api/policy/v1beta1"
 	rbac "k8s.io/api/rbac/v1"
@@ -29,6 +30,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	rbac_util "kmodules.xyz/client-go/rbac/v1"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 func (c *Controller) createServiceAccount(db *api.MySQL, saName string) error {
@@ -93,6 +95,13 @@ func (c *Controller) ensureRole(db *api.MySQL, name string, pspName string) erro
 					Resources: []string{"secrets"},
 					Verbs:     []string{"get"},
 				},
+				{
+
+					APIGroups:     []string{apps.GroupName},
+					Resources:     []string{"statefulsets"},
+					Verbs:         []string{"get"},
+					ResourceNames: []string{db.OffshootName()},
+				},
 			}
 			in.Rules = append(in.Rules, resourceRule...)
 
@@ -149,8 +158,20 @@ func (c *Controller) getPolicyNames(db *api.MySQL) (string, error) {
 func (c *Controller) ensureDatabaseRBAC(db *api.MySQL) error {
 	saName := db.Spec.PodTemplate.Spec.ServiceAccountName
 	if saName == "" {
-		saName = db.OffshootName()
-		db.Spec.PodTemplate.Spec.ServiceAccountName = saName
+		db.Spec.PodTemplate.Spec.ServiceAccountName = db.OffshootName()
+	}
+
+	if db.IsInnoDBCluster() {
+		if db.Spec.Topology.InnoDBCluster == nil {
+			db.Spec.Topology.InnoDBCluster = &api.MySQLInnoDBClusterSpec{}
+		}
+		if db.Spec.Topology.InnoDBCluster.Router.PodTemplate == nil {
+			db.Spec.Topology.InnoDBCluster.Router.PodTemplate = &ofst.PodTemplateSpec{}
+		}
+		routerSaName := db.Spec.Topology.InnoDBCluster.Router.PodTemplate.Spec.ServiceAccountName
+		if routerSaName == "" {
+			db.Spec.Topology.InnoDBCluster.Router.PodTemplate.Spec.ServiceAccountName = db.OffshootName()
+		}
 	}
 
 	sa, err := c.Client.CoreV1().ServiceAccounts(db.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})

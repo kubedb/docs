@@ -49,9 +49,7 @@ var _ database = api.MySQL{}
 
 type workloadOptions struct {
 	// App level options
-	stsName   string
-	labels    map[string]string
-	selectors map[string]string
+	stsName string
 
 	// database container options
 	conatainerName string
@@ -170,8 +168,6 @@ func (c *Controller) ensureProxySQLNode(db *api.ProxySQL) (kutil.VerbType, error
 
 	opts := workloadOptions{
 		stsName:          db.OffshootName(),
-		labels:           db.OffshootLabels(),
-		selectors:        db.OffshootSelectors(),
 		conatainerName:   api.ResourceSingularProxySQL,
 		image:            proxysqlVersion.Spec.Proxysql.Image,
 		args:             nil,
@@ -271,16 +267,16 @@ func (c *Controller) ensureStatefulSet(db *api.ProxySQL, opts workloadOptions) (
 		c.Client,
 		statefulSetMeta,
 		func(in *apps.StatefulSet) *apps.StatefulSet {
-			in.Labels = opts.labels
+			in.Labels = db.PodControllerLabels()
 			in.Annotations = pt.Controller.Annotations
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 			in.Spec.Replicas = opts.replicas
 			in.Spec.ServiceName = opts.gvrSvcName
 			in.Spec.Selector = &metav1.LabelSelector{
-				MatchLabels: opts.selectors,
+				MatchLabels: db.OffshootSelectors(),
 			}
-			in.Spec.Template.Labels = opts.selectors
+			in.Spec.Template.Labels = db.PodLabels()
 			in.Spec.Template.Annotations = pt.Annotations
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 				in.Spec.Template.Spec.InitContainers,

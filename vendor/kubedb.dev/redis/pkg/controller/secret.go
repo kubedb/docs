@@ -119,7 +119,7 @@ func (c *Controller) upgradeAuthSecret(db *api.Redis) error {
 			in.Data = map[string][]byte{}
 		}
 		if _, ok := in.Data[core.BasicAuthUsernameKey]; !ok {
-			in.Data[core.BasicAuthUsernameKey] = []byte("root")
+			in.Data[core.BasicAuthUsernameKey] = []byte("default")
 		}
 		if _, ok := in.Data[core.BasicAuthPasswordKey]; !ok {
 			in.Data[core.BasicAuthPasswordKey] = in.Data[api.EnvRedisPassword]
