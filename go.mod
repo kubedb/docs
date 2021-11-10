@@ -8,9 +8,9 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/xdg/scram v1.0.3 // indirect
 	github.com/xdg/stringprep v1.0.3 // indirect
-	go.bytebuilders.dev/audit v0.0.10
-	go.bytebuilders.dev/license-verifier v0.9.3
-	go.bytebuilders.dev/license-verifier/kubernetes v0.9.3
+	go.bytebuilders.dev/audit v0.0.12
+	go.bytebuilders.dev/license-verifier v0.9.4
+	go.bytebuilders.dev/license-verifier/kubernetes v0.9.4
 	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/runtime v0.2.0
 	gomodules.xyz/x v0.0.8
@@ -20,20 +20,20 @@ require (
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20210928133955-8df5bb467db6
+	kmodules.xyz/client-go v0.0.0-20211110065417-091bd089a92d
 	kmodules.xyz/custom-resources v0.0.0-20211007080833-72bd9e8cae6e
 	kmodules.xyz/webhook-runtime v0.0.0-20210928141616-7f73c2ab318a
-	kubedb.dev/apimachinery v0.22.1-0.20211006103425-47b42be0bc35
-	kubedb.dev/elasticsearch v0.22.0
-	kubedb.dev/mariadb v0.6.0
-	kubedb.dev/memcached v0.15.0
-	kubedb.dev/mongodb v0.15.0
-	kubedb.dev/mysql v0.15.0
-	kubedb.dev/percona-xtradb v0.9.0
-	kubedb.dev/pgbouncer v0.9.0
-	kubedb.dev/postgres v0.22.1-0.20211007203332-8755bde270d3
-	kubedb.dev/proxysql v0.9.0
-	kubedb.dev/redis v0.15.1-0.20210928092115-a14cd6302bf9
+	kubedb.dev/apimachinery v0.22.1-0.20211110124206-1222a1d62803
+	kubedb.dev/elasticsearch v0.22.1-0.20211110140013-c70caee30859
+	kubedb.dev/mariadb v0.6.1-0.20211110132500-92626beb8f74
+	kubedb.dev/memcached v0.15.1-0.20211110135336-7c395019e48d
+	kubedb.dev/mongodb v0.15.1-0.20211110135430-ecfb158314f8
+	kubedb.dev/mysql v0.15.1-0.20211110210730-de8696fc6fcf
+	kubedb.dev/percona-xtradb v0.9.1-0.20211110135606-11db9761abb4
+	kubedb.dev/pgbouncer v0.9.1-0.20211110135542-a3eb245d46a0
+	kubedb.dev/postgres v0.22.1-0.20211110135708-304072737251
+	kubedb.dev/proxysql v0.9.1-0.20211110135819-229ba8c78270
+	kubedb.dev/redis v0.15.1-0.20211110140458-c00f72bf6e46
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
@@ -110,7 +110,7 @@ replace github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring =
 
 replace github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.10.0
 
-replace github.com/satori/go.uuid => github.com/gofrs/uuid v4.0.0+incompatible
+replace github.com/satori/go.uuid => github.com/gomodules/uuid v4.0.0+incompatible
 
 replace go.etcd.io/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
 

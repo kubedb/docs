@@ -67,7 +67,7 @@ var (
 func (es *Elasticsearch) ensureStatefulSet(
 	esNode *api.ElasticsearchNode,
 	stsName string,
-	labels map[string]string,
+	roleLabels map[string]string,
 	replicas *int32,
 	nodeRole string,
 	envList []core.EnvVar,
@@ -89,15 +89,6 @@ func (es *Elasticsearch) ensureStatefulSet(
 
 	owner := metav1.NewControllerRef(es.db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
-	// Make a new map "labelSelector", so that it remains
-	// unchanged even if the "labels" changes.
-	// It contains:
-	//	-	kubedb.com/kind: ResourceKindElasticsearch
-	//	-	kubedb.com/name: elasticsearch.Name
-	//	-	node.role.<master/data/ingest>: set
-	labelSelector := es.db.OffshootSelectors()
-	labelSelector = core_util.UpsertMap(labelSelector, labels)
-
 	// Node affinity is added to support, multi-regional cluster.
 	affinity, err := parseAffinityTemplate(es.db.Spec.PodTemplate.Spec.Affinity.DeepCopy(), nodeRole)
 	if err != nil {
@@ -115,28 +106,29 @@ func (es *Elasticsearch) ensureStatefulSet(
 
 	// Get elasticsearch container.
 	// Also get monitoring sidecar if any.
-	containers, err := es.getContainers(esNode, nodeRole, envList)
+	containers, err := es.getContainers(esNode, envList)
 	if err != nil {
 		return kutil.VerbUnchanged, errors.Wrap(err, "failed to get containers")
 	}
 
-	volumes, pvc, err := es.getVolumes(esNode, nodeRole)
+	volumes, pvc, err := es.getVolumes(esNode)
 	if err != nil {
 		return kutil.VerbUnchanged, errors.Wrap(err, "failed to get volumes")
 	}
 
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(context.TODO(), es.kClient, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
-		in.Labels = core_util.UpsertMap(labels, es.db.OffshootLabels())
+		//	roleLabels: it contains the node role specific labels.
+		//	It helps distinguish between different type Elasticsearch node-groups (i.e. statefulSet) or nodes (i.e. pod) such as master, data, ingest,etc.
+		//	- kubedb.com/role-<master/data/ingest/..>: set
+		in.Labels = es.db.PodControllerLabels(roleLabels)
 		in.Annotations = es.db.Spec.PodTemplate.Controller.Annotations
+		in.Spec.Template.Labels = es.db.PodLabels(roleLabels)
+		in.Spec.Template.Annotations = es.db.Spec.PodTemplate.Annotations
+		in.Spec.Selector = &metav1.LabelSelector{MatchLabels: es.db.OffshootSelectors(roleLabels)}
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 		in.Spec.Replicas = replicas
 		in.Spec.ServiceName = es.db.GoverningServiceName()
-
-		in.Spec.Selector = &metav1.LabelSelector{MatchLabels: labelSelector}
-		in.Spec.Template.Labels = labelSelector
-
-		in.Spec.Template.Annotations = es.db.Spec.PodTemplate.Annotations
 
 		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, initContainers)
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainers(in.Spec.Template.Spec.Containers, containers)
@@ -199,7 +191,7 @@ func (es *Elasticsearch) ensureStatefulSet(
 	return vt, nil
 }
 
-func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole string) ([]core.Volume, *core.PersistentVolumeClaim, error) {
+func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode) ([]core.Volume, *core.PersistentVolumeClaim, error) {
 	if esNode == nil {
 		return nil, nil, errors.New("elasticsearchNode is empty")
 	}
@@ -320,6 +312,32 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 			},
 		})
 
+		// To load configuration changes to the security plugin (securityadmin.sh),
+		// user must provide the admin certificate to the tool.
+		// So we must mount the admin certificates, so that the cert files usable from inside the pods.
+		volumes = core_util.UpsertVolume(volumes, core.Volume{
+			Name: es.db.CertSecretVolumeName(api.ElasticsearchAdminCert),
+			VolumeSource: core.VolumeSource{
+				Secret: &core.SecretVolumeSource{
+					SecretName: es.db.GetCertSecretName(api.ElasticsearchAdminCert),
+					Items: []core.KeyToPath{
+						{
+							Key:  certlib.CACert,
+							Path: certlib.CACert,
+						},
+						{
+							Key:  certlib.TLSCert,
+							Path: certlib.TLSCert,
+						},
+						{
+							Key:  certlib.TLSKey,
+							Path: certlib.TLSKey,
+						},
+					},
+				},
+			},
+		})
+
 		// if security is enabled at rest layer
 		if es.db.Spec.EnableSSL {
 			volumes = core_util.UpsertVolume(volumes, core.Volume{
@@ -349,11 +367,9 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	}
 
 	// Upsert Volume for monitoring sidecar.
-	// This volume is only used for ingest nodes.
 	if es.db.Spec.Monitor != nil &&
 		es.db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus &&
-		es.db.Spec.EnableSSL &&
-		nodeRole == string(api.ElasticsearchNodeRoleTypeIngest) {
+		es.db.Spec.EnableSSL {
 		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name: es.db.CertSecretVolumeName(api.ElasticsearchMetricsExporterCert),
 			VolumeSource: core.VolumeSource{
@@ -381,7 +397,7 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	return volumes, pvc, nil
 }
 
-func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole string, envList []core.EnvVar) ([]core.Container, error) {
+func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, envList []core.EnvVar) ([]core.Container, error) {
 	if esNode == nil {
 		return nil, errors.New("ElasticsearchNode is empty")
 	}
@@ -420,6 +436,13 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 				Name:      es.db.CertSecretVolumeName(api.ElasticsearchTransportCert),
 				MountPath: es.db.CertSecretVolumeMountPath(api.ElasticsearchConfigDir, api.ElasticsearchTransportCert),
 			},
+			// To load configuration changes to the security plugin (securityadmin.sh),
+			// user must provide the admin certificate to the tool.
+			// So we must mount the admin certificates, so that the cert files usable from inside the pods.
+			{
+				Name:      es.db.CertSecretVolumeName(api.ElasticsearchAdminCert),
+				MountPath: es.db.CertSecretVolumeMountPath(api.ElasticsearchConfigDir, api.ElasticsearchAdminCert),
+			},
 		}...)
 
 		if es.db.Spec.EnableSSL {
@@ -452,9 +475,8 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 	}
 
 	// upsert metrics exporter sidecar for monitoring purpose.
-	// add monitoring sidecar only for ingest nodes.
 	var err error
-	if es.db.Spec.Monitor != nil && nodeRole == string(api.ElasticsearchNodeRoleTypeIngest) {
+	if es.db.Spec.Monitor != nil {
 		containers, err = es.upsertMonitoringContainer(containers)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get monitoring container")

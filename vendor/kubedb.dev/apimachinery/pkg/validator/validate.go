@@ -47,7 +47,7 @@ func ValidateStorage(client kubernetes.Interface, storageType api.StorageType, s
 	}
 
 	if spec.StorageClassName != nil {
-		if _, err := client.StorageV1beta1().StorageClasses().Get(context.TODO(), *spec.StorageClassName, metav1.GetOptions{}); err != nil {
+		if _, err := client.StorageV1().StorageClasses().Get(context.TODO(), *spec.StorageClassName, metav1.GetOptions{}); err != nil {
 			if kerr.IsNotFound(err) {
 				return fmt.Errorf(`%v.storageClassName "%v" not found`, storagePath, *spec.StorageClassName)
 			}

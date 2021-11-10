@@ -22,11 +22,11 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
-	"github.com/go-xorm/xorm"
 	_ "github.com/lib/pq"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/tools/certholder"
+	"xorm.io/xorm"
 )
 
 func (c *Controller) GetPostgresClient(ctx context.Context, db *api.Postgres, dnsName string, port int32) (*xorm.Engine, error) {

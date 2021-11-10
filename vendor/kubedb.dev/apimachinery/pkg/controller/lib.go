@@ -44,7 +44,7 @@ func (c *Controller) CreateStatefulSetPodDisruptionBudget(sts *apps.StatefulSet)
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 			in.Spec.Selector = &metav1.LabelSelector{
-				MatchLabels: sts.Spec.Template.Labels,
+				MatchLabels: sts.Spec.Selector.MatchLabels,
 			}
 
 			maxUnavailable := int32(math.Max(1, math.Floor((float64(*sts.Spec.Replicas)-1.0)/2.0)))

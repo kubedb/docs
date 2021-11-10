@@ -44,7 +44,7 @@ func (es *Elasticsearch) createPodDisruptionBudget(sts *apps.StatefulSet, maxUna
 
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Spec.Selector = &metav1.LabelSelector{
-				MatchLabels: sts.Spec.Template.Labels,
+				MatchLabels: sts.Spec.Selector.MatchLabels,
 			}
 
 			in.Spec.MaxUnavailable = maxUnavailable

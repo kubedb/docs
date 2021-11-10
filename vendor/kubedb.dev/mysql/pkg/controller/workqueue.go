@@ -72,6 +72,11 @@ func (c *Controller) runMySQL(key string) error {
 				return err
 			}
 		} else {
+			if db.IsInnoDBCluster() {
+				// avoid needing to check for db.Spec.Topology.InnoDBCluster != nil later
+				db.Spec.Topology.InnoDBCluster = &api.MySQLInnoDBClusterSpec{}
+			}
+
 			db, _, err = util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.MySQL) *api.MySQL {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in

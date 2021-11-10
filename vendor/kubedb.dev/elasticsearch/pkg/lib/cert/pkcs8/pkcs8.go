@@ -36,6 +36,7 @@ import (
 	"github.com/pkg/errors"
 	"gomodules.xyz/cert"
 	"gomodules.xyz/x/ioutil"
+	"kmodules.xyz/client-go/meta"
 )
 
 // Creates pkcs8 encoded certificates in pem format.
@@ -88,6 +89,17 @@ func CreateTransportCertificate(certPath string, db *api.Elasticsearch, caKey *r
 			x509.ExtKeyUsageServerAuth,
 			x509.ExtKeyUsageClientAuth,
 		},
+		AltNames: cert.AltNames{
+			DNSNames: []string{
+				fmt.Sprintf("%v.%v.svc", db.GoverningServiceName(), db.Namespace),
+				fmt.Sprintf("*.%v.%v.svc", db.GoverningServiceName(), db.Namespace),
+				fmt.Sprintf("*.%v.%v.svc.%v", db.GoverningServiceName(), db.Namespace, meta.ClusterDomain()),
+				api.LocalHost,
+			},
+			IPs: []net.IP{
+				net.ParseIP(api.LocalHostIP),
+			},
+		},
 	}
 
 	nodePrivateKey, err := cert.NewPrivateKey()
@@ -128,8 +140,15 @@ func CreateHTTPCertificate(certPath string, db *api.Elasticsearch, caKey *rsa.Pr
 		Organization: []string{kubedb.GroupName},
 		AltNames: cert.AltNames{
 			DNSNames: []string{
-				"localhost",
 				fmt.Sprintf("%v.%v.svc", db.OffshootName(), db.Namespace),
+				fmt.Sprintf("%v.%v.svc.%v", db.OffshootName(), db.Namespace, meta.ClusterDomain()),
+				fmt.Sprintf("%v.%v.svc", db.GoverningServiceName(), db.Namespace),
+				fmt.Sprintf("*.%v.%v.svc", db.GoverningServiceName(), db.Namespace),
+				fmt.Sprintf("*.%v.%v.svc.%v", db.GoverningServiceName(), db.Namespace, meta.ClusterDomain()),
+				api.LocalHost,
+			},
+			IPs: []net.IP{
+				net.ParseIP(api.LocalHostIP),
 			},
 		},
 		Usages: []x509.ExtKeyUsage{

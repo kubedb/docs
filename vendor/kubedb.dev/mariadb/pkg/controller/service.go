@@ -44,7 +44,6 @@ func (c *Controller) ensureGoverningService(db *api.MariaDB) error {
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
-
 		in.Spec.Type = core.ServiceTypeClusterIP
 		// create headless service
 		in.Spec.ClusterIP = core.ClusterIPNone
@@ -102,7 +101,7 @@ func (c *Controller) createPrimaryService(db *api.MariaDB) (kutil.VerbType, erro
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = db.OffshootLabels()
+		in.Labels = db.ServiceLabels(api.PrimaryServiceAlias)
 		in.Annotations = svcTemplate.Annotations
 
 		in.Spec.Selector = db.OffshootSelectors()

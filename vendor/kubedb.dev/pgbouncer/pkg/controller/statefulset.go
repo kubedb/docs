@@ -89,8 +89,8 @@ func (c *Controller) ensureStatefulSet(
 		c.Client,
 		statefulSetMeta,
 		func(in *apps.StatefulSet) *apps.StatefulSet {
-			in.Annotations = db.Annotations //TODO: actual annotations
-			in.Labels = db.OffshootLabels()
+			in.Labels = db.PodControllerLabels()
+			in.Annotations = db.Spec.PodTemplate.Controller.Annotations
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 			in.Spec.Replicas = pointer.Int32P(replicas)
@@ -99,7 +99,8 @@ func (c *Controller) ensureStatefulSet(
 			in.Spec.Selector = &metav1.LabelSelector{
 				MatchLabels: db.OffshootSelectors(),
 			}
-			in.Spec.Template.Labels = db.OffshootSelectors()
+			in.Spec.Template.Labels = db.PodLabels()
+			in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 
 			var volumes []core.Volume
 			secretVolume := core.Volume{

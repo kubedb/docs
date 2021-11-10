@@ -131,7 +131,7 @@ func (c *Controller) ensurePrimaryService(db *api.Redis) (kutil.VerbType, error)
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = db.OffshootSelectors()
+		in.Labels = db.ServiceLabels(api.PrimaryServiceAlias)
 		in.Annotations = svcTemplate.Annotations
 		in.Spec.Selector = db.OffshootSelectors()
 		if db.Spec.Mode == api.RedisModeSentinel {
@@ -176,7 +176,7 @@ func (c *Controller) ensureStandbyService(db *api.Redis) (kutil.VerbType, error)
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = db.OffshootSelectors()
+		in.Labels = db.ServiceLabels(api.StandbyServiceAlias)
 		in.Annotations = svcTemplate.Annotations
 		in.Spec.Selector = db.OffshootSelectors()
 		if db.Spec.Mode == api.RedisModeSentinel {
@@ -224,7 +224,7 @@ func (c *Controller) ensureStatsService(db *api.Redis) (kutil.VerbType, error) {
 		Namespace: db.Namespace,
 	}
 	svcTemplate := api.GetServiceTemplate(db.Spec.ServiceTemplates, api.StatsServiceAlias)
-	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceCodeRedis))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.StatsServiceLabels()

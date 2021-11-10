@@ -69,7 +69,7 @@ func (c *Controller) ensurePrimaryService(db *api.MongoDB) (kutil.VerbType, erro
 		meta,
 		func(in *core.Service) *core.Service {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-			in.Labels = db.OffshootLabels()
+			in.Labels = db.ServiceLabels(api.PrimaryServiceAlias, svcTemplate.Labels)
 			in.Annotations = svcTemplate.Annotations
 
 			in.Spec.Selector = selector

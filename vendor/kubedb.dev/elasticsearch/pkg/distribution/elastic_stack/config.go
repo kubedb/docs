@@ -26,6 +26,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 const (
@@ -113,7 +114,7 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 	}
 
 	if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secretMeta, func(in *core.Secret) *core.Secret {
-		in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
+		in.Labels = meta_util.OverwriteKeys(in.Labels, es.db.OffshootLabels())
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Data = map[string][]byte{
 			ConfigFileName: []byte(config),

@@ -82,7 +82,7 @@ github.com/aws/aws-sdk-go/service/sts/stsiface
 github.com/beorn7/perks/quantile
 # github.com/blang/semver v3.5.1+incompatible
 github.com/blang/semver
-# github.com/cespare/xxhash/v2 v2.1.1
+# github.com/cespare/xxhash/v2 v2.1.2
 github.com/cespare/xxhash/v2
 # github.com/cloudevents/sdk-go/v2 v2.5.0
 github.com/cloudevents/sdk-go/v2
@@ -103,7 +103,7 @@ github.com/cloudevents/sdk-go/v2/types
 github.com/codegangsta/inject
 # github.com/coreos/go-semver v0.3.0
 github.com/coreos/go-semver/semver
-# github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
+# github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f
 github.com/coreos/go-systemd/daemon
 github.com/coreos/go-systemd/journal
 # github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f
@@ -112,12 +112,14 @@ github.com/coreos/pkg/capnslog
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
+# github.com/divideandconquer/go-merge v0.0.0-20160829212531-bc6b3a394b4e
+github.com/divideandconquer/go-merge/merge
 # github.com/elastic/go-elasticsearch/v6 v6.8.10
 github.com/elastic/go-elasticsearch/v6
 github.com/elastic/go-elasticsearch/v6/esapi
 github.com/elastic/go-elasticsearch/v6/estransport
 github.com/elastic/go-elasticsearch/v6/internal/version
-# github.com/elastic/go-elasticsearch/v7 v7.12.0
+# github.com/elastic/go-elasticsearch/v7 v7.13.1
 github.com/elastic/go-elasticsearch/v7
 github.com/elastic/go-elasticsearch/v7/esapi
 github.com/elastic/go-elasticsearch/v7/estransport
@@ -153,14 +155,22 @@ github.com/go-redis/redis/internal/hashtag
 github.com/go-redis/redis/internal/pool
 github.com/go-redis/redis/internal/proto
 github.com/go-redis/redis/internal/util
-# github.com/go-sql-driver/mysql v1.5.0
+# github.com/go-sql-driver/mysql v1.6.0
 github.com/go-sql-driver/mysql
 # github.com/go-stack/stack v1.8.0
 github.com/go-stack/stack
-# github.com/go-xorm/xorm v0.7.9
-github.com/go-xorm/xorm
 # github.com/gobuffalo/flect v0.2.3
 github.com/gobuffalo/flect
+# github.com/goccy/go-json v0.7.4
+github.com/goccy/go-json
+github.com/goccy/go-json/internal/decoder
+github.com/goccy/go-json/internal/encoder
+github.com/goccy/go-json/internal/encoder/vm
+github.com/goccy/go-json/internal/encoder/vm_color
+github.com/goccy/go-json/internal/encoder/vm_color_indent
+github.com/goccy/go-json/internal/encoder/vm_indent
+github.com/goccy/go-json/internal/errors
+github.com/goccy/go-json/internal/runtime
 # github.com/gogo/protobuf v1.3.2 => github.com/gogo/protobuf v1.3.2
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
@@ -327,7 +337,7 @@ github.com/prometheus/procfs/internal/util
 github.com/robfig/cron/v3
 # github.com/russross/blackfriday/v2 v2.0.1
 github.com/russross/blackfriday/v2
-# github.com/satori/go.uuid v1.2.0 => github.com/gofrs/uuid v4.0.0+incompatible
+# github.com/satori/go.uuid v1.2.0 => github.com/gomodules/uuid v4.0.0+incompatible
 github.com/satori/go.uuid
 # github.com/sergi/go-diff v1.1.0
 github.com/sergi/go-diff/diffmatchpatch
@@ -342,6 +352,19 @@ github.com/spf13/cobra/doc
 github.com/spf13/pflag
 # github.com/stretchr/testify v1.7.0
 github.com/stretchr/testify/assert
+# github.com/syndtr/goleveldb v1.0.0
+github.com/syndtr/goleveldb/leveldb
+github.com/syndtr/goleveldb/leveldb/cache
+github.com/syndtr/goleveldb/leveldb/comparer
+github.com/syndtr/goleveldb/leveldb/errors
+github.com/syndtr/goleveldb/leveldb/filter
+github.com/syndtr/goleveldb/leveldb/iterator
+github.com/syndtr/goleveldb/leveldb/journal
+github.com/syndtr/goleveldb/leveldb/memdb
+github.com/syndtr/goleveldb/leveldb/opt
+github.com/syndtr/goleveldb/leveldb/storage
+github.com/syndtr/goleveldb/leveldb/table
+github.com/syndtr/goleveldb/leveldb/util
 # github.com/xdg/scram v1.0.3
 ## explicit
 github.com/xdg/scram
@@ -355,17 +378,17 @@ github.com/yudai/gojsondiff
 github.com/yudai/gojsondiff/formatter
 # github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82
 github.com/yudai/golcs
-# go.bytebuilders.dev/audit v0.0.10
+# go.bytebuilders.dev/audit v0.0.12
 ## explicit
 go.bytebuilders.dev/audit/api/v1
 go.bytebuilders.dev/audit/lib
-# go.bytebuilders.dev/license-verifier v0.9.3
+# go.bytebuilders.dev/license-verifier v0.9.4
 ## explicit
 go.bytebuilders.dev/license-verifier
 go.bytebuilders.dev/license-verifier/apis/licenses
 go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1
 go.bytebuilders.dev/license-verifier/info
-# go.bytebuilders.dev/license-verifier/kubernetes v0.9.3
+# go.bytebuilders.dev/license-verifier/kubernetes v0.9.4
 ## explicit
 go.bytebuilders.dev/license-verifier/kubernetes
 # go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489 => go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
@@ -448,14 +471,14 @@ go.starlark.net/syntax
 go.uber.org/atomic
 # go.uber.org/multierr v1.6.0
 go.uber.org/multierr
-# go.uber.org/zap v1.17.0
+# go.uber.org/zap v1.19.0
 go.uber.org/zap
 go.uber.org/zap/buffer
 go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20210314154223-e6e6c4f2bb5b
+# golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/cryptobyte
@@ -489,7 +512,7 @@ golang.org/x/oauth2/jwt
 # golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 golang.org/x/sync/semaphore
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.0.0-20210423082822-04245dca01da
+# golang.org/x/sys v0.0.0-20210817190340-bfb29a6856f2
 golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
@@ -509,7 +532,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
+# golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
 golang.org/x/time/rate
 # gomodules.xyz/cert v1.2.0
 gomodules.xyz/cert
@@ -1232,7 +1255,7 @@ k8s.io/kube-openapi/pkg/util
 k8s.io/kube-openapi/pkg/util/proto
 # k8s.io/kubernetes v1.21.1 => github.com/kmodules/kubernetes v1.22.0-alpha.0.0.20210617232219-a432af45d932
 k8s.io/kubernetes/pkg/util/hash
-# k8s.io/utils v0.0.0-20210527160623-6fdb442a123b => k8s.io/utils v0.0.0-20201110183641-67b214c5f920
+# k8s.io/utils v0.0.0-20210802155522-efc7438f0176 => k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 k8s.io/utils/buffer
 k8s.io/utils/integer
 k8s.io/utils/net
@@ -1241,7 +1264,7 @@ k8s.io/utils/pointer
 k8s.io/utils/trace
 # kmodules.xyz/apiversion v0.2.0
 kmodules.xyz/apiversion
-# kmodules.xyz/client-go v0.0.0-20210928133955-8df5bb467db6
+# kmodules.xyz/client-go v0.0.0-20211110065417-091bd089a92d
 ## explicit
 kmodules.xyz/client-go
 kmodules.xyz/client-go/admissionregistration
@@ -1292,7 +1315,7 @@ kmodules.xyz/custom-resources/client/listers/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/client/listers/metrics/v1alpha1
 kmodules.xyz/custom-resources/crds
 kmodules.xyz/custom-resources/util/siteinfo
-# kmodules.xyz/monitoring-agent-api v0.0.0-20210928135619-38ca075a2dbd
+# kmodules.xyz/monitoring-agent-api v0.0.0-20211110102906-ca48f83c44c5
 kmodules.xyz/monitoring-agent-api/agents
 kmodules.xyz/monitoring-agent-api/agents/prometheus
 kmodules.xyz/monitoring-agent-api/agents/prometheusbuiltin
@@ -1302,11 +1325,11 @@ kmodules.xyz/monitoring-agent-api/api/v1alpha1
 kmodules.xyz/monitoring-agent-api/prometheus/v1
 # kmodules.xyz/objectstore-api v0.0.0-20210928135706-fdf68f88ea6e
 kmodules.xyz/objectstore-api/api/v1
-# kmodules.xyz/offshoot-api v0.0.0-20210829122105-6f4d481b0c61
+# kmodules.xyz/offshoot-api v0.0.0-20211103060642-3e217667cf41
 kmodules.xyz/offshoot-api/api/v1
 # kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027
 kmodules.xyz/prober/api/v1
-# kmodules.xyz/resource-metadata v0.6.4
+# kmodules.xyz/resource-metadata v0.6.7
 kmodules.xyz/resource-metadata/apis/meta
 kmodules.xyz/resource-metadata/apis/meta/v1alpha1
 kmodules.xyz/resource-metadata/crds
@@ -1320,7 +1343,7 @@ kmodules.xyz/resource-metrics/api
 ## explicit
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.22.1-0.20211006103425-47b42be0bc35
+# kubedb.dev/apimachinery v0.22.1-0.20211110124206-1222a1d62803
 ## explicit
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
@@ -1365,7 +1388,9 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.22.0
+# kubedb.dev/db-client-go v0.0.0-20211102100133-9d4b23e3d1c5
+kubedb.dev/db-client-go/mongodb
+# kubedb.dev/elasticsearch v0.22.1-0.20211110140013-c70caee30859
 ## explicit
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
@@ -1373,6 +1398,7 @@ kubedb.dev/elasticsearch/pkg/distribution
 kubedb.dev/elasticsearch/pkg/distribution/api
 kubedb.dev/elasticsearch/pkg/distribution/elastic_stack
 kubedb.dev/elasticsearch/pkg/distribution/open_distro
+kubedb.dev/elasticsearch/pkg/distribution/open_search
 kubedb.dev/elasticsearch/pkg/distribution/search_guard
 kubedb.dev/elasticsearch/pkg/lib/cert
 kubedb.dev/elasticsearch/pkg/lib/cert/pkcs8
@@ -1380,39 +1406,39 @@ kubedb.dev/elasticsearch/pkg/lib/heap
 kubedb.dev/elasticsearch/pkg/lib/kernel
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/mariadb v0.6.0
+# kubedb.dev/mariadb v0.6.1-0.20211110132500-92626beb8f74
 ## explicit
 kubedb.dev/mariadb/pkg/admission
 kubedb.dev/mariadb/pkg/controller
-# kubedb.dev/memcached v0.15.0
+# kubedb.dev/memcached v0.15.1-0.20211110135336-7c395019e48d
 ## explicit
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.15.0
+# kubedb.dev/mongodb v0.15.1-0.20211110135430-ecfb158314f8
 ## explicit
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.15.0
+# kubedb.dev/mysql v0.15.1-0.20211110210730-de8696fc6fcf
 ## explicit
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.9.0
+# kubedb.dev/percona-xtradb v0.9.1-0.20211110135606-11db9761abb4
 ## explicit
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pgbouncer v0.9.0
+# kubedb.dev/pgbouncer v0.9.1-0.20211110135542-a3eb245d46a0
 ## explicit
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.22.1-0.20211007203332-8755bde270d3
+# kubedb.dev/postgres v0.22.1-0.20211110135708-304072737251
 ## explicit
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.9.0
+# kubedb.dev/proxysql v0.9.1-0.20211110135819-229ba8c78270
 ## explicit
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.15.1-0.20210928092115-a14cd6302bf9
+# kubedb.dev/redis v0.15.1-0.20211110140458-c00f72bf6e46
 ## explicit
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
@@ -1517,7 +1543,7 @@ sigs.k8s.io/kustomize/kyaml/yaml/merge2
 sigs.k8s.io/kustomize/kyaml/yaml/merge3
 sigs.k8s.io/kustomize/kyaml/yaml/schema
 sigs.k8s.io/kustomize/kyaml/yaml/walk
-# sigs.k8s.io/structured-merge-diff/v4 v4.1.0
+# sigs.k8s.io/structured-merge-diff/v4 v4.1.2
 sigs.k8s.io/structured-merge-diff/v4/fieldpath
 sigs.k8s.io/structured-merge-diff/v4/merge
 sigs.k8s.io/structured-merge-diff/v4/schema
@@ -1525,7 +1551,7 @@ sigs.k8s.io/structured-merge-diff/v4/typed
 sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
-# stash.appscode.dev/apimachinery v0.14.2-0.20210715200631-5399637188c0
+# stash.appscode.dev/apimachinery v0.16.0
 stash.appscode.dev/apimachinery/apis
 stash.appscode.dev/apimachinery/apis/repositories
 stash.appscode.dev/apimachinery/apis/repositories/v1alpha1
@@ -1548,10 +1574,22 @@ stash.appscode.dev/apimachinery/client/listers/stash/v1beta1
 stash.appscode.dev/apimachinery/crds
 stash.appscode.dev/apimachinery/pkg/invoker
 stash.appscode.dev/apimachinery/pkg/restic
-# xorm.io/builder v0.3.6
+# xorm.io/builder v0.3.9
 xorm.io/builder
-# xorm.io/core v0.7.2-0.20190928055935-90aeac8d08eb
-xorm.io/core
+# xorm.io/xorm v1.2.5
+xorm.io/xorm
+xorm.io/xorm/caches
+xorm.io/xorm/contexts
+xorm.io/xorm/convert
+xorm.io/xorm/core
+xorm.io/xorm/dialects
+xorm.io/xorm/internal/json
+xorm.io/xorm/internal/statements
+xorm.io/xorm/internal/utils
+xorm.io/xorm/log
+xorm.io/xorm/names
+xorm.io/xorm/schemas
+xorm.io/xorm/tags
 # bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
 # cloud.google.com/go => cloud.google.com/go v0.54.0
 # cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.4.0
@@ -1589,7 +1627,7 @@ xorm.io/core
 # github.com/prometheus-operator/prometheus-operator => github.com/prometheus-operator/prometheus-operator v0.47.0
 # github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring => github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.47.0
 # github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.10.0
-# github.com/satori/go.uuid => github.com/gofrs/uuid v4.0.0+incompatible
+# github.com/satori/go.uuid => github.com/gomodules/uuid v4.0.0+incompatible
 # go.etcd.io/etcd => go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
 # google.golang.org/api => google.golang.org/api v0.20.0
 # google.golang.org/genproto => google.golang.org/genproto v0.0.0-20201110150050-8816d57aaa9a

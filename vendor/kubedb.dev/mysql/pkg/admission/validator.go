@@ -147,16 +147,10 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 }
 
 func validateGroupReplicas(replicas int32) error {
-	if replicas == 1 {
-		return fmt.Errorf("group shouldn't start with 1 member, accepted value of 'spec.replicas' for group replication is in range [2, %d], default is %d if not specified",
-			api.MySQLMaxGroupMembers, api.MySQLDefaultGroupSize)
-	}
-
-	if replicas > api.MySQLMaxGroupMembers {
-		return fmt.Errorf("group size can't be greater than max size %d (see https://dev.mysql.com/doc/refman/5.7/en/group-replication-frequently-asked-questions.html",
+	if replicas < 3 || replicas > api.MySQLMaxGroupMembers {
+		return fmt.Errorf("accepted value of 'spec.replicas' for group replication is in range [3, %d]",
 			api.MySQLMaxGroupMembers)
 	}
-
 	return nil
 }
 
@@ -195,16 +189,13 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 			return errors.New("a valid 'spec.topology.mode' must be set for MySQL clustering")
 		}
 
-		// currently supported cluster mode for MySQL is "GroupReplication". So
-		// '.spec.topology.mode' has been validated only for value "GroupReplication"
-		if *mysql.Spec.Topology.Mode != api.MySQLClusterModeGroup {
-			return errors.Errorf("currently supported cluster mode for MySQL is %[1]q, spec.topology.mode must be %[1]q",
-				api.MySQLClusterModeGroup)
+		if mysql.IsInnoDBCluster() && mysqlVersion.Spec.Router.Image == "" {
+			return errors.Errorf("InnoDBCluster mode is not supported for MySQL version %s", mysqlVersion.Name)
 		}
 
 		// validation for group configuration is performed only when
 		// 'spec.topology.mode' is set to "GroupReplication"
-		if *mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup {
+		if *mysql.Spec.Topology.Mode == api.MySQLClusterModeGroupReplication {
 			// if spec.topology.mode is "GroupReplication", spec.topology.group is set to default during mutating
 			if err := validateMySQLGroup(*mysql.Spec.Replicas, *mysql.Spec.Topology.Group); err != nil {
 				return err
@@ -240,7 +231,6 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 		if mysqlVersion.Spec.Deprecated {
 			return fmt.Errorf("mysql %s/%s is using deprecated version %v. Skipped processing", mysql.Namespace, mysql.Name, mysqlVersion.Name)
 		}
-
 		if err := mysqlVersion.ValidateSpecs(); err != nil {
 			return fmt.Errorf("mysql %s/%s is using invalid mysqlVersion %v. Skipped processing. reason: %v", mysql.Namespace,
 				mysql.Name, mysqlVersion.Name, err)

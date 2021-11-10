@@ -52,9 +52,25 @@ func (p ProxySQL) OffshootSelectors() map[string]string {
 }
 
 func (p ProxySQL) OffshootLabels() map[string]string {
-	out := p.OffshootSelectors()
-	out[meta_util.ComponentLabelKey] = ComponentDatabase
-	return meta_util.FilterKeys(kubedb.GroupName, out, p.Labels)
+	return p.offshootLabels(p.OffshootSelectors(), nil)
+}
+
+func (p ProxySQL) PodLabels() map[string]string {
+	return p.offshootLabels(p.OffshootSelectors(), p.Spec.PodTemplate.Labels)
+}
+
+func (p ProxySQL) PodControllerLabels() map[string]string {
+	return p.offshootLabels(p.OffshootSelectors(), p.Spec.PodTemplate.Controller.Labels)
+}
+
+func (p ProxySQL) ServiceLabels(alias ServiceAlias, extraLabels ...map[string]string) map[string]string {
+	svcTemplate := GetServiceTemplate(p.Spec.ServiceTemplates, alias)
+	return p.offshootLabels(meta_util.OverwriteKeys(p.OffshootSelectors(), extraLabels...), svcTemplate.Labels)
+}
+
+func (p ProxySQL) offshootLabels(selector, override map[string]string) map[string]string {
+	selector[meta_util.ComponentLabelKey] = ComponentDatabase
+	return meta_util.FilterKeys(kubedb.GroupName, selector, meta_util.OverwriteKeys(nil, p.Labels, override))
 }
 
 func (p ProxySQL) ResourceFQN() string {
@@ -134,9 +150,7 @@ func (p ProxySQL) StatsService() mona.StatsAccessor {
 }
 
 func (p ProxySQL) StatsServiceLabels() map[string]string {
-	lbl := meta_util.FilterKeys(kubedb.GroupName, p.OffshootSelectors(), p.Labels)
-	lbl[LabelRole] = RoleStats
-	return lbl
+	return p.ServiceLabels(StatsServiceAlias, map[string]string{LabelRole: RoleStats})
 }
 
 func (p *ProxySQL) SetDefaults() {

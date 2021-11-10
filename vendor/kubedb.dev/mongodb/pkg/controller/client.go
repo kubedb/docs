@@ -19,104 +19,24 @@ package controller
 import (
 	"context"
 	"crypto/x509"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"strings"
 	"time"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/db-client-go/mongodb"
 
-	"github.com/pkg/errors"
+	"github.com/divideandconquer/go-merge/merge"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	mgoptions "go.mongodb.org/mongo-driver/mongo/options"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"
-	"kmodules.xyz/client-go/tools/certholder"
 )
 
-func (c *Controller) GetMongoClient(ctx context.Context, db *api.MongoDB, url, repSetName string) (*mongo.Client, error) {
-	clientOpts, err := c.GetMongoDBClientOpts(db, url, repSetName)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := mongo.Connect(ctx, clientOpts)
-	if err != nil {
-		return nil, err
-	}
-
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
-}
-
-func (c *Controller) GetURL(db *api.MongoDB, clientPodName string) string {
-	nodeType := clientPodName[:strings.LastIndex(clientPodName, "-")]
-	return fmt.Sprintf("%s.%s.%s.svc", clientPodName, db.GoverningServiceName(nodeType), db.Namespace)
-}
-
-func (c *Controller) GetMongoDBClientOpts(db *api.MongoDB, url, repSetName string) (*mgoptions.ClientOptions, error) {
-	repSetConfig := ""
-	if repSetName != "" {
-		repSetConfig = "replicaSet=" + repSetName + "&"
-	}
-
-	user, pass, err := c.GetMongoDBRootCredentials(db)
-	if err != nil {
-		return nil, err
-	}
-	var clientOpts *mgoptions.ClientOptions
-	if db.Spec.TLS != nil {
-		secretName := db.GetCertSecretName(api.MongoDBClientCert, "")
-		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
-		if err != nil {
-			klog.Error(err, "failed to get certificate secret. ", secretName)
-			return nil, err
-		}
-
-		certs, _ := certholder.DefaultHolder.
-			ForResource(api.SchemeGroupVersion.WithResource(api.ResourcePluralMongoDB), db.ObjectMeta)
-		_, err = certs.Save(certSecret)
-		if err != nil {
-			klog.Error(err, "failed to save certificate")
-			return nil, err
-		}
-
-		paths, err := certs.Get(secretName)
-		if err != nil {
-			return nil, err
-		}
-
-		uri := fmt.Sprintf("mongodb://%s:%s@%s/admin?%vtls=true&tlsCAFile=%v&tlsCertificateKeyFile=%v", user, pass, url, repSetConfig, paths.CACert, paths.Pem)
-		clientOpts = mgoptions.Client().ApplyURI(uri)
-	} else {
-		clientOpts = mgoptions.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s/admin?%v", user, pass, url, repSetConfig))
-	}
-
-	clientOpts.SetDirect(false)
-	clientOpts.SetConnectTimeout(5 * time.Second)
-
-	return clientOpts, nil
-}
-
-func (c *Controller) GetMongoDBRootCredentials(db *api.MongoDB) (string, string, error) {
-	if db.Spec.AuthSecret == nil {
-		return "", "", errors.New("no database secret")
-	}
-	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
-	if err != nil {
-		return "", "", err
-	}
-	return string(secret.Data[core.BasicAuthUsernameKey]), string(secret.Data[core.BasicAuthPasswordKey]), nil
-}
-
-func (c *Controller) CreateTLSUsers(db *api.MongoDB) error {
+func (c *Reconciler) CreateTLSUsers(db *api.MongoDB) error {
 	secretName := db.GetCertSecretName(api.MongoDBClientCert, "")
 	certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
@@ -155,18 +75,19 @@ func (c *Controller) CreateTLSUsers(db *api.MongoDB) error {
 	return nil
 }
 
-func (c *Controller) CreateTLSUser(db *api.MongoDB, url, repSetName, tlsUserName string) error {
+func (c *Reconciler) CreateTLSUser(db *api.MongoDB, url, repSetName, tlsUserName string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
 	defer cancel()
-	dbClient, err := c.GetMongoClient(ctx, db, url, repSetName)
+	dbClient, err := mongodb.NewKubeDBClientBuilder(db, c.Client).
+		WithContext(ctx).
+		WithURL(url).
+		WithReplSet(repSetName).
+		GetMongoClient()
 	if err != nil {
 		return err
 	}
 	defer func() {
-		err = dbClient.Disconnect(context.TODO())
-		if err != nil {
-			klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
-		}
+		dbClient.Close()
 	}()
 
 	res := make(map[string]interface{})
@@ -201,4 +122,88 @@ func (c *Controller) CreateTLSUser(db *api.MongoDB, url, repSetName, tlsUserName
 	}
 
 	return nil
+}
+
+func (c *Reconciler) SetupReplicaSetsConfig(db *api.MongoDB) error {
+	if db.Spec.ShardTopology != nil {
+		err := c.SetupReplicaSetConfig(db, strings.Join(db.ConfigSvrHosts(), ","), db.ConfigSvrRepSetName(), db.Spec.ShardTopology.ConfigServer.ConfigSecret)
+		if err != nil {
+			return err
+		}
+
+		for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
+			err = c.SetupReplicaSetConfig(db, strings.Join(db.ShardHosts(i), ","), db.ShardRepSetName(i), db.Spec.ShardTopology.Shard.ConfigSecret)
+			if err != nil {
+				return err
+			}
+		}
+	} else if db.Spec.ReplicaSet != nil {
+		err := c.SetupReplicaSetConfig(db, strings.Join(db.Hosts(), ","), db.RepSetName(), db.Spec.ConfigSecret)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *Reconciler) SetupReplicaSetConfig(db *api.MongoDB, url, repSetName string, configSecretRef *core.LocalObjectReference) error {
+	if configSecretRef == nil {
+		return nil
+	}
+
+	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), configSecretRef.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	providedConfigByte, ok := secret.Data["replicaset.json"]
+	if !ok {
+		return nil
+	}
+
+	providedConfig := make(map[string]interface{})
+	err = json.Unmarshal(providedConfigByte, &providedConfig)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+	dbClient, err := mongodb.NewKubeDBClientBuilder(db, c.Client).
+		WithContext(ctx).
+		WithReplSet(repSetName).
+		WithURL(url).
+		GetMongoClient()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		dbClient.Close()
+	}()
+
+	info := make(map[string]interface{})
+	err = dbClient.Database("admin").RunCommand(context.Background(), bson.D{{Key: "replSetGetConfig", Value: 1.0}}).Decode(&info)
+	if err != nil {
+		return err
+	}
+	if val, ok := info["ok"]; ok && val != 1.0 {
+		return fmt.Errorf("failed to get replset config. err: %v", info["errmsg"])
+	}
+
+	currentConfig := info["config"].(map[string]interface{})
+	config := merge.Merge(currentConfig, providedConfig).(map[string]interface{})
+	config["version"] = config["version"].(int32) + 1
+
+	info = make(map[string]interface{})
+	err = dbClient.Database("admin").RunCommand(context.Background(), bson.D{{Key: "replSetReconfig", Value: config}}).Decode(&info)
+	if err != nil {
+		return err
+	}
+
+	if val, ok := info["ok"]; ok && val == 1.0 {
+		return nil
+	}
+
+	return fmt.Errorf("failed to run reconfig for mongodb database %s/%s, response: %v", db.Namespace, db.Name, info)
 }

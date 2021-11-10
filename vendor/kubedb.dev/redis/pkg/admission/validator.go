@@ -163,6 +163,9 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 	if redis.Spec.Mode == api.RedisModeCluster && *redis.Spec.Cluster.Replicas == 0 {
 		return fmt.Errorf(`spec.cluster.replicas "%v" invalid. Value must be > 0`, redis.Spec.Cluster.Replicas)
 	}
+	if redis.Spec.Mode == api.RedisModeSentinel && (redis.Spec.SentinelRef == nil || redis.Spec.SentinelRef.Name == "" || redis.Spec.SentinelRef.Namespace == "") {
+		return fmt.Errorf("need to provide sentinelRef Name and Namespace while redis Mode set to Sentinel for redis %s/%s", redis.Namespace, redis.Name)
+	}
 
 	if redis.Spec.StorageType == "" {
 		return fmt.Errorf(`'spec.storageType' is missing`)

@@ -815,7 +815,7 @@ func (c *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 		c.Client,
 		statefulSetMeta,
 		func(in *apps.StatefulSet) *apps.StatefulSet {
-			in.Labels = opts.labels
+			in.Labels = db.PodControllerLabels(pt.Controller.Labels, opts.labels)
 			in.Annotations = pt.Controller.Annotations
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
@@ -824,7 +824,7 @@ func (c *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 			in.Spec.Selector = &metav1.LabelSelector{
 				MatchLabels: opts.selectors,
 			}
-			in.Spec.Template.Labels = opts.selectors
+			in.Spec.Template.Labels = db.PodLabels(pt.Labels, opts.labels)
 			in.Spec.Template.Annotations = pt.Annotations
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 				in.Spec.Template.Spec.InitContainers,

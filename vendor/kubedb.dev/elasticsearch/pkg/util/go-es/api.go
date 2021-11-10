@@ -22,11 +22,12 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"strings"
 	"time"
 
+	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
+	"github.com/Masterminds/semver/v3"
 	esv6 "github.com/elastic/go-elasticsearch/v6"
 	esv7 "github.com/elastic/go-elasticsearch/v7"
 	"github.com/pkg/errors"
@@ -40,7 +41,11 @@ type ESClient interface {
 	ClusterStatus() (string, error)
 }
 
-func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion, url string) (ESClient, error) {
+func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion *catalog.ElasticsearchVersion, url string) (ESClient, error) {
+	if db == nil || esVersion == nil {
+		return nil, errors.New("db or esVersion is empty")
+	}
+
 	var username, password string
 	if !db.Spec.DisableSecurity && db.Spec.AuthSecret != nil {
 		secret, err := kc.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
@@ -64,9 +69,15 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion,
 		}
 	}
 
+	// parse version
+	version, err := semver.NewVersion(esVersion.Spec.Version)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse version")
+	}
+
 	switch {
 	// for Elasticsearch 6.x.x
-	case strings.HasPrefix(esVersion, "6."):
+	case version.Major() == 6:
 		client, err := esv6.NewClient(esv6.Config{
 			Addresses:         []string{url},
 			Username:          username,
@@ -102,8 +113,8 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion,
 		}
 		return &ESClientV6{client: client}, nil
 
-	// for Elasticsearch 7.x.x
-	case strings.HasPrefix(esVersion, "7."):
+	// for Elasticsearch 7.x.x and OpenSearch 1.x.x
+	case version.Major() == 7 || (esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginOpenSearch && version.Major() == 1):
 		client, err := esv7.NewClient(esv7.Config{
 			Addresses:         []string{url},
 			Username:          username,
