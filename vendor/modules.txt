@@ -382,13 +382,13 @@ github.com/yudai/golcs
 ## explicit
 go.bytebuilders.dev/audit/api/v1
 go.bytebuilders.dev/audit/lib
-# go.bytebuilders.dev/license-verifier v0.9.4
+# go.bytebuilders.dev/license-verifier v0.9.5
 ## explicit
 go.bytebuilders.dev/license-verifier
 go.bytebuilders.dev/license-verifier/apis/licenses
 go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1
 go.bytebuilders.dev/license-verifier/info
-# go.bytebuilders.dev/license-verifier/kubernetes v0.9.4
+# go.bytebuilders.dev/license-verifier/kubernetes v0.9.5
 ## explicit
 go.bytebuilders.dev/license-verifier/kubernetes
 # go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489 => go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
@@ -1291,7 +1291,7 @@ kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/client-go/tools/clusterid
 kmodules.xyz/client-go/tools/exec
 kmodules.xyz/client-go/tools/queue
-# kmodules.xyz/custom-resources v0.0.0-20211007080833-72bd9e8cae6e
+# kmodules.xyz/custom-resources v0.0.0-20211025144742-7ab2db03cce8
 ## explicit
 kmodules.xyz/custom-resources/apis/appcatalog
 kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
@@ -1323,7 +1323,8 @@ kmodules.xyz/monitoring-agent-api/agents/prometheusoperator
 kmodules.xyz/monitoring-agent-api/api/v1
 kmodules.xyz/monitoring-agent-api/api/v1alpha1
 kmodules.xyz/monitoring-agent-api/prometheus/v1
-# kmodules.xyz/objectstore-api v0.0.0-20210928135706-fdf68f88ea6e
+# kmodules.xyz/objectstore-api v0.0.0-20211025143832-b9135743b78b
+## explicit
 kmodules.xyz/objectstore-api/api/v1
 # kmodules.xyz/offshoot-api v0.0.0-20211103060642-3e217667cf41
 kmodules.xyz/offshoot-api/api/v1
@@ -1339,7 +1340,7 @@ kmodules.xyz/resource-metadata/hub/resourcedescriptors
 kmodules.xyz/resource-metadata/pkg/graph
 # kmodules.xyz/resource-metrics v0.0.5
 kmodules.xyz/resource-metrics/api
-# kmodules.xyz/webhook-runtime v0.0.0-20210928141616-7f73c2ab318a
+# kmodules.xyz/webhook-runtime v0.0.0-20211025143924-ac7adedbd680
 ## explicit
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
