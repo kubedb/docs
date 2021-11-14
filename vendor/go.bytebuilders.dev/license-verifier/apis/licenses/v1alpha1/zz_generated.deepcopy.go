@@ -34,6 +34,13 @@ func (in *License) DeepCopyInto(out *License) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.FeatureFlags != nil {
+		in, out := &in.FeatureFlags, &out.FeatureFlags
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.Clusters != nil {
 		in, out := &in.Clusters, &out.Clusters
 		*out = make([]string, len(*in))

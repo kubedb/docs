@@ -9,8 +9,8 @@ require (
 	github.com/xdg/scram v1.0.3 // indirect
 	github.com/xdg/stringprep v1.0.3 // indirect
 	go.bytebuilders.dev/audit v0.0.12
-	go.bytebuilders.dev/license-verifier v0.9.4
-	go.bytebuilders.dev/license-verifier/kubernetes v0.9.4
+	go.bytebuilders.dev/license-verifier v0.9.5
+	go.bytebuilders.dev/license-verifier/kubernetes v0.9.5
 	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/runtime v0.2.0
 	gomodules.xyz/x v0.0.8
@@ -21,8 +21,9 @@ require (
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
 	kmodules.xyz/client-go v0.0.0-20211110065417-091bd089a92d
-	kmodules.xyz/custom-resources v0.0.0-20211007080833-72bd9e8cae6e
-	kmodules.xyz/webhook-runtime v0.0.0-20210928141616-7f73c2ab318a
+	kmodules.xyz/custom-resources v0.0.0-20211025144742-7ab2db03cce8
+	kmodules.xyz/objectstore-api v0.0.0-20211025143832-b9135743b78b // indirect
+	kmodules.xyz/webhook-runtime v0.0.0-20211025143924-ac7adedbd680
 	kubedb.dev/apimachinery v0.22.1-0.20211110124206-1222a1d62803
 	kubedb.dev/elasticsearch v0.22.1-0.20211110140013-c70caee30859
 	kubedb.dev/mariadb v0.6.1-0.20211110132500-92626beb8f74
