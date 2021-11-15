@@ -40,7 +40,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
-	"kmodules.xyz/client-go/tools/cli"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	appcatinformers "kmodules.xyz/custom-resources/client/informers/externalversions"
@@ -95,10 +94,6 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	var err error
 
 	cfg.LicenseFile = s.LicenseFile
-	cfg.License = license.NewLicenseEnforcer(cfg.ClientConfig, s.LicenseFile).LoadLicense()
-
-	cfg.EnableAnalytics = cli.EnableAnalytics
-	cfg.AnalyticsClientID = cli.AnalyticsClientID
 
 	cfg.ClientConfig.QPS = float32(s.QPS)
 	cfg.ClientConfig.Burst = s.Burst
@@ -120,6 +115,7 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 		} else if !sets.NewString(info.Features...).Has("kubedb-community") {
 			return fmt.Errorf("not a valid license for this product")
 		}
+		cfg.License = info
 	}
 
 	if cfg.KubeClient, err = kubernetes.NewForConfig(cfg.ClientConfig); err != nil {

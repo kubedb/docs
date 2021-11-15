@@ -93,8 +93,6 @@ type Config struct {
 	ReadinessProbeInterval  time.Duration
 	MaxNumRequeues          int
 	NumThreads              int
-	EnableAnalytics         bool
-	AnalyticsClientID       string
 	EnableValidatingWebhook bool
 	EnableMutatingWebhook   bool
 }

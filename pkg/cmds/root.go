@@ -26,28 +26,23 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"kmodules.xyz/client-go/tools/cli"
 	appcatscheme "kmodules.xyz/custom-resources/client/clientset/versioned/scheme"
 )
 
-func NewRootCmd(version string) *cobra.Command {
+func NewRootCmd() *cobra.Command {
 	var rootCmd = &cobra.Command{
 		Use:               "kubedb-operator [command]",
 		Short:             `KubeDB operator by AppsCode`,
 		DisableAutoGenTag: true,
 		PersistentPreRun: func(c *cobra.Command, args []string) {
-			cli.SendAnalytics(c, version)
-
 			utilruntime.Must(scheme.AddToScheme(clientsetscheme.Scheme))
 			utilruntime.Must(appcatscheme.AddToScheme(clientsetscheme.Scheme))
 		},
 	}
-	rootCmd.PersistentFlags().BoolVar(&cli.EnableAnalytics, "enable-analytics", cli.EnableAnalytics, "Send analytical events to Google Analytics")
-
 	rootCmd.AddCommand(v.NewCmdVersion())
 
 	stopCh := genericapiserver.SetupSignalHandler()
-	rootCmd.AddCommand(NewCmdRun(version, os.Stdout, os.Stderr, stopCh))
+	rootCmd.AddCommand(NewCmdRun(os.Stdout, os.Stderr, stopCh))
 
 	return rootCmd
 }
