@@ -18,12 +18,14 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	auditlib "go.bytebuilders.dev/audit/lib"
+	licenseapi "go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/metadata"
@@ -32,7 +34,6 @@ import (
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
-	"kmodules.xyz/client-go/tools/cli"
 	"kmodules.xyz/client-go/tools/clusterid"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
@@ -46,6 +47,7 @@ type OperatorConfig struct {
 	amc.Config
 
 	LicenseFile      string
+	License          licenseapi.License
 	ClientConfig     *rest.Config
 	KubeClient       kubernetes.Interface
 	CRDClient        crd_cs.Interface
@@ -79,7 +81,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	// audit event publisher
 	// WARNING: https://stackoverflow.com/a/46275411/244009
 	var auditor *auditlib.EventPublisher
-	if c.LicenseFile != "" && cli.EnableAnalytics {
+	if c.LicenseFile != "" && !c.License.DisableAnalytics() {
 		fn := auditlib.BillingEventCreator{
 			Mapper: mapper,
 		}
@@ -90,6 +92,10 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		auditor = auditlib.NewResilientEventPublisher(func() (*auditlib.NatsConfig, error) {
 			return auditlib.NewNatsConfig(cid, c.LicenseFile)
 		}, mapper, fn.CreateEvent)
+		err = auditor.SetupSiteInfoPublisher(c.ClientConfig, c.KubeClient, c.KubeInformerFactory)
+		if err != nil {
+			return nil, fmt.Errorf("failed to setup site info publisher, reason: %v", err)
+		}
 	}
 
 	ctrl := New(
