@@ -170,3 +170,27 @@ func (c *Controller) GetRedisSentinelSecrets(db *api.RedisSentinel) []string {
 	}
 	return nil
 }
+
+// if sentinel and redis are in different namespace then sentinel auth secret need to exist in redis namespace also.
+// if sentinel auth does not exist in redis namespace then create a new one.
+
+func (c *Controller) EnsureSentinelAuthSecretForRedisNamespace(db *api.Redis, sentinel *api.RedisSentinel) error {
+	sentinelAuth, err := c.Client.CoreV1().Secrets(sentinel.Namespace).Get(context.TODO(), sentinel.Spec.AuthSecret.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	// create or patch a secret if the sentinel and redis are not in same namespace
+	meta := metav1.ObjectMeta{
+		Name:      sentinelAuth.Name,
+		Namespace: db.Namespace,
+	}
+	_, _, err = core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
+		in.Data = sentinelAuth.Data
+		return in
+	}, metav1.PatchOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

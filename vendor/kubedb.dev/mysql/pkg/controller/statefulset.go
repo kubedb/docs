@@ -175,32 +175,40 @@ func (c *Reconciler) createOrPatchStatefulSet(db *api.MySQL) (*apps.StatefulSet,
 }
 
 func getMySQLExporterContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion) core.Container {
-	var commands []string
-	// pass config.my-cnf flag into exporter to configure TLS
+	// ref: https://github.com/prometheus/mysqld_exporter#general-flags
+	args := []string{
+		"/bin/mysqld_exporter",
+		fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
+		fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
+	}
 	if db.Spec.TLS != nil {
-		// ref: https://github.com/prometheus/mysqld_exporter#general-flags
+		// pass config.my-cnf flag into exporter to configure TLS
 		// https://github.com/prometheus/mysqld_exporter#customizing-configuration-for-a-ssl-connection
-		cmd := strings.Join(append([]string{
-			"/bin/mysqld_exporter",
-			fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
-			fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
-			"--config.my-cnf=/etc/mysql/certs/exporter.cnf",
-		}, db.Spec.Monitor.Prometheus.Exporter.Args...), " ")
-		commands = []string{cmd}
-	} else {
+		args = append(args, "--config.my-cnf=/etc/mysql/certs/exporter.cnf")
+	}
+	if db.UsesGroupReplication() || db.IsInnoDBCluster() {
+		groupReplicationArgs := []string{
+			"--collect.perf_schema.replication_group_members",
+			"--collect.perf_schema.replication_group_member_stats",
+			"--collect.perf_schema.replication_applier_status_by_worker",
+			"--collect.group_replication.custom_query",
+		}
+		args = append(args, groupReplicationArgs...)
+	}
+
+	args = append(args, db.Spec.Monitor.Prometheus.Exporter.Args...)
+
+	joinedArgs := strings.Join(args, " ")
+
+	var exporterArgs []string
+	if db.Spec.TLS == nil {
 		// DATA_SOURCE_NAME=user:password@tcp(localhost:5555)/dbname
 		// ref: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
-		cmd := strings.Join(append([]string{
-			"/bin/mysqld_exporter",
-			fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
-			fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
-		}, db.Spec.Monitor.Prometheus.Exporter.Args...), " ")
-		commands = []string{
-			`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"`,
-			cmd,
-		}
+		exporterArgs = append(exporterArgs, `export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"`)
 	}
-	script := strings.Join(commands, ";")
+	exporterArgs = append(exporterArgs, joinedArgs)
+
+	script := strings.Join(exporterArgs, ";")
 	return core.Container{
 		Name: api.ContainerExporterName,
 		Command: []string{

@@ -19,7 +19,6 @@ package admission
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
@@ -33,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
@@ -119,7 +119,7 @@ func (pbValidator *PgBouncerValidator) Admit(req *admission.AdmissionRequest) *a
 			oldPgBouncer := oldObject.(*api.PgBouncer).DeepCopy()
 			oldPgBouncer.SetDefaults()
 
-			if err := validateUpdate(pgbouncer, oldPgBouncer, req.Kind.Kind); err != nil {
+			if err := validateUpdate(pgbouncer, oldPgBouncer); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
@@ -169,44 +169,14 @@ func ValidatePgBouncer(client kubernetes.Interface, extClient cs.Interface, db *
 	return nil
 }
 
-func validateUpdate(obj, oldObj runtime.Object, kind string) error {
-	preconditions := getPreconditionFunc()
-	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
+func validateUpdate(obj, oldObj runtime.Object) error {
+	preconditions := meta_util.PreConditionSet{String: sets.NewString()}
+	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions.PreconditionFunc()...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
-			return fmt.Errorf("%v.%v", err, preconditionFailedError(kind))
+			return fmt.Errorf("%v.%v", err, preconditions.Error())
 		}
 		return err
 	}
 	return nil
-}
-
-func getPreconditionFunc() []mergepatch.PreconditionFunc {
-	preconditions := []mergepatch.PreconditionFunc{
-		mergepatch.RequireKeyUnchanged("apiVersion"),
-		mergepatch.RequireKeyUnchanged("kind"),
-		mergepatch.RequireMetadataKeyUnchanged("name"),
-		mergepatch.RequireMetadataKeyUnchanged("namespace"),
-	}
-
-	for _, field := range preconditionSpecFields {
-		preconditions = append(preconditions,
-			meta_util.RequireChainKeyUnchanged(field),
-		)
-	}
-	return preconditions
-}
-
-var preconditionSpecFields = []string{
-	// nothing to check yet
-}
-
-func preconditionFailedError(kind string) error {
-	str := preconditionSpecFields
-	strList := strings.Join(str, "\n\t")
-	return fmt.Errorf(strings.Join([]string{"For resource kind ", kind, `, at least one of the following was changed for resource
-	apiVersion
-	kind
-	name
-	namespace`, strList}, "\n\t"))
 }

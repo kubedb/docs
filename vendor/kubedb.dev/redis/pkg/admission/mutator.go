@@ -125,6 +125,9 @@ func setDefaultValues(redis *api.Redis, clusterTopology *core_util.Topology) (ru
 	if redis.Spec.Replicas == nil {
 		redis.Spec.Replicas = pointer.Int32P(1)
 	}
+	if redis.Spec.Mode == api.RedisModeSentinel && redis.Spec.SentinelRef != nil && redis.Spec.SentinelRef.Namespace == "" {
+		redis.Spec.SentinelRef.Namespace = redis.Namespace
+	}
 
 	redis.SetDefaults(clusterTopology)
 
