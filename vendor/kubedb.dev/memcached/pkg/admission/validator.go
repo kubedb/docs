@@ -19,7 +19,6 @@ package admission
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
@@ -33,6 +32,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -184,43 +184,17 @@ func ValidateMemcached(client kubernetes.Interface, extClient cs.Interface, memc
 }
 
 func validateUpdate(obj, oldObj runtime.Object) error {
-	preconditions := getPreconditionFunc()
-	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
+	preconditions := meta_util.PreConditionSet{
+		String: sets.NewString(
+			"spec.podTemplate.spec.nodeSelector",
+		),
+	}
+	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions.PreconditionFunc()...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
-			return fmt.Errorf("%v.%v", err, preconditionFailedError())
+			return fmt.Errorf("%v.%v", err, preconditions.Error())
 		}
 		return err
 	}
 	return nil
-}
-
-func getPreconditionFunc() []mergepatch.PreconditionFunc {
-	preconditions := []mergepatch.PreconditionFunc{
-		mergepatch.RequireKeyUnchanged("apiVersion"),
-		mergepatch.RequireKeyUnchanged("kind"),
-		mergepatch.RequireMetadataKeyUnchanged("name"),
-		mergepatch.RequireMetadataKeyUnchanged("namespace"),
-	}
-
-	for _, field := range preconditionSpecFields {
-		preconditions = append(preconditions,
-			meta_util.RequireChainKeyUnchanged(field),
-		)
-	}
-	return preconditions
-}
-
-var preconditionSpecFields = []string{
-	"spec.podTemplate.spec.nodeSelector",
-}
-
-func preconditionFailedError() error {
-	str := preconditionSpecFields
-	strList := strings.Join(str, "\n\t")
-	return fmt.Errorf(strings.Join([]string{`At least one of the following was changed:
-	apiVersion
-	kind
-	name
-	namespace`, strList}, "\n\t"))
 }

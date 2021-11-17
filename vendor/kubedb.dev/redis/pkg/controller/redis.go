@@ -103,6 +103,17 @@ func (c *Controller) create(db *api.Redis) error {
 		if !kmapi.IsConditionTrue(sentinel.Status.Conditions, api.DatabaseProvisioned) {
 			return fmt.Errorf("redis %s/%s is waiting for the sentinel %s/%s to be provisioned", db.Namespace, db.Name, sentinel.Namespace, sentinel.Name)
 		}
+
+		if sentinel.Namespace != db.Namespace {
+			err = c.EnsureSentinelAuthSecretForRedisNamespace(db, sentinel)
+			if err != nil {
+				return err
+			}
+			err = c.EnsureSentinelRoleBindingForRedisServiceAcc(db, sentinel)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	// ensure database StatefulSet

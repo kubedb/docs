@@ -19,7 +19,6 @@ package admission
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
@@ -31,13 +30,13 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
-	"gomodules.xyz/sets"
 	admission "k8s.io/api/admission/v1beta1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -298,53 +297,26 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 }
 
 func validateUpdate(obj, oldObj *api.Elasticsearch) error {
-	preconditions := getPreconditionFunc(oldObj)
-	_, err := meta_util.CreateJSONMergePatch(oldObj, obj, preconditions...)
+	preconditions := meta_util.PreConditionSet{
+		String: sets.NewString(
+			"spec.topology.*.suffix",
+			"spec.authSecret",
+			"spec.storageType",
+			"spec.podTemplate.spec.nodeSelector",
+		),
+	}
+	// Once the database has been initialized, don't let update the "spec.init" section
+	if oldObj.Spec.Init != nil && oldObj.Spec.Init.Initialized {
+		preconditions.Insert("spec.init")
+	}
+	_, err := meta_util.CreateJSONMergePatch(oldObj, obj, preconditions.PreconditionFunc()...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
-			return fmt.Errorf("%v.%v", err, preconditionFailedError())
+			return fmt.Errorf("%v.%v", err, preconditions.Error())
 		}
 		return err
 	}
 	return nil
-}
-
-func getPreconditionFunc(db *api.Elasticsearch) []mergepatch.PreconditionFunc {
-	preconditions := []mergepatch.PreconditionFunc{
-		mergepatch.RequireKeyUnchanged("apiVersion"),
-		mergepatch.RequireKeyUnchanged("kind"),
-		mergepatch.RequireMetadataKeyUnchanged("name"),
-		mergepatch.RequireMetadataKeyUnchanged("namespace"),
-	}
-
-	// Once the database has been initialized, don't let update the "spec.init" section
-	if db.Spec.Init != nil && db.Spec.Init.Initialized {
-		preconditionSpecFields.Insert("spec.init")
-	}
-
-	for _, field := range preconditionSpecFields.List() {
-		preconditions = append(preconditions,
-			meta_util.RequireChainKeyUnchanged(field),
-		)
-	}
-	return preconditions
-}
-
-var preconditionSpecFields = sets.NewString(
-	"spec.topology.*.suffix",
-	"spec.authSecret",
-	"spec.storageType",
-	"spec.podTemplate.spec.nodeSelector",
-)
-
-func preconditionFailedError() error {
-	str := preconditionSpecFields.List()
-	strList := strings.Join(str, "\n\t")
-	return fmt.Errorf(strings.Join([]string{`At least one of the following was changed:
-	apiVersion
-	kind
-	name
-	namespace`, strList}, "\n\t"))
 }
 
 func validateContainerSecurityContext(sc *core.SecurityContext, esVersion *catalog.ElasticsearchVersion) error {

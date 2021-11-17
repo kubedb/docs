@@ -94,11 +94,26 @@ func (c *Controller) ensureSentinelRole(db *api.RedisSentinel, name string, pspN
 	return err
 }
 
+// we are not going to override the existing subject list for role binding of the sentinel. just append new one with the existing subjects.
+// this is the case when sentinel is in different namespace from redis. in that case we need to add the redis SAName also in subject list.
 func (c *Controller) createSentinelRoleBinding(db *api.RedisSentinel, roleName string, saName string) error {
-	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedisSentinel))
+	var subjects []rbac.Subject
+	roleBinding, err := c.Client.RbacV1().RoleBindings(db.Namespace).Get(context.TODO(), roleName, metav1.GetOptions{})
+	if err != nil && !kerr.IsNotFound(err) {
+		return err
+	}
+	if err == nil {
+		subjects = roleBinding.Subjects
+	}
+	subjects = UpsertSentinelRoleBindingSubject(subjects, rbac.Subject{
+		Kind:      rbac.ServiceAccountKind,
+		Name:      saName,
+		Namespace: db.Namespace,
+	})
 
-	// Ensure new RoleBindings for Redis and it's Snapshot
-	_, _, err := rbac_util.CreateOrPatchRoleBinding(
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedisSentinel))
+	// Ensure new RoleBindings for Redis sentinel and it's Snapshot
+	_, _, err = rbac_util.CreateOrPatchRoleBinding(
 		context.TODO(),
 		c.Client,
 		metav1.ObjectMeta{
@@ -113,13 +128,7 @@ func (c *Controller) createSentinelRoleBinding(db *api.RedisSentinel, roleName s
 				Kind:     "Role",
 				Name:     roleName,
 			}
-			in.Subjects = []rbac.Subject{
-				{
-					Kind:      rbac.ServiceAccountKind,
-					Name:      saName,
-					Namespace: db.Namespace,
-				},
-			}
+			in.Subjects = subjects
 			return in
 		},
 		metav1.PatchOptions{},
@@ -174,4 +183,22 @@ func (c *Controller) ensureSentinelRBACStuff(db *api.RedisSentinel) error {
 	}
 
 	return nil
+}
+
+// UpsertSentinelRoleBindingSubject will upsert new rbac subject in the old one
+func UpsertSentinelRoleBindingSubject(subjects []rbac.Subject, newSubjects ...rbac.Subject) []rbac.Subject {
+	upsert := func(subject rbac.Subject) {
+		for i, sub := range subjects {
+			if sub.Name == subject.Name {
+				subjects[i] = subject
+				return
+			}
+		}
+		subjects = append(subjects, subject)
+	}
+
+	for _, subject := range newSubjects {
+		upsert(subject)
+	}
+	return subjects
 }

@@ -180,3 +180,40 @@ func (c *Controller) ensureRBACStuff(db *api.Redis) error {
 
 	return nil
 }
+
+// if Redis database and sentinel are in different namespace then we need add the redis SAName inside sentinels rolebinding
+// so that we can get sentinel statefulset from redis pods. one use case is like: we need to get sentinel statefulset from redis-coordinator container
+
+func (c *Controller) EnsureSentinelRoleBindingForRedisServiceAcc(db *api.Redis, sentinel *api.RedisSentinel) error {
+	saName := db.Spec.PodTemplate.Spec.ServiceAccountName
+	roleName := sentinel.OffshootName()
+	var subjects []rbac.Subject
+	roleBinding, err := c.Client.RbacV1().RoleBindings(sentinel.Namespace).Get(context.TODO(), roleName, metav1.GetOptions{})
+	if err != nil && !kerr.IsNotFound(err) {
+		return err
+	}
+	if err == nil {
+		subjects = roleBinding.Subjects
+	}
+	subjects = UpsertSentinelRoleBindingSubject(subjects, rbac.Subject{
+		Kind:      rbac.ServiceAccountKind,
+		Name:      saName,
+		Namespace: db.Namespace,
+	})
+
+	// Ensure new RoleBindings for Redis sentinel and it's Snapshot
+	_, _, err = rbac_util.CreateOrPatchRoleBinding(
+		context.TODO(),
+		c.Client,
+		metav1.ObjectMeta{
+			Name:      roleName,
+			Namespace: sentinel.Namespace,
+		},
+		func(in *rbac.RoleBinding) *rbac.RoleBinding {
+			in.Subjects = subjects
+			return in
+		},
+		metav1.PatchOptions{},
+	)
+	return err
+}

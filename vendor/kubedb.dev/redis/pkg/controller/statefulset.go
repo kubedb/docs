@@ -262,7 +262,7 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 			},
 			{
 				Name:  "SENTINEL_GOVERNING_SERVICE",
-				Value: fmt.Sprintf("%s.%s.svc", sentinel.GoverningServiceName(), db.Namespace),
+				Value: fmt.Sprintf("%s.%s.svc", sentinel.GoverningServiceName(), sentinel.Namespace),
 			},
 			{
 				Name:  "SENTINEL_NAME",

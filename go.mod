@@ -21,17 +21,17 @@ require (
 	kmodules.xyz/client-go v0.0.0-20211116191353-a321f503ea3a
 	kmodules.xyz/custom-resources v0.0.0-20211025144742-7ab2db03cce8
 	kmodules.xyz/webhook-runtime v0.0.0-20211025143924-ac7adedbd680
-	kubedb.dev/apimachinery v0.22.1-0.20211116190956-ff3a4175f2df
-	kubedb.dev/elasticsearch v0.22.1-0.20211115004739-16895e921604
-	kubedb.dev/mariadb v0.6.1-0.20211115005420-45cbdb9e6f0e
-	kubedb.dev/memcached v0.15.1-0.20211115011141-d44def4ba8ea
-	kubedb.dev/mongodb v0.15.1-0.20211115011641-e24969a19f41
-	kubedb.dev/mysql v0.15.1-0.20211115012140-eca0cfd5ded0
-	kubedb.dev/percona-xtradb v0.9.1-0.20211115012912-87f94bb7ce3f
-	kubedb.dev/pgbouncer v0.9.1-0.20211115013345-3a2a4143281a
-	kubedb.dev/postgres v0.22.1-0.20211115013841-63585d4dbc0a
-	kubedb.dev/proxysql v0.9.1-0.20211115014448-271bc5afaddc
-	kubedb.dev/redis v0.15.1-0.20211115014720-32b2565a495f
+	kubedb.dev/apimachinery v0.23.0
+	kubedb.dev/elasticsearch v0.23.0
+	kubedb.dev/mariadb v0.7.0
+	kubedb.dev/memcached v0.16.0
+	kubedb.dev/mongodb v0.16.0
+	kubedb.dev/mysql v0.16.0
+	kubedb.dev/percona-xtradb v0.10.0
+	kubedb.dev/pgbouncer v0.10.0
+	kubedb.dev/postgres v0.23.0
+	kubedb.dev/proxysql v0.10.0
+	kubedb.dev/redis v0.16.0
 )
 
 require (
