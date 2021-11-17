@@ -1398,7 +1398,7 @@ k8s.io/utils/trace
 # kmodules.xyz/apiversion v0.2.0
 ## explicit; go 1.14
 kmodules.xyz/apiversion
-# kmodules.xyz/client-go v0.0.0-20211110065417-091bd089a92d
+# kmodules.xyz/client-go v0.0.0-20211116191353-a321f503ea3a
 ## explicit; go 1.17
 kmodules.xyz/client-go
 kmodules.xyz/client-go/admissionregistration
@@ -1447,7 +1447,7 @@ kmodules.xyz/custom-resources/client/listers/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/client/listers/metrics/v1alpha1
 kmodules.xyz/custom-resources/crds
 kmodules.xyz/custom-resources/util/siteinfo
-# kmodules.xyz/monitoring-agent-api v0.0.0-20211110102906-ca48f83c44c5
+# kmodules.xyz/monitoring-agent-api v0.0.0-20211117051609-520052fe6ff6
 ## explicit; go 1.15
 kmodules.xyz/monitoring-agent-api/agents
 kmodules.xyz/monitoring-agent-api/agents/prometheus
@@ -1481,7 +1481,7 @@ kmodules.xyz/resource-metrics/api
 ## explicit; go 1.12
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.22.1-0.20211114235512-1969d04c0945
+# kubedb.dev/apimachinery v0.22.1-0.20211116190956-ff3a4175f2df
 ## explicit; go 1.16
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling

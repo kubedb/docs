@@ -18,10 +18,10 @@ require (
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20211110065417-091bd089a92d
+	kmodules.xyz/client-go v0.0.0-20211116191353-a321f503ea3a
 	kmodules.xyz/custom-resources v0.0.0-20211025144742-7ab2db03cce8
 	kmodules.xyz/webhook-runtime v0.0.0-20211025143924-ac7adedbd680
-	kubedb.dev/apimachinery v0.22.1-0.20211114235512-1969d04c0945
+	kubedb.dev/apimachinery v0.22.1-0.20211116190956-ff3a4175f2df
 	kubedb.dev/elasticsearch v0.22.1-0.20211115004739-16895e921604
 	kubedb.dev/mariadb v0.6.1-0.20211115005420-45cbdb9e6f0e
 	kubedb.dev/memcached v0.15.1-0.20211115011141-d44def4ba8ea
@@ -176,7 +176,7 @@ require (
 	k8s.io/kubernetes v1.21.1 // indirect
 	k8s.io/utils v0.0.0-20210802155522-efc7438f0176 // indirect
 	kmodules.xyz/apiversion v0.2.0 // indirect
-	kmodules.xyz/monitoring-agent-api v0.0.0-20211110102906-ca48f83c44c5 // indirect
+	kmodules.xyz/monitoring-agent-api v0.0.0-20211117051609-520052fe6ff6 // indirect
 	kmodules.xyz/objectstore-api v0.0.0-20211025143832-b9135743b78b // indirect
 	kmodules.xyz/offshoot-api v0.0.0-20211103060642-3e217667cf41 // indirect
 	kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027 // indirect

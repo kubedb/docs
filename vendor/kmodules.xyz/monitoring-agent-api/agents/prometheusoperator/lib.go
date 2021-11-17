@@ -34,7 +34,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// PrometheusOperator creates `ServiceMonitor` so that CoreOS Prometheus operator can generate necessary config for Prometheus.
+// PrometheusOperator creates `ServiceMonitor` so that Prometheus operator can generate necessary config for Prometheus.
 type PrometheusOperator struct {
 	at         api.AgentType
 	k8sClient  kubernetes.Interface
@@ -55,7 +55,7 @@ func (agent *PrometheusOperator) GetType() api.AgentType {
 
 func (agent *PrometheusOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.AgentSpec) (kutil.VerbType, error) {
 	if !discovery.ExistsGroupKind(agent.k8sClient.Discovery(), promapi.SchemeGroupVersion.Group, promapi.ServiceMonitorsKind) {
-		return kutil.VerbUnchanged, errors.New("cluster does not support CoreOS Prometheus operator")
+		return kutil.VerbUnchanged, errors.New("cluster does not support Prometheus operator")
 	}
 
 	svc, err := agent.k8sClient.CoreV1().Services(sp.GetNamespace()).Get(context.TODO(), sp.ServiceName(), metav1.GetOptions{})
@@ -108,7 +108,7 @@ func (agent *PrometheusOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.A
 
 func (agent *PrometheusOperator) Delete(sp api.StatsAccessor) (kutil.VerbType, error) {
 	if !discovery.ExistsGroupKind(agent.k8sClient.Discovery(), promapi.SchemeGroupVersion.Group, promapi.ServiceMonitorsKind) {
-		return kutil.VerbUnchanged, errors.New("cluster does not support CoreOS Prometheus operator")
+		return kutil.VerbUnchanged, errors.New("cluster does not support Prometheus operator")
 	}
 
 	err := agent.promClient.ServiceMonitors(sp.GetNamespace()).Delete(context.TODO(), sp.ServiceMonitorName(), metav1.DeleteOptions{})
