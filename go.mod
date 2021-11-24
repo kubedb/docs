@@ -6,9 +6,9 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.47.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
-	go.bytebuilders.dev/audit v0.0.12
-	go.bytebuilders.dev/license-verifier v0.9.5
-	go.bytebuilders.dev/license-verifier/kubernetes v0.9.5
+	go.bytebuilders.dev/audit v0.0.13
+	go.bytebuilders.dev/license-verifier v0.9.6
+	go.bytebuilders.dev/license-verifier/kubernetes v0.9.6
 	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/runtime v0.2.0
 	gomodules.xyz/x v0.0.8
@@ -18,10 +18,10 @@ require (
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20211116191353-a321f503ea3a
-	kmodules.xyz/custom-resources v0.0.0-20211025144742-7ab2db03cce8
-	kmodules.xyz/webhook-runtime v0.0.0-20211025143924-ac7adedbd680
-	kubedb.dev/apimachinery v0.23.0
+	kmodules.xyz/client-go v0.0.0-20211122091731-6c471b24a4ea
+	kmodules.xyz/custom-resources v0.0.0-20211122142737-3bf3dbd8ac52
+	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1
+	kubedb.dev/apimachinery v0.23.1-0.20211122140200-fe94664c6645
 	kubedb.dev/elasticsearch v0.23.0
 	kubedb.dev/mariadb v0.7.0
 	kubedb.dev/memcached v0.16.0
@@ -177,8 +177,8 @@ require (
 	k8s.io/utils v0.0.0-20210802155522-efc7438f0176 // indirect
 	kmodules.xyz/apiversion v0.2.0 // indirect
 	kmodules.xyz/monitoring-agent-api v0.0.0-20211117051609-520052fe6ff6 // indirect
-	kmodules.xyz/objectstore-api v0.0.0-20211025143832-b9135743b78b // indirect
-	kmodules.xyz/offshoot-api v0.0.0-20211103060642-3e217667cf41 // indirect
+	kmodules.xyz/objectstore-api v0.0.0-20211116180107-8720be0c9bf7 // indirect
+	kmodules.xyz/offshoot-api v0.0.0-20211116180130-806cde7fb795 // indirect
 	kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027 // indirect
 	kmodules.xyz/resource-metadata v0.6.7 // indirect
 	kmodules.xyz/resource-metrics v0.0.5 // indirect

@@ -469,17 +469,17 @@ github.com/yudai/gojsondiff/formatter
 # github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82
 ## explicit
 github.com/yudai/golcs
-# go.bytebuilders.dev/audit v0.0.12
+# go.bytebuilders.dev/audit v0.0.13
 ## explicit; go 1.16
 go.bytebuilders.dev/audit/api/v1
 go.bytebuilders.dev/audit/lib
-# go.bytebuilders.dev/license-verifier v0.9.5
+# go.bytebuilders.dev/license-verifier v0.9.6
 ## explicit; go 1.15
 go.bytebuilders.dev/license-verifier
 go.bytebuilders.dev/license-verifier/apis/licenses
 go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1
 go.bytebuilders.dev/license-verifier/info
-# go.bytebuilders.dev/license-verifier/kubernetes v0.9.5
+# go.bytebuilders.dev/license-verifier/kubernetes v0.9.6
 ## explicit; go 1.16
 go.bytebuilders.dev/license-verifier/kubernetes
 # go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489 => go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489
@@ -1398,7 +1398,7 @@ k8s.io/utils/trace
 # kmodules.xyz/apiversion v0.2.0
 ## explicit; go 1.14
 kmodules.xyz/apiversion
-# kmodules.xyz/client-go v0.0.0-20211116191353-a321f503ea3a
+# kmodules.xyz/client-go v0.0.0-20211122091731-6c471b24a4ea
 ## explicit; go 1.17
 kmodules.xyz/client-go
 kmodules.xyz/client-go/admissionregistration
@@ -1423,7 +1423,7 @@ kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/client-go/tools/clusterid
 kmodules.xyz/client-go/tools/exec
 kmodules.xyz/client-go/tools/queue
-# kmodules.xyz/custom-resources v0.0.0-20211025144742-7ab2db03cce8
+# kmodules.xyz/custom-resources v0.0.0-20211122142737-3bf3dbd8ac52
 ## explicit; go 1.16
 kmodules.xyz/custom-resources/apis/appcatalog
 kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
@@ -1456,10 +1456,10 @@ kmodules.xyz/monitoring-agent-api/agents/prometheusoperator
 kmodules.xyz/monitoring-agent-api/api/v1
 kmodules.xyz/monitoring-agent-api/api/v1alpha1
 kmodules.xyz/monitoring-agent-api/prometheus/v1
-# kmodules.xyz/objectstore-api v0.0.0-20211025143832-b9135743b78b
+# kmodules.xyz/objectstore-api v0.0.0-20211116180107-8720be0c9bf7
 ## explicit; go 1.15
 kmodules.xyz/objectstore-api/api/v1
-# kmodules.xyz/offshoot-api v0.0.0-20211103060642-3e217667cf41
+# kmodules.xyz/offshoot-api v0.0.0-20211116180130-806cde7fb795
 ## explicit; go 1.15
 kmodules.xyz/offshoot-api/api/v1
 # kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027
@@ -1477,12 +1477,12 @@ kmodules.xyz/resource-metadata/pkg/graph
 # kmodules.xyz/resource-metrics v0.0.5
 ## explicit; go 1.17
 kmodules.xyz/resource-metrics/api
-# kmodules.xyz/webhook-runtime v0.0.0-20211025143924-ac7adedbd680
+# kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1
 ## explicit; go 1.12
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.23.0
-## explicit; go 1.16
+# kubedb.dev/apimachinery v0.23.1-0.20211122140200-fe94664c6645
+## explicit; go 1.17
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
 kubedb.dev/apimachinery/apis/autoscaling/v1alpha1
@@ -1495,6 +1495,8 @@ kubedb.dev/apimachinery/apis/kubedb/v1alpha1
 kubedb.dev/apimachinery/apis/kubedb/v1alpha2
 kubedb.dev/apimachinery/apis/ops
 kubedb.dev/apimachinery/apis/ops/v1alpha1
+kubedb.dev/apimachinery/apis/ui
+kubedb.dev/apimachinery/apis/ui/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned
 kubedb.dev/apimachinery/client/clientset/versioned/scheme
 kubedb.dev/apimachinery/client/clientset/versioned/typed/autoscaling/v1alpha1
@@ -1504,6 +1506,7 @@ kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2
 kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util
 kubedb.dev/apimachinery/client/clientset/versioned/typed/ops/v1alpha1
+kubedb.dev/apimachinery/client/clientset/versioned/typed/ui/v1alpha1
 kubedb.dev/apimachinery/client/informers/externalversions
 kubedb.dev/apimachinery/client/informers/externalversions/autoscaling
 kubedb.dev/apimachinery/client/informers/externalversions/autoscaling/v1alpha1
