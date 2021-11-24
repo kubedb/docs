@@ -162,7 +162,12 @@ func (c *Controller) checkPostgreSQLClusterHealth(ctx context.Context, db *api.P
 	if err != nil {
 		return false, err
 	}
-	for _, pod := range podList.Items {
+
+	dbPods, err := api.GetDatabasePods(db, c.StsLister, podList.Items)
+	if err != nil {
+		return false, fmt.Errorf("failed filter database pods. Reason: %v", err)
+	}
+	for _, pod := range dbPods {
 		err := c.IsPostgreSQLServerOnline(ctx, db, HostDNS(db, pod.ObjectMeta), api.PostgresDatabasePort)
 
 		if err != nil {

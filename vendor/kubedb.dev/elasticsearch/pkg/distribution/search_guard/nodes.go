@@ -23,6 +23,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/elasticsearch/pkg/lib/heap"
 
+	"github.com/Masterminds/semver/v3"
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	kutil "kmodules.xyz/client-go"
@@ -47,6 +48,11 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 		heapSize = heap.GetHeapSizeFromMemory(limit.Value())
 	}
 
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
 	// Environment variable list for main container.
 	// These are node specific, i.e. changes depending on node type.
 	// Following are for Master node:
@@ -55,24 +61,40 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 			Name:  "ES_JAVA_OPTS",
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
 		},
-		{
-			Name:  "node.ingest",
-			Value: "false",
-		},
-		{
-			Name:  "node.master",
-			Value: "true",
-		},
-		{
-			Name:  "node.data",
-			Value: "false",
-		},
 	}
 
+	// For Elasticsearch version >= 7.9.x
+	// The legacy node role setting is deprecated.
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
+		// Set "NODE_ROLES" env,
+		// It is used while generating elasticsearch.yml file.
+		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
+			Name:  "NODE_ROLES",
+			Value: "master",
+		})
+
+	} else {
+		// For Elasticsearch version >=7.6.x, <7.9.x
+		// For master node, only master role is true.
+		envList = core_util.UpsertEnvVars(envList, []core.EnvVar{
+			{
+				Name:  "node.ingest",
+				Value: "false",
+			},
+			{
+				Name:  "node.master",
+				Value: "true",
+			},
+			{
+				Name:  "node.data",
+				Value: "false",
+			},
+		}...)
+	}
 	// These Env are only required for master nodes to bootstrap
 	// for the vary first time. Need to remove from EnvList as
 	// soon as the cluster is up and running.
-	if strings.HasPrefix(es.esVersion.Spec.Version, "7.") {
+	if dbVersion.Major() >= 7 {
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "cluster.initial_master_nodes",
 			Value: strings.Join(es.db.InitialMasterNodes(), ","),
@@ -86,7 +108,7 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList, err := es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -96,6 +118,13 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
+		{
+			Name:  "NODE_ROLES",
+			Value: "master",
+		},
+		// TODO:
+		// 		For supporting old config-merger version,
+		// 		Should be removed soon.
 		{
 			Name:  "NODE_MASTER",
 			Value: "true",
@@ -138,22 +167,44 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 			Name:  "ES_JAVA_OPTS",
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
 		},
-		{
-			Name:  "node.ingest",
-			Value: "false",
-		},
-		{
-			Name:  "node.master",
-			Value: "false",
-		},
-		{
-			Name:  "node.data",
-			Value: "true",
-		},
 	}
+
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	// For Elasticsearch version >= 7.9.x
+	// The legacy node role setting is deprecated.
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
+		// Set "NODE_ROLES" env,
+		// It is used while generating elasticsearch.yml file.
+		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
+			Name:  "NODE_ROLES",
+			Value: "data",
+		})
+	} else {
+		// For Elasticsearch version >=6.8.0, <7.9.x
+		// For data node, only data role is true.
+		envList = core_util.UpsertEnvVars(envList, []core.EnvVar{
+			{
+				Name:  "node.ingest",
+				Value: "false",
+			},
+			{
+				Name:  "node.master",
+				Value: "false",
+			},
+			{
+				Name:  "node.data",
+				Value: "true",
+			},
+		}...)
+	}
+
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList, err := es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -162,6 +213,13 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
+		{
+			Name:  "NODE_ROLES",
+			Value: "data",
+		},
+		// TODO:
+		// 		For supporting old config-merger version,
+		// 		Should be removed soon.
 		{
 			Name:  "NODE_MASTER",
 			Value: "false",
@@ -205,22 +263,43 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 			Name:  "ES_JAVA_OPTS",
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
 		},
-		{
-			Name:  "node.ingest",
-			Value: "true",
-		},
-		{
-			Name:  "node.master",
-			Value: "false",
-		},
-		{
-			Name:  "node.data",
-			Value: "false",
-		},
+	}
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	// For Elasticsearch version >= 7.9.x
+	// The legacy node role setting is deprecated.
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
+		// Set "NODE_ROLES" env,
+		// It is used in elasticsearch.yml file.
+		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
+			Name:  "NODE_ROLES",
+			Value: "ingest",
+		})
+
+	} else {
+		// For Elasticsearch version >=6.8.x, <7.9.x
+		// For ingest node, only ingest role is true.
+		envList = core_util.UpsertEnvVars(envList, []core.EnvVar{
+			{
+				Name:  "node.ingest",
+				Value: "true",
+			},
+			{
+				Name:  "node.master",
+				Value: "false",
+			},
+			{
+				Name:  "node.data",
+				Value: "false",
+			},
+		}...)
 	}
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList, err := es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -229,6 +308,13 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
+		{
+			Name:  "NODE_ROLES",
+			Value: "ingest",
+		},
+		// TODO:
+		// 		For supporting old config-merger version,
+		// 		Should be removed soon.
 		{
 			Name:  "NODE_MASTER",
 			Value: "false",
@@ -281,24 +367,44 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 			Name:  "ES_JAVA_OPTS",
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
 		},
-		{
-			Name:  "node.ingest",
-			Value: "true",
-		},
-		{
-			Name:  "node.master",
-			Value: "true",
-		},
-		{
-			Name:  "node.data",
-			Value: "true",
-		},
+	}
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
+	if err != nil {
+		return kutil.VerbUnchanged, err
 	}
 
-	// These Env are only required for master nodes to bootstrap
-	// for the vary first time. Need to remove from EnvList as
+	// For Elasticsearch version >= 7.9.x
+	// The legacy node role setting is deprecated.
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
+		// Set "NODE_ROLES" env,
+		// It is used in elasticsearch.yml file.
+		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
+			Name:  "NODE_ROLES",
+			Value: "master, data, ingest",
+		})
+	} else {
+		// For Elasticsearch version >=6.8.0, <7.9.x
+		// For combined node, all master, data, ingest are ture.
+		envList = core_util.UpsertEnvVars(envList, []core.EnvVar{
+			{
+				Name:  "node.ingest",
+				Value: "true",
+			},
+			{
+				Name:  "node.master",
+				Value: "true",
+			},
+			{
+				Name:  "node.data",
+				Value: "true",
+			},
+		}...)
+	}
+
+	// These Envs are only required for master nodes to bootstrap
+	// for the very first time. Need to remove from EnvList as
 	// soon as the cluster is up and running.
-	if strings.HasPrefix(es.esVersion.Spec.Version, "7.") {
+	if dbVersion.Major() >= 7 {
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "cluster.initial_master_nodes",
 			Value: strings.Join(es.db.InitialMasterNodes(), ","),
@@ -312,7 +418,7 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
-	envList, err := es.upsertContainerEnv(envList)
+	envList, err = es.upsertContainerEnv(envList)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -322,6 +428,13 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
+		{
+			Name:  "NODE_ROLES",
+			Value: "master, data, ingest",
+		},
+		// TODO:
+		// 		For supporting old config-merger version,
+		// 		Should be removed soon.
 		{
 			Name:  "NODE_MASTER",
 			Value: "true",

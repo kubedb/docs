@@ -78,7 +78,7 @@ func (c *Controller) ensureAppBinding(db *api.MySQL) (kutil.VerbType, error) {
 
 		in.Spec.Type = appmeta.Type()
 		in.Spec.Version = mysqlVersion.Spec.Version
-		in.Spec.ClientConfig.URL = pointer.StringP(fmt.Sprintf("tcp(%s:%d)/", db.ServiceName(), port))
+		in.Spec.ClientConfig.URL = pointer.StringP(fmt.Sprintf("tcp(%s.%s.svc:%d)/", db.ServiceName(), db.Namespace, port))
 		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
 			Scheme: "mysql",
 			Name:   db.ServiceName(),

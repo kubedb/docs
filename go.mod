@@ -21,17 +21,17 @@ require (
 	kmodules.xyz/client-go v0.0.0-20211122091731-6c471b24a4ea
 	kmodules.xyz/custom-resources v0.0.0-20211122142737-3bf3dbd8ac52
 	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1
-	kubedb.dev/apimachinery v0.23.1-0.20211122140200-fe94664c6645
-	kubedb.dev/elasticsearch v0.23.0
-	kubedb.dev/mariadb v0.7.0
-	kubedb.dev/memcached v0.16.0
-	kubedb.dev/mongodb v0.16.0
-	kubedb.dev/mysql v0.16.0
-	kubedb.dev/percona-xtradb v0.10.0
-	kubedb.dev/pgbouncer v0.10.0
-	kubedb.dev/postgres v0.23.0
-	kubedb.dev/proxysql v0.10.0
-	kubedb.dev/redis v0.16.0
+	kubedb.dev/apimachinery v0.24.0
+	kubedb.dev/elasticsearch v0.24.0
+	kubedb.dev/mariadb v0.8.0
+	kubedb.dev/memcached v0.17.0
+	kubedb.dev/mongodb v0.17.0
+	kubedb.dev/mysql v0.17.0
+	kubedb.dev/percona-xtradb v0.11.0
+	kubedb.dev/pgbouncer v0.11.0
+	kubedb.dev/postgres v0.24.0
+	kubedb.dev/proxysql v0.11.0
+	kubedb.dev/redis v0.17.0
 )
 
 require (
