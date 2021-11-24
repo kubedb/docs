@@ -129,8 +129,14 @@ func (c *Controller) CheckMySQLHealthOnce() {
 				klog.Warning("Failed to list DB pod with ", err.Error())
 				return
 			}
+
+			dbPods, err := api.GetDatabasePods(db, c.StsLister, podList.Items)
+			if err != nil {
+				klog.Warning("Failed filter database pods. Reason: ", err.Error())
+				return
+			}
 			isHealthy := false
-			for _, pod := range podList.Items {
+			for _, pod := range dbPods {
 
 				engine, err := c.getMySQLClient(ctx, db, HostDNS(db, pod.ObjectMeta), api.MySQLDatabasePort)
 				if err != nil {
@@ -184,7 +190,7 @@ func (c *Controller) CheckMySQLHealthOnce() {
 				func(engine *xorm.Engine) {
 					defer closeClientEngine(engine)
 					if *db.Spec.Replicas > int32(1) && db.Spec.Topology != nil && (db.UsesGroupReplication() || db.IsInnoDBCluster()) {
-						isHealthy, err = c.checkMySQLClusterHealth(ctx, len(podList.Items), engine)
+						isHealthy, err = c.checkMySQLClusterHealth(ctx, len(dbPods), engine)
 						if err != nil {
 							klog.Errorf("MySQL Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
 							err := c.updateMySQLStatusConditions(ctx, db, kmapi.Condition{
@@ -266,7 +272,7 @@ func (c *Controller) CheckMySQLHealthOnce() {
 					return
 				}
 
-				isRouterHealthy, err := c.checkMySQLClusterHealth(ctx, len(podList.Items), engine)
+				isRouterHealthy, err := c.checkMySQLClusterHealth(ctx, len(dbPods), engine)
 
 				if err != nil {
 					klog.Errorf("MySQL Innodb Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())

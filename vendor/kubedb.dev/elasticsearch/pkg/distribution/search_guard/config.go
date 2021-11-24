@@ -24,6 +24,7 @@ import (
 	certlib "kubedb.dev/elasticsearch/pkg/lib/cert"
 	"kubedb.dev/elasticsearch/pkg/lib/user"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 	core "k8s.io/api/core/v1"
@@ -38,6 +39,14 @@ const (
 	InternalUserFileName = "sg_internal_users.yml"
 	RolesMappingFileName = "sg_roles_mapping.yml"
 )
+
+var xpack_security_disabled = `
+xpack.security.enabled: false
+`
+
+var elasticsearch_node_roles = `
+node.roles: '${NODE_ROLES}'
+`
 
 var adminDNTemplate = `
 searchguard.authcz.admin_dn:
@@ -116,8 +125,28 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 
 	var isEqualInUserConfig bool
 	var config, inUserConfig, rolesMapping string
+
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
+	if err != nil {
+		return err
+	}
+	// For Elasticsearch version >= 7.11.x
+	// The searchGuard no longer use the oss version Elasticsearch.
+	// It uses the official image which comes with xpack plugin pre-installed.
+	// Disable the xpack plugin.
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 11) {
+		config += xpack_security_disabled
+	}
+
+	// For Elasticsearch version >= 7.9.x
+	// The legacy node role setting (ie. node.master=true) is deprecated,
+	// So, for newer versions, node roles will be managed by elasticsearch.yml file.
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
+		config += elasticsearch_node_roles
+	}
+
 	if !es.db.Spec.DisableSecurity {
-		// If security is enable, the transport layer must be secured with tls
+		// If security is enabled, the transport layer must be secured with tls
 		if es.db.Spec.TLS == nil {
 			return errors.New("spec.TLS configuration is empty")
 		}
@@ -174,7 +203,7 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 			nodesDN = fmt.Sprintf(nodesDNTemplate, subj.String())
 		}
 
-		config = fmt.Sprintf(searchguard_security_enabled, nodesDN)
+		config += fmt.Sprintf(searchguard_security_enabled, nodesDN)
 
 		// If the HTTP layer is secured with Certificate,
 		// Update the configuration with certificate paths.
