@@ -6,9 +6,9 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.47.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
-	go.bytebuilders.dev/audit v0.0.13
-	go.bytebuilders.dev/license-verifier v0.9.6
-	go.bytebuilders.dev/license-verifier/kubernetes v0.9.6
+	go.bytebuilders.dev/audit v0.0.14
+	go.bytebuilders.dev/license-verifier v0.9.7
+	go.bytebuilders.dev/license-verifier/kubernetes v0.9.7
 	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/runtime v0.2.0
 	gomodules.xyz/x v0.0.8
