@@ -146,10 +146,10 @@ All of them has the following sub-fields:
 
 ### spec.storage
 
-`spec.compute` specifies the autoscaling configuration for the storage resources of the database components. This field consists of the following sub-field:
+`spec.storage` specifies the autoscaling configuration for the storage resources of the database components. This field consists of the following sub-field:
 
-- `spec.compute.node` indicates the desired storage autoscaling configuration for a combined Elasticsearch cluster.
-- `spec.compute.topology` indicates the desired storage autoscaling configuration for different type of nodes running in the Elasticsearch topology cluster mode.
+- `spec.storage.node` indicates the desired storage autoscaling configuration for a combined Elasticsearch cluster.
+- `spec.storage.topology` indicates the desired storage autoscaling configuration for different type of nodes running in the Elasticsearch topology cluster mode.
   - `topology.master` indicates the desired storage autoscaling configuration for the master nodes.
   - `topology.data` indicates the desired storage autoscaling configuration for the data nodes.
   - `topology.ingest` indicates the desired storage autoscaling configuration for the ingest nodes.
