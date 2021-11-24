@@ -48,7 +48,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.0.23-v1"
+  version: "8.0.27"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -84,7 +84,7 @@ $ watch -n 3 kubectl get my -n demo my-group
 Every 3.0s: kubectl get my -n demo my-group                      suaas-appscode: Wed Sep  9 10:54:34 2020
 
 NAME       VERSION   STATUS    AGE
-my-group   8.0.23-v1    Running   16m
+my-group   8.0.27    Running   16m
 
 $ watch -n 3 kubectl get sts -n demo my-group
 ery 3.0s: kubectl get sts -n demo my-group                     suaas-appscode: Wed Sep  9 10:53:52 2020
@@ -183,7 +183,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.23-v1"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.27"}}
 
     Creation Timestamp:  2021-03-15T12:18:35Z
     Labels:
@@ -207,16 +207,16 @@ AppBinding:
       Stash:
         Addon:
           Backup Task:
-            Name:  mysql-backup-8.0.21-v2
+            Name:  mysql-backup-8.0.27
             Params:
               Name:   args
               Value:  --all-databases --set-gtid-purged=OFF
           Restore Task:
-            Name:  mysql-restore-8.0.21-v2
+            Name:  mysql-restore-8.0.27
     Secret:
       Name:   my-group-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.23-v1
+    Version:  8.0.27
 
 Events:
   Type    Reason      Age   From             Message

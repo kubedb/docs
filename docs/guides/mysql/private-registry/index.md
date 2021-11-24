@@ -30,13 +30,13 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   $ kubectl get mysqlversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,REPLICATION_MODE_DETECTOR_IMAGE:.spec.replicationModeDetector.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
   NAME        VERSION   DB_IMAGE                  EXPORTER_IMAGE                   REPLICATION_MODE_DETECTOR_IMAGE           INITCONTAINER_IMAGE   DEPRECATED
   5.7.25-v2   5.7.25    kubedb/mysql:5.7.25-v2    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
-  5.7.29-v2   5.7.29    kubedb/mysql:5.7.29-v2    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
-  5.7.31-v2   5.7.31    kubedb/mysql:5.7.31-v2    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
-  5.7.33-v1   5.7.33    kubedb/mysql:5.7.33-v1    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
+  5.7.36   5.7.29    kubedb/mysql:5.7.36    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
+  5.7.36   5.7.31    kubedb/mysql:5.7.36    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
+  5.7.36   5.7.33    kubedb/mysql:5.7.36    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
   8.0.14-v2   8.0.14    kubedb/mysql:8.0.14-v2    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
   8.0.20-v1   8.0.20    kubedb/mysql:8.0.20-v1    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
-  8.0.21-v2   8.0.21    kubedb/mysql:8.0.21-v2    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
-  8.0.23-v1   8.0.23    kubedb/mysql:8.0.23-v1    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
+  8.0.27   8.0.21    kubedb/mysql:8.0.27    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
+  8.0.27   8.0.23    kubedb/mysql:8.0.27    kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
   8.0.3-v2    8.0.3     kubedb/mysql:8.0.3-v2     kubedb/mysqld-exporter:v0.11.0   kubedb/replication-mode-detector:v0.3.2   kubedb/toybox:0.8.4   <none>
   ```
 
@@ -52,10 +52,10 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: MySQLVersion
   metadata:
-    name: 8.0.23-v1
+    name: 8.0.27
   spec:
     db:
-      image: PRIVATE_REGISTRY/mysql:8.0.23-v1
+      image: PRIVATE_REGISTRY/mysql:8.0.27
     distribution: Oracle
     exporter:
       image: PRIVATE_REGISTRY/mysqld-exporter:v0.11.0
@@ -122,7 +122,7 @@ metadata:
   name: mysql-pvt-reg
   namespace: demo
 spec:
-  version: "8.0.23-v1"
+  version: "8.0.27"
   storage:
     storageClassName: "standard"
     accessModes:

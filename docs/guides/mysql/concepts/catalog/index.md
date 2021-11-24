@@ -39,10 +39,10 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v0.16.2
     helm.sh/chart: kubedb-catalog-v0.16.2
-  name: 8.0.23-v1
+  name: 8.0.27
 spec:
   db:
-    image: kubedb/mysql:8.0.23-v1
+    image: kubedb/mysql:8.0.27
   distribution: Oracle
   exporter:
     image: kubedb/mysqld-exporter:v0.11.0

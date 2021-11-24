@@ -48,7 +48,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.0.23-v1"
+  version: "8.0.27"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -163,7 +163,7 @@ Database Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"baseServerID":100,"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.23-v1"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"baseServerID":100,"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.27"}}
 
     Creation Timestamp:  2020-08-25T10:50:59Z
     Labels:
@@ -171,7 +171,7 @@ AppBinding:
       app.kubernetes.io/instance:    my-group
       app.kubernetes.io/managed-by:  kubedb.com
       app.kubernetes.io/name:        mysql
-      app.kubernetes.io/version:     8.0.23-v1
+      app.kubernetes.io/version:     8.0.27
       app.kubernetes.io/name:        mysqls.kubedb.com
       app.kubernetes.io/instance:               my-group
     Name:                            my-group
@@ -187,7 +187,7 @@ AppBinding:
     Secret:
       Name:   my-group-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.23-v1
+    Version:  8.0.27
 
 Events:
   Type    Reason      Age   From            Message
@@ -281,7 +281,7 @@ spec:
     group:
       name: dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b
     mode: GroupReplication
-  version: 8.0.23-v1
+  version: 8.0.27
 status:
   observedGeneration: 2$4213139756412538772
   phase: Running

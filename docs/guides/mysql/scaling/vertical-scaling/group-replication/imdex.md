@@ -54,17 +54,17 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 $ kubectl get mysqlversion
 NAME        VERSION   DB_IMAGE                  DEPRECATED   AGE
 5.7.25-v2   5.7.25    kubedb/mysql:5.7.25-v2                 3h55m
-5.7.29-v2   5.7.29    kubedb/mysql:5.7.29-v2                 3h55m
-5.7.31-v2   5.7.31    kubedb/mysql:5.7.31-v2                 3h55m
-5.7.33-v1   5.7.33    kubedb/mysql:5.7.33-v1                 3h55m
+5.7.36   5.7.29    kubedb/mysql:5.7.36                 3h55m
+5.7.36   5.7.31    kubedb/mysql:5.7.36                 3h55m
+5.7.36   5.7.33    kubedb/mysql:5.7.36                 3h55m
 8.0.14-v2   8.0.14    kubedb/mysql:8.0.14-v2                 3h55m
 8.0.20-v1   8.0.20    kubedb/mysql:8.0.20-v1                 3h55m
-8.0.21-v2   8.0.21    kubedb/mysql:8.0.21-v2                 3h55m
-8.0.23-v1      8.0.23-v1    kubedb/mysql:8.0.23-v1                    3h55m
+8.0.27   8.0.21    kubedb/mysql:8.0.27                 3h55m
+8.0.27      8.0.27    kubedb/mysql:8.0.27                    3h55m
 8.0.3-v2    8.0.3     kubedb/mysql:8.0.3-v2                  3h55m
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `8.0.23-v1`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `8.0.27`.
 
 **Deploy MySQL Group Replication:**
 
@@ -77,7 +77,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.0.23-v1"
+  version: "8.0.27"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -111,7 +111,7 @@ $ watch -n 3 kubectl get my -n demo my-group
 Every 3.0s: kubectl get my -n demo my-group                     suaas-appscode: Tue Jun 30 22:43:57 2020
 
 NAME       VERSION   STATUS    AGE
-my-group   8.0.23-v1    Running   16m
+my-group   8.0.27    Running   16m
 
 $ watch -n 3 kubectl get sts -n demo my-group
 Every 3.0s: kubectl get sts -n demo my-group                     Every 3.0s: kubectl get sts -n demo my-group                    suaas-appscode: Tue Jun 30 22:44:35 2020

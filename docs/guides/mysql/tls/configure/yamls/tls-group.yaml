@@ -4,7 +4,7 @@ metadata:
   name: my-group-tls
   namespace: demo
 spec:
-  version: "8.0.23-v1"
+  version: "8.0.27"
   replicas: 3
   topology:
     mode: GroupReplication
