@@ -90,7 +90,7 @@ metadata:
   name: my-standalone-tls
   namespace: demo
 spec:
-  version: "8.0.23-v1"
+  version: "8.0.27"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -144,7 +144,7 @@ $ watch -n 3 kubectl get my -n demo my-standalone-tls
 Every 3.0s: kubectl get my -n demo my-standalone-tls            suaas-appscode: Thu Aug 13 18:12:39 2020
 
 NAME                VERSION   STATUS    AGE
-my-standalone-tls   8.0.23-v1    Running   7m5s
+my-standalone-tls   8.0.27    Running   7m5s
 
 $ watch -n 3 kubectl get sts -n demo my-standalone-tls
 Every 3.0s: kubectl get sts -n demo my-standalone-tls            suaas-appscode: Thu Aug 13 18:12:59 2020
@@ -325,7 +325,7 @@ metadata:
   name: my-group-tls
   namespace: demo
 spec:
-  version: "8.0.23-v1"
+  version: "8.0.27"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -373,7 +373,7 @@ $ watch -n 3 kubectl get my -n demo my-group-tls
 Every 3.0s: kubectl get my -n demo my-group-tls                 suaas-appscode: Thu Aug 13 19:02:15 2020
 
 NAME           VERSION   STATUS    AGE
-my-group-tls   8.0.23-v1    Running   9m41s
+my-group-tls   8.0.27    Running   9m41s
 
 $ watch -n 3 kubectl get sts -n demo my-group-tls
 Every 3.0s: kubectl get sts -n demo my-group-tls                suaas-appscode: Thu Aug 13 19:02:42 2020

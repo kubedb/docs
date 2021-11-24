@@ -54,13 +54,13 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 $ kubectl get mysqlversion
 NAME        VERSION   DB_IMAGE                  DEPRECATED   AGE
 5.7.25-v2   5.7.25    kubedb/mysql:5.7.25-v2                 128m
-5.7.29-v2   5.7.29    kubedb/mysql:5.7.29-v2                 128m
-5.7.31-v2   5.7.31    kubedb/mysql:5.7.31-v2                 128m
-5.7.33-v1   5.7.33    kubedb/mysql:5.7.33-v1                 128m
+5.7.36   5.7.29    kubedb/mysql:5.7.36                 128m
+5.7.36   5.7.31    kubedb/mysql:5.7.36                 128m
+5.7.36   5.7.33    kubedb/mysql:5.7.36                 128m
 8.0.14-v2   8.0.14    kubedb/mysql:8.0.14-v2                 128m
 8.0.20-v1   8.0.20    kubedb/mysql:8.0.20-v1                 128m
-8.0.21-v2   8.0.21    kubedb/mysql:8.0.21-v2                 128m
-8.0.23-v1   8.0.23    kubedb/mysql:8.0.23-v1                 128m
+8.0.27   8.0.21    kubedb/mysql:8.0.27                 128m
+8.0.27   8.0.23    kubedb/mysql:8.0.27                 128m
 8.0.3-v2    8.0.3     kubedb/mysql:8.0.3-v2                  128m
 ```
 
@@ -68,10 +68,10 @@ The version above that does not show `DEPRECATED` `true` is supported by `KubeDB
 
 **Check Upgrade Constraints:**
 
-Database version upgrade constraints is a constraint that shows whether it is possible or not possible to upgrade from one version to another. Let's check the version upgrade constraints of `MySQL` `5.7.31-v2`,
+Database version upgrade constraints is a constraint that shows whether it is possible or not possible to upgrade from one version to another. Let's check the version upgrade constraints of `MySQL` `5.7.36`,
 
 ```bash
-$ kubectl get mysqlversion 5.7.31-v2 -o yaml | kubectl neat
+$ kubectl get mysqlversion 5.7.36 -o yaml | kubectl neat
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
@@ -84,10 +84,10 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v0.16.2
     helm.sh/chart: kubedb-catalog-v0.16.2
-  name: 5.7.31-v2
+  name: 5.7.36
 spec:
   db:
-    image: kubedb/mysql:5.7.31-v2
+    image: kubedb/mysql:5.7.36
   distribution: Oracle
   exporter:
     image: kubedb/mysqld-exporter:v0.11.0
@@ -112,7 +112,7 @@ spec:
   version: 5.7.31
 ```
 
-The above `spec.upgradeConstraints.denylist` is showing that upgrading below version of `5.7.31-v2` is not possible for both standalone and group replication. That means, it is possible to upgrade any version above `5.7.31-v2`. Here, we are going to create a `MySQL` standalone using MySQL  `5.7.31-v2`. Then we are going to upgrade this version to `8.0.21-v2`.
+The above `spec.upgradeConstraints.denylist` is showing that upgrading below version of `5.7.36` is not possible for both standalone and group replication. That means, it is possible to upgrade any version above `5.7.36`. Here, we are going to create a `MySQL` standalone using MySQL  `5.7.36`. Then we are going to upgrade this version to `8.0.27`.
 
 **Deploy MySQL standalone:**
 
@@ -125,7 +125,7 @@ metadata:
   name: my-standalone
   namespace: demo
 spec:
-  version: "5.7.33-v1"
+  version: "5.7.36"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -154,7 +154,7 @@ $ watch -n 3 kubectl get my -n demo my-standalone
 Every 3.0s: kubectl get my -n demo my-standalone                 suaas-appscode: Thu Jun 18 01:28:43 2020
 
 NAME            VERSION      STATUS    AGE
-my-standalone   5.7.31-v2    Running   3m
+my-standalone   5.7.36    Running   3m
 
 $ watch -n 3 kubectl get sts -n demo my-standalone
 Every 3.0s: kubectl get sts -n demo my-standalone                suaas-appscode: Thu Jun 18 12:57:42 2020
@@ -173,20 +173,20 @@ Let's verify the `MySQL`, the `StatefulSet` and its `Pod` image version,
 
 ```bash
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
-5.7.31-v2
+5.7.36
 
 $ kubectl get sts -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-kubedb/my:5.7.31-v2
+kubedb/my:5.7.36
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-kubedb/my:5.7.31-v2
+kubedb/my:5.7.36
 ```
 
 We are ready to apply upgrading on this `MySQL` standalone.
 
 #### Upgrade
 
-Here, we are going to upgrade `MySQL` standalone from `5.7.31-v2` to `8.0.21-v2`.
+Here, we are going to upgrade `MySQL` standalone from `5.7.36` to `8.0.27`.
 
 **Create MySQLOpsRequest:**
 
@@ -203,14 +203,14 @@ spec:
     name: my-standalone
   type: Upgrade
   upgrade:
-    targetVersion: "8.0.21-v2"
+    targetVersion: "8.0.27"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going to perform `Upgrade` on our database.
-- `spec.upgrade.targetVersion` specifies expected version `8.0.21-v2` after upgrading.
+- `spec.upgrade.targetVersion` specifies expected version `8.0.27` after upgrading.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
@@ -261,7 +261,7 @@ Spec:
   Stateful Set Ordinal:  0
   Type:                  Upgrade
   Upgrade:
-    Target Version:  8.0.21-v2
+    Target Version:  8.0.27
 Status:
   Conditions:
     Last Transition Time:  2021-03-10T08:38:48Z
@@ -308,13 +308,13 @@ Now, we are going to verify whether the `MySQL`, `StatefulSet` and it's `Pod` ha
 
 ```bash
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
-8.0.21-v2
+8.0.27
 
 $ kubectl get sts -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-kubedb/my:8.0.21-v2
+kubedb/my:8.0.27
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-kubedb/my:8.0.21-v2
+kubedb/my:8.0.27
 ```
 
 You can see above that our `MySQL`standalone has been updated with the new version. It verifies that we have successfully upgraded our standalone.

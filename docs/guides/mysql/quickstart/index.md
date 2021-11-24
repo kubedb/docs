@@ -84,13 +84,13 @@ When you have installed KubeDB, it has created `MySQLVersion` crd for all suppor
 $ kubectl get mysqlversions
 NAME        VERSION   DB_IMAGE                  DEPRECATED   AGE
 5.7.25-v2   5.7.25    kubedb/mysql:5.7.25-v2                 3h55m
-5.7.29-v2   5.7.29    kubedb/mysql:5.7.29-v2                 3h55m
-5.7.31-v2   5.7.31    kubedb/mysql:5.7.31-v2                 3h55m
-5.7.33-v1   5.7.33    kubedb/mysql:5.7.33-v1                 3h55m
+5.7.36   5.7.29    kubedb/mysql:5.7.36                 3h55m
+5.7.36   5.7.31    kubedb/mysql:5.7.36                 3h55m
+5.7.36   5.7.33    kubedb/mysql:5.7.36                 3h55m
 8.0.14-v2   8.0.14    kubedb/mysql:8.0.14-v2                 3h55m
 8.0.20-v1   8.0.20    kubedb/mysql:8.0.20-v1                 3h55m
-8.0.21-v2   8.0.21    kubedb/mysql:8.0.21-v2                 3h55m
-8.0.23-v1      8.0.23-v1    kubedb/mysql:8.0.23-v1                    3h55m
+8.0.27   8.0.21    kubedb/mysql:8.0.27                 3h55m
+8.0.27      8.0.27    kubedb/mysql:8.0.27                    3h55m
 8.0.3-v2    8.0.3     kubedb/mysql:8.0.3-v2                  3h55m
 ```
 
@@ -105,7 +105,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.0.23-v1"
+  version: "8.0.27"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -124,7 +124,7 @@ mysql.kubedb.com/mysql-quickstart created
 
 Here,
 
-- `spec.version` is the name of the MySQLVersion CRD where the docker images are specified. In this tutorial, a MySQL `8.0.23-v1` database is going to be created.
+- `spec.version` is the name of the MySQLVersion CRD where the docker images are specified. In this tutorial, a MySQL `8.0.27` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for MySQL database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MySQL database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
@@ -203,7 +203,7 @@ Database Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"8.0.23-v1"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"8.0.27"}}
 
     Creation Timestamp:  2020-08-31T10:40:53Z
     Labels:
@@ -211,7 +211,7 @@ AppBinding:
       app.kubernetes.io/instance:    mysql-quickstart
       app.kubernetes.io/managed-by:  kubedb.com
       app.kubernetes.io/name:        mysql
-      app.kubernetes.io/version:     8.0.23-v1
+      app.kubernetes.io/version:     8.0.27
       app.kubernetes.io/name:        mysqls.kubedb.com
       app.kubernetes.io/instance:               mysql-quickstart
     Name:                            mysql-quickstart
@@ -227,7 +227,7 @@ AppBinding:
     Secret:
       Name:   mysql-quickstart-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.23-v1
+    Version:  8.0.27
 
 Events:
   Type    Reason      Age   From            Message
@@ -267,7 +267,7 @@ kind: MySQL
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"8.0.23-v1"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"8.0.27"}}
   creationTimestamp: "2020-08-27T12:19:42Z"
   finalizers:
   - kubedb.com
@@ -296,7 +296,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: DoNotTerminate
-  version: 8.0.23-v1
+  version: 8.0.27
 status:
   observedGeneration: 2
   phase: Running
@@ -436,7 +436,7 @@ Run the following command to get MySQL resources,
 ```bash
 $ kubectl get my,sts,secret,svc,pvc -n demo
 NAME                                VERSION   STATUS   AGE
-mysql.kubedb.com/mysql-quickstart   8.0.23-v1    Halted   22m
+mysql.kubedb.com/mysql-quickstart   8.0.27    Halted   22m
 
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      27h

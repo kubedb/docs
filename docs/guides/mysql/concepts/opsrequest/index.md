@@ -39,7 +39,7 @@ spec:
     name: my-group
   type: Upgrade
   upgrade:
-    targetVersion: 8.0.23-v1
+    targetVersion: 8.0.27
 status:
   conditions:
   - lastTransitionTime: "2020-06-11T09:59:05Z"

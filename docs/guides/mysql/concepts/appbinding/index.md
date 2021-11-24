@@ -34,7 +34,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"custom-mysql","namespace":"demo"},"spec":{"configSecret":{"name":"my-configuration"},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.23-v1"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"custom-mysql","namespace":"demo"},"spec":{"configSecret":{"name":"my-configuration"},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.27"}}
   creationTimestamp: "2021-03-11T05:22:43Z"
   generation: 1
   labels:
@@ -72,13 +72,13 @@ spec:
     stash:
       addon:
         backupTask:
-          name: mysql-backup-8.0.21-v2
+          name: mysql-backup-8.0.27
         restoreTask:
-          name: mysql-restore-8.0.21-v2
+          name: mysql-restore-8.0.27
   secret:
     name: custom-mysql-auth
   type: kubedb.com/mysql
-  version: 8.0.23-v1
+  version: 8.0.27
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

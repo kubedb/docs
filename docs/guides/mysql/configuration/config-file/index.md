@@ -104,7 +104,7 @@ metadata:
   name: custom-mysql
   namespace: demo
 spec:
-  version: "8.0.23-v1"
+  version: "8.0.27"
   configSecret:
     name: my-configuration
   storage:
