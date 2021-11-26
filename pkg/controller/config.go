@@ -22,7 +22,6 @@ import (
 
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
-	sts "kubedb.dev/apimachinery/pkg/controller/statefulset"
 	esc "kubedb.dev/elasticsearch/pkg/controller"
 	mrc "kubedb.dev/mariadb/pkg/controller"
 	mcc "kubedb.dev/memcached/pkg/controller"
@@ -214,9 +213,5 @@ func (c *Controller) Init() error {
 	if err := c.rdCtrl.Init(); err != nil {
 		return err
 	}
-
-	// Initialize StatefulSet watcher
-	sts.NewController(&c.Config, c.Client, c.DBClient, c.DynamicClient).InitStsWatcher()
-
 	return nil
 }
