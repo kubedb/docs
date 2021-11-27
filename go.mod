@@ -20,7 +20,6 @@ require (
 	k8s.io/klog/v2 v2.8.0
 	kmodules.xyz/client-go v0.0.0-20211122091731-6c471b24a4ea
 	kmodules.xyz/custom-resources v0.0.0-20211122142737-3bf3dbd8ac52
-	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1
 	kubedb.dev/apimachinery v0.24.0
 	kubedb.dev/elasticsearch v0.24.0
 	kubedb.dev/mariadb v0.8.0
@@ -166,7 +165,6 @@ require (
 	google.golang.org/grpc v1.29.1 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	k8s.io/cli-runtime v0.21.1 // indirect
@@ -182,6 +180,7 @@ require (
 	kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027 // indirect
 	kmodules.xyz/resource-metadata v0.6.7 // indirect
 	kmodules.xyz/resource-metrics v0.0.5 // indirect
+	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1 // indirect
 	kubedb.dev/db-client-go v0.0.0-20211102100133-9d4b23e3d1c5 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.15 // indirect
 	sigs.k8s.io/controller-runtime v0.9.0 // indirect

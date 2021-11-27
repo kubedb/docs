@@ -17,17 +17,16 @@ limitations under the License.
 package cmds
 
 import (
-	"io"
-
 	"kubedb.dev/operator/pkg/cmds/server"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/meta"
 )
 
-func NewCmdRun(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
-	o := server.NewKubeDBServerOptions(out, errOut)
+func NewCmdRun(stopCh <-chan struct{}) *cobra.Command {
+	o := server.NewExtraOptions()
 
 	cmd := &cobra.Command{
 		Use:               "run",
@@ -39,8 +38,8 @@ func NewCmdRun(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
 			if err := o.Complete(); err != nil {
 				return err
 			}
-			if err := o.Validate(args); err != nil {
-				return err
+			if err := o.Validate(); err != nil {
+				return errors.NewAggregate(err)
 			}
 			if err := o.Run(stopCh); err != nil {
 				return err

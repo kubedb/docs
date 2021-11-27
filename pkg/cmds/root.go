@@ -17,8 +17,6 @@ limitations under the License.
 package cmds
 
 import (
-	"os"
-
 	"kubedb.dev/apimachinery/client/clientset/versioned/scheme"
 
 	"github.com/spf13/cobra"
@@ -42,7 +40,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(v.NewCmdVersion())
 
 	stopCh := genericapiserver.SetupSignalHandler()
-	rootCmd.AddCommand(NewCmdRun(os.Stdout, os.Stderr, stopCh))
+	rootCmd.AddCommand(NewCmdRun(stopCh))
 
 	return rootCmd
 }

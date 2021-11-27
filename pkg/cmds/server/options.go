@@ -41,12 +41,16 @@ import (
 	"k8s.io/client-go/kubernetes"
 	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
+	"kmodules.xyz/client-go/tools/clientcmd"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	appcatinformers "kmodules.xyz/custom-resources/client/informers/externalversions"
 )
 
 type ExtraOptions struct {
+	MasterURL              string
+	KubeconfigPath         string
 	LicenseFile            string
 	QPS                    float64
 	Burst                  int
@@ -54,9 +58,6 @@ type ExtraOptions struct {
 	ReadinessProbeInterval time.Duration
 	MaxNumRequeues         int
 	NumThreads             int
-
-	EnableMutatingWebhook   bool
-	EnableValidatingWebhook bool
 }
 
 func NewExtraOptions() *ExtraOptions {
@@ -74,15 +75,15 @@ func NewExtraOptions() *ExtraOptions {
 }
 
 func (s *ExtraOptions) AddGoFlags(fs *flag.FlagSet) {
+	fs.StringVar(&s.MasterURL, "master", s.MasterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
+	fs.StringVar(&s.KubeconfigPath, "kubeconfig", s.KubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
+
 	fs.StringVar(&s.LicenseFile, "license-file", s.LicenseFile, "Path to license file")
 
 	fs.Float64Var(&s.QPS, "qps", s.QPS, "The maximum QPS to the master from this client")
 	fs.IntVar(&s.Burst, "burst", s.Burst, "The maximum burst for throttle")
 	fs.DurationVar(&s.ResyncPeriod, "resync-period", s.ResyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
 	fs.DurationVar(&s.ReadinessProbeInterval, "readiness-probe-interval", s.ReadinessProbeInterval, "The time between two consecutive health checks that the operator performs to the database.")
-
-	fs.BoolVar(&s.EnableMutatingWebhook, "enable-mutating-webhook", s.EnableMutatingWebhook, "If true, enables mutating webhooks for KubeDB CRDs.")
-	fs.BoolVar(&s.EnableValidatingWebhook, "enable-validating-webhook", s.EnableValidatingWebhook, "If true, enables validating webhooks for KubeDB CRDs.")
 }
 
 func (s *ExtraOptions) AddFlags(fs *pflag.FlagSet) {
@@ -102,8 +103,6 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	cfg.ReadinessProbeInterval = s.ReadinessProbeInterval
 	cfg.MaxNumRequeues = s.MaxNumRequeues
 	cfg.NumThreads = s.NumThreads
-	cfg.EnableMutatingWebhook = s.EnableMutatingWebhook
-	cfg.EnableValidatingWebhook = s.EnableValidatingWebhook
 
 	cfg.RestrictToNamespace = queue.NamespaceDemo
 	if cfg.LicenseFile != "" {
@@ -156,4 +155,51 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	sts.NewController(&cfg.Config, cfg.KubeClient, cfg.DBClient, cfg.DynamicClient).InitStsWatcher()
 	// Configure Stash initializer
 	return stash.Configure(cfg.ClientConfig, &cfg.Initializers.Stash, cfg.ResyncPeriod)
+}
+
+func (s *ExtraOptions) Validate() []error {
+	return nil
+}
+
+func (s *ExtraOptions) Complete() error {
+	return nil
+}
+
+func (s ExtraOptions) Config() (*controller.OperatorConfig, error) {
+	clientConfig, err := clientcmd.BuildConfigFromFlags(s.MasterURL, s.KubeconfigPath)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fixes https://github.com/Azure/AKS/issues/522
+	clientcmd.Fix(clientConfig)
+
+	cfg := controller.NewOperatorConfig(clientConfig)
+	if err := s.ApplyTo(cfg); err != nil {
+		return nil, err
+	}
+	if cfg.RestrictToNamespace != core.NamespaceAll {
+		klog.Infof("Operator restricted to %s namespace", cfg.RestrictToNamespace)
+	}
+
+	return cfg, nil
+}
+
+func (s ExtraOptions) Run(stopCh <-chan struct{}) error {
+	cfg, err := s.Config()
+	if err != nil {
+		return err
+	}
+
+	ctrl, err := cfg.New()
+	if err != nil {
+		return err
+	}
+
+	// Start periodic license verification
+	//nolint:errcheck
+	go license.VerifyLicensePeriodically(cfg.ClientConfig, s.LicenseFile, stopCh)
+
+	ctrl.Run(stopCh)
+	return nil
 }
