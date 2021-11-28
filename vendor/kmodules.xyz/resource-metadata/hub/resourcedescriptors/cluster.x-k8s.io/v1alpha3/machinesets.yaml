@@ -24,4 +24,4 @@ spec:
     editor:
       name: clusterxk8sio-machineset-editor
       url: https://bundles.byte.builders/ui/
-      version: v0.2.0
+      version: v0.3.0

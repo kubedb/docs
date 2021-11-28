@@ -19,7 +19,7 @@ spec:
     editor:
       name: kubedbcom-redissentinel-editor
       url: https://bundles.byte.builders/ui/
-      version: v0.2.0
+      version: v0.3.0
   validation:
     openAPIV3Schema:
       properties:
@@ -243,10 +243,18 @@ spec:
                       additionalProperties:
                         type: string
                       type: object
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
                   type: object
                 metadata:
                   properties:
                     annotations:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    labels:
                       additionalProperties:
                         type: string
                       type: object
@@ -1688,6 +1696,10 @@ spec:
                   metadata:
                     properties:
                       annotations:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      labels:
                         additionalProperties:
                           type: string
                         type: object
