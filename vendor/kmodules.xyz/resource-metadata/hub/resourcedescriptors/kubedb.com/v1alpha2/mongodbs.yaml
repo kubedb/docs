@@ -346,11 +346,11 @@ spec:
     editor:
       name: kubedbcom-mongodb-editor
       url: https://bundles.byte.builders/ui/
-      version: v0.2.0
+      version: v0.3.0
     options:
       name: kubedbcom-mongodb-editor-options
       url: https://bundles.byte.builders/ui/
-      version: v0.2.0
+      version: v0.3.0
   validation:
     openAPIV3Schema:
       properties:
@@ -1360,10 +1360,18 @@ spec:
                       additionalProperties:
                         type: string
                       type: object
+                    labels:
+                      additionalProperties:
+                        type: string
+                      type: object
                   type: object
                 metadata:
                   properties:
                     annotations:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    labels:
                       additionalProperties:
                         type: string
                       type: object
@@ -2815,6 +2823,10 @@ spec:
                         additionalProperties:
                           type: string
                         type: object
+                      labels:
+                        additionalProperties:
+                          type: string
+                        type: object
                     type: object
                   spec:
                     properties:
@@ -2883,10 +2895,18 @@ spec:
                               additionalProperties:
                                 type: string
                               type: object
+                            labels:
+                              additionalProperties:
+                                type: string
+                              type: object
                           type: object
                         metadata:
                           properties:
                             annotations:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            labels:
                               additionalProperties:
                                 type: string
                               type: object
@@ -4403,10 +4423,18 @@ spec:
                               additionalProperties:
                                 type: string
                               type: object
+                            labels:
+                              additionalProperties:
+                                type: string
+                              type: object
                           type: object
                         metadata:
                           properties:
                             annotations:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            labels:
                               additionalProperties:
                                 type: string
                               type: object
@@ -5856,10 +5884,18 @@ spec:
                               additionalProperties:
                                 type: string
                               type: object
+                            labels:
+                              additionalProperties:
+                                type: string
+                              type: object
                           type: object
                         metadata:
                           properties:
                             annotations:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            labels:
                               additionalProperties:
                                 type: string
                               type: object

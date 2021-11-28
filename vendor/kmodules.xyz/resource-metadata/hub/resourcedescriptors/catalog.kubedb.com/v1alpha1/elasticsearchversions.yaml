@@ -24,7 +24,7 @@ spec:
     editor:
       name: catalogkubedbcom-elasticsearchversion-editor
       url: https://bundles.byte.builders/ui/
-      version: v0.2.0
+      version: v0.3.0
   validation:
     openAPIV3Schema:
       properties:
@@ -64,6 +64,7 @@ spec:
               - OpenDistro
               - SearchGuard
               - X-Pack
+              - OpenSearch
               type: string
             db:
               properties:
@@ -79,6 +80,7 @@ spec:
               - ElasticStack
               - OpenDistro
               - SearchGuard
+              - OpenSearch
               - KubeDB
               type: string
             exporter:

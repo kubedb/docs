@@ -64,7 +64,7 @@ spec:
     editor:
       name: opskubedbcom-elasticsearchopsrequest-editor
       url: https://bundles.byte.builders/ui/
-      version: v0.2.0
+      version: v0.3.0
   validation:
     openAPIV3Schema:
       properties:
@@ -108,6 +108,25 @@ spec:
         spec:
           properties:
             configuration:
+              properties:
+                applyConfig:
+                  additionalProperties:
+                    type: string
+                  type: object
+                configSecret:
+                  properties:
+                    name:
+                      type: string
+                  type: object
+                removeCustomConfig:
+                  type: boolean
+                removeSecureCustomConfig:
+                  type: boolean
+                secureConfigSecret:
+                  properties:
+                    name:
+                      type: string
+                  type: object
               type: object
             databaseRef:
               properties:

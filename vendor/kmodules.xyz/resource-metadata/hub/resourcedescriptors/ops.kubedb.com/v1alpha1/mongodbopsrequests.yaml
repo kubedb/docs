@@ -64,7 +64,7 @@ spec:
     editor:
       name: opskubedbcom-mongodbopsrequest-editor
       url: https://bundles.byte.builders/ui/
-      version: v0.2.0
+      version: v0.3.0
   validation:
     openAPIV3Schema:
       properties:
@@ -111,6 +111,10 @@ spec:
               properties:
                 configServer:
                   properties:
+                    applyConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
                     configSecret:
                       properties:
                         name:
@@ -123,6 +127,10 @@ spec:
                   type: object
                 mongos:
                   properties:
+                    applyConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
                     configSecret:
                       properties:
                         name:
@@ -135,6 +143,10 @@ spec:
                   type: object
                 replicaSet:
                   properties:
+                    applyConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
                     configSecret:
                       properties:
                         name:
@@ -147,6 +159,10 @@ spec:
                   type: object
                 shard:
                   properties:
+                    applyConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
                     configSecret:
                       properties:
                         name:
@@ -159,6 +175,10 @@ spec:
                   type: object
                 standalone:
                   properties:
+                    applyConfig:
+                      additionalProperties:
+                        type: string
+                      type: object
                     configSecret:
                       properties:
                         name:
@@ -357,6 +377,25 @@ spec:
                         x-kubernetes-int-or-string: true
                       type: object
                   type: object
+                coordinator:
+                  properties:
+                    limits:
+                      additionalProperties:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      type: object
+                    requests:
+                      additionalProperties:
+                        anyOf:
+                        - type: integer
+                        - type: string
+                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        x-kubernetes-int-or-string: true
+                      type: object
+                  type: object
                 exporter:
                   properties:
                     limits:
@@ -461,6 +500,12 @@ spec:
                   - type: string
                   pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                   x-kubernetes-int-or-string: true
+                mode:
+                  default: Online
+                  enum:
+                  - Offline
+                  - Online
+                  type: string
                 replicaSet:
                   anyOf:
                   - type: integer

@@ -1398,7 +1398,7 @@ k8s.io/utils/trace
 # kmodules.xyz/apiversion v0.2.0
 ## explicit; go 1.14
 kmodules.xyz/apiversion
-# kmodules.xyz/client-go v0.0.0-20211122091731-6c471b24a4ea
+# kmodules.xyz/client-go v0.0.0-20211127071251-7e4808453833
 ## explicit; go 1.17
 kmodules.xyz/client-go
 kmodules.xyz/client-go/admissionregistration
@@ -1465,7 +1465,7 @@ kmodules.xyz/offshoot-api/api/v1
 # kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027
 ## explicit; go 1.15
 kmodules.xyz/prober/api/v1
-# kmodules.xyz/resource-metadata v0.6.7
+# kmodules.xyz/resource-metadata v0.7.0
 ## explicit; go 1.16
 kmodules.xyz/resource-metadata/apis/meta
 kmodules.xyz/resource-metadata/apis/meta/v1alpha1

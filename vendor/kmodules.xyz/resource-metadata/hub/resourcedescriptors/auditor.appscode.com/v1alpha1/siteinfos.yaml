@@ -18,8 +18,8 @@ spec:
   ui:
     editor:
       name: auditorappscodecom-siteinfo-editor
-      url: https://raw.githubusercontent.com/bytebuilders/ui-wizards/master/stable
-      version: v0.1.0
+      url: https://bundles.byte.builders/ui/
+      version: v0.3.0
   validation:
     openAPIV3Schema:
       properties:
@@ -193,6 +193,4 @@ spec:
           required:
           - version
           type: object
-      required:
-      - kubernetes
       type: object

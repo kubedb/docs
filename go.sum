@@ -1432,8 +1432,9 @@ kmodules.xyz/client-go v0.0.0-20211013093146-1fbfd52e78c9/go.mod h1:0gkPeALtYjB2
 kmodules.xyz/client-go v0.0.0-20211107190155-5bb4090d2728/go.mod h1:ENUu8pPK19xzBkVpAJHoGCI2QRvb1SqffWRt0K2sV5I=
 kmodules.xyz/client-go v0.0.0-20211110065417-091bd089a92d/go.mod h1:ENUu8pPK19xzBkVpAJHoGCI2QRvb1SqffWRt0K2sV5I=
 kmodules.xyz/client-go v0.0.0-20211119042047-bbc619ee4c49/go.mod h1:ENUu8pPK19xzBkVpAJHoGCI2QRvb1SqffWRt0K2sV5I=
-kmodules.xyz/client-go v0.0.0-20211122091731-6c471b24a4ea h1:z5Li57oxum0018ryWpI5w5HYVFgI2S2cVj27R76IRnU=
 kmodules.xyz/client-go v0.0.0-20211122091731-6c471b24a4ea/go.mod h1:ENUu8pPK19xzBkVpAJHoGCI2QRvb1SqffWRt0K2sV5I=
+kmodules.xyz/client-go v0.0.0-20211127071251-7e4808453833 h1:LXyRj6TuP79dxBuHFuhokyjZ7YE39geK+hAGfPSJhfQ=
+kmodules.xyz/client-go v0.0.0-20211127071251-7e4808453833/go.mod h1:ENUu8pPK19xzBkVpAJHoGCI2QRvb1SqffWRt0K2sV5I=
 kmodules.xyz/constants v0.0.0-20210218100002-2c304bfda278/go.mod h1:DbiFk1bJ1KEO94t1SlAn7tzc+Zz95rSXgyUKa2nzPmY=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20210618002152-fae23aef5fb4/go.mod h1:IIkUctlfoptoci0BOrsUf8ya+MOG5uaeh1PE4uzaIbA=
 kmodules.xyz/custom-resources v0.0.0-20211007080833-72bd9e8cae6e/go.mod h1:pGabego8q4oi/2sNjhdtFkgVaVw4AyGv14GO6VtAjTw=
@@ -1453,8 +1454,9 @@ kmodules.xyz/openshift v0.0.0-20210618001443-f2507caa512f/go.mod h1:8E5ckbd1KMNm
 kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027 h1:rtSPsruEkoBOLcbJkxMQjnPafpv8/vJnfWlTIj9yRBg=
 kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027/go.mod h1:H4NcvS1RQxeXtQONALbU6r9OT3Xa7cMhfamX/k9t9wo=
 kmodules.xyz/resource-metadata v0.6.4/go.mod h1:KWf68Ado/hgYpb/msYNvhYSLWvS/bJcVAAHO1/q9nNg=
-kmodules.xyz/resource-metadata v0.6.7 h1:a8yosjST8+GsdgCB4i8WrT9ayEqf3jwzbcoPqRDpDCs=
 kmodules.xyz/resource-metadata v0.6.7/go.mod h1:BGy9IyQG13z6ArdexZ7gguVrNspLxa1fSPd/I7fdpI0=
+kmodules.xyz/resource-metadata v0.7.0 h1:iGa7Rw98SnFUg6OaYL3dAiACWthLnT1ly0u7UTAnrY0=
+kmodules.xyz/resource-metadata v0.7.0/go.mod h1:t5d2yZk20ksJDqVr7qkOr9uVMgfMElrpur1wq8RsjqI=
 kmodules.xyz/resource-metrics v0.0.3/go.mod h1:6Dv63HDgp83DhA+lZNB7GIQR6PLjNrYW6ghQKioQzII=
 kmodules.xyz/resource-metrics v0.0.5 h1:an1eaxw8mWX5RfujUMTTkJPGiMlQQUDzT6aveSGNAq8=
 kmodules.xyz/resource-metrics v0.0.5/go.mod h1:6Dv63HDgp83DhA+lZNB7GIQR6PLjNrYW6ghQKioQzII=
