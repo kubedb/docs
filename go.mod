@@ -26,7 +26,7 @@ require (
 	kubedb.dev/mariadb v0.8.0
 	kubedb.dev/memcached v0.17.0
 	kubedb.dev/mongodb v0.17.0
-	kubedb.dev/mysql v0.17.0
+	kubedb.dev/mysql v0.17.1-0.20211129105744-a25b9a4cf2ac
 	kubedb.dev/percona-xtradb v0.11.0
 	kubedb.dev/pgbouncer v0.11.0
 	kubedb.dev/postgres v0.24.0
