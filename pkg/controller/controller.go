@@ -138,6 +138,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		dbapi.Postgres{}.CustomResourceDefinition(),
 		dbapi.ProxySQL{}.CustomResourceDefinition(),
 		dbapi.Redis{}.CustomResourceDefinition(),
+		dbapi.RedisSentinel{}.CustomResourceDefinition(),
 
 		catalogapi.ElasticsearchVersion{}.CustomResourceDefinition(),
 		catalogapi.EtcdVersion{}.CustomResourceDefinition(),
