@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Postgres
+metadata:
+  name: pg
+  namespace: demo
+spec:
+  version: "13.2"
+  replicas: 3
+  standbyMode: Hot
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
