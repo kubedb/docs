@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pg-upgrade
+  namespace: demo
+spec:
+  type: Upgrade
+  upgrade:
+    targetVersion: "13.2"
+  databaseRef:
+    name: pg

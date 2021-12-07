@@ -1,0 +1,33 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Postgres
+metadata:
+  name: pg
+  namespace: demo
+spec:
+  version: "13.2"
+  replicas: 3
+  standbyMode: Hot
+  sslMode: verify-full
+  storageType: Durable
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      name: postgres-ca-issuer
+      kind: Issuer
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
