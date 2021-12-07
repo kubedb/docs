@@ -29,6 +29,7 @@ func (c Config) createCluster(useTLS bool, pod *core.Pod, addrs ...string) error
 	options := []func(options *exec.Options){
 		exec.Input("yes"),
 		exec.Command(c.ClusterCreateCmd(useTLS, 0, addrs...)...),
+		exec.Container("redis"),
 	}
 	_, err := exec.ExecIntoPod(c.RestConfig, pod, options...)
 	if err != nil {
@@ -42,11 +43,19 @@ func (c Config) addNode(useTLS bool, pod *core.Pod, newAddr, existingAddr, maste
 	var err error
 
 	if masterId == "" {
-		if _, err = exec.ExecIntoPod(c.RestConfig, pod, exec.Command(c.AddNodeAsMasterCmd(useTLS, newAddr, existingAddr)...)); err != nil {
+		options := []func(options *exec.Options){
+			exec.Command(c.AddNodeAsMasterCmd(useTLS, newAddr, existingAddr)...),
+			exec.Container("redis"),
+		}
+		if _, err = exec.ExecIntoPod(c.RestConfig, pod, options...); err != nil {
 			return errors.Wrapf(err, "Failed to add %q as a master", newAddr)
 		}
 	} else {
-		if _, err = exec.ExecIntoPod(c.RestConfig, pod, exec.Command(c.AddNodeAsSlaveCmd(useTLS, newAddr, existingAddr, masterId)...)); err != nil {
+		options := []func(options *exec.Options){
+			exec.Command(c.AddNodeAsSlaveCmd(useTLS, newAddr, existingAddr, masterId)...),
+			exec.Container("redis"),
+		}
+		if _, err = exec.ExecIntoPod(c.RestConfig, pod, options...); err != nil {
 			return errors.Wrapf(err, "Failed to add %q as a slave of master with id %q", newAddr, masterId)
 		}
 	}
@@ -55,7 +64,11 @@ func (c Config) addNode(useTLS bool, pod *core.Pod, newAddr, existingAddr, maste
 }
 
 func (c Config) deleteNode(useTLS bool, pod *core.Pod, existingAddr, deletingNodeID string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(c.DeleteNodeCmd(useTLS, existingAddr, deletingNodeID)...))
+	options := []func(options *exec.Options){
+		exec.Command(c.DeleteNodeCmd(useTLS, existingAddr, deletingNodeID)...),
+		exec.Container("redis"),
+	}
+	_, err := exec.ExecIntoPod(c.RestConfig, pod, options...)
 	if err != nil && !strings.Contains(err.Error(), "command terminated with exit code 1") {
 		return errors.Wrapf(err, "Failed to delete node with ID %q", deletingNodeID)
 	}
@@ -64,7 +77,11 @@ func (c Config) deleteNode(useTLS bool, pod *core.Pod, existingAddr, deletingNod
 }
 
 func (c Config) ping(useTLS bool, pod *core.Pod, ip string) (string, error) {
-	pong, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(PingCmd(useTLS, ip)...))
+	options := []func(options *exec.Options){
+		exec.Command(PingCmd(useTLS, ip)...),
+		exec.Container("redis"),
+	}
+	pong, err := exec.ExecIntoPod(c.RestConfig, pod, options...)
 	if err != nil {
 		return "", errors.Wrapf(err, "Failed to ping %q", pod.Status.PodIP)
 	}
@@ -73,7 +90,11 @@ func (c Config) ping(useTLS bool, pod *core.Pod, ip string) (string, error) {
 }
 
 func (c Config) getClusterNodes(useTLS bool, pod *core.Pod, ip string) (string, error) {
-	out, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterNodesCmd(useTLS, ip)...))
+	options := []func(options *exec.Options){
+		exec.Command(ClusterNodesCmd(useTLS, ip)...),
+		exec.Container("redis"),
+	}
+	out, err := exec.ExecIntoPod(c.RestConfig, pod, options...)
 	if err != nil {
 		return "", errors.Wrapf(err, "Failed to get cluster nodes from %q", ip)
 	}
@@ -82,7 +103,11 @@ func (c Config) getClusterNodes(useTLS bool, pod *core.Pod, ip string) (string, 
 }
 
 func (c Config) clusterMeet(useTLS bool, pod *core.Pod, senderIP, receiverIP, receiverPort string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterMeetCmd(useTLS, senderIP, receiverIP, receiverPort)...))
+	options := []func(options *exec.Options){
+		exec.Command(ClusterMeetCmd(useTLS, senderIP, receiverIP, receiverPort)...),
+		exec.Container("redis"),
+	}
+	_, err := exec.ExecIntoPod(c.RestConfig, pod, options...)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to meet node %q with node %q", senderIP, receiverIP)
 	}
@@ -91,7 +116,11 @@ func (c Config) clusterMeet(useTLS bool, pod *core.Pod, senderIP, receiverIP, re
 }
 
 func (c Config) clusterReset(useTLS bool, pod *core.Pod, ip, resetType string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterResetCmd(useTLS, ip, resetType)...))
+	options := []func(options *exec.Options){
+		exec.Command(ClusterResetCmd(useTLS, ip, resetType)...),
+		exec.Container("redis"),
+	}
+	_, err := exec.ExecIntoPod(c.RestConfig, pod, options...)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to reset node %q", ip)
 	}
@@ -100,7 +129,11 @@ func (c Config) clusterReset(useTLS bool, pod *core.Pod, ip, resetType string) e
 }
 
 func (c Config) clusterFailover(useTLS bool, pod *core.Pod, ip string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterFailoverCmd(useTLS, ip)...))
+	options := []func(options *exec.Options){
+		exec.Command(ClusterFailoverCmd(useTLS, ip)...),
+		exec.Container("redis"),
+	}
+	_, err := exec.ExecIntoPod(c.RestConfig, pod, options...)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to failover node %q", ip)
 	}
@@ -109,7 +142,11 @@ func (c Config) clusterFailover(useTLS bool, pod *core.Pod, ip string) error {
 }
 
 func (c Config) clusterReplicate(useTLS bool, pod *core.Pod, receivingNodeIP, masterNodeID string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterReplicateCmd(useTLS, receivingNodeIP, masterNodeID)...))
+	options := []func(options *exec.Options){
+		exec.Command(ClusterReplicateCmd(useTLS, receivingNodeIP, masterNodeID)...),
+		exec.Container("redis"),
+	}
+	_, err := exec.ExecIntoPod(c.RestConfig, pod, options...)
 	if err != nil {
 		return errors.Wrapf(err, "Failed to replicate node %q of node with ID %s",
 			receivingNodeIP, masterNodeID)
@@ -139,8 +176,11 @@ func (c Config) reshard(useTLS bool, pod *core.Pod, nodes [][]RedisNode, src, ds
 			end = start + need - 1
 		}
 		cmd := c.ReshardCmd(useTLS, nodes[src][0].IP, nodes[src][0].ID, nodes[dst][0].IP, nodes[dst][0].ID, start, end)
-
-		_, err = exec.ExecIntoPod(c.RestConfig, pod, exec.Command(cmd...))
+		options := []func(options *exec.Options){
+			exec.Command(cmd...),
+			exec.Container("redis"),
+		}
+		_, err = exec.ExecIntoPod(c.RestConfig, pod, options...)
 		if err != nil {
 			return errors.Wrapf(err, "Failed to reshard %d slots from %q to %q",
 				requstedSlotsCount, nodes[src][0].IP, nodes[dst][0].IP)

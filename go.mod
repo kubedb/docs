@@ -31,7 +31,7 @@ require (
 	kubedb.dev/pgbouncer v0.11.0
 	kubedb.dev/postgres v0.24.0
 	kubedb.dev/proxysql v0.11.0
-	kubedb.dev/redis v0.17.0
+	kubedb.dev/redis v0.17.1-0.20211207050226-ae1384d8dd1f
 )
 
 require (
