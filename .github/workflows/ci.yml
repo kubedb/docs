@@ -7,6 +7,12 @@ on:
   push:
     branches:
       - master
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+concurrency:
+  group: '${{ github.head_ref || github.ref }}'
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -36,3 +42,23 @@ jobs:
       - name: Run checks
         run: |
           make ci
+
+      - name: Publish to Docker Registry
+        id: publish-to-docker-hub
+        env:
+          REGISTRY: appscodeci
+          DOCKER_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          USERNAME: 1gtm
+        run: |
+          docker login --username ${USERNAME} --password ${DOCKER_TOKEN}
+          make push
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ steps.publish-to-docker-hub.outputs.TAG_PROD }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'

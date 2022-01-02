@@ -240,6 +240,7 @@ push: bin/.push-$(DOTFILE_IMAGE)-PROD bin/.push-$(DOTFILE_IMAGE)-DBG
 bin/.push-$(DOTFILE_IMAGE)-%: bin/.container-$(DOTFILE_IMAGE)-%
 	@docker push $(IMAGE):$(TAG_$*)
 	@echo "pushed: $(IMAGE):$(TAG_$*)"
+	@echo ::set-output name=TAG_$*::$(IMAGE):$(TAG_$*)
 	@echo
 
 .PHONY: docker-manifest
