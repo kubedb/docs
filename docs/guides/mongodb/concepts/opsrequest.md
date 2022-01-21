@@ -610,7 +610,7 @@ If you want to expand the volume of your MongoDB cluster or different components
 - `spec.volumeExpansion.configServer` indicates the desired size for the persistent volume of the config server of a sharded MongoDB database.
 - `spec.volumeExpansion.shard` indicates the desired size for the persistent volume of shards of a sharded MongoDB database.
 
-All of them refer to [Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.18/#quantity-resource-core) types of Kubernetes.
+All of them refer to [Quantity](https://v1-22.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#quantity-resource-core) types of Kubernetes.
 
 Example usage of this field is given below:
 
