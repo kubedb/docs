@@ -16,13 +16,13 @@ section_menu_id: guides
 
 # Vertical Scale Postgres Instance
 
-This guide will show you how to use `kubeDP-Ops-Manager` to update the resources of a Postgres instance.
+This guide will show you how to use `kubeDB-Ops-Manager` to update the resources of a Postgres instance.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB-Provisioner` and `kubeDP-Ops-Manager` in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB-Provisioner` and `kubeDB-Ops-Manager` in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [Postgres](/docs/guides/postgres/concepts/postgres.md)

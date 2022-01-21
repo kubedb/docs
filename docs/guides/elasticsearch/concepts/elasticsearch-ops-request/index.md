@@ -264,7 +264,7 @@ It specifies the necessary information required to horizontally scale the Elasti
   - `topology.data` - specifies the desired size of the persistent volume for the data nodes.
   - `topology.ingest` - specifies the desired size of the persistent volume for the ingest nodes.
 
-All of them refer to [Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.18/#quantity-resource-core) types of Kubernetes.
+All of them refer to [Quantity](https://v1-22.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#quantity-resource-core) types of Kubernetes.
 
 > Note: Make sure that the requested volume is greater than the current volume.
 

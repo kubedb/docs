@@ -64,16 +64,19 @@ metadata:
   name: timescaledb-2.1.0-pg13
 spec:
   coordinator:
-    image: kubedb/pg-coordinator:v0.1.0
+    image: kubedb/pg-coordinator:v0.8.0
   db:
     image: timescale/timescaledb:2.1.0-pg13-oss
   distribution: TimescaleDB
   exporter:
     image: prometheuscommunity/postgres-exporter:v0.9.0
   initContainer:
-    image: kubedb/postgres-init:0.1.0
+    image: kubedb/postgres-init:0.4.0
   podSecurityPolicies:
     databasePolicyName: postgres-db
+  securityContext:
+    runAsAnyNonRoot: true
+    runAsUser: 70
   stash:
     addon:
       backupTask:

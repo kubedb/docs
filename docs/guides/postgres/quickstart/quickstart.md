@@ -83,36 +83,39 @@ Here, we have `standard` StorageClass in our cluster.
 When you have installed KubeDB, it has created `PostgresVersion` crd for all supported PostgreSQL versions. Let's check available PostgresVersions by,
 
 ```bash
-$ kubectl get postgresversions
-NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
-10.2       10.2      kubedb/postgres:10.2       true         54m
-10.2-v1    10.2      kubedb/postgres:10.2-v2    true         54m
-10.2-v2    10.2      kubedb/postgres:10.2-v3                 54m
-10.2-v3    10.2      kubedb/postgres:10.2-v4                 54m
-10.2-v4    10.2      kubedb/postgres:10.2-v5                 54m
-10.2-v5    10.2      kubedb/postgres:10.2-v6                 54m
-10.6       10.6      kubedb/postgres:10.6                    54m
-10.6-v1    10.6      kubedb/postgres:10.6-v1                 54m
-10.6-v2    10.6      kubedb/postgres:10.6-v2                 54m
-10.6-v3    10.6      kubedb/postgres:10.6-v3                 54m
-11.1       11.1      kubedb/postgres:11.1                    54m
-11.1-v1    11.1      kubedb/postgres:11.1-v1                 54m
-11.1-v2    11.1      kubedb/postgres:11.1-v2                 54m
-11.1-v3    11.1      kubedb/postgres:11.1-v3                 54m
-11.2       11.2      kubedb/postgres:11.2                    54m
-11.2-v1    11.2      kubedb/postgres:11.2-v1                 54m
-9.6        9.6       kubedb/postgres:9.6        true         54m
-9.6-v1     9.6       kubedb/postgres:9.6-v2     true         54m
-9.6-v2     9.6       kubedb/postgres:9.6-v3                  54m
-9.6-v3     9.6       kubedb/postgres:9.6-v4                  54m
-9.6-v4     9.6       kubedb/postgres:9.6-v5                  54m
-9.6-v5     9.6       kubedb/postgres:9.6-v6                  54m
-9.6.7      9.6.7     kubedb/postgres:9.6.7      true         54m
-9.6.7-v1   9.6.7     kubedb/postgres:9.6.7-v2   true         54m
-9.6.7-v2   9.6.7     kubedb/postgres:9.6.7-v3                54m
-9.6.7-v3   9.6.7     kubedb/postgres:9.6.7-v4                54m
-9.6.7-v4   9.6.7     kubedb/postgres:9.6.7-v5                54m
-9.6.7-v5   9.6.7     kubedb/postgres:9.6.7-v6                54m
+$ kubectl get postgresversion
+NAME                       VERSION   DISTRIBUTION   DB_IMAGE                               DEPRECATED   AGE
+10.16                      10.16     Official       postgres:10.16-alpine                               63s
+10.16-debian               10.16     Official       postgres:10.16                                      63s
+10.19                      10.19     Official       postgres:10.19-bullseye                             63s
+10.19-bullseye             10.19     Official       postgres:10.19-bullseye                             63s
+11.11                      11.11     Official       postgres:11.11-alpine                               63s
+11.11-debian               11.11     Official       postgres:11.11                                      63s
+11.14                      11.14     Official       postgres:11.14-alpine                               63s
+11.14-bullseye             11.14     Official       postgres:11.14-bullseye                             63s
+11.14-bullseye-postgis     11.14     PostGIS        postgis/postgis:11-3.1                              63s
+12.6                       12.6      Official       postgres:12.6-alpine                                63s
+12.6-debian                12.6      Official       postgres:12.6                                       63s
+12.9                       12.9      Official       postgres:12.9-alpine                                63s
+12.9-bullseye              12.9      Official       postgres:12.9-bullseye                              63s
+12.9-bullseye-postgis      12.9      PostGIS        postgis/postgis:12-3.1                              63s
+13.2                       13.2      Official       postgres:13.2-alpine                                63s
+13.2-debian                13.2      Official       postgres:13.2                                       63s
+13.5                       13.5      Official       postgres:13.5-alpine                                63s
+13.5-bullseye              13.5      Official       postgres:13.5-bullseye                              63s
+13.5-bullseye-postgis      13.5      PostGIS        postgis/postgis:13-3.1                              63s
+14.1                       14.1      Official       postgres:14.1-alpine                                63s
+14.1-bullseye              14.1      Official       postgres:14.1-bullseye                              63s
+14.1-bullseye-postgis      14.1      PostGIS        postgis/postgis:14-3.1                              63s
+9.6.21                     9.6.21    Official       postgres:9.6.21-alpine                              63s
+9.6.21-debian              9.6.21    Official       postgres:9.6.21                                     63s
+9.6.24                     9.6.24    Official       postgres:9.6.24-alpine                              63s
+9.6.24-bullseye            9.6.24    Official       postgres:9.6.24-bullseye                            63s
+timescaledb-2.1.0-pg11     11.11     TimescaleDB    timescale/timescaledb:2.1.0-pg11-oss                63s
+timescaledb-2.1.0-pg12     12.6      TimescaleDB    timescale/timescaledb:2.1.0-pg12-oss                63s
+timescaledb-2.1.0-pg13     13.2      TimescaleDB    timescale/timescaledb:2.1.0-pg13-oss                63s
+timescaledb-2.5.0-pg14.1   14.1      TimescaleDB    timescale/timescaledb:2.5.0-pg14-oss                63s
+
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this PostgresVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PostgresVersion.
