@@ -3,9 +3,9 @@ title: Backup & Restore Sharded MongoDB Cluster| Stash
 description: Backup and restore sharded MongoDB cluster using Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-mongodb-backup-sharded-cluster
+    identifier: guides-mongodb-backup-logical-sharded-cluster
     name: MongoDB Sharded Cluster
-    parent: guides-mongodb-backup
+    parent: guides-mongodb-backup-logical
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -81,7 +81,7 @@ spec:
 Create the above `MongoDB` crd,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/sharding/examples/mongodb-sharding.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/sharding/examples/mongodb-sharding.yaml
 mongodb.kubedb.com/sample-mgo-sh created
 ```
 
@@ -139,7 +139,6 @@ metadata:
     app.kubernetes.io/instance: sample-mgo-sh
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodbs.kubedb.com
-    app.kubernetes.io/instance: sample-mgo-sh
   name: sample-mgo-sh
   namespace: demo
 spec:
@@ -191,15 +190,11 @@ sample-mgo-sh-mongos-9459cfc44-6d2st   1/1     Running   0          60m
 Now, let's exec into the pod and create a table,
 
 ```console
-$ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\username}' | base64 -d
-root
+$ export USER=$(kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\username}' | base64 -d)
 
-$ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\password}' | base64 -d
-JJPcMxNKJev0SzgX
+$ export PASSWORD=$(kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\password}' | base64 -d)
 
-$ kubectl exec -it -n demo sample-mgo-sh-mongos-9459cfc44-4jthd bash
-
-mongodb@sample-mgo-sh-0:/$ mongo admin -u root -p JJPcMxNKJev0SzgX
+$ kubectl exec -it -n demo sample-mgo-sh-mongos-9459cfc44-4jthd -- mongo admin -u $USER -p $PASSWORD
 
 mongos> show dbs
 admin   0.000GB
@@ -237,7 +232,7 @@ Now, we are ready to backup this sample database.
 
 ### Prepare Backend
 
-We are going to store our backed up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](https://stash.run/docs/latest/guides/latest/backends/overview/).
+We are going to store our backed up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](https://stash.run/docs/latest/guides/backends/overview/).
 
 **Create Storage Secret:**
 
@@ -275,7 +270,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/sharding/examples/repository-sharding.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/sharding/examples/repository-sharding.yaml
 repository.stash.appscode.com/gcs-repo-sharding created
 ```
 
@@ -318,7 +313,7 @@ Here,
 Let's create the `BackupConfiguration` crd we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/sharding/examples/backupconfiguration-sharding.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/sharding/examples/backupconfiguration-sharding.yaml
 backupconfiguration.stash.appscode.com/sample-mgo-sh-backup created
 ```
 
@@ -364,8 +359,7 @@ Now, if we navigate to the GCS bucket, we are going to see backed up data has be
 > Note: Stash keeps all the backed up data encrypted. So, data in the backend will not make any sense until they are decrypted.
 
 ## Restore MongoDB Sharding
-
-In this section, we are going to restore the database from the backup we have taken in the previous section. We are going to deploy a new sharded database and initialize it from the backup.
+You can restore your data into the same database you have backed up from or into a different database in the same cluster or a different cluster. In this section, we are going to show you how to restore in the same database which may be necessary when you have accidentally deleted any data from the running database.
 
 **Stop Taking Backup of the Old Database:**
 
@@ -388,75 +382,32 @@ sample-mgo-sh-backup  mongodb-restore-4.2.3        */5 * * * *   true     26m
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
 
-**Deploy Restored Database:**
+**Simulate Disaster:**
 
-Now, we have to deploy the restored database similarly as we have deployed the original `sample-mgo-sh` database. However, this time there will be the following differences:
-
-- We have to specify `spec.init.waitForInitialRestore` field that tells KubeDB to wait until first restore completes before marking this MongoDB ready to use.
-
-Below is the YAML for `MongoDB` crd we are going deploy to initialize from backup,
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: MongoDB
-metadata:
-  name: restored-mgo-sh
-  namespace: demo
-spec:
-  version: 4.2.3
-  shardTopology:
-    configServer:
-      replicas: 3
-      storage:
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
-    mongos:
-      replicas: 2
-    shard:
-      replicas: 3
-      shards: 3
-      storage:
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
-  init:
-    waitForInitialRestore: true
-  terminationPolicy: WipeOut
-```
-
-Let's create the above database,
-
+Now, let’s simulate an accidental deletion scenario. Here, we are going to exec into the database pod and delete the `newdb` database we had created earlier.
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/sharding/examples/restored-mongodb-sharding.yaml
-mongodb.kubedb.com/restored-mgo-sh created
-```
+$ kubectl exec -it -n demo sample-mgo-sh-mongos-9459cfc44-4jthd -- mongo admin -u $USER -p $PASSWORD
 
-If you check the database status, you will see it is stuck in `Provisioning` state.
+mongos> use newdb
+switched to db newdb
 
-```console
-$ kubectl get mg -n demo restored-mgo-sh
-NAME              VERSION       STATUS         AGE
-restored-mgo-sh   4.2.3         Provisioning   48m
+mongos> db.dropDatabase()
+{ "dropped" : "newdb", "ok" : 1 }
+
+mongos> show dbs
+admin   0.000GB
+config  0.000GB
+local   0.000GB
+
+mongos> exit
+bye
 ```
 
 **Create RestoreSession:**
 
-Now, we need to create a `RestoreSession` crd pointing to the AppBinding for this restored database.
+Now, we need to create a `RestoreSession` crd pointing to the AppBinding of `sample-mgo-sh` database.
 
-Check AppBinding has been created for the `restored-mgo-sh` database using the following command,
-
-```console
-$ kubectl get appbindings -n demo restored-mgo-sh
-NAME               AGE
-restored-mgo-sh    29s
-```
-
-NB. The appbinding `restored-mgo-sh` also contains `spec.parametrs` field. the number of hosts in `spec.parameters.replicaSets` needs to be similar to the old appbinding. Otherwise, the sharding recover may not be accurate.
-
-Below is the YAML for the `RestoreSession` crd that we are going to create to restore backed up data into `restored-mgo-sh` database.
+Below is the YAML for the `RestoreSession` crd that we are going to create to restore the backed up data.
 
 ```yaml
 apiVersion: stash.appscode.com/v1beta1
@@ -471,7 +422,7 @@ spec:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: restored-mgo-sh
+      name: sample-mgo-sh
   rules:
   - snapshots: [latest]
 ```
@@ -485,7 +436,7 @@ Here,
 Let's create the `RestoreSession` crd we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/sharding/examples/restoresession-sharding.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/sharding/examples/restoresession-sharding.yaml
 restoresession.stash.appscode.com/sample-mgo-sh-restore created
 ```
 
@@ -504,37 +455,13 @@ So, we can see from the output of the above command that the restore process suc
 
 **Verify Restored Data:**
 
-In this section, we are going to verify that the desired data has been restored successfully. We are going to connect to `mongos` and check whether the table we had created in the original database is restored or not.
+In this section, we are going to verify that the desired data has been restored successfully. We are going to connect to `mongos` and check whether the table we had created earlier is restored or not.
 
-At first, check if the database has gone into `Ready` state by the following command,
-
-```console
-$ kubectl get mg -n demo restored-mgo-sh
-NAME              VERSION       STATUS  AGE
-restored-mgo-sh   4.2.3         Ready   2h
-```
-
-Now, find out the `mongos` pod,
+Lets, exec into the database pod and list available tables,
 
 ```console
-$ kubectl get pods -n demo --selector="mongodb.kubedb.com/node.mongos=restored-mgo-sh-mongos"
-NAME                                      READY   STATUS    RESTARTS   AGE
-restored-mgo-sh-mongos-7bccd5d684-2z5xs   1/1     Running   0          169m
-restored-mgo-sh-mongos-7bccd5d684-vvdxb   1/1     Running   0          169m
-```
 
-Now, exec into the database pod and list available tables,
-
-```console
-$ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\username}' | base64 -d
-root
-
-$ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\password}' | base64 -d
-JJPcMxNKJev0SzgX
-
-$ kubectl exec -it -n demo restored-mgo-sh-mongos-7bccd5d684-2z5xs bash
-
-mongodb@restored-mgo-sh-0:/$ mongo admin -u root -p JJPcMxNKJev0SzgX
+$ kubectl exec -it -n demo sample-mgo-sh-mongos-9459cfc44-4jthd -- mongo admin -u $USER -p $PASSWORD
 
 mongos> show dbs
 admin   0.000GB
@@ -566,7 +493,7 @@ mongos> exit
 bye
 ```
 
-So, from the above output, we can see the database `newdb` that we had created in the original database `sample-mgo-sh` is restored in the restored database `restored-mgo-sh`.
+So, from the above output, we can see the database `newdb` that we had created earlier is restored.
 
 ## Backup MongoDB Sharded Cluster and Restore into a Standalone database
 
@@ -631,7 +558,7 @@ spec:
 This time, we have to provide Stash addon info in `spec.task` section of `BackupConfiguration` object as the `AppBinding` we are creating manually does not have those info.
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/sharding/examples/standalone-backup.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/sharding/examples/standalone-backup.yaml
 appbinding.appcatalog.appscode.com/sample-mgo-sh-custom created
 repository.stash.appscode.com/gcs-repo-custom created
 backupconfiguration.stash.appscode.com/sample-mgo-sh-backup2 created
@@ -697,14 +624,14 @@ spec:
 ```
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/sharding/examples/restored-standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/sharding/examples/restored-standalone.yaml
 mongodb.kubedb.com/restored-mongodb created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION       STATUS         AGE
 restored-mongodb   4.2.3         Provisioning   56s
 
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/sharding/examples/restoresession-standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/sharding/examples/restoresession-standalone.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
 $ kubectl get mg -n demo restored-mongodb
@@ -715,15 +642,11 @@ restored-mongodb   4.2.3         Ready   56s
 Now, exec into the database pod and list available tables,
 
 ```console
-$ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\username}' | base64 -d
-root
+$ export USER=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.\username}' | base64 -d)
 
-$ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\password}' | base64 -d
-JJPcMxNKJev0SzgX
+$ export PASSWORD=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.\password}' | base64 -d)
 
-$ kubectl exec -it -n demo restored-mongodb-0 bash
-
-mongodb@restored-mongodb-0:/$ mongo admin -u root -p JJPcMxNKJev0SzgX
+$ kubectl exec -it -n demo restored-mongodb-0 -- mongo admin -u $USER -p $PASSWORD
 
 > show dbs
 admin   0.000GB
@@ -764,6 +687,6 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```console
 kubectl delete -n demo restoresession sample-mgo-sh-restore sample-mongodb-restore
 kubectl delete -n demo backupconfiguration sample-mgo-sh-backup sample-mgo-sh-backup2
-kubectl delete -n demo mg sample-mgo-sh sample-mgo-sh-ssl restored-mgo-sh restored-mgo-sh restored-mongodb
+kubectl delete -n demo mg sample-mgo-sh restored-mongodb
 kubectl delete -n demo repository gcs-repo-sharding gcs-repo-custom
 ```

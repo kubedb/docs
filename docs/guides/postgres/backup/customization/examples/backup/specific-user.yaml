@@ -1,22 +1,23 @@
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration
 metadata:
-  name: sample-mariadb-backup
+  name: sample-postgres-backup
   namespace: demo
 spec:
-  schedule: "*/5 * * * *"
+  schedule: "*/2 * * * *"
   repository:
     name: gcs-repo
   target:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-postgres
+  runtimeSettings:
+    pod:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
   retentionPolicy:
-    name: sample-mariadb-retention
+    name: keep-last-5
     keepLast: 5
-    keepDaily: 10
-    keepWeekly: 20
-    keepMonthly: 50
-    keepYearly: 100
     prune: true

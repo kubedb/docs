@@ -1,15 +1,19 @@
 apiVersion: stash.appscode.com/v1beta1
 kind: RestoreSession
 metadata:
-  name: sample-mariadb-restore
+  name: sample-postgres-restore
   namespace: demo
 spec:
+  task:
+    params:
+      - name: user
+        value: testuser
   repository:
     name: gcs-repo
   target:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-postgres
   rules:
-  - snapshots: [4bc21d6f]
+    - snapshots: [latest]

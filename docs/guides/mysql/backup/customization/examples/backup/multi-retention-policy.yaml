@@ -1,7 +1,7 @@
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration
 metadata:
-  name: sample-mariadb-backup
+  name: sample-mysql-backup
   namespace: demo
 spec:
   schedule: "*/5 * * * *"
@@ -11,9 +11,9 @@ spec:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-mysql
   retentionPolicy:
-    name: sample-mariadb-retention
+    name: sample-mysql-retention
     keepLast: 5
     keepDaily: 10
     keepWeekly: 20
