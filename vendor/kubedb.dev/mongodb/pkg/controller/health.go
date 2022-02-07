@@ -27,6 +27,8 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/db-client-go/mongodb"
 
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -77,9 +79,9 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 			}()
 			var err error
 			var dbClient, configSvrClient, mongosClient *mongodb.Client
-			var shardPingErrors []error
+			var shardErrors []error
 
-			ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+			ctx, cancel := context.WithTimeout(context.Background(), api.HealthCheckInterval)
 			defer cancel()
 
 			// Create database client
@@ -118,7 +120,7 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 					configSvrClient.Close()
 				}()
 
-				shardPingErrors = make([]error, db.Spec.ShardTopology.Shard.Shards)
+				shardErrors = make([]error, db.Spec.ShardTopology.Shard.Shards)
 				for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
 					shardClient, err := mongodb.NewKubeDBClientBuilder(db, c.Client).
 						WithContext(ctx).
@@ -137,11 +139,10 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 						defer func() {
 							client.Close()
 						}()
-						err = client.Ping(ctx, nil)
+
+						err = checkReadWrite(ctx, client)
 						if err != nil {
-							shardPingErrors[i] = err
-							klog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, err.Error())
-							// Since the get status failed, skip remaining operations.
+							shardErrors[i] = err
 							return
 						}
 					}(shardClient)
@@ -193,36 +194,38 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 			}
 
 			if db.Spec.ShardTopology == nil {
-				// Update to "Ready" condition to "true" only if the database ping is successful.
-				err = dbClient.Ping(ctx, nil)
+				err = checkReadWrite(ctx, dbClient)
 				if err != nil {
-					klog.Errorf("Failed to ping database for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
-					// Since the get status failed, skip remaining operations.
+					klog.Errorf("health check failed for database for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+					// Since read/write operations failed, skip remaining operations.
+					c.updateErrorAcceptingConnections(db, err)
 					return
 				}
 
 				c.updateDatabaseReady(db)
 			} else {
 				for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
-					if shardPingErrors[i] != nil {
-						klog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, shardPingErrors[i].Error())
-						// Since the get status failed, skip remaining operations.
+					if shardErrors[i] != nil {
+						klog.Errorf("health check failed for shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, err.Error())
+						// Since the read/write operations failed, skip remaining operations.
+						c.updateErrorAcceptingConnections(db, err)
 						return
 					}
 				}
 
-				// Update to "Ready" condition to "true" only if the config server and shard ping is successful.
-				err = configSvrClient.Ping(ctx, nil)
+				err = checkReadWrite(ctx, configSvrClient, true)
 				if err != nil {
-					klog.Errorf("Failed to ping config server for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
-					// Since the get status failed, skip remaining operations.
+					klog.Errorf("health check failed for config server for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+					// Since read/write operations failed, skip remaining operations.
+					c.updateErrorAcceptingConnections(db, err)
 					return
 				}
 
-				err = mongosClient.Ping(ctx, nil)
+				err = checkReadWrite(ctx, mongosClient)
 				if err != nil {
-					klog.Errorf("Failed to ping mongos for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
-					// Since the get status failed, skip remaining operations.
+					klog.Errorf("health check failed for mongos for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+					// Since read/write operations failed, skip remaining operations.
+					c.updateErrorAcceptingConnections(db, err)
 					return
 				}
 
@@ -286,4 +289,51 @@ func (c *Controller) updateDatabaseReady(db *api.MongoDB) {
 	if err != nil {
 		klog.Errorf("Failed to update status for MongoDB: %s/%s", db.Namespace, db.Name)
 	}
+}
+
+func checkReadWrite(ctx context.Context, client *mongodb.Client, checkPingOnly ...bool) error {
+	err := client.Ping(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to ping database with error: %s", err.Error())
+	}
+	if len(checkPingOnly) == 1 && checkPingOnly[0] {
+		return nil
+	}
+
+	valTrue := true
+	_, err = client.Database("kubedb-system").Collection("health-check").UpdateOne(
+		ctx,
+		bson.M{"id": "1"},
+		bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: "id", Value: "1"},
+				{Key: "health", Value: "Ok"},
+			}},
+		},
+		&options.UpdateOptions{
+			Upsert: &valTrue,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to write on database with error: %s", err.Error())
+	}
+
+	c, err := client.Database("kubedb-system").Collection("health-check").Find(
+		ctx,
+		bson.D{
+			{Key: "id", Value: "1"},
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to read from database with error: %s", err.Error())
+	}
+	defer c.Close(context.TODO())
+
+	var res bson.A
+	err = c.All(context.TODO(), &res)
+	if err != nil {
+		return fmt.Errorf("failed to read from database with error: %s", err.Error())
+	}
+
+	return nil
 }

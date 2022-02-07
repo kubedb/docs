@@ -35,14 +35,14 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 )
 
-func (c *Reconciler) ensureAuthSecret(db *api.MongoDB) error {
+func (r *Reconciler) ensureAuthSecret(db *api.MongoDB) error {
 	if db.Spec.AuthSecret == nil {
-		authSecret, err := c.createAuthSecret(db)
+		authSecret, err := r.createAuthSecret(db)
 		if err != nil {
 			return err
 		}
 
-		ms, _, err := util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.MongoDB) *api.MongoDB {
+		ms, _, err := util.PatchMongoDB(context.TODO(), r.DBClient.KubedbV1alpha2(), db, func(in *api.MongoDB) *api.MongoDB {
 			in.Spec.AuthSecret = authSecret
 			return in
 		}, metav1.PatchOptions{})
@@ -55,7 +55,7 @@ func (c *Reconciler) ensureAuthSecret(db *api.MongoDB) error {
 	return nil
 }
 
-func (c *Reconciler) ensureKeyFileSecret(db *api.MongoDB) error {
+func (r *Reconciler) ensureKeyFileSecret(db *api.MongoDB) error {
 	if !db.KeyFileRequired() {
 		return nil
 	}
@@ -65,7 +65,7 @@ func (c *Reconciler) ensureKeyFileSecret(db *api.MongoDB) error {
 		secretName = db.Spec.KeyFileSecret.Name
 	}
 
-	secret, err := c.checkSecret(secretName, db)
+	secret, err := r.checkSecret(secretName, db)
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (c *Reconciler) ensureKeyFileSecret(db *api.MongoDB) error {
 
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB)))
 
-		if _, err := c.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
+		if _, err := r.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return err
 		}
 	}
@@ -94,7 +94,7 @@ func (c *Reconciler) ensureKeyFileSecret(db *api.MongoDB) error {
 	keyFile := &core.LocalObjectReference{
 		Name: secretName,
 	}
-	_, _, err = util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.MongoDB) *api.MongoDB {
+	_, _, err = util.PatchMongoDB(context.TODO(), r.DBClient.KubedbV1alpha2(), db, func(in *api.MongoDB) *api.MongoDB {
 		in.Spec.KeyFileSecret = keyFile
 		return in
 	}, metav1.PatchOptions{})
@@ -106,10 +106,10 @@ func (c *Reconciler) ensureKeyFileSecret(db *api.MongoDB) error {
 	return nil
 }
 
-func (c *Reconciler) createAuthSecret(db *api.MongoDB) (*core.LocalObjectReference, error) {
+func (r *Reconciler) createAuthSecret(db *api.MongoDB) (*core.LocalObjectReference, error) {
 	authSecretName := db.Name + api.MongoDBAuthSecretSuffix
 
-	sc, err := c.checkSecret(authSecretName, db)
+	sc, err := r.checkSecret(authSecretName, db)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (c *Reconciler) createAuthSecret(db *api.MongoDB) (*core.LocalObjectReferen
 
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB)))
 
-		if _, err := c.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
+		if _, err := r.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return nil, err
 		}
 	}
@@ -137,8 +137,8 @@ func (c *Reconciler) createAuthSecret(db *api.MongoDB) (*core.LocalObjectReferen
 	}, nil
 }
 
-func (c *Reconciler) checkSecret(secretName string, db *api.MongoDB) (*core.Secret, error) {
-	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
+func (r *Reconciler) checkSecret(secretName string, db *api.MongoDB) (*core.Secret, error) {
+	secret, err := r.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
@@ -163,11 +163,11 @@ func (c *Controller) MongoDBForSecret(s *core.Secret) cache.ExplicitKey {
 }
 
 // Ensure keyfile for cluster
-func (c *Reconciler) EnsureKeyFileSecret(db *api.MongoDB) error {
+func (r *Reconciler) EnsureKeyFileSecret(db *api.MongoDB) error {
 	sslMode := db.Spec.SSLMode
 	if (sslMode != api.SSLModeDisabled && sslMode != "") ||
 		db.Spec.ReplicaSet != nil || db.Spec.ShardTopology != nil {
-		if err := c.ensureKeyFileSecret(db); err != nil {
+		if err := r.ensureKeyFileSecret(db); err != nil {
 			return err
 		}
 	}

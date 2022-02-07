@@ -230,7 +230,6 @@ func validateUpdate(obj, oldObj *api.Redis) error {
 	preconditions := meta_util.PreConditionSet{
 		String: sets.NewString(
 			"spec.storageType",
-			"spec.storage",
 			"spec.podTemplate.spec.nodeSelector",
 		),
 	}

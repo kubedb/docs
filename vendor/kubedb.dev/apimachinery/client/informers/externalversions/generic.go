@@ -23,8 +23,10 @@ import (
 
 	v1alpha1 "kubedb.dev/apimachinery/apis/autoscaling/v1alpha1"
 	catalogv1alpha1 "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	dashboardv1alpha1 "kubedb.dev/apimachinery/apis/dashboard/v1alpha1"
 	v1alpha2 "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	opsv1alpha1 "kubedb.dev/apimachinery/apis/ops/v1alpha1"
+	schemav1alpha1 "kubedb.dev/apimachinery/apis/schema/v1alpha1"
 
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
@@ -104,6 +106,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	case catalogv1alpha1.SchemeGroupVersion.WithResource("redisversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().RedisVersions().Informer()}, nil
 
+		// Group=dashboard.kubedb.com, Version=v1alpha1
+	case dashboardv1alpha1.SchemeGroupVersion.WithResource("elasticsearchdashboards"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dashboard().V1alpha1().ElasticsearchDashboards().Informer()}, nil
+
 		// Group=kubedb.com, Version=v1alpha2
 	case v1alpha2.SchemeGroupVersion.WithResource("elasticsearches"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().Elasticsearches().Informer()}, nil
@@ -153,6 +159,18 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Ops().V1alpha1().ProxySQLOpsRequests().Informer()}, nil
 	case opsv1alpha1.SchemeGroupVersion.WithResource("redisopsrequests"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Ops().V1alpha1().RedisOpsRequests().Informer()}, nil
+
+		// Group=schema.kubedb.com, Version=v1alpha1
+	case schemav1alpha1.SchemeGroupVersion.WithResource("mariadbdatabases"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Schema().V1alpha1().MariaDBDatabases().Informer()}, nil
+	case schemav1alpha1.SchemeGroupVersion.WithResource("mongodbdatabases"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Schema().V1alpha1().MongoDBDatabases().Informer()}, nil
+	case schemav1alpha1.SchemeGroupVersion.WithResource("mysqldatabases"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Schema().V1alpha1().MySQLDatabases().Informer()}, nil
+	case schemav1alpha1.SchemeGroupVersion.WithResource("postgresdatabases"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Schema().V1alpha1().PostgresDatabases().Informer()}, nil
+	case schemav1alpha1.SchemeGroupVersion.WithResource("redisdatabases"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Schema().V1alpha1().RedisDatabases().Informer()}, nil
 
 	}
 

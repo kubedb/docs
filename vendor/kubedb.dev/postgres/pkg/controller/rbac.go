@@ -55,6 +55,12 @@ func (c *Controller) ensureRole(db *api.Postgres, pspName string) error {
 					ResourceNames: []string{db.OffshootName()},
 				},
 				{
+					APIGroups:     []string{"kubedb.com"},
+					Resources:     []string{"postgreses"},
+					Verbs:         []string{"get"},
+					ResourceNames: []string{db.OffshootName()},
+				},
+				{
 					APIGroups: []string{core.GroupName},
 					Resources: []string{"pods"},
 					Verbs:     []string{"get", "list", "patch", "delete"},

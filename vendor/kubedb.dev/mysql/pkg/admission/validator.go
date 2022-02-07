@@ -194,7 +194,7 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 
 		// validation for group configuration is performed only when
 		// 'spec.topology.mode' is set to "GroupReplication"
-		if *mysql.Spec.Topology.Mode == api.MySQLClusterModeGroupReplication {
+		if *mysql.Spec.Topology.Mode == api.MySQLModeGroupReplication {
 			// if spec.topology.mode is "GroupReplication", spec.topology.group is set to default during mutating
 			if err := validateMySQLGroup(*mysql.Spec.Replicas, *mysql.Spec.Topology.Group); err != nil {
 				return err

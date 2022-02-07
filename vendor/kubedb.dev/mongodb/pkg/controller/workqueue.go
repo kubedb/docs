@@ -167,8 +167,9 @@ func (c *Controller) runMongoDB(key string) error {
 					return nil
 				}
 
+				r := c.getReconciler()
 				// process db object
-				if err := c.create(db); err != nil {
+				if err := r.Reconcile(db); err != nil {
 					klog.Errorln(err)
 					c.pushFailureEvent(db, err.Error())
 					return err

@@ -145,7 +145,9 @@ func (c *Controller) createService(db *api.Elasticsearch) (kutil.VerbType, error
 		in.Spec.ExternalIPs = svcTemplate.Spec.ExternalIPs
 		in.Spec.LoadBalancerIP = svcTemplate.Spec.LoadBalancerIP
 		in.Spec.LoadBalancerSourceRanges = svcTemplate.Spec.LoadBalancerSourceRanges
-		in.Spec.ExternalTrafficPolicy = svcTemplate.Spec.ExternalTrafficPolicy
+		if svcTemplate.Spec.ExternalTrafficPolicy != "" {
+			in.Spec.ExternalTrafficPolicy = svcTemplate.Spec.ExternalTrafficPolicy
+		}
 		if svcTemplate.Spec.HealthCheckNodePort > 0 {
 			in.Spec.HealthCheckNodePort = svcTemplate.Spec.HealthCheckNodePort
 		}

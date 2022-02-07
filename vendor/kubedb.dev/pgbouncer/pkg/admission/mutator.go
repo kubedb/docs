@@ -94,15 +94,13 @@ func (a *PgBouncerMutator) Admit(req *admission.AdmissionRequest) *admission.Adm
 	}
 
 	pbMod := setDefaultValues(obj.(*api.PgBouncer).DeepCopy())
-	if pbMod != nil {
-		patch, err := meta_util.CreateJSONPatch(req.Object.Raw, pbMod)
-		if err != nil {
-			return hookapi.StatusInternalServerError(err)
-		}
-		status.Patch = patch
-		patchType := admission.PatchTypeJSONPatch
-		status.PatchType = &patchType
+	patch, err := meta_util.CreateJSONPatch(req.Object.Raw, pbMod)
+	if err != nil {
+		return hookapi.StatusInternalServerError(err)
 	}
+	status.Patch = patch
+	patchType := admission.PatchTypeJSONPatch
+	status.PatchType = &patchType
 
 	status.Allowed = true
 	return status

@@ -182,10 +182,11 @@ func (c *Controller) haltDatabase(db *api.MongoDB) error {
 		}
 	}
 
+	r := c.getReconciler()
 	// Delete monitoring resources
 	klog.Infof("deleting Monitoring resources of MongoDB %v/%v.", db.Namespace, db.Name)
 	if db.Spec.Monitor != nil {
-		if err := c.deleteMonitor(db); err != nil {
+		if err := r.deleteMonitor(db); err != nil {
 			klog.Errorln(err)
 			return nil
 		}
