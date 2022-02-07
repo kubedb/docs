@@ -1,19 +1,19 @@
 apiVersion: kubedb.com/v1alpha2
-kind: MariaDB
+kind: MySQL
 metadata:
-  name: sample-mariadb
+  name: sample-mysql
   namespace: demo
   annotations:
-    stash.appscode.com/backup-blueprint: mariadb-backup-template
+    stash.appscode.com/backup-blueprint: mysql-backup-template
 spec:
-  version: "10.5.8"
+  version: "8.0.27"
   replicas: 1
   storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 50Mi
   terminationPolicy: WipeOut

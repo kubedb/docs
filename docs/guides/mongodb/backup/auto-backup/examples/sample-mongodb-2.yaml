@@ -1,19 +1,18 @@
 apiVersion: kubedb.com/v1alpha2
-kind: MariaDB
+kind: MongoDB
 metadata:
-  name: sample-mariadb-2
+  name: sample-mongodb-2
   namespace: demo-2
   annotations:
-    stash.appscode.com/backup-blueprint: mariadb-backup-template
+    stash.appscode.com/backup-blueprint: mongodb-backup-template
     stash.appscode.com/schedule: "*/3 * * * *"
 spec:
-  version: "10.5.8"
-  replicas: 1
+  version: "4.4.6"
   storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi

@@ -1,7 +1,7 @@
 apiVersion: stash.appscode.com/v1beta1
 kind: RestoreSession
 metadata:
-  name: sample-mariadb-restore
+  name: sample-postgres-restore
   namespace: demo
 spec:
   repository:
@@ -10,6 +10,12 @@ spec:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-postgres
+  runtimeSettings:
+    pod:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
   rules:
-  - snapshots: [4bc21d6f]
+  - snapshots: [latest]
+

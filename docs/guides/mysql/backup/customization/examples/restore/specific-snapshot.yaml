@@ -1,7 +1,7 @@
 apiVersion: stash.appscode.com/v1beta1
 kind: RestoreSession
 metadata:
-  name: sample-mariadb-restore
+  name: sample-mysql-restore
   namespace: demo
 spec:
   repository:
@@ -10,6 +10,6 @@ spec:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-mysql
   rules:
   - snapshots: [4bc21d6f]

@@ -3,9 +3,9 @@ title: Backup & Restore MongoDB ReplicaSet Cluster | Stash
 description: Backup and restore MongoDB ReplicaSet cluster using Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-mongodb-backup-replicaset
+    identifier: guides-mongodb-backup-logical-replicaset
     name: MongoDB ReplicaSet Cluster
-    parent: guides-mongodb-backup
+    parent: guides-mongodb-backup-logical
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -73,7 +73,7 @@ spec:
 Create the above `MongoDB` crd,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/examples/mongodb-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/mongodb-replicaset.yaml
 mongodb.kubedb.com/sample-mgo-rs created
 ```
 
@@ -128,7 +128,6 @@ metadata:
     app.kubernetes.io/instance: sample-mgo-rs
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodbs.kubedb.com
-    app.kubernetes.io/instance: sample-mgo-rs
   name: sample-mgo-rs
   namespace: demo
 spec:
@@ -177,15 +176,11 @@ sample-mgo-rs-2   1/1     Running   0          15m
 Now, let's exec into the pod and create a table,
 
 ```console
-$ kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.\username}' | base64 -d
-root
+$ export USER=$(kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.\username}' | base64 -d)
 
-$ kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.\password}' | base64 -d
-CRz6EuxvKdFjopfP
+$ export PASSWORD=$(kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.\password}' | base64 -d)
 
-$ kubectl exec -it -n demo sample-mgo-rs-0 bash
-
-mongodb@sample-mgo-rs-0:/$ mongo admin -u root -p CRz6EuxvKdFjopfP
+$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongo admin -u $USER -p $PASSWORD
 
 rs0:PRIMARY> rs.isMaster().primary
 sample-mgo-rs-0.sample-mgo-rs-gvr.demo.svc.cluster.local:27017
@@ -213,7 +208,7 @@ rs0:PRIMARY> use newdb
 switched to db newdb
 
 rs0:PRIMARY> db.movie.insert({"name":"batman"});
-WriteResult({ "nInserted" : 1 })
+WriteResult({ "Inserted" : 1 })
 
 rs0:PRIMARY> db.movie.find().pretty()
 { "_id" : ObjectId("5d31b9d44db670db130d7a5c"), "name" : "batman" }
@@ -226,7 +221,7 @@ Now, we are ready to backup this sample database.
 
 ### Prepare Backend
 
-We are going to store our backed up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](https://stash.run/docs/latest/guides/latest/backends/overview/).
+We are going to store our backed up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](https://stash.run/docs/latest/guides/backends/overview/).
 
 **Create Storage Secret:**
 
@@ -264,7 +259,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/examples/repository-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/repository-replicaset.yaml
 repository.stash.appscode.com/gcs-repo-replicaset created
 ```
 
@@ -307,7 +302,7 @@ Here,
 Let's create the `BackupConfiguration` crd we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/examples/backupconfiguration-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/backupconfiguration-replicaset.yaml
 backupconfiguration.stash.appscode.com/sample-mgo-rs-backup created
 ```
 
@@ -353,10 +348,10 @@ Now, if we navigate to the GCS bucket, we are going to see backed up data has be
 > Note: Stash keeps all the backed up data encrypted. So, data in the backend will not make any sense until they are decrypted.
 
 ## Restore MongoDB ReplicaSet
+You can restore your data into the same database you have backed up from or into a different database in the same cluster or a different cluster. In this section, we are going to show you how to restore in the same database which may be necessary when you have accidentally deleted any data from the running database.
 
-In this section, we are going to restore the database from the backup we have taken in the previous section. We are going to deploy a new replicaset database and initialize it from the backup.
 
-**Stop Taking Backup of the Old Database:**
+**Stop Taking Backup:**
 
 At first, let's stop taking any further backup of the old database so that no backup is taken during restore process. We are going to pause the `BackupConfiguration` crd that we had created to backup the `sample-mgo-rs` database. Then, Stash will stop taking any further backup for this database.
 
@@ -377,70 +372,33 @@ sample-mgo-rs-backup  mongodb-backup-4.2.3      */5 * * * *   true     26m
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
 
-**Deploy Restored Database:**
+**Simulate Disaster:**
 
-Now, we have to deploy the restored database similarly as we have deployed the original `sample-mgo-rs` database. However, this time there will be the following differences:
-
-- We have to specify `spec.init.waitForInitialRestore` section that tells KubeDB to wait until the first restore completes before marking this database ready to use.
-
-Below is the YAML for `MongoDB` crd we are going deploy to initialize from backup,
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: MongoDB
-metadata:
-  name: restored-mgo-rs
-  namespace: demo
-spec:
-  version: "4.2.3"
-  replicas: 3
-  replicaSet:
-    name: rs0
-  storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  terminationPolicy: WipeOut
-  init:
-    waitForInitialRestore: true
-```
-
-Let's create the above database,
-
+Now, let’s simulate an accidental deletion scenario. Here, we are going to exec into the database pod and delete the `newdb` database we had created earlier.
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/examples/restored-mongodb-replicaset.yaml
-mongodb.kubedb.com/restored-mgo-rs created
+$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongo admin -u $USER -p $PASSWORD
+
+rs0:PRIMARY> rs.isMaster().primary
+sample-mgo-rs-0.sample-mgo-rs-gvr.demo.svc.cluster.local:27017
+
+rs0:PRIMARY> use newdb
+switched to db newdb
+
+rs0:PRIMARY> db.dropDatabase()
+{ "dropped" : "newdb", "ok" : 1 }
+
+rs0:PRIMARY> show dbs
+admin   0.000GB
+config  0.000GB
+local   0.000GB
+
+rs0:PRIMARY> exit
+bye
 ```
-
-If you check the database status, you will see it is stuck in `Provisioning` state.
-
-```console
-$ kubectl get mg -n demo restored-mgo-rs
-NAME              VERSION       STATUS         AGE
-restored-mgo-rs   4.2.3         Provisioning   2m
-```
-
 **Create RestoreSession:**
 
-Now, we need to create a `RestoreSession` crd pointing to the AppBinding for this restored database.
-
-Check AppBinding has been created for the `restored-mgo-rs` database using the following command,
-
-```console
-$ kubectl get appbindings -n demo restored-mgo-rs
-NAME               AGE
-restored-mgo-rs    29s
-```
-
-NB. The appbinding `restored-mgo-rs` also contains `spec.parametrs` field. the number of hosts in `spec.parameters.replicaSets` needs to be similar to the old appbinding. Otherwise, the replicaset recover may not be accurate.
-
-> If you are not using KubeDB to deploy database, create the AppBinding manually.
-
-Below is the YAML for the `RestoreSession` crd that we are going to create to restore backed up data into `restored-mgo-rs` database.
-
+Now, we need to create a `RestoreSession` crd pointing to the AppBinding of `sample-mgo-rs` database.
+Below is the YAML for the `RestoreSession` crd that we are going to create to restore the backed up data,
 ```yaml
 apiVersion: stash.appscode.com/v1beta1
 kind: RestoreSession
@@ -454,7 +412,7 @@ spec:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: restored-mgo-rs
+      name: sample-mgo-rs
   rules:
   - snapshots: [latest]
 ```
@@ -468,7 +426,7 @@ Here,
 Let's create the `RestoreSession` crd we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/rexamples/estoresession-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/estoresession-replicaset.yaml
 restoresession.stash.appscode.com/sample-mgo-rs-restore created
 ```
 
@@ -489,26 +447,12 @@ So, we can see from the output of the above command that the restore process suc
 
 In this section, we are going to verify that the desired data has been restored successfully. We are going to connect to `mongos` and check whether the table we had created in the original database is restored or not.
 
-At first, check if the database has gone into `Running` state by the following command,
+
+
+Lets, exec into the database pod and list available tables,
 
 ```console
-$ kubectl get mg -n demo restored-mgo-rs
-NAME              VERSION       STATUS    AGE
-restored-mgo-rs   4.2.3         Running   3m
-```
-
-Now, exec into the database pod and list available tables,
-
-```console
-$ kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.\username}' | base64 -d
-root
-
-$ kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.\password}' | base64 -d
-CRz6EuxvKdFjopfP
-
-$ kubectl exec -it -n demo restored-mgo-rs-0 bash
-
-mongodb@restored-mgo-rs-0:/$ mongo admin -u root -p CRz6EuxvKdFjopfP
+$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongo admin -u $USER -p $PASSWORD
 
 rs0:PRIMARY> rs.isMaster().primary
 restored-mgo-rs-0.restored-mgo-rs-gvr.demo.svc.cluster.local:27017
@@ -543,7 +487,7 @@ rs0:PRIMARY> exit
 bye
 ```
 
-So, from the above output, we can see the database `newdb` that we had created in the original database `sample-mgo-rs` is restored in the restored database `restored-mgo-rs`.
+So, from the above output, we can see the database `newdb` that we had created earlier is restored.
 
 ## Backup MongoDB ReplicaSet Cluster and Restore into a Standalone database
 
@@ -608,7 +552,7 @@ spec:
 This time, we have to provide the Stash Addon information in `spec.task` section of `BackupConfiguration` object as it does not present in the `AppBinding` object that we are creating manually.
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/examples/standalone-backup.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/standalone-backup.yaml
 appbinding.appcatalog.appscode.com/sample-mgo-rs-custom created
 repository.stash.appscode.com/gcs-repo-custom created
 backupconfiguration.stash.appscode.com/sample-mgo-rs-backup2 created
@@ -674,14 +618,14 @@ spec:
 ```
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/eplicaset/rexamples/estored-standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/rexamples/estored-standalone.yaml
 mongodb.kubedb.com/restored-mongodb created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION        STATUS         AGE
 restored-mongodb   4.2.3         Provisioning   56s
 
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/eplicaset/rexamples/estoresession-standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/rexamples/estoresession-standalone.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
 $ kubectl get mg -n demo restored-mongodb
@@ -692,13 +636,11 @@ restored-mongodb   4.2.3         Running   2m
 Now, exec into the database pod and list available tables,
 
 ```console
-$ kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.\username}' | base64 -d
-root
+$ export USER=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.\username}' | base64 -d)
 
-$ kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.\password}' | base64 -d
-CRz6EuxvKdFjopfP
+$ export PASSWORD=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.\password}' | base64 -d)
 
-$ kubectl exec -it -n demo restored-mongodb-0 bash
+$ kubectl exec -it -n demo restored-mongodb-0 -- mongo admin -u $USER -p $PASSWORD
 
 mongodb@restored-mongodb-0:/$ mongo admin -u root -p CRz6EuxvKdFjopfP
 
@@ -741,7 +683,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```console
 kubectl delete -n demo restoresession sample-mgo-rs-restore sample-mongodb-restore
 kubectl delete -n demo backupconfiguration sample-mgo-rs-backup sample-mgo-rs-backup2
-kubectl delete -n demo mg sample-mgo-rs sample-mgo-rs-ssl restored-mgo-rs restored-mgo-rs restored-mongodb
+kubectl delete -n demo mg sample-mgo-rs restored-mongodb
 kubectl delete -n demo repository gcs-repo-replicaset gcs-repo-custom
 kubectl delete -n demo appbinding sample-mgo-rs-custom
 ```
