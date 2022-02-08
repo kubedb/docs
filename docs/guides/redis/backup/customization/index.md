@@ -1,11 +1,11 @@
 ---
-title: MariaDB Backup Customization | Stash
-description: Customizing MariaDB Backup and Restore process with Stash
+title: Redis Backup Customization | Stash
+description: Customizing Redis Backup and Restore process with Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-backup-customization
+    identifier: rd-backup-customization-kubedb
     name: Customizing Backup & Restore Process
-    parent: guides-mariadb-backup
+    parent: rd-guides-redis-backup
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -15,42 +15,41 @@ section_menu_id: guides
 
 Stash provides rich customization supports for the backup and restore process to meet the requirements of various cluster configurations. This guide will show you some examples of these customizations.
 
+
 ## Customizing Backup Process
 
 In this section, we are going to show you how to customize the backup process. Here, we are going to show some examples of providing arguments to the backup process, running the backup process as a specific user, ignoring some indexes during the backup process, etc.
 
 ### Passing arguments to the backup process
 
-Stash MariaDB addon uses [mysqldump](https://mariadb.com/kb/en/mysqldump) for backup. You can pass arguments to the `mysqldump` through `args` param under `task.params` section.
+Stash Redis addon uses [redis-dump-go](https://github.com/yannh/redis-dump-go) for backup. You can pass arguments to the `redis-dump-go` through `args` param under `task.params` section.
 
-The below example shows how you can pass the `--databases testdb` to take backup for a specific mariadb databases named `testdb`.
+The below example shows how you can pass the `-db 1` to take backup only the database with index 1.
 
 ```yaml
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration
 metadata:
-  name: sample-mariadb-backup
+  name: sample-redis-backup
   namespace: demo
 spec:
-  schedule: "*/5 * * * *"
+  schedule: "*/2 * * * *"
   task:
     params:
     - name: args
-      value: --databases testdb
+      value: "-db 1"
   repository:
     name: gcs-repo
   target:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-redis
   retentionPolicy:
     name: keep-last-5
     keepLast: 5
     prune: true
 ```
-
-> **WARNING**: Make sure that you have the specific database created before taking backup. In this case, Database `testdb` should exist before the backup job starts.
 
 ### Running backup job as a specific user
 
@@ -60,7 +59,7 @@ If your cluster requires running the backup job as a specific user, you can prov
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration
 metadata:
-  name: sample-mariadb-backup
+  name: sample-redis-backup
   namespace: demo
 spec:
   schedule: "*/2 * * * *"
@@ -70,7 +69,7 @@ spec:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-redis
   runtimeSettings:
     pod:
       securityContext:
@@ -90,7 +89,7 @@ If you want to specify the Memory/CPU limit/request for your backup job, you can
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration
 metadata:
-  name: sample-mariadb-backup
+  name: sample-redis-backup
   namespace: demo
 spec:
   schedule: "*/2 * * * *"
@@ -100,7 +99,7 @@ spec:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-redis
   runtimeSettings:
     container:
       resources:
@@ -124,7 +123,7 @@ You can also specify multiple retention policies for your backed up data. For ex
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration
 metadata:
-  name: sample-mariadb-backup
+  name: sample-redis-backup
   namespace: demo
 spec:
   schedule: "*/5 * * * *"
@@ -134,9 +133,9 @@ spec:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-redis
   retentionPolicy:
-    name: sample-mariadb-retention
+    name: sample-redis-retention
     keepLast: 5
     keepDaily: 10
     keepWeekly: 20
@@ -149,37 +148,37 @@ To know more about the available options for retention policies, please visit [h
 
 ## Customizing Restore Process
 
-Stash also uses `mysql` during the restore process. In this section, we are going to show how you can pass arguments to the restore process, restore a specific snapshot, run restore job as a specific user, etc.
+Stash uses `redis-cli` during the restore process. In this section, we are going to show how you can pass arguments to the restore process, restore a specific snapshot, run restore job as a specific user, etc.
 
 ### Passing arguments to the restore process
 
-Similar to the backup process, you can pass arguments to the restore process through the `args` params under `task.params` section. This example will restore data from database `testdb` only.
+Similar to the backup process, you can pass arguments to the restore process through the `args` params under `task.params` section. Here, we have passed `--pipe-timeout` argument to the `redis-cli`.
 
 ```yaml
 apiVersion: stash.appscode.com/v1beta1
 kind: RestoreSession
 metadata:
-  name: sample-mariadb-restore
+  name: sample-redis-restore
   namespace: demo
 spec:
   task:
     params:
     - name: args
-      value: --one-database testdb
+      value: "--pipe-timeout 300"
   repository:
     name: gcs-repo
   target:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-redis
   rules:
   - snapshots: [latest]
 ```
 
 ### Restore specific snapshot
 
-You can also restore a specific snapshot. At first, list the available snapshot as bellow,
+You can also restore a specific snapshot. At first, list the available snapshots as below,
 
 ```bash
 ❯ kubectl get snapshots -n demo
@@ -200,7 +199,7 @@ The below example shows how you can pass a specific snapshot ID through the `sna
 apiVersion: stash.appscode.com/v1beta1
 kind: RestoreSession
 metadata:
-  name: sample-mariadb-restore
+  name: sample-redis-restore
   namespace: demo
 spec:
   repository:
@@ -209,7 +208,7 @@ spec:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-redis
   rules:
   - snapshots: [4bc21d6f]
 ```
@@ -224,7 +223,7 @@ You can provide `securityContext` under `runtimeSettings.pod` section to run the
 apiVersion: stash.appscode.com/v1beta1
 kind: RestoreSession
 metadata:
-  name: sample-mariadb-restore
+  name: sample-redis-restore
   namespace: demo
 spec:
   repository:
@@ -233,7 +232,7 @@ spec:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-redis
   runtimeSettings:
     pod:
       securityContext:
@@ -251,7 +250,7 @@ Similar to the backup process, you can also provide `resources` field under the 
 apiVersion: stash.appscode.com/v1beta1
 kind: RestoreSession
 metadata:
-  name: sample-mariadb-restore
+  name: sample-redis-restore
   namespace: demo
 spec:
   repository:
@@ -260,7 +259,7 @@ spec:
     ref:
       apiVersion: appcatalog.appscode.com/v1alpha1
       kind: AppBinding
-      name: sample-mariadb
+      name: sample-redis
   runtimeSettings:
     container:
       resources:
