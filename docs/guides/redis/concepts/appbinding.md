@@ -32,35 +32,31 @@ An `AppBinding` object created by `KubeDB` for PostgreSQL database is shown belo
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  name: quick-postgres
+  name: quick-redis
   namespace: demo
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: quick-postgres
+    app.kubernetes.io/instance: quick-redis
     app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: postgres
-    app.kubernetes.io/version: "10.2"-v2
-    app.kubernetes.io/name: postgreses.kubedb.com
-    app.kubernetes.io/instance: quick-postgres
+    app.kubernetes.io/name: redises.kubedb.com
+  ...    
 spec:
-  type: kubedb.com/postgres
+  type: kubedb.com/redis
   secret:
-    name: quick-postgres-auth
+    name: quick-redis-auth
   clientConfig:
     service:
-      name: quick-postgres
-      path: /
-      port: 5432
-      query: sslmode=disable
-      scheme: postgresql
-  secretTransforms:
-    - renameKey:
-        from: POSTGRES_USER
-        to: username
-    - renameKey:
-        from: POSTGRES_PASSWORD
-        to: password
-  version: "10.2"
+      service:
+      name: quick-redis
+      port: 6379
+      scheme: redis
+  parameters:
+    apiVersion: config.kubedb.com/v1alpha1
+    kind: RedisConfiguration
+  secret:
+    name: quick-redis-auth
+  type: kubedb.com/redis
+  version: 6.0.6
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

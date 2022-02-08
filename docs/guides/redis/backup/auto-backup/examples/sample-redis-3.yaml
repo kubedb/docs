@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Redis
+metadata:
+  name: sample-redis-3
+  namespace: demo-3
+  annotations:
+    stash.appscode.com/backup-blueprint: redis-backup-template
+    params.stash.appscode.com/args: "-db 0"
+spec:
+  version: 6.0.6
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: Delete
