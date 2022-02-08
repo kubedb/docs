@@ -90,4 +90,4 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Backup your Redis database using Stash following the guide from [here](/docs/guides/redis/backup/kubedb/index.md).
+- Backup your Redis database using Stash following the guide from [here](/docs/guides/redis/backup/standalone/index.md).
