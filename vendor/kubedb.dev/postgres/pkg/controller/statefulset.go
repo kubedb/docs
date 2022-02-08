@@ -40,8 +40,9 @@ import (
 )
 
 const (
-	PostgresInitContainerName = "postgres-init-container"
-	sharedTlsVolumeMountPath  = "/tls/certs"
+	PgEnforceFsGroupInitContainerName = "pg-fsgroup-init"
+	PostgresInitContainerName         = "postgres-init-container"
+	sharedTlsVolumeMountPath          = "/tls/certs"
 
 	clientTlsVolumeMountPath   = "/certs/client"
 	serverTlsVolumeMountPath   = "/certs/server"
@@ -109,6 +110,9 @@ func (c *Reconciler) ensureStatefulSet(
 			in.Spec.Template.Labels = db.PodLabels()
 			in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, db.Spec.PodTemplate.Spec.InitContainers)
+			if db.Spec.EnforceFsGroup {
+				in.Spec.Template.Spec.InitContainers = getEnforceFsGroupInitContainers(in, postgresVersion)
+			}
 			in.Spec.Template.Spec.InitContainers = getInitContainers(in, db, postgresVersion)
 
 			in.Spec.Template.Spec.Containers = getContainers(in, db, postgresVersion, envList)
@@ -707,6 +711,42 @@ func upsertSharedCertificatesVolume(volumes []core.Volume) []core.Volume {
 
 	return volumes
 }
+func getEnforceFsGroupInitContainers(statefulSet *apps.StatefulSet, postgresVersion *catalog.PostgresVersion) []core.Container {
+
+	volumeMounts := []core.VolumeMount{
+		{
+			Name:      "data",
+			MountPath: "/var/pv",
+		},
+	}
+	statefulSet.Spec.Template.Spec.InitContainers = core_util.UpsertContainer(
+		statefulSet.Spec.Template.Spec.InitContainers,
+		core.Container{
+			Name:  PgEnforceFsGroupInitContainerName,
+			Image: postgresVersion.Spec.InitContainer.Image,
+			Resources: core.ResourceRequirements{
+				Limits: core.ResourceList{
+					core.ResourceCPU:    resource.MustParse(".200"),
+					core.ResourceMemory: resource.MustParse("128Mi"),
+				},
+				Requests: core.ResourceList{
+					core.ResourceCPU:    resource.MustParse(".200"),
+					core.ResourceMemory: resource.MustParse("128Mi"),
+				},
+			},
+			Command: []string{
+				"chmod",
+				"0777",
+				"/var/pv",
+			},
+			SecurityContext: &core.SecurityContext{
+				RunAsUser:  pointer.Int64P(0),
+				RunAsGroup: pointer.Int64P(0),
+			},
+			VolumeMounts: volumeMounts,
+		})
+	return statefulSet.Spec.Template.Spec.InitContainers
+}
 
 func getInitContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion *catalog.PostgresVersion) []core.Container {
 	majorPGVersion, err := getMajorPgVersion(postgresVersion)
@@ -886,8 +926,6 @@ func getContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVers
 		}
 		coordinatorVolumeMounts = core_util.UpsertVolumeMount(coordinatorVolumeMounts, volumeMount)
 	}
-	// TODO: This defaulting should be removed once https://github.com/kubedb/apimachinery/pull/798 change is applied to existing CRDs
-	api.SetDefaultResourceLimits(&db.Spec.Coordinator.Resources, api.CoordinatorDefaultResources)
 	statefulSet.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 		statefulSet.Spec.Template.Spec.Containers,
 		core.Container{

@@ -36,9 +36,9 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
-func (c *Controller) create(db *api.MongoDB) error {
-	if err := validator.ValidateMongoDB(c.Client, c.DBClient, db, true); err != nil {
-		c.Recorder.Event(
+func (r *Reconciler) Reconcile(db *api.MongoDB) error {
+	if err := validator.ValidateMongoDB(r.Client, r.DBClient, db, true); err != nil {
+		r.Recorder.Event(
 			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -48,36 +48,31 @@ func (c *Controller) create(db *api.MongoDB) error {
 		return nil
 	}
 
-	nc := Reconciler{
-		Config:     c.Config,
-		Controller: c.Controller,
-	}
-
 	// create Governing Service
-	if err := nc.EnsureGoverningService(db); err != nil {
+	if err := r.EnsureGoverningService(db); err != nil {
 		return fmt.Errorf(`failed to create governing Service for "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
 	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
-	if err := c.ensureDatabaseRBAC(db); err != nil {
+	if err := r.ensureDatabaseRBAC(db); err != nil {
 		return err
 	}
 
 	// ensure database Service
-	vt1, err := c.ensureService(db)
+	vt1, err := r.ensureService(db)
 	if err != nil {
 		return err
 	}
 
-	if err := nc.ensureAuthSecret(db); err != nil {
+	if err := r.ensureAuthSecret(db); err != nil {
 		return err
 	}
 
-	if err := nc.EnsureKeyFileSecret(db); err != nil {
+	if err := r.EnsureKeyFileSecret(db); err != nil {
 		return err
 	}
 
-	ok, err := nc.IsCertificateSecretsCreated(db)
+	ok, err := r.IsCertificateSecretsCreated(db)
 	if err != nil {
 		return err
 	}
@@ -88,7 +83,7 @@ func (c *Controller) create(db *api.MongoDB) error {
 
 	// ensure database StatefulSet
 
-	vt2, err := nc.Reconcile(db)
+	vt2, err := r.ensureStatefulSets(db)
 	if err != nil && err != ErrStsNotReady {
 		return err
 	}
@@ -98,14 +93,14 @@ func (c *Controller) create(db *api.MongoDB) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.Recorder.Event(
+		r.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created MongoDB",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.Recorder.Event(
+		r.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -114,7 +109,7 @@ func (c *Controller) create(db *api.MongoDB) error {
 	}
 
 	// ensure appbinding before ensuring Restic scheduler and restore
-	_, err = c.ensureAppBinding(db)
+	_, err = r.ensureAppBinding(db)
 	if err != nil {
 		klog.Errorln(err)
 		return err
@@ -138,8 +133,8 @@ func (c *Controller) create(db *api.MongoDB) error {
 	}
 
 	// ensure StatsService for desired monitoring
-	if _, err := c.ensureStatsService(db); err != nil {
-		c.Recorder.Eventf(
+	if _, err := r.ensureStatsService(db); err != nil {
+		r.Recorder.Eventf(
 			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -150,8 +145,8 @@ func (c *Controller) create(db *api.MongoDB) error {
 		return nil
 	}
 
-	if err := c.manageMonitor(db); err != nil {
-		c.Recorder.Eventf(
+	if err := r.manageMonitor(db); err != nil {
+		r.Recorder.Eventf(
 			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -172,7 +167,7 @@ func (c *Controller) create(db *api.MongoDB) error {
 		!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
 		_, err := util.UpdateMongoDBStatus(
 			context.TODO(),
-			c.DBClient.KubedbV1alpha2(),
+			r.DBClient.KubedbV1alpha2(),
 			db.ObjectMeta,
 			func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
 				in.Conditions = kmapi.SetCondition(in.Conditions,
@@ -192,15 +187,24 @@ func (c *Controller) create(db *api.MongoDB) error {
 		}
 	}
 
+	if !kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
+		return nil
+	}
+
 	// Create TLS user with Certificate subject name
 	if db.Spec.TLS != nil {
-		err = nc.CreateTLSUsers(db)
+		err = r.CreateTLSUsers(db)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = nc.SetupReplicaSetsConfig(db)
+	err = r.SetupReplicaSetsConfig(db)
+	if err != nil {
+		return err
+	}
+
+	err = r.ApplyConfigJsFiles(db)
 	if err != nil {
 		return err
 	}
@@ -211,7 +215,7 @@ func (c *Controller) create(db *api.MongoDB) error {
 	if db.Spec.Init != nil &&
 		!db.Spec.Init.Initialized &&
 		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
-		_, _, err := util.CreateOrPatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MongoDB) *api.MongoDB {
+		_, _, err := util.CreateOrPatchMongoDB(context.TODO(), r.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MongoDB) *api.MongoDB {
 			in.Spec.Init.Initialized = true
 			return in
 		}, metav1.PatchOptions{})
@@ -291,8 +295,9 @@ func (c *Controller) terminate(db *api.MongoDB) error {
 		}
 	}
 
+	r := c.getReconciler()
 	if db.Spec.Monitor != nil {
-		if err := c.deleteMonitor(db); err != nil {
+		if err := r.deleteMonitor(db); err != nil {
 			klog.Errorln(err)
 			return nil
 		}

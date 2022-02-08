@@ -24,7 +24,6 @@ import (
 
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
-	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/fatih/structs"
@@ -36,7 +35,6 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	kutilapi "kmodules.xyz/client-go/api/v1"
 	app_util "kmodules.xyz/client-go/apps/v1"
@@ -66,40 +64,34 @@ type workloadOptions struct {
 	gvrSvcName     string
 	podTemplate    *ofst.PodTemplateSpec
 	pvcSpec        *core.PersistentVolumeClaimSpec
+	emptyDirSpec   *core.EmptyDirVolumeSource
 	initContainers []core.Container
 	volumes        []core.Volume // volumes to mount on stsPodTemplate
 	isMongos       bool
 }
 
-type Reconciler struct {
-	amc.Config
-	*amc.Controller
-
-	enableIPv6 bool
-}
-
-func (c *Reconciler) Reconcile(db *api.MongoDB) (kutil.VerbType, error) {
+func (r *Reconciler) ensureStatefulSets(db *api.MongoDB) (kutil.VerbType, error) {
 	var err error
-	c.enableIPv6, err = meta_util.IPv6EnabledInKernel()
+	r.enableIPv6, err = meta_util.IPv6EnabledInKernel()
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	// Standalone, replicaset, shard
 	if db.Spec.ShardTopology != nil {
-		return c.ensureTopologyCluster(db)
+		return r.ensureTopologyCluster(db)
 	}
 
-	return c.ensureNonTopology(db)
+	return r.ensureNonTopology(db)
 }
 
-func (c *Reconciler) ensureTopologyCluster(db *api.MongoDB) (kutil.VerbType, error) {
-	st, vt1, err := c.ensureConfigNode(db)
+func (r *Reconciler) ensureTopologyCluster(db *api.MongoDB) (kutil.VerbType, error) {
+	st, vt1, err := r.ensureConfigNode(db)
 	if err != nil {
 		return vt1, err
 	}
 
-	sts, vt2, err := c.ensureShardNode(db)
+	sts, vt2, err := r.ensureShardNode(db)
 	if err != nil {
 		return vt2, err
 	}
@@ -111,7 +103,7 @@ func (c *Reconciler) ensureTopologyCluster(db *api.MongoDB) (kutil.VerbType, err
 			return "", ErrStsNotReady
 		}
 		if vt1 != kutil.VerbUnchanged || vt2 != kutil.VerbUnchanged {
-			c.Recorder.Eventf(
+			r.Recorder.Eventf(
 				db,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,
@@ -121,7 +113,7 @@ func (c *Reconciler) ensureTopologyCluster(db *api.MongoDB) (kutil.VerbType, err
 		}
 	}
 
-	mongosSts, vt3, err := c.ensureMongosNode(db)
+	mongosSts, vt3, err := r.ensureMongosNode(db)
 	if err != nil {
 		return vt3, err
 	}
@@ -130,7 +122,7 @@ func (c *Reconciler) ensureTopologyCluster(db *api.MongoDB) (kutil.VerbType, err
 		if !app_util.IsStatefulSetReady(mongosSts) {
 			return "", ErrStsNotReady
 		}
-		c.Recorder.Eventf(
+		r.Recorder.Eventf(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -148,9 +140,9 @@ func (c *Reconciler) ensureTopologyCluster(db *api.MongoDB) (kutil.VerbType, err
 	return kutil.VerbUnchanged, nil
 }
 
-func (c *Reconciler) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kutil.VerbType, error) {
+func (r *Reconciler) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kutil.VerbType, error) {
 	shardSts := func(nodeNum int32) (*apps.StatefulSet, kutil.VerbType, error) {
-		mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+		mongodbVersion, err := r.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
@@ -179,11 +171,11 @@ func (c *Reconciler) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 			"--clusterAuthMode=" + string(clusterAuth),
 			"--keyFile=" + api.MongoDBConfigDirectoryPath + "/" + api.MongoDBKeyForKeyFile,
 		}
-		if c.enableIPv6 {
+		if r.enableIPv6 {
 			args = append(args, "--ipv6")
 		}
 
-		sslArgs, err := c.getTLSArgs(db, mongodbVersion)
+		sslArgs, err := r.getTLSArgs(db, mongodbVersion)
 		if err != nil {
 			return &apps.StatefulSet{}, "", err
 		}
@@ -335,12 +327,13 @@ func (c *Reconciler) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 			podTemplate:    podTemplate,
 			configSecret:   db.Spec.ShardTopology.Shard.ConfigSecret,
 			pvcSpec:        db.Spec.ShardTopology.Shard.Storage,
+			emptyDirSpec:   db.Spec.ShardTopology.Shard.EphemeralStorage,
 			replicas:       &db.Spec.ShardTopology.Shard.Replicas,
 			volumes:        volumes,
 			volumeMount:    volumeMounts,
 		}
 
-		return c.ensureStatefulSet(db, opts)
+		return r.ensureStatefulSet(db, opts)
 	}
 
 	var sts []*apps.StatefulSet
@@ -359,8 +352,8 @@ func (c *Reconciler) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 	return sts, vt, nil
 }
 
-func (c *Reconciler) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
-	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+func (r *Reconciler) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
+	mongodbVersion, err := r.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -389,11 +382,11 @@ func (c *Reconciler) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 		"--clusterAuthMode=" + string(clusterAuth),
 		"--keyFile=" + api.MongoDBConfigDirectoryPath + "/" + api.MongoDBKeyForKeyFile,
 	}
-	if c.enableIPv6 {
+	if r.enableIPv6 {
 		args = append(args, "--ipv6")
 	}
 
-	sslArgs, err := c.getTLSArgs(db, mongodbVersion)
+	sslArgs, err := r.getTLSArgs(db, mongodbVersion)
 	if err != nil {
 		return &apps.StatefulSet{}, "", err
 	}
@@ -533,16 +526,17 @@ func (c *Reconciler) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 		podTemplate:    &db.Spec.ShardTopology.ConfigServer.PodTemplate,
 		configSecret:   db.Spec.ShardTopology.ConfigServer.ConfigSecret,
 		pvcSpec:        db.Spec.ShardTopology.ConfigServer.Storage,
+		emptyDirSpec:   db.Spec.ShardTopology.ConfigServer.EphemeralStorage,
 		replicas:       &db.Spec.ShardTopology.ConfigServer.Replicas,
 		volumes:        volumes,
 		volumeMount:    volumeMounts,
 	}
 
-	return c.ensureStatefulSet(db, opts)
+	return r.ensureStatefulSet(db, opts)
 }
 
-func (c *Reconciler) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) {
-	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+func (r *Reconciler) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) {
+	mongodbVersion, err := r.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -571,11 +565,11 @@ func (c *Reconciler) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 		"--bind_ip_all",
 		"--port=" + strconv.Itoa(api.MongoDBDatabasePort),
 	}
-	if c.enableIPv6 {
+	if r.enableIPv6 {
 		args = append(args, "--ipv6")
 	}
 
-	sslArgs, err := c.getTLSArgs(db, mongodbVersion)
+	sslArgs, err := r.getTLSArgs(db, mongodbVersion)
 	if err != nil {
 		return "", err
 	}
@@ -747,12 +741,13 @@ func (c *Reconciler) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 		podTemplate:    db.Spec.PodTemplate,
 		configSecret:   db.Spec.ConfigSecret,
 		pvcSpec:        db.Spec.Storage,
+		emptyDirSpec:   db.Spec.EphemeralStorage,
 		replicas:       db.Spec.Replicas,
 		volumes:        volumes,
 		volumeMount:    volumeMounts,
 	}
 
-	st, vt, err := c.ensureStatefulSet(db, opts)
+	st, vt, err := r.ensureStatefulSet(db, opts)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -760,7 +755,7 @@ func (c *Reconciler) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 		if !app_util.IsStatefulSetReady(st) {
 			return "", ErrStsNotReady
 		}
-		c.Recorder.Eventf(
+		r.Recorder.Eventf(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -771,17 +766,17 @@ func (c *Reconciler) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 	return vt, err
 }
 
-func (c *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*apps.StatefulSet, kutil.VerbType, error) {
+func (r *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*apps.StatefulSet, kutil.VerbType, error) {
 	// Take value of podTemplate
 	var pt ofst.PodTemplateSpec
 	if opts.podTemplate != nil {
 		pt = *opts.podTemplate
 	}
-	if err := c.checkStatefulSet(db, opts.stsName); err != nil {
+	if err := r.checkStatefulSet(db, opts.stsName); err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := r.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -812,7 +807,7 @@ func (c *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(
 		context.TODO(),
-		c.Client,
+		r.Client,
 		statefulSetMeta,
 		func(in *apps.StatefulSet) *apps.StatefulSet {
 			in.Labels = db.PodControllerLabels(pt.Controller.Labels, opts.labels)
@@ -887,11 +882,11 @@ func (c *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 			in.Spec.Template = upsertEnv(in.Spec.Template, db)
 			if !opts.isMongos {
 				//Mongos doesn't have any data
-				in = upsertDataVolume(in, opts.pvcSpec, db.Spec.StorageType)
+				in = upsertDataVolume(in, opts.pvcSpec, opts.emptyDirSpec, db.Spec.StorageType)
 			}
 
 			if opts.configSecret != nil {
-				in.Spec.Template = c.upsertConfigSecretVolume(in.Spec.Template, opts.configSecret)
+				in.Spec.Template = r.upsertConfigSecretVolume(in.Spec.Template, opts.configSecret)
 			}
 
 			in.Spec.Template.Spec.NodeSelector = pt.Spec.NodeSelector
@@ -926,16 +921,16 @@ func (c *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 
 	// Check StatefulSet Pod status
 	// ensure pdb
-	if err := c.CreateStatefulSetPodDisruptionBudget(statefulSet); err != nil {
+	if err := r.CreateStatefulSetPodDisruptionBudget(statefulSet); err != nil {
 		return nil, vt, err
 	}
 
 	return statefulSet, vt, nil
 }
 
-func (c *Reconciler) checkStatefulSet(db *api.MongoDB, stsName string) error {
+func (r *Reconciler) checkStatefulSet(db *api.MongoDB, stsName string) error {
 	// StatefulSet for MongoDB database
-	statefulSet, err := c.Client.AppsV1().StatefulSets(db.Namespace).Get(context.TODO(), stsName, metav1.GetOptions{})
+	statefulSet, err := r.Client.AppsV1().StatefulSets(db.Namespace).Get(context.TODO(), stsName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -1091,6 +1086,7 @@ func installInitContainer(
 func upsertDataVolume(
 	statefulSet *apps.StatefulSet,
 	pvcSpec *core.PersistentVolumeClaimSpec,
+	emptyDirSpec *core.EmptyDirVolumeSource,
 	storageType api.StorageType,
 ) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
@@ -1128,10 +1124,8 @@ func upsertDataVolume(
 
 			if storageType == api.StorageTypeEphemeral {
 				ed := core.EmptyDirVolumeSource{}
-				if pvcSpec != nil {
-					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
-						ed.SizeLimit = &sz
-					}
+				if emptyDirSpec != nil {
+					ed = *emptyDirSpec
 				}
 				statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
 					statefulSet.Spec.Template.Spec.Volumes,
@@ -1146,7 +1140,6 @@ func upsertDataVolume(
 					pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
 						core.ReadWriteOnce,
 					}
-					klog.Infof(`Using "%v" as AccessModes in mongodb.Spec.Storage`, core.ReadWriteOnce)
 				}
 
 				claim := core.PersistentVolumeClaim{

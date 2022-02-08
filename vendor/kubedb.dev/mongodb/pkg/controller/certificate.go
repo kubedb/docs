@@ -28,7 +28,7 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
-func (c *Reconciler) getTLSArgs(db *api.MongoDB, mgVersion *v1alpha1.MongoDBVersion) ([]string, error) {
+func (r *Reconciler) getTLSArgs(db *api.MongoDB, mgVersion *v1alpha1.MongoDBVersion) ([]string, error) {
 	var sslArgs []string
 	sslMode := string(db.Spec.SSLMode)
 	breakingVer, err := semver.NewVersion("4.2")
@@ -73,7 +73,7 @@ func (c *Reconciler) getTLSArgs(db *api.MongoDB, mgVersion *v1alpha1.MongoDBVers
 	return sslArgs, nil
 }
 
-func (c *Reconciler) IsCertificateSecretsCreated(db *api.MongoDB) (bool, error) {
+func (r *Reconciler) IsCertificateSecretsCreated(db *api.MongoDB) (bool, error) {
 	// wait for certificates
 	if db.Spec.TLS != nil {
 		var secrets []string
@@ -96,7 +96,7 @@ func (c *Reconciler) IsCertificateSecretsCreated(db *api.MongoDB) (bool, error) 
 		secrets = append(secrets, db.GetCertSecretName(api.MongoDBMetricsExporterCert, ""))
 
 		return dynamic_util.ResourcesExists(
-			c.DynamicClient,
+			r.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			db.Namespace,
 			secrets...,

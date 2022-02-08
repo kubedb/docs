@@ -98,6 +98,12 @@ func (c *Controller) ensureRole(db *api.MariaDB, name string, pspName string) er
 					Resources: []string{"pods/exec"},
 					Verbs:     []string{"create"},
 				},
+				{
+					APIGroups:     []string{"kubedb.com"},
+					Resources:     []string{api.ResourcePluralMariaDB},
+					Verbs:         []string{"get"},
+					ResourceNames: []string{db.OffshootName()},
+				},
 			}
 			in.Rules = append(in.Rules, resourceRule...)
 			return in

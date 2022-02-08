@@ -291,14 +291,15 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.Postgres, owner *metav
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
+
+	secrets := db.Spec.GetPersistentSecrets()
+	secrets = append(secrets, c.GetPostgresSecrets(db)...)
 	if db.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := c.wipeOutDatabase(db.ObjectMeta, db.Spec.GetPersistentSecrets(), owner); err != nil {
+		if err := c.wipeOutDatabase(db.ObjectMeta, secrets, owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 
 	} else {
-		secrets := db.Spec.GetPersistentSecrets()
-		secrets = append(secrets, c.GetPostgresSecrets(db)...)
 		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
 			context.TODO(),

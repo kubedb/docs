@@ -33,13 +33,13 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-func (c *Controller) ensureService(db *api.MongoDB) (kutil.VerbType, error) {
+func (r *Reconciler) ensureService(db *api.MongoDB) (kutil.VerbType, error) {
 	// create database Service
-	vt, err := c.ensurePrimaryService(db)
+	vt, err := r.ensurePrimaryService(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.Recorder.Eventf(
+		r.Recorder.Eventf(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -50,7 +50,7 @@ func (c *Controller) ensureService(db *api.MongoDB) (kutil.VerbType, error) {
 	return vt, nil
 }
 
-func (c *Controller) ensurePrimaryService(db *api.MongoDB) (kutil.VerbType, error) {
+func (r *Reconciler) ensurePrimaryService(db *api.MongoDB) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
 		Name:      db.OffshootName(),
 		Namespace: db.Namespace,
@@ -65,7 +65,7 @@ func (c *Controller) ensurePrimaryService(db *api.MongoDB) (kutil.VerbType, erro
 
 	_, ok, err := core_util.CreateOrPatchService(
 		context.TODO(),
-		c.Client,
+		r.Client,
 		meta,
 		func(in *core.Service) *core.Service {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
@@ -106,7 +106,7 @@ func (c *Controller) ensurePrimaryService(db *api.MongoDB) (kutil.VerbType, erro
 	return ok, err
 }
 
-func (c *Controller) ensureStatsService(db *api.MongoDB) (kutil.VerbType, error) {
+func (r *Reconciler) ensureStatsService(db *api.MongoDB) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
 	if db.Spec.Monitor == nil || db.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
 		klog.Infoln("spec.monitor.agent is not provided by prometheus.io")
@@ -122,7 +122,7 @@ func (c *Controller) ensureStatsService(db *api.MongoDB) (kutil.VerbType, error)
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 	_, vt, err := core_util.CreateOrPatchService(
 		context.TODO(),
-		c.Client,
+		r.Client,
 		meta,
 		func(in *core.Service) *core.Service {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
@@ -160,7 +160,7 @@ func (c *Controller) ensureStatsService(db *api.MongoDB) (kutil.VerbType, error)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.Recorder.Eventf(
+		r.Recorder.Eventf(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -171,7 +171,7 @@ func (c *Controller) ensureStatsService(db *api.MongoDB) (kutil.VerbType, error)
 	return vt, nil
 }
 
-func (c *Reconciler) EnsureGoverningService(db *api.MongoDB) error {
+func (r *Reconciler) EnsureGoverningService(db *api.MongoDB) error {
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
 	svcFunc := func(svcName string, labels, selectors map[string]string) error {
@@ -183,7 +183,7 @@ func (c *Reconciler) EnsureGoverningService(db *api.MongoDB) error {
 
 		_, vt, err := core_util.CreateOrPatchService(
 			context.TODO(),
-			c.Client,
+			r.Client,
 			meta,
 			func(in *core.Service) *core.Service {
 				core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
@@ -210,7 +210,7 @@ func (c *Reconciler) EnsureGoverningService(db *api.MongoDB) error {
 		)
 
 		if err == nil && vt != kutil.VerbUnchanged {
-			c.Recorder.Eventf(
+			r.Recorder.Eventf(
 				db,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,

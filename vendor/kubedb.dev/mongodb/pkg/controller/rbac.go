@@ -33,12 +33,12 @@ import (
 	v1 "kmodules.xyz/offshoot-api/api/v1"
 )
 
-func (c *Controller) createServiceAccount(db *api.MongoDB, saName string) error {
+func (r *Reconciler) createServiceAccount(db *api.MongoDB, saName string) error {
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 	// Create new ServiceAccount
 	_, _, err := core_util.CreateOrPatchServiceAccount(
 		context.TODO(),
-		c.Client,
+		r.Client,
 		metav1.ObjectMeta{
 			Name:      saName,
 			Namespace: db.Namespace,
@@ -53,13 +53,13 @@ func (c *Controller) createServiceAccount(db *api.MongoDB, saName string) error 
 	return err
 }
 
-func (c *Controller) ensureRole(db *api.MongoDB, name string, pspName string) error {
+func (r *Reconciler) ensureRole(db *api.MongoDB, name string, pspName string) error {
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
 	// Create new Role for MongoDB and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRole(
 		context.TODO(),
-		c.Client,
+		r.Client,
 		metav1.ObjectMeta{
 			Name:      name,
 			Namespace: db.Namespace,
@@ -104,12 +104,12 @@ func (c *Controller) ensureRole(db *api.MongoDB, name string, pspName string) er
 	return err
 }
 
-func (c *Controller) createRoleBinding(db *api.MongoDB, roleName string, saName string) error {
+func (r *Reconciler) createRoleBinding(db *api.MongoDB, roleName string, saName string) error {
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 	// Ensure new RoleBindings for MongoDB and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRoleBinding(
 		context.TODO(),
-		c.Client,
+		r.Client,
 		metav1.ObjectMeta{
 			Name:      roleName,
 			Namespace: db.Namespace,
@@ -136,8 +136,8 @@ func (c *Controller) createRoleBinding(db *api.MongoDB, roleName string, saName 
 	return err
 }
 
-func (c *Controller) getPolicyNames(db *api.MongoDB) (string, error) {
-	dbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+func (r *Reconciler) getPolicyNames(db *api.MongoDB) (string, error) {
+	dbVersion, err := r.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -146,7 +146,7 @@ func (c *Controller) getPolicyNames(db *api.MongoDB) (string, error) {
 	return dbPolicyName, nil
 }
 
-func (c *Controller) ensureDatabaseRBAC(db *api.MongoDB) error {
+func (r *Reconciler) ensureDatabaseRBAC(db *api.MongoDB) error {
 	var createDatabaseRBAC = func(podTemplate *v1.PodTemplateSpec) error {
 		if podTemplate == nil {
 			return errors.New("Pod Template can not be empty.")
@@ -157,10 +157,10 @@ func (c *Controller) ensureDatabaseRBAC(db *api.MongoDB) error {
 			saName = db.OffshootName() // in case mutator was disabled
 			podTemplate.Spec.ServiceAccountName = saName
 		}
-		sa, err := c.Client.CoreV1().ServiceAccounts(db.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
+		sa, err := r.Client.CoreV1().ServiceAccounts(db.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			// create service account, since it does not exist
-			if err = c.createServiceAccount(db, saName); err != nil {
+			if err = r.createServiceAccount(db, saName); err != nil {
 				if !kerr.IsAlreadyExists(err) {
 					return err
 				}
@@ -173,16 +173,16 @@ func (c *Controller) ensureDatabaseRBAC(db *api.MongoDB) error {
 		}
 
 		// Create New Role
-		pspName, err := c.getPolicyNames(db)
+		pspName, err := r.getPolicyNames(db)
 		if err != nil {
 			return err
 		}
-		if err = c.ensureRole(db, db.OffshootName(), pspName); err != nil {
+		if err = r.ensureRole(db, db.OffshootName(), pspName); err != nil {
 			return err
 		}
 
 		// Create New RoleBinding
-		if err = c.createRoleBinding(db, db.OffshootName(), saName); err != nil {
+		if err = r.createRoleBinding(db, db.OffshootName(), saName); err != nil {
 			return err
 		}
 		return nil

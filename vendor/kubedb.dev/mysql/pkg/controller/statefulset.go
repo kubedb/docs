@@ -261,12 +261,12 @@ func getEnvsForMySQLCoordinatorContainer(db *api.MySQL) []core.EnvVar {
 	if db.UsesGroupReplication() {
 		envList = append(envList, core.EnvVar{
 			Name:  "TOPOLOGY",
-			Value: string(api.MySQLClusterModeGroupReplication),
+			Value: string(api.MySQLModeGroupReplication),
 		})
 	} else if db.IsInnoDBCluster() {
 		envList = append(envList, core.EnvVar{
 			Name:  "TOPOLOGY",
-			Value: string(api.MySQLClusterModeInnoDBCluster),
+			Value: string(api.MySQLModeInnoDBCluster),
 		})
 	}
 

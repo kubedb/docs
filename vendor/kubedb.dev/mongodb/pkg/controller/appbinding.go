@@ -39,8 +39,8 @@ import (
 	"stash.appscode.dev/apimachinery/pkg/restic"
 )
 
-func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
-	port, err := c.GetPrimaryServicePort(db)
+func (r *Reconciler) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
+	port, err := r.GetPrimaryServicePort(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -54,7 +54,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
-	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := r.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, fmt.Errorf("failed to get MongoDBVersion %v for %v/%v. Reason: %v", db.Spec.Version, db.Namespace, db.Name, err)
 	}
@@ -85,7 +85,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 	if (db.Spec.SSLMode == api.SSLModeRequireSSL || db.Spec.SSLMode == api.SSLModePreferSSL) &&
 		db.Spec.TLS != nil {
 
-		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.GetCertSecretName(api.MongoDBClientCert, ""), metav1.GetOptions{})
+		certSecret, err := r.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.GetCertSecretName(api.MongoDBClientCert, ""), metav1.GetOptions{})
 		if err != nil {
 			return kutil.VerbUnchanged, errors.Wrapf(err, "failed to read certificate secret for MongoDB %s/%s", db.Namespace, db.Name)
 		}
@@ -103,7 +103,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(
 		context.TODO(),
-		c.AppCatalogClient.AppcatalogV1alpha1(),
+		r.AppCatalogClient.AppcatalogV1alpha1(),
 		meta,
 		func(in *appcat.AppBinding) *appcat.AppBinding {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
@@ -135,7 +135,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.Recorder.Eventf(
+		r.Recorder.Eventf(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -146,7 +146,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 	return vt, nil
 }
 
-func (c *Controller) GetPrimaryServicePort(db *api.MongoDB) (int32, error) {
+func (r *Reconciler) GetPrimaryServicePort(db *api.MongoDB) (int32, error) {
 	ports := ofst.PatchServicePorts([]core.ServicePort{
 		{
 			Name:       api.MongoDBPrimaryServicePortName,
