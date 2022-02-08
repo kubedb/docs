@@ -155,8 +155,8 @@ redis.kubedb.com/sample-redis-1 created
 Now, let's insert some sample data into it.
 
 ```bash
-❯ export PASSWORD=$(kubectl get secrets -n demo-1 sample-redis-1 -o jsonpath='{.data.\redis-password}' | base64 -d)
-❯ kubectl exec -it -n demo-1 sample-redis-1-master-0 -- redis-cli -a $PASSWORD
+❯ export PASSWORD=$(kubectl get secrets -n demo-1 sample-redis-1-auth -o jsonpath='{.data.\password}' | base64 -d)
+❯ kubectl exec -it -n demo-1 sample-redis-1-0 -- redis-cli -a $PASSWORD
 Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
 127.0.0.1:6379> set key1 value1
 OK
@@ -338,8 +338,8 @@ redis.kubedb.com/sample-redis-2 created
 Now, let's insert some sample data into it.
 
 ```bash
-❯ export PASSWORD=$(kubectl get secrets -n demo-2 sample-redis-2 -o jsonpath='{.data.\redis-password}' | base64 -d)
-❯ kubectl exec -it -n demo-2 sample-redis-2-master-0 -- redis-cli -a $PASSWORD
+❯ export PASSWORD=$(kubectl get secrets -n demo-2 sample-redis-2-auth -o jsonpath='{.data.\password}' | base64 -d)
+❯ kubectl exec -it -n demo-2 sample-redis-2-0 -- redis-cli -a $PASSWORD
 Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
 127.0.0.1:6379> set key1 value1
 OK
@@ -515,8 +515,8 @@ redis.kubedb.com/sample-redis-3 created
 Now, let's insert some sample data into it.
 
 ```bash
-❯ export PASSWORD=$(kubectl get secrets -n demo-3 sample-redis-3 -o jsonpath='{.data.\redis-password}' | base64 -d)
-❯ kubectl exec -it -n demo-3 sample-redis-3-master-0 -- redis-cli -a $PASSWORD
+❯ export PASSWORD=$(kubectl get secrets -n demo-3 sample-redis-3-auth -o jsonpath='{.data.\password}' | base64 -d)
+❯ kubectl exec -it -n demo-3 sample-redis-3-0 -- redis-cli -a $PASSWORD
 Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
 127.0.0.1:6379> set key1 value1
 OK
@@ -657,7 +657,7 @@ To cleanup the resources created by this tutorial, run the following commands,
 ❯ kubectl delete repository -n demo-1 --all
 
 # cleanup sample-redis-2 resources
-❯ kubectl delete redis sample-redis-1 -n demo-2
+❯ kubectl delete redis sample-redis-2 -n demo-2
 ❯ kubectl delete repository -n demo-2 --all
 
 # cleanup sample-redis-3 resources
