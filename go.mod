@@ -6,7 +6,7 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.47.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
-	go.bytebuilders.dev/audit v0.0.18
+	go.bytebuilders.dev/audit v0.0.19
 	go.bytebuilders.dev/license-verifier v0.9.7
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.7
 	gomodules.xyz/logs v0.0.6
@@ -19,7 +19,7 @@ require (
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
 	kmodules.xyz/client-go v0.0.0-20220203031013-1de48437aaf3
-	kmodules.xyz/custom-resources v0.0.0-20220126201139-be014631db0c
+	kmodules.xyz/custom-resources v0.0.0-20220208103158-61b298634e43
 	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1
 	kubedb.dev/apimachinery v0.24.1-0.20220202063936-5d665ff166f6
 	kubedb.dev/elasticsearch v0.24.1-0.20220207232930-feaf7f2a1ba3
@@ -176,7 +176,7 @@ require (
 	kmodules.xyz/objectstore-api v0.0.0-20211207131029-3271069de43e // indirect
 	kmodules.xyz/offshoot-api v0.0.0-20211207130839-cc7187e020cf // indirect
 	kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027 // indirect
-	kmodules.xyz/resource-metadata v0.9.3 // indirect
+	kmodules.xyz/resource-metadata v0.9.4 // indirect
 	kmodules.xyz/resource-metrics v0.0.8 // indirect
 	kubedb.dev/db-client-go v0.0.0-20211102100133-9d4b23e3d1c5 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.15 // indirect
