@@ -260,22 +260,23 @@ spec:
 
 ### Restore specific snapshot
 
-You can also restore a specific snapshot. At first, list the available snapshot as bellow,
+You can also restore a specific snapshot. At first, list the available snapshots as below,
 
 ```bash
 ❯ kubectl get snapshots -n demo
-NAME                REPOSITORY   HOSTNAME   CREATED AT
-gcs-repo-4bc21d6f   gcs-repo     host-0     2021-02-12T14:54:27Z
-gcs-repo-f0ac7cbd   gcs-repo     host-0     2021-02-12T14:56:26Z
-gcs-repo-9210ebb6   gcs-repo     host-0     2021-02-12T14:58:27Z
-gcs-repo-0aff8890   gcs-repo     host-0     2021-02-12T15:00:28Z
+NAME                ID         REPOSITORY   HOSTNAME   CREATED AT
+gcs-repo-4bc21d6f   4bc21d6f   gcs-repo     host-0     2022-01-12T14:54:27Z
+gcs-repo-f0ac7cbd   f0ac7cbd   gcs-repo     host-0     2022-01-12T14:56:26Z
+gcs-repo-9210ebb6   9210ebb6   gcs-repo     host-0     2022-01-12T14:58:27Z
+gcs-repo-0aff8890   0aff8890   gcs-repo     host-0     2022-01-12T15:00:28Z
 ```
+
 
 >You can also filter the snapshots as shown in the guide [here](https://stash.run/docs/latest/concepts/crds/snapshot/#working-with-snapshot).
 
-Stash adds the Repository name as a prefix of the Snapshot. You have to remove the repository prefix and use only the last 8 characters as the snapshot name during restore.
+You can use the respective ID of the snapshot to restore that snapshot.
 
-The below example shows how you can pass a specific snapshot name through the `snapshots` filed of `rules` section.
+The below example shows how you can pass a specific snapshot ID through the `snapshots` field of `rules` section.
 
 ```yaml
 apiVersion: stash.appscode.com/v1beta1

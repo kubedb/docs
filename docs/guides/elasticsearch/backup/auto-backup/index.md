@@ -23,8 +23,8 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - If you are not familiar with how Stash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/elasticsearch/backup/overview/index.md).
-- If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/latest/auto-backup/overview/).
-- If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/latest/auto-backup/database/).
+- If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/overview/).
+- If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/database/).
 
 You should be familiar with the following `Stash` concepts:
 
@@ -122,7 +122,7 @@ Let's create the `BackupBlueprint` we have shown above,
 backupblueprint.stash.appscode.com/elasticsearch-backup-template created
 ```
 
-Now, we are ready to backup our Elasticsearch databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://stash.run/docs/latest/guides/latest/auto-backup/database/#available-auto-backup-annotations-for-database).
+Now, we are ready to backup our Elasticsearch databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://stash.run/docs/latest/guides/auto-backup/database/#available-auto-backup-annotations-for-database).
 
 ## Auto-backup with default configurations
 
@@ -135,7 +135,7 @@ At first, let's create the `gcs-secret` in `demo` namespace with the access cred
 ```bash
 ❯ echo -n 'changeit' > RESTIC_PASSWORD
 ❯ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-❯ cat downloaded-sa-json.key > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+❯ cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
 ❯ kubectl create secret generic -n demo gcs-secret \
     --from-file=./RESTIC_PASSWORD \
     --from-file=./GOOGLE_PROJECT_ID \
