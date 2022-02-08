@@ -5,6 +5,7 @@ metadata:
   namespace: demo-2
   annotations:
     stash.appscode.com/backup-blueprint: redis-backup-template
+    stash.appscode.com/schedule: "*/3 * * * *"
 spec:
   version: 6.0.6
   storageType: Durable
