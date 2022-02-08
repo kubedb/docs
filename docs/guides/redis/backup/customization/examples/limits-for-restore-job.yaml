@@ -1,0 +1,24 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: RestoreSession
+metadata:
+  name: sample-redis-restore
+  namespace: demo
+spec:
+  repository:
+    name: gcs-repo
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: sample-redis
+  runtimeSettings:
+    container:
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "1Gi"
+        limits:
+          cpu: "200m"
+          memory: "1Gi"
+  rules:
+  - snapshots: [latest]
