@@ -176,7 +176,7 @@ require (
 	kmodules.xyz/objectstore-api v0.0.0-20211207131029-3271069de43e // indirect
 	kmodules.xyz/offshoot-api v0.0.0-20211207130839-cc7187e020cf // indirect
 	kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027 // indirect
-	kmodules.xyz/resource-metadata v0.9.4 // indirect
+	kmodules.xyz/resource-metadata v0.9.7 // indirect
 	kmodules.xyz/resource-metrics v0.0.8 // indirect
 	kubedb.dev/db-client-go v0.0.0-20211102100133-9d4b23e3d1c5 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.15 // indirect
