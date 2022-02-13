@@ -1602,8 +1602,9 @@ software.sslmate.com/src/go-pkcs12 v0.0.0-20200830195227-52f69702a001/go.mod h1:
 sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0/go.mod h1:hI742Nqp5OhwiqlzhgfbWU4mW4yO10fP+LoT9WOswdU=
 stash.appscode.dev/apimachinery v0.16.0/go.mod h1:unpV/YyHVECNrAdFjFg/SetmPeUjfvc2+P8cnGjih/U=
 stash.appscode.dev/apimachinery v0.17.0/go.mod h1:hmxBy6Ei6RjBLgXw4A1hE4eyEgsa43H2LCs1yDfI3GM=
-stash.appscode.dev/apimachinery v0.17.1-0.20220207211309-7c80de5c81b1 h1:eyYKB2ORbEmCOdViSyJdEGjQfFnjDITw6n+QES9WW4c=
 stash.appscode.dev/apimachinery v0.17.1-0.20220207211309-7c80de5c81b1/go.mod h1:j9DiQxWPzarOJ0F161L3s2dRc+QS2/zYwJKLRpi+Adk=
+stash.appscode.dev/apimachinery v0.18.0 h1:Mo5m3ffLKePJMPVWufGlFXas3rAwu96R9BeswSNkTrI=
+stash.appscode.dev/apimachinery v0.18.0/go.mod h1:MDzqJ66A2QZKAHRksfHT5crOD29a0S5Hfuy/D5hHAjw=
 xorm.io/builder v0.3.6/go.mod h1:LEFAPISnRzG+zxaxj2vPicRwz67BdhFreKg8yv8/TgU=
 xorm.io/builder v0.3.9 h1:Sd65/LdWyO7LR8+Cbd+e7mm3sK/7U9k0jS3999IDHMc=
 xorm.io/builder v0.3.9/go.mod h1:aUW0S9eb9VCaPohFCH3j7czOx1PMW3i1HrSzbLYGBSE=
