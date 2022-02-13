@@ -573,17 +573,11 @@ go.uber.org/zap/zapcore
 ## explicit; go 1.17
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
-golang.org/x/crypto/cryptobyte
-golang.org/x/crypto/cryptobyte/asn1
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/ed25519/internal/edwards25519
-golang.org/x/crypto/internal/subtle
-golang.org/x/crypto/nacl/secretbox
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/pkcs12
 golang.org/x/crypto/pkcs12/internal/rc2
-golang.org/x/crypto/poly1305
-golang.org/x/crypto/salsa20/salsa
 # golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
 ## explicit; go 1.11
 golang.org/x/net/context
@@ -608,7 +602,6 @@ golang.org/x/sync/semaphore
 golang.org/x/sync/singleflight
 # golang.org/x/sys v0.0.0-20210817190340-bfb29a6856f2
 ## explicit; go 1.17
-golang.org/x/sys/cpu
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
@@ -796,9 +789,6 @@ google.golang.org/protobuf/types/known/timestamppb
 # gopkg.in/inf.v0 v0.9.1
 ## explicit
 gopkg.in/inf.v0
-# gopkg.in/natefinch/lumberjack.v2 v2.0.0
-## explicit
-gopkg.in/natefinch/lumberjack.v2
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
@@ -956,14 +946,10 @@ k8s.io/apiserver/pkg/apis/apiserver/v1
 k8s.io/apiserver/pkg/apis/apiserver/v1alpha1
 k8s.io/apiserver/pkg/apis/apiserver/v1beta1
 k8s.io/apiserver/pkg/apis/audit
-k8s.io/apiserver/pkg/apis/audit/install
 k8s.io/apiserver/pkg/apis/audit/v1
 k8s.io/apiserver/pkg/apis/audit/v1alpha1
 k8s.io/apiserver/pkg/apis/audit/v1beta1
 k8s.io/apiserver/pkg/apis/audit/validation
-k8s.io/apiserver/pkg/apis/config
-k8s.io/apiserver/pkg/apis/config/v1
-k8s.io/apiserver/pkg/apis/config/validation
 k8s.io/apiserver/pkg/apis/flowcontrol/bootstrap
 k8s.io/apiserver/pkg/audit
 k8s.io/apiserver/pkg/audit/policy
@@ -982,7 +968,6 @@ k8s.io/apiserver/pkg/authentication/token/tokenfile
 k8s.io/apiserver/pkg/authentication/user
 k8s.io/apiserver/pkg/authorization/authorizer
 k8s.io/apiserver/pkg/authorization/authorizerfactory
-k8s.io/apiserver/pkg/authorization/path
 k8s.io/apiserver/pkg/authorization/union
 k8s.io/apiserver/pkg/endpoints
 k8s.io/apiserver/pkg/endpoints/deprecation
@@ -1001,7 +986,6 @@ k8s.io/apiserver/pkg/endpoints/warning
 k8s.io/apiserver/pkg/features
 k8s.io/apiserver/pkg/quota/v1
 k8s.io/apiserver/pkg/registry/generic
-k8s.io/apiserver/pkg/registry/generic/registry
 k8s.io/apiserver/pkg/registry/rest
 k8s.io/apiserver/pkg/server
 k8s.io/apiserver/pkg/server/dynamiccertificates
@@ -1011,25 +995,15 @@ k8s.io/apiserver/pkg/server/filters
 k8s.io/apiserver/pkg/server/healthz
 k8s.io/apiserver/pkg/server/httplog
 k8s.io/apiserver/pkg/server/mux
-k8s.io/apiserver/pkg/server/options
-k8s.io/apiserver/pkg/server/options/encryptionconfig
-k8s.io/apiserver/pkg/server/resourceconfig
 k8s.io/apiserver/pkg/server/routes
 k8s.io/apiserver/pkg/server/storage
 k8s.io/apiserver/pkg/storage
-k8s.io/apiserver/pkg/storage/cacher
-k8s.io/apiserver/pkg/storage/errors
 k8s.io/apiserver/pkg/storage/etcd3
 k8s.io/apiserver/pkg/storage/etcd3/metrics
 k8s.io/apiserver/pkg/storage/names
 k8s.io/apiserver/pkg/storage/storagebackend
 k8s.io/apiserver/pkg/storage/storagebackend/factory
 k8s.io/apiserver/pkg/storage/value
-k8s.io/apiserver/pkg/storage/value/encrypt/aes
-k8s.io/apiserver/pkg/storage/value/encrypt/envelope
-k8s.io/apiserver/pkg/storage/value/encrypt/envelope/v1beta1
-k8s.io/apiserver/pkg/storage/value/encrypt/identity
-k8s.io/apiserver/pkg/storage/value/encrypt/secretbox
 k8s.io/apiserver/pkg/storageversion
 k8s.io/apiserver/pkg/util/apihelpers
 k8s.io/apiserver/pkg/util/dryrun
@@ -1049,10 +1023,6 @@ k8s.io/apiserver/pkg/util/shufflesharding
 k8s.io/apiserver/pkg/util/webhook
 k8s.io/apiserver/pkg/util/wsstream
 k8s.io/apiserver/pkg/warning
-k8s.io/apiserver/plugin/pkg/audit/buffered
-k8s.io/apiserver/plugin/pkg/audit/log
-k8s.io/apiserver/plugin/pkg/audit/truncate
-k8s.io/apiserver/plugin/pkg/audit/webhook
 k8s.io/apiserver/plugin/pkg/authenticator/token/webhook
 k8s.io/apiserver/plugin/pkg/authorizer/webhook
 # k8s.io/cli-runtime v0.21.1 => k8s.io/cli-runtime v0.21.1
@@ -1383,12 +1353,9 @@ k8s.io/utils/trace
 # kmodules.xyz/client-go v0.0.0-20220203031013-1de48437aaf3
 ## explicit; go 1.17
 kmodules.xyz/client-go
-kmodules.xyz/client-go/admissionregistration
-kmodules.xyz/client-go/admissionregistration/v1
 kmodules.xyz/client-go/api/v1
 kmodules.xyz/client-go/apiextensions
 kmodules.xyz/client-go/apiextensions/v1
-kmodules.xyz/client-go/apiregistration/v1
 kmodules.xyz/client-go/apps/v1
 kmodules.xyz/client-go/core/v1
 kmodules.xyz/client-go/discovery
@@ -1459,8 +1426,7 @@ kmodules.xyz/resource-metrics/kubedb.com/v1alpha2
 # kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1
 ## explicit; go 1.12
 kmodules.xyz/webhook-runtime/admission/v1beta1
-kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.24.1-0.20220202063936-5d665ff166f6
+# kubedb.dev/apimachinery v0.24.1-0.20220213164510-c6db524e70fd
 ## explicit; go 1.17
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
@@ -1511,7 +1477,6 @@ kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2
 kubedb.dev/apimachinery/client/listers/ops/v1alpha1
 kubedb.dev/apimachinery/client/listers/schema/v1alpha1
 kubedb.dev/apimachinery/crds
-kubedb.dev/apimachinery/pkg/admission/namespace
 kubedb.dev/apimachinery/pkg/controller
 kubedb.dev/apimachinery/pkg/controller/initializer/stash
 kubedb.dev/apimachinery/pkg/controller/statefulset
@@ -1521,8 +1486,8 @@ kubedb.dev/apimachinery/pkg/validator
 # kubedb.dev/db-client-go v0.0.0-20211102100133-9d4b23e3d1c5
 ## explicit; go 1.17
 kubedb.dev/db-client-go/mongodb
-# kubedb.dev/elasticsearch v0.24.1-0.20220207232930-feaf7f2a1ba3
-## explicit; go 1.15
+# kubedb.dev/elasticsearch v0.24.1-0.20220213172139-847fe9c413da
+## explicit; go 1.17
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
 kubedb.dev/elasticsearch/pkg/distribution
@@ -1537,40 +1502,40 @@ kubedb.dev/elasticsearch/pkg/lib/heap
 kubedb.dev/elasticsearch/pkg/lib/kernel
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/mariadb v0.8.1-0.20220207233510-10ff78274186
+# kubedb.dev/mariadb v0.8.1-0.20220213172035-4871392bde9e
 ## explicit; go 1.17
 kubedb.dev/mariadb/pkg/admission
 kubedb.dev/mariadb/pkg/controller
-# kubedb.dev/memcached v0.17.1-0.20220207233632-7fc044444bdf
-## explicit; go 1.15
+# kubedb.dev/memcached v0.17.1-0.20220213171837-0fb58107c8a9
+## explicit; go 1.17
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.17.1-0.20220207233929-2d7b4b0edf8b
-## explicit; go 1.15
+# kubedb.dev/mongodb v0.17.1-0.20220213171749-417ca61e88d5
+## explicit; go 1.17
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.17.1-0.20220207233953-a248a8e2ea66
+# kubedb.dev/mysql v0.17.1-0.20220213171654-b7209b208f43
 ## explicit; go 1.17
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.11.1-0.20220207234024-473b9ba631a6
-## explicit; go 1.15
+# kubedb.dev/percona-xtradb v0.11.1-0.20220213171419-675cd74752f6
+## explicit; go 1.17
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pgbouncer v0.11.1-0.20220207234047-504f39d76b08
-## explicit; go 1.15
+# kubedb.dev/pgbouncer v0.11.1-0.20220213171224-3e1ed897c498
+## explicit; go 1.17
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.24.1-0.20220207234111-2d8e23ed65d9
+# kubedb.dev/postgres v0.24.1-0.20220213171119-3212a076388f
 ## explicit; go 1.17
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.11.1-0.20220207234131-1a903feb0dc3
-## explicit; go 1.15
+# kubedb.dev/proxysql v0.11.1-0.20220213171003-ee41ced8728d
+## explicit; go 1.17
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.17.1-0.20220207234201-efd0041fc3e8
-## explicit; go 1.15
+# kubedb.dev/redis v0.17.1-0.20220213170454-4340c91e0590
+## explicit; go 1.17
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
 kubedb.dev/redis/pkg/controller

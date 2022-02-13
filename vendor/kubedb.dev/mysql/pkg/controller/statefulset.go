@@ -106,8 +106,10 @@ func (c *Reconciler) createOrPatchStatefulSet(db *api.MySQL) (*apps.StatefulSet,
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 				nil, getMySQLContainer(db, mysqlVersion))
 
-			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
-				in.Spec.Template.Spec.Containers, getMySQLCoordinatorContainer(db, mysqlVersion))
+			if db.UsesGroupReplication() || db.IsInnoDBCluster() {
+				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+					in.Spec.Template.Spec.Containers, getMySQLCoordinatorContainer(db, mysqlVersion))
+			}
 
 			if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(

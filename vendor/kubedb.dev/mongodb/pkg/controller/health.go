@@ -95,7 +95,7 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 					// Since the client was unable to connect the database,
 					// update "AcceptingConnection" to "false".
 					// update "Ready" to "false"
-					c.updateErrorAcceptingConnections(db, err)
+					c.updateErrorAcceptingConnections(db, fmt.Errorf("unable to connect to the database client, error: %v", err.Error()))
 					// Since the client isn't created, skip rest operations.
 					return
 				}
@@ -112,7 +112,7 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 					// Since the client was unable to connect to the config server,
 					// update "AcceptingConnection" to "false".
 					// update "Ready" to "false"
-					c.updateErrorAcceptingConnections(db, err)
+					c.updateErrorAcceptingConnections(db, fmt.Errorf("unable to connect to the configsvr client, error: %v", err.Error()))
 					// Since the client isn't created, skip rest operations.
 					return
 				}
@@ -131,7 +131,7 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 						// Since the client was unable to connect to the shard nodes,
 						// update "AcceptingConnection" to "false".
 						// update "Ready" to "false"
-						c.updateErrorAcceptingConnections(db, err)
+						c.updateErrorAcceptingConnections(db, fmt.Errorf("unable to connect to the shard-%d client, error: %v", i, err.Error()))
 						// Since the client isn't created, skip rest operations.
 						return
 					}
@@ -157,7 +157,7 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 					// Since the client was unable to connect to the mongos,
 					// update "AcceptingConnection" to "false".
 					// update "Ready" to "false"
-					c.updateErrorAcceptingConnections(db, err)
+					c.updateErrorAcceptingConnections(db, fmt.Errorf("unable to connect to the mongos client, error: %v", err.Error()))
 					// Since the client isn't created, skip rest operations.
 					return
 				}
@@ -194,11 +194,11 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 			}
 
 			if db.Spec.ShardTopology == nil {
-				err = checkReadWrite(ctx, dbClient)
+				err = checkReadWrite(ctx, dbClient, true)
 				if err != nil {
 					klog.Errorf("health check failed for database for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
 					// Since read/write operations failed, skip remaining operations.
-					c.updateErrorAcceptingConnections(db, err)
+					c.updateErrorAcceptingConnections(db, fmt.Errorf("unable to check read/write of the database, error: %v", err.Error()))
 					return
 				}
 
@@ -208,7 +208,7 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 					if shardErrors[i] != nil {
 						klog.Errorf("health check failed for shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, err.Error())
 						// Since the read/write operations failed, skip remaining operations.
-						c.updateErrorAcceptingConnections(db, err)
+						c.updateErrorAcceptingConnections(db, fmt.Errorf("unable to check read/write of the shard-%d, error: %v", i, err.Error()))
 						return
 					}
 				}
@@ -217,7 +217,7 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 				if err != nil {
 					klog.Errorf("health check failed for config server for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
 					// Since read/write operations failed, skip remaining operations.
-					c.updateErrorAcceptingConnections(db, err)
+					c.updateErrorAcceptingConnections(db, fmt.Errorf("unable to check read/write of the configsvr, error: %v", err.Error()))
 					return
 				}
 
@@ -225,7 +225,7 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 				if err != nil {
 					klog.Errorf("health check failed for mongos for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
 					// Since read/write operations failed, skip remaining operations.
-					c.updateErrorAcceptingConnections(db, err)
+					c.updateErrorAcceptingConnections(db, fmt.Errorf("unable to check read/write of the mongos, error: %v", err.Error()))
 					return
 				}
 
@@ -238,6 +238,7 @@ func (c *Controller) CheckMongoDBHealthOnce() {
 }
 
 func (c *Controller) updateErrorAcceptingConnections(db *api.MongoDB, connectionErr error) {
+	klog.Errorf("Failed to accept connections for MongoDB: %s/%s", db.Namespace, db.Name)
 	_, err := util.UpdateMongoDBStatus(
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),

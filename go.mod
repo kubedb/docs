@@ -20,18 +20,17 @@ require (
 	k8s.io/klog/v2 v2.9.0
 	kmodules.xyz/client-go v0.0.0-20220203031013-1de48437aaf3
 	kmodules.xyz/custom-resources v0.0.0-20220208103158-61b298634e43
-	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1
-	kubedb.dev/apimachinery v0.24.1-0.20220202063936-5d665ff166f6
-	kubedb.dev/elasticsearch v0.24.1-0.20220207232930-feaf7f2a1ba3
-	kubedb.dev/mariadb v0.8.1-0.20220207233510-10ff78274186
-	kubedb.dev/memcached v0.17.1-0.20220207233632-7fc044444bdf
-	kubedb.dev/mongodb v0.17.1-0.20220207233929-2d7b4b0edf8b
-	kubedb.dev/mysql v0.17.1-0.20220207233953-a248a8e2ea66
-	kubedb.dev/percona-xtradb v0.11.1-0.20220207234024-473b9ba631a6
-	kubedb.dev/pgbouncer v0.11.1-0.20220207234047-504f39d76b08
-	kubedb.dev/postgres v0.24.1-0.20220207234111-2d8e23ed65d9
-	kubedb.dev/proxysql v0.11.1-0.20220207234131-1a903feb0dc3
-	kubedb.dev/redis v0.17.1-0.20220207234201-efd0041fc3e8
+	kubedb.dev/apimachinery v0.24.1-0.20220213164510-c6db524e70fd
+	kubedb.dev/elasticsearch v0.24.1-0.20220213172139-847fe9c413da
+	kubedb.dev/mariadb v0.8.1-0.20220213172035-4871392bde9e
+	kubedb.dev/memcached v0.17.1-0.20220213171837-0fb58107c8a9
+	kubedb.dev/mongodb v0.17.1-0.20220213171749-417ca61e88d5
+	kubedb.dev/mysql v0.17.1-0.20220213171654-b7209b208f43
+	kubedb.dev/percona-xtradb v0.11.1-0.20220213171419-675cd74752f6
+	kubedb.dev/pgbouncer v0.11.1-0.20220213171224-3e1ed897c498
+	kubedb.dev/postgres v0.24.1-0.20220213171119-3212a076388f
+	kubedb.dev/proxysql v0.11.1-0.20220213171003-ee41ced8728d
+	kubedb.dev/redis v0.17.1-0.20220213170454-4340c91e0590
 )
 
 require (
@@ -163,7 +162,6 @@ require (
 	google.golang.org/grpc v1.38.0 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	k8s.io/cli-runtime v0.21.1 // indirect
@@ -178,6 +176,7 @@ require (
 	kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027 // indirect
 	kmodules.xyz/resource-metadata v0.9.7 // indirect
 	kmodules.xyz/resource-metrics v0.0.8 // indirect
+	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1 // indirect
 	kubedb.dev/db-client-go v0.0.0-20211102100133-9d4b23e3d1c5 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.15 // indirect
 	sigs.k8s.io/cli-utils v0.26.1 // indirect

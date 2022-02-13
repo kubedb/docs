@@ -41,7 +41,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
-	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
 	apiextensions "kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
@@ -152,15 +151,6 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	}
 
 	c.RunControllers(stopCh)
-
-	if c.EnableMutatingWebhook {
-		cancel1, _ := reg_util.SyncMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig)
-		defer cancel1()
-	}
-	if c.EnableValidatingWebhook {
-		cancel2, _ := reg_util.SyncValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig)
-		defer cancel2()
-	}
 
 	<-stopCh
 	klog.Infoln("Stopping KubeDB controller")

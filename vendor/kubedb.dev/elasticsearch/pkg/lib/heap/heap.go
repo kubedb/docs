@@ -17,7 +17,13 @@ limitations under the License.
 package heap
 
 import (
+	"fmt"
+	"strings"
+
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+
+	core "k8s.io/api/core/v1"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 // Ref:
@@ -27,10 +33,12 @@ import (
 // 	- no more than 26GB for zero-based compressed oops.
 
 // GetHeapSizeFromMemory takes memory value as input, returns heap size
-func GetHeapSizeFromMemory(val int64) int64 {
-	// no more than 50% of main memory (RAM)
-	ret := (val / 100) * 50
+func GetHeapSizeFromMemory(val int64, percentage *int32) int64 {
+	if percentage == nil {
+		return api.ElasticsearchMinHeapSize
+	}
 
+	ret := (val / 100) * int64(*percentage)
 	// 26 GB is safe on most systems
 	if ret > api.ElasticsearchMaxHeapSize {
 		ret = api.ElasticsearchMaxHeapSize
@@ -38,4 +46,51 @@ func GetHeapSizeFromMemory(val int64) int64 {
 		ret = api.ElasticsearchMinHeapSize
 	}
 	return ret
+}
+
+func UpsertJavaOptsEnv(envs []core.EnvVar, envName string, esNode *api.ElasticsearchNode) []core.EnvVar {
+	// Calculate Xms, Xmx from memory
+	memory := int64(api.ElasticsearchMinHeapSize) // 128mb
+	if limit, found := esNode.Resources.Limits[core.ResourceMemory]; found && limit.Value() > 0 {
+		memory = limit.Value()
+	}
+	heapSize := GetHeapSizeFromMemory(memory, esNode.HeapSizePercentage)
+	// Elasticsearch bootstrap fails, if -Xms and -Xmx are not equal.
+	// Error: initial heap size [X] not equal to maximum heap size [Y]; this can cause resize pauses.
+	XmsXmx := fmt.Sprintf("-Xms%d -Xmx%d", heapSize, heapSize)
+
+	var javaOpts core.EnvVar
+	for _, e := range envs {
+		if e.Name == envName {
+			javaOpts = e
+			break
+		}
+	}
+
+	var opts []string
+	if javaOpts.Value != "" {
+		opts = strings.Split(javaOpts.Value, " ")
+	}
+
+	for idx, opt := range opts {
+		if strings.HasPrefix(opt, "-Xms") {
+			opts = append(opts[:idx], opts[idx+1:]...)
+			break
+		}
+	}
+
+	for idx, opt := range opts {
+		if strings.HasPrefix(opt, "-Xmx") {
+			opts = append(opts[:idx], opts[idx+1:]...)
+			break
+		}
+	}
+
+	opts = append(opts, XmsXmx)
+	envs = core_util.UpsertEnvVars(envs, core.EnvVar{
+		Name:  envName,
+		Value: strings.Join(opts, " "),
+	})
+
+	return envs
 }

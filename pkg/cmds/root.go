@@ -17,8 +17,6 @@ limitations under the License.
 package cmds
 
 import (
-	"os"
-
 	"kubedb.dev/apimachinery/client/clientset/versioned/scheme"
 
 	"github.com/spf13/cobra"
@@ -31,8 +29,7 @@ import (
 
 func NewRootCmd() *cobra.Command {
 	var rootCmd = &cobra.Command{
-		Use:               "kubedb-operator [command]",
-		Short:             `KubeDB operator by AppsCode`,
+		Use:               "kubedb-operator",
 		DisableAutoGenTag: true,
 		PersistentPreRun: func(c *cobra.Command, args []string) {
 			utilruntime.Must(scheme.AddToScheme(clientsetscheme.Scheme))
@@ -42,7 +39,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(v.NewCmdVersion())
 
 	stopCh := genericapiserver.SetupSignalHandler()
-	rootCmd.AddCommand(NewCmdRun(os.Stdout, os.Stderr, stopCh))
+	rootCmd.AddCommand(NewCmdOperator(stopCh))
 
 	return rootCmd
 }

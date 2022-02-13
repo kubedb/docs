@@ -21,21 +21,11 @@ import (
 
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/klog/v2"
-	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
 )
 
 // Blocks caller. Intended to be called as a Go routine.
 func (c *Controller) Run(stopCh <-chan struct{}) {
 	go c.StartAndRunControllers(stopCh)
-
-	if c.EnableMutatingWebhook {
-		cancel1, _ := reg_util.SyncMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig)
-		defer cancel1()
-	}
-	if c.EnableValidatingWebhook {
-		cancel2, _ := reg_util.SyncValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig)
-		defer cancel2()
-	}
 
 	<-stopCh
 }
