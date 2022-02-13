@@ -32,6 +32,6 @@ func main() {
 	defer logs.FlushLogs()
 
 	if err := rootCmd.Execute(); err != nil {
-		klog.Fatal(err)
+		klog.Warningln(err)
 	}
 }
