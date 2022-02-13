@@ -186,7 +186,7 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.10.17 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
-	stash.appscode.dev/apimachinery v0.17.1-0.20220207211309-7c80de5c81b1 // indirect
+	stash.appscode.dev/apimachinery v0.18.0 // indirect
 	xorm.io/builder v0.3.9 // indirect
 	xorm.io/xorm v1.2.5 // indirect
 )
