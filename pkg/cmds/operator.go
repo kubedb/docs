@@ -17,40 +17,35 @@ limitations under the License.
 package cmds
 
 import (
-	"io"
-
 	"kubedb.dev/operator/pkg/cmds/server"
 
 	"github.com/spf13/cobra"
+	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/klog/v2"
-	"kmodules.xyz/client-go/meta"
 )
 
-func NewCmdRun(out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {
-	o := server.NewKubeDBServerOptions(out, errOut)
+func NewCmdOperator(stopCh <-chan struct{}) *cobra.Command {
+	o := server.NewOperatorOptions()
 
 	cmd := &cobra.Command{
-		Use:               "run",
-		Short:             "Run kubedb operator in Kubernetes",
+		Use:               "operator",
+		Short:             "Launch KubeDB Provisioner",
+		Long:              "Launch KubeDB Provisioner",
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			klog.Infoln("Starting kubedb-operator...")
+			klog.Infoln("Starting kubedb-provisioner...")
 
 			if err := o.Complete(); err != nil {
 				return err
 			}
-			if err := o.Validate(args); err != nil {
-				return err
+			if err := o.Validate(); err != nil {
+				return errors.NewAggregate(err)
 			}
-			if err := o.Run(stopCh); err != nil {
-				return err
-			}
-			return nil
+			return o.Run(stopCh)
 		},
 	}
 
 	o.AddFlags(cmd.Flags())
-	meta.AddLabelBlacklistFlag(cmd.Flags())
 
 	return cmd
 }

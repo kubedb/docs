@@ -43,7 +43,6 @@ import (
 	"k8s.io/client-go/metadata"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
-	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
 	"kmodules.xyz/client-go/tools/clusterid"
@@ -159,16 +158,6 @@ func (c *OperatorConfig) New() (*Controller, error) {
 func (c *Controller) Init() error {
 	if err := c.EnsureCustomResourceDefinitions(); err != nil {
 		return err
-	}
-	if c.EnableMutatingWebhook {
-		if err := reg_util.UpdateMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig); err != nil {
-			return err
-		}
-	}
-	if c.EnableValidatingWebhook {
-		if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig); err != nil {
-			return err
-		}
 	}
 
 	if err := c.esCtrl.Init(); err != nil {

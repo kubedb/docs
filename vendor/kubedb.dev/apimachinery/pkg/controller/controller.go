@@ -88,13 +88,11 @@ type Config struct {
 	StsLister   appslister.StatefulSetLister
 
 	// Only watch or reconcile objects in this namespace (usually for license reasons)
-	RestrictToNamespace     string
-	ResyncPeriod            time.Duration
-	ReadinessProbeInterval  time.Duration
-	MaxNumRequeues          int
-	NumThreads              int
-	EnableValidatingWebhook bool
-	EnableMutatingWebhook   bool
+	RestrictToNamespace    string
+	ResyncPeriod           time.Duration
+	ReadinessProbeInterval time.Duration
+	MaxNumRequeues         int
+	NumThreads             int
 }
 
 type Initializers struct {

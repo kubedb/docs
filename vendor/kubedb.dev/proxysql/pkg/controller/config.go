@@ -30,28 +30,31 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/record"
-	reg_util "kmodules.xyz/client-go/admissionregistration/v1"
 	"kmodules.xyz/client-go/discovery"
 	"kmodules.xyz/client-go/tools/clusterid"
+	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
+	hooks "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
-const (
-	mutatingWebhookConfig   = "mutators.kubedb.com"
-	validatingWebhookConfig = "validators.kubedb.com"
-)
+type WebhookConfig struct {
+	LicenseFile    string
+	ClientConfig   *rest.Config
+	AdmissionHooks []hooks.AdmissionHook
+}
 
 type OperatorConfig struct {
 	amc.Config
 
-	LicenseFile   string
-	License       licenseapi.License
-	ClientConfig  *rest.Config
-	KubeClient    kubernetes.Interface
-	CRDClient     crd_cs.Interface
-	DBClient      cs.Interface
-	DynamicClient dynamic.Interface
-	PromClient    pcm.MonitoringV1Interface
-	Recorder      record.EventRecorder
+	LicenseFile      string
+	License          licenseapi.License
+	ClientConfig     *rest.Config
+	KubeClient       kubernetes.Interface
+	CRDClient        crd_cs.Interface
+	DBClient         cs.Interface
+	AppCatalogClient appcat_cs.Interface
+	DynamicClient    dynamic.Interface
+	PromClient       pcm.MonitoringV1Interface
+	Recorder         record.EventRecorder
 }
 
 func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
@@ -106,16 +109,6 @@ func (c *OperatorConfig) New() (*Controller, error) {
 
 	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {
 		return nil, err
-	}
-	if c.EnableMutatingWebhook {
-		if err := reg_util.UpdateMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig); err != nil {
-			return nil, err
-		}
-	}
-	if c.EnableValidatingWebhook {
-		if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig); err != nil {
-			return nil, err
-		}
 	}
 
 	if err := ctrl.Init(); err != nil {
