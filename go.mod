@@ -21,16 +21,16 @@ require (
 	kmodules.xyz/client-go v0.0.0-20220203031013-1de48437aaf3
 	kmodules.xyz/custom-resources v0.0.0-20220208103158-61b298634e43
 	kubedb.dev/apimachinery v0.24.1-0.20220213164510-c6db524e70fd
-	kubedb.dev/elasticsearch v0.24.1-0.20220213172139-847fe9c413da
-	kubedb.dev/mariadb v0.8.1-0.20220213172035-4871392bde9e
-	kubedb.dev/memcached v0.17.1-0.20220213171837-0fb58107c8a9
-	kubedb.dev/mongodb v0.17.1-0.20220213171749-417ca61e88d5
-	kubedb.dev/mysql v0.17.1-0.20220213171654-b7209b208f43
-	kubedb.dev/percona-xtradb v0.11.1-0.20220213171419-675cd74752f6
-	kubedb.dev/pgbouncer v0.11.1-0.20220213171224-3e1ed897c498
-	kubedb.dev/postgres v0.24.1-0.20220213171119-3212a076388f
-	kubedb.dev/proxysql v0.11.1-0.20220213171003-ee41ced8728d
-	kubedb.dev/redis v0.17.1-0.20220213170454-4340c91e0590
+	kubedb.dev/elasticsearch v0.24.1-0.20220214032307-6fd7c0df0648
+	kubedb.dev/mariadb v0.8.1-0.20220214032249-8c266208e923
+	kubedb.dev/memcached v0.17.1-0.20220214032222-dd6ce3a702fc
+	kubedb.dev/mongodb v0.17.1-0.20220214032211-111d3d889a1f
+	kubedb.dev/mysql v0.17.1-0.20220214032204-4a4f156ecf88
+	kubedb.dev/percona-xtradb v0.11.1-0.20220214032458-1458bd2b109d
+	kubedb.dev/pgbouncer v0.11.1-0.20220214032447-d23c89395be5
+	kubedb.dev/postgres v0.24.1-0.20220214032441-b43419f39999
+	kubedb.dev/proxysql v0.11.1-0.20220214032434-85c46c872cda
+	kubedb.dev/redis v0.17.1-0.20220214032427-4a3be0c8745b
 )
 
 require (
@@ -61,7 +61,7 @@ require (
 	github.com/divideandconquer/go-merge v0.0.0-20160829212531-bc6b3a394b4e // indirect
 	github.com/elastic/go-elasticsearch/v6 v6.8.10 // indirect
 	github.com/elastic/go-elasticsearch/v7 v7.13.1 // indirect
-	github.com/emicklei/go-restful v2.9.5+incompatible // indirect
+	github.com/emicklei/go-restful v2.14.3+incompatible // indirect
 	github.com/evanphx/json-patch v4.11.0+incompatible // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible // indirect
@@ -70,8 +70,8 @@ require (
 	github.com/go-logr/logr v0.4.0 // indirect
 	github.com/go-openapi/jsonpointer v0.19.3 // indirect
 	github.com/go-openapi/jsonreference v0.19.3 // indirect
-	github.com/go-openapi/spec v0.19.5 // indirect
-	github.com/go-openapi/swag v0.19.5 // indirect
+	github.com/go-openapi/spec v0.19.8 // indirect
+	github.com/go-openapi/swag v0.19.9 // indirect
 	github.com/go-redis/redis v0.0.0-20190803144825-742f3ccb21cd // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
@@ -97,7 +97,7 @@ require (
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/lib/pq v1.10.2 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
-	github.com/mailru/easyjson v0.7.0 // indirect
+	github.com/mailru/easyjson v0.7.1 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/moby/spdystream v0.2.0 // indirect

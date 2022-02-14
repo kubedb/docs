@@ -49,11 +49,6 @@ import (
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
 
-const (
-	mutatingWebhookConfig   = "mutators.kubedb.com"
-	validatingWebhookConfig = "validators.kubedb.com"
-)
-
 type OperatorConfig struct {
 	amc.Config
 
