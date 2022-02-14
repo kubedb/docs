@@ -177,7 +177,7 @@ require (
 	kmodules.xyz/resource-metadata v0.9.7 // indirect
 	kmodules.xyz/resource-metrics v0.0.8 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1 // indirect
-	kubedb.dev/db-client-go v0.0.0-20211102100133-9d4b23e3d1c5 // indirect
+	kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.15 // indirect
 	sigs.k8s.io/cli-utils v0.26.1 // indirect
 	sigs.k8s.io/controller-runtime v0.9.0 // indirect

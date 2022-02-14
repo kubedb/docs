@@ -1506,8 +1506,9 @@ kubedb.dev/apimachinery v0.22.1-0.20211012044625-d0176524a0cc/go.mod h1:LLwysTxy
 kubedb.dev/apimachinery v0.24.1-0.20220213104801-cd7f1a25bb7f/go.mod h1:lJagQW6j0FbZ8sds/p1zz//aaF5t6hMS9Tl5Yw3I0ew=
 kubedb.dev/apimachinery v0.24.1-0.20220213164510-c6db524e70fd h1:ZuMt3054+zwZ9jhhq08onr6tGZ+xgTz8chL3X6e4wYI=
 kubedb.dev/apimachinery v0.24.1-0.20220213164510-c6db524e70fd/go.mod h1:lJagQW6j0FbZ8sds/p1zz//aaF5t6hMS9Tl5Yw3I0ew=
-kubedb.dev/db-client-go v0.0.0-20211102100133-9d4b23e3d1c5 h1:YdsaIj9Xs9d1S5OQEN6Fdkixg6PqLA/UdkerGQ9F9ys=
 kubedb.dev/db-client-go v0.0.0-20211102100133-9d4b23e3d1c5/go.mod h1:z5qHbfnNuEg9ORXi6gmc+8WNeKjNfaPs1GL2JLYS838=
+kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178 h1:YG3GNPqILJ1KjmOvcMoDHtznBix1IWXkvZzzkn7T4dI=
+kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178/go.mod h1:z5qHbfnNuEg9ORXi6gmc+8WNeKjNfaPs1GL2JLYS838=
 kubedb.dev/elasticsearch v0.24.1-0.20220213172139-847fe9c413da h1:Fk1pOYkv8QRfNca5kfwcc9uQ3VWyXP44cenNr/d82Ic=
 kubedb.dev/elasticsearch v0.24.1-0.20220213172139-847fe9c413da/go.mod h1:bvtM7b/+hBQVeYRkFxRD9hmlOeoyHgUpjc6fvZrd+PA=
 kubedb.dev/mariadb v0.8.1-0.20220213172035-4871392bde9e h1:bliCxFDftuUtjXBxDKOFVjWoKr9mj/8ZIGqra0OiW5w=
