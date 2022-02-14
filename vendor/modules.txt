@@ -1483,7 +1483,7 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/db-client-go v0.0.0-20211102100133-9d4b23e3d1c5
+# kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178
 ## explicit; go 1.17
 kubedb.dev/db-client-go/mongodb
 # kubedb.dev/elasticsearch v0.24.1-0.20220213172139-847fe9c413da
