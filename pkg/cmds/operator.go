@@ -17,6 +17,8 @@ limitations under the License.
 package cmds
 
 import (
+	"context"
+
 	"kubedb.dev/operator/pkg/cmds/server"
 
 	"github.com/spf13/cobra"
@@ -24,7 +26,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func NewCmdOperator(stopCh <-chan struct{}) *cobra.Command {
+func NewCmdOperator(ctx context.Context) *cobra.Command {
 	o := server.NewOperatorOptions()
 
 	cmd := &cobra.Command{
@@ -41,7 +43,7 @@ func NewCmdOperator(stopCh <-chan struct{}) *cobra.Command {
 			if err := o.Validate(); err != nil {
 				return errors.NewAggregate(err)
 			}
-			return o.Run(stopCh)
+			return o.Run(ctx)
 		},
 	}
 

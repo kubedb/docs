@@ -28,7 +28,7 @@ import (
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
 	"github.com/pkg/errors"
-	admission "k8s.io/api/admission/v1beta1"
+	admission "k8s.io/api/admission/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -38,7 +38,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	meta_util "kmodules.xyz/client-go/meta"
-	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
+	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
 )
 
 // ProxySQLValidator implements the AdmissionHook interface to validate the ProxySQL resources

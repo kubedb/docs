@@ -145,7 +145,7 @@ func (c *Controller) RunControllers(stopCh <-chan struct{}) {
 
 // Blocks caller. Intended to be called as a Go routine.
 func (c *Controller) Run(stopCh <-chan struct{}) {
-	go c.StartAndRunControllers(stopCh)
+	c.StartAndRunControllers(stopCh)
 }
 
 // StartAndRunControllers starts InformerFactory and runs queue.worker

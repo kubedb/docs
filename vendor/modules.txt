@@ -1322,6 +1322,7 @@ k8s.io/component-base/version
 # k8s.io/klog/v2 v2.9.0
 ## explicit; go 1.13
 k8s.io/klog/v2
+k8s.io/klog/v2/klogr
 # k8s.io/kube-aggregator v0.21.1
 ## explicit; go 1.16
 k8s.io/kube-aggregator/pkg/apis/apiregistration
@@ -1350,13 +1351,15 @@ k8s.io/utils/net
 k8s.io/utils/path
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# kmodules.xyz/client-go v0.0.0-20220203031013-1de48437aaf3
+# kmodules.xyz/client-go v0.0.0-20220215012708-9963581d69a7
 ## explicit; go 1.17
 kmodules.xyz/client-go
 kmodules.xyz/client-go/api/v1
 kmodules.xyz/client-go/apiextensions
 kmodules.xyz/client-go/apiextensions/v1
 kmodules.xyz/client-go/apps/v1
+kmodules.xyz/client-go/client
+kmodules.xyz/client-go/client/apiutil
 kmodules.xyz/client-go/core/v1
 kmodules.xyz/client-go/discovery
 kmodules.xyz/client-go/dynamic
@@ -1423,10 +1426,10 @@ kmodules.xyz/resource-metrics/batch/v1
 kmodules.xyz/resource-metrics/batch/v1beta1
 kmodules.xyz/resource-metrics/core/v1
 kmodules.xyz/resource-metrics/kubedb.com/v1alpha2
-# kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1
-## explicit; go 1.12
-kmodules.xyz/webhook-runtime/admission/v1beta1
-# kubedb.dev/apimachinery v0.24.1-0.20220213164510-c6db524e70fd
+# kmodules.xyz/webhook-runtime v0.0.0-20220215152916-ccff289ecdb9
+## explicit; go 1.17
+kmodules.xyz/webhook-runtime/admission/v1
+# kubedb.dev/apimachinery v0.24.1-0.20220215125934-f72178904f3e
 ## explicit; go 1.17
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
@@ -1486,7 +1489,7 @@ kubedb.dev/apimachinery/pkg/validator
 # kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178
 ## explicit; go 1.17
 kubedb.dev/db-client-go/mongodb
-# kubedb.dev/elasticsearch v0.24.1-0.20220214032307-6fd7c0df0648
+# kubedb.dev/elasticsearch v0.24.1-0.20220215190810-99cac2248afe
 ## explicit; go 1.17
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
@@ -1502,39 +1505,39 @@ kubedb.dev/elasticsearch/pkg/lib/heap
 kubedb.dev/elasticsearch/pkg/lib/kernel
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/mariadb v0.8.1-0.20220214032249-8c266208e923
+# kubedb.dev/mariadb v0.8.1-0.20220215193104-d29518d27ecd
 ## explicit; go 1.17
 kubedb.dev/mariadb/pkg/admission
 kubedb.dev/mariadb/pkg/controller
-# kubedb.dev/memcached v0.17.1-0.20220214032222-dd6ce3a702fc
+# kubedb.dev/memcached v0.17.1-0.20220215194907-31f19773d6b8
 ## explicit; go 1.17
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.17.1-0.20220214032211-111d3d889a1f
+# kubedb.dev/mongodb v0.17.1-0.20220215195711-85ae88c151b5
 ## explicit; go 1.17
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.17.1-0.20220214032204-4a4f156ecf88
+# kubedb.dev/mysql v0.17.1-0.20220215200700-e987420aaf7c
 ## explicit; go 1.17
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.11.1-0.20220214032458-1458bd2b109d
+# kubedb.dev/percona-xtradb v0.11.1-0.20220215201559-15c1e0455749
 ## explicit; go 1.17
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pgbouncer v0.11.1-0.20220214032447-d23c89395be5
+# kubedb.dev/pgbouncer v0.11.1-0.20220215210556-117c33a72733
 ## explicit; go 1.17
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.24.1-0.20220214032441-b43419f39999
+# kubedb.dev/postgres v0.24.1-0.20220215202447-bc82ff36fda9
 ## explicit; go 1.17
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.11.1-0.20220214032434-85c46c872cda
+# kubedb.dev/proxysql v0.11.1-0.20220215203828-31e15e52d726
 ## explicit; go 1.17
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.17.1-0.20220214032427-4a3be0c8745b
+# kubedb.dev/redis v0.17.1-0.20220215185200-46216979c429
 ## explicit; go 1.17
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
@@ -1546,7 +1549,7 @@ sigs.k8s.io/apiserver-network-proxy/konnectivity-client/proto/client
 # sigs.k8s.io/cli-utils v0.26.1
 ## explicit; go 1.16
 sigs.k8s.io/cli-utils/pkg/kstatus/status
-# sigs.k8s.io/controller-runtime v0.9.0
+# sigs.k8s.io/controller-runtime v0.9.0 => github.com/kmodules/controller-runtime v0.9.1-0.20220112213948-0e7a1aa77c8e
 ## explicit; go 1.16
 sigs.k8s.io/controller-runtime/pkg/builder
 sigs.k8s.io/controller-runtime/pkg/cache
@@ -1714,6 +1717,7 @@ xorm.io/xorm/log
 xorm.io/xorm/names
 xorm.io/xorm/schemas
 xorm.io/xorm/tags
+# sigs.k8s.io/controller-runtime => github.com/kmodules/controller-runtime v0.9.1-0.20220112213948-0e7a1aa77c8e
 # bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
 # cloud.google.com/go => cloud.google.com/go v0.54.0
 # cloud.google.com/go/bigquery => cloud.google.com/go/bigquery v1.4.0

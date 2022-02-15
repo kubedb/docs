@@ -25,7 +25,7 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/pkg/errors"
-	admission "k8s.io/api/admission/v1beta1"
+	admission "k8s.io/api/admission/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -33,7 +33,7 @@ import (
 	"k8s.io/client-go/rest"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
-	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
+	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
 )
 
 type ElasticsearchMutator struct {
