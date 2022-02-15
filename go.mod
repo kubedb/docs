@@ -3,6 +3,7 @@ module kubedb.dev/operator
 go 1.17
 
 require (
+	github.com/pkg/errors v0.9.1
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.47.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
@@ -18,20 +19,23 @@ require (
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
-	kmodules.xyz/client-go v0.0.0-20220203031013-1de48437aaf3
+	kmodules.xyz/client-go v0.0.0-20220215012708-9963581d69a7
 	kmodules.xyz/custom-resources v0.0.0-20220208103158-61b298634e43
-	kubedb.dev/apimachinery v0.24.1-0.20220213164510-c6db524e70fd
-	kubedb.dev/elasticsearch v0.24.1-0.20220214032307-6fd7c0df0648
-	kubedb.dev/mariadb v0.8.1-0.20220214032249-8c266208e923
-	kubedb.dev/memcached v0.17.1-0.20220214032222-dd6ce3a702fc
-	kubedb.dev/mongodb v0.17.1-0.20220214032211-111d3d889a1f
-	kubedb.dev/mysql v0.17.1-0.20220214032204-4a4f156ecf88
-	kubedb.dev/percona-xtradb v0.11.1-0.20220214032458-1458bd2b109d
-	kubedb.dev/pgbouncer v0.11.1-0.20220214032447-d23c89395be5
-	kubedb.dev/postgres v0.24.1-0.20220214032441-b43419f39999
-	kubedb.dev/proxysql v0.11.1-0.20220214032434-85c46c872cda
-	kubedb.dev/redis v0.17.1-0.20220214032427-4a3be0c8745b
+	kubedb.dev/apimachinery v0.24.1-0.20220215125934-f72178904f3e
+	kubedb.dev/elasticsearch v0.24.1-0.20220215190810-99cac2248afe
+	kubedb.dev/mariadb v0.8.1-0.20220215193104-d29518d27ecd
+	kubedb.dev/memcached v0.17.1-0.20220215194907-31f19773d6b8
+	kubedb.dev/mongodb v0.17.1-0.20220215195711-85ae88c151b5
+	kubedb.dev/mysql v0.17.1-0.20220215200700-e987420aaf7c
+	kubedb.dev/percona-xtradb v0.11.1-0.20220215201559-15c1e0455749
+	kubedb.dev/pgbouncer v0.11.1-0.20220215210556-117c33a72733
+	kubedb.dev/postgres v0.24.1-0.20220215202447-bc82ff36fda9
+	kubedb.dev/proxysql v0.11.1-0.20220215203828-31e15e52d726
+	kubedb.dev/redis v0.17.1-0.20220215185200-46216979c429
+	sigs.k8s.io/controller-runtime v0.9.0
 )
+
+replace sigs.k8s.io/controller-runtime => github.com/kmodules/controller-runtime v0.9.1-0.20220112213948-0e7a1aa77c8e
 
 require (
 	cloud.google.com/go v0.58.0 // indirect
@@ -109,7 +113,6 @@ require (
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.47.0 // indirect
 	github.com/prometheus/client_golang v1.11.0 // indirect
@@ -176,11 +179,10 @@ require (
 	kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027 // indirect
 	kmodules.xyz/resource-metadata v0.9.7 // indirect
 	kmodules.xyz/resource-metrics v0.0.8 // indirect
-	kmodules.xyz/webhook-runtime v0.0.0-20211116181908-909a755cc9d1 // indirect
+	kmodules.xyz/webhook-runtime v0.0.0-20220215152916-ccff289ecdb9 // indirect
 	kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.15 // indirect
 	sigs.k8s.io/cli-utils v0.26.1 // indirect
-	sigs.k8s.io/controller-runtime v0.9.0 // indirect
 	sigs.k8s.io/kustomize/api v0.8.8 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.10.17 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect

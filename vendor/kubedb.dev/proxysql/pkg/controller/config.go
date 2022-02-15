@@ -33,7 +33,7 @@ import (
 	"kmodules.xyz/client-go/discovery"
 	"kmodules.xyz/client-go/tools/clusterid"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	hooks "kmodules.xyz/webhook-runtime/admission/v1beta1"
+	hooks "kmodules.xyz/webhook-runtime/admission/v1"
 )
 
 type WebhookConfig struct {
