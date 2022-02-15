@@ -1,19 +1,19 @@
 ---
-title: Kubedb-Operator Version
+title: Kubedb-Webhook-Server Version
 menu:
   docs_{{ .version }}:
-    identifier: kubedb-operator-version
-    name: Kubedb-Operator Version
+    identifier: kubedb-webhook-server-version
+    name: Kubedb-Webhook-Server Version
     parent: reference-operator
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubedb-operator version
+## kubedb-webhook-server version
 
 Prints binary version number.
 
 ```
-kubedb-operator version [flags]
+kubedb-webhook-server version [flags]
 ```
 
 ### Options
@@ -32,5 +32,5 @@ kubedb-operator version [flags]
 
 ### SEE ALSO
 
-* [kubedb-operator](/docs/reference/operator/kubedb-operator.md)	 - 
+* [kubedb-webhook-server](/docs/reference/operator/kubedb-webhook-server.md)	 - 
 
