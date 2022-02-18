@@ -17,9 +17,14 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
+	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+
 	"github.com/Masterminds/semver/v3"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func GetTLSArgs(curVersion *semver.Version, standAlone bool, port int) []string {
@@ -39,4 +44,32 @@ func GetTLSArgs(curVersion *semver.Version, standAlone bool, port int) []string 
 		tlsArgs = append(tlsArgs, "--tls-auth-clients no")
 	}
 	return tlsArgs
+}
+
+func (c *Controller) getRedisVersion(db *api.Redis) (*v1alpha1.RedisVersion, *semver.Version, error) {
+	redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
+	if err != nil {
+		return nil, nil, err
+	}
+	curVersion, err := semver.NewVersion(redisVersion.Spec.Version)
+	if err != nil {
+		return nil, nil, err
+	}
+	return redisVersion, curVersion, nil
+}
+
+func (c *Controller) getRedisSentinelVersion(sentinel *api.RedisSentinel) (*v1alpha1.RedisVersion, *semver.Version, error) {
+	redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), sentinel.Spec.Version, metav1.GetOptions{})
+	if err != nil {
+		return nil, nil, err
+	}
+	curVersion, err := semver.NewVersion(redisVersion.Spec.Version)
+	if err != nil {
+		return nil, nil, err
+	}
+	return redisVersion, curVersion, nil
+}
+
+func GetRdClusterRegisteredNameInSentinel(db *api.Redis) string {
+	return fmt.Sprintf("%s/%s", db.Namespace, db.Name)
 }

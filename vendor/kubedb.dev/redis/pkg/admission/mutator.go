@@ -17,15 +17,18 @@ limitations under the License.
 package admission
 
 import (
+	"context"
+	"fmt"
 	"sync"
 
-	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
 	admission "k8s.io/api/admission/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
@@ -33,6 +36,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
+	"kmodules.xyz/webhook-runtime/builder"
 )
 
 type RedisMutator struct {
@@ -47,12 +51,7 @@ type RedisMutator struct {
 var _ hookapi.AdmissionHook = &RedisMutator{}
 
 func (a *RedisMutator) Resource() (plural schema.GroupVersionResource, singular string) {
-	return schema.GroupVersionResource{
-			Group:    kubedb.MutatorGroupName,
-			Version:  "v1alpha1",
-			Resource: api.ResourcePluralRedis,
-		},
-		api.ResourceSingularRedis
+	return builder.MutatorResource(api.Kind(api.ResourceKindRedis))
 }
 
 func (a *RedisMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
@@ -92,7 +91,7 @@ func (a *RedisMutator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mod, err := setDefaultValues(obj.(*api.Redis).DeepCopy(), a.ClusterTopology)
+	mod, err := a.setDefaultValues(obj.(*api.Redis).DeepCopy(), a.ClusterTopology)
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mod != nil {
@@ -110,11 +109,21 @@ func (a *RedisMutator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a Redis database
-func setDefaultValues(redis *api.Redis, clusterTopology *core_util.Topology) (runtime.Object, error) {
+func (a *RedisMutator) setDefaultValues(redis *api.Redis, clusterTopology *core_util.Topology) (runtime.Object, error) {
 	if redis.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
-
+	redisVersion, err := a.dbClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	curVersion, err := semver.NewVersion(redisVersion.Spec.Version)
+	if err != nil {
+		return nil, fmt.Errorf("can't get the version from RedisVersion spec. err: %v", err)
+	}
+	if curVersion.Major() <= 4 {
+		redis.Spec.DisableAuth = true
+	}
 	if redis.Spec.Halted {
 		if redis.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
 			return nil, errors.New(`Can't halt, since termination policy is 'DoNotTerminate'`)

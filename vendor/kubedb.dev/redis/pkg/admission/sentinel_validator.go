@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"sync"
 
-	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
@@ -38,6 +37,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
+	"kmodules.xyz/webhook-runtime/builder"
 )
 
 type RedisSentinelValidator struct {
@@ -52,12 +52,7 @@ type RedisSentinelValidator struct {
 var _ hookapi.AdmissionHook = &RedisSentinelValidator{}
 
 func (a *RedisSentinelValidator) Resource() (plural schema.GroupVersionResource, singular string) {
-	return schema.GroupVersionResource{
-			Group:    kubedb.ValidatorGroupName,
-			Version:  "v1alpha1",
-			Resource: api.ResourcePluralRedisSentinel,
-		},
-		api.ResourceSingularRedisSentinel
+	return builder.ValidatorResource(api.Kind(api.ResourceKindRedisSentinel))
 }
 func (a *RedisSentinelValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
 	a.lock.Lock()
@@ -150,13 +145,17 @@ func ValidateRedisSentinel(client kubernetes.Interface, extClient cs.Interface, 
 		return err
 	}
 
+	redisVersion, err := extClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(sentinel.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if sentinel.Spec.DisableAuth && sentinel.Spec.AuthSecret != nil {
+		return fmt.Errorf("auth Secret is not supported when disableAuth is true")
+	}
+
 	if strictValidation {
 		// Check if redisVersion is deprecated.
 		// If deprecated, return error
-		redisVersion, err := extClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(sentinel.Spec.Version), metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
 		if redisVersion.Spec.Deprecated {
 			return fmt.Errorf("redis Sentinel %s/%s is using deprecated version %v. Skipped processing",
 				sentinel.Namespace, sentinel.Name, redisVersion.Name)

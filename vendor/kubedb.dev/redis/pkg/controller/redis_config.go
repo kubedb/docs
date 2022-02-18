@@ -22,14 +22,11 @@ import (
 	"strings"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
-	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
-	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -81,7 +78,7 @@ func (c *Controller) ensureRedisConfig(db *api.Redis) error {
 		}
 	}
 	// create secret for redis
-	_, _, err = CreateConfigSecret(c.Client, c.DBClient, db, db.ConfigSecretName(), data)
+	_, _, err = c.CreateConfigSecret(db, db.ConfigSecretName(), data)
 	if err != nil {
 		return errors.Wrap(err, "Failed to CreateOrPatch secret")
 	}
@@ -119,18 +116,21 @@ func (c *Controller) getCustomSecretData(db *api.Redis) (string, error) {
 // If custom config not empty then create with two keys:
 //		1. default config (default.conf)
 // 		2. for custom config (redis.conf)
-func CreateConfigSecret(kubeClient kubernetes.Interface, dbClient cs.Interface, db *api.Redis, name, CustomConfigData string) (*core.Secret, kutil.VerbType, error) {
+func (c *Controller) CreateConfigSecret(db *api.Redis, name, CustomConfigData string) (*core.Secret, kutil.VerbType, error) {
 	dataArray := []string{redisConfig}
 	if db.Spec.Mode == api.RedisModeCluster {
 		dataArray = append(dataArray, clusterConfig)
 	} else if db.Spec.Mode == api.RedisModeSentinel {
 		dataArray = append(dataArray, redisSentinelConfig)
 	}
-	passwordConfigData, err := AddAuthParamsInConfigSecret(kubeClient, dbClient, db)
-	if err != nil {
-		return nil, kutil.VerbUnchanged, err
+	if !db.Spec.DisableAuth {
+		passwordConfigData, err := c.AddAuthParamsInConfigSecret(db)
+		if err != nil {
+			return nil, kutil.VerbUnchanged, err
+		}
+		dataArray = append(dataArray, passwordConfigData)
 	}
-	dataArray = append(dataArray, passwordConfigData)
+
 	if CustomConfigData != "" {
 		dataArray = append(dataArray, fmt.Sprintf("include %s%s\n", CONFIG_MOUNT_PATH, api.RedisConfigKey))
 	}
@@ -150,13 +150,13 @@ func CreateConfigSecret(kubeClient kubernetes.Interface, dbClient cs.Interface, 
 		Namespace: db.Namespace,
 	}
 
-	configSecret, err := kubeClient.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.ConfigSecretName(), metav1.GetOptions{})
+	configSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.ConfigSecretName(), metav1.GetOptions{})
 	if err != nil && !kerr.IsNotFound(err) {
 		return nil, kutil.VerbUnchanged, err
 	}
 	if err != nil && kerr.IsNotFound(err) {
 		owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
-		return core_util.CreateOrPatchSecret(context.TODO(), kubeClient, meta, func(in *core.Secret) *core.Secret {
+		return core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = db.OffshootSelectors()
 			in.Data = inputData
@@ -164,25 +164,17 @@ func CreateConfigSecret(kubeClient kubernetes.Interface, dbClient cs.Interface, 
 			return in
 		}, metav1.PatchOptions{})
 	} else {
-		return core_util.PatchSecret(context.TODO(), kubeClient, configSecret, func(in *core.Secret) *core.Secret {
+		return core_util.PatchSecret(context.TODO(), c.Client, configSecret, func(in *core.Secret) *core.Secret {
 			in.Data = inputData
 			return in
 		}, metav1.PatchOptions{})
 	}
 
 }
-func AddAuthParamsInConfigSecret(kubeClient kubernetes.Interface, dbClient cs.Interface, db *api.Redis) (finalData string, err error) {
-	redisVersion, err := dbClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return "", err
-	}
+func (c *Controller) AddAuthParamsInConfigSecret(db *api.Redis) (finalData string, err error) {
 
-	curVersion, err := semver.NewVersion(redisVersion.Spec.Version)
-	if err != nil {
-		return "", fmt.Errorf("can't get the version from RedisVersion spec")
-	}
-	if curVersion.Major() > 4 {
-		authSecret, err := kubeClient.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
+	if !db.Spec.DisableAuth {
+		authSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
 		if err != nil {
 			return "", err
 		}

@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"sync"
 
-	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -38,6 +37,7 @@ import (
 	"k8s.io/klog/v2"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
+	"kmodules.xyz/webhook-runtime/builder"
 )
 
 type PgBouncerValidator struct {
@@ -50,12 +50,7 @@ type PgBouncerValidator struct {
 var _ hookapi.AdmissionHook = &PgBouncerValidator{}
 
 func (a *PgBouncerValidator) Resource() (plural schema.GroupVersionResource, singular string) {
-	return schema.GroupVersionResource{
-			Group:    kubedb.ValidatorGroupName,
-			Version:  "v1alpha1",
-			Resource: api.ResourcePluralPgBouncer,
-		},
-		api.ResourceSingularPgBouncer
+	return builder.ValidatorResource(api.Kind(api.ResourceKindPgBouncer))
 }
 
 func (a *PgBouncerValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

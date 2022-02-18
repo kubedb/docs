@@ -86,8 +86,8 @@ func (c *Controller) runRedis(key string) error {
 					if err != nil {
 						return err
 					}
-					rdClient.Master(db.Name)
-					output := rdClient.Remove(db.Name)
+					rdClient.Master(GetRdClusterRegisteredNameInSentinel(db))
+					output := rdClient.Remove(GetRdClusterRegisteredNameInSentinel(db))
 					err = rdClient.Close()
 					if err != nil {
 						return err

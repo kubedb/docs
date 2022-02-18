@@ -28,6 +28,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/Masterminds/semver/v3"
+	esv5 "github.com/elastic/go-elasticsearch/v5"
 	esv6 "github.com/elastic/go-elasticsearch/v6"
 	esv7 "github.com/elastic/go-elasticsearch/v7"
 	"github.com/pkg/errors"
@@ -76,6 +77,41 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion 
 	}
 
 	switch {
+	// For Elasticsearch 5.x.x
+	case version.Major() == 5:
+		client, err := esv5.NewClient(esv5.Config{
+			Addresses: []string{url},
+			Username:  username,
+			Password:  password,
+			Transport: &http.Transport{
+				IdleConnTimeout: 3 * time.Second,
+				DialContext: (&net.Dialer{
+					Timeout: 30 * time.Second,
+				}).DialContext,
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+					MaxVersion:         tls.VersionTLS12,
+				},
+			},
+		})
+		if err != nil {
+			klog.Errorf("Failed to create HTTP client for Elasticsearch: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+			return nil, err
+		}
+		// do a manual health check to test client
+		res, err := client.Cluster.Health(
+			client.Cluster.Health.WithPretty(),
+		)
+		if err != nil {
+			return nil, err
+		}
+		defer res.Body.Close()
+
+		if res.IsError() {
+			return nil, fmt.Errorf("health check failed with status code: %d", res.StatusCode)
+		}
+		return &ESClientV5{client: client}, nil
+
 	// for Elasticsearch 6.x.x
 	case version.Major() == 6:
 		client, err := esv6.NewClient(esv6.Config{

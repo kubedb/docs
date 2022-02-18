@@ -20,7 +20,6 @@ import (
 	"context"
 	"sync"
 
-	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -34,6 +33,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
+	"kmodules.xyz/webhook-runtime/builder"
 )
 
 type ElasticsearchMutator struct {
@@ -48,12 +48,7 @@ type ElasticsearchMutator struct {
 var _ hookapi.AdmissionHook = &ElasticsearchMutator{}
 
 func (a *ElasticsearchMutator) Resource() (plural schema.GroupVersionResource, singular string) {
-	return schema.GroupVersionResource{
-			Group:    kubedb.MutatorGroupName,
-			Version:  "v1alpha1",
-			Resource: api.ResourcePluralElasticsearch,
-		},
-		api.ResourceSingularElasticsearch
+	return builder.MutatorResource(api.Kind(api.ResourceKindElasticsearch))
 }
 
 func (a *ElasticsearchMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

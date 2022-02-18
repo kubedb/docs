@@ -88,7 +88,7 @@ func (c *Controller) ensureSentinelStatsService(db *api.RedisSentinel) (kutil.Ve
 		Namespace: db.Namespace,
 	}
 	svcTemplate := api.GetServiceTemplate(db.Spec.ServiceTemplates, api.StatsServiceAlias)
-	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceCodeRedisSentinel))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedisSentinel))
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.StatsServiceLabels()

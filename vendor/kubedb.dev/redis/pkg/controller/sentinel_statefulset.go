@@ -97,9 +97,13 @@ func (c *Controller) checkSentinelStatefulSet(db *api.RedisSentinel) error {
 }
 
 func (c *Controller) createSentinelStatefulSet(db *api.RedisSentinel) (*apps.StatefulSet, kutil.VerbType, error) {
-	authSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
-	if err != nil {
-		return nil, "", err
+	var authSecret *core.Secret
+	var err error
+	if !db.Spec.DisableAuth {
+		authSecret, err = c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, "", err
+		}
 	}
 	statefulSetMeta := metav1.ObjectMeta{
 		Name:      db.Name,
@@ -108,11 +112,7 @@ func (c *Controller) createSentinelStatefulSet(db *api.RedisSentinel) (*apps.Sta
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedisSentinel))
 
-	redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return nil, kutil.VerbUnchanged, err
-	}
-	curVersion, err := semver.NewVersion(redisVersion.Spec.Version)
+	redisVersion, curVersion, err := c.getRedisSentinelVersion(db)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, fmt.Errorf("can't get the version from RedisVersion spec")
 	}
@@ -147,7 +147,7 @@ func (c *Controller) createSentinelStatefulSet(db *api.RedisSentinel) (*apps.Sta
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, upsertSentinelContainer(redisVersion, db, curVersion))
 
 		if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
-			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, upsertSentinelMonitorContainer(redisVersion, db, curVersion, authSecret))
+			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, upsertSentinelMonitorContainer(redisVersion, db, authSecret))
 		}
 
 		in = upsertSentinelDataVolume(in, db)
@@ -280,7 +280,7 @@ func upsertSentinelContainer(redisVersion *v1alpha1.RedisVersion, db *api.RedisS
 		ReadinessProbe: db.Spec.PodTemplate.Spec.ReadinessProbe,
 		Lifecycle:      db.Spec.PodTemplate.Spec.Lifecycle,
 	}
-	if curVersion.Major() > 4 {
+	if !db.Spec.DisableAuth {
 		container.Env = core_util.UpsertEnvVars(container.Env, []core.EnvVar{
 			{
 				Name: api.EnvRedisPassword,
@@ -305,12 +305,12 @@ func upsertSentinelContainer(redisVersion *v1alpha1.RedisVersion, db *api.RedisS
 	return container
 }
 
-func upsertSentinelMonitorContainer(redisVersion *v1alpha1.RedisVersion, db *api.RedisSentinel, curVersion *semver.Version, authSecret *core.Secret) core.Container {
+func upsertSentinelMonitorContainer(redisVersion *v1alpha1.RedisVersion, db *api.RedisSentinel, authSecret *core.Secret) core.Container {
 	args := []string{
 		fmt.Sprintf("--web.listen-address=:%v", db.Spec.Monitor.Prometheus.Exporter.Port),
 		fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
 	}
-	if curVersion.Major() > 4 {
+	if !db.Spec.DisableAuth && authSecret != nil {
 		args = append(args, []string{
 			fmt.Sprintf("--redis.password=%s", authSecret.Data[core.BasicAuthPasswordKey]),
 		}...)
@@ -323,6 +323,11 @@ func upsertSentinelMonitorContainer(redisVersion *v1alpha1.RedisVersion, db *api
 			"--tls-ca-cert-file=/certs/ca.crt",
 		}
 		args = append(args, tlsArgs...)
+	} else {
+		nonTLSArgs := []string{
+			"--redis.addr=redis://localhost:26379",
+		}
+		args = append(args, nonTLSArgs...)
 	}
 	var volumeMounts []core.VolumeMount
 	if db.Spec.TLS != nil {

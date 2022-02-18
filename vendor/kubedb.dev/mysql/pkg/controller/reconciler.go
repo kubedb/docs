@@ -42,6 +42,7 @@ func NewReconciler(config amc.Config, controller *amc.Controller) *Reconciler {
 	}
 }
 
+// ReconcileNodes Reconciles AuthSecret and statefulSet and wait for necessary certs to be created
 func (c *Reconciler) ReconcileNodes(db *api.MySQL) (*api.MySQL, kutil.VerbType, error) {
 	if db == nil {
 		return nil, kutil.VerbUnchanged, errors.New("MySQL object is empty")

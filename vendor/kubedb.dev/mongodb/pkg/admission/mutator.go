@@ -21,7 +21,6 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -35,6 +34,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
+	"kmodules.xyz/webhook-runtime/builder"
 )
 
 type MongoDBMutator struct {
@@ -49,12 +49,7 @@ type MongoDBMutator struct {
 var _ hookapi.AdmissionHook = &MongoDBMutator{}
 
 func (a *MongoDBMutator) Resource() (plural schema.GroupVersionResource, singular string) {
-	return schema.GroupVersionResource{
-			Group:    kubedb.MutatorGroupName,
-			Version:  "v1alpha1",
-			Resource: api.ResourcePluralMongoDB,
-		},
-		api.ResourceSingularMongoDB
+	return builder.MutatorResource(api.Kind(api.ResourceKindMongoDB))
 }
 
 func (a *MongoDBMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

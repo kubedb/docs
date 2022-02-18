@@ -19,7 +19,6 @@ package admission
 import (
 	"sync"
 
-	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -33,6 +32,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
+	"kmodules.xyz/webhook-runtime/builder"
 )
 
 type MySQLMutator struct {
@@ -47,12 +47,7 @@ type MySQLMutator struct {
 var _ hookapi.AdmissionHook = &MySQLMutator{}
 
 func (a *MySQLMutator) Resource() (plural schema.GroupVersionResource, singular string) {
-	return schema.GroupVersionResource{
-			Group:    kubedb.MutatorGroupName,
-			Version:  "v1alpha1",
-			Resource: api.ResourcePluralMySQL,
-		},
-		api.ResourceSingularMySQL
+	return builder.MutatorResource(api.Kind(api.ResourceKindMySQL))
 }
 
 func (a *MySQLMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

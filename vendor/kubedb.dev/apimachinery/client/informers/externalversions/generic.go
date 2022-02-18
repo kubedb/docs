@@ -169,8 +169,6 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Schema().V1alpha1().MySQLDatabases().Informer()}, nil
 	case schemav1alpha1.SchemeGroupVersion.WithResource("postgresdatabases"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Schema().V1alpha1().PostgresDatabases().Informer()}, nil
-	case schemav1alpha1.SchemeGroupVersion.WithResource("redisdatabases"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Schema().V1alpha1().RedisDatabases().Informer()}, nil
 
 	}
 

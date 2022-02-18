@@ -19,7 +19,6 @@ package admission
 import (
 	"sync"
 
-	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -31,6 +30,7 @@ import (
 	"k8s.io/client-go/rest"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
+	"kmodules.xyz/webhook-runtime/builder"
 )
 
 // ProxySQLMutator implements the AdmissionHook interface to mutate the ProxySQL resources
@@ -45,12 +45,7 @@ var _ hookapi.AdmissionHook = &ProxySQLMutator{}
 
 // Resource is the resource to use for hosting mutating admission webhook.
 func (a *ProxySQLMutator) Resource() (plural schema.GroupVersionResource, singular string) {
-	return schema.GroupVersionResource{
-			Group:    kubedb.MutatorGroupName,
-			Version:  "v1alpha1",
-			Resource: api.ResourcePluralProxySQL,
-		},
-		api.ResourceSingularProxySQL
+	return builder.MutatorResource(api.Kind(api.ResourceKindProxySQL))
 }
 
 // Initialize is called as a post-start hook

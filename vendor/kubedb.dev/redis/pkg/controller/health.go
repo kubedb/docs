@@ -22,14 +22,15 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
+	configgenerator "kubedb.dev/apimachinery/pkg/config_generator"
 
-	"github.com/Masterminds/semver/v3"
 	rd "github.com/go-redis/redis"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -79,19 +80,28 @@ func (c *Controller) CheckRedisHealthOnce() {
 				wg.Done()
 			}()
 
-			client, err := c.getRedisClient(db)
+			rdClient, err := c.getRedisClient(db, nil)
 			if err != nil {
-				klog.Errorf("Failed to get redis client for Redis: %s/%s error: %s", db.Namespace, db.Name, err.Error())
-				// Since the client was unable to connect the database,
+				klog.Errorf("Failed to get redis rdClient for Redis: %s/%s error: %s", db.Namespace, db.Name, err.Error())
+				// Since the rdClient was unable to connect the database,
 				// update "AcceptingConnection" to "false".
 				// update "Ready" to "false"
 				c.updateErrorAcceptingConnections(db, err)
-				// Since the client isn't created, skip rest operations.
+				// Since the rdClient isn't created, skip rest operations.
 				return
 			}
-			defer client.Close()
+			defer rdClient.Close()
 
-			// If the client was created without any error,
+			if db.Spec.Mode == api.RedisModeCluster {
+				err = c.CheckClusterSlotsForClusterMode(db)
+				if err != nil {
+					klog.Errorf("failed on cluster slots check. error:", err.Error())
+					c.updateErrorAcceptingConnections(db, err)
+					return
+				}
+			}
+
+			// If the rdClient was created without any error, and for cluster mode if the slot is ok then,
 			// the database is accepting connection.
 			// Update "AcceptingConnection" to "true".
 			_, err = util.UpdateRedisStatus(
@@ -105,7 +115,7 @@ func (c *Controller) CheckRedisHealthOnce() {
 							Status:             core.ConditionTrue,
 							Reason:             api.DatabaseAcceptingConnectionRequest,
 							ObservedGeneration: db.Generation,
-							Message:            fmt.Sprintf("The Redis: %s/%s is accepting client requests.", db.Namespace, db.Name),
+							Message:            fmt.Sprintf("The Redis: %s/%s is accepting rdClient requests.", db.Namespace, db.Name),
 						})
 					return db.UID, in
 				},
@@ -117,7 +127,7 @@ func (c *Controller) CheckRedisHealthOnce() {
 				return
 			}
 
-			pingResult, err := client.Ping().Result()
+			pingResult, err := rdClient.Ping().Result()
 			if err != nil {
 				c.updateDatabaseNotReady(db)
 				klog.Errorf("Failed to ping the database: %s/%s error: %s", db.Namespace, db.Name, err.Error())
@@ -128,6 +138,19 @@ func (c *Controller) CheckRedisHealthOnce() {
 				return
 			}
 
+			if db.Spec.Mode == api.RedisModeCluster || db.Spec.Mode == api.RedisModeSentinel {
+				isHealthy, err := c.checkRedisClusterHealth(db)
+				if err != nil {
+					klog.Errorf("Failed to ping the database Replicas: %s/%s error: %s", db.Namespace, db.Name, err.Error())
+					c.updateDatabaseNotReady(db)
+					return
+				}
+				if !isHealthy {
+					klog.Errorf("Failed to ping the database Replicas: %s/%s ", db.Namespace, db.Name)
+					c.updateDatabaseNotReady(db)
+					return
+				}
+			}
 			c.updateDatabaseReady(db)
 		}(db)
 	}
@@ -136,26 +159,21 @@ func (c *Controller) CheckRedisHealthOnce() {
 
 }
 
-func (c *Controller) getRedisClient(db *api.Redis) (*rd.Client, error) {
-	if db.Spec.AuthSecret == nil {
-		return nil, errors.New("no database secret")
+func (c *Controller) getRedisClient(db *api.Redis, dnsNames []string) (*rd.Client, error) {
+	address := db.Address()
+	if len(dnsNames) > 0 {
+		address = dnsNames[0]
 	}
-	redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-	curVersion, err := semver.NewVersion(redisVersion.Spec.Version)
-	if err != nil {
-		return nil, fmt.Errorf("can't get the version from RedisVersion spec")
-	}
-
 	rdOpts := &rd.Options{
 		DialTimeout: 15 * time.Second,
 		IdleTimeout: 3 * time.Second,
 		PoolSize:    1,
-		Addr:        db.Address(),
+		Addr:        address,
 	}
-	if curVersion.Major() > 4 {
+	if !db.Spec.DisableAuth {
+		if db.Spec.AuthSecret == nil {
+			return nil, errors.New("no database secret")
+		}
 		authSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
@@ -262,4 +280,86 @@ func (c *Controller) updateDatabaseNotReady(db *api.Redis) {
 	if err != nil {
 		klog.Errorf("Failed to update status for Redis: %s/%s", db.Namespace, db.Name)
 	}
+}
+
+func (c *Controller) checkRedisClusterHealth(db *api.Redis) (bool, error) {
+	podList, err := c.Client.CoreV1().Pods(db.Namespace).List(context.TODO(), metav1.ListOptions{
+		LabelSelector: labels.Set(db.OffshootSelectors()).String(),
+	})
+	if err != nil {
+		return false, err
+	}
+	dbPods, err := api.GetDatabasePods(db, c.StsLister, podList.Items)
+	if err != nil {
+		return false, fmt.Errorf("failed filter database pods. Reason: %v", err)
+	}
+	for _, pod := range dbPods {
+		err := c.IsRedisServerOnline(db, HostDNS(db, pod.ObjectMeta))
+		if err != nil {
+			return false, err
+		}
+	}
+	return true, nil
+}
+
+//try to query in server if failed return err that means not online
+func (c *Controller) IsRedisServerOnline(db *api.Redis, dnsName string) error {
+	var err error
+	client, err := c.getRedisClient(db, []string{dnsName})
+
+	if err != nil {
+		return err
+	}
+	defer client.Close()
+
+	pingResult, err := client.Ping().Result()
+	if err != nil {
+		return err
+	} else if !strings.Contains(pingResult, "PONG") {
+		return fmt.Errorf("ping returned unexpected reply for the database: %s/%s reply: %s", db.Namespace, db.Name, pingResult)
+	}
+	return nil
+}
+
+// make host dns with require template
+func HostDNS(db *api.Redis, podMeta metav1.ObjectMeta) string {
+	return fmt.Sprintf("%v.%v.%v.svc:%d", podMeta.Name, db.GoverningServiceName(), podMeta.Namespace, api.RedisDatabasePort)
+}
+
+func (c *Controller) CheckClusterSlotsForClusterMode(db *api.Redis) error {
+	if db.Spec.Mode != api.RedisModeCluster {
+		return nil
+	}
+	rdClient, err := c.getRedisClient(db, nil)
+	if err != nil {
+		return fmt.Errorf("failed to get redis rdClient for Redis: %s/%s error: %s", db.Namespace, db.Name, err.Error())
+	}
+	defer rdClient.Close()
+
+	res, err := rdClient.ClusterInfo().Result()
+	if err != nil {
+		return fmt.Errorf("failed to get cluster info from the database: %s/%s error: %s", db.Namespace, db.Name, err.Error())
+	}
+	clusterInfos := configgenerator.ConvertStringInToMap(res, []string{":", "="})
+	state, _ := clusterInfos.Get("cluster_state")
+	ClusterState := state.(*configgenerator.ValueGenerator).Value
+	aSlots, _ := clusterInfos.Get("cluster_slots_assigned") // this will parse the total number of slots
+	assignedSlots, err := strconv.Atoi(aSlots.(*configgenerator.ValueGenerator).Value)
+	if err != nil {
+		return fmt.Errorf("failed to get cluster assigned slots from the database: %s/%s error: %s", db.Namespace, db.Name, err.Error())
+	}
+	slots, _ := clusterInfos.Get("cluster_slots_ok") // this will parse the ok slots
+	okSlots, err := strconv.Atoi(slots.(*configgenerator.ValueGenerator).Value)
+	if err != nil {
+		return fmt.Errorf("failed to get cluster ok slots from the database: %s/%s error: %s", db.Namespace, db.Name, err.Error())
+	}
+	fSlots, _ := clusterInfos.Get("cluster_slots_fail") //this will parse the missing number of slots
+	failedSlots, err := strconv.Atoi(fSlots.(*configgenerator.ValueGenerator).Value)
+	if err != nil {
+		return fmt.Errorf("failed to get cluster failed slots from the database: %s/%s error: %s", db.Namespace, db.Name, err.Error())
+	}
+	if ClusterState != "ok" && okSlots == assignedSlots || failedSlots > 0 {
+		return fmt.Errorf("the redis cluster is not in healthy state %s/%s", db.Namespace, db.Name)
+	}
+	return nil
 }
