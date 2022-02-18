@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# KubeDB - MariaDB Group Replication
+# KubeDB - MariaDB Cluster
 
 This tutorial will show you how to use KubeDB to provision a MariaDB replication group in single-primary mode.
 

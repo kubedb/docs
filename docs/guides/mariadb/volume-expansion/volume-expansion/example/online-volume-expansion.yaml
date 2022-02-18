@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MariaDBOpsRequest
+metadata:
+  name: md-online-volume-expansion
+  namespace: demo
+spec:
+  type: VolumeExpansion  
+  databaseRef:
+    name: sample-mariadb
+  volumeExpansion:   
+    mode: "Online"
+    mariadb: 2Gi
