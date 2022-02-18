@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MariaDBOpsRequest
+metadata:
+  name: mdops-reconfigure-remove
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: sample-mariadb
+  configuration:   
+    removeCustomConfig: true
