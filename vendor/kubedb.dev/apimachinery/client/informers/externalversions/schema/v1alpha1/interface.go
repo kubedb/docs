@@ -32,8 +32,6 @@ type Interface interface {
 	MySQLDatabases() MySQLDatabaseInformer
 	// PostgresDatabases returns a PostgresDatabaseInformer.
 	PostgresDatabases() PostgresDatabaseInformer
-	// RedisDatabases returns a RedisDatabaseInformer.
-	RedisDatabases() RedisDatabaseInformer
 }
 
 type version struct {
@@ -65,9 +63,4 @@ func (v *version) MySQLDatabases() MySQLDatabaseInformer {
 // PostgresDatabases returns a PostgresDatabaseInformer.
 func (v *version) PostgresDatabases() PostgresDatabaseInformer {
 	return &postgresDatabaseInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// RedisDatabases returns a RedisDatabaseInformer.
-func (v *version) RedisDatabases() RedisDatabaseInformer {
-	return &redisDatabaseInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

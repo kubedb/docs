@@ -19,7 +19,6 @@ package admission
 import (
 	"sync"
 
-	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -31,6 +30,7 @@ import (
 	"k8s.io/client-go/rest"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
+	"kmodules.xyz/webhook-runtime/builder"
 )
 
 const (
@@ -47,12 +47,7 @@ type PgBouncerMutator struct {
 var _ hookapi.AdmissionHook = &PgBouncerMutator{}
 
 func (a *PgBouncerMutator) Resource() (plural schema.GroupVersionResource, singular string) {
-	return schema.GroupVersionResource{
-			Group:    kubedb.MutatorGroupName,
-			Version:  "v1alpha1",
-			Resource: api.ResourcePluralPgBouncer,
-		},
-		api.ResourceSingularPgBouncer
+	return builder.MutatorResource(api.Kind(api.ResourceKindPgBouncer))
 }
 
 func (a *PgBouncerMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

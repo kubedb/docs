@@ -88,7 +88,7 @@ func (c *Controller) CheckElasticsearchHealthOnce() {
 				// Since the client was unable to connect the database,
 				// update "AcceptingConnection" to "false".
 				// update "Ready" to "false"
-				_, err = util.UpdateElasticsearchStatus(
+				_, err2 := util.UpdateElasticsearchStatus(
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),
 					db.ObjectMeta,
@@ -99,7 +99,7 @@ func (c *Controller) CheckElasticsearchHealthOnce() {
 								Status:             core.ConditionFalse,
 								Reason:             api.DatabaseNotAcceptingConnectionRequest,
 								ObservedGeneration: db.Generation,
-								Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not accepting client requests.", db.Namespace, db.Name),
+								Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not accepting client requests. Error: %s.", db.Namespace, db.Name, err.Error()),
 							})
 						in.Conditions = kmapi.SetCondition(in.Conditions,
 							kmapi.Condition{
@@ -113,8 +113,8 @@ func (c *Controller) CheckElasticsearchHealthOnce() {
 					},
 					metav1.UpdateOptions{},
 				)
-				if err != nil {
-					klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
+				if err2 != nil {
+					klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err2.Error())
 				}
 				// Since the client isn't created, skip rest operations.
 				return

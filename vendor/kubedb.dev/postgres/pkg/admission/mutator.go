@@ -20,7 +20,6 @@ import (
 	"context"
 	"sync"
 
-	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -35,6 +34,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
+	"kmodules.xyz/webhook-runtime/builder"
 )
 
 type PostgresMutator struct {
@@ -49,12 +49,7 @@ type PostgresMutator struct {
 var _ hookapi.AdmissionHook = &PostgresMutator{}
 
 func (a *PostgresMutator) Resource() (plural schema.GroupVersionResource, singular string) {
-	return schema.GroupVersionResource{
-			Group:    kubedb.MutatorGroupName,
-			Version:  "v1alpha1",
-			Resource: api.ResourcePluralPostgres,
-		},
-		api.ResourceSingularPostgres
+	return builder.MutatorResource(api.Kind(api.ResourceKindPostgres))
 }
 
 func (a *PostgresMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

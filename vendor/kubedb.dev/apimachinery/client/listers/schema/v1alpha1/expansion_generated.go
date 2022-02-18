@@ -49,11 +49,3 @@ type PostgresDatabaseListerExpansion interface{}
 // PostgresDatabaseNamespaceListerExpansion allows custom methods to be added to
 // PostgresDatabaseNamespaceLister.
 type PostgresDatabaseNamespaceListerExpansion interface{}
-
-// RedisDatabaseListerExpansion allows custom methods to be added to
-// RedisDatabaseLister.
-type RedisDatabaseListerExpansion interface{}
-
-// RedisDatabaseNamespaceListerExpansion allows custom methods to be added to
-// RedisDatabaseNamespaceLister.
-type RedisDatabaseNamespaceListerExpansion interface{}

@@ -27,6 +27,7 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/pkg/errors"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -82,6 +83,16 @@ func (c *Reconciler) createOrPatchStatefulSet(db *api.MySQL) (*apps.StatefulSet,
 		return nil, kutil.VerbUnchanged, err
 	}
 
+	var source *api.MySQL
+	if db.IsReadReplica() {
+		ns := db.Spec.Topology.ReadReplica.SourceRef.Namespace
+		name := db.Spec.Topology.ReadReplica.SourceRef.Name
+		source, err = c.DBClient.KubedbV1alpha2().MySQLs(ns).Get(context.TODO(), name, metav1.GetOptions{})
+		if err != nil {
+			return nil, kutil.VerbUnchanged, errors.Wrap(err, "unable to get source db object")
+		}
+	}
+
 	return app_util.CreateOrPatchStatefulSet(
 		context.TODO(),
 		c.Client,
@@ -125,9 +136,30 @@ func (c *Reconciler) createOrPatchStatefulSet(db *api.MySQL) (*apps.StatefulSet,
 				},
 			}
 
+			if db.IsReadReplica() && c.SourceHasSSL(db) {
+				///test for secret exists
+				in.Spec.Template.Spec.Volumes = append(in.Spec.Template.Spec.Volumes, []core.Volume{
+					{
+						Name: "source-ca",
+						VolumeSource: core.VolumeSource{
+
+							Secret: &core.SecretVolumeSource{
+								SecretName: meta_util.NameWithSuffix(db.Name, "source-tls-secret"),
+							},
+						},
+					},
+				}...)
+
+			}
+
 			// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
-			in = upsertEnv(in, db)
-			in = upsertSharedScriptsVolume(in)
+			// TODO:
+			//		- while creating the container: make sure it has the envs, dataMount, security, etc.
+			//		- containers, err := GetMySqlContainers()
+			//		- in.spec...containers = upsert(in.spec...containers, containers)
+
+			in = c.updateStatefulSetEnv(in, db, source)
+			in = c.upsertSharedScriptsVolume(in, db)
 			in = upsertDataVolume(in, db)
 			in = upsertCustomConfig(in, db)
 
@@ -167,9 +199,8 @@ func (c *Reconciler) createOrPatchStatefulSet(db *api.MySQL) (*apps.StatefulSet,
 			}
 
 			in = upsertUserEnv(in, db)
-
 			// configure tls if configured in DB
-			in = upsertTLSVolume(in, db)
+			in = c.upsertTLSVolume(in, db)
 			//in.Spec.PodManagementPolicy = apps.ParallelPodManagement
 			in.Spec.Template.Spec.ReadinessGates = nil
 			return in
@@ -314,7 +345,7 @@ func getMySQLContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion) core.
 
 func getCmdsForMySQLContainer(db *api.MySQL) []string {
 	var cmds []string
-	if db.UsesGroupReplication() || db.IsInnoDBCluster() {
+	if db.UsesGroupReplication() || db.IsInnoDBCluster() || db.IsReadReplica() {
 		cmds = []string{
 			"/scripts/tini",
 			"-g",
@@ -325,21 +356,26 @@ func getCmdsForMySQLContainer(db *api.MySQL) []string {
 }
 
 func getArgsForMysqlContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion) []string {
-
+	var args []string
+	if db.IsReadReplica() {
+		args = append([]string{"scripts/run_read_only.sh"}, args...)
+	}
 	// add ssl certs flag into args to configure TLS for standalone
-	if db.Spec.Topology == nil && db.Spec.TLS != nil {
-		args := db.Spec.PodTemplate.Spec.Args
-		tlsArgs := []string{
-			"--ssl-capath=/etc/mysql/certs",
-			"--ssl-ca=" + caFile,
-			"--ssl-cert=" + certFile,
-			"--ssl-key=" + keyFile,
+	if db.Spec.Topology == nil || db.IsReadReplica() {
+		//args = append(db.Spec.PodTemplate.Spec.Args, args...)
+		args = append(args, db.Spec.PodTemplate.Spec.Args...)
+		if db.Spec.TLS != nil {
+			tlsArgs := []string{
+				"--ssl-capath=/etc/mysql/certs",
+				"--ssl-ca=" + caFile,
+				"--ssl-cert=" + certFile,
+				"--ssl-key=" + keyFile,
+			}
+			args = append(args, tlsArgs...)
+			if db.Spec.RequireSSL {
+				args = append(args, "--require-secure-transport=ON")
+			}
 		}
-		args = append(args, tlsArgs...)
-		if db.Spec.RequireSSL {
-			args = append(args, "--require-secure-transport=ON")
-		}
-		return args
 	}
 
 	if db.UsesGroupReplication() || db.IsInnoDBCluster() {
@@ -403,7 +439,13 @@ func getArgsForMysqlContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion
 		}
 		return args
 	}
-	return nil
+
+	if db.Spec.Topology == nil && db.Spec.AllowedReadReplicas != nil {
+		//args = append(args, "--datadir=/var/lib/mysql/data")
+		args = append(args, "--gtid-mode=ON", "--enforce_gtid_consistency=ON")
+	}
+
+	return args
 }
 
 func getInitContainers(statefulSet *apps.StatefulSet, mysqlVersion *v1alpha1.MySQLVersion) []core.Container {
@@ -422,7 +464,7 @@ func getInitContainers(statefulSet *apps.StatefulSet, mysqlVersion *v1alpha1.MyS
 	return statefulSet.Spec.Template.Spec.InitContainers
 }
 
-func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
+func (c Reconciler) upsertSharedScriptsVolume(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMySQL {
 			configVolumeMount := core.VolumeMount{
@@ -432,6 +474,15 @@ func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet 
 			volumeMounts := container.VolumeMounts
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+			if db.IsReadReplica() && c.SourceHasSSL(db) {
+
+				caVolumeMount := core.VolumeMount{
+					Name:      "source-ca",
+					MountPath: "/etc/mysql/server/certs",
+				}
+				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, caVolumeMount)
+				statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+			}
 
 		}
 		if container.Name == "mysql-coordinator" {
@@ -537,104 +588,6 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.Statef
 	return statefulSet
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMySQL || container.Name == api.ContainerExporterName || container.Name == api.ReplicationModeDetectorContainerName {
-			envs := []core.EnvVar{
-				{
-					Name: "MYSQL_ROOT_PASSWORD",
-					ValueFrom: &core.EnvVarSource{
-						SecretKeyRef: &core.SecretKeySelector{
-							LocalObjectReference: core.LocalObjectReference{
-								Name: db.Spec.AuthSecret.Name,
-							},
-							Key: core.BasicAuthPasswordKey,
-						},
-					},
-				},
-				{
-					Name: "MYSQL_ROOT_USERNAME",
-					ValueFrom: &core.EnvVarSource{
-						SecretKeyRef: &core.SecretKeySelector{
-							LocalObjectReference: core.LocalObjectReference{
-								Name: db.Spec.AuthSecret.Name,
-							},
-							Key: core.BasicAuthUsernameKey,
-						},
-					},
-				},
-			}
-			if (db.UsesGroupReplication() || db.IsInnoDBCluster()) &&
-				container.Name == api.ResourceSingularMySQL {
-				envs = append(envs, []core.EnvVar{
-					{
-						Name:  "BASE_NAME",
-						Value: db.OffshootName(),
-					},
-					{
-						Name:  "GOV_SVC",
-						Value: db.GoverningServiceName(),
-					},
-					{
-						Name: "POD_NAMESPACE",
-						ValueFrom: &core.EnvVarSource{
-							FieldRef: &core.ObjectFieldSelector{
-								FieldPath: "metadata.namespace",
-							},
-						},
-					},
-					{
-						Name:  "DB_NAME",
-						Value: db.GetName(),
-					},
-					{
-						Name: "POD_IP",
-						ValueFrom: &core.EnvVarSource{
-							FieldRef: &core.ObjectFieldSelector{
-								FieldPath: "status.podIP",
-							},
-						},
-					},
-				}...)
-			}
-			if db.UsesGroupReplication() && container.Name == api.ResourceSingularMySQL {
-				envs = append(envs, []core.EnvVar{
-					{
-						Name:  "GROUP_NAME",
-						Value: db.Spec.Topology.Group.Name,
-					},
-				}...)
-			}
-			if container.Name == api.ReplicationModeDetectorContainerName {
-				envs = append(envs, []core.EnvVar{
-					{
-						Name: "POD_NAME",
-						ValueFrom: &core.EnvVarSource{
-							FieldRef: &core.ObjectFieldSelector{
-								FieldPath: "metadata.name",
-							},
-						},
-					},
-				}...)
-			}
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envs...)
-		}
-	}
-
-	return statefulSet
-}
-
-// upsertUserEnv add/overwrite env from user provided env in crd spec
-func upsertUserEnv(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMySQL {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Env...)
-			return statefulSet
-		}
-	}
-	return statefulSet
-}
-
 func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMySQL {
@@ -692,7 +645,7 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.Stat
 	return statefulSet
 }
 
-func upsertTLSVolume(sts *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
+func (c Reconciler) upsertTLSVolume(sts *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
 	if db.Spec.TLS != nil {
 		volume := core.Volume{
 			Name: "tls-volume",
@@ -876,6 +829,19 @@ func recommendedArgs(db *api.MySQL, myVersion *v1alpha1.MySQLVersion) map[string
 	} else {
 		recommendedArgs["expire-logs-days"] = fmt.Sprintf("%d", 7) // 7 days
 	}
-
 	return recommendedArgs
+}
+
+func (c Reconciler) SourceHasSSL(db *api.MySQL) bool {
+	sourceName := db.Spec.Topology.ReadReplica.SourceRef.Name
+	sourceNameSpace := db.Spec.Topology.ReadReplica.SourceRef.Namespace
+	dbObj, err := c.DBClient.KubedbV1alpha2().MySQLs(sourceNameSpace).Get(context.TODO(), sourceName, metav1.GetOptions{})
+	if err != nil {
+		klog.Error("unable to get source mysql object", err)
+		return false
+	}
+	if dbObj.Spec.RequireSSL {
+		return true
+	}
+	return false
 }

@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"sync"
 
-	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
@@ -31,23 +30,25 @@ import (
 	admission "k8s.io/api/admission/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1"
+	"kmodules.xyz/webhook-runtime/builder"
 )
 
 type MySQLValidator struct {
 	ClusterTopology *core_util.Topology
-
-	client      kubernetes.Interface
-	extClient   cs.Interface
-	lock        sync.RWMutex
-	initialized bool
+	client          kubernetes.Interface
+	extClient       cs.Interface
+	lock            sync.RWMutex
+	initialized     bool
 }
 
 var _ hookapi.AdmissionHook = &MySQLValidator{}
@@ -60,12 +61,7 @@ var forbiddenEnvVars = []string{
 }
 
 func (a *MySQLValidator) Resource() (plural schema.GroupVersionResource, singular string) {
-	return schema.GroupVersionResource{
-			Group:    kubedb.ValidatorGroupName,
-			Version:  "v1alpha1",
-			Resource: api.ResourcePluralMySQL,
-		},
-		api.ResourceSingularMySQL
+	return builder.ValidatorResource(api.Kind(api.ResourceKindMySQL))
 }
 
 func (a *MySQLValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
@@ -117,6 +113,12 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 		if err != nil {
 			return hookapi.StatusBadRequest(err)
 		}
+		db := obj.(*api.MySQL)
+		if db.DeletionTimestamp != nil {
+			status.Allowed = true
+			return status
+		}
+
 		if req.Operation == admission.Update {
 			// validate changes made by user
 			oldObject, err := meta_util.UnmarshalFromJSON(req.OldObject.Raw, api.SchemeGroupVersion)
@@ -124,7 +126,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 				return hookapi.StatusBadRequest(err)
 			}
 
-			mysql := obj.(*api.MySQL).DeepCopy()
+			mysql := db.DeepCopy()
 			oldMySQL := oldObject.(*api.MySQL).DeepCopy()
 			oldMySQL.SetDefaults(a.ClusterTopology)
 			// Allow changing Database Secret only if there was no secret have set up yet.
@@ -137,7 +139,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			}
 		}
 		// validate database specs
-		if err = ValidateMySQL(a.client, a.extClient, obj.(*api.MySQL), false); err != nil {
+		if err = ValidateMySQL(a.client, a.extClient, db, false); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -200,6 +202,16 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 				return err
 			}
 		}
+
+		//prevent to create read replica if it's not allowed to read from the source.
+		if mysql.IsReadReplica() {
+			allowed, err := allowedForRead(client, extClient, mysql)
+			if err != nil {
+				return fmt.Errorf("the instance isn't allowed to read from the  referred db server,reason: %v", err)
+			} else if !allowed {
+				return fmt.Errorf("the instance isn't allowed to read from the  referred db server.check")
+			}
+		}
 	}
 
 	if err := amv.ValidateEnvVar(mysql.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMySQL); err != nil {
@@ -216,14 +228,9 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 		return err
 	}
 
-	authSecret := mysql.Spec.AuthSecret
+	//authSecret := mysql.Spec.AuthSecret
 
 	if strictValidation {
-		if authSecret != nil {
-			if _, err := client.CoreV1().Secrets(mysql.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
-				return err
-			}
-		}
 
 		// Check if mysqlVersion is deprecated.
 		// If deprecated, return error
@@ -274,4 +281,91 @@ func validateUpdate(obj, oldObj *api.MySQL) error {
 		return err
 	}
 	return nil
+}
+
+// a replica will be allowed for read if it matches the namespace and selector allowed by the source
+func allowedForRead(client kubernetes.Interface, extClient cs.Interface, readReplica *api.MySQL) (bool, error) {
+	//get db object
+	referredDBName := readReplica.Spec.Topology.ReadReplica.SourceRef.Name
+	referredDBNameSpace := readReplica.Spec.Topology.ReadReplica.SourceRef.Namespace
+
+	referredDB, err := extClient.KubedbV1alpha2().MySQLs(referredDBNameSpace).Get(context.TODO(), referredDBName, metav1.GetOptions{})
+	if err != nil {
+		klog.Error(err)
+		return false, err
+	}
+	// check for allowed Namespaces
+	// check for match selector
+	matchNamespace, err := isInAllowedNamespaces(client, readReplica, referredDB)
+	if err != nil {
+		return false, err
+	}
+
+	matchLabels, err := isMatchByLabels(readReplica.ObjectMeta, referredDB.Spec.AllowedReadReplicas)
+	if err != nil {
+		return false, err
+	}
+	return matchNamespace && matchLabels, nil
+}
+
+func isInAllowedNamespaces(client kubernetes.Interface, readReplica *api.MySQL, referredDB *api.MySQL) (bool, error) {
+
+	if referredDB.Spec.AllowedReadReplicas == nil {
+		return false, nil
+	}
+	if referredDB.Spec.AllowedReadReplicas.Namespaces == nil || referredDB.Spec.AllowedReadReplicas.Namespaces.From == nil {
+		return false, nil
+	}
+
+	if *referredDB.Spec.AllowedReadReplicas.Namespaces.From == api.NamespacesFromAll {
+		return true, nil
+	}
+
+	if *referredDB.Spec.AllowedReadReplicas.Namespaces.From == api.NamespacesFromSame {
+		return readReplica.Namespace == referredDB.Namespace, nil
+	}
+
+	if *referredDB.Spec.AllowedReadReplicas.Namespaces.From == api.NamespacesFromSelector {
+		if referredDB.Spec.AllowedReadReplicas.Namespaces.Selector != nil {
+			labelSelector := referredDB.Spec.AllowedReadReplicas.Namespaces.Selector.MatchLabels
+			namespaces, err := client.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(labelSelector).String()})
+			if err != nil {
+				klog.Error(err)
+				return false, err
+			}
+			for _, ns := range namespaces.Items {
+				if ns.Name == readReplica.Namespace {
+					return true, nil
+				}
+
+			}
+
+		}
+	}
+
+	return false, errors.New("NameSpace/selector didn't matched")
+}
+
+func isMatchByLabels(readReplicaMeta metav1.ObjectMeta, allowedConsumers *api.AllowedConsumers) (bool, error) {
+	if allowedConsumers.Selector != nil {
+		ret, err := selectorMatches(allowedConsumers.Selector, readReplicaMeta.Labels)
+		if err != nil {
+			return false, err
+		}
+		return ret, nil
+	}
+	// if Selector is not given, all the Schemas are allowed of the selected namespace
+	return true, nil
+}
+
+func selectorMatches(ls *metav1.LabelSelector, srcLabels map[string]string) (bool, error) {
+	selector, err := metav1.LabelSelectorAsSelector(ls)
+	if err != nil {
+		klog.Infoln("invalid selector: ", ls)
+		return false, err
+	}
+	if selector.Matches(labels.Set(srcLabels)) {
+		return true, nil
+	}
+	return false, errors.New("labels didn't match")
 }

@@ -52,10 +52,11 @@ func (c *Controller) create(db *api.Redis) error {
 	if err := c.ensureGoverningService(db); err != nil {
 		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
-
 	// ensure auth require for redis
-	if err := c.ensureAuthSecret(db); err != nil {
-		return err
+	if !db.Spec.DisableAuth {
+		if err := c.ensureAuthSecret(db); err != nil {
+			return err
+		}
 	}
 	// ensure ConfigMap for redis configuration file (i.e. redis.conf)
 	if err := c.ensureRedisConfig(db); err != nil {
@@ -105,9 +106,11 @@ func (c *Controller) create(db *api.Redis) error {
 		}
 
 		if sentinel.Namespace != db.Namespace {
-			err = c.EnsureSentinelAuthSecretForRedisNamespace(db, sentinel)
-			if err != nil {
-				return err
+			if sentinel.Spec.AuthSecret != nil {
+				err = c.EnsureSentinelAuthSecretForRedisNamespace(db, sentinel)
+				if err != nil {
+					return err
+				}
 			}
 			err = c.EnsureSentinelRoleBindingForRedisServiceAcc(db, sentinel)
 			if err != nil {

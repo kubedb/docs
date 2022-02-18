@@ -21,17 +21,17 @@ require (
 	k8s.io/klog/v2 v2.9.0
 	kmodules.xyz/client-go v0.0.0-20220215012708-9963581d69a7
 	kmodules.xyz/custom-resources v0.0.0-20220208103158-61b298634e43
-	kubedb.dev/apimachinery v0.24.1-0.20220215125934-f72178904f3e
-	kubedb.dev/elasticsearch v0.24.1-0.20220215190810-99cac2248afe
-	kubedb.dev/mariadb v0.8.1-0.20220215193104-d29518d27ecd
-	kubedb.dev/memcached v0.17.1-0.20220215194907-31f19773d6b8
-	kubedb.dev/mongodb v0.17.1-0.20220215195711-85ae88c151b5
-	kubedb.dev/mysql v0.17.1-0.20220215200700-e987420aaf7c
-	kubedb.dev/percona-xtradb v0.11.1-0.20220215201559-15c1e0455749
-	kubedb.dev/pgbouncer v0.11.1-0.20220215210556-117c33a72733
-	kubedb.dev/postgres v0.24.1-0.20220215202447-bc82ff36fda9
-	kubedb.dev/proxysql v0.11.1-0.20220215203828-31e15e52d726
-	kubedb.dev/redis v0.17.1-0.20220215185200-46216979c429
+	kubedb.dev/apimachinery v0.25.0
+	kubedb.dev/elasticsearch v0.25.0
+	kubedb.dev/mariadb v0.9.0
+	kubedb.dev/memcached v0.18.0
+	kubedb.dev/mongodb v0.18.0
+	kubedb.dev/mysql v0.18.0
+	kubedb.dev/percona-xtradb v0.12.0
+	kubedb.dev/pgbouncer v0.12.0
+	kubedb.dev/postgres v0.25.0
+	kubedb.dev/proxysql v0.12.0
+	kubedb.dev/redis v0.18.0
 	sigs.k8s.io/controller-runtime v0.9.0
 )
 
@@ -63,6 +63,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/divideandconquer/go-merge v0.0.0-20160829212531-bc6b3a394b4e // indirect
+	github.com/elastic/go-elasticsearch/v5 v5.6.1 // indirect
 	github.com/elastic/go-elasticsearch/v6 v6.8.10 // indirect
 	github.com/elastic/go-elasticsearch/v7 v7.13.1 // indirect
 	github.com/emicklei/go-restful v2.14.3+incompatible // indirect
@@ -94,6 +95,7 @@ require (
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
+	github.com/iancoleman/orderedmap v0.2.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jetstack/cert-manager v1.4.0 // indirect
@@ -179,7 +181,7 @@ require (
 	kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027 // indirect
 	kmodules.xyz/resource-metadata v0.9.7 // indirect
 	kmodules.xyz/resource-metrics v0.0.8 // indirect
-	kmodules.xyz/webhook-runtime v0.0.0-20220215152916-ccff289ecdb9 // indirect
+	kmodules.xyz/webhook-runtime v0.0.0-20220216120952-5cbb086f560a // indirect
 	kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.0.15 // indirect
 	sigs.k8s.io/cli-utils v0.26.1 // indirect

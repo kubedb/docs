@@ -28,7 +28,6 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/redis/pkg/admission"
 
-	"github.com/Masterminds/semver/v3"
 	rd "github.com/go-redis/redis"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -59,8 +58,10 @@ func (c *Controller) createSentinel(db *api.RedisSentinel) error {
 	}
 
 	// ensure auth require for redis
-	if err := c.ensureSentinelAuthSecret(db); err != nil {
-		return err
+	if !db.Spec.DisableAuth {
+		if err := c.ensureSentinelAuthSecret(db); err != nil {
+			return err
+		}
 	}
 
 	// Ensure ClusterRoles for statefulsets
@@ -306,24 +307,16 @@ func (c *Controller) removeOwnerReferenceFromOffshootsForSentinel(db *api.RedisS
 }
 
 func (c *Controller) getRedisSentinelClient(db *api.RedisSentinel, dnsName string, port int) (*rd.SentinelClient, error) {
-	if db.Spec.AuthSecret == nil {
-		return nil, errors.New("no database secret")
-	}
-	redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-	curVersion, err := semver.NewVersion(redisVersion.Spec.Version)
-	if err != nil {
-		return nil, fmt.Errorf("can't get the version from RedisVersion spec")
-	}
 	rdOpts := &rd.Options{
 		DialTimeout: 15 * time.Second,
 		IdleTimeout: 3 * time.Second,
 		PoolSize:    1,
 		Addr:        fmt.Sprintf("%s:%v", dnsName, port),
 	}
-	if curVersion.Major() > 4 {
+	if !db.Spec.DisableAuth {
+		if db.Spec.AuthSecret == nil {
+			return nil, errors.New("no database secret")
+		}
 		authSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, err

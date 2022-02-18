@@ -40,64 +40,6 @@ const (
 	RolesMappingFileName = "sg_roles_mapping.yml"
 )
 
-var xpack_security_disabled = `
-xpack.security.enabled: false
-`
-
-var elasticsearch_node_roles = `
-node.roles: '${NODE_ROLES}'
-`
-
-var adminDNTemplate = `
-searchguard.authcz.admin_dn:
-- "%s"
-`
-
-var nodesDNTemplate = `
-searchguard.nodes_dn:
-- "%s"
-`
-
-var searchguard_security_enabled = `
-searchguard.enterprise_modules_enabled: false
-
-searchguard.ssl.transport.enforce_hostname_verification: false
-searchguard.ssl.transport.pemkey_filepath: certs/transport/tls.key
-searchguard.ssl.transport.pemcert_filepath: certs/transport/tls.crt
-searchguard.ssl.transport.pemtrustedcas_filepath: certs/transport/ca.crt
-
-# searchguard.nodes_dn:
-%s
-
-searchguard.allow_unsafe_democertificates: true
-searchguard.allow_default_init_sgindex: true
-searchguard.enable_snapshot_restore_privilege: true
-searchguard.check_snapshot_restore_write_privileges: true
-searchguard.audit.type: internal_elasticsearch
-
-searchguard.restapi.roles_enabled: ["SGS_ALL_ACCESS","sg_all_access"]
-`
-
-var searchguard_security_disabled = `
-searchguard.disabled: true
-`
-
-var https_enabled = `
-searchguard.ssl.http.enabled: true
-searchguard.ssl.http.pemkey_filepath: certs/http/tls.key
-searchguard.ssl.http.pemcert_filepath: certs/http/tls.crt
-searchguard.ssl.http.pemtrustedcas_filepath: certs/http/ca.crt
-`
-
-var authcz_admin_dn = `
-# searchguard.authcz.admin_dn:
-%s
-`
-
-var https_disabled = `
-searchguard.ssl.http.enabled: false
-`
-
 func (es *Elasticsearch) EnsureDefaultConfig() error {
 	secret, err := es.findSecret(es.db.ConfigSecretName())
 	if err != nil {
@@ -123,34 +65,14 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 		Namespace: es.db.Namespace,
 	}
 
-	var isEqualInUserConfig bool
-	var config, inUserConfig, rolesMapping string
-
-	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
+	config, err := es.GetElasticsearchConfig()
 	if err != nil {
 		return err
 	}
-	// For Elasticsearch version >= 7.11.x
-	// The searchGuard no longer use the oss version Elasticsearch.
-	// It uses the official image which comes with xpack plugin pre-installed.
-	// Disable the xpack plugin.
-	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 11) {
-		config += xpack_security_disabled
-	}
 
-	// For Elasticsearch version >= 7.9.x
-	// The legacy node role setting (ie. node.master=true) is deprecated,
-	// So, for newer versions, node roles will be managed by elasticsearch.yml file.
-	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
-		config += elasticsearch_node_roles
-	}
-
+	var isEqualInUserConfig bool
+	var inUserConfig, rolesMapping string
 	if !es.db.Spec.DisableSecurity {
-		// If security is enabled, the transport layer must be secured with tls
-		if es.db.Spec.TLS == nil {
-			return errors.New("spec.TLS configuration is empty")
-		}
-
 		if secret != nil {
 			if value, ok := secret.Data[InternalUserFileName]; ok {
 				oldInUsers, err := user.ParseInUserConfig(string(value))
@@ -181,64 +103,6 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 		if err != nil {
 			return errors.Wrap(err, "failed to generate default roles_mapping.yml")
 		}
-
-		// Get transport layer cert secret.
-		// Parse the tls.cert to extract the nodeDNs.
-		sName, exist := api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchTransportCert))
-		if !exist {
-			return errors.New("transport-cert secret is missing")
-		}
-
-		cSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
-		}
-
-		nodesDN := ""
-		if value, ok := cSecret.Data[certlib.TLSCert]; ok {
-			subj, err := certlib.ExtractSubjectFromCertificate(value)
-			if err != nil {
-				return err
-			}
-			nodesDN = fmt.Sprintf(nodesDNTemplate, subj.String())
-		}
-
-		config += fmt.Sprintf(searchguard_security_enabled, nodesDN)
-
-		// If the HTTP layer is secured with Certificate,
-		// Update the configuration with certificate paths.
-		if es.db.Spec.EnableSSL {
-			config += https_enabled
-		} else {
-			config += https_disabled
-		}
-
-		// To load configuration changes to the security plugin, you must provide your admin certificate to the tool.
-		// So we must create the admin certificate even if the HTTP layer (db.Spec.EnableSSL=false) is disabled.
-		// Which will provide us the opportunity to run sgadmin.sh command.
-		// Let's calculate the adminDN from the admin certificate.
-		// Parse the tls.cert to extract the adminDNs.
-		sName, exist = api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchAdminCert))
-		if !exist {
-			return errors.New("admin-cert secret is missing")
-		}
-
-		cSecret, err = es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
-		}
-
-		adminDN := ""
-		if value, ok := cSecret.Data[certlib.TLSCert]; ok {
-			subj, err := certlib.ExtractSubjectFromCertificate(value)
-			if err != nil {
-				return err
-			}
-			adminDN = fmt.Sprintf(adminDNTemplate, subj.String())
-		}
-		config += fmt.Sprintf(authcz_admin_dn, adminDN)
-	} else {
-		config = searchguard_security_disabled
 	}
 
 	if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secretMeta, func(in *core.Secret) *core.Secret {
@@ -258,6 +122,122 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 	}
 
 	return nil
+}
+
+func (es *Elasticsearch) GetElasticsearchConfig() (string, error) {
+	dbVersion, err := semver.NewVersion(es.esVersion.Spec.Version)
+	if err != nil {
+		return "", err
+	}
+
+	config := make(map[string]interface{})
+	// Basic configs
+	if dbVersion.Major() >= 6 {
+		config["searchguard.enterprise_modules_enabled"] = false
+	} else {
+		config["cluster.name"] = `${cluster.name}`
+		config["node.name"] = `${node.name}`
+		config["network.host"] = `${network.host}`
+		config["node.ingest"] = `${node.ingest}`
+		config["node.master"] = `${node.master}`
+		config["node.data"] = `${node.data}`
+		config["discovery.zen.minimum_master_nodes"] = `${discovery.zen.minimum_master_nodes}`
+		config["discovery.zen.ping.unicast.hosts"] = `${discovery.zen.ping.unicast.hosts}`
+	}
+	// For Elasticsearch version >= 7.9.x
+	// The legacy node role setting (ie. node.master=true) is deprecated,
+	// So, for newer versions, node roles will be managed by elasticsearch.yml file.
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 9) {
+		config["node.roles"] = `${NODE_ROLES}`
+	}
+
+	// X-Pack
+	// For Elasticsearch version >= 7.11.x
+	// The searchGuard no longer use the oss version Elasticsearch.
+	// It uses the official image which comes with xpack plugin pre-installed.
+	// Disable the xpack plugin.
+	if dbVersion.Major() > 7 || (dbVersion.Major() == 7 && dbVersion.Minor() >= 11) {
+		config["xpack.security.enabled"] = false
+	}
+
+	if es.db.Spec.DisableSecurity {
+		config["searchguard.disabled"] = true
+	} else {
+		// If security is enabled, the transport layer must be secured with tls
+		if es.db.Spec.TLS == nil {
+			return "", errors.New("spec.TLS configuration is empty")
+		}
+
+		// Transport layer
+		config["searchguard.ssl.transport.enforce_hostname_verification"] = false
+		config["searchguard.ssl.transport.pemkey_filepath"] = "certs/transport/tls.key"
+		config["searchguard.ssl.transport.pemcert_filepath"] = "certs/transport/tls.crt"
+		config["searchguard.ssl.transport.pemtrustedcas_filepath"] = "certs/transport/ca.crt"
+
+		if es.db.Spec.EnableSSL {
+			// Rest layer
+			config["searchguard.ssl.http.enabled"] = true
+			config["searchguard.ssl.http.pemkey_filepath"] = "certs/http/tls.key"
+			config["searchguard.ssl.http.pemcert_filepath"] = "certs/http/tls.crt"
+			config["searchguard.ssl.http.pemtrustedcas_filepath"] = "certs/http/ca.crt"
+		} else {
+			config["searchguard.ssl.http.enabled"] = false
+		}
+
+		// Admin DN
+		// To load configuration changes to the security plugin, you must provide your admin certificate to the tool.
+		// So we must create the admin certificate even if the HTTP layer (db.Spec.EnableSSL=false) is disabled.
+		// Which will provide us the opportunity to run sgadmin.sh command.
+		// Let's calculate the adminDN from the admin certificate.
+		// Parse the tls.cert to extract the adminDNs.
+		sName, exist := api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchAdminCert))
+		if !exist {
+			return "", errors.New(fmt.Sprintf("admin-cert: %s secret is missing", sName))
+		}
+		cSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+		if err != nil {
+			return "", errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
+		}
+		if value, ok := cSecret.Data[certlib.TLSCert]; ok {
+			subj, err := certlib.ExtractSubjectFromCertificate(value)
+			if err != nil {
+				return "", err
+			}
+			config["searchguard.authcz.admin_dn"] = []string{subj.String()}
+		}
+
+		// Node DN
+		// Get transport layer cert secret.
+		// Parse the tls.cert to extract the nodeDNs.
+		sName, exist = api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchTransportCert))
+		if !exist {
+			return "", errors.New(fmt.Sprintf("transport-cert: %s secret is missing", sName))
+		}
+		cSecret, err = es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+		if err != nil {
+			return "", errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
+		}
+		if value, ok := cSecret.Data[certlib.TLSCert]; ok {
+			subj, err := certlib.ExtractSubjectFromCertificate(value)
+			if err != nil {
+				return "", err
+			}
+			config["searchguard.nodes_dn"] = []string{subj.String()}
+		}
+
+		// Additional configs
+		config["searchguard.audit.type"] = "internal_elasticsearch"
+		config["searchguard.enable_snapshot_restore_privilege"] = true
+		if dbVersion.Major() >= 6 {
+			config["searchguard.allow_default_init_sgindex"] = true
+			config["searchguard.allow_unsafe_democertificates"] = true
+			config["searchguard.check_snapshot_restore_write_privileges"] = true
+			config["searchguard.restapi.roles_enabled"] = []string{"SGS_ALL_ACCESS", "sg_all_access"}
+		}
+	}
+
+	configByt, err := yaml.Marshal(config)
+	return string(configByt), err
 }
 
 func (es *Elasticsearch) getInternalUserConfig() (string, error) {
