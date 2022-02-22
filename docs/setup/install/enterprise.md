@@ -166,10 +166,13 @@ To check if KubeDB operator pods have started, run the following command:
 ```bash
 $ watch kubectl get pods --all-namespaces -l "app.kubernetes.io/instance=kubedb"
 
-NAMESPACE   NAME                                        READY   STATUS    RESTARTS   AGE
-kubedb      kubedb-kubedb-autoscaler-5845d7b8ff-ts82g   1/1     Running   0          56s
-kubedb      kubedb-kubedb-community-595c96d499-srl7c    1/1     Running   0          56s
-kubedb      kubedb-kubedb-enterprise-9cf54ccd-9hz96     1/1     Running   0          56s
+NAME                                            READY   STATUS    RESTARTS   AGE
+kubedb-kubedb-autoscaler-b5dd47dc5-bxnrq        1/1     Running   0          48s
+kubedb-kubedb-dashboard-99db95dc4-j78w2         1/1     Running   0          48s
+kubedb-kubedb-ops-manager-6f766b86c6-h9m66      1/1     Running   0          48s
+kubedb-kubedb-provisioner-6fd44d5784-d8v9c      1/1     Running   0          48s
+kubedb-kubedb-schema-manager-f65c79878-tnftp    1/1     Running   0          48s
+kubedb-kubedb-webhook-server-6cf469bdf4-72wvz   1/1     Running   0          48s
 ```
 
 Once the operator pod is running, you can cancel the above command by typing `Ctrl+C`.
