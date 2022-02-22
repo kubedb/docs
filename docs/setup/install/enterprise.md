@@ -86,20 +86,30 @@ $ helm repo update
 
 $ helm search repo appscode/kubedb
 NAME                        CHART VERSION APP VERSION DESCRIPTION
-appscode/kubedb             {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB by AppsCode - Production ready databases...
-appscode/kubedb-autoscaler  {{< param "info.autoscaler" >}}        {{< param "info.autoscaler" >}}      KubeDB Autoscaler by AppsCode - Autoscale KubeD...
-appscode/kubedb-catalog     {{< param "info.version" >}}       {{< param "info.version" >}}     KubeDB Catalog by AppsCode - Catalog for databa...
-appscode/kubedb-community   {{< param "info.community" >}}       {{< param "info.community" >}}     KubeDB Community by AppsCode - Community featur...
-appscode/kubedb-crds        {{< param "info.version" >}}       {{< param "info.version" >}}     KubeDB Custom Resource Definitions
-appscode/kubedb-enterprise  {{< param "info.enterprise" >}}        {{< param "info.enterprise" >}}      KubeDB Enterprise by AppsCode - Enterprise feat...
+appscode/kubedb                     {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB by AppsCode - Production ready databases...
+appscode/kubedb-autoscaler          {{< param "info.autoscaler" >}}       {{< param "info.autoscaler" >}}     KubeDB Autoscaler by AppsCode - Autoscale KubeD...
+appscode/kubedb-catalog             {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Catalog by AppsCode - Catalog for databa...
+appscode/kubedb-crds                {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Custom Resource Definitions
+appscode/kubedb-dashboard           {{< param "info.dashboard" >}}        {{< param "info.dashboard" >}}      KubeDB Dashboard by AppsCode
+appscode/kubedb-grafana-dashboards  {{< param "info.version" >}}   {{< param "info.version" >}} A Helm chart for kubedb-grafana-dashboards by A...
+appscode/kubedb-metrics             {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB State Metrics
+appscode/kubedb-ops-manager         {{< param "info.enterprise" >}}       {{< param "info.enterprise" >}}     KubeDB Ops Manager by AppsCode - Enterprise fea...
+appscode/kubedb-opscenter           {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Opscenter by AppsCode
+appscode/kubedb-provisioner         {{< param "info.community" >}}       {{< param "info.community" >}}     KubeDB Provisioner by AppsCode - Community feat...
+appscode/kubedb-schema-manager      {{< param "info.schema-manager" >}}        {{< param "info.schema-manager" >}}      KubeDB Schema Manager by AppsCode
+appscode/kubedb-ui-server           {{< param "info.ui-server" >}}   {{< param "info.ui-server" >}} A Helm chart for kubedb-ui-server by AppsCode
+appscode/kubedb-webhook-server      {{< param "info.webhook-server" >}}        {{< param "info.webhook-server" >}}      KubeDB Webhook Server by AppsCode
 
-# Install KubeDB Enterprise operator chart
+# Install KubeDB Enterprise edition
 $ helm install kubedb appscode/kubedb \
-    --version {{< param "info.version" >}} \
-    --namespace kubedb --create-namespace \
-    --set kubedb-enterprise.enabled=true \
-    --set kubedb-autoscaler.enabled=true \
-    --set-file global.license=/path/to/the/license.txt
+  --version {{< param "info.version" >}} \
+  --namespace kubedb --create-namespace \
+  --set kubedb-provisioner.enabled=true \
+  --set kubedb-ops-manager.enabled=true \
+  --set kubedb-autoscaler.enabled=true \
+  --set kubedb-dashboard.enabled=true \
+  --set kubedb-schema-manager.enabled=true \
+  --set-file global.license=/path/to/the/license.txt
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
@@ -117,21 +127,31 @@ $ helm repo update
 
 $ helm search repo appscode/kubedb
 NAME                        CHART VERSION APP VERSION DESCRIPTION
-appscode/kubedb             {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB by AppsCode - Production ready databases...
-appscode/kubedb-autoscaler  {{< param "info.autoscaler" >}}        {{< param "info.autoscaler" >}}      KubeDB Autoscaler by AppsCode - Autoscale KubeD...
-appscode/kubedb-catalog     {{< param "info.community" >}}       {{< param "info.community" >}}     KubeDB Catalog by AppsCode - Catalog for databa...
-appscode/kubedb-community   {{< param "info.community" >}}       {{< param "info.community" >}}     KubeDB Community by AppsCode - Community featur...
-appscode/kubedb-crds        {{< param "info.community" >}}       {{< param "info.community" >}}     KubeDB Custom Resource Definitions
-appscode/kubedb-enterprise  {{< param "info.enterprise" >}}        {{< param "info.enterprise" >}}      KubeDB Enterprise by AppsCode - Enterprise feat...
+appscode/kubedb                     {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB by AppsCode - Production ready databases...
+appscode/kubedb-autoscaler          {{< param "info.autoscaler" >}}       {{< param "info.autoscaler" >}}     KubeDB Autoscaler by AppsCode - Autoscale KubeD...
+appscode/kubedb-catalog             {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Catalog by AppsCode - Catalog for databa...
+appscode/kubedb-crds                {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Custom Resource Definitions
+appscode/kubedb-dashboard           {{< param "info.dashboard" >}}        {{< param "info.dashboard" >}}      KubeDB Dashboard by AppsCode
+appscode/kubedb-grafana-dashboards  {{< param "info.version" >}}   {{< param "info.version" >}} A Helm chart for kubedb-grafana-dashboards by A...
+appscode/kubedb-metrics             {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB State Metrics
+appscode/kubedb-ops-manager         {{< param "info.enterprise" >}}       {{< param "info.enterprise" >}}     KubeDB Ops Manager by AppsCode - Enterprise fea...
+appscode/kubedb-opscenter           {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Opscenter by AppsCode
+appscode/kubedb-provisioner         {{< param "info.community" >}}       {{< param "info.community" >}}     KubeDB Provisioner by AppsCode - Community feat...
+appscode/kubedb-schema-manager      {{< param "info.schema-manager" >}}        {{< param "info.schema-manager" >}}      KubeDB Schema Manager by AppsCode
+appscode/kubedb-ui-server           {{< param "info.ui-server" >}}   {{< param "info.ui-server" >}} A Helm chart for kubedb-ui-server by AppsCode
+appscode/kubedb-webhook-server      {{< param "info.webhook-server" >}}        {{< param "info.webhook-server" >}}      KubeDB Webhook Server by AppsCode
 
 # Install KubeDB Enterprise operator chart
 $ helm template kubedb appscode/kubedb \
-    --version {{< param "info.version" >}} \
-    --namespace kubedb --create-namespace \
-    --set-file global.license=/path/to/the/license.txt  \
-    --set kubedb-enterprise.enabled=true \
-    --set kubedb-autoscaler.enabled=true \
-    --set global.skipCleaner=true | kubectl apply -f -
+  --version {{< param "info.version" >}} \
+  --namespace kubedb --create-namespace \
+  --set-file global.license=/path/to/the/license.txt  \
+  --set kubedb-provisioner.enabled=true \
+  --set kubedb-ops-manager.enabled=true \
+  --set kubedb-autoscaler.enabled=true \
+  --set kubedb-dashboard.enabled=true \
+  --set kubedb-schema-manager.enabled=true \
+  --set global.skipCleaner=true | kubectl apply -f -
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
