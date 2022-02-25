@@ -22,7 +22,7 @@ require (
 	kmodules.xyz/client-go v0.0.0-20220215012708-9963581d69a7
 	kmodules.xyz/custom-resources v0.0.0-20220208103158-61b298634e43
 	kubedb.dev/apimachinery v0.25.0
-	kubedb.dev/elasticsearch v0.25.0
+	kubedb.dev/elasticsearch v0.25.1-0.20220224120836-d1317ca88896
 	kubedb.dev/mariadb v0.9.0
 	kubedb.dev/memcached v0.18.0
 	kubedb.dev/mongodb v0.18.0

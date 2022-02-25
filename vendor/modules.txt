@@ -1500,7 +1500,7 @@ kubedb.dev/apimachinery/pkg/validator
 # kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178
 ## explicit; go 1.17
 kubedb.dev/db-client-go/mongodb
-# kubedb.dev/elasticsearch v0.25.0
+# kubedb.dev/elasticsearch v0.25.1-0.20220224120836-d1317ca88896
 ## explicit; go 1.17
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller

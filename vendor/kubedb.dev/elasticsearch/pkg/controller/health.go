@@ -27,6 +27,7 @@ import (
 	go_es "kubedb.dev/elasticsearch/pkg/util/go-es"
 
 	"github.com/pkg/errors"
+	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -160,9 +161,7 @@ func (c *Controller) CheckElasticsearchHealthOnce() {
 			// check if:
 			//	( status == green ) || ( status == yellow && (standalone-data-topology || standalone-data-combined))
 			if status == api.ElasticsearchStatusGreen ||
-				(status == api.ElasticsearchStatusYellow &&
-					((db.Spec.Topology != nil && db.Spec.Topology.Data.Replicas != nil && *db.Spec.Topology.Data.Replicas == int32(1)) ||
-						(db.Spec.Topology == nil && db.Spec.Replicas != nil && *db.Spec.Replicas == int32(1)))) {
+				(status == api.ElasticsearchStatusYellow && isStandaloneDataNodeCluster(db)) {
 				// Update "Ready" to "true".
 				_, err = util.UpdateElasticsearchStatus(
 					context.TODO(),
@@ -228,4 +227,32 @@ func (c *Controller) GetElasticsearchClient(db *api.Elasticsearch) (go_es.ESClie
 		return nil, err
 	}
 	return dbClient, nil
+}
+
+func isStandaloneDataNodeCluster(db *api.Elasticsearch) bool {
+	var dnCount int32
+	if db.Spec.Topology != nil {
+		if db.Spec.Topology.Data != nil {
+			dnCount += pointer.Int32(db.Spec.Topology.Data.Replicas)
+		}
+		if db.Spec.Topology.DataHot != nil {
+			dnCount += pointer.Int32(db.Spec.Topology.DataHot.Replicas)
+		}
+		if db.Spec.Topology.DataWarm != nil {
+			dnCount += pointer.Int32(db.Spec.Topology.DataWarm.Replicas)
+		}
+		if db.Spec.Topology.DataCold != nil {
+			dnCount += pointer.Int32(db.Spec.Topology.DataCold.Replicas)
+		}
+		if db.Spec.Topology.DataFrozen != nil {
+			dnCount += pointer.Int32(db.Spec.Topology.DataFrozen.Replicas)
+		}
+		if db.Spec.Topology.DataContent != nil {
+			dnCount += pointer.Int32(db.Spec.Topology.DataContent.Replicas)
+		}
+	} else {
+		dnCount += pointer.Int32(db.Spec.Replicas)
+	}
+
+	return dnCount == 1
 }
