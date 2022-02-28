@@ -216,12 +216,12 @@ Here, you can see that Stash has resolved the variables in `prefix` field and su
 
 #### Verify BackupConfiguration
 
-Now, let's verify whether Stash has created a `BackupConfiguration` for our MongoDB or not.
+If everything goes well, Stash should create a `BackupConfiguration` for our MongoDB in `demo` namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` crd by the following command,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo
-NAMESPACE   NAME                 TASK   SCHEDULE      PAUSED   AGE
-demo        app-sample-mongodb          */5 * * * *            4m11s
+NAMESPACE   NAME                 TASK   SCHEDULE      PAUSED   PHASE   AGE
+demo        app-sample-mongodb          */5 * * * *            Ready   4m11s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -391,12 +391,12 @@ Here, you can see that Stash has resolved the variables in `prefix` field and su
 
 #### Verify BackupConfiguration
 
-Now, let's verify whether Stash has created a `BackupConfiguration` for our MongoDB or not.
+If everything goes well, Stash should create a `BackupConfiguration` for our MongoDB in `demo-2` namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` crd by the following command,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo-2
-NAME                   TASK                    SCHEDULE      PAUSED   AGE
-app-sample-mongodb-2   mongodb-backup-10.5.8   */3 * * * *            3m24s
+NAME                   TASK                    SCHEDULE      PAUSED   PHASE   AGE
+app-sample-mongodb-2   mongodb-backup-10.5.8   */3 * * * *            Ready   3m24s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -577,12 +577,12 @@ Here, you can see that Stash has resolved the variables in `prefix` field and su
 
 #### Verify BackupConfiguration
 
-Now, let's verify whether Stash has created a `BackupConfiguration` for our MongoDB or not.
+If everything goes well, Stash should create a `BackupConfiguration` for our MongoDB in `demo-3` namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` crd by the following command,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo-3
-NAME                   TASK                    SCHEDULE      PAUSED   AGE
-app-sample-mongodb-3   mongodb-backup-10.5.8   */5 * * * *            106s
+NAME                   TASK                    SCHEDULE      PAUSED   PHASE   AGE
+app-sample-mongodb-3   mongodb-backup-10.5.8   */5 * * * *            Ready   106s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.

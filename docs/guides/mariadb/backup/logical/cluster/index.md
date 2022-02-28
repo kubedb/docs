@@ -316,9 +316,19 @@ $ kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" 
 backupconfiguration.stash.appscode.com/sample-mariadb-backup created
 ```
 
+### Verify Backup Setup Successful
+
+If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
+
+```bash
+$ kubectl get backupconfiguration -n demo
+NAME                    TASK                    SCHEDULE      PAUSED   PHASE      AGE
+sample-mariadb-backup   mariadb-backup-10.5.8   */5 * * * *            Ready      11s
+```
+
 #### Verify CronJob
 
-If everything goes well, Stash will create a CronJob with the schedule specified in `spec.schedule` field of `BackupConfiguration` object.
+Stash will create a CronJob with the schedule specified in `spec.schedule` field of `BackupConfiguration` object.
 
 Verify that the CronJob has been created using the following command,
 
@@ -386,8 +396,8 @@ Verify that the `BackupConfiguration` has been paused,
 
 ```bash
 $ kubectl get backupconfiguration -n demo sample-mariadb-backup
-NAME                   TASK                    SCHEDULE      PAUSED   AGE
-sample-mariadb-backup  mariadb-backup-10.5.8   */5 * * * *   true     26m
+NAME                   TASK                    SCHEDULE      PAUSED   PHASE   AGE
+sample-mariadb-backup  mariadb-backup-10.5.8   */5 * * * *   true     Ready   26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the `BackupConfiguration` has been paused.
@@ -558,8 +568,8 @@ backupconfiguration.stash.appscode.com/sample-mariadb-backup patched
 Verify that the `BackupConfiguration` has been resumed,
 ```bash
 $ kubectl get backupconfiguration -n demo sample-mariadb-backup
-NAME                    TASK                    SCHEDULE      PAUSED   AGE
-sample-mariadb-backup   mariadb-backup-10.5.8   */5 * * * *   false    29m
+NAME                    TASK                    SCHEDULE      PAUSED   PHASE   AGE
+sample-mariadb-backup   mariadb-backup-10.5.8   */5 * * * *   false    Ready   29m
 ```
 
 Here,  `false` in the `PAUSED` column means the backup has been resume successfully. The CronJob also should be resumed now.

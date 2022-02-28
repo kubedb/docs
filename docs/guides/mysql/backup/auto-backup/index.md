@@ -199,12 +199,12 @@ Here, you can see that Stash has resolved the variables in `prefix` field and su
 
 #### Verify BackupConfiguration
 
-Now, let's verify whether Stash has created a `BackupConfiguration` for our MySQL or not.
+If everything goes well, Stash should create a `BackupConfiguration` for our MySQL in `demo` namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` crd by the following command,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo
-NAMESPACE   NAME               TASK   SCHEDULE      PAUSED   AGE
-demo        app-sample-mysql          */5 * * * *            3m56s
+NAMESPACE   NAME               TASK   SCHEDULE      PAUSED   PHASE   AGE
+demo        app-sample-mysql          */5 * * * *            Ready   3m56s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -384,12 +384,12 @@ Here, you can see that Stash has resolved the variables in `prefix` field and su
 
 #### Verify BackupConfiguration
 
-Now, let's verify whether Stash has created a `BackupConfiguration` for our MySQL or not.
+If everything goes well, Stash should create a `BackupConfiguration` for our MySQL in `demo-2` namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` crd by the following command,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo-2
-NAMESPACE   NAME                 TASK   SCHEDULE      PAUSED   AGE
-demo-2      app-sample-mysql-2          */3 * * * *            113s
+NAMESPACE   NAME                 TASK   SCHEDULE      PAUSED   PHASE   AGE
+demo-2      app-sample-mysql-2          */3 * * * *            Ready   113s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -573,12 +573,12 @@ Here, you can see that Stash has resolved the variables in `prefix` field and su
 
 #### Verify BackupConfiguration
 
-Now, let's verify whether Stash has created a `BackupConfiguration` for our MySQL or not.
+If everything goes well, Stash should create a `BackupConfiguration` for our MySQL in `demo` namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` crd by the following command,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo-3
-NAMESPACE   NAME                 TASK   SCHEDULE      PAUSED   AGE
-demo-3      app-sample-mysql-3          */5 * * * *            107s
+NAMESPACE   NAME                 TASK   SCHEDULE      PAUSED   PHASE   AGE
+demo-3      app-sample-mysql-3          */5 * * * *            Ready   107s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.

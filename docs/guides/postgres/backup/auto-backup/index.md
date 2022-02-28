@@ -194,12 +194,12 @@ Here, you can see that Stash has resolved the variables in `prefix` field and su
 
 #### Verify BackupConfiguration
 
-Now, let's verify whether Stash has created a `BackupConfiguration` for our PostgreSQL or not.
+If everything goes well, Stash should create a `BackupConfiguration` for our PostgreSQL in `demo` namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` crd by the following command,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo
-NAME                    TASK                   SCHEDULE      PAUSED   AGE
-app-sample-postgres-1   postgres-backup-11.9   */5 * * * *            97s
+NAME                    TASK                   SCHEDULE      PAUSED   PHASE   AGE
+app-sample-postgres-1   postgres-backup-11.9   */5 * * * *            Ready   97s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -363,12 +363,12 @@ Here, you can see that Stash has resolved the variables in `prefix` field and su
 
 #### Verify BackupConfiguration
 
-Now, let's verify whether Stash has created a `BackupConfiguration` for our PostgreSQL or not.
+If everything goes well, Stash should create a `BackupConfiguration` for our PostgreSQL in `demo-2` namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` crd by the following command,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo-2
-NAME                    TASK                   SCHEDULE      PAUSED   AGE
-app-sample-postgres-2   postgres-backup-11.9   */3 * * * *            61s
+NAME                    TASK                   SCHEDULE      PAUSED   PHASE   AGE
+app-sample-postgres-2   postgres-backup-11.9   */3 * * * *            Ready   61s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -533,12 +533,12 @@ Here, you can see that Stash has resolved the variables in `prefix` field and su
 
 #### Verify BackupConfiguration
 
-Now, let's verify whether Stash has created a `BackupConfiguration` for our PostgreSQL or not.
+If everything goes well, Stash should create a `BackupConfiguration` for our PostgreSQL in `demo-3` namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` crd by the following command,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo-3
-NAME                    TASK                   SCHEDULE      PAUSED   AGE
-app-sample-postgres-3   postgres-backup-11.9   */5 * * * *            51s
+NAME                    TASK                   SCHEDULE      PAUSED   PHASE   AGE
+app-sample-postgres-3   postgres-backup-11.9   */5 * * * *            Ready   51s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
