@@ -317,9 +317,19 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 backupconfiguration.stash.appscode.com/sample-mgo-sh-backup created
 ```
 
+**Verify Backup Setup Successful:**
+
+If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
+
+```console
+$ kubectl get backupconfiguration -n demo
+NAME                    TASK                    SCHEDULE      PAUSED   PHASE      AGE
+sample-mgo-sh-backup    mongodb-backup-4.2.3    */5 * * * *            Ready      11s
+```
+
 **Verify CronJob:**
 
-If everything goes well, Stash will create a CronJob with the schedule specified in `spec.schedule` field of `BackupConfiguration` crd.
+Stash will create a CronJob with the schedule specified in `spec.schedule` field of `BackupConfiguration` crd.
 
 Verify that the CronJob has been created using the following command,
 
@@ -376,8 +386,8 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 
 ```console
 $ kubectl get backupconfiguration -n demo sample-mgo-sh-backup
-NAME                  TASK                         SCHEDULE      PAUSED   AGE
-sample-mgo-sh-backup  mongodb-restore-4.2.3        */5 * * * *   true     26m
+NAME                  TASK                         SCHEDULE      PAUSED   PHASE   AGE
+sample-mgo-sh-backup  mongodb-restore-4.2.3        */5 * * * *   true     Ready   26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.

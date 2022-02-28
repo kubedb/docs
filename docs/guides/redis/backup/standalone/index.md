@@ -318,9 +318,19 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 backupconfiguration.stash.appscode.com/sample-redis-backup created
 ```
 
+#### Verify Backup Setup Successful
+
+If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
+
+```bash
+$ kubectl get backupconfiguration -n demo
+NAME                  TASK                 SCHEDULE      PAUSED   PHASE      AGE
+sample-redis-backup   redis-backup-6.2.5   */5 * * * *            Ready      11s
+```
+
 #### Verify CronJob
 
-If everything goes well, Stash will create a CronJob with the schedule specified in `spec.schedule` field of `BackupConfiguration` object.
+Stash will create a CronJob with the schedule specified in `spec.schedule` field of `BackupConfiguration` object.
 
 Verify that the CronJob has been created using the following command,
 
@@ -388,8 +398,8 @@ Verify that the `BackupConfiguration` has been paused,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo sample-redis-backup
-NAME                  TASK                 SCHEDULE      PAUSED   AGE
-sample-redis-backup   redis-backup-6.2.5   */5 * * * *   true     4h47m
+NAME                  TASK                 SCHEDULE      PAUSED   PHASE   AGE
+sample-redis-backup   redis-backup-6.2.5   */5 * * * *   true     Ready   4h47m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the `BackupConfiguration` has been paused.
@@ -498,8 +508,8 @@ backupconfiguration.stash.appscode.com/sample-redis-backup patched
 Verify that the `BackupConfiguration` has been resumed,
 ```bash
 ❯ kubectl get backupconfiguration -n demo sample-redis-backup
-NAME                  TASK                 SCHEDULE      PAUSED   AGE
-sample-redis-backup   redis-backup-6.2.5   */5 * * * *   false    4h54m
+NAME                  TASK                 SCHEDULE      PAUSED   PHASE   AGE
+sample-redis-backup   redis-backup-6.2.5   */5 * * * *   false    Ready   4h54m
 ```
 
 Here,  `false` in the `PAUSED` column means the backup has been resume successfully. The CronJob also should be resumed now.
