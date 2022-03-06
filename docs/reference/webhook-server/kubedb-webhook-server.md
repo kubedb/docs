@@ -20,6 +20,7 @@ aliases:
 ### Options
 
 ```
+      --bypass-validating-webhook-xray   if true, bypasses validating webhook xray checks
   -h, --help                             help for kubedb-webhook-server
       --use-kubeapiserver-fqdn-for-aks   if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 (default true)
 ```
