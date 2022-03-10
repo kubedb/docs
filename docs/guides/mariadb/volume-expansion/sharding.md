@@ -2,9 +2,9 @@
 title: MongoDB Sharded Database Volume Expansion
 menu:
   docs_{{ .version }}:
-    identifier: mg-volume-expansion-shard
+    identifier: md-volume-expansion-shard
     name: Sharding
-    parent: mg-volume-expansion
+    parent: md-volume-expansion
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
