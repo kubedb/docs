@@ -20,6 +20,7 @@ Stash 0.9.0+ supports taking [backup](https://docs.mongodb.com/manual/tutorial/b
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
+- Install Stash `kubectl` plugin following the steps [here](https://stash.run/docs/latest/setup/install/kubectl_plugin/).
 - If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/overview/index.md).
 
 You have to be familiar with following custom resources:
@@ -371,15 +372,21 @@ Now, if we navigate to the GCS bucket, we are going to see backed up data has be
 ## Restore MongoDB Sharding
 You can restore your data into the same database you have backed up from or into a different database in the same cluster or a different cluster. In this section, we are going to show you how to restore in the same database which may be necessary when you have accidentally deleted any data from the running database.
 
-**Stop Taking Backup of the Old Database:**
+
+#### Stop Taking Backup of the Old Database:
 
 At first, let's stop taking any further backup of the old database so that no backup is taken during restore process. We are going to pause the `BackupConfiguration` crd that we had created to backup the `sample-mgo-sh` database. Then, Stash will stop taking any further backup for this database.
 
 Let's pause the `sample-mgo-sh-backup` BackupConfiguration,
-
-```console
+```bash
 $ kubectl patch backupconfiguration -n demo sample-mgo-sh-backup --type="merge" --patch='{"spec": {"paused": true}}'
 backupconfiguration.stash.appscode.com/sample-mgo-sh-backup patched
+```
+
+Or you can use the Stash `kubectl` plugin to pause the `BackupConfiguration`,
+```bash
+$ kubectl stash pause backup -n demo --backupconfig=sample-mgo-sh-backup
+BackupConfiguration demo/sample-mgo-sh-backup has been paused successfully.
 ```
 
 Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that the BackupConfiguration  has been paused,
@@ -392,7 +399,7 @@ sample-mgo-sh-backup  mongodb-restore-4.2.3        */5 * * * *   true     Ready 
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
 
-**Simulate Disaster:**
+#### Simulate Disaster:
 
 Now, let’s simulate an accidental deletion scenario. Here, we are going to exec into the database pod and delete the `newdb` database we had created earlier.
 ```console
@@ -413,7 +420,7 @@ mongos> exit
 bye
 ```
 
-**Create RestoreSession:**
+#### Create RestoreSession:
 
 Now, we need to create a `RestoreSession` crd pointing to the AppBinding of `sample-mgo-sh` database.
 
@@ -463,7 +470,7 @@ sample-mgo-sh-restore   gcs-repo-sharding    Succeeded   43s
 
 So, we can see from the output of the above command that the restore process succeeded.
 
-**Verify Restored Data:**
+#### Verify Restored Data:
 
 In this section, we are going to verify that the desired data has been restored successfully. We are going to connect to `mongos` and check whether the table we had created earlier is restored or not.
 

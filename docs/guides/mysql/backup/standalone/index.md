@@ -20,6 +20,7 @@ Stash 0.9.0+ supports backup and restoration of MySQL databases. This guide will
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
+- Install Stash `kubectl` plugin following the steps [here](https://stash.run/docs/latest/setup/install/kubectl_plugin/).
 - If you are not familiar with how Stash backup and restore MySQL databases, please check the following guide [here](/docs/guides/mysql/backup/overview/index.md).
 
 You have to be familiar with following custom resources:
@@ -390,15 +391,20 @@ Now, if we navigate to the GCS bucket, we will see the backed up data has been s
 
 In this section, we are going to restore the database from the backup we have taken in the previous section. We are going to deploy a new database and initialize it from the backup.
 
-**Stop Taking Backup of the Old Database:**
+#### Stop Taking Backup of the Old Database:
 
 At first, let's stop taking any further backup of the old database so that no backup is taken during restore process. We are going to pause the `BackupConfiguration` crd that we had created to backup the `sample-mysql` database. Then, Stash will stop taking any further backup for this database.
 
 Let's pause the `sample-mysql-backup` BackupConfiguration,
-
-```console
+```bash
 $ kubectl patch backupconfiguration -n demo sample-mysql-backup --type="merge" --patch='{"spec": {"paused": true}}'
 backupconfiguration.stash.appscode.com/sample-mysql-backup patched
+```
+
+Or you can use the Stash `kubectl` plugin to pause the ` BackupConfiguration`,
+```bash
+$ kubectl stash pause backup -n demo --backupconfig=sample-mysql-backup
+BackupConfiguration demo/sample-mysql-backup has been paused successfully.
 ```
 
 Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that the BackupConfiguration  has been paused,
@@ -411,7 +417,7 @@ sample-mysql-backup  mysql-backup-8.0.21   */5 * * * *   true     Ready   26m
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
 
-**Deploy Restored Database:**
+#### Deploy Restored Database:
 
 Now, we have to deploy the restored database similarly as we have deployed the original `sample-mysql` database. However, this time there will be the following differences:
 
@@ -455,7 +461,7 @@ NAME             VERSION   STATUS         AGE
 restored-mysql   8.0.21    Provisioning   61s
 ```
 
-**Create RestoreSession:**
+#### Create RestoreSession:
 
 Now, we need to create a RestoreSession CRD pointing to the AppBinding for this restored database.
 
@@ -514,7 +520,7 @@ demo        restore-sample-mysql   gcs-repo          Succeeded   59s
 
 Here, we can see from the output of the above command that the restore process succeeded.
 
-**Verify Restored Data:**
+#### Verify Restored Data:
 
 In this section, we are going to verify whether the desired data has been restored successfully. We are going to connect to the database server and check whether the database and the table we created earlier in the original database are restored.
 
@@ -538,10 +544,10 @@ And then copy the user name and password of the `root` user to access into `mysq
 
 ```bash
 $ kubectl get secret -n demo  sample-mysql-auth -o jsonpath='{.data.username}'| base64 -d
-root⏎
+root
 
 $ kubectl get secret -n demo  sample-mysql-auth -o jsonpath='{.data.password}'| base64 -d
-5HEqoozyjgaMO97N⏎
+5HEqoozyjgaMO97N
 ```
 
 Now, let's exec into the Pod to enter into `mysql` shell and create a database and a table,

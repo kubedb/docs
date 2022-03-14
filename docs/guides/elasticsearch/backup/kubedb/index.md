@@ -20,6 +20,7 @@ Stash 0.9.0+ supports backup and restoration of Elasticsearch clusters. This gui
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
+- Install Stash `kubectl` plugin following the steps [here](https://stash.run/docs/latest/setup/install/kubectl_plugin/).
 - If you are not familiar with how Stash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/elasticsearch/backup/overview/index.md).
 
 You have to be familiar with following custom resources:
@@ -531,6 +532,11 @@ Let's pause the `sample-es-backup` BackupConfiguration,
 ❯ kubectl patch backupconfiguration -n demo sample-es-backup --type="merge" --patch='{"spec": {"paused": true}}'
 backupconfiguration.stash.appscode.com/sample-es-backup patched
 ```
+Or you can use the Stash `kubectl` plugin to pause the `BackupConfiguration`, 
+```bash
+❯ kubectl stash pause backup -n demo --backupconfig=sample-es-backup
+BackupConfiguration demo/sample-es-backup has been paused successfully.
+```
 
 Verify that the `BackupConfiguration` has been paused,
 
@@ -740,10 +746,15 @@ So, we can see that the data has been restored as well.
 #### Resume Backup
 
 Since our data has been restored successfully we can now resume our usual backup process. Resume the `BackupConfiguration` using following command,
-
 ```bash
 ❯ kubectl patch backupconfiguration -n demo sample-es-backup --type="merge" --patch='{"spec": {"paused": false}}'
 backupconfiguration.stash.appscode.com/sample-es-backup patched
+```
+
+Or you can use Stash `kubectl` plugin to resume the `BackupConfiguration`, 
+```bash
+❯ kubectl stash resume -n demo --backupconfig=sample-es-backup
+BackupConfiguration demo/sample-es-backup has been resumed successfully.
 ```
 
 Verify that the `BackupConfiguration` has been resumed,
@@ -773,25 +784,6 @@ We are going to restore the data into an Elasticsearch in `restored` namespace. 
 ```bash
 ❯ kubectl create ns restored
 namespace/restored created
-```
-
-#### Install `stash` kubectl plugin
-
-Now, we are going to use `stash` kubectl plugin to help us copying the `Repository` and backend `Secret` from our `demo` namespace into `restored` namespace. If you haven't already installed the `stash` kubectl-plugin, please install it by following the guide from [here](https://stash.run/docs/latest/setup/install/kubectl_plugin/).
-
-Verify that the `stash` kubectl plugin has been installed properly,
-
-```bash
-❯ kubectl stash version
-Version = v0.11.9
-VersionStrategy = tag
-GitTag = v0.11.9
-GitBranch = HEAD
-CommitHash = 05511503bab90e48514aed24457458456876dfcf
-CommitTimestamp = 2021-01-21T22:12:04
-GoVersion = go1.15.6
-Compiler = gcc
-Platform = linux/amd64
 ```
 
 #### Copy Repository and backend Secret into the new namespace

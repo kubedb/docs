@@ -21,6 +21,7 @@ Stash 0.9.0+ supports backup and restoration of PostgreSQL databases. This guide
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
+- Install Stash `kubectl` plugin following the steps [here](https://stash.run/docs/latest/setup/install/kubectl_plugin/).
 - If you are not familiar with how Stash backup and restore PostgreSQL databases, please check the following guide [here](/docs/guides/postgres/backup/overview/index.md):
 
 You have to be familiar with following custom resources:
@@ -383,15 +384,20 @@ Now, if we navigate to the GCS bucket, we are going to see backed up data has be
 
 Now, we are going to restore the database from the backup we have taken in the previous section. We are going to deploy a new database and initialize it from the backup.
 
-**Stop Taking Backup of the Old Database:**
+#### Stop Taking Backup of the Old Database:
 
 At first, let's stop taking any further backup of the old database so that no backup is taken during the restore process. We are going to pause the `BackupConfiguration` crd that we had created to backup the `sample-postgres` database. Then, Stash will stop taking any further backup for this database.
 
 Let's pause the `sample-postgres-backup` BackupConfiguration,
-
 ```bash
 ❯ kubectl patch backupconfiguration -n demo sample-postgres-backup --type="merge" --patch='{"spec": {"paused": true}}'
 backupconfiguration.stash.appscode.com/sample-postgres-backup patched
+```
+
+Or you can use the Stash `kubectl` plugin to pause the `BackupConfiguration`,
+```bash
+❯ kubectl stash pause backup -n demo --backupconfig=sample-postgres-backup
+BackupConfiguration demo/sample-postgres-backup has been paused successfully.
 ```
 
 Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that the BackupConfiguration  has been paused,
@@ -404,7 +410,7 @@ sample-postgres-backup  postgres-backup-11.9      */5 * * * *   true     Ready  
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
 
-**Deploy Restored Database:**
+#### Deploy Restored Database:
 
 Now, we are going to deploy the restored database similarly as we have deployed the original `sample-psotgres` database.
 
@@ -463,7 +469,7 @@ You can check the log from the database pod to be sure whether the database is r
 
 As you can see from the above log that the database is ready to accept connections. Now, we can start restoring this database.
 
-**Create RestoreSession:**
+#### Create RestoreSession:
 
 Now, we need to create a `RestoreSession` object pointing to the AppBinding for this restored database.
 
@@ -525,7 +531,7 @@ sample-postgres-restore   gcs-repo     Succeeded   15s
 
 So, we can see from the output of the above command that the restore process succeeded.
 
-**Verify Restored Data:**
+#### Verify Restored Data:
 
 In this section, we are going to verify that the desired data has been restored successfully. We are going to connect to the database and check whether the table we had created in the original database has been restored or not.
 

@@ -20,6 +20,7 @@ Stash `v0.11.8+` supports backup and restoration of MariaDB databases. This guid
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 - Install KubeDB operator in your cluster from [here](https://kubedb.com/docs/latest/setup).
 - Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
+- Install Stash `kubectl` plugin following the steps [here](https://stash.run/docs/latest/setup/install/kubectl_plugin/).
 - If you are not familiar with how Stash backup and restore MariaDB databases, please check the following guide [here](/docs/guides/mariadb/backup/overview/index.md).
 
 You have to be familiar with following custom resources:
@@ -386,12 +387,15 @@ You can restore your data into the same database you have backed up from or into
 At first, let's stop taking any further backup of the database so that no backup runs after we delete the sample data. We are going to pause the `BackupConfiguration` object. Stash will stop taking any further backup when the `BackupConfiguration` is paused.
 
 Let's pause the `sample-mariadb-backup` BackupConfiguration,
-
 ```bash
 $ kubectl patch backupconfiguration -n demo sample-mariadb-backup --type="merge" --patch='{"spec": {"paused": true}}'
 backupconfiguration.stash.appscode.com/sample-mariadb-backup patched
 ```
-
+Or you can use Stash `kubectl` plugin to  pause the BackupConfiguration,
+```bash
+$ kubectl stash pause backup -n demo --backupconfig=sample-mariadb-backup
+BackupConfiguration demo/sample-mariadb-backup has been paused successfully.
+````
 Verify that the `BackupConfiguration` has been paused,
 
 ```bash
@@ -559,10 +563,15 @@ Hence, we can see from the above output that the deleted data has been restored 
 #### Resume Backup
 
 Since our data has been restored successfully we can now resume our usual backup process. Resume the `BackupConfiguration` using following command,
-
 ```bash
 $ kubectl patch backupconfiguration -n demo sample-mariadb-backup --type="merge" --patch='{"spec": {"paused": false}}'
 backupconfiguration.stash.appscode.com/sample-mariadb-backup patched
+```
+Or you can use the Stash `kubectl` plugin to resume the `BackupConfiguration`,
+
+```bash
+$ kubectl stash resume -n demo --backupconfig=sample-mariadb-backup
+BackupConfiguration demo/sample-mariadb-backup has been resumed successfully.
 ```
 
 Verify that the `BackupConfiguration` has been resumed,
@@ -588,7 +597,7 @@ If you want to restore the backed up data into a different database of the same 
 
 ### Restore Into Different Namespace
 
-If you want to restore into a different namespace of the same cluster, you have to create the Repository, backend Secret in the desired namespace. You can use [Stash kubectl plugin](https://stash.run/docs/v2020.11.17/guides/latest/cli/cli/) to easily copy the resources into a new namespace. Then, you have to create the `RestoreSession` object in the desired namespace pointing to the Repository, AppBinding of that namespace.
+If you want to restore into a different namespace of the same cluster, you have to create the Repository, backend Secret in the desired namespace. You can use [Stash kubectl plugin](https://stash.run/docs/latest/guides/cli/cli/) to easily copy the resources into a new namespace. Then, you have to create the `RestoreSession` object in the desired namespace pointing to the Repository, AppBinding of that namespace.
 
 ### Restore Into Different Cluster
 
