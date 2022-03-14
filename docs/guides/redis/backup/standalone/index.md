@@ -20,6 +20,7 @@ Stash 0.9.0+ supports backup and restoration of Redis databases. This guide will
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
+- Install Stash `kubectl` plugin following the steps [here](https://stash.run/docs/latest/setup/install/kubectl_plugin/).
 - If you are not familiar with how Stash backup and restore Redis databases, please check the following guide [here](/docs/guides/redis/backup/overview/index.md):
 
 
@@ -382,16 +383,20 @@ If you have followed the previous sections properly, you should have a successfu
 
 You can restore your data into the same database you have backed up from or into a different database in the same cluster or a different cluster. In this section, we are going to show you how to restore in the same database which may be necessary when you have accidentally deleted any data from the running database.
 
-
 #### Temporarily Pause Backup
 
 At first, let's stop taking any further backup of the database so that no backup runs after we delete the sample data. We are going to pause the `BackupConfiguration` object. Stash will stop taking any further backup when the `BackupConfiguration` is paused.
 
 Let's pause the `sample-redis-backup` BackupConfiguration,
-
 ```bash
-$ kubectl patch backupconfiguration -n demo sample-redis-backup --type="merge" --patch='{"spec": {"paused": true}}'
+❯ kubectl patch backupconfiguration -n demo sample-redis-backup --type="merge" --patch='{"spec": {"paused": true}}'
 backupconfiguration.stash.appscode.com/sample-redis-backup patched
+```
+
+Or you can use the Stash `kubectl` plugin to pause the `BackupConfiguration`,
+```bash
+❯ kubectl stash pause backup -n demo --backupconfig=sample-redis-backup
+BackupConfiguration demo/sample-redis-backup has been paused successfully.
 ```
 
 Verify that the `BackupConfiguration` has been paused,
@@ -499,10 +504,15 @@ Hence, we can see from the above output that the deleted data has been restored 
 #### Resume Backup
 
 Since our data has been restored successfully we can now resume our usual backup process. Resume the `BackupConfiguration` using following command,
-
 ```bash
 ❯ kubectl patch backupconfiguration -n demo sample-redis-backup --type="merge" --patch='{"spec": {"paused": false}}'
 backupconfiguration.stash.appscode.com/sample-redis-backup patched
+```
+
+Or you can use the Stash `kubectl` plugin to resume the `BackupConfiguration`
+```bash
+❯ kubectl stash resume -n demo --backupconfig=sample-redis-backup 
+BackupConfiguration demo/sample-redis-backup has been resumed successfully.
 ```
 
 Verify that the `BackupConfiguration` has been resumed,

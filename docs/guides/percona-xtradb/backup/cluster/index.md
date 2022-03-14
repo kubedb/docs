@@ -20,6 +20,7 @@ Stash 0.9.0+ supports backup and restoration of Percona XtraDB cluster databases
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
+- Install Stash `kubectl` plugin following the steps [here](https://stash.run/docs/latest/setup/install/kubectl_plugin/).
 - If you are not familiar with how Stash takes backup and restores Percona XtraDB, please check the following guide [here](/docs/guides/percona-xtradb/backup/overview/index.md).
 
 You have to be familiar with the following custom resources:
@@ -398,10 +399,15 @@ In this section, we are going to restore the database from the backup we have ta
 At first, let's stop taking any further backup of the old database so that no backup is taken during the restore process. We are going to pause the `BackupConfiguration` CRD that we had created to backup the `sample-xtradb-cluster` database. Then, Stash will stop taking any further backup for this database.
 
 Let's pause the `sample-xtradb-cluster-backup` BackupConfiguration,
-
-```console
+```bash
 $ kubectl patch backupconfiguration -n demo sample-xtradb-cluster-backup --type="merge" --patch='{"spec": {"paused": true}}'
 backupconfiguration.stash.appscode.com/sample-xtradb-cluster-backup patched
+```
+
+Or you can use the Stash `kubectl` plugin to pause the `BackupConfiguration`,
+```bash
+$ kubectl stash pause backup -n demo --backupconfig=sample-xtradb-cluster-backup
+BackupConfiguration demo/sample-xtradb-cluster-backup has been paused successfully.
 ```
 
 Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that the operator has paused the BackupConfiguration object,
