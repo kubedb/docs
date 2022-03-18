@@ -10,6 +10,7 @@ require (
 	go.bytebuilders.dev/audit v0.0.19
 	go.bytebuilders.dev/license-verifier v0.9.7
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.7
+	golang.org/x/text v0.3.7
 	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/runtime v0.2.0
 	gomodules.xyz/x v0.0.10
@@ -100,7 +101,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jetstack/cert-manager v1.4.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/json-iterator/go v1.1.11 // indirect
+	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/lib/pq v1.10.2 // indirect
 	github.com/liggitt/tabwriter v0.0.0-20181228230101-89fcab3d43de // indirect
 	github.com/mailru/easyjson v0.7.1 // indirect
@@ -108,7 +109,7 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/moby/spdystream v0.2.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nats-io/nats.go v1.13.0 // indirect
@@ -145,7 +146,6 @@ require (
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210817190340-bfb29a6856f2 // indirect
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d // indirect
-	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	gomodules.xyz/cert v1.2.0 // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
