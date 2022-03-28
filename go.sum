@@ -1560,8 +1560,8 @@ kmodules.xyz/webhook-runtime v0.0.0-20220317222714-0ddfc9e4c221 h1:FCnfxyTewrH2y
 kmodules.xyz/webhook-runtime v0.0.0-20220317222714-0ddfc9e4c221/go.mod h1:Q+4LHbCHVlkKxpEgaDa/EyZb5p/Bpj767zInBwyyitc=
 kubedb.dev/apimachinery v0.22.1-0.20211012044625-d0176524a0cc/go.mod h1:LLwysTxytDqUq2CSJ5iS8H+8mFa0a9PepejreZZcZwI=
 kubedb.dev/apimachinery v0.25.0/go.mod h1:9446hC1cAGNiThtiLjuTOoPeeyZPORjJZSwdahySmjw=
-kubedb.dev/apimachinery v0.25.1-0.20220317212333-8b0203db7259 h1:xS0YVbeIDMyASUJ2o3DoXaBXhEdwtxkviVcQF5S2r24=
-kubedb.dev/apimachinery v0.25.1-0.20220317212333-8b0203db7259/go.mod h1:/1NsI9l9X2jU1LOzhocqU1Vkg4tCgw8TEToMbKyfuKk=
+kubedb.dev/apimachinery v0.25.1-0.20220328161708-3a3c03c00cff h1:c9Sec1F4+KleCGYCjlkEtlpM/zGri4Yh8l01e23KLc0=
+kubedb.dev/apimachinery v0.25.1-0.20220328161708-3a3c03c00cff/go.mod h1:LAfg7PrC3y90bK8t0NqQ6aYMe/jadl9ZrV+CEPu0TrY=
 kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178 h1:YG3GNPqILJ1KjmOvcMoDHtznBix1IWXkvZzzkn7T4dI=
 kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178/go.mod h1:z5qHbfnNuEg9ORXi6gmc+8WNeKjNfaPs1GL2JLYS838=
 kubedb.dev/elasticsearch v0.25.1-0.20220224120836-d1317ca88896 h1:i+AInTe/k7XxzpzLP+NEuR2wVsnbSMPO6mvtnMiLXAw=

@@ -22,7 +22,7 @@ require (
 	k8s.io/klog/v2 v2.9.0
 	kmodules.xyz/client-go v0.0.0-20220317213815-2a6d5a5784f2
 	kmodules.xyz/custom-resources v0.0.0-20220317220154-7beb809b1f5e
-	kubedb.dev/apimachinery v0.25.1-0.20220317212333-8b0203db7259
+	kubedb.dev/apimachinery v0.25.1-0.20220328161708-3a3c03c00cff
 	kubedb.dev/elasticsearch v0.25.1-0.20220224120836-d1317ca88896
 	kubedb.dev/mariadb v0.9.0
 	kubedb.dev/memcached v0.18.0

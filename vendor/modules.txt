@@ -1470,7 +1470,7 @@ kmodules.xyz/resource-metrics/kubedb.com/v1alpha2
 ## explicit; go 1.17
 kmodules.xyz/webhook-runtime/admission/v1
 kmodules.xyz/webhook-runtime/builder
-# kubedb.dev/apimachinery v0.25.1-0.20220317212333-8b0203db7259
+# kubedb.dev/apimachinery v0.25.1-0.20220328161708-3a3c03c00cff
 ## explicit; go 1.17
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
