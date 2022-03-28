@@ -17,6 +17,7 @@ import (
 	"strings"
 	"time"
 
+	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/auth"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
@@ -31,8 +32,13 @@ type config struct {
 	replicaSetName         string
 	seedList               []string
 	serverOpts             []ServerOption
-	cs                     connstring.ConnString
+	cs                     connstring.ConnString // This must not be used for any logic in topology.Topology.
+	uri                    string
 	serverSelectionTimeout time.Duration
+	serverMonitor          *event.ServerMonitor
+	srvMaxHosts            int
+	srvServiceName         string
+	loadBalanced           bool
 }
 
 func newConfig(opts ...Option) (*config, error) {
@@ -64,11 +70,10 @@ func WithConnString(fn func(connstring.ConnString) connstring.ConnString) Option
 		var connOpts []ConnectionOption
 
 		if cs.AppName != "" {
-			connOpts = append(connOpts, WithAppName(func(string) string { return cs.AppName }))
+			c.serverOpts = append(c.serverOpts, WithServerAppName(func(string) string { return cs.AppName }))
 		}
 
-		switch cs.Connect {
-		case connstring.SingleConnect:
+		if cs.Connect == connstring.SingleConnect || (cs.DirectConnectionSet && cs.DirectConnection) {
 			c.mode = SingleMode
 		}
 
@@ -195,7 +200,7 @@ func WithConnString(fn func(connstring.ConnString) connstring.ConnString) Option
 		} else {
 			// We need to add a non-auth Handshaker to the connection options
 			connOpts = append(connOpts, WithHandshaker(func(h driver.Handshaker) driver.Handshaker {
-				return operation.NewIsMaster().AppName(cs.AppName).Compressors(cs.Compressors)
+				return operation.NewHello().AppName(cs.AppName).Compressors(cs.Compressors)
 			}))
 		}
 
@@ -205,15 +210,31 @@ func WithConnString(fn func(connstring.ConnString) connstring.ConnString) Option
 			}))
 
 			for _, comp := range cs.Compressors {
-				if comp == "zlib" {
+				switch comp {
+				case "zlib":
 					connOpts = append(connOpts, WithZlibLevel(func(level *int) *int {
 						return &cs.ZlibLevel
+					}))
+				case "zstd":
+					connOpts = append(connOpts, WithZstdLevel(func(level *int) *int {
+						return &cs.ZstdLevel
 					}))
 				}
 			}
 
 			c.serverOpts = append(c.serverOpts, WithCompressionOptions(func(opts ...string) []string {
 				return append(opts, cs.Compressors...)
+			}))
+		}
+
+		// LoadBalanced
+		if cs.LoadBalancedSet {
+			c.loadBalanced = cs.LoadBalanced
+			c.serverOpts = append(c.serverOpts, WithServerLoadBalanced(func(bool) bool {
+				return cs.LoadBalanced
+			}))
+			connOpts = append(connOpts, WithConnectionLoadBalanced(func(bool) bool {
+				return cs.LoadBalanced
 			}))
 		}
 
@@ -269,6 +290,46 @@ func WithServerSelectionTimeout(fn func(time.Duration) time.Duration) Option {
 	}
 }
 
+// WithTopologyServerMonitor configures the monitor for all SDAM events
+func WithTopologyServerMonitor(fn func(*event.ServerMonitor) *event.ServerMonitor) Option {
+	return func(cfg *config) error {
+		cfg.serverMonitor = fn(cfg.serverMonitor)
+		return nil
+	}
+}
+
+// WithURI specifies the URI that was used to create the topology.
+func WithURI(fn func(string) string) Option {
+	return func(cfg *config) error {
+		cfg.uri = fn(cfg.uri)
+		return nil
+	}
+}
+
+// WithLoadBalanced specifies whether or not the cluster is behind a load balancer.
+func WithLoadBalanced(fn func(bool) bool) Option {
+	return func(cfg *config) error {
+		cfg.loadBalanced = fn(cfg.loadBalanced)
+		return nil
+	}
+}
+
+// WithSRVMaxHosts specifies the SRV host limit that was used to create the topology.
+func WithSRVMaxHosts(fn func(int) int) Option {
+	return func(cfg *config) error {
+		cfg.srvMaxHosts = fn(cfg.srvMaxHosts)
+		return nil
+	}
+}
+
+// WithSRVServiceName specifies the SRV service name that was used to create the topology.
+func WithSRVServiceName(fn func(string) string) Option {
+	return func(cfg *config) error {
+		cfg.srvServiceName = fn(cfg.srvServiceName)
+		return nil
+	}
+}
+
 // addCACertFromFile adds a root CA certificate to the configuration given a path
 // to the containing file.
 func addCACertFromFile(cfg *tls.Config, file string) error {
@@ -300,7 +361,7 @@ func loadCert(data []byte) ([]byte, error) {
 	var certBlock *pem.Block
 
 	for certBlock == nil {
-		if data == nil || len(data) == 0 {
+		if len(data) == 0 {
 			return nil, errors.New(".pem file must have both a CERTIFICATE and an RSA PRIVATE KEY section")
 		}
 
@@ -385,5 +446,5 @@ func addClientCertFromFile(cfg *tls.Config, clientFile, keyPasswd string) (strin
 		return "", err
 	}
 
-	return x509CertSubject(crt), nil
+	return crt.Subject.String(), nil
 }

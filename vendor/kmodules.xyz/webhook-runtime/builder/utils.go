@@ -28,6 +28,7 @@ const (
 	MutatorGroupPrefix   GroupPrefix = "mutators."
 	ValidatorGroupPrefix GroupPrefix = "validators."
 )
+
 const (
 	ResourceSuffixPlural   = "webhooks"
 	ResourceSuffixSingular = "webhook"

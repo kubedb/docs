@@ -8,21 +8,24 @@ package auth
 
 import (
 	"context"
-	"crypto/md5"
 	"fmt"
-
 	"io"
+
+	// Ignore gosec warning "Blocklisted import crypto/md5: weak cryptographic primitive". We need
+	// to use MD5 here to implement the MONGODB-CR specification.
+	/* #nosec G501 */
+	"crypto/md5"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/operation"
 )
 
 // MONGODBCR is the mechanism name for MONGODB-CR.
 //
-// The MONGODB-CR authentication mechanism is deprecated in MongoDB 4.0.
+// The MONGODB-CR authentication mechanism is deprecated in MongoDB 3.6 and removed in
+// MongoDB 4.0.
 const MONGODBCR = "MONGODB-CR"
 
 func newMongoDBCRAuthenticator(cred *Cred) (Authenticator, error) {
@@ -35,7 +38,8 @@ func newMongoDBCRAuthenticator(cred *Cred) (Authenticator, error) {
 
 // MongoDBCRAuthenticator uses the MONGODB-CR algorithm to authenticate a connection.
 //
-// The MONGODB-CR authentication mechanism is deprecated in MongoDB 4.0.
+// The MONGODB-CR authentication mechanism is deprecated in MongoDB 3.6 and removed in
+// MongoDB 4.0.
 type MongoDBCRAuthenticator struct {
 	DB       string
 	Username string
@@ -44,8 +48,9 @@ type MongoDBCRAuthenticator struct {
 
 // Auth authenticates the connection.
 //
-// The MONGODB-CR authentication mechanism is deprecated in MongoDB 4.0.
-func (a *MongoDBCRAuthenticator) Auth(ctx context.Context, _ description.Server, conn driver.Connection) error {
+// The MONGODB-CR authentication mechanism is deprecated in MongoDB 3.6 and removed in
+// MongoDB 4.0.
+func (a *MongoDBCRAuthenticator) Auth(ctx context.Context, cfg *Config) error {
 
 	db := a.DB
 	if db == "" {
@@ -53,7 +58,11 @@ func (a *MongoDBCRAuthenticator) Auth(ctx context.Context, _ description.Server,
 	}
 
 	doc := bsoncore.BuildDocumentFromElements(nil, bsoncore.AppendInt32Element(nil, "getnonce", 1))
-	cmd := operation.NewCommand(doc).Database(db).Deployment(driver.SingleConnectionDeployment{conn})
+	cmd := operation.NewCommand(doc).
+		Database(db).
+		Deployment(driver.SingleConnectionDeployment{cfg.Connection}).
+		ClusterClock(cfg.ClusterClock).
+		ServerAPI(cfg.ServerAPI)
 	err := cmd.Execute(ctx)
 	if err != nil {
 		return newError(err, MONGODBCR)
@@ -75,7 +84,11 @@ func (a *MongoDBCRAuthenticator) Auth(ctx context.Context, _ description.Server,
 		bsoncore.AppendStringElement(nil, "nonce", getNonceResult.Nonce),
 		bsoncore.AppendStringElement(nil, "key", a.createKey(getNonceResult.Nonce)),
 	)
-	cmd = operation.NewCommand(doc).Database(db).Deployment(driver.SingleConnectionDeployment{conn})
+	cmd = operation.NewCommand(doc).
+		Database(db).
+		Deployment(driver.SingleConnectionDeployment{cfg.Connection}).
+		ClusterClock(cfg.ClusterClock).
+		ServerAPI(cfg.ServerAPI)
 	err = cmd.Execute(ctx)
 	if err != nil {
 		return newError(err, MONGODBCR)
@@ -85,6 +98,9 @@ func (a *MongoDBCRAuthenticator) Auth(ctx context.Context, _ description.Server,
 }
 
 func (a *MongoDBCRAuthenticator) createKey(nonce string) string {
+	// Ignore gosec warning "Use of weak cryptographic primitive". We need to use MD5 here to
+	// implement the MONGODB-CR specification.
+	/* #nosec G401 */
 	h := md5.New()
 
 	_, _ = io.WriteString(h, nonce)
