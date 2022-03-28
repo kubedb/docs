@@ -8,3 +8,12 @@ package internal // import "go.mongodb.org/mongo-driver/internal"
 
 // Version is the current version of the driver.
 var Version = "local build"
+
+// LegacyHello is the legacy version of the hello command.
+var LegacyHello = "isMaster"
+
+// LegacyHelloLowercase is the lowercase, legacy version of the hello command.
+var LegacyHelloLowercase = "ismaster"
+
+// LegacyNotPrimary is the legacy version of the "not primary" server error message.
+var LegacyNotPrimary = "not master"

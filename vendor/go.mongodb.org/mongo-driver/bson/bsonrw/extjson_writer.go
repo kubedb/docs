@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
 	"math"
 	"sort"
@@ -19,13 +18,9 @@ import (
 	"sync"
 	"time"
 	"unicode/utf8"
-)
 
-var ejvwPool = sync.Pool{
-	New: func() interface{} {
-		return new(extJSONValueWriter)
-	},
-}
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 // ExtJSONValueWriterPool is a pool for ExtJSON ValueWriters.
 type ExtJSONValueWriterPool struct {
@@ -536,7 +531,10 @@ func (ejvw *extJSONValueWriter) WriteUndefined() error {
 func (ejvw *extJSONValueWriter) WriteDocumentElement(key string) (ValueWriter, error) {
 	switch ejvw.stack[ejvw.frame].mode {
 	case mDocument, mTopLevel, mCodeWithScope:
-		ejvw.buf = append(ejvw.buf, []byte(fmt.Sprintf(`"%s":`, key))...)
+		var buf bytes.Buffer
+		writeStringWithEscapes(key, &buf, ejvw.escapeHTML)
+
+		ejvw.buf = append(ejvw.buf, []byte(fmt.Sprintf(`%s:`, buf.String()))...)
 		ejvw.push(mElement)
 	default:
 		return nil, ejvw.invalidTransitionErr(mElement, "WriteDocumentElement", []mode{mDocument, mTopLevel, mCodeWithScope})

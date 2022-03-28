@@ -23,8 +23,7 @@ import (
 
 // Prometheus agent does nothing as user is expected to setup Prometheus manually for scraping.
 // xref: https://github.com/kmodules/monitoring-agent-api/issues/25#issuecomment-567635963
-type Prometheus struct {
-}
+type Prometheus struct{}
 
 func New() api.Agent {
 	return &Prometheus{}

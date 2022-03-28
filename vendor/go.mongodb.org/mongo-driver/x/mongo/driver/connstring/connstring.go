@@ -9,6 +9,7 @@ package connstring // import "go.mongodb.org/mongo-driver/x/mongo/driver/connstr
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"net"
 	"net/url"
 	"strconv"
@@ -16,12 +17,33 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/internal"
+	"go.mongodb.org/mongo-driver/internal/randutil"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/dns"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/wiremessage"
 )
 
-// Parse parses the provided uri and returns a URI object.
+// random is a package-global pseudo-random number generator.
+var random = randutil.NewLockedRand(rand.NewSource(time.Now().UnixNano()))
+
+// ParseAndValidate parses the provided URI into a ConnString object.
+// It check that all values are valid.
+func ParseAndValidate(s string) (ConnString, error) {
+	p := parser{dnsResolver: dns.DefaultResolver}
+	err := p.parse(s)
+	if err != nil {
+		return p.ConnString, internal.WrapErrorf(err, "error parsing uri")
+	}
+	err = p.ConnString.Validate()
+	if err != nil {
+		return p.ConnString, internal.WrapErrorf(err, "error validating uri")
+	}
+	return p.ConnString, nil
+}
+
+// Parse parses the provided URI into a ConnString object
+// but does not check that all values are valid. Use `ConnString.Validate()`
+// to run the validation checks separately.
 func Parse(s string) (ConnString, error) {
 	p := parser{dnsResolver: dns.DefaultResolver}
 	err := p.parse(s)
@@ -37,10 +59,14 @@ type ConnString struct {
 	AppName                            string
 	AuthMechanism                      string
 	AuthMechanismProperties            map[string]string
+	AuthMechanismPropertiesSet         bool
 	AuthSource                         string
+	AuthSourceSet                      bool
 	Compressors                        []string
 	Connect                            ConnectMode
 	ConnectSet                         bool
+	DirectConnection                   bool
+	DirectConnectionSet                bool
 	ConnectTimeout                     time.Duration
 	ConnectTimeoutSet                  bool
 	Database                           string
@@ -49,6 +75,8 @@ type ConnString struct {
 	Hosts                              []string
 	J                                  bool
 	JSet                               bool
+	LoadBalanced                       bool
+	LoadBalancedSet                    bool
 	LocalThreshold                     time.Duration
 	LocalThresholdSet                  bool
 	MaxConnIdleTime                    time.Duration
@@ -57,6 +85,8 @@ type ConnString struct {
 	MaxPoolSizeSet                     bool
 	MinPoolSize                        uint64
 	MinPoolSizeSet                     bool
+	MaxConnecting                      uint64
+	MaxConnectingSet                   bool
 	Password                           string
 	PasswordSet                        bool
 	ReadConcernLevel                   string
@@ -64,6 +94,8 @@ type ConnString struct {
 	ReadPreferenceTagSets              []map[string]string
 	RetryWrites                        bool
 	RetryWritesSet                     bool
+	RetryReads                         bool
+	RetryReadsSet                      bool
 	MaxStaleness                       time.Duration
 	MaxStalenessSet                    bool
 	ReplicaSet                         string
@@ -72,22 +104,33 @@ type ConnString struct {
 	ServerSelectionTimeoutSet          bool
 	SocketTimeout                      time.Duration
 	SocketTimeoutSet                   bool
+	SRVMaxHosts                        int
+	SRVServiceName                     string
 	SSL                                bool
 	SSLSet                             bool
 	SSLClientCertificateKeyFile        string
 	SSLClientCertificateKeyFileSet     bool
 	SSLClientCertificateKeyPassword    func() string
 	SSLClientCertificateKeyPasswordSet bool
+	SSLCertificateFile                 string
+	SSLCertificateFileSet              bool
+	SSLPrivateKeyFile                  string
+	SSLPrivateKeyFileSet               bool
 	SSLInsecure                        bool
 	SSLInsecureSet                     bool
 	SSLCaFile                          string
 	SSLCaFileSet                       bool
+	SSLDisableOCSPEndpointCheck        bool
+	SSLDisableOCSPEndpointCheckSet     bool
 	WString                            string
 	WNumber                            int
 	WNumberSet                         bool
 	Username                           string
+	UsernameSet                        bool
 	ZlibLevel                          int
 	ZlibLevelSet                       bool
+	ZstdLevel                          int
+	ZstdLevelSet                       bool
 
 	WTimeout              time.Duration
 	WTimeoutSet           bool
@@ -101,15 +144,46 @@ func (u *ConnString) String() string {
 	return u.Original
 }
 
+// HasAuthParameters returns true if this ConnString has any authentication parameters set and therefore represents
+// a request for authentication.
+func (u *ConnString) HasAuthParameters() bool {
+	// Check all auth parameters except for AuthSource because an auth source without other credentials is semantically
+	// valid and must not be interpreted as a request for authentication.
+	return u.AuthMechanism != "" || u.AuthMechanismProperties != nil || u.UsernameSet || u.PasswordSet
+}
+
+// Validate checks that the Auth and SSL parameters are valid values.
+func (u *ConnString) Validate() error {
+	p := parser{
+		dnsResolver: dns.DefaultResolver,
+		ConnString:  *u,
+	}
+	return p.validate()
+}
+
 // ConnectMode informs the driver on how to connect
 // to the server.
 type ConnectMode uint8
+
+var _ fmt.Stringer = ConnectMode(0)
 
 // ConnectMode constants.
 const (
 	AutoConnect ConnectMode = iota
 	SingleConnect
 )
+
+// String implements the fmt.Stringer interface.
+func (c ConnectMode) String() string {
+	switch c {
+	case AutoConnect:
+		return "automatic"
+	case SingleConnect:
+		return "direct"
+	default:
+		return "unknown"
+	}
+}
 
 // Scheme constants
 const (
@@ -154,27 +228,26 @@ func (p *parser) parse(original string) error {
 			p.PasswordSet = true
 		}
 
-		if len(username) > 1 {
-			if strings.Contains(username, "/") {
-				return fmt.Errorf("unescaped slash in username")
-			}
+		// Validate and process the username.
+		if strings.Contains(username, "/") {
+			return fmt.Errorf("unescaped slash in username")
 		}
-
 		p.Username, err = url.QueryUnescape(username)
 		if err != nil {
 			return internal.WrapErrorf(err, "invalid username")
 		}
-		if len(password) > 1 {
-			if strings.Contains(password, ":") {
-				return fmt.Errorf("unescaped colon in password")
-			}
-			if strings.Contains(password, "/") {
-				return fmt.Errorf("unescaped slash in password")
-			}
-			p.Password, err = url.QueryUnescape(password)
-			if err != nil {
-				return internal.WrapErrorf(err, "invalid password")
-			}
+		p.UsernameSet = true
+
+		// Validate and process the password.
+		if strings.Contains(password, ":") {
+			return fmt.Errorf("unescaped colon in password")
+		}
+		if strings.Contains(password, "/") {
+			return fmt.Errorf("unescaped slash in password")
+		}
+		p.Password, err = url.QueryUnescape(password)
+		if err != nil {
+			return internal.WrapErrorf(err, "invalid password")
 		}
 	}
 
@@ -190,14 +263,25 @@ func (p *parser) parse(original string) error {
 		hosts = uri[:idx]
 	}
 
-	var connectionArgsFromTXT []string
 	parsedHosts := strings.Split(hosts, ",")
+	uri = uri[len(hosts):]
+	extractedDatabase, err := extractDatabaseFromURI(uri)
+	if err != nil {
+		return err
+	}
 
+	uri = extractedDatabase.uri
+	p.Database = extractedDatabase.db
+
+	// grab connection arguments from URI
+	connectionArgsFromQueryString, err := extractQueryArgsFromURI(uri)
+	if err != nil {
+		return err
+	}
+
+	// grab connection arguments from TXT record and enable SSL if "mongodb+srv://"
+	var connectionArgsFromTXT []string
 	if p.Scheme == SchemeMongoDBSRV {
-		parsedHosts, err = p.dnsResolver.ParseHosts(hosts, true)
-		if err != nil {
-			return err
-		}
 		connectionArgsFromTXT, err = p.dnsResolver.GetConnectionArgsFromTXT(hosts)
 		if err != nil {
 			return err
@@ -206,6 +290,32 @@ func (p *parser) parse(original string) error {
 		// SSL is enabled by default for SRV, but can be manually disabled with "ssl=false".
 		p.SSL = true
 		p.SSLSet = true
+	}
+
+	// add connection arguments from URI and TXT records to connstring
+	connectionArgPairs := append(connectionArgsFromTXT, connectionArgsFromQueryString...)
+	for _, pair := range connectionArgPairs {
+		err := p.addOption(pair)
+		if err != nil {
+			return err
+		}
+	}
+
+	// do SRV lookup if "mongodb+srv://"
+	if p.Scheme == SchemeMongoDBSRV {
+		parsedHosts, err = p.dnsResolver.ParseHosts(hosts, p.SRVServiceName, true)
+		if err != nil {
+			return err
+		}
+
+		// If p.SRVMaxHosts is non-zero and is less than the number of hosts, randomly
+		// select SRVMaxHosts hosts from parsedHosts.
+		if p.SRVMaxHosts > 0 && p.SRVMaxHosts < len(parsedHosts) {
+			random.Shuffle(len(parsedHosts), func(i, j int) {
+				parsedHosts[i], parsedHosts[j] = parsedHosts[j], parsedHosts[i]
+			})
+			parsedHosts = parsedHosts[:p.SRVMaxHosts]
+		}
 	}
 
 	for _, host := range parsedHosts {
@@ -218,39 +328,9 @@ func (p *parser) parse(original string) error {
 		return fmt.Errorf("must have at least 1 host")
 	}
 
-	uri = uri[len(hosts):]
-
-	extractedDatabase, err := extractDatabaseFromURI(uri)
-	if err != nil {
-		return err
-	}
-
-	uri = extractedDatabase.uri
-	p.Database = extractedDatabase.db
-
-	connectionArgsFromQueryString, err := extractQueryArgsFromURI(uri)
-	connectionArgPairs := append(connectionArgsFromTXT, connectionArgsFromQueryString...)
-
-	for _, pair := range connectionArgPairs {
-		err = p.addOption(pair)
-		if err != nil {
-			return err
-		}
-	}
-
 	err = p.setDefaultAuthParams(extractedDatabase.db)
 	if err != nil {
 		return err
-	}
-
-	err = p.validateAuth()
-	if err != nil {
-		return err
-	}
-
-	// Check for invalid write concern (i.e. w=0 and j=true)
-	if p.WNumberSet && p.WNumber == 0 && p.JSet && p.J {
-		return writeconcern.ErrInconsistent
 	}
 
 	// If WTimeout was set from manual options passed in, set WTImeoutSet to true.
@@ -261,7 +341,66 @@ func (p *parser) parse(original string) error {
 	return nil
 }
 
+func (p *parser) validate() error {
+	var err error
+
+	err = p.validateAuth()
+	if err != nil {
+		return err
+	}
+
+	if err = p.validateSSL(); err != nil {
+		return err
+	}
+
+	// Check for invalid write concern (i.e. w=0 and j=true)
+	if p.WNumberSet && p.WNumber == 0 && p.JSet && p.J {
+		return writeconcern.ErrInconsistent
+	}
+
+	// Check for invalid use of direct connections.
+	if (p.ConnectSet && p.Connect == SingleConnect) || (p.DirectConnectionSet && p.DirectConnection) {
+		if len(p.Hosts) > 1 {
+			return errors.New("a direct connection cannot be made if multiple hosts are specified")
+		}
+		if p.Scheme == SchemeMongoDBSRV {
+			return errors.New("a direct connection cannot be made if an SRV URI is used")
+		}
+		if p.LoadBalancedSet && p.LoadBalanced {
+			return internal.ErrLoadBalancedWithDirectConnection
+		}
+	}
+
+	// Validation for load-balanced mode.
+	if p.LoadBalancedSet && p.LoadBalanced {
+		if len(p.Hosts) > 1 {
+			return internal.ErrLoadBalancedWithMultipleHosts
+		}
+		if p.ReplicaSet != "" {
+			return internal.ErrLoadBalancedWithReplicaSet
+		}
+	}
+
+	// Check for invalid use of SRVMaxHosts.
+	if p.SRVMaxHosts > 0 {
+		if p.ReplicaSet != "" {
+			return internal.ErrSRVMaxHostsWithReplicaSet
+		}
+		if p.LoadBalanced {
+			return internal.ErrSRVMaxHostsWithLoadBalanced
+		}
+	}
+
+	return nil
+}
+
 func (p *parser) setDefaultAuthParams(dbName string) error {
+	// We do this check here rather than in validateAuth because this function is called as part of parsing and sets
+	// the value of AuthSource if authentication is enabled.
+	if p.AuthSourceSet && p.AuthSource == "" {
+		return errors.New("authSource must be non-empty when supplied in a URI")
+	}
+
 	switch strings.ToLower(p.AuthMechanism) {
 	case "plain":
 		if p.AuthSource == "" {
@@ -279,7 +418,7 @@ func (p *parser) setDefaultAuthParams(dbName string) error {
 			p.AuthMechanismProperties["SERVICE_NAME"] = "mongodb"
 		}
 		fallthrough
-	case "mongodb-x509":
+	case "mongodb-aws", "mongodb-x509":
 		if p.AuthSource == "" {
 			p.AuthSource = "$external"
 		} else if p.AuthSource != "$external" {
@@ -297,6 +436,7 @@ func (p *parser) setDefaultAuthParams(dbName string) error {
 			}
 		}
 	case "":
+		// Only set auth source if there is a request for authentication via non-empty credentials.
 		if p.AuthSource == "" && (p.AuthMechanismProperties != nil || p.Username != "" || p.PasswordSet) {
 			p.AuthSource = dbName
 			if p.AuthSource == "" {
@@ -327,6 +467,23 @@ func (p *parser) validateAuth() error {
 		}
 		if p.AuthMechanismProperties != nil {
 			return fmt.Errorf("MONGO-X509 cannot have mechanism properties")
+		}
+	case "mongodb-aws":
+		if p.Username != "" && p.Password == "" {
+			return fmt.Errorf("username without password is invalid for MONGODB-AWS")
+		}
+		if p.Username == "" && p.Password != "" {
+			return fmt.Errorf("password without username is invalid for MONGODB-AWS")
+		}
+		var token bool
+		for k := range p.AuthMechanismProperties {
+			if k != "AWS_SESSION_TOKEN" {
+				return fmt.Errorf("invalid auth property for MONGODB-AWS")
+			}
+			token = true
+		}
+		if token && p.Username == "" && p.Password == "" {
+			return fmt.Errorf("token without username and password is invalid for MONGODB-AWS")
 		}
 	case "gssapi":
 		if p.Username == "" {
@@ -368,11 +525,37 @@ func (p *parser) validateAuth() error {
 			return fmt.Errorf("SCRAM-SHA-256 cannot have mechanism properties")
 		}
 	case "":
-		if p.Username == "" && p.AuthSource != "" {
-			return fmt.Errorf("authsource without username is invalid")
+		if p.UsernameSet && p.Username == "" {
+			return fmt.Errorf("username required if URI contains user info")
 		}
 	default:
 		return fmt.Errorf("invalid auth mechanism")
+	}
+	return nil
+}
+
+func (p *parser) validateSSL() error {
+	if !p.SSL {
+		return nil
+	}
+
+	if p.SSLClientCertificateKeyFileSet {
+		if p.SSLCertificateFileSet || p.SSLPrivateKeyFileSet {
+			return errors.New("the sslClientCertificateKeyFile/tlsCertificateKeyFile URI option cannot be provided " +
+				"along with tlsCertificateFile or tlsPrivateKeyFile")
+		}
+		return nil
+	}
+	if p.SSLCertificateFileSet && !p.SSLPrivateKeyFileSet {
+		return errors.New("the tlsPrivateKeyFile URI option must be provided if the tlsCertificateFile option is specified")
+	}
+	if p.SSLPrivateKeyFileSet && !p.SSLCertificateFileSet {
+		return errors.New("the tlsCertificateFile URI option must be provided if the tlsPrivateKeyFile option is specified")
+	}
+
+	if p.SSLInsecureSet && p.SSLDisableOCSPEndpointCheckSet {
+		return errors.New("the sslInsecure/tlsInsecure URI option cannot be provided along with " +
+			"tlsDisableOCSPEndpointCheck ")
 	}
 	return nil
 }
@@ -440,8 +623,10 @@ func (p *parser) addOption(pair string) error {
 			}
 			p.AuthMechanismProperties[kv[0]] = kv[1]
 		}
+		p.AuthMechanismPropertiesSet = true
 	case "authsource":
 		p.AuthSource = value
+		p.AuthSourceSet = true
 	case "compressors":
 		compressors := strings.Split(value, ",")
 		if len(compressors) < 1 {
@@ -456,8 +641,34 @@ func (p *parser) addOption(pair string) error {
 		default:
 			return fmt.Errorf("invalid 'connect' value: %s", value)
 		}
+		if p.DirectConnectionSet {
+			expectedValue := p.Connect == SingleConnect // directConnection should be true if connect=direct
+			if p.DirectConnection != expectedValue {
+				return fmt.Errorf("options connect=%s and directConnection=%v conflict", value, p.DirectConnection)
+			}
+		}
 
 		p.ConnectSet = true
+	case "directconnection":
+		switch strings.ToLower(value) {
+		case "true":
+			p.DirectConnection = true
+		case "false":
+		default:
+			return fmt.Errorf("invalid 'directConnection' value: %s", value)
+		}
+
+		if p.ConnectSet {
+			expectedValue := AutoConnect
+			if p.DirectConnection {
+				expectedValue = SingleConnect
+			}
+
+			if p.Connect != expectedValue {
+				return fmt.Errorf("options connect=%s and directConnection=%s conflict", p.Connect, value)
+			}
+		}
+		p.DirectConnectionSet = true
 	case "connecttimeoutms":
 		n, err := strconv.Atoi(value)
 		if err != nil || n < 0 {
@@ -483,6 +694,17 @@ func (p *parser) addOption(pair string) error {
 		}
 
 		p.JSet = true
+	case "loadbalanced":
+		switch value {
+		case "true":
+			p.LoadBalanced = true
+		case "false":
+			p.LoadBalanced = false
+		default:
+			return fmt.Errorf("invalid value for %s: %s", key, value)
+		}
+
+		p.LoadBalancedSet = true
 	case "localthresholdms":
 		n, err := strconv.Atoi(value)
 		if err != nil || n < 0 {
@@ -511,13 +733,22 @@ func (p *parser) addOption(pair string) error {
 		}
 		p.MinPoolSize = uint64(n)
 		p.MinPoolSizeSet = true
+	case "maxconnecting":
+		n, err := strconv.Atoi(value)
+		if err != nil || n < 0 {
+			return fmt.Errorf("invalid value for %s: %s", key, value)
+		}
+		p.MaxConnecting = uint64(n)
+		p.MaxConnectingSet = true
 	case "readconcernlevel":
 		p.ReadConcernLevel = value
 	case "readpreference":
 		p.ReadPreference = value
 	case "readpreferencetags":
 		if value == "" {
-			// for when readPreferenceTags= at end of URI
+			// If "readPreferenceTags=" is supplied, append an empty map to tag sets to
+			// represent a wild-card.
+			p.ReadPreferenceTagSets = append(p.ReadPreferenceTagSets, map[string]string{})
 			break
 		}
 
@@ -551,6 +782,17 @@ func (p *parser) addOption(pair string) error {
 		}
 
 		p.RetryWritesSet = true
+	case "retryreads":
+		switch value {
+		case "true":
+			p.RetryReads = true
+		case "false":
+			p.RetryReads = false
+		default:
+			return fmt.Errorf("invalid value for %s: %s", key, value)
+		}
+
+		p.RetryReadsSet = true
 	case "serverselectiontimeoutms":
 		n, err := strconv.Atoi(value)
 		if err != nil || n < 0 {
@@ -565,6 +807,31 @@ func (p *parser) addOption(pair string) error {
 		}
 		p.SocketTimeout = time.Duration(n) * time.Millisecond
 		p.SocketTimeoutSet = true
+	case "srvmaxhosts":
+		// srvMaxHosts can only be set on URIs with the "mongodb+srv" scheme
+		if p.Scheme != SchemeMongoDBSRV {
+			return fmt.Errorf("cannot specify srvMaxHosts on non-SRV URI")
+		}
+
+		n, err := strconv.Atoi(value)
+		if err != nil || n < 0 {
+			return fmt.Errorf("invalid value for %s: %s", key, value)
+		}
+		p.SRVMaxHosts = n
+	case "srvservicename":
+		// srvServiceName can only be set on URIs with the "mongodb+srv" scheme
+		if p.Scheme != SchemeMongoDBSRV {
+			return fmt.Errorf("cannot specify srvServiceName on non-SRV URI")
+		}
+
+		// srvServiceName must be between 1 and 62 characters according to
+		// our specification. Empty service names are not valid, and the service
+		// name (including prepended underscore) should not exceed the 63 character
+		// limit for DNS query subdomains.
+		if len(value) < 1 || len(value) > 62 {
+			return fmt.Errorf("srvServiceName value must be between 1 and 62 characters")
+		}
+		p.SRVServiceName = value
 	case "ssl", "tls":
 		switch value {
 		case "true":
@@ -590,6 +857,16 @@ func (p *parser) addOption(pair string) error {
 	case "sslclientcertificatekeypassword", "tlscertificatekeyfilepassword":
 		p.SSLClientCertificateKeyPassword = func() string { return value }
 		p.SSLClientCertificateKeyPasswordSet = true
+	case "tlscertificatefile":
+		p.SSL = true
+		p.SSLSet = true
+		p.SSLCertificateFile = value
+		p.SSLCertificateFileSet = true
+	case "tlsprivatekeyfile":
+		p.SSL = true
+		p.SSLSet = true
+		p.SSLPrivateKeyFile = value
+		p.SSLPrivateKeyFileSet = true
 	case "sslinsecure", "tlsinsecure":
 		switch value {
 		case "true":
@@ -606,6 +883,19 @@ func (p *parser) addOption(pair string) error {
 		p.SSLSet = true
 		p.SSLCaFile = value
 		p.SSLCaFileSet = true
+	case "tlsdisableocspendpointcheck":
+		p.SSL = true
+		p.SSLSet = true
+
+		switch value {
+		case "true":
+			p.SSLDisableOCSPEndpointCheck = true
+		case "false":
+			p.SSLDisableOCSPEndpointCheck = false
+		default:
+			return fmt.Errorf("invalid value for %s: %s", key, value)
+		}
+		p.SSLDisableOCSPEndpointCheckSet = true
 	case "w":
 		if w, err := strconv.Atoi(value); err == nil {
 			if w < 0 {
@@ -649,6 +939,18 @@ func (p *parser) addOption(pair string) error {
 		}
 		p.ZlibLevel = level
 		p.ZlibLevelSet = true
+	case "zstdcompressionlevel":
+		const maxZstdLevel = 22 // https://github.com/facebook/zstd/blob/a880ca239b447968493dd2fed3850e766d6305cc/contrib/linux-kernel/lib/zstd/compress.c#L3291
+		level, err := strconv.Atoi(value)
+		if err != nil || (level < -1 || level > maxZstdLevel) {
+			return fmt.Errorf("invalid value for %s: %s", key, value)
+		}
+
+		if level == -1 {
+			level = wiremessage.DefaultZstdLevel
+		}
+		p.ZstdLevel = level
+		p.ZstdLevelSet = true
 	default:
 		if p.UnknownOptions == nil {
 			p.UnknownOptions = make(map[string][]string)
