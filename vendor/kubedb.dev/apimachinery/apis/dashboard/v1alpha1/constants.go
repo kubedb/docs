@@ -24,17 +24,15 @@ import (
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var (
-	DefaultResources = core.ResourceRequirements{
-		Requests: core.ResourceList{
-			core.ResourceCPU:    resource.MustParse(".500"),
-			core.ResourceMemory: resource.MustParse("1024Mi"),
-		},
-		Limits: core.ResourceList{
-			core.ResourceMemory: resource.MustParse("1024Mi"),
-		},
-	}
-)
+var DefaultResources = core.ResourceRequirements{
+	Requests: core.ResourceList{
+		core.ResourceCPU:    resource.MustParse(".500"),
+		core.ResourceMemory: resource.MustParse("1024Mi"),
+	},
+	Limits: core.ResourceList{
+		core.ResourceMemory: resource.MustParse("1024Mi"),
+	},
+}
 
 const (
 	ES_USER_ENV     = "ELASTICSEARCH_USERNAME"

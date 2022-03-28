@@ -64,7 +64,6 @@ func (in *MySQLDatabase) Default() {
 	if in.Spec.Database.Config.CharacterSet == "" {
 		in.Spec.Database.Config.CharacterSet = "utf8"
 	}
-
 }
 
 // +kubebuilder:webhook:path=/validate-schema-kubedb-com-v1alpha1-mysqldatabase,mutating=false,failurePolicy=fail,sideEffects=None,groups=schema.kubedb.com,resources=mysqldatabases,verbs=create;update;delete,versions=v1alpha1,name=vmysqldatabase.kb.io,admissionReviewVersions={v1,v1beta1}

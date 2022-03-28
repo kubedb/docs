@@ -53,6 +53,7 @@ func GetPostgresSchemaFinalizerString() string {
 func GetPostgresInitVolumeNameForPod(pgSchema *PostgresDatabase) string {
 	return kmeta.NameWithSuffix(pgSchema.Name, kdm.ResourceSingularPostgres+"-vol")
 }
+
 func GetPostgresInitJobContainerName(pgSchema *PostgresDatabase) string {
 	return kmeta.NameWithSuffix(pgSchema.Name, kdm.ResourceSingularPostgres)
 }
