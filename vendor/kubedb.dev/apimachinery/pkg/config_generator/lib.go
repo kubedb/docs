@@ -63,8 +63,8 @@ func (generator *CustomConfigGenerator) GetMergedConfigString() (string, error) 
 	}
 	// there is no inline config. so we are going to just add the new one with the provided current config
 	return fmt.Sprintf("%s\n\n%s\n%s", generator.CurrentConfig, generator.ConfigBlockDivider, ConvertMapInToString(requestedDataMap)), nil
-
 }
+
 func ConvertStringInToMap(configString string, separators []string) (configData *orderedmap.OrderedMap) {
 	configData = orderedmap.New()
 	outputs := strings.Split(configString, "\n")

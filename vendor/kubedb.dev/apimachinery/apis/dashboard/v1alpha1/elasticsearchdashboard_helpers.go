@@ -41,12 +41,15 @@ var _ apis.ResourceInfo = &ElasticsearchDashboard{}
 func (ed ElasticsearchDashboard) OffshootName() string {
 	return ed.Name
 }
+
 func (ed ElasticsearchDashboard) ServiceName() string {
 	return ed.OffshootName()
 }
+
 func (ed ElasticsearchDashboard) DeploymentName() string {
 	return ed.OffshootName()
 }
+
 func (ed ElasticsearchDashboard) DashboardContainerName() string {
 	return meta_util.NameWithSuffix(ed.Name, "dashboard")
 }
@@ -145,6 +148,7 @@ func (ed *ElasticsearchDashboard) getLabels(extraLabels ...map[string]string) ma
 func (ed *ElasticsearchDashboard) PodLabels(extraLabels ...map[string]string) map[string]string {
 	return meta_util.OverwriteKeys(ed.OffshootSelectors(), extraLabels...)
 }
+
 func (ed *ElasticsearchDashboard) PodControllerLabels(extraLabels ...map[string]string) map[string]string {
 	return ed.offshootLabels(meta_util.OverwriteKeys(ed.OffshootSelectors(), extraLabels...), ed.Spec.PodTemplate.Controller.Labels)
 }
@@ -152,6 +156,7 @@ func (ed *ElasticsearchDashboard) PodControllerLabels(extraLabels ...map[string]
 func (ed *ElasticsearchDashboard) ServiceLabels(alias ServiceAlias, extraLabels ...map[string]string) map[string]string {
 	return meta_util.OverwriteKeys(ed.OffshootSelectors(), extraLabels...)
 }
+
 func (ed *ElasticsearchDashboard) GetServiceSelectors() map[string]string {
 	extraSelectors := map[string]string{
 		"app.kubernetes.io/instance": ed.Name,

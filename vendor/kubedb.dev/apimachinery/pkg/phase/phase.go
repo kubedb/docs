@@ -24,7 +24,6 @@ import (
 )
 
 func DashboardPhaseFromCondition(conditions []kmapi.Condition) dapi.DashboardPhase {
-
 	if !kmapi.IsConditionTrue(conditions, string(dapi.DashboardConditionProvisioned)) {
 		return dapi.DashboardPhaseProvisioning
 	}
@@ -52,7 +51,6 @@ func DashboardPhaseFromCondition(conditions []kmapi.Condition) dapi.DashboardPha
 	}
 
 	return dapi.DashboardPhaseNotReady
-
 }
 
 func PhaseFromCondition(conditions []kmapi.Condition) api.DatabasePhase {
