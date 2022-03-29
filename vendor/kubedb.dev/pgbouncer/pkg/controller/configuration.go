@@ -33,8 +33,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 )
 
-var (
-	cfgtpl = template.Must(template.New("cfg").Parse(`listen_port = {{ .Port }}
+var cfgtpl = template.Must(template.New("cfg").Parse(`listen_port = {{ .Port }}
 listen_addr = *
 pool_mode = {{ .PoolMode }}
 ignore_startup_parameters = extra_float_digits{{ if .IgnoreStartupParameters }}, {{.IgnoreStartupParameters}}{{ end }}
@@ -70,7 +69,6 @@ auth_user = {{ .AuthUser }}
 {{- end }}
 admin_users = kubedb{{range .AdminUsers }},{{.}}{{end}}
 `))
-)
 
 func (c *Controller) generateConfig(db *api.PgBouncer) (string, error) {
 	var buf bytes.Buffer
@@ -87,7 +85,7 @@ func (c *Controller) generateConfig(db *api.PgBouncer) (string, error) {
 				} else {
 					klog.Error(err)
 				}
-				continue //Dont add pgbouncer database base for this non existent appBinding
+				continue // Dont add pgbouncer database base for this non existent appBinding
 			}
 			var hostname string
 			if appBinding.Spec.ClientConfig.URL == nil {
@@ -118,7 +116,7 @@ func (c *Controller) generateConfig(db *api.PgBouncer) (string, error) {
 
 	if db.Spec.TLS != nil {
 		if db.Spec.TLS.IssuerRef != nil {
-			//SSL is enabled
+			// SSL is enabled
 			buf.WriteString("client_tls_sslmode = verify-full\n")
 			buf.WriteString(fmt.Sprintln("client_tls_ca_file = " + filepath.Join(ServingCertMountPath, string(api.PgBouncerServerCert), "ca.crt")))
 			buf.WriteString(fmt.Sprintln("client_tls_key_file = " + filepath.Join(ServingCertMountPath, string(api.PgBouncerServerCert), "tls.key")))
@@ -144,7 +142,7 @@ func (c *Controller) generateConfig(db *api.PgBouncer) (string, error) {
 	if db.Spec.ConnectionPool == nil || (db.Spec.ConnectionPool != nil && db.Spec.ConnectionPool.AuthType != "any") {
 		buf.WriteString(fmt.Sprintln("auth_file = ", filepath.Join(UserListMountPath, secretFileName)))
 	}
-	//TODO: what about auth type md5 and or something else?
+	// TODO: what about auth type md5 and or something else?
 	if db.Spec.ConnectionPool != nil {
 		err := cfgtpl.Execute(&buf, db.Spec.ConnectionPool)
 		if err != nil {

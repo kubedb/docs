@@ -81,6 +81,7 @@ opendistro_security.ssl.http.pemkey_filepath: certs/http/tls.key
 opendistro_security.ssl.http.pemtrustedcas_filepath: certs/http/ca.crt
 
 `
+
 var authcz_admin_dn = `
 # opendistro_security.authcz.admin_dn:
 %s

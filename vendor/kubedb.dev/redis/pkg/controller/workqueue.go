@@ -93,8 +93,8 @@ func (c *Controller) runRedis(key string) error {
 						return err
 					}
 					if !strings.Contains(output.String(), "OK") && !strings.Contains(output.String(), "No such master") {
-						//we need to make sure that the redis sentinel cluster has been remove the sentinel successfully
-						//TODO: need to make sure that in every version have the same string type as output
+						// we need to make sure that the redis sentinel cluster has been remove the sentinel successfully
+						// TODO: need to make sure that in every version have the same string type as output
 						return fmt.Errorf("failed to remove from sentinel")
 					}
 				}

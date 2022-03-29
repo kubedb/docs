@@ -30,7 +30,7 @@ import (
 )
 
 func (c *Controller) manageAppBindingEvent(key string) error {
-	//wait for pgboncer to ber ready
+	// wait for pgboncer to ber ready
 	klog.V(5).Infoln("started processing appBindings, key:", key)
 	_, _, err := c.appBindingInformer.GetIndexer().GetByKey(key)
 	if err != nil {
@@ -42,7 +42,7 @@ func (c *Controller) manageAppBindingEvent(key string) error {
 	if len(splitKey) != 2 || splitKey[0] == "" || splitKey[1] == "" {
 		return nil
 	}
-	//Now we are interested in this particular appBinding
+	// Now we are interested in this particular appBinding
 	appBindingInfo := make(map[string]string)
 	appBindingInfo[namespaceKey] = splitKey[0]
 	appBindingInfo[nameKey] = splitKey[1]
@@ -92,7 +92,7 @@ func (c *Controller) getCABundlesFromAppBindingsInPgBouncerSpec(db *api.PgBounce
 			if err != nil {
 				if kerr.IsNotFound(err) {
 					klog.Infoln(err)
-					continue //because non blocking err
+					continue // because non blocking err
 				}
 				return "", err
 			}

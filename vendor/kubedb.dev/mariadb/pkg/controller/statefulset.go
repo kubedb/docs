@@ -67,7 +67,7 @@ func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 				in.Spec.Template.Spec.InitContainers,
 				append(getInitContainers(in, dbVersion), db.Spec.PodTemplate.Spec.InitContainers...),
-				//append(lostAndFoundCleaner(db, dbVersion), db.Spec.PodTemplate.Spec.InitContainers...),
+				// append(lostAndFoundCleaner(db, dbVersion), db.Spec.PodTemplate.Spec.InitContainers...),
 			)
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 				in.Spec.Template.Spec.Containers,
@@ -120,7 +120,6 @@ func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 		},
 		metav1.PatchOptions{},
 	)
-
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -143,7 +142,8 @@ func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 }
 
 func upsertCustomConfig(
-	template core.PodTemplateSpec, configSecret *core.LocalObjectReference, isCluster bool) core.PodTemplateSpec {
+	template core.PodTemplateSpec, configSecret *core.LocalObjectReference, isCluster bool,
+) core.PodTemplateSpec {
 	for i, container := range template.Spec.Containers {
 		if container.Name == api.ResourceSingularMariaDB {
 			var configVolumeMount core.VolumeMount
@@ -354,7 +354,7 @@ func getEnvsForMariaDBContainer(db *api.MariaDB) []core.EnvVar {
 	return envList
 }
 
-//getEnvsForMariaDBCoordinatorContainer
+// getEnvsForMariaDBCoordinatorContainer
 
 func getEnvsForMariaDBCoordinatorContainer(db *api.MariaDB) []core.EnvVar {
 	var envList []core.EnvVar
@@ -415,7 +415,6 @@ func dbInitScriptVolumeMount(db *api.MariaDB) []core.VolumeMount {
 }
 
 func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.StatefulSet {
-
 	// Add DataVolume
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMariaDB {

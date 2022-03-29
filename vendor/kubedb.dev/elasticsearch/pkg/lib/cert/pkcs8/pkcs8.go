@@ -268,9 +268,7 @@ func NewSignedCert(cfg cert.Config, key *rsa.PrivateKey, caCert *x509.Certificat
 	return x509.ParseCertificate(certDERBytes)
 }
 
-var (
-	oidExtensionSubjectAltName = []int{2, 5, 29, 17}
-)
+var oidExtensionSubjectAltName = []int{2, 5, 29, 17}
 
 // marshalSANs marshals a list of addresses into a the contents of an X.509
 // SubjectAlternativeName extension.

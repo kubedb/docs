@@ -84,5 +84,4 @@ func (c *Reconciler) ReconcileNodes(db *api.MySQL) (*api.MySQL, kutil.VerbType, 
 	}
 
 	return db, vt, nil
-
 }

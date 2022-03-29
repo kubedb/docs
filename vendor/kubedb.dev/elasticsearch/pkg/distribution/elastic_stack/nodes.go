@@ -75,7 +75,6 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 			Name:  "NODE_ROLES",
 			Value: "master",
 		})
-
 	} else {
 		// For Elasticsearch version >=7.6.x, <7.9.x
 		// For master node, only master role is true.
@@ -168,7 +167,6 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 			Name:  "NODE_ROLES",
 			Value: "data",
 		})
-
 	} else {
 		// For Elasticsearch version >=6.8.0, <7.9.x
 		// For data node, only data role is true.
@@ -237,7 +235,6 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 	}
 
 	return es.ensureStatefulSet(dataNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeData), envList, initEnvList)
-
 }
 
 func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
@@ -262,7 +259,6 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 			Name:  "NODE_ROLES",
 			Value: "ingest",
 		})
-
 	} else {
 		// For Elasticsearch version >=6.8.x, <7.9.x
 		// For ingest node, only ingest role is true.
@@ -440,7 +436,6 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 
 	// For affinity, NodeRoleIngest is used.
 	return es.ensureStatefulSet(combinedNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeIngest), envList, initEnvList)
-
 }
 
 func (es *Elasticsearch) EnsureDataContentNode() (kutil.VerbType, error) {
@@ -470,7 +465,8 @@ func (es *Elasticsearch) EnsureDataContentNode() (kutil.VerbType, error) {
 		{
 			Name:  "NODE_ROLES",
 			Value: "data_content",
-		}}
+		},
+	}
 	// Upsert common environment variables.
 	// These are same for all type of node.
 	envList, err = es.upsertContainerEnv(envList)
@@ -530,7 +526,8 @@ func (es *Elasticsearch) EnsureDataHotNode() (kutil.VerbType, error) {
 		{
 			Name:  "NODE_ROLES",
 			Value: "data_hot",
-		}}
+		},
+	}
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
@@ -591,7 +588,8 @@ func (es *Elasticsearch) EnsureDataWarmNode() (kutil.VerbType, error) {
 		{
 			Name:  "NODE_ROLES",
 			Value: "data_warm",
-		}}
+		},
+	}
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
@@ -652,7 +650,8 @@ func (es *Elasticsearch) EnsureDataColdNode() (kutil.VerbType, error) {
 		{
 			Name:  "NODE_ROLES",
 			Value: "data_cold",
-		}}
+		},
+	}
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
@@ -713,7 +712,8 @@ func (es *Elasticsearch) EnsureDataFrozenNode() (kutil.VerbType, error) {
 		{
 			Name:  "NODE_ROLES",
 			Value: "data_frozen",
-		}}
+		},
+	}
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
@@ -776,7 +776,6 @@ func (es *Elasticsearch) EnsureMLNode() (kutil.VerbType, error) {
 			Name:  "NODE_ROLES",
 			Value: "ml, remote_cluster_client",
 		})
-
 	} else {
 		// For Elasticsearch version >=6.8.0, <7.9.x
 		// For data node, only ml role is true.
@@ -860,7 +859,8 @@ func (es *Elasticsearch) EnsureTransformNode() (kutil.VerbType, error) {
 		{
 			Name:  "NODE_ROLES",
 			Value: "transform, remote_cluster_client",
-		}}
+		},
+	}
 
 	// Upsert common environment variables.
 	// These are same for all type of node.
@@ -931,7 +931,6 @@ func (es *Elasticsearch) EnsureCoordinatingNode() (kutil.VerbType, error) {
 			Name:  "NODE_ROLES",
 			Value: "",
 		})
-
 	} else {
 		// For Elasticsearch version >=6.8.0, <7.9.x
 		// Every node is implicitly a coordinating node.

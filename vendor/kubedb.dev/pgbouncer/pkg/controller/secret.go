@@ -49,7 +49,7 @@ func (c *Controller) ensureAuthSecret(db *api.PgBouncer) (kutil.VerbType, error)
 		return kutil.VerbUnchanged, err
 	}
 
-	//get ca-bundle SecretData from associated PostgresDatabases
+	// get ca-bundle SecretData from associated PostgresDatabases
 	upstreamCAData, err := c.getCABundlesFromAppBindingsInPgBouncerSpec(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
@@ -73,7 +73,7 @@ func (c *Controller) ensureAuthSecret(db *api.PgBouncer) (kutil.VerbType, error)
 			in.Data[pbAdminPasswordKey] = []byte(passgen.Generate(api.DefaultPasswordLength))
 		}
 
-		var pbAdminData = fmt.Sprintf(`"%s" "%s"`, api.PgBouncerAdminUsername, string(in.Data[pbAdminPasswordKey]))
+		pbAdminData := fmt.Sprintf(`"%s" "%s"`, api.PgBouncerAdminUsername, string(in.Data[pbAdminPasswordKey]))
 		in.Data[pbAdminDataKey] = []byte(pbAdminData)
 
 		// If user secret is available, add user given userList-data to default secret

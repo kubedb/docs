@@ -156,6 +156,7 @@ func (c *Controller) GetPostgresSecrets(db *api.Postgres) []string {
 	}
 	return nil
 }
+
 func (r *Reconciler) RequiredCertSecretNames(db *api.Postgres) []string {
 	// wait for  Certificates secrets
 	if db.Spec.TLS != nil {

@@ -34,7 +34,7 @@ func (c *Controller) getVolumeAndVolumeMountForAuthSecret(db *api.PgBouncer) (*c
 			},
 		},
 	}
-	//Add to volumeMounts to mount the volume
+	// Add to volumeMounts to mount the volume
 	secretVolumeMount := &core.VolumeMount{
 		Name:      "fallback-userlist",
 		MountPath: UserListMountPath,
@@ -44,18 +44,18 @@ func (c *Controller) getVolumeAndVolumeMountForAuthSecret(db *api.PgBouncer) (*c
 }
 
 func (c *Controller) getVolumeAndVolumeMountForCertificate(db *api.PgBouncer, alias api.PgBouncerCertificateAlias) (*core.Volume, *core.VolumeMount) {
-	//TODO: this is for issuer only, I'm not sure about clusterIssuer yet
+	// TODO: this is for issuer only, I'm not sure about clusterIssuer yet
 	secretName := db.MustCertSecretName(api.PgBouncerServerCert)
 	secretVolume := &core.Volume{
 		Name: secretName,
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
 				SecretName:  secretName,
-				DefaultMode: pointer.Int32P(0600),
+				DefaultMode: pointer.Int32P(0o600),
 			},
 		},
 	}
-	//Add to volumeMounts to mount the volume
+	// Add to volumeMounts to mount the volume
 	secretVolumeMount := &core.VolumeMount{
 		Name:      secretName,
 		MountPath: filepath.Join(ServingCertMountPath, string(alias)),

@@ -219,7 +219,6 @@ func (r *Reconciler) Reconcile(db *api.MongoDB) error {
 			in.Spec.Init.Initialized = true
 			return in
 		}, metav1.PatchOptions{})
-
 		if err != nil {
 			return err
 		}

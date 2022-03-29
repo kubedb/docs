@@ -140,17 +140,14 @@ func (c *Controller) CheckPostgresDBHealthOnce() {
 				// database is healthy. So update to "Ready" condition to "true"
 				c.updateDatabaseReady(ctx, db)
 			}
-
 		}(db)
 	}
 	// Wait until all go-routine complete executions
 	wg.Wait()
-
 }
 
-//check if the cluster's every replica is active and in sync with master
+// check if the cluster's every replica is active and in sync with master
 func (c *Controller) checkPostgreSQLClusterHealth(ctx context.Context, db *api.Postgres) (bool, error) {
-
 	err := c.IsPostgreSQLServerOnline(ctx, db, PrimaryServiceDNS(db), api.PostgresDatabasePort)
 	if err != nil {
 		return false, err
@@ -169,14 +166,13 @@ func (c *Controller) checkPostgreSQLClusterHealth(ctx context.Context, db *api.P
 	}
 	for _, pod := range dbPods {
 		err := c.IsPostgreSQLServerOnline(ctx, db, HostDNS(db, pod.ObjectMeta), api.PostgresDatabasePort)
-
 		if err != nil {
 			return false, err
 		}
 	}
 
 	// 3. check replicas data sync with master
-	//TODO
+	// TODO
 	return true, nil
 }
 
@@ -295,11 +291,10 @@ func (c *Controller) updateDatabaseNotReady(ctx context.Context, db *api.Postgre
 	}
 }
 
-//try to query in server if failed return err that means not online
+// try to query in server if failed return err that means not online
 func (c *Controller) IsPostgreSQLServerOnline(ctx context.Context, db *api.Postgres, dnsName string, port int32) error {
 	var err error
 	eng, err := c.GetPostgresClient(ctx, db, dnsName, port)
-
 	if err != nil {
 		return err
 	}

@@ -232,7 +232,6 @@ func (c *Controller) create(db *api.Redis) error {
 			in.Spec.Init.Initialized = true
 			return in
 		}, metav1.PatchOptions{})
-
 		if err != nil {
 			return err
 		}
@@ -328,7 +327,6 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.Redis) error {
 }
 
 func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.Redis) error {
-
 	secrets := db.Spec.GetPersistentSecrets()
 	secrets = append(secrets, c.GetRedisSecrets(db)...)
 

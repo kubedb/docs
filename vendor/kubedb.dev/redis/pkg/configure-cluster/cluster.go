@@ -35,8 +35,8 @@ import (
 // there is a StatefulSet and 0'th Pod of i'th StatefulSet is the master for i'th shard and 1, 2,
 // 3, ....'th Pods are the replicas or slaves of that master).
 func ConfigureRedisCluster(
-	restConfig *rest.Config, redis *api.Redis, version string, pods [][]*core.Pod) error {
-
+	restConfig *rest.Config, redis *api.Redis, version string, pods [][]*core.Pod,
+) error {
 	ver, err := newVersion(version)
 	if err != nil {
 		return err

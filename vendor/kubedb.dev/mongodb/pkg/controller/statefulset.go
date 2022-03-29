@@ -280,14 +280,14 @@ func (r *Reconciler) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 				Name: api.MongoDBInitialKeyDirectoryName, // FIXIT: mounted where?
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
-						DefaultMode: pointer.Int32P(0400),
+						DefaultMode: pointer.Int32P(0o400),
 						SecretName:  db.Spec.KeyFileSecret.Name,
 					},
 				},
 			})
 		}
 
-		//only on mongos in case of sharding (which is handled on 'ensureMongosNode'.
+		// only on mongos in case of sharding (which is handled on 'ensureMongosNode'.
 		if db.Spec.ShardTopology == nil && db.Spec.Init != nil && db.Spec.Init.Script != nil {
 			volumes = core_util.UpsertVolume(volumes, core.Volume{
 				Name:         "initial-script",
@@ -491,14 +491,14 @@ func (r *Reconciler) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 			Name: api.MongoDBInitialKeyDirectoryName, // FIXIT: mounted where?
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					DefaultMode: pointer.Int32P(0400),
+					DefaultMode: pointer.Int32P(0o400),
 					SecretName:  db.Spec.KeyFileSecret.Name,
 				},
 			},
 		})
 	}
 
-	//only on mongos in case of sharding (which is handled on 'ensureMongosNode'.
+	// only on mongos in case of sharding (which is handled on 'ensureMongosNode'.
 	if db.Spec.ShardTopology == nil && db.Spec.Init != nil && db.Spec.Init.Script != nil {
 		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name:         "initial-script",
@@ -699,14 +699,14 @@ func (r *Reconciler) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 				Name: api.MongoDBInitialKeyDirectoryName, // FIXIT: mounted where?
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
-						DefaultMode: pointer.Int32P(0400),
+						DefaultMode: pointer.Int32P(0o400),
 						SecretName:  db.Spec.KeyFileSecret.Name,
 					},
 				},
 			})
 		}
 
-		//only on mongos in case of sharding (which is handled on 'ensureMongosNode'.
+		// only on mongos in case of sharding (which is handled on 'ensureMongosNode'.
 		if db.Spec.ShardTopology == nil && db.Spec.Init != nil && db.Spec.Init.Script != nil {
 			volumes = core_util.UpsertVolume(volumes, core.Volume{
 				Name:         "initial-script",
@@ -881,7 +881,7 @@ func (r *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 
 			in.Spec.Template = upsertEnv(in.Spec.Template, db)
 			if !opts.isMongos {
-				//Mongos doesn't have any data
+				// Mongos doesn't have any data
 				in = upsertDataVolume(in, opts.pvcSpec, opts.emptyDirSpec, db.Spec.StorageType)
 			}
 
@@ -914,7 +914,6 @@ func (r *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 		},
 		metav1.PatchOptions{},
 	)
-
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -1038,7 +1037,7 @@ func installInitContainer(
 				Name: api.MongoDBClientCertDirectoryName,
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
-						DefaultMode: pointer.Int32P(0400),
+						DefaultMode: pointer.Int32P(0o400),
 						SecretName:  db.GetCertSecretName(api.MongoDBClientCert, ""),
 					},
 				},
@@ -1047,7 +1046,7 @@ func installInitContainer(
 				Name: api.MongoDBServerCertDirectoryName,
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
-						DefaultMode: pointer.Int32P(0400),
+						DefaultMode: pointer.Int32P(0o400),
 						SecretName:  db.GetCertSecretName(api.MongoDBServerCert, stsName),
 					},
 				},
@@ -1073,7 +1072,7 @@ func installInitContainer(
 			Name: api.MongoDBInitialKeyDirectoryName,
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					DefaultMode: pointer.Int32P(0400),
+					DefaultMode: pointer.Int32P(0o400),
 					SecretName:  db.Spec.KeyFileSecret.Name,
 				},
 			},
@@ -1237,7 +1236,7 @@ func getExporterContainer(db *api.MongoDB, mongodbVersion *v1alpha1.MongoDBVersi
 		VolumeMounts: []core.VolumeMount{
 			{
 				Name:      api.MongoDBCertDirectoryName,
-				MountPath: api.MongoCertDirectory, //TODO: use exporter certs by adding a exporter volume and mounting that here
+				MountPath: api.MongoCertDirectory, // TODO: use exporter certs by adding a exporter volume and mounting that here
 			},
 		},
 	}

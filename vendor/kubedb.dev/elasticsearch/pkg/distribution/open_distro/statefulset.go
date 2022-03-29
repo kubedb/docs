@@ -73,7 +73,6 @@ func (es *Elasticsearch) ensureStatefulSet(
 	envList []core.EnvVar,
 	initEnvList []core.EnvVar,
 ) (kutil.VerbType, error) {
-
 	if esNode == nil {
 		return kutil.VerbUnchanged, errors.New("ElasticsearchNode is empty")
 	}
@@ -176,7 +175,6 @@ func (es *Elasticsearch) ensureStatefulSet(
 
 		return in
 	}, metav1.PatchOptions{})
-
 	if err != nil {
 		return kutil.VerbUnchanged, errors.Wrap(err, "failed to create or patch statefulset")
 	}
@@ -587,7 +585,6 @@ func (es *Elasticsearch) checkStatefulSet(sName string) error {
 }
 
 func (es *Elasticsearch) upsertContainerEnv(envList []core.EnvVar) []core.EnvVar {
-
 	envList = core_util.UpsertEnvVars(envList, []core.EnvVar{
 		{
 			Name: "node.name",

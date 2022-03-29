@@ -40,19 +40,19 @@ func (r *Reconciler) getTLSArgs(db *api.MongoDB, mgVersion *v1alpha1.MongoDBVers
 		return nil, err
 	}
 
-	//xREF: https://github.com/docker-library/mongo/issues/367
+	// xREF: https://github.com/docker-library/mongo/issues/367
 	if currentVer.Compare(breakingVer) >= 0 {
-		var tlsMode = sslMode
+		tlsMode := sslMode
 		if strings.Contains(sslMode, "SSL") {
 			tlsMode = strings.Replace(sslMode, "SSL", "TLS", 1)
-		} //ie. requireSSL => requireTLS
+		} // ie. requireSSL => requireTLS
 
 		sslArgs = []string{
 			fmt.Sprintf("--tlsMode=%v", tlsMode),
 		}
 
 		if db.Spec.SSLMode != api.SSLModeDisabled {
-			//xREF: https://github.com/docker-library/mongo/issues/367
+			// xREF: https://github.com/docker-library/mongo/issues/367
 			sslArgs = append(sslArgs, []string{
 				fmt.Sprintf("--tlsCAFile=%v/%v", api.MongoCertDirectory, api.TLSCACertFileName),
 				fmt.Sprintf("--tlsCertificateKeyFile=%v/%v", api.MongoCertDirectory, api.MongoPemFileName),

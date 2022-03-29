@@ -129,7 +129,7 @@ func (c *Controller) Init() error {
 // RunControllers runs queue.worker
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
 	c.pbQueue.Run(stopCh)
-	//c.secretQueue.Run(stopCh)
+	// c.secretQueue.Run(stopCh)
 	c.appBindingQueue.Run(stopCh)
 }
 
@@ -144,7 +144,7 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.KubeInformerFactory.Start(stopCh)
 	c.KubedbInformerFactory.Start(stopCh)
 	c.AppCatInformerFactory.Start(stopCh)
-	//c.CertManagerInformerFactory.Start(stopCh)
+	// c.CertManagerInformerFactory.Start(stopCh)
 	c.ExternalInformerFactory.Start(stopCh)
 
 	// Wait for all involved caches to be synced, before processing items from the queue is started

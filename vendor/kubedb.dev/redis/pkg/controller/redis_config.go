@@ -27,6 +27,7 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -54,11 +55,13 @@ appendonly yes
 protected-mode no
 port 6379
 `
+
 var clusterConfig = `cluster-enabled yes
 cluster-config-file /data/nodes.conf
 cluster-node-timeout 5000
 cluster-migration-barrier 1
 `
+
 var redisSentinelConfig = `replica-announce-port 6379
 `
 
@@ -78,7 +81,7 @@ func (c *Controller) ensureRedisConfig(db *api.Redis) error {
 		}
 	}
 	// create secret for redis
-	_, _, err = c.CreateConfigSecret(db, db.ConfigSecretName(), data)
+	_, _, err = CreateConfigSecret(c.Client, db, db.ConfigSecretName(), data)
 	if err != nil {
 		return errors.Wrap(err, "Failed to CreateOrPatch secret")
 	}
@@ -116,7 +119,8 @@ func (c *Controller) getCustomSecretData(db *api.Redis) (string, error) {
 // If custom config not empty then create with two keys:
 //		1. default config (default.conf)
 // 		2. for custom config (redis.conf)
-func (c *Controller) CreateConfigSecret(db *api.Redis, name, CustomConfigData string) (*core.Secret, kutil.VerbType, error) {
+// WARNING: CreateConfigSecret is called from the ops-manager project. So, keep it public
+func CreateConfigSecret(kc kubernetes.Interface, db *api.Redis, name, CustomConfigData string) (*core.Secret, kutil.VerbType, error) {
 	dataArray := []string{redisConfig}
 	if db.Spec.Mode == api.RedisModeCluster {
 		dataArray = append(dataArray, clusterConfig)
@@ -124,7 +128,7 @@ func (c *Controller) CreateConfigSecret(db *api.Redis, name, CustomConfigData st
 		dataArray = append(dataArray, redisSentinelConfig)
 	}
 	if !db.Spec.DisableAuth {
-		passwordConfigData, err := c.AddAuthParamsInConfigSecret(db)
+		passwordConfigData, err := AddAuthParamsInConfigSecret(kc, db)
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
@@ -150,13 +154,13 @@ func (c *Controller) CreateConfigSecret(db *api.Redis, name, CustomConfigData st
 		Namespace: db.Namespace,
 	}
 
-	configSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.ConfigSecretName(), metav1.GetOptions{})
+	configSecret, err := kc.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.ConfigSecretName(), metav1.GetOptions{})
 	if err != nil && !kerr.IsNotFound(err) {
 		return nil, kutil.VerbUnchanged, err
 	}
 	if err != nil && kerr.IsNotFound(err) {
 		owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
-		return core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
+		return core_util.CreateOrPatchSecret(context.TODO(), kc, meta, func(in *core.Secret) *core.Secret {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = db.OffshootSelectors()
 			in.Data = inputData
@@ -164,17 +168,16 @@ func (c *Controller) CreateConfigSecret(db *api.Redis, name, CustomConfigData st
 			return in
 		}, metav1.PatchOptions{})
 	} else {
-		return core_util.PatchSecret(context.TODO(), c.Client, configSecret, func(in *core.Secret) *core.Secret {
+		return core_util.PatchSecret(context.TODO(), kc, configSecret, func(in *core.Secret) *core.Secret {
 			in.Data = inputData
 			return in
 		}, metav1.PatchOptions{})
 	}
-
 }
-func (c *Controller) AddAuthParamsInConfigSecret(db *api.Redis) (finalData string, err error) {
 
+func AddAuthParamsInConfigSecret(kc kubernetes.Interface, db *api.Redis) (finalData string, err error) {
 	if !db.Spec.DisableAuth {
-		authSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
+		authSecret, err := kc.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
 		if err != nil {
 			return "", err
 		}

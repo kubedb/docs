@@ -175,7 +175,6 @@ func mongosInitContainer(
 	envList []core.EnvVar,
 	scriptName string,
 ) (core.Container, []core.Volume) {
-
 	envList = core_util.UpsertEnvVars(envList, podTemplate.Spec.Env...)
 
 	// mongodb.Spec.SSLMode & mongodb.Spec.ClusterAuthMode can be empty if upgraded operator from
@@ -264,7 +263,7 @@ func mongosInitContainer(
 			Name: api.MongoDBInitialKeyDirectoryName, // FIXIT: mounted where?
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					DefaultMode: pointer.Int32P(0400),
+					DefaultMode: pointer.Int32P(0o400),
 					SecretName:  db.Spec.KeyFileSecret.Name,
 				},
 			},

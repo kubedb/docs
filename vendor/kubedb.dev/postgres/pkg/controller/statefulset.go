@@ -75,7 +75,6 @@ func (c *Reconciler) ensureStatefulSet(
 	postgresVersion *catalog.PostgresVersion,
 	envList []core.EnvVar,
 ) (kutil.VerbType, error) {
-
 	if err := c.checkStatefulSet(db); err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -154,7 +153,6 @@ func (c *Reconciler) ensureStatefulSet(
 		},
 		metav1.PatchOptions{},
 	)
-
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -226,7 +224,6 @@ func (c *Reconciler) checkStatefulSet(db *api.Postgres) error {
 }
 
 func getEnvForPostgres(db *api.Postgres, postgresVersion *catalog.PostgresVersion, envs []core.EnvVar) []core.EnvVar {
-
 	majorPGVersion, err := getMajorPgVersion(postgresVersion)
 	if err != nil {
 		klog.Error("couldn't get version's major part")
@@ -347,7 +344,6 @@ func getEnvForPostgres(db *api.Postgres, postgresVersion *catalog.PostgresVersio
 }
 
 func getEnvForCoordinator(db *api.Postgres, postgresVersion *catalog.PostgresVersion) []core.EnvVar {
-
 	majorPGVersion, err := getMajorPgVersion(postgresVersion)
 	if err != nil {
 		klog.Error("couldn't get version's major part")
@@ -459,6 +455,7 @@ func upsertUserEnv(statefulSet *apps.StatefulSet, postgress *api.Postgres) *apps
 	}
 	return statefulSet
 }
+
 func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 	getPostgresPorts := func() []core.ContainerPort {
 		portList := []core.ContainerPort{
@@ -498,7 +495,6 @@ func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 }
 
 func (c *Reconciler) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion *catalog.PostgresVersion) *apps.StatefulSet {
-
 	if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 		sslMode := string(db.Spec.SSLMode)
 		if sslMode == string(api.PostgresSSLModePrefer) || sslMode == string(api.PostgresSSLModeAllow) {
@@ -686,8 +682,8 @@ func upsertSharedRunScriptsVolume(volumes []core.Volume) []core.Volume {
 	volumes = core_util.UpsertVolume(volumes, configVolume)
 	return volumes
 }
-func upsertSharedScriptsVolume(volumes []core.Volume) []core.Volume {
 
+func upsertSharedScriptsVolume(volumes []core.Volume) []core.Volume {
 	configVolume := core.Volume{
 		Name: "scripts",
 		VolumeSource: core.VolumeSource{
@@ -698,8 +694,8 @@ func upsertSharedScriptsVolume(volumes []core.Volume) []core.Volume {
 
 	return volumes
 }
-func upsertSharedCertificatesVolume(volumes []core.Volume) []core.Volume {
 
+func upsertSharedCertificatesVolume(volumes []core.Volume) []core.Volume {
 	configVolume := core.Volume{
 		Name: sharedTlsVolumeName,
 		VolumeSource: core.VolumeSource{
@@ -711,8 +707,8 @@ func upsertSharedCertificatesVolume(volumes []core.Volume) []core.Volume {
 
 	return volumes
 }
-func getEnforceFsGroupInitContainers(statefulSet *apps.StatefulSet, postgresVersion *catalog.PostgresVersion) []core.Container {
 
+func getEnforceFsGroupInitContainers(statefulSet *apps.StatefulSet, postgresVersion *catalog.PostgresVersion) []core.Container {
 	volumeMounts := []core.VolumeMount{
 		{
 			Name:      "data",

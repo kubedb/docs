@@ -69,7 +69,7 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 			password := password.Generate(api.DefaultPasswordLength)
 
 			// Secret Data
-			var data = map[string][]byte{
+			data := map[string][]byte{
 				core.BasicAuthUsernameKey: []byte(username),
 				core.BasicAuthPasswordKey: []byte(password),
 			}

@@ -183,7 +183,6 @@ func (c *Controller) create(db *api.Elasticsearch) error {
 			in.Spec.Init.Initialized = true
 			return in
 		}, metav1.PatchOptions{})
-
 		if err != nil {
 			return err
 		}

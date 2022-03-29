@@ -188,7 +188,6 @@ func (c *Controller) create(db *api.Postgres) error {
 			in.Spec.Init.Initialized = true
 			return in
 		}, metav1.PatchOptions{})
-
 		if err != nil {
 			return err
 		}
@@ -298,7 +297,6 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.Postgres, owner *metav
 		if err := c.wipeOutDatabase(db.ObjectMeta, secrets, owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
-
 	} else {
 		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
@@ -322,7 +320,6 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.Postgres, owner *metav
 }
 
 func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.Postgres) error {
-
 	secrets := db.Spec.GetPersistentSecrets()
 	secrets = append(secrets, c.GetPostgresSecrets(db)...)
 

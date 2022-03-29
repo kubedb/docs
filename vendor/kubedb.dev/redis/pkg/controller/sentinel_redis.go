@@ -186,7 +186,6 @@ func (c *Controller) createSentinel(db *api.RedisSentinel) error {
 		_, _, err := util.CreateOrPatchRedisSentinel(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisSentinel) *api.RedisSentinel {
 			return in
 		}, metav1.PatchOptions{})
-
 		if err != nil {
 			return err
 		}

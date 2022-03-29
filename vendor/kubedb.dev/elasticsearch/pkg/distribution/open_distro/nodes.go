@@ -186,7 +186,6 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 	}
 
 	return es.ensureStatefulSet(dataNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeData), envList, initEnvList)
-
 }
 
 func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
@@ -347,7 +346,6 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 
 	// For affinity, NodeRoleIngest is used.
 	return es.ensureStatefulSet(combinedNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeIngest), envList, initEnvList)
-
 }
 
 // Use ElasticsearchNode struct for combined nodes too,
@@ -443,6 +441,7 @@ func (es *Elasticsearch) EnsureDataHotNode() (kutil.VerbType, error) {
 
 	return es.ensureStatefulSet(dataHotNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeDataHot), envList, initEnvList)
 }
+
 func (es *Elasticsearch) EnsureDataWarmNode() (kutil.VerbType, error) {
 	if es.db.Spec.Topology.DataWarm == nil {
 		return kutil.VerbUnchanged, nil
@@ -521,18 +520,23 @@ func (es *Elasticsearch) EnsureDataWarmNode() (kutil.VerbType, error) {
 
 	return es.ensureStatefulSet(dataWarmNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeDataWarm), envList, initEnvList)
 }
+
 func (es *Elasticsearch) EnsureDataColdNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
 }
+
 func (es *Elasticsearch) EnsureDataFrozenNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
 }
+
 func (es *Elasticsearch) EnsureMLNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
 }
+
 func (es *Elasticsearch) EnsureTransformNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
 }
+
 func (es *Elasticsearch) EnsureCoordinatingNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
 }

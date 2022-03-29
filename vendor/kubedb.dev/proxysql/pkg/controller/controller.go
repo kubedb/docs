@@ -168,7 +168,6 @@ func (c *Controller) pushFailureEvent(db *api.ProxySQL, reason string) {
 		in.ObservedGeneration = db.Generation
 		return db.UID, in
 	}, metav1.UpdateOptions{})
-
 	if err != nil {
 		c.Recorder.Eventf(
 			db,
