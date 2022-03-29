@@ -47,7 +47,6 @@ func (c *Controller) GetPostgresClient(ctx context.Context, db *api.Postgres, dn
 		secretName := db.GetCertSecretName(api.PostgresClientCert)
 
 		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(ctx, secretName, metav1.GetOptions{})
-
 		if err != nil {
 			klog.Error(err, "failed to get certificate secret.", secretName)
 			return nil, err

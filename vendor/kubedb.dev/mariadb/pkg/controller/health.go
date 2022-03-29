@@ -257,7 +257,6 @@ func (c *Controller) CheckMariaDBHealthOnce() {
 	}
 
 	wg.Wait()
-
 }
 
 func (c *Controller) checkMariaDBClusterHealth(db *api.MariaDB, engine *xorm.Engine) error {

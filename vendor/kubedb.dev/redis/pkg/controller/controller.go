@@ -66,7 +66,7 @@ type Controller struct {
 	rsInformer cache.SharedIndexInformer
 	rsLister   api_listers.RedisSentinelLister
 
-	//Redis StatefulSet Informer
+	// Redis StatefulSet Informer
 	rdStsInformer cache.SharedIndexInformer
 }
 
@@ -193,6 +193,7 @@ func (c *Controller) pushFailureEvent(db *api.Redis, reason string) {
 		reason,
 	)
 }
+
 func (c *Controller) pushSentinelFailureEvent(db *api.RedisSentinel, reason string) {
 	c.Recorder.Eventf(
 		db,

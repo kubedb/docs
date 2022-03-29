@@ -96,7 +96,7 @@ func (es *Elasticsearch) createOrSyncAdminCredSecret() (*core.LocalObjectReferen
 
 	// Create new secret new random password
 	pass := password.Generate(api.DefaultPasswordLength)
-	var data = map[string][]byte{
+	data := map[string][]byte{
 		core.BasicAuthUsernameKey: []byte(api.ElasticsearchInternalUserElastic),
 		core.BasicAuthPasswordKey: []byte(pass),
 	}

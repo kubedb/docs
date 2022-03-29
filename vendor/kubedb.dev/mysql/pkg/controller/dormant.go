@@ -84,10 +84,10 @@ func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, o
 	}
 	unusedSecrets := sets.NewString(secrets...).Difference(secretUsed)
 
-	//Dont delete unused secrets that are not owned by kubeDB
+	// Dont delete unused secrets that are not owned by kubeDB
 	for _, unusedSecret := range unusedSecrets.List() {
 		secret, err := c.Client.CoreV1().Secrets(meta.Namespace).Get(context.TODO(), unusedSecret, metav1.GetOptions{})
-		//Maybe user has delete this secret
+		// Maybe user has delete this secret
 		if kerr.IsNotFound(err) {
 			unusedSecrets.Delete(secret.Name)
 			continue

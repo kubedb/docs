@@ -44,7 +44,6 @@ const (
 // for read replica it validates the allowance of reading from the source object and create secrets to connect with source
 
 func (c *Reconciler) ensureAuthSecret(db *api.MySQL) error {
-
 	if db.IsReadReplica() {
 		err := c.ensureReadReplicaAuthSecret(db)
 		if err != nil {
@@ -86,7 +85,6 @@ func (c *Reconciler) ensureInstanceAuthSecret(db *api.MySQL) error {
 }
 
 func (c *Reconciler) ensureReadReplicaAuthSecret(db *api.MySQL) error {
-
 	sec, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.GetAuthSecretName(), metav1.GetOptions{})
 	if err == nil {
 		err = c.validateAndSyncSecret(sec, db)
@@ -142,7 +140,6 @@ func (c *Reconciler) validateAndSyncSecret(secret *core.Secret, db *api.MySQL) e
 		}
 	}
 	return nil
-
 }
 
 func (c *Reconciler) createAuthSecret(db *api.MySQL) (string, error) {
@@ -185,7 +182,7 @@ func (c *Reconciler) createReadReplicaAuthSecret(db *api.MySQL) error {
 	readAppBindingName := db.Spec.Topology.ReadReplica.SourceRef.Name
 	readAppBindingNameSpace := db.Spec.Topology.ReadReplica.SourceRef.Namespace
 
-	//get the secret from appbinding
+	// get the secret from appbinding
 	readAppBinding, err := c.AppCatalogClient.AppcatalogV1alpha1().AppBindings(readAppBindingNameSpace).Get(context.TODO(), readAppBindingName, metav1.GetOptions{})
 	if err != nil {
 		klog.Error("unable to get read appbinding", err)

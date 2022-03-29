@@ -175,7 +175,6 @@ func (r *Reconciler) EnsureGoverningService(db *api.MongoDB) error {
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
 	svcFunc := func(svcName string, labels, selectors map[string]string) error {
-
 		meta := metav1.ObjectMeta{
 			Name:      svcName,
 			Namespace: db.Namespace,

@@ -120,7 +120,6 @@ func (c *Controller) ensureSentinelStatsService(db *api.RedisSentinel) (kutil.Ve
 			in.Spec.HealthCheckNodePort = svcTemplate.Spec.HealthCheckNodePort
 		}
 		return in
-
 	}, metav1.PatchOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err

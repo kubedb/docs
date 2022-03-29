@@ -533,7 +533,6 @@ func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert 
 }
 
 func (es *Elasticsearch) findSecret(name string) (*core.Secret, error) {
-
 	secret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {

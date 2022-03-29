@@ -130,7 +130,6 @@ func (c *Controller) CheckSentinelHealthOnce() {
 	}
 	// Wait until all go-routine complete executions
 	wg.Wait()
-
 }
 
 func (c *Controller) updateErrorAcceptingConnectionsSentinel(db *api.RedisSentinel, connectionErr error) {

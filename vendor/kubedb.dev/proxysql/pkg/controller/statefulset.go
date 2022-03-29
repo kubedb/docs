@@ -44,8 +44,10 @@ type database interface {
 	GetAuthSecretName() string
 }
 
-var _ database = api.PerconaXtraDB{}
-var _ database = api.MySQL{}
+var (
+	_ database = api.PerconaXtraDB{}
+	_ database = api.MySQL{}
+)
 
 type workloadOptions struct {
 	// App level options
@@ -78,7 +80,7 @@ func (c *Controller) ensureProxySQLNode(db *api.ProxySQL) (kutil.VerbType, error
 		return kutil.VerbUnchanged, err
 	}
 
-	var ports = []core.ContainerPort{
+	ports := []core.ContainerPort{
 		{
 			Name:          api.ProxySQLDatabasePortName,
 			ContainerPort: api.ProxySQLDatabasePort,
@@ -340,7 +342,6 @@ func (c *Controller) ensureStatefulSet(db *api.ProxySQL, opts workloadOptions) (
 		},
 		metav1.PatchOptions{},
 	)
-
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}

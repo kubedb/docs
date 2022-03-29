@@ -165,6 +165,7 @@ func (c *Controller) ensurePrimaryService(db *api.Redis) (kutil.VerbType, error)
 	}, metav1.PatchOptions{})
 	return ok, err
 }
+
 func (c *Controller) ensureStandbyService(db *api.Redis) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
 		Name:      db.StandbyServiceName(),
@@ -256,7 +257,6 @@ func (c *Controller) ensureStatsService(db *api.Redis) (kutil.VerbType, error) {
 			in.Spec.HealthCheckNodePort = svcTemplate.Spec.HealthCheckNodePort
 		}
 		return in
-
 	}, metav1.PatchOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err

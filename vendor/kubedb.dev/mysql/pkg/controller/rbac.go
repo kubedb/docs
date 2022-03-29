@@ -96,7 +96,6 @@ func (c *Controller) ensureRole(db *api.MySQL, name string, pspName string) erro
 					Verbs:     []string{"get"},
 				},
 				{
-
 					APIGroups:     []string{apps.GroupName},
 					Resources:     []string{"statefulsets"},
 					Verbs:         []string{"get"},

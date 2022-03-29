@@ -41,11 +41,15 @@ type redisVersion interface {
 	ReshardCmd(useTLS bool, srcIP, srcID, dstIP, dstID string, slotStart, slotEnd int) []string
 }
 
-type version4 struct{}
-type version5 struct{}
+type (
+	version4 struct{}
+	version5 struct{}
+)
 
-var _ redisVersion = &version4{}
-var _ redisVersion = &version5{}
+var (
+	_ redisVersion = &version4{}
+	_ redisVersion = &version5{}
+)
 
 func newVersion(version string) (redisVersion, error) {
 	// remove metadata from version string
@@ -99,8 +103,10 @@ func (v version4) DeleteNodeCmd(useTLS bool, existingAddr, deletingNodeID string
 }
 
 func (v version4) ReshardCmd(useTLS bool, srcIP, srcID, dstIP, dstID string, slotStart, slotEnd int) []string {
-	return []string{"/conf/cluster.sh", "reshard", srcIP, srcID, dstIP, dstID,
-		strconv.Itoa(slotStart), strconv.Itoa(slotEnd)}
+	return []string{
+		"/conf/cluster.sh", "reshard", srcIP, srcID, dstIP, dstID,
+		strconv.Itoa(slotStart), strconv.Itoa(slotEnd),
+	}
 }
 
 /*************************************************

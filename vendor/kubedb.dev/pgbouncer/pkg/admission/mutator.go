@@ -107,7 +107,7 @@ func setDefaultValues(db *api.PgBouncer) runtime.Object {
 		db.Spec.Replicas = pointer.Int32P(1)
 	}
 
-	//TODO: Make sure an image path is set
+	// TODO: Make sure an image path is set
 
 	if db.Spec.ConnectionPool != nil {
 		if db.Spec.ConnectionPool.Port == nil {

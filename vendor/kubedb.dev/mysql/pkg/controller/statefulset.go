@@ -142,14 +142,12 @@ func (c *Reconciler) createOrPatchStatefulSet(db *api.MySQL) (*apps.StatefulSet,
 					{
 						Name: "source-ca",
 						VolumeSource: core.VolumeSource{
-
 							Secret: &core.SecretVolumeSource{
 								SecretName: meta_util.NameWithSuffix(db.Name, "source-tls-secret"),
 							},
 						},
 					},
 				}...)
-
 			}
 
 			// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
@@ -201,7 +199,7 @@ func (c *Reconciler) createOrPatchStatefulSet(db *api.MySQL) (*apps.StatefulSet,
 			in = upsertUserEnv(in, db)
 			// configure tls if configured in DB
 			in = c.upsertTLSVolume(in, db)
-			//in.Spec.PodManagementPolicy = apps.ParallelPodManagement
+			// in.Spec.PodManagementPolicy = apps.ParallelPodManagement
 			in.Spec.Template.Spec.ReadinessGates = nil
 			return in
 		}, metav1.PatchOptions{})
@@ -340,7 +338,6 @@ func getMySQLContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion) core.
 	}
 
 	return container
-
 }
 
 func getCmdsForMySQLContainer(db *api.MySQL) []string {
@@ -362,7 +359,7 @@ func getArgsForMysqlContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion
 	}
 	// add ssl certs flag into args to configure TLS for standalone
 	if db.Spec.Topology == nil || db.IsReadReplica() {
-		//args = append(db.Spec.PodTemplate.Spec.Args, args...)
+		// args = append(db.Spec.PodTemplate.Spec.Args, args...)
 		args = append(args, db.Spec.PodTemplate.Spec.Args...)
 		if db.Spec.TLS != nil {
 			tlsArgs := []string{
@@ -387,7 +384,7 @@ func getArgsForMysqlContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion
 		if db.Spec.TLS != nil {
 			// https://dev.mysql.com/doc/refman/8.0/en/group-replication-secure-socket-layer-support-ssl.html
 			// Host name identity verification with VERIFY_IDENTITY does not work with self-signed certificate
-			//specArgs["loose-group_replication_ssl_mode"] = "VERIFY_IDENTITY"
+			// specArgs["loose-group_replication_ssl_mode"] = "VERIFY_IDENTITY"
 			specArgs["loose-group_replication_ssl_mode"] = "VERIFY_CA"
 			// the configuration for Group Replication's group communication connections is taken from the server's SSL configuration
 			// https://dev.mysql.com/doc/refman/8.0/en/group-replication-secure-socket-layer-support-ssl.html
@@ -441,7 +438,7 @@ func getArgsForMysqlContainer(db *api.MySQL, mysqlVersion *v1alpha1.MySQLVersion
 	}
 
 	if db.Spec.Topology == nil && db.Spec.AllowedReadReplicas != nil {
-		//args = append(args, "--datadir=/var/lib/mysql/data")
+		// args = append(args, "--datadir=/var/lib/mysql/data")
 		args = append(args, "--gtid-mode=ON", "--enforce_gtid_consistency=ON")
 	}
 

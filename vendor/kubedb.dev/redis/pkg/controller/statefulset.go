@@ -64,7 +64,7 @@ func (c *Controller) ensureStatefulSet(db *api.Redis, statefulSetName string, re
 		return kutil.VerbUnchanged, err
 	}
 
-	//ensure PDB for statefulSet
+	// ensure PDB for statefulSet
 	if err := c.CreateStatefulSetPodDisruptionBudget(statefulSet); err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -331,7 +331,7 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 				getCoordinatorContainer(redisVersion, db, redisModeEnvs))
 		}
 
-		//upsert the container
+		// upsert the container
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, getRedisContainer(db, redisVersion, curVersion, redisModeEnvs))
 
 		if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
@@ -376,7 +376,6 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 }
 
 func getMonitorContainer(db *api.Redis, redisVersion *v1alpha1.RedisVersion, authSecret *core.Secret) core.Container {
-
 	args := []string{
 		fmt.Sprintf("--web.listen-address=:%v", db.Spec.Monitor.Prometheus.Exporter.Port),
 		fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
@@ -424,6 +423,7 @@ func getMonitorContainer(db *api.Redis, redisVersion *v1alpha1.RedisVersion, aut
 	}
 	return container
 }
+
 func getRedisInitContainer(redisVersion *v1alpha1.RedisVersion) core.Container {
 	container := core.Container{
 		Name:            "redis-init",
@@ -438,16 +438,15 @@ func getRedisInitContainer(redisVersion *v1alpha1.RedisVersion) core.Container {
 	}
 	return container
 }
+
 func getRedisContainer(db *api.Redis, redisVersion *v1alpha1.RedisVersion, curVersion *semver.Version, redisEnvs []core.EnvVar) core.Container {
-	var (
-		ports = []core.ContainerPort{
-			{
-				Name:          api.RedisDatabasePortName,
-				ContainerPort: api.RedisDatabasePort,
-				Protocol:      core.ProtocolTCP,
-			},
-		}
-	)
+	ports := []core.ContainerPort{
+		{
+			Name:          api.RedisDatabasePortName,
+			ContainerPort: api.RedisDatabasePort,
+			Protocol:      core.ProtocolTCP,
+		},
+	}
 	if db.Spec.Mode == api.RedisModeCluster {
 		ports = append(ports, core.ContainerPort{
 			Name:          api.RedisGossipPortName,
@@ -590,6 +589,7 @@ func getRedisContainer(db *api.Redis, redisVersion *v1alpha1.RedisVersion, curVe
 	container.Env = core_util.UpsertEnvVars(container.Env, redisEnvs...)
 	return container
 }
+
 func getCoordinatorContainer(redisVersion *v1alpha1.RedisVersion, db *api.Redis, redisEnvs []core.EnvVar) core.Container {
 	var volumeMounts []core.VolumeMount
 
@@ -661,7 +661,6 @@ func getCoordinatorContainer(redisVersion *v1alpha1.RedisVersion, db *api.Redis,
 	container.Env = core_util.UpsertEnvVars(container.Env, redisEnvs...)
 
 	if !db.Spec.DisableAuth {
-
 		container.Env = core_util.UpsertEnvVars(container.Env, []core.EnvVar{
 			{
 				Name: api.EnvRedisPassword,
@@ -678,6 +677,7 @@ func getCoordinatorContainer(redisVersion *v1alpha1.RedisVersion, db *api.Redis,
 	}
 	return container
 }
+
 func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 	pvcSpec := db.Spec.Storage
 	if db.Spec.StorageType == api.StorageTypeEphemeral {
@@ -718,6 +718,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Redis) *apps.Statef
 	}
 	return statefulSet
 }
+
 func upsertRedisSentinelVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 	Volumes := []core.Volume{
 		{
@@ -838,7 +839,6 @@ func upsertUserEnv(statefulset *apps.StatefulSet, db *api.Redis) *apps.StatefulS
 }
 
 func upsertRedisConfig(statefulSet *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
-
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularRedis {
 			configVolumeMount := core.VolumeMount{
@@ -854,7 +854,7 @@ func upsertRedisConfig(statefulSet *apps.StatefulSet, db *api.Redis) *apps.State
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
 						SecretName:  db.ConfigSecretName(),
-						DefaultMode: pointer.Int32P(0777),
+						DefaultMode: pointer.Int32P(0o777),
 					},
 				},
 			}

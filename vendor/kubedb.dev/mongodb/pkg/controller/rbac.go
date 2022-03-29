@@ -147,7 +147,7 @@ func (r *Reconciler) getPolicyNames(db *api.MongoDB) (string, error) {
 }
 
 func (r *Reconciler) ensureDatabaseRBAC(db *api.MongoDB) error {
-	var createDatabaseRBAC = func(podTemplate *v1.PodTemplateSpec) error {
+	createDatabaseRBAC := func(podTemplate *v1.PodTemplateSpec) error {
 		if podTemplate == nil {
 			return errors.New("Pod Template can not be empty.")
 		}

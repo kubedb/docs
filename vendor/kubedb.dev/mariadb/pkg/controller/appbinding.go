@@ -27,6 +27,7 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/pkg/errors"
+	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -100,6 +101,7 @@ func (c *Controller) ensureAppBinding(db *api.MariaDB) (kutil.VerbType, error) {
 			in.Annotations = meta_util.FilterKeys(kubedb.GroupName, nil, db.Annotations)
 			in.Spec.Type = appBindMeta.Type()
 			in.Spec.Version = dbVersion.Spec.Version
+			in.Spec.ClientConfig.URL = pointer.StringP(fmt.Sprintf("tcp(%s.%s.svc:%d)/", db.ServiceName(), db.Namespace, port))
 			in.Spec.ClientConfig.Service = &appcat.ServiceReference{
 				Scheme: "mysql",
 				Name:   db.ServiceName(),

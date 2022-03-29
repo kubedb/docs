@@ -203,7 +203,7 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 			}
 		}
 
-		//prevent to create read replica if it's not allowed to read from the source.
+		// prevent to create read replica if it's not allowed to read from the source.
 		if mysql.IsReadReplica() {
 			allowed, err := allowedForRead(client, extClient, mysql)
 			if err != nil {
@@ -228,7 +228,7 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 		return err
 	}
 
-	//authSecret := mysql.Spec.AuthSecret
+	// authSecret := mysql.Spec.AuthSecret
 
 	if strictValidation {
 
@@ -285,7 +285,7 @@ func validateUpdate(obj, oldObj *api.MySQL) error {
 
 // a replica will be allowed for read if it matches the namespace and selector allowed by the source
 func allowedForRead(client kubernetes.Interface, extClient cs.Interface, readReplica *api.MySQL) (bool, error) {
-	//get db object
+	// get db object
 	referredDBName := readReplica.Spec.Topology.ReadReplica.SourceRef.Name
 	referredDBNameSpace := readReplica.Spec.Topology.ReadReplica.SourceRef.Namespace
 
@@ -309,7 +309,6 @@ func allowedForRead(client kubernetes.Interface, extClient cs.Interface, readRep
 }
 
 func isInAllowedNamespaces(client kubernetes.Interface, readReplica *api.MySQL, referredDB *api.MySQL) (bool, error) {
-
 	if referredDB.Spec.AllowedReadReplicas == nil {
 		return false, nil
 	}
@@ -337,7 +336,6 @@ func isInAllowedNamespaces(client kubernetes.Interface, readReplica *api.MySQL, 
 				if ns.Name == readReplica.Namespace {
 					return true, nil
 				}
-
 			}
 
 		}

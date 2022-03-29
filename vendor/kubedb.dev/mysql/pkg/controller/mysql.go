@@ -92,7 +92,7 @@ func (c *Controller) create(db *api.MySQL) error {
 		)
 	}
 
-	//ensure Router configuration if db uses innodb cluster
+	// ensure Router configuration if db uses innodb cluster
 	if db.IsInnoDBCluster() {
 		if err := c.ensureRouter(db); err != nil {
 			return err
@@ -220,7 +220,6 @@ func (c *Controller) create(db *api.MySQL) error {
 			in.Spec.Init.Initialized = true
 			return in
 		}, metav1.PatchOptions{})
-
 		if err != nil {
 			return err
 		}

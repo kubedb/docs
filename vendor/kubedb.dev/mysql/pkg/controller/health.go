@@ -112,14 +112,14 @@ func (c *Controller) CheckMySQLHealthOnce() {
 			for _, pod := range dbPods {
 
 				dns := HostDNS(db, pod.ObjectMeta)
-				//innodbCluster uses router as a load balancer
+				// innodbCluster uses router as a load balancer
 				// which is connected to router Primary service
 				if db.IsInnoDBCluster() {
 					dns = db.PrimaryServiceDNS()
 				}
 
 				engine, err := c.getMySQLClient(ctx, db, dns, api.MySQLDatabasePort)
-				//unable get clientConnection means database server is not healthy
+				// unable get clientConnection means database server is not healthy
 				if err != nil {
 					klog.Error(err)
 					err = c.updateConditionsForNotHealthy(ctx, db, err)
@@ -132,7 +132,7 @@ func (c *Controller) CheckMySQLHealthOnce() {
 				func(engine *xorm.Engine) {
 					defer closeClientEngine(engine)
 
-					//checkHeath for StandAlone and update status
+					// checkHeath for StandAlone and update status
 					if db.Spec.Topology == nil {
 						healthy, err := c.checkMySQLStandaloneHealth(ctx, engine)
 
@@ -144,7 +144,7 @@ func (c *Controller) CheckMySQLHealthOnce() {
 							}
 							return
 						}
-						//db is healthy
+						// db is healthy
 						err = c.updateConditionsForHealthy(ctx, db)
 						if err != nil {
 							klog.Error(err)
@@ -152,7 +152,7 @@ func (c *Controller) CheckMySQLHealthOnce() {
 						}
 					}
 
-					//check Health for Read Replica and update status
+					// check Health for Read Replica and update status
 					if db.IsReadReplica() {
 						healthy, err := c.checkMySQLReadReplicaHealth(ctx, engine, db)
 						if err != nil || !healthy {
@@ -163,7 +163,7 @@ func (c *Controller) CheckMySQLHealthOnce() {
 							}
 							return
 						}
-						//db is healthy
+						// db is healthy
 						err = c.updateConditionsForHealthy(ctx, db)
 
 						if err != nil {
@@ -172,8 +172,8 @@ func (c *Controller) CheckMySQLHealthOnce() {
 						}
 					}
 
-					//check Health for GroupReplication and update status
-					//check Health for InnodbCluster and update status
+					// check Health for GroupReplication and update status
+					// check Health for InnodbCluster and update status
 					if db.UsesGroupReplication() || db.IsInnoDBCluster() {
 						healthy, err := c.checkMySQLClusterHealth(ctx, len(dbPods), engine)
 						if err != nil {
@@ -230,7 +230,6 @@ func (c *Controller) CheckMySQLHealthOnce() {
 					}
 				}
 			}
-
 		}()
 	}
 	wg.Wait()
@@ -246,7 +245,7 @@ func closeClientEngine(engine *xorm.Engine) {
 }
 
 func (c *Controller) checkMySQLReadReplicaHealth(ctx context.Context, engine *xorm.Engine, db *api.MySQL) (bool, error) {
-	//check is online
+	// check is online
 	session := engine.NewSession().Context(ctx)
 	defer func(session *xorm.Session) {
 		err := session.Close()
@@ -297,7 +296,6 @@ func (c *Controller) checkMySQLClusterHealth(ctx context.Context, members int, e
 	} else {
 		return false, nil
 	}
-
 }
 
 func (c *Controller) checkMySQLStandaloneHealth(ctx context.Context, engine *xorm.Engine) (bool, error) {
@@ -348,7 +346,6 @@ func (c *Controller) getMySQLClient(ctx context.Context, db *api.MySQL, dns stri
 	cnnstr := fmt.Sprintf("%v:%v@tcp(%s:%d)/%s?%s", user, pass, dns, port, api.ResourceSingularMySQL, tlsParam)
 	engine, err := xorm.NewEngine(api.ResourceSingularMySQL, cnnstr)
 	if err != nil {
-
 		return engine, err
 	}
 	engine.SetDefaultContext(ctx)
@@ -396,7 +393,6 @@ func (c *Controller) updateMySQLStatusConditions(ctx context.Context, db *api.My
 }
 
 func (c *Controller) updateConditionsForNotHealthy(ctx context.Context, db *api.MySQL, reason error) error {
-
 	err := c.updateMySQLStatusConditions(ctx, db,
 		kmapi.Condition{
 			Type:    api.DatabaseAcceptingConnection,
@@ -421,7 +417,6 @@ func (c *Controller) updateConditionsForNotHealthy(ctx context.Context, db *api.
 }
 
 func (c *Controller) updateConditionsForHealthy(ctx context.Context, db *api.MySQL) error {
-
 	err := c.updateMySQLStatusConditions(ctx, db,
 		kmapi.Condition{
 			Type:    api.DatabaseAcceptingConnection,

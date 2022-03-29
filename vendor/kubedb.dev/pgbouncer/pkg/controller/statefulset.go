@@ -125,8 +125,8 @@ func (c *Controller) ensureStatefulSet(
 			volumeMounts = append(volumeMounts, *cfgVolumeMount)
 
 			if db.Spec.TLS != nil {
-				//TLS is enabled
-				//mount client crt (CT is short for client-tls)
+				// TLS is enabled
+				// mount client crt (CT is short for client-tls)
 				if db.Spec.TLS.IssuerRef != nil {
 					servingServerSecretVolume, servingServerSecretVolumeMount := c.getVolumeAndVolumeMountForCertificate(db, api.PgBouncerServerCert)
 					volumes = append(volumes, *servingServerSecretVolume)
@@ -136,7 +136,7 @@ func (c *Controller) ensureStatefulSet(
 					volumes = append(volumes, *servingClientSecretVolume)
 					volumeMounts = append(volumeMounts, *servingClientVolumeMount)
 
-					//add exporter certificate volume
+					// add exporter certificate volume
 					exporterSecretVolume, _ := c.getVolumeAndVolumeMountForCertificate(db, api.PgBouncerMetricsExporterCert)
 					volumes = append(volumes, *exporterSecretVolume)
 				}
@@ -195,7 +195,6 @@ func (c *Controller) ensureStatefulSet(
 		},
 		metav1.PatchOptions{},
 	)
-
 	if err != nil {
 		klog.Infoln(err)
 		return kutil.VerbUnchanged, err
@@ -239,7 +238,7 @@ func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 }
 
 func (c *Controller) checkStatefulSet(db *api.PgBouncer) error {
-	//Name validation for StatefulSet
+	// Name validation for StatefulSet
 	// Check whether PgBouncer's StatefulSet (not managed by KubeDB) already exists
 	name := db.OffshootName()
 	// SatatefulSet for PgBouncer database
@@ -261,7 +260,7 @@ func (c *Controller) checkStatefulSet(db *api.PgBouncer) error {
 }
 
 func (c *Controller) checkSecret(db *api.PgBouncer) error {
-	//Name validation for secret
+	// Name validation for secret
 	// Check whether a non-kubedb managed secret by this name already exists
 	name := db.OffshootName()
 	// secret for PgBouncer

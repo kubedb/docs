@@ -1470,7 +1470,7 @@ kmodules.xyz/resource-metrics/kubedb.com/v1alpha2
 ## explicit; go 1.17
 kmodules.xyz/webhook-runtime/admission/v1
 kmodules.xyz/webhook-runtime/builder
-# kubedb.dev/apimachinery v0.25.1-0.20220317212333-8b0203db7259
+# kubedb.dev/apimachinery v0.26.0
 ## explicit; go 1.17
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
@@ -1531,7 +1531,7 @@ kubedb.dev/apimachinery/pkg/validator
 # kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178
 ## explicit; go 1.17
 kubedb.dev/db-client-go/mongodb
-# kubedb.dev/elasticsearch v0.25.1-0.20220224120836-d1317ca88896
+# kubedb.dev/elasticsearch v0.26.0
 ## explicit; go 1.17
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
@@ -1547,39 +1547,39 @@ kubedb.dev/elasticsearch/pkg/lib/heap
 kubedb.dev/elasticsearch/pkg/lib/kernel
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/mariadb v0.9.0
+# kubedb.dev/mariadb v0.10.0
 ## explicit; go 1.17
 kubedb.dev/mariadb/pkg/admission
 kubedb.dev/mariadb/pkg/controller
-# kubedb.dev/memcached v0.18.0
+# kubedb.dev/memcached v0.19.0
 ## explicit; go 1.17
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.18.0
+# kubedb.dev/mongodb v0.19.0
 ## explicit; go 1.17
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.18.0
+# kubedb.dev/mysql v0.19.0
 ## explicit; go 1.17
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.12.0
+# kubedb.dev/percona-xtradb v0.13.0
 ## explicit; go 1.17
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pgbouncer v0.12.0
+# kubedb.dev/pgbouncer v0.13.0
 ## explicit; go 1.17
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.25.0
+# kubedb.dev/postgres v0.26.0
 ## explicit; go 1.17
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.12.0
+# kubedb.dev/proxysql v0.13.0
 ## explicit; go 1.17
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.18.0
+# kubedb.dev/redis v0.19.0
 ## explicit; go 1.17
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster

@@ -37,7 +37,6 @@ import (
 )
 
 func (c *Controller) create(db *api.MariaDB) error {
-
 	// validate MariaDB object
 	if err := validator.ValidateMariaDB(c.Client, c.DBClient, db, true); err != nil {
 		c.Recorder.Event(
@@ -214,7 +213,6 @@ func (c *Controller) create(db *api.MariaDB) error {
 			in.Spec.Init.Initialized = true
 			return in
 		}, metav1.PatchOptions{})
-
 		if err != nil {
 			return err
 		}

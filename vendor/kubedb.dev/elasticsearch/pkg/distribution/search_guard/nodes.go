@@ -57,7 +57,6 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 			Name:  "NODE_ROLES",
 			Value: "master",
 		})
-
 	} else {
 		// For Elasticsearch version >=7.6.x, <7.9.x
 		// For master node, only master role is true.
@@ -222,7 +221,6 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 	}
 
 	return es.ensureStatefulSet(dataNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeData), envList, initEnvList)
-
 }
 
 func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
@@ -246,7 +244,6 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 			Name:  "NODE_ROLES",
 			Value: "ingest",
 		})
-
 	} else {
 		// For Elasticsearch version >=6.8.x, <7.9.x
 		// For ingest node, only ingest role is true.
@@ -414,7 +411,6 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 
 	// For affinity, NodeRoleIngest is used.
 	return es.ensureStatefulSet(combinedNode, statefulSetName, labels, replicas, string(api.ElasticsearchNodeRoleTypeIngest), envList, initEnvList)
-
 }
 
 // Use ElasticsearchNode struct for combined nodes too,
@@ -436,18 +432,23 @@ func (es *Elasticsearch) EnsureDataContentNode() (kutil.VerbType, error) {
 func (es *Elasticsearch) EnsureDataHotNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
 }
+
 func (es *Elasticsearch) EnsureDataWarmNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
 }
+
 func (es *Elasticsearch) EnsureDataColdNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
 }
+
 func (es *Elasticsearch) EnsureDataFrozenNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
 }
+
 func (es *Elasticsearch) EnsureMLNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
 }
+
 func (es *Elasticsearch) EnsureTransformNode() (kutil.VerbType, error) {
 	return kutil.VerbUnchanged, nil
 }

@@ -81,6 +81,7 @@ plugins.security.ssl.http.pemkey_filepath: certs/http/tls.key
 plugins.security.ssl.http.pemtrustedcas_filepath: certs/http/ca.crt
 
 `
+
 var authcz_admin_dn = `
 # plugins.security.authcz.admin_dn:
 %s

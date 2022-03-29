@@ -146,7 +146,7 @@ func (c *Controller) ensurePrimaryService(db *api.MySQL) (kutil.VerbType, error)
 		in.Annotations = svcTemplate.Annotations
 		in.Spec.Selector = db.OffshootSelectors()
 
-		//add extra selector to select only primary pod for group replication
+		// add extra selector to select only primary pod for group replication
 		if db.UsesGroupReplication() {
 			in.Spec.Selector[api.LabelRole] = api.DatabasePodPrimary
 		}
@@ -201,7 +201,7 @@ func (c *Controller) ensureStandbyService(db *api.MySQL) (kutil.VerbType, error)
 		in.Labels = db.ServiceLabels(api.StandbyServiceAlias)
 		in.Annotations = svcTemplate.Annotations
 		in.Spec.Selector = db.OffshootSelectors()
-		//add extra selector to select only secondary pod
+		// add extra selector to select only secondary pod
 		in.Spec.Selector[api.LabelRole] = api.DatabasePodStandby
 
 		targetPortName := api.MySQLDatabasePortName

@@ -54,6 +54,7 @@ var _ hookapi.AdmissionHook = &RedisSentinelValidator{}
 func (a *RedisSentinelValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return builder.ValidatorResource(api.Kind(api.ResourceKindRedisSentinel))
 }
+
 func (a *RedisSentinelValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
 	a.lock.Lock()
 	defer a.lock.Unlock()

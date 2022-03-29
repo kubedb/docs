@@ -156,7 +156,6 @@ func (c *Controller) CheckRedisHealthOnce() {
 	}
 	// Wait until all go-routine complete executions
 	wg.Wait()
-
 }
 
 func (c *Controller) getRedisClient(db *api.Redis, dnsNames []string) (*rd.Client, error) {
@@ -302,11 +301,10 @@ func (c *Controller) checkRedisClusterHealth(db *api.Redis) (bool, error) {
 	return true, nil
 }
 
-//try to query in server if failed return err that means not online
+// try to query in server if failed return err that means not online
 func (c *Controller) IsRedisServerOnline(db *api.Redis, dnsName string) error {
 	var err error
 	client, err := c.getRedisClient(db, []string{dnsName})
-
 	if err != nil {
 		return err
 	}
@@ -353,7 +351,7 @@ func (c *Controller) CheckClusterSlotsForClusterMode(db *api.Redis) error {
 	if err != nil {
 		return fmt.Errorf("failed to get cluster ok slots from the database: %s/%s error: %s", db.Namespace, db.Name, err.Error())
 	}
-	fSlots, _ := clusterInfos.Get("cluster_slots_fail") //this will parse the missing number of slots
+	fSlots, _ := clusterInfos.Get("cluster_slots_fail") // this will parse the missing number of slots
 	failedSlots, err := strconv.Atoi(fSlots.(*configgenerator.ValueGenerator).Value)
 	if err != nil {
 		return fmt.Errorf("failed to get cluster failed slots from the database: %s/%s error: %s", db.Namespace, db.Name, err.Error())

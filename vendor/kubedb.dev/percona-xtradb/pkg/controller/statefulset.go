@@ -92,7 +92,7 @@ func (c *Controller) ensurePerconaXtraDB(db *api.PerconaXtraDB) (kutil.VerbType,
 	}
 
 	var cmds, args []string
-	var ports = []core.ContainerPort{
+	ports := []core.ContainerPort{
 		{
 			Name:          api.MySQLDatabasePortName,
 			ContainerPort: api.MySQLDatabasePort,
@@ -213,7 +213,8 @@ func (c *Controller) checkStatefulSet(db *api.PerconaXtraDB, stsName string) err
 }
 
 func upsertCustomConfig(
-	template core.PodTemplateSpec, configSecret *core.LocalObjectReference, replicas int32) core.PodTemplateSpec {
+	template core.PodTemplateSpec, configSecret *core.LocalObjectReference, replicas int32,
+) core.PodTemplateSpec {
 	for i, container := range template.Spec.Containers {
 		if container.Name == api.ResourceSingularPerconaXtraDB {
 			configVolumeMount := core.VolumeMount{
@@ -367,7 +368,6 @@ func (c *Controller) ensureStatefulSet(db *api.PerconaXtraDB, opts workloadOptio
 		},
 		metav1.PatchOptions{},
 	)
-
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
