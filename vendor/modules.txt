@@ -1436,7 +1436,7 @@ kmodules.xyz/custom-resources/client/listers/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/client/listers/metrics/v1alpha1
 kmodules.xyz/custom-resources/crds
 kmodules.xyz/custom-resources/util/siteinfo
-# kmodules.xyz/monitoring-agent-api v0.0.0-20220319222118-0290ed5b75e1
+# kmodules.xyz/monitoring-agent-api v0.0.0-20220411091706-5e314163686f
 ## explicit; go 1.17
 kmodules.xyz/monitoring-agent-api/agents
 kmodules.xyz/monitoring-agent-api/agents/prometheus
@@ -1571,7 +1571,7 @@ kubedb.dev/percona-xtradb/pkg/controller
 ## explicit; go 1.17
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.26.0
+# kubedb.dev/postgres v0.26.1-0.20220411091810-f5406ad5feed
 ## explicit; go 1.17
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller

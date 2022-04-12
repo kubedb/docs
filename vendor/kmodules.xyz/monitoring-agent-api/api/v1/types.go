@@ -44,6 +44,8 @@ const (
 
 	PrometheusExporterPortNumber = 56790
 	PrometheusExporterPortName   = "metrics"
+	RaftMetricsExporterPort      = 23790
+	RaftMetricsExporterPortName  = "raft-metrics"
 )
 
 func (at AgentType) Vendor() string {

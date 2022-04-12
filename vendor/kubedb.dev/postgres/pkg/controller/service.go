@@ -249,6 +249,11 @@ func (c *Controller) ensureStatsService(db *api.Postgres) (kutil.VerbType, error
 					Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
 					TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 				},
+				{
+					Name:       mona.RaftMetricsExporterPortName,
+					Port:       mona.RaftMetricsExporterPort,
+					TargetPort: intstr.FromString(mona.RaftMetricsExporterPortName),
+				},
 			}),
 			svcTemplate.Spec.Ports,
 		)

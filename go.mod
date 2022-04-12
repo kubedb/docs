@@ -30,7 +30,7 @@ require (
 	kubedb.dev/mysql v0.19.1-0.20220419080213-5caa331a127e
 	kubedb.dev/percona-xtradb v0.13.0
 	kubedb.dev/pgbouncer v0.13.0
-	kubedb.dev/postgres v0.26.0
+	kubedb.dev/postgres v0.26.1-0.20220411091810-f5406ad5feed
 	kubedb.dev/proxysql v0.13.0
 	kubedb.dev/redis v0.19.0
 	sigs.k8s.io/controller-runtime v0.9.0
@@ -179,7 +179,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/kubernetes v1.21.1 // indirect
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
-	kmodules.xyz/monitoring-agent-api v0.0.0-20220319222118-0290ed5b75e1 // indirect
+	kmodules.xyz/monitoring-agent-api v0.0.0-20220411091706-5e314163686f // indirect
 	kmodules.xyz/objectstore-api v0.0.0-20220317220441-f1d593d0a778 // indirect
 	kmodules.xyz/offshoot-api v0.0.0-20220323112402-3b0fd2ea77d6 // indirect
 	kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027 // indirect

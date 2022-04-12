@@ -479,6 +479,11 @@ func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 				ContainerPort: api.PostgresCoordinatorClientPort, // 2379
 				Protocol:      core.ProtocolTCP,
 			},
+			{
+				Name:          mona.RaftMetricsExporterPortName,
+				ContainerPort: mona.RaftMetricsExporterPort,
+				Protocol:      core.ProtocolTCP,
+			},
 		}
 		return portList
 	}
@@ -836,7 +841,7 @@ func getContainers(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVers
 	pgLifeCycle := &core.Lifecycle{
 		PreStop: &core.Handler{
 			Exec: &core.ExecAction{
-				Command: []string{"pg_ctl", "-m", "immediate", "-w", "stop"},
+				Command: []string{"pg_ctl", "-m", "fast", "-w", "stop"},
 			},
 		},
 	}

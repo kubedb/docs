@@ -63,9 +63,13 @@ func (agent *PrometheusOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.A
 		return kutil.VerbUnchanged, err
 	}
 	var portName string
+	var raftExporterPortName string
 	for _, p := range svc.Spec.Ports {
 		if p.Port == new.Prometheus.Exporter.Port {
 			portName = p.Name
+		}
+		if p.Port == api.RaftMetricsExporterPort {
+			raftExporterPortName = p.Name
 		}
 	}
 	if portName == "" {
@@ -76,6 +80,24 @@ func (agent *PrometheusOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.A
 		return kutil.VerbUnchanged, errors.New("serviceMonitor spec is empty")
 	}
 
+	endPoints := []promapi.Endpoint{
+		{
+			Port:        portName,
+			Interval:    new.Prometheus.ServiceMonitor.Interval,
+			Path:        sp.Path(),
+			HonorLabels: true,
+		},
+	}
+	if raftExporterPortName != "" {
+		endPoints = append(endPoints, []promapi.Endpoint{
+			{
+				Port:        raftExporterPortName,
+				Interval:    new.Prometheus.ServiceMonitor.Interval,
+				Path:        sp.Path(),
+				HonorLabels: true,
+			},
+		}...)
+	}
 	smMeta := metav1.ObjectMeta{
 		Name:      sp.ServiceMonitorName(),
 		Namespace: sp.GetNamespace(),
@@ -89,14 +111,7 @@ func (agent *PrometheusOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.A
 		in.Spec.NamespaceSelector = promapi.NamespaceSelector{
 			MatchNames: []string{sp.GetNamespace()},
 		}
-		in.Spec.Endpoints = []promapi.Endpoint{
-			{
-				Port:        portName,
-				Interval:    new.Prometheus.ServiceMonitor.Interval,
-				Path:        sp.Path(),
-				HonorLabels: true,
-			},
-		}
+		in.Spec.Endpoints = endPoints
 		in.Spec.Selector = metav1.LabelSelector{
 			MatchLabels: svc.Labels,
 		}

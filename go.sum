@@ -1520,8 +1520,9 @@ kmodules.xyz/custom-resources v0.0.0-20220314103517-150ada19b198/go.mod h1:cDD2g
 kmodules.xyz/custom-resources v0.0.0-20220317220154-7beb809b1f5e h1:JpfwsPxcNXSDfyErTikfQOwr/RmQsHLm1/3NfUElsys=
 kmodules.xyz/custom-resources v0.0.0-20220317220154-7beb809b1f5e/go.mod h1:OCLmlMhRowPtBPP1bu4xreNLj8/TYu/4lY477+eAzUM=
 kmodules.xyz/monitoring-agent-api v0.0.0-20210928135619-38ca075a2dbd/go.mod h1:08pBqfEuy29EjhaMrHB2XFy2iekoFi7AjaXcJS+xAck=
-kmodules.xyz/monitoring-agent-api v0.0.0-20220319222118-0290ed5b75e1 h1:V+UN7+86GIrRszwCwWJAPSHq9mfgZR5K1xX7hYRmQRg=
 kmodules.xyz/monitoring-agent-api v0.0.0-20220319222118-0290ed5b75e1/go.mod h1:UewkaANM5lHuURg/WPjuBmsdbfYN2yG0y0L2fxmADw8=
+kmodules.xyz/monitoring-agent-api v0.0.0-20220411091706-5e314163686f h1:Yf2fwF0WqpW+d27vMLV1iZSmRsMH7o4rlH10iGWZAHw=
+kmodules.xyz/monitoring-agent-api v0.0.0-20220411091706-5e314163686f/go.mod h1:UewkaANM5lHuURg/WPjuBmsdbfYN2yG0y0L2fxmADw8=
 kmodules.xyz/objectstore-api v0.0.0-20210928135706-fdf68f88ea6e/go.mod h1:Tkcf9uTplnrJ6C8o0zlw2kpgS1SaWAiMO5P2YgLjTo8=
 kmodules.xyz/objectstore-api v0.0.0-20211207131029-3271069de43e/go.mod h1:IICnDdPFOEeGXdaPVHOGYfdwD1cyh/p1I/TWMkyNTIE=
 kmodules.xyz/objectstore-api v0.0.0-20220317220441-f1d593d0a778 h1:1biCLf6zjBzg9YI9xDjrH6RrKtizpKVB7iuo/5NWOo0=
@@ -1566,8 +1567,8 @@ kubedb.dev/percona-xtradb v0.13.0 h1:uxfuYPmi6sbeC9fyrvBtGDYsLMS5Gdtwi+b9kZz04BE
 kubedb.dev/percona-xtradb v0.13.0/go.mod h1:Ra4VE2NSzmJazlILbRYWk4VYZtKNA+Ui/8noTTVeycg=
 kubedb.dev/pgbouncer v0.13.0 h1:Y3POXtDxXT4XEaid3jg5+0xvZR3qANVHdc7IgjYz2VA=
 kubedb.dev/pgbouncer v0.13.0/go.mod h1:HN+D23YltgDEoxAEFt3PQ7eVEtAt37CZZ0MaJttFqu8=
-kubedb.dev/postgres v0.26.0 h1:Zm/QGHbGIehasTrKyN1Ci8Dpm10tWlSindbekmP0XcY=
-kubedb.dev/postgres v0.26.0/go.mod h1:qJ3HUjbpBmLnvAbdocaBFkaJhMZ1/XtNhCYKBuwE0Pw=
+kubedb.dev/postgres v0.26.1-0.20220411091810-f5406ad5feed h1:BRKECJa8x6TsFRtzArbTKek8koI1Ku6xGF4BmfkyoQk=
+kubedb.dev/postgres v0.26.1-0.20220411091810-f5406ad5feed/go.mod h1:BdSYOu1N+MErRc0l36w+VDi8Z6Py/pu0vtOupO5cxBI=
 kubedb.dev/proxysql v0.13.0 h1:xM9Hk2PzOcdZfs3RRnDp+73JWQ3y+HLxM3rPa8cjdvw=
 kubedb.dev/proxysql v0.13.0/go.mod h1:ZyI70kbGEY77XjxUQQNwvV2zZKuqBFW8/5+OBawrmzk=
 kubedb.dev/redis v0.19.0 h1:G7/DStgenrHdGWxleXB2KlOppyUtGoCi/gbb+EP88Ps=
