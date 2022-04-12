@@ -1,0 +1,51 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Elasticsearch
+metadata:
+  name: es-cluster
+  namespace: demo
+spec:
+  enableSSL: true
+  version: xpack-7.16.2
+  topology:
+      master:
+        replicas: 2
+        storage:
+          resources:
+            requests:
+              storage: 1Gi
+          storageClassName: "linode-block-storage"
+      ingest:
+        replicas: 2
+        storage:
+          resources:
+            requests:
+              storage: 1Gi
+          storageClassName: "linode-block-storage"
+      dataContent:
+        replicas: 1
+        storage:
+          resources:
+            requests:
+              storage: 5Gi
+          storageClassName: "linode-block-storage"
+      dataHot:
+        replicas: 3
+        storage:
+          resources:
+            requests:
+              storage: 3Gi
+          storageClassName: "linode-block-storage"
+      dataWarm:
+        replicas: 2
+        storage:
+          resources:
+            requests:
+              storage: 5Gi
+          storageClassName: "linode-block-storage"
+      dataCold:
+        replicas: 2
+        storage:
+          resources:
+            requests:
+              storage: 5Gi
+          storageClassName: "linode-block-storage"

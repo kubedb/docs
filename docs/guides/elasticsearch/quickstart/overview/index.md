@@ -493,7 +493,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 ## Next Steps
 
 - Learn about [backup & restore](/docs/guides/elasticsearch/backup/overview/index.md) Elasticsearch database using Stash.
-- Learn how to configure [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology-cluster/index.md).
+- Learn how to configure [Elasticsearch Topology Cluster](/docs/guides/elasticsearch/clustering/topology-cluster/simple-dedicated-cluster/index.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
