@@ -52,16 +52,23 @@ func (c *Reconciler) ensureAuthSecret(db *api.MySQL) error {
 	} else {
 		err := c.ensureInstanceAuthSecret(db)
 		if err != nil {
-			return errors.Wrapf(err, "unablet to ensure Auth Secret for %s", db.GetNameSpacedName())
+			return errors.Wrapf(err, "unable to ensure Auth Secret for %s", db.GetNameSpacedName())
 		}
 	}
-	return c.upgradeAuthSecret(db)
+	if db.Spec.AuthSecret != nil {
+		return c.upgradeAuthSecret(db)
+	}
+	return nil
 }
 
 func (c *Reconciler) ensureInstanceAuthSecret(db *api.MySQL) error {
 	sec, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.GetAuthSecretName(), metav1.GetOptions{})
 	if err == nil {
 		err = c.validateAndSyncSecret(sec, db)
+		if err != nil {
+			return err
+		}
+		err = c.patchAuthSecret(db)
 		if err != nil {
 			return err
 		}
@@ -88,6 +95,11 @@ func (c *Reconciler) ensureReadReplicaAuthSecret(db *api.MySQL) error {
 	sec, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.GetAuthSecretName(), metav1.GetOptions{})
 	if err == nil {
 		err = c.validateAndSyncSecret(sec, db)
+		if err != nil {
+			return err
+		}
+
+		err = c.patchAuthSecret(db)
 		if err != nil {
 			return err
 		}

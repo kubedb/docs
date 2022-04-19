@@ -1559,7 +1559,7 @@ kubedb.dev/memcached/pkg/controller
 ## explicit; go 1.17
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.19.0
+# kubedb.dev/mysql v0.19.1-0.20220419080213-5caa331a127e
 ## explicit; go 1.17
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
