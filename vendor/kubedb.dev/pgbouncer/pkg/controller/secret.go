@@ -33,7 +33,7 @@ import (
 
 const UserListKey string = "userlist"
 
-func (c *Controller) GetDefaultSecretSpec(db *api.PgBouncer) *core.Secret {
+func (r *Reconciler) GetDefaultSecretSpec(db *api.PgBouncer) *core.Secret {
 	return &core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      db.AuthSecretName(),
@@ -43,14 +43,24 @@ func (c *Controller) GetDefaultSecretSpec(db *api.PgBouncer) *core.Secret {
 	}
 }
 
-func (c *Controller) ensureAuthSecret(db *api.PgBouncer) (kutil.VerbType, error) {
-	userSecret, err := c.GetUserSecret(db)
+func (r *Reconciler) ensureAuthSecret(db *api.PgBouncer) (kutil.VerbType, error) {
+	userSecret, err := r.GetUserSecret(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	// get ca-bundle SecretData from associated PostgresDatabases
-	upstreamCAData, err := c.getCABundlesFromAppBindingsInPgBouncerSpec(db)
+	upstreamCAData, err := r.getCABundlesFromAppBindingsInPgBouncerSpec(db)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	upstreamClientCert, err := r.getClientCertFromAppbindingsInPgBouncerSpec(db)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	upstreamClientKey, err := r.getClientKeyFromAppbindingsInPgBouncerSpec(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -61,7 +71,7 @@ func (c *Controller) ensureAuthSecret(db *api.PgBouncer) (kutil.VerbType, error)
 	}
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
 
-	_, vt, err := core_util.CreateOrPatchSecret(context.TODO(), c.Client, objMeta, func(in *core.Secret) *core.Secret {
+	_, vt, err := core_util.CreateOrPatchSecret(context.TODO(), r.Client, objMeta, func(in *core.Secret) *core.Secret {
 		in.Labels = db.OffshootLabels()
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
@@ -87,16 +97,53 @@ func (c *Controller) ensureAuthSecret(db *api.PgBouncer) (kutil.VerbType, error)
 		if upstreamCAData != "" {
 			in.Data[api.PgBouncerUpstreamServerCA] = []byte(upstreamCAData)
 		}
+
+		if upstreamClientCert != "" {
+			in.Data[api.PgBouncerUpstreamServerClientCert] = []byte(upstreamClientCert)
+		}
+
+		if upstreamClientKey != "" {
+			in.Data[api.PgBouncerUpstreamServerClientKey] = []byte(upstreamClientKey)
+		}
+
 		return in
 	}, metav1.PatchOptions{})
 	return vt, err
 }
 
-func (c *Controller) GetUserSecret(db *api.PgBouncer) (*core.Secret, error) {
+func (r *Reconciler) GetUserSecret(db *api.PgBouncer) (*core.Secret, error) {
 	if db.Spec.UserListSecretRef == nil || db.Spec.UserListSecretRef.Name == "" {
 		return nil, nil
 	}
-	return c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.UserListSecretRef.Name, metav1.GetOptions{})
+	return r.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.UserListSecretRef.Name, metav1.GetOptions{})
+}
+
+func (c *Controller) GetPgBouncerSecrets(db *api.PgBouncer) []string {
+	if db.Spec.TLS != nil {
+		return []string{
+			db.GetCertSecretName(api.PgBouncerServerCert),
+			db.GetCertSecretName(api.PgBouncerClientCert),
+			db.GetCertSecretName(api.PgBouncerMetricsExporterCert),
+		}
+	}
+	return nil
+}
+
+func (r *Reconciler) RequiredCertSecretName(db *api.PgBouncer) []string {
+	if db.Spec.TLS != nil {
+		var sNames []string
+		// server certificates
+		sNames = append(sNames, db.GetCertSecretName(api.PgBouncerServerCert))
+		// client certificates
+		sNames = append(sNames, db.GetCertSecretName(api.PgBouncerClientCert))
+		// metrics exporter certificates
+		if db.Spec.Monitor != nil {
+			// monitor certificate
+			sNames = append(sNames, db.GetCertSecretName(api.PgBouncerMetricsExporterCert))
+		}
+		return sNames
+	}
+	return nil
 }
 
 func (c *Controller) PgBouncerForSecret(s *core.Secret) cache.ExplicitKey {

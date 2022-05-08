@@ -70,15 +70,16 @@ auth_user = {{ .AuthUser }}
 admin_users = kubedb{{range .AdminUsers }},{{.}}{{end}}
 `))
 
-func (c *Controller) generateConfig(db *api.PgBouncer) (string, error) {
+// get cross
+func (r *Reconciler) generateConfig(db *api.PgBouncer) (string, error) {
 	var buf bytes.Buffer
 	buf.WriteString("[databases]\n")
 	if db.Spec.Databases != nil {
 		for _, pg := range db.Spec.Databases {
 			name := pg.DatabaseRef.Name
-			namespace := db.GetNamespace()
+			namespace := pg.DatabaseRef.Namespace
 
-			appBinding, err := c.AppCatalogClient.AppcatalogV1alpha1().AppBindings(namespace).Get(context.TODO(), name, metav1.GetOptions{})
+			appBinding, err := r.AppCatalogClient.AppcatalogV1alpha1().AppBindings(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 			if err != nil {
 				if kerr.IsNotFound(err) {
 					klog.Warning(err)
@@ -100,7 +101,7 @@ func (c *Controller) generateConfig(db *api.PgBouncer) (string, error) {
 				buf.WriteString(fmt.Sprint(pg.Alias + " = " + *(appBinding.Spec.ClientConfig.URL) + " dbname=" + pg.DatabaseName))
 			}
 			if pg.AuthSecretRef != nil {
-				secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), pg.AuthSecretRef.Name, metav1.GetOptions{})
+				secret, err := r.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), pg.AuthSecretRef.Name, metav1.GetOptions{})
 				if err == nil {
 					buf.WriteString(fmt.Sprint(" user=", string(secret.Data["username"])))
 					buf.WriteString(fmt.Sprint(" password=", string(secret.Data["password"])))
@@ -117,23 +118,44 @@ func (c *Controller) generateConfig(db *api.PgBouncer) (string, error) {
 	if db.Spec.TLS != nil {
 		if db.Spec.TLS.IssuerRef != nil {
 			// SSL is enabled
-			buf.WriteString("client_tls_sslmode = verify-full\n")
-			buf.WriteString(fmt.Sprintln("client_tls_ca_file = " + filepath.Join(ServingCertMountPath, string(api.PgBouncerServerCert), "ca.crt")))
-			buf.WriteString(fmt.Sprintln("client_tls_key_file = " + filepath.Join(ServingCertMountPath, string(api.PgBouncerServerCert), "tls.key")))
-			buf.WriteString(fmt.Sprintln("client_tls_cert_file = " + filepath.Join(ServingCertMountPath, string(api.PgBouncerServerCert), "tls.crt")))
+			buf.WriteString(fmt.Sprintln("client_tls_sslmode = " + db.Spec.SSLMode))
+			buf.WriteString(fmt.Sprintln("client_tls_ca_file = " + filepath.Join(ServingCertMountPath, string(api.PgBouncerServerCert), api.PgBouncerCACrt)))
+			buf.WriteString(fmt.Sprintln("client_tls_key_file = " + filepath.Join(ServingCertMountPath, string(api.PgBouncerServerCert), api.PgBouncerTLSKey)))
+			buf.WriteString(fmt.Sprintln("client_tls_cert_file = " + filepath.Join(ServingCertMountPath, string(api.PgBouncerServerCert), api.PgBouncerTLSCrt)))
 		}
 	}
-	upstreamServerCAExists, err := c.isUpStreamServerCAExist(db)
+	upstreamServerCAExists, err := r.isUpStreamServerCAExist(db)
 	if err != nil {
 		klog.Infoln(err)
 		return "", err
 	}
 	if upstreamServerCAExists {
-		buf.WriteString("server_tls_sslmode = verify-full\n")
+		pg, _ := r.DBClient.KubedbV1alpha2().Postgreses(db.Spec.Databases[0].DatabaseRef.Namespace).Get(context.TODO(), db.Spec.Databases[0].DatabaseRef.Name, metav1.GetOptions{})
+		buf.WriteString(fmt.Sprintln("server_tls_sslmode = " + pg.Spec.SSLMode))
 		buf.WriteString(fmt.Sprintln("server_tls_ca_file = " + filepath.Join(UserListMountPath, api.PgBouncerUpstreamServerCA)))
 	}
 
-	secretFileName, err := c.getUserListFileName(db)
+	upstreamServerClientCertExists, err := r.isUpStreamServerClientCertExist(db)
+	if err != nil {
+		klog.Infoln(err)
+		return "", err
+	}
+
+	if upstreamServerClientCertExists {
+		buf.WriteString(fmt.Sprintln("server_tls_cert_file = " + filepath.Join(UserListMountPath, api.PgBouncerUpstreamServerClientCert)))
+	}
+
+	upstreamServerClientKeyExists, err := r.isUpStreamServerClientKeyExist(db)
+	if err != nil {
+		klog.Infoln(err)
+		return "", err
+	}
+
+	if upstreamServerClientKeyExists {
+		buf.WriteString(fmt.Sprintln("server_tls_key_file = " + filepath.Join(UserListMountPath, api.PgBouncerUpstreamServerClientKey)))
+	}
+
+	secretFileName, err := r.getUserListFileName(db)
 	if err != nil {
 		klog.Infoln(err)
 		return "", err
@@ -152,24 +174,24 @@ func (c *Controller) generateConfig(db *api.PgBouncer) (string, error) {
 	return buf.String(), nil
 }
 
-func (c *Controller) ensureConfigSecret(db *api.PgBouncer) (kutil.VerbType, error) {
+func (r *Reconciler) ensureConfigSecret(db *api.PgBouncer) (kutil.VerbType, error) {
 	objMeta := metav1.ObjectMeta{
 		Name:      db.ConfigSecretName(),
 		Namespace: db.Namespace,
 	}
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
 
-	cfg, err := c.generateConfig(db)
+	cfg, err := r.generateConfig(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
-	_, vt, err := core_util.CreateOrPatchSecret(context.TODO(), c.Client, objMeta, func(in *core.Secret) *core.Secret {
+	_, vt, err := core_util.CreateOrPatchSecret(context.TODO(), r.Client, objMeta, func(in *core.Secret) *core.Secret {
 		in.Labels = db.OffshootLabels()
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
-		in.StringData = map[string]string{
-			api.PgBouncerConfigFile: cfg,
+		in.Data = map[string][]byte{
+			api.PgBouncerConfigFile: []byte(cfg),
 		}
 		return in
 	}, metav1.PatchOptions{})
@@ -177,9 +199,9 @@ func (c *Controller) ensureConfigSecret(db *api.PgBouncer) (kutil.VerbType, erro
 	return vt, err
 }
 
-func (c *Controller) getUserListFileName(db *api.PgBouncer) (string, error) {
-	defaultSecretSpec := c.GetDefaultSecretSpec(db)
-	defaultSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), defaultSecretSpec.Name, metav1.GetOptions{})
+func (r *Reconciler) getUserListFileName(db *api.PgBouncer) (string, error) {
+	defaultSecretSpec := r.GetDefaultSecretSpec(db)
+	defaultSecret, err := r.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), defaultSecretSpec.Name, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -189,13 +211,37 @@ func (c *Controller) getUserListFileName(db *api.PgBouncer) (string, error) {
 	return pbAdminDataKey, nil
 }
 
-func (c *Controller) isUpStreamServerCAExist(db *api.PgBouncer) (bool, error) {
-	defaultSecretSpec := c.GetDefaultSecretSpec(db)
-	defaultSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), defaultSecretSpec.Name, metav1.GetOptions{})
+func (r *Reconciler) isUpStreamServerCAExist(db *api.PgBouncer) (bool, error) {
+	defaultSecretSpec := r.GetDefaultSecretSpec(db)
+	defaultSecret, err := r.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), defaultSecretSpec.Name, metav1.GetOptions{})
 	if err != nil {
 		return false, err
 	}
 	if _, exists := defaultSecret.Data[api.PgBouncerUpstreamServerCA]; exists {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (r *Reconciler) isUpStreamServerClientCertExist(db *api.PgBouncer) (bool, error) {
+	defaultSecretSpec := r.GetDefaultSecretSpec(db)
+	defaultSecret, err := r.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), defaultSecretSpec.Name, metav1.GetOptions{})
+	if err != nil {
+		return false, err
+	}
+	if _, exists := defaultSecret.Data[api.PgBouncerUpstreamServerClientCert]; exists {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (r *Reconciler) isUpStreamServerClientKeyExist(db *api.PgBouncer) (bool, error) {
+	defaultSecretSpec := r.GetDefaultSecretSpec(db)
+	defaultSecret, err := r.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), defaultSecretSpec.Name, metav1.GetOptions{})
+	if err != nil {
+		return false, err
+	}
+	if _, exists := defaultSecret.Data[api.PgBouncerUpstreamServerClientKey]; exists {
 		return true, nil
 	}
 	return false, nil

@@ -54,6 +54,15 @@ func (c *Controller) addOrUpdateMonitor(db *api.PgBouncer) (kutil.VerbType, erro
 	return agent.CreateOrUpdate(db.StatsService(), db.Spec.Monitor)
 }
 
+func (c *Controller) deleteMonitor(db *api.PgBouncer) error {
+	agent, err := c.newMonitorController(db)
+	if err != nil {
+		return err
+	}
+	_, err = agent.Delete(db.StatsService())
+	return err
+}
+
 func (c *Controller) getOldAgent(db *api.PgBouncer) mona.Agent {
 	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {

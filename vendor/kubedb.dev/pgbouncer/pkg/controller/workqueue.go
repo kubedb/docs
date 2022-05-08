@@ -25,10 +25,6 @@ import (
 )
 
 const (
-	systemNamespace    = "kube-system"
-	publicNamespace    = "kube-public"
-	namespaceKey       = "namespace"
-	nameKey            = "name"
 	pbAdminDatabase    = "pgbouncer"
 	pbAdminPasswordKey = "pb-password"
 	pbAdminDataKey     = "pb-admin"
@@ -43,13 +39,6 @@ func (c *Controller) initWatcher() {
 	if c.Auditor != nil {
 		c.pbInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer)))
 	}
-}
-
-func (c *Controller) initAppBindingWatcher() {
-	c.appBindingInformer = c.AppCatInformerFactory.Appcatalog().V1alpha1().AppBindings().Informer()
-	c.appBindingQueue = queue.New("AppBinding", c.MaxNumRequeues, c.NumThreads, c.manageAppBindingEvent)
-	c.appBindingLister = c.AppCatInformerFactory.Appcatalog().V1alpha1().AppBindings().Lister()
-	c.appBindingInformer.AddEventHandler(queue.DefaultEventHandler(c.appBindingQueue.GetQueue(), c.RestrictToNamespace))
 }
 
 func (c *Controller) initSecretWatcher() {

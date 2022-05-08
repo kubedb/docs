@@ -25,8 +25,10 @@ import (
 	stash_scheme "stash.appscode.dev/apimachinery/client/clientset/versioned/scheme"
 	v1beta1_util "stash.appscode.dev/apimachinery/client/clientset/versioned/typed/stash/v1beta1/util"
 
+	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/reference"
 	kmapi "kmodules.xyz/client-go/api/v1"
@@ -69,6 +71,7 @@ func (inv *BackupBatchInvoker) GetOwnerRef() *metav1.OwnerReference {
 func (inv *BackupBatchInvoker) GetLabels() map[string]string {
 	return inv.backupBatch.OffshootLabels()
 }
+
 func (inv *BackupBatchInvoker) AddFinalizer() error {
 	updatedBackupBatch, _, err := v1beta1_util.PatchBackupBatch(context.TODO(), inv.stashClient.StashV1beta1(), inv.backupBatch, func(in *v1beta1.BackupBatch) *v1beta1.BackupBatch {
 		in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, v1beta1.StashKey)
@@ -124,7 +127,7 @@ func (inv *BackupBatchInvoker) SetCondition(target *v1beta1.TargetRef, newCondit
 		} else {
 			in.Conditions = kmapi.SetCondition(in.Conditions, newCondition)
 		}
-		in.Phase = calculateBackupInvokerPhase(inv.GetDriver(), in.Conditions)
+		in.Phase = CalculateBackupInvokerPhase(inv.GetDriver(), in.Conditions)
 		return inv.backupBatch.UID, in
 	}, metav1.UpdateOptions{})
 	if err != nil {
@@ -150,7 +153,7 @@ func (inv *BackupBatchInvoker) GetTargetInfo() []BackupTargetInfo {
 	for _, member := range inv.backupBatch.Spec.Members {
 		targetInfo = append(targetInfo, BackupTargetInfo{
 			Task:                  member.Task,
-			Target:                member.Target,
+			Target:                getBackupTarget(member.Target, inv.backupBatch.Namespace),
 			RuntimeSettings:       member.RuntimeSettings,
 			TempDir:               member.TempDir,
 			InterimVolumeTemplate: member.InterimVolumeTemplate,
@@ -158,6 +161,18 @@ func (inv *BackupBatchInvoker) GetTargetInfo() []BackupTargetInfo {
 		})
 	}
 	return targetInfo
+}
+
+func getBackupTarget(target *v1beta1.BackupTarget, invNamespace string) *v1beta1.BackupTarget {
+	if target == nil {
+		return &v1beta1.BackupTarget{
+			Ref: v1beta1.EmptyTargetRef(),
+		}
+	}
+	if target.Ref.Namespace == "" {
+		target.Ref.Namespace = invNamespace
+	}
+	return target
 }
 
 func (inv *BackupBatchInvoker) GetDriver() v1beta1.Snapshotter {
@@ -234,10 +249,24 @@ func (inv *BackupBatchInvoker) GetObjectJSON() (string, error) {
 	return string(jsonObj), nil
 }
 
+func (inv *BackupBatchInvoker) GetRuntimeObject() runtime.Object {
+	return inv.backupBatch
+}
+
 func (inv *BackupBatchInvoker) GetRetentionPolicy() v1alpha1.RetentionPolicy {
 	return inv.backupBatch.Spec.RetentionPolicy
 }
 
 func (inv *BackupBatchInvoker) GetPhase() v1beta1.BackupInvokerPhase {
 	return inv.backupBatch.Status.Phase
+}
+
+func (inv *BackupBatchInvoker) GetSummary(target v1beta1.TargetRef, session kmapi.ObjectReference) *v1beta1.Summary {
+	summary := getTargetBackupSummary(inv.stashClient, target, session)
+	summary.Invoker = core.TypedLocalObjectReference{
+		APIGroup: pointer.StringP(v1beta1.SchemeGroupVersion.Group),
+		Kind:     v1beta1.ResourceKindBackupBatch,
+		Name:     inv.backupBatch.Name,
+	}
+	return summary
 }

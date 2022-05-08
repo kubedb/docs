@@ -71,7 +71,6 @@ func (a *PgBouncerValidator) Initialize(config *rest.Config, stopCh <-chan struc
 
 func (pbValidator *PgBouncerValidator) Admit(req *admission.AdmissionRequest) *admission.AdmissionResponse {
 	status := &admission.AdmissionResponse{}
-
 	if (req.Operation != admission.Create && req.Operation != admission.Update && req.Operation != admission.Delete) ||
 		len(req.SubResource) != 0 ||
 		req.Kind.Group != api.SchemeGroupVersion.Group ||
@@ -96,6 +95,8 @@ func (pbValidator *PgBouncerValidator) Admit(req *admission.AdmissionRequest) *a
 			}
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
+			} else if err == nil && obj.Spec.TerminationPolicy == api.PgBouncerTerminationPolicyDoNotTerminate {
+				return hookapi.StatusBadRequest(fmt.Errorf(`PgBouncer "%v/%v" can't be terminated. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
 	default:
@@ -139,13 +140,11 @@ func ValidatePgBouncer(client kubernetes.Interface, extClient cs.Interface, db *
 	}
 
 	if db.Spec.TLS != nil {
-		if db.Spec.TLS != nil {
-			if *db.Spec.TLS.IssuerRef.APIGroup != cm_api.SchemeGroupVersion.Group {
-				return fmt.Errorf(`spec.tls.client.issuerRef.apiGroup must be %s`, cm_api.SchemeGroupVersion.Group)
-			}
-			if (db.Spec.TLS.IssuerRef.Kind != cm_api.IssuerKind) && (db.Spec.TLS.IssuerRef.Kind != cm_api.ClusterIssuerKind) {
-				return fmt.Errorf(`spec.tls.client.issuerRef.issuerKind must be either %s or %s`, cm_api.IssuerKind, cm_api.ClusterIssuerKind)
-			}
+		if *db.Spec.TLS.IssuerRef.APIGroup != cm_api.SchemeGroupVersion.Group {
+			return fmt.Errorf(`spec.tls.client.issuerRef.apiGroup must be %s`, cm_api.SchemeGroupVersion.Group)
+		}
+		if (db.Spec.TLS.IssuerRef.Kind != cm_api.IssuerKind) && (db.Spec.TLS.IssuerRef.Kind != cm_api.ClusterIssuerKind) {
+			return fmt.Errorf(`spec.tls.client.issuerRef.issuerKind must be either %s or %s`, cm_api.IssuerKind, cm_api.ClusterIssuerKind)
 		}
 	}
 

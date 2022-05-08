@@ -7,29 +7,29 @@ require (
 	github.com/prometheus-operator/prometheus-operator/pkg/client v0.47.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
-	go.bytebuilders.dev/audit v0.0.19
+	go.bytebuilders.dev/audit v0.0.20
 	go.bytebuilders.dev/license-verifier v0.9.7
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.7
 	golang.org/x/text v0.3.7
 	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/runtime v0.2.0
-	gomodules.xyz/x v0.0.13
+	gomodules.xyz/x v0.0.14
 	k8s.io/api v0.21.1
 	k8s.io/apiextensions-apiserver v0.21.1
 	k8s.io/apimachinery v0.21.1
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
-	kmodules.xyz/client-go v0.0.0-20220317213815-2a6d5a5784f2
-	kmodules.xyz/custom-resources v0.0.0-20220317220154-7beb809b1f5e
-	kubedb.dev/apimachinery v0.26.0
+	kmodules.xyz/client-go v0.0.0-20220427165208-36281a681909
+	kmodules.xyz/custom-resources v0.0.0-20220422215041-237eae1d7ddd
+	kubedb.dev/apimachinery v0.26.1-0.20220508053725-74c4fc13ef02
 	kubedb.dev/elasticsearch v0.26.0
 	kubedb.dev/mariadb v0.10.0
 	kubedb.dev/memcached v0.19.0
 	kubedb.dev/mongodb v0.19.0
 	kubedb.dev/mysql v0.19.1-0.20220419080213-5caa331a127e
 	kubedb.dev/percona-xtradb v0.13.0
-	kubedb.dev/pgbouncer v0.13.0
+	kubedb.dev/pgbouncer v0.13.1-0.20220508071856-8122b2c7112d
 	kubedb.dev/postgres v0.26.0
 	kubedb.dev/proxysql v0.13.0
 	kubedb.dev/redis v0.19.0
@@ -114,7 +114,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d // indirect
+	github.com/nats-io/nats.go v1.15.0 // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
@@ -138,13 +138,13 @@ require (
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20200910180754-dd1b699fc489 // indirect
-	go.mongodb.org/mongo-driver v1.8.4 // indirect
+	go.mongodb.org/mongo-driver v1.9.1 // indirect
 	go.opencensus.io v0.22.3 // indirect
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.1 // indirect
-	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce // indirect
+	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd // indirect
 	golang.org/x/net v0.0.0-20211209124913-491a49abca63 // indirect
 	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
@@ -158,7 +158,7 @@ require (
 	gomodules.xyz/flags v0.1.3 // indirect
 	gomodules.xyz/go-sh v0.1.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
-	gomodules.xyz/mergo v0.3.13-0.20210702100041-9d62ff8ece4d // indirect
+	gomodules.xyz/mergo v0.3.13-0.20220214162359-48efe39fd402 // indirect
 	gomodules.xyz/password-generator v0.2.8 // indirect
 	gomodules.xyz/pointer v0.1.0 // indirect
 	gomodules.xyz/sets v0.2.1 // indirect
@@ -181,9 +181,9 @@ require (
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
 	kmodules.xyz/monitoring-agent-api v0.0.0-20220319222118-0290ed5b75e1 // indirect
 	kmodules.xyz/objectstore-api v0.0.0-20220317220441-f1d593d0a778 // indirect
-	kmodules.xyz/offshoot-api v0.0.0-20220323112402-3b0fd2ea77d6 // indirect
-	kmodules.xyz/prober v0.0.0-20210618020259-5836fb959027 // indirect
-	kmodules.xyz/resource-metadata v0.10.12 // indirect
+	kmodules.xyz/offshoot-api v0.0.0-20220420055916-fefb02c26514 // indirect
+	kmodules.xyz/prober v0.0.0-20220317043828-5ae0114adcad // indirect
+	kmodules.xyz/resource-metadata v0.10.16-0.20220419233724-fbd1b7e25b05 // indirect
 	kmodules.xyz/resource-metrics v0.0.8 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20220317222714-0ddfc9e4c221 // indirect
 	kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178 // indirect
@@ -193,7 +193,7 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.10.17 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.0 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
-	stash.appscode.dev/apimachinery v0.18.0 // indirect
+	stash.appscode.dev/apimachinery v0.20.0 // indirect
 	xorm.io/builder v0.3.9 // indirect
 	xorm.io/xorm v1.2.5 // indirect
 )

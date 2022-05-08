@@ -38,12 +38,13 @@ type Insert struct {
 	serverAPI                *driver.ServerAPIOptions
 }
 
+// InsertResult represents an insert result returned by the server.
 type InsertResult struct {
 	// Number of documents successfully inserted.
-	N int32
+	N int64
 }
 
-func buildInsertResult(response bsoncore.Document, srvr driver.Server) (InsertResult, error) {
+func buildInsertResult(response bsoncore.Document) (InsertResult, error) {
 	elements, err := response.Elements()
 	if err != nil {
 		return InsertResult{}, err
@@ -53,9 +54,9 @@ func buildInsertResult(response bsoncore.Document, srvr driver.Server) (InsertRe
 		switch element.Key() {
 		case "n":
 			var ok bool
-			ir.N, ok = element.Value().AsInt32OK()
+			ir.N, ok = element.Value().AsInt64OK()
 			if !ok {
-				return ir, fmt.Errorf("response field 'n' is type int32, but received BSON type %s", element.Value().Type)
+				return ir, fmt.Errorf("response field 'n' is type int32 or int64, but received BSON type %s", element.Value().Type)
 			}
 		}
 	}
@@ -73,12 +74,12 @@ func NewInsert(documents ...bsoncore.Document) *Insert {
 func (i *Insert) Result() InsertResult { return i.result }
 
 func (i *Insert) processResponse(info driver.ResponseInfo) error {
-	ir, err := buildInsertResult(info.ServerResponse, info.Server)
+	ir, err := buildInsertResult(info.ServerResponse)
 	i.result.N += ir.N
 	return err
 }
 
-// Execute runs this operations and returns an error if the operaiton did not execute successfully.
+// Execute runs this operations and returns an error if the operation did not execute successfully.
 func (i *Insert) Execute(ctx context.Context) error {
 	if i.deployment == nil {
 		return errors.New("the Insert operation must have a Deployment set before Execute can be called")
