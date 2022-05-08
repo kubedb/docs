@@ -155,12 +155,6 @@ func (in *MySQLDatabase) ValidateMySQLDatabase() error {
 	if err := in.validateMySQLDatabaseConfig(); err != nil {
 		allErrs = append(allErrs, err)
 	}
-	if err := in.validateMySQLDatabaseNamespace(); err != nil {
-		allErrs = append(allErrs, err)
-	}
-	if err := in.validateMySQLDatabaseName(); err != nil {
-		allErrs = append(allErrs, err)
-	}
 	if len(allErrs) == 0 {
 		return nil
 	}
@@ -189,16 +183,16 @@ func (in *MySQLDatabase) validateMySQLDatabaseConfig() *field.Error {
 	if name == "mysql" {
 		return field.Invalid(path, in.Name, `cannot use "mysql" as the database name`)
 	}
-	if name == "kubedb_system" {
+	if name == DatabaseForEntry {
 		return field.Invalid(path, in.Name, `cannot use "kubedb_system" as the database name`)
 	}
 	if name == "information_schema" {
 		return field.Invalid(path, in.Name, `cannot use "information_schema" as the database name`)
 	}
-	if name == "admin" {
+	if name == DatabaseNameAdmin {
 		return field.Invalid(path, in.Name, `cannot use "admin" as the database name`)
 	}
-	if name == "config" {
+	if name == DatabaseNameConfig {
 		return field.Invalid(path, in.Name, `cannot use "config" as the database name`)
 	}
 	path = field.NewPath("spec").Child("database.config")
@@ -215,37 +209,6 @@ func (in *MySQLDatabase) validateMySQLDatabaseConfig() *field.Error {
 				return field.Invalid(path.Child("encryption"), in.Name, `cannot make the database encryption enables , init/restore yet to be applied`)
 			}
 		}
-	}
-	return nil
-}
-
-func (in *MySQLDatabase) validateMySQLDatabaseNamespace() *field.Error {
-	path := field.NewPath("metadata").Child("namespace")
-	ns := in.ObjectMeta.Namespace
-	if ns == "cert-manager" {
-		return field.Invalid(path, in.Name, `cannot use namespace "cert-manager" to create schema manager`)
-	}
-	if ns == "kube-system" {
-		return field.Invalid(path, in.Name, `cannot use namespace "kube-system" to create schema manager`)
-	}
-	if ns == "kubedb-system" {
-		return field.Invalid(path, in.Name, `cannot use namespace "kubedb-system" to create schema manager`)
-	}
-	if ns == "kubedb" {
-		return field.Invalid(path, in.Name, `cannot use namespace "kubedb" to create schema manager`)
-	}
-	if ns == "kubevault" {
-		return field.Invalid(path, in.Name, `cannot use namespace "kubevault" to create schema manager`)
-	}
-	if ns == "local-path-storage" {
-		return field.Invalid(path, in.Name, `cannot use namespace "local-path-storage" to create schema manager`)
-	}
-	return nil
-}
-
-func (in *MySQLDatabase) validateMySQLDatabaseName() *field.Error {
-	if len(in.ObjectMeta.Name) > 45 {
-		return field.Invalid(field.NewPath("metadata").Child("name"), in.Name, "must be no more than 30 characters")
 	}
 	return nil
 }

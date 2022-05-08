@@ -25,6 +25,7 @@ import (
 	stash_scheme "stash.appscode.dev/apimachinery/client/clientset/versioned/scheme"
 	v1beta1_util "stash.appscode.dev/apimachinery/client/clientset/versioned/typed/stash/v1beta1/util"
 
+	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -69,6 +70,7 @@ func (inv *BackupConfigurationInvoker) GetOwnerRef() *metav1.OwnerReference {
 func (inv *BackupConfigurationInvoker) GetLabels() map[string]string {
 	return inv.backupConfig.OffshootLabels()
 }
+
 func (inv *BackupConfigurationInvoker) AddFinalizer() error {
 	updatedBackupConfig, _, err := v1beta1_util.PatchBackupConfiguration(context.TODO(), inv.stashClient.StashV1beta1(), inv.backupConfig, func(in *v1beta1.BackupConfiguration) *v1beta1.BackupConfiguration {
 		in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, v1beta1.StashKey)
@@ -113,7 +115,7 @@ func (inv *BackupConfigurationInvoker) GetCondition(target *v1beta1.TargetRef, c
 func (inv *BackupConfigurationInvoker) SetCondition(target *v1beta1.TargetRef, newCondition kmapi.Condition) error {
 	updatedBackupConfig, err := v1beta1_util.UpdateBackupConfigurationStatus(context.TODO(), inv.stashClient.StashV1beta1(), inv.backupConfig.ObjectMeta, func(in *v1beta1.BackupConfigurationStatus) (types.UID, *v1beta1.BackupConfigurationStatus) {
 		in.Conditions = kmapi.SetCondition(in.Conditions, newCondition)
-		in.Phase = calculateBackupInvokerPhase(inv.GetDriver(), in.Conditions)
+		in.Phase = CalculateBackupInvokerPhase(inv.GetDriver(), in.Conditions)
 		return inv.backupConfig.UID, in
 	}, metav1.UpdateOptions{})
 	if err != nil {
@@ -135,7 +137,7 @@ func (inv *BackupConfigurationInvoker) GetTargetInfo() []BackupTargetInfo {
 	return []BackupTargetInfo{
 		{
 			Task:                  inv.backupConfig.Spec.Task,
-			Target:                inv.backupConfig.Spec.Target,
+			Target:                getBackupTarget(inv.backupConfig.Spec.Target, inv.backupConfig.Namespace),
 			RuntimeSettings:       inv.backupConfig.Spec.RuntimeSettings,
 			TempDir:               inv.backupConfig.Spec.TempDir,
 			InterimVolumeTemplate: inv.backupConfig.Spec.InterimVolumeTemplate,
@@ -224,4 +226,14 @@ func (inv *BackupConfigurationInvoker) GetRetentionPolicy() v1alpha1.RetentionPo
 
 func (inv *BackupConfigurationInvoker) GetPhase() v1beta1.BackupInvokerPhase {
 	return inv.backupConfig.Status.Phase
+}
+
+func (inv *BackupConfigurationInvoker) GetSummary(target v1beta1.TargetRef, session kmapi.ObjectReference) *v1beta1.Summary {
+	summary := getTargetBackupSummary(inv.stashClient, target, session)
+	summary.Invoker = core.TypedLocalObjectReference{
+		APIGroup: pointer.StringP(v1beta1.SchemeGroupVersion.Group),
+		Kind:     v1beta1.ResourceKindBackupConfiguration,
+		Name:     inv.backupConfig.Name,
+	}
+	return summary
 }

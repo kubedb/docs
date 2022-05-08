@@ -111,18 +111,18 @@ func (w *ResticWrapper) setupEnv() error {
 
 	if w.config.EnableCache {
 		cacheDir := filepath.Join(w.config.ScratchDir, resticCacheDir)
-		if err := os.MkdirAll(cacheDir, 0755); err != nil {
+		if err := os.MkdirAll(cacheDir, 0o755); err != nil {
 			return err
 		}
 	}
 
-	//path = strings.TrimPrefix(path, "/")
+	// path = strings.TrimPrefix(path, "/")
 
 	switch w.config.Provider {
 
 	case storage.ProviderLocal:
 		r := w.config.Bucket
-		if err := os.MkdirAll(r, 0755); err != nil {
+		if err := os.MkdirAll(r, 0o755); err != nil {
 			return err
 		}
 		w.sh.SetEnv(RESTIC_REPOSITORY, r)
@@ -131,11 +131,11 @@ func (w *ResticWrapper) setupEnv() error {
 		r := fmt.Sprintf("s3:%s/%s", w.config.Endpoint, filepath.Join(w.config.Bucket, w.config.Path))
 		w.sh.SetEnv(RESTIC_REPOSITORY, r)
 
-		if err := w.exportSecretKey(AWS_ACCESS_KEY_ID, true); err != nil {
+		if err := w.exportSecretKey(AWS_ACCESS_KEY_ID, false); err != nil {
 			return err
 		}
 
-		if err := w.exportSecretKey(AWS_SECRET_ACCESS_KEY, true); err != nil {
+		if err := w.exportSecretKey(AWS_SECRET_ACCESS_KEY, false); err != nil {
 			return err
 		}
 
@@ -147,25 +147,26 @@ func (w *ResticWrapper) setupEnv() error {
 		r := fmt.Sprintf("gs:%s:/%s", w.config.Bucket, w.config.Path)
 		w.sh.SetEnv(RESTIC_REPOSITORY, r)
 
-		if err := w.exportSecretKey(GOOGLE_PROJECT_ID, true); err != nil {
+		if err := w.exportSecretKey(GOOGLE_PROJECT_ID, false); err != nil {
 			return err
 		}
 
-		filePath, err := w.writeSecretKeyToFile(GOOGLE_SERVICE_ACCOUNT_JSON_KEY, GOOGLE_SERVICE_ACCOUNT_JSON_KEY)
-		if err != nil {
-			return err
+		if w.isSecretKeyExist(GOOGLE_SERVICE_ACCOUNT_JSON_KEY) {
+			filePath, err := w.writeSecretKeyToFile(GOOGLE_SERVICE_ACCOUNT_JSON_KEY, GOOGLE_SERVICE_ACCOUNT_JSON_KEY)
+			if err != nil {
+				return err
+			}
+			w.sh.SetEnv(GOOGLE_APPLICATION_CREDENTIALS, filePath)
 		}
-		w.sh.SetEnv(GOOGLE_APPLICATION_CREDENTIALS, filePath)
-
 	case storage.ProviderAzure:
 		r := fmt.Sprintf("azure:%s:/%s", w.config.Bucket, w.config.Path)
 		w.sh.SetEnv(RESTIC_REPOSITORY, r)
 
-		if err := w.exportSecretKey(AZURE_ACCOUNT_NAME, true); err != nil {
+		if err := w.exportSecretKey(AZURE_ACCOUNT_NAME, false); err != nil {
 			return err
 		}
 
-		if err := w.exportSecretKey(AZURE_ACCOUNT_KEY, true); err != nil {
+		if err := w.exportSecretKey(AZURE_ACCOUNT_KEY, false); err != nil {
 			return err
 		}
 
@@ -323,6 +324,11 @@ func (w *ResticWrapper) exportSecretKey(key string, required bool) error {
 	return nil
 }
 
+func (w *ResticWrapper) isSecretKeyExist(key string) bool {
+	_, ok := w.config.StorageSecret.Data[key]
+	return ok
+}
+
 func (w *ResticWrapper) writeSecretKeyToFile(key, name string) (string, error) {
 	v, ok := w.config.StorageSecret.Data[key]
 	if !ok {
@@ -332,7 +338,7 @@ func (w *ResticWrapper) writeSecretKeyToFile(key, name string) (string, error) {
 	tmpDir := w.GetEnv(TMPDIR)
 	filePath := filepath.Join(tmpDir, name)
 
-	if err := ioutil.WriteFile(filePath, v, 0755); err != nil {
+	if err := ioutil.WriteFile(filePath, v, 0o755); err != nil {
 		return "", err
 	}
 	return filePath, nil
