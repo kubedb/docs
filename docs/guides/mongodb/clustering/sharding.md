@@ -37,7 +37,7 @@ Before proceeding:
 
 ## Deploy Sharded MongoDB Cluster
 
-To deploy a MongoDB Sharding, user have to specify `spec.replicaSet` option in `Mongodb` CRD.
+To deploy a MongoDB Sharding, user have to specify `spec.shardTopology` option in `Mongodb` CRD.
 
 The following is an example of a `Mongodb` object which creates MongoDB Sharding of three members.
 
@@ -97,7 +97,7 @@ Here,
     - `podTemplate` is an optional configuration for pods.
 - `spec.keyFileSecret` (optional) is a secret name that contains keyfile (a random string)against `key.txt` key. Each mongod instances in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the replicaset. Only mongod instances with the correct keyfile can join the replica set. _User can provide the `keyFileSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `keyFileSecret`._ If `keyFileSecret` is not given, KubeDB operator will generate a `keyFileSecret` itself.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create governing services for StatefulSets with the name `<mongodb-name>-<node-type>-gvr`.
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create some new StatefulSets : 1 for mongos, 1 for configServer & 1 for each of the shards. It creates a primary Service with the matching MongoDB object name. KubeDB operator will also create governing services for StatefulSets with the name `<mongodb-name>-<node-type>-pods`.
 
 MongoDB `mongo-sh` state,
 

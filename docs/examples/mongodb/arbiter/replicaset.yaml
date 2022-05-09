@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MongoDB
+metadata:
+  name: mongo-arb
+  namespace: demo
+spec:
+  version: "4.4.6"
+  replicaSet:
+    name: "rs0"
+  replicas: 2
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 500Mi
+  arbiter:
+    podTemplate: null
+  terminationPolicy: WipeOut
+
