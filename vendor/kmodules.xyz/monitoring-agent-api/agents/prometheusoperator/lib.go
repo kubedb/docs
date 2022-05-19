@@ -62,16 +62,6 @@ func (agent *PrometheusOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.A
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	var portName string
-	for _, p := range svc.Spec.Ports {
-		if p.Port == new.Prometheus.Exporter.Port {
-			portName = p.Name
-		}
-	}
-	if portName == "" {
-		return kutil.VerbUnchanged, errors.New("no port found in stats service")
-	}
-
 	if new.Prometheus.ServiceMonitor == nil {
 		return kutil.VerbUnchanged, errors.New("serviceMonitor spec is empty")
 	}
@@ -89,13 +79,13 @@ func (agent *PrometheusOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.A
 		in.Spec.NamespaceSelector = promapi.NamespaceSelector{
 			MatchNames: []string{sp.GetNamespace()},
 		}
-		in.Spec.Endpoints = []promapi.Endpoint{
-			{
-				Port:        portName,
+		for _, p := range svc.Spec.Ports {
+			in.Spec.Endpoints = upsertMonitoringEndpoint(in.Spec.Endpoints, promapi.Endpoint{
+				Port:        p.Name,
 				Interval:    new.Prometheus.ServiceMonitor.Interval,
 				Path:        sp.Path(),
 				HonorLabels: true,
-			},
+			})
 		}
 		in.Spec.Selector = metav1.LabelSelector{
 			MatchLabels: svc.Labels,
@@ -116,4 +106,14 @@ func (agent *PrometheusOperator) Delete(sp api.StatsAccessor) (kutil.VerbType, e
 		return kutil.VerbUnchanged, err
 	}
 	return kutil.VerbDeleted, nil
+}
+
+func upsertMonitoringEndpoint(endpoints []promapi.Endpoint, newEndpoint promapi.Endpoint) []promapi.Endpoint {
+	for i, endpoint := range endpoints {
+		if endpoint.Port == newEndpoint.Port {
+			endpoints[i] = newEndpoint
+			return endpoints
+		}
+	}
+	return append(endpoints, newEndpoint)
 }

@@ -206,6 +206,9 @@ github.com/go-sql-driver/mysql
 # github.com/go-stack/stack v1.8.0
 ## explicit
 github.com/go-stack/stack
+# github.com/gobuffalo/flect v0.2.5
+## explicit; go 1.13
+github.com/gobuffalo/flect
 # github.com/goccy/go-json v0.7.4
 ## explicit; go 1.12
 github.com/goccy/go-json
@@ -1390,7 +1393,7 @@ k8s.io/utils/net
 k8s.io/utils/path
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# kmodules.xyz/client-go v0.0.0-20220427165208-36281a681909
+# kmodules.xyz/client-go v0.0.0-20220512223652-dc247aa7f6df
 ## explicit; go 1.17
 kmodules.xyz/client-go
 kmodules.xyz/client-go/api/v1
@@ -1435,7 +1438,7 @@ kmodules.xyz/custom-resources/client/listers/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/client/listers/metrics/v1alpha1
 kmodules.xyz/custom-resources/crds
 kmodules.xyz/custom-resources/util/siteinfo
-# kmodules.xyz/monitoring-agent-api v0.0.0-20220319222118-0290ed5b75e1
+# kmodules.xyz/monitoring-agent-api v0.0.0-20220519191512-5a48a0a1d3f8
 ## explicit; go 1.17
 kmodules.xyz/monitoring-agent-api/agents
 kmodules.xyz/monitoring-agent-api/agents/prometheus
@@ -1453,7 +1456,7 @@ kmodules.xyz/offshoot-api/api/v1
 # kmodules.xyz/prober v0.0.0-20220317043828-5ae0114adcad
 ## explicit; go 1.15
 kmodules.xyz/prober/api/v1
-# kmodules.xyz/resource-metadata v0.10.16-0.20220419233724-fbd1b7e25b05
+# kmodules.xyz/resource-metadata v0.10.16
 ## explicit; go 1.17
 kmodules.xyz/resource-metadata/apis/core/v1alpha1
 # kmodules.xyz/resource-metrics v0.0.8
@@ -1469,7 +1472,7 @@ kmodules.xyz/resource-metrics/kubedb.com/v1alpha2
 ## explicit; go 1.17
 kmodules.xyz/webhook-runtime/admission/v1
 kmodules.xyz/webhook-runtime/builder
-# kubedb.dev/apimachinery v0.26.1-0.20220508053725-74c4fc13ef02
+# kubedb.dev/apimachinery v0.26.1-0.20220519193141-3634eb14c9ac
 ## explicit; go 1.17
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
@@ -1717,7 +1720,7 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
-# stash.appscode.dev/apimachinery v0.20.0
+# stash.appscode.dev/apimachinery v0.20.1
 ## explicit; go 1.17
 stash.appscode.dev/apimachinery/apis
 stash.appscode.dev/apimachinery/apis/repositories

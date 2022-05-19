@@ -20,9 +20,9 @@ require (
 	k8s.io/apiserver v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
-	kmodules.xyz/client-go v0.0.0-20220427165208-36281a681909
+	kmodules.xyz/client-go v0.0.0-20220512223652-dc247aa7f6df
 	kmodules.xyz/custom-resources v0.0.0-20220422215041-237eae1d7ddd
-	kubedb.dev/apimachinery v0.26.1-0.20220508053725-74c4fc13ef02
+	kubedb.dev/apimachinery v0.26.1-0.20220519193141-3634eb14c9ac
 	kubedb.dev/elasticsearch v0.26.0
 	kubedb.dev/mariadb v0.10.0
 	kubedb.dev/memcached v0.19.0
@@ -81,6 +81,7 @@ require (
 	github.com/go-redis/redis v0.0.0-20190803144825-742f3ccb21cd // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
+	github.com/gobuffalo/flect v0.2.5 // indirect
 	github.com/goccy/go-json v0.7.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -179,11 +180,11 @@ require (
 	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/kubernetes v1.21.1 // indirect
 	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
-	kmodules.xyz/monitoring-agent-api v0.0.0-20220319222118-0290ed5b75e1 // indirect
+	kmodules.xyz/monitoring-agent-api v0.0.0-20220519191512-5a48a0a1d3f8 // indirect
 	kmodules.xyz/objectstore-api v0.0.0-20220317220441-f1d593d0a778 // indirect
 	kmodules.xyz/offshoot-api v0.0.0-20220420055916-fefb02c26514 // indirect
 	kmodules.xyz/prober v0.0.0-20220317043828-5ae0114adcad // indirect
-	kmodules.xyz/resource-metadata v0.10.16-0.20220419233724-fbd1b7e25b05 // indirect
+	kmodules.xyz/resource-metadata v0.10.16 // indirect
 	kmodules.xyz/resource-metrics v0.0.8 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20220317222714-0ddfc9e4c221 // indirect
 	kubedb.dev/db-client-go v0.0.0-20211109094331-9c63e21a2178 // indirect
@@ -193,7 +194,7 @@ require (
 	sigs.k8s.io/kustomize/kyaml v0.10.17 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.0 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
-	stash.appscode.dev/apimachinery v0.20.0 // indirect
+	stash.appscode.dev/apimachinery v0.20.1 // indirect
 	xorm.io/builder v0.3.9 // indirect
 	xorm.io/xorm v1.2.5 // indirect
 )

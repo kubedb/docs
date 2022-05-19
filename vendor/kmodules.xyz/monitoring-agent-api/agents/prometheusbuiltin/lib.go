@@ -24,6 +24,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	api "kmodules.xyz/monitoring-agent-api/api/v1"
 
+	"github.com/gobuffalo/flect"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,7 +61,12 @@ func (agent *PrometheusBuiltin) CreateOrUpdate(sp api.StatsAccessor, new *api.Ag
 			delete(in.Annotations, "prometheus.io/scheme")
 		}
 		in.Annotations["prometheus.io/path"] = sp.Path()
-		if new.Prometheus.Exporter.Port > 0 {
+		if len(svc.Spec.Ports) > 1 {
+			for _, port := range svc.Spec.Ports {
+				portName := flect.Underscore(port.Name)
+				in.Annotations[fmt.Sprintf("prometheus.io/%s_port", portName)] = fmt.Sprintf("%d", port.Port)
+			}
+		} else if len(svc.Spec.Ports) == 1 {
 			in.Annotations["prometheus.io/port"] = fmt.Sprintf("%d", new.Prometheus.Exporter.Port)
 		} else {
 			delete(in.Annotations, "prometheus.io/port")

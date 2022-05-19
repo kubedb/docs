@@ -67,8 +67,16 @@ func PhaseFromCondition(conditions []kmapi.Condition) api.DatabasePhase {
 	// 4. DataRestored
 	// 5. Ready
 	// 6. Paused
+	// 7. HealthCheckPaused
 
 	var phase api.DatabasePhase
+
+	// ================================= Handling "HealthCheckPaused" condition ==========================
+	// If the condition is present and its "true", then the phase should be "Unknown".
+	// Skip if the database isn't provisioned yet.
+	if kmapi.IsConditionTrue(conditions, api.DatabaseHealthCheckPaused) {
+		return api.DatabasePhaseUnknown
+	}
 
 	// ==================================  Handling "ProvisioningStarted" condition  ========================
 	// If the condition is present and its "true", then the phase should be "Provisioning".
