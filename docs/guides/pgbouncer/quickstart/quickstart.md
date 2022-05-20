@@ -47,20 +47,12 @@ When you have installed KubeDB, it has created `PgBouncerVersion` crd for all su
 $ kubectl get pgbouncerversions
 
     NAME     VERSION   DB_IMAGE   DEPRECATED   AGE
-    1.10.0   1.10.0               false        75m
-    1.11.0   1.11.0               false        75m
-    1.12.0   1.12.0               false        75m
-    1.7      1.7                  false        75m
-    1.7.1    1.7.1                false        75m
-    1.7.2    1.7.2                false        75m
-    1.8.1    1.8.1                false        75m
-    1.9.0    1.9.0                false        75m
-    latest   latest               false        75m
+    1.17.0   1.17.0               false        75m
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this PgBouncerVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PgBouncerVersion.
 
-In this tutorial, we will use `1.11.0` PgBouncerVersion crd to create PgBouncer. To know more about what `PgBouncerVersion` crd is, please visit [here](/docs/guides/pgbouncer/concepts/catalog.md). You can also see supported PgBouncerVersion [here](/docs/guides/pgbouncer/README.md#supported-pgbouncerversion-crd).
+In this tutorial, we will use `1.17.0` PgBouncerVersion crd to create PgBouncer. To know more about what `PgBouncerVersion` crd is, please visit [here](/docs/guides/pgbouncer/concepts/catalog.md). You can also see supported PgBouncerVersion [here](/docs/guides/pgbouncer/README.md#supported-pgbouncerversion-crd).
 
 ## Get PostgreSQL Server ready
 
@@ -174,7 +166,7 @@ metadata:
   name: pgbouncer-server
   namespace: demo
 spec:
-  version: "1.11.0"
+  version: "1.17.0"
   replicas: 1
   databases:
   - alias: "postgres"
@@ -194,7 +186,7 @@ spec:
 
 Here,
 
-- `spec.version` is name of the PgBouncerVersion crd where the docker images are specified. In this tutorial, a PgBouncer with base image version 1.11.0 is created.
+- `spec.version` is name of the PgBouncerVersion crd where the docker images are specified. In this tutorial, a PgBouncer with base image version 1.17.0 is created.
 - `spec.replicas` specifies the number of replica pgbouncer server pods to be created for the PgBouncer object.
 - `spec.databases` specifies the databases that are going to be served via PgBouncer.
 - `spec.connectionPool` specifies the configurations for connection pool.
@@ -316,7 +308,7 @@ metadata:
   name: pgbouncer-server
   namespace: demo
 spec:
-  version: "1.11.0"
+  version: "1.17.0"
   replicas: 1
   databases:
   - alias: "postgres"
@@ -375,7 +367,7 @@ KubeDB operator sets the `status.phase` to `Running` once the connection-pooling
 ```bash
 $ kubectl get pb -n demo pgbouncer-server -o wide
 NAME               VERSION   STATUS    AGE
-pgbouncer-server   1.11.0    Running   2h
+pgbouncer-server   1.17.0    Running   2h
 ```
 
 Let's describe PgBouncer object `pgbouncer-server`
@@ -432,7 +424,7 @@ Spec:
     Spec:
   User List Secret Ref:
     Name:   db-user-pass
-  Version:  1.12.0
+  Version:  1.17.0
 Status:
   Observed Generation:  1$6208915667192219204
   Phase:                Running
