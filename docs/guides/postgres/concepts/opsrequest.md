@@ -65,7 +65,7 @@ spec:
     name: pg-group
   type: HorizontalScaling  
   horizontalScaling:
-    member: 3
+    replicas: 3
 status:
   conditions:
   - lastTransitionTime: "2020-06-11T09:59:05Z"

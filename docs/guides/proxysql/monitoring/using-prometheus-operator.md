@@ -146,7 +146,7 @@ metadata:
   name: builtin-prom-proxysql
   namespace: demo
 spec:
-  version: "2.0.4"
+  version: "2.3.2"
   replicas: 1
   mode: GroupReplication
   backend:
@@ -184,7 +184,7 @@ proxysql.kubedb.com/coreos-prom-mysql created
 ```bash
 $ kubectl get proxysql -n demo coreos-prom-proxysql
 NAME                   VERSION   STATUS    AGE
-coreos-prom-proxysql   2.0.4     Running   14s
+coreos-prom-proxysql   2.3.2     Running   14s
 ```
 
 KubeDB will create a separate stats service with the name `{ProxySQL object name}-stats` for monitoring purposes.
