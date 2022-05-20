@@ -32,13 +32,13 @@ As with all other Kubernetes objects, a ProxySQLVersion needs `apiVersion`, `kin
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: ProxySQLVersion
 metadata:
-  name: "2.0.4"
+  name: "2.3.2"
   labels:
     app: kubedb
 spec:
-  version: "2.0.4"
+  version: "2.3.2"
   proxysql:
-    image: "${KUBEDB_CATALOG_REGISTRY}/proxysql:2.0.4"
+    image: "${KUBEDB_CATALOG_REGISTRY}/proxysql:2.3.2"
   exporter:
     image: "${KUBEDB_CATALOG_REGISTRY}/proxysql-exporter:1.1.0"
   podSecurityPolicies:

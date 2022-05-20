@@ -41,7 +41,7 @@ KubeDB supports providing custom configuration for ProxySQL. This tutorial will 
 
 ProxySQL allows to configure via configuration file. The default configuration for ProxySQL can be found in `/etc/proxysql.cnf` file. In our Docker image (for ProxySQL), we used the file `/etc/configuration/custom-proxysql.cnf` as the custom configuration file. The procedure is such that if the configuration file exist, ProxySQL instance will use combined startup settings from both `/etc/proxysql.cnf` and `/etc/configuration/custom-proxysql.cnf` files. This custom configuration will overwrite the existing default one. For example config file:
 
-- [v2.0.4](https://github.com/sysown/proxysql/blob/v2.0.4/src/proxysql.cfg).
+- [v2.3.2](https://github.com/sysown/proxysql/blob/v2.3.2/src/proxysql.cfg).
 
 To know more about configuring ProxySQL see [configuration file](https://github.com/sysown/proxysql/wiki/Configuration-file) and [variables](https://github.com/sysown/proxysql/wiki/Global-variables).
 
@@ -119,7 +119,7 @@ metadata:
   name: custom-proxysql
   namespace: demo
 spec:
-  version: "2.0.4"
+  version: "2.3.2"
   replicas: 1
   mode: GroupReplication
   backend:

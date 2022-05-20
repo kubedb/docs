@@ -1,11 +1,12 @@
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PgBouncerVersion
 metadata:
-  name: "1.11.0"
+  name: "1.17.0"
 spec:
-  deprecated: false
-  version: "1.11.0"
-  server:
-    image: "myco/pgbouncer:custom-1.11.0"
   exporter:
-    image: "myco/pgbouncer_exporter:v0.1.1"
+    image: kubedb/pgbouncer_exporter:v0.1.1
+  initContainer:
+    image: kubedb/pgbouncer-init:0.1.0
+  pgBouncer:
+    image: kubedb/pgbouncer:1.17.0
+  version: 1.17.0

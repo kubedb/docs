@@ -32,14 +32,14 @@ As with all other Kubernetes objects, a PgBouncerVersion needs `apiVersion`, `ki
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PgBouncerVersion
 metadata:
-  name: "1.12.0"
+  name: "1.17.0"
   labels:
     app: kubedb
 spec:
   deprecated: false
-  version: "1.12.0"
-  server:
-    image: "${KUBEDB_CATALOG_REGISTRY}/pgbouncer:1.12.0"
+  version: "1.17.0"
+  pgBouncer:
+    image: "${KUBEDB_CATALOG_REGISTRY}/pgbouncer:1.17.0"
   exporter:
     image: "${KUBEDB_CATALOG_REGISTRY}/pgbouncer_exporter:v0.1.1"
 ```
@@ -64,9 +64,9 @@ We plan to modify original PgBouncer docker images to support additional feature
 
 The default value of this field is `false`. If `spec.deprecated` is set `true`, KubeDB operator will not create the server and other respective resources for this version.
 
-### spec.server.image
+### spec.pgBouncer.image
 
-`spec.server.image` is a required field that specifies the docker image which will be used to create Statefulset by KubeDB operator to create expected PgBouncer server.
+`spec.pgBouncer.image` is a required field that specifies the docker image which will be used to create Statefulset by KubeDB operator to create expected PgBouncer server.
 
 ### spec.exporter.image
 

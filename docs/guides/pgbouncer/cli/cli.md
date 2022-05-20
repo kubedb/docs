@@ -49,10 +49,10 @@ cat pgbouncer-demo.yaml | kubectl create -f -
 ```bash
 $ kubectl get pgbouncer
 NAME            VERSION   STATUS    AGE
-pgbouncer-demo   1.11.0    Running   13m
-pgbouncer-dev    1.11.0    Running   11m
-pgbouncer-prod   1.11.0    Running   11m
-pgbouncer-qa     1.11.0    Running   10m
+pgbouncer-demo   1.17.0    Running   13m
+pgbouncer-dev    1.17.0    Running   11m
+pgbouncer-prod   1.17.0    Running   11m
+pgbouncer-qa     1.17.0    Running   10m
 ```
 
 To get YAML of an object, use `--output=yaml` flag.
@@ -64,7 +64,7 @@ kind: PgBouncer
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"connectionPool":{"adminUsers":["admin","admin1"],"maxClientConnections":20,"reservePoolSize":5},"databases":[{"alias":"postgres","databaseName":"postgres","databaseRef":{"name":"quick-postgres"}},{"alias":"tmpdb","databaseName":"mydb","databaseRef":{"name":"quick-postgres"}}],"monitor":{"agent":"prometheus.io/builtin"},"replicas":1,"userListSecretRef":{"name":"db-user-pass"},"version":"1.12.0"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"connectionPool":{"adminUsers":["admin","admin1"],"maxClientConnections":20,"reservePoolSize":5},"databases":[{"alias":"postgres","databaseName":"postgres","databaseRef":{"name":"quick-postgres"}},{"alias":"tmpdb","databaseName":"mydb","databaseRef":{"name":"quick-postgres"}}],"monitor":{"agent":"prometheus.io/builtin"},"replicas":1,"userListSecretRef":{"name":"db-user-pass"},"version":"1.17.0"}}
   creationTimestamp: "2019-10-31T10:34:04Z"
   finalizers:
   - kubedb.com
@@ -107,7 +107,7 @@ spec:
   replicas: 1
   userListSecretRef:
     name: db-user-pass
-  version: 1.12.0
+  version: 1.17.0
 status:
   observedGeneration: 1$6208915667192219204
   phase: Running
@@ -132,10 +132,10 @@ service/pgbouncer-demo         ClusterIP   10.98.95.4      <none>        5432/TC
 service/pgbouncer-demo-stats   ClusterIP   10.107.214.97   <none>        56790/TCP   5m38s        app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-demo
 
 NAME                              READY       AGE             CONTAINERS           IMAGES
-statefulset.apps/pgbouncer-demo   1/1         5m53s           pgbouncer,exporter   kubedb/pgbouncer:1.12.0,kubedb/pgbouncer_exporter:v0.1.1
+statefulset.apps/pgbouncer-demo   1/1         5m53s           pgbouncer,exporter   kubedb/pgbouncer:1.17.0,kubedb/pgbouncer_exporter:v0.1.1
 
 NAME                                  VERSION     STATUS          AGE
-pgbouncer.kubedb.com/pgbouncer-demo   1.12.0      Running         5m54s
+pgbouncer.kubedb.com/pgbouncer-demo   1.17.0      Running         5m54s
 
 ```
 
@@ -216,7 +216,7 @@ Spec:
   User List:
     Secret Name:       db-userlist
     Secret Namespace:  demo
-  Version:             1.11.0
+  Version:             1.17.0
 Status:
   Observed Generation:  1$6208915667192219204
   Phase:                Running

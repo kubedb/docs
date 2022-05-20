@@ -40,15 +40,7 @@ namespace/demo created
   ```bash
   $ kubectl get pgbouncerversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.server.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME     VERSION   SERVER_IMAGE              EXPORTER_IMAGE                     DEPRECATED
-  1.10.0   1.10.0    kubedb/pgbouncer:1.10.0   kubedb/pgbouncer_exporter:v0.1.1   false
-  1.11.0   1.11.0    kubedb/pgbouncer:1.11.0   kubedb/pgbouncer_exporter:v0.1.1   false
-  1.12.0   1.12.0    kubedb/pgbouncer:1.12.0   kubedb/pgbouncer_exporter:v0.1.1   false
-  1.7      1.7       kubedb/pgbouncer:1.7      kubedb/pgbouncer_exporter:v0.1.1   false
-  1.7.1    1.7.1     kubedb/pgbouncer:1.7.1    kubedb/pgbouncer_exporter:v0.1.1   false
-  1.7.2    1.7.2     kubedb/pgbouncer:1.7.2    kubedb/pgbouncer_exporter:v0.1.1   false
-  1.8.1    1.8.1     kubedb/pgbouncer:1.8.1    kubedb/pgbouncer_exporter:v0.1.1   false
-  1.9.0    1.9.0     kubedb/pgbouncer:1.9.0    kubedb/pgbouncer_exporter:v0.1.1   false
-  latest   latest    kubedb/pgbouncer:latest   kubedb/pgbouncer_exporter:v0.1.1   false
+  1.17.0   1.17.0    kubedb/pgbouncer:1.17.0   kubedb/pgbouncer_exporter:v0.1.1   false
   ```
 
   Docker hub repositories:
@@ -91,25 +83,25 @@ Here, is an example of PgBouncerVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` w
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PgBouncerVersion
 metadata:
-  name: "1.12.0"
+  name: "1.17.0"
 spec:
   exporter:
     image: PRIVATE_REGISTRY/pgbouncer_exporter:v0.1.1
-  server:
-    image: PRIVATE_REGISTRY/pgbouncer:1.12.0
-  version: 1.12.0
+  pgBouncer:
+    image: PRIVATE_REGISTRY/pgbouncer:1.17.0
+  version: 1.17.0
 ```
 
 Now, create the PgBouncerVersion crd,
 
 ```bash
 $ kubectl apply -f pvt-pgbouncerversion.yaml
-pgbouncerversion.kubedb.com/pvt-1.11.0 created
+pgbouncerversion.kubedb.com/pvt-1.17.0 created
 ```
 
 ## Deploy PgBouncer from Private Registry
 
-While deploying PgBouncer from private repository, you have to add `myregistrykey` secret in PgBouncer `spec.podTemplate.spec.imagePullSecrets` and specify `pvt-1.11.0` in `spec.version` field.
+While deploying PgBouncer from private repository, you have to add `myregistrykey` secret in PgBouncer `spec.podTemplate.spec.imagePullSecrets` and specify `pvt-1.17.0` in `spec.version` field.
 
 Below is the PgBouncer object we will create in this tutorial
 
@@ -120,7 +112,7 @@ metadata:
   name: pvt-reg-pgbouncer
   namespace: demo
 spec:
-  version: "1.12.0"
+  version: "1.17.0"
   databases:
   - alias: "postgres"
     databaseName: "postgres"

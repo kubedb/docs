@@ -111,7 +111,7 @@ metadata:
   name: pgbouncer-server
   namespace: demo
 spec:
-  version: "1.11.0"
+  version: "1.17.0"
   replicas: 1
   databases:
   - alias: "postgres"
@@ -157,7 +157,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get pb -n demo pgbouncer-server
 NAME               VERSION   STATUS    AGE
-pgbouncer-server   1.11.0    Running   10s
+pgbouncer-server   1.17.0    Running   10s
 ```
 
 KubeDB will create a separate stats service with name `{PgBouncer crd name}-stats` for monitoring purpose.

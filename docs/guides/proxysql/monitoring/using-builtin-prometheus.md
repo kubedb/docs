@@ -96,7 +96,7 @@ metadata:
   name: builtin-prom-proxysql
   namespace: demo
 spec:
-  version: "2.0.4"
+  version: "2.3.2"
   replicas: 1
   mode: GroupReplication
   backend:
@@ -126,7 +126,7 @@ Now, wait for the ProxySQL object to go into the `Running` state.
 ```bash
 $ kubectl get proxysql -n demo builtin-prom-proxysql
 NAME                    VERSION   STATUS    AGE
-builtin-prom-proxysql   2.0.4     Running   3m
+builtin-prom-proxysql   2.3.2     Running   3m
 ```
 
 KubeDB will create a separate stats service with the name `{ProxySQL object name}-stats` for monitoring purposes.

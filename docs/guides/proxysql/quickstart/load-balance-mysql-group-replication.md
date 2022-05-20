@@ -196,7 +196,7 @@ metadata:
   name: proxy-my-group
   namespace: demo
 spec:
-  version: "2.0.4"
+  version: "2.3.2"
   replicas: 1
   mode: GroupReplication
   backend:
@@ -223,7 +223,7 @@ Let's check if the ProxySQL object is ready to use,
 ```bash
 $ kubectl get proxysql -n demo proxy-my-group
 NAME             VERSION   STATUS    AGE
-proxy-my-group   2.0.4     Running   129m
+proxy-my-group   2.3.2     Running   129m
 ```
 
 The status is `Running`. Verify that KubeDB has created necessary Secret and Service for this object using the following commands,

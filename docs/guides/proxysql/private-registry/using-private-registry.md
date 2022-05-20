@@ -31,7 +31,7 @@ KubeDB operator supports using a private Docker registry. This tutorial will sho
   ```bash
   $ kubectl get proxysqlversions  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,PROXYSQL_IMAGE:.spec.proxysql.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME     VERSION   PROXYSQL_IMAGE          EXPORTER_IMAGE                   DEPRECATED
-  2.0.4    2.0.4     kubedb/proxysql:v2.0.4   kubedb/proxysql-exporter:v1.1.0   <none>
+  2.3.2    2.3.2     kubedb/proxysql:v2.3.2   kubedb/proxysql-exporter:v1.1.0   <none>
   ```
 
   Docker hub repositories:
@@ -46,15 +46,15 @@ KubeDB operator supports using a private Docker registry. This tutorial will sho
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: ProxySQLVersion
   metadata:
-    name: 2.0.4
+    name: 2.3.2
   spec:
     exporter:
       image: PRIVATE_DOCKER_REGISTRY:v1.1.0
     podSecurityPolicies:
       databasePolicyName: proxysql-db
     proxysql:
-      image: PRIVATE_DOCKER_REGISTRY:v2.0.4
-    version: 2.0.4
+      image: PRIVATE_DOCKER_REGISTRY:v2.3.2
+    version: 2.3.2
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -99,7 +99,7 @@ metadata:
   name: proxysql-pvt-reg
   namespace: demo
 spec:
-  version: "2.0.4"
+  version: "2.3.2"
   replicas: 1
   mode: GroupReplication
   backend:

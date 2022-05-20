@@ -4,7 +4,7 @@ metadata:
   name: pgbouncer-server
   namespace: demo
 spec:
-  version: "1.12.0"
+  version: "1.17.0"
   databases:
   - alias: "postgres"
     databaseName: "postgres"
