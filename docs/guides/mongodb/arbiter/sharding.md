@@ -77,7 +77,7 @@ spec:
     podTemplate:
       spec:
         resources:
-        requests:
+          requests:
             cpu: "200m"
             memory: "200Mi"
   terminationPolicy: WipeOut
