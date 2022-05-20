@@ -68,14 +68,14 @@ KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://g
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm search repo appscode/kubedb --version {{< param "info.community" >}}
+$ helm search repo appscode/kubedb --version {{< param "info.provisioner" >}}
 NAME                        CHART VERSION APP VERSION   DESCRIPTION
-appscode/kubedb-catalog   	{{< param "info.community" >}}  {{< param "info.community" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
-appscode/kubedb-community 	{{< param "info.community" >}}  {{< param "info.community" >}}    	KubeDB Community by AppsCode - Community featur...               
+appscode/kubedb-catalog   	{{< param "info.provisioner" >}}  {{< param "info.provisioner" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
+appscode/kubedb-community 	{{< param "info.provisioner" >}}  {{< param "info.provisioner" >}}    	KubeDB Community by AppsCode - Community featur...               
 
 # Step 1: Install KubeDB Community operator chart
 $ helm install kubedb-community appscode/kubedb-community \
-  --version {{< param "info.community" >}} \
+  --version {{< param "info.provisioner" >}} \
   --namespace kubedb --create-namespace \
   --set-file license=/path/to/the/license.txt
 
@@ -99,12 +99,12 @@ redisversions.kubedb.com           6s
 
 # Step 3(a): Install KubeDB catalog of database versions
 $ helm install kubedb-catalog appscode/kubedb-catalog \
-  --version {{< param "info.community" >}} \
+  --version {{< param "info.provisioner" >}} \
   --namespace kubedb
 
 # Step 3(b): Or, if previously installed, upgrade KubeDB catalog of database versions
 $ helm upgrade kubedb-catalog appscode/kubedb-catalog \
-  --version {{< param "info.community" >}} \
+  --version {{< param "info.provisioner" >}} \
   --namespace kubedb
 ```
 
@@ -120,15 +120,15 @@ If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and depl
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm search repo appscode/kubedb --version {{< param "info.community" >}}
+$ helm search repo appscode/kubedb --version {{< param "info.provisioner" >}}
 NAME                        CHART VERSION APP VERSION   DESCRIPTION
-appscode/kubedb-catalog   	{{< param "info.community" >}}  {{< param "info.community" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
-appscode/kubedb-community 	{{< param "info.community" >}}  {{< param "info.community" >}}    	KubeDB Community by AppsCode - Community featur...               
+appscode/kubedb-catalog   	{{< param "info.provisioner" >}}  {{< param "info.provisioner" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
+appscode/kubedb-community 	{{< param "info.provisioner" >}}  {{< param "info.provisioner" >}}    	KubeDB Community by AppsCode - Community featur...               
 
 
 # Step 1: Install KubeDB Community operator chart
 $ helm template kubedb-community appscode/kubedb-community \
-  --version {{< param "info.community" >}} \
+  --version {{< param "info.provisioner" >}} \
   --namespace kubedb --create-namespace \
   --set-file license=/path/to/the/license.txt \
   --set cleaner.skip=true | kubectl apply -f -
@@ -151,7 +151,7 @@ redisversions.kubedb.com           6s
 
 # Step: Install/Upgrade KubeDB catalog of database versions
 $ helm template kubedb-catalog appscode/kubedb-catalog \
-  --version {{< param "info.community" >}} \
+  --version {{< param "info.provisioner" >}} \
   --namespace kubedb --create-namespace | kubectl apply -f -
 ```
 
