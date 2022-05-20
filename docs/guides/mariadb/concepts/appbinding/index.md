@@ -106,7 +106,7 @@ MongoDB :
 | `username` | Username of the target database.               |
 | `password` | Password for the user specified by `username`. |
 
-Elasticsearch:
+MariaDB:
 
 |       Key        |          Usage          |
 | ---------------- | ----------------------- |

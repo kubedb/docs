@@ -99,7 +99,7 @@ Here, we have specified that we are going to monitor this server using Prometheu
 ## Next Steps
 
 - Learn how to monitor `MariaDB` database with KubeDB using [builtin-Prometheus](/docs/guides/mariadb/monitoring/builtin-prometheus) and using [Prometheus operator](/docs/guides/mariadb/monitoring/prometheus-operator).
-- Learn how to monitor `Elasticsearch` database with KubeDB using [builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
+- Learn how to monitor `MariaDB` database with KubeDB using [builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Learn how to monitor `PostgreSQL` database with KubeDB using [builtin-Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
 - Learn how to monitor `MySQL` database with KubeDB using [builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md) and using [Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
 - Learn how to monitor `MongoDB` database with KubeDB using [builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
