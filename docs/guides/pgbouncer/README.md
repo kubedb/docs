@@ -26,7 +26,8 @@ KubeDB operator now comes bundled with PgBouncer crd to handle connection poolin
 ## PgBouncer Features
 
 | Features                           | Availability |
-| ---------------------------------- | :----------: |
+|------------------------------------| :----------: |
+| Clustering                         |   &#10003;   |
 | Multiple PgBouncer Versions        |   &#10003;   |
 | Customizable Pooling Configuration |   &#10003;   |
 | Custom docker images               |   &#10003;   |

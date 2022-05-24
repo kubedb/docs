@@ -46,8 +46,8 @@ When you have installed KubeDB, it has created `PgBouncerVersion` crd for all su
 ```bash
 $ kubectl get pgbouncerversions
 
-    NAME     VERSION   DB_IMAGE   DEPRECATED   AGE
-    1.17.0   1.17.0               false        75m
+    NAME     VERSION   PGBOUNCER_IMAGE           DEPRECATED   AGE
+    1.17.0   1.17.0    kubedb/pgbouncer:1.17.0                2d23h
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this PgBouncerVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PgBouncerVersion.
@@ -204,7 +204,7 @@ Databases contain three `required` fields and two `optional` fields.
 
 ### spec.connectionPool
 
- ConnectionPool is used to configure pgbouncer connection pool. All the fields here are accompanied by default values and can be left unspecified if no customization is required by the user.
+ConnectionPool is used to configure pgbouncer connection pool. All the fields here are accompanied by default values and can be left unspecified if no customization is required by the user.
 
 - `spec.connectionPool.port`: specifies the port on which pgbouncer should listen to connect with clients. The default is 5432.
 - `spec.connectionPool.adminUsers`: specifies the values of admin_users. An array of names of admin users are listed here.
@@ -367,18 +367,18 @@ KubeDB operator sets the `status.phase` to `Running` once the connection-pooling
 ```bash
 $ kubectl get pb -n demo pgbouncer-server -o wide
 NAME               VERSION   STATUS    AGE
-pgbouncer-server   1.17.0    Running   2h
+pgbouncer-server   1.17.0    Ready     2h
 ```
 
 Let's describe PgBouncer object `pgbouncer-server`
 
 ```bash
 $ kubectl dba describe pb -n demo pgbouncer-server
-Name:         pgbouncer-demo
+Name:         pgbouncer-server
 Namespace:    demo
 Labels:       <none>
 Annotations:  kubectl.kubernetes.io/last-applied-configuration:
-                {"apiVersion":"kubedb.com/v1alpha2","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"c...
+                {"apiVersion":"kubedb.com/v1alpha2","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-server","namespace":"demo"},"spec":{"c...
 API Version:  kubedb.com/v1alpha2
 Kind:         PgBouncer
 Metadata:
@@ -387,7 +387,7 @@ Metadata:
     kubedb.com
   Generation:        1
   Resource Version:  4733
-  Self Link:         /apis/kubedb.com/v1alpha2/namespaces/demo/pgbouncers/pgbouncer-demo
+  Self Link:         /apis/kubedb.com/v1alpha2/namespaces/demo/pgbouncers/pgbouncer-server
   UID:               158b7c58-ecb2-4a77-bceb-081489b4921a
 Spec:
   Connection Pool:
@@ -449,7 +449,6 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 kubectl delete -n demo pg/quick-postgres
 
 kubectl delete -n demo pb/pgbouncer-server
-kubectl delete -n demo pb/pgbouncer-server-mod
 
 kubectl delete secret -n demo db-user-pass
 
