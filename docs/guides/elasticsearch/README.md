@@ -93,7 +93,7 @@ aliases:
 |  7.1.x  |   &#10003;    |     &#10007;      |
 |  7.0.x  |   &#10003;    |     &#10007;      |
 </td>
-<td>
+<td style="vertical-align:top">
 
 |  Version   | ElasticSearch | Dashboard(Kibana) |
 |:----------:|:-------------:|:-----------------:|
