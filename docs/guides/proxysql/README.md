@@ -27,6 +27,10 @@ aliases:
 | Using Custom docker image            |   &#10003;   |
 | Builtin Prometheus Discovery         |   &#10003;   |
 | Using Prometheus operator            |   &#10003;   |
+| ProxySQL server cluster              |   &#10003;   |
+| ProxySQL server failure recovery     |   &#10003;   |
+| TLS secured connection for backend   |   &#10003;   |
+| TLS secured connection for frontend  |   &#10003;   |
 
 ## User Guide
 
