@@ -72,8 +72,9 @@ We will have to provide `StorageClass` in Postgres crd specification. Check avai
 
 ```bash
 $ kubectl get storageclass
-NAME                 PROVISIONER                AGE
-standard (default)   k8s.io/minikube-hostpath   5h
+NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  10d
+
 ```
 
 Here, we have `standard` StorageClass in our cluster.
@@ -85,42 +86,52 @@ When you have installed KubeDB, it has created `PostgresVersion` crd for all sup
 ```bash
 $ kubectl get postgresversion
 NAME                       VERSION   DISTRIBUTION   DB_IMAGE                               DEPRECATED   AGE
-10.16                      10.16     Official       postgres:10.16-alpine                               63s
-10.16-debian               10.16     Official       postgres:10.16                                      63s
-10.19                      10.19     Official       postgres:10.19-bullseye                             63s
-10.19-bullseye             10.19     Official       postgres:10.19-bullseye                             63s
-11.11                      11.11     Official       postgres:11.11-alpine                               63s
-11.11-debian               11.11     Official       postgres:11.11                                      63s
-11.14                      11.14     Official       postgres:11.14-alpine                               63s
-11.14-bullseye             11.14     Official       postgres:11.14-bullseye                             63s
-11.14-bullseye-postgis     11.14     PostGIS        postgis/postgis:11-3.1                              63s
-12.6                       12.6      Official       postgres:12.6-alpine                                63s
-12.6-debian                12.6      Official       postgres:12.6                                       63s
-12.9                       12.9      Official       postgres:12.9-alpine                                63s
-12.9-bullseye              12.9      Official       postgres:12.9-bullseye                              63s
-12.9-bullseye-postgis      12.9      PostGIS        postgis/postgis:12-3.1                              63s
-13.2                       13.2      Official       postgres:13.2-alpine                                63s
-13.2-debian                13.2      Official       postgres:13.2                                       63s
-13.5                       13.5      Official       postgres:13.5-alpine                                63s
-13.5-bullseye              13.5      Official       postgres:13.5-bullseye                              63s
-13.5-bullseye-postgis      13.5      PostGIS        postgis/postgis:13-3.1                              63s
-14.1                       14.1      Official       postgres:14.1-alpine                                63s
-14.1-bullseye              14.1      Official       postgres:14.1-bullseye                              63s
-14.1-bullseye-postgis      14.1      PostGIS        postgis/postgis:14-3.1                              63s
-9.6.21                     9.6.21    Official       postgres:9.6.21-alpine                              63s
-9.6.21-debian              9.6.21    Official       postgres:9.6.21                                     63s
-9.6.24                     9.6.24    Official       postgres:9.6.24-alpine                              63s
-9.6.24-bullseye            9.6.24    Official       postgres:9.6.24-bullseye                            63s
-timescaledb-2.1.0-pg11     11.11     TimescaleDB    timescale/timescaledb:2.1.0-pg11-oss                63s
-timescaledb-2.1.0-pg12     12.6      TimescaleDB    timescale/timescaledb:2.1.0-pg12-oss                63s
-timescaledb-2.1.0-pg13     13.2      TimescaleDB    timescale/timescaledb:2.1.0-pg13-oss                63s
-timescaledb-2.5.0-pg14.1   14.1      TimescaleDB    timescale/timescaledb:2.5.0-pg14-oss                63s
+10.16                      10.16     Official       postgres:10.16-alpine                               3d
+10.16-debian               10.16     Official       postgres:10.16                                      3d
+10.19                      10.19     Official       postgres:10.19-bullseye                             3d
+10.19-bullseye             10.19     Official       postgres:10.19-bullseye                             3d
+10.20                      10.20     Official       postgres:10.20-bullseye                             3d
+10.20-bullseye             10.20     Official       postgres:10.20-bullseye                             3d
+11.11                      11.11     Official       postgres:11.11-alpine                               3d
+11.11-debian               11.11     Official       postgres:11.11                                      3d
+11.14                      11.14     Official       postgres:11.14-alpine                               3d
+11.14-bullseye             11.14     Official       postgres:11.14-bullseye                             3d
+11.14-bullseye-postgis     11.14     PostGIS        postgis/postgis:11-3.1                              3d
+11.15                      11.15     Official       postgres:11.15-alpine                               3d
+11.15-bullseye             11.15     Official       postgres:11.15-bullseye                             3d
+12.10                      12.10     Official       postgres:12.10-alpine                               3d
+12.10-bullseye             12.10     Official       postgres:12.10-bullseye                             3d
+12.6                       12.6      Official       postgres:12.6-alpine                                3d
+12.6-debian                12.6      Official       postgres:12.6                                       3d
+12.9                       12.9      Official       postgres:12.9-alpine                                3d
+12.9-bullseye              12.9      Official       postgres:12.9-bullseye                              3d
+12.9-bullseye-postgis      12.9      PostGIS        postgis/postgis:12-3.1                              3d
+13.2                       13.2      Official       postgres:13.2-alpine                                3d
+13.2-debian                13.2      Official       postgres:13.2                                       3d
+13.5                       13.5      Official       postgres:13.5-alpine                                3d
+13.5-bullseye              13.5      Official       postgres:13.5-bullseye                              3d
+13.5-bullseye-postgis      13.5      PostGIS        postgis/postgis:13-3.1                              3d
+13.6                       13.6      Official       postgres:13.6-alpine                                3d
+13.6-bullseye              13.6      Official       postgres:13.6-bullseye                              3d
+14.1                       14.1      Official       postgres:14.1-alpine                                3d
+14.1-bullseye              14.1      Official       postgres:14.1-bullseye                              3d
+14.1-bullseye-postgis      14.1      PostGIS        postgis/postgis:14-3.1                              3d
+14.2                       14.2      Official       postgres:14.2-alpine                                3d
+14.2-bullseye              14.2      Official       postgres:14.2-bullseye                              3d
+9.6.21                     9.6.21    Official       postgres:9.6.21-alpine                              3d
+9.6.21-debian              9.6.21    Official       postgres:9.6.21                                     3d
+9.6.24                     9.6.24    Official       postgres:9.6.24-alpine                              3d
+9.6.24-bullseye            9.6.24    Official       postgres:9.6.24-bullseye                            3d
+timescaledb-2.1.0-pg11     11.11     TimescaleDB    timescale/timescaledb:2.1.0-pg11-oss                3d
+timescaledb-2.1.0-pg12     12.6      TimescaleDB    timescale/timescaledb:2.1.0-pg12-oss                3d
+timescaledb-2.1.0-pg13     13.2      TimescaleDB    timescale/timescaledb:2.1.0-pg13-oss                3d
+timescaledb-2.5.0-pg14.1   14.1      TimescaleDB    timescale/timescaledb:2.5.0-pg14-oss                3d
 
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this PostgresVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PostgresVersion.
 
-In this tutorial, we will use `10.2-v5` PostgresVersion crd to create PostgreSQL database. To know more about what is `PostgresVersion` crd and why there is `10.2` and `10.2-v5` variation, please visit [here](/docs/guides/postgres/concepts/catalog.md). You can also see supported PostgresVersion [here](/docs/guides/postgres/README.md#supported-postgresversion-crd).
+In this tutorial, we will use `13.2` PostgresVersion crd to create PostgreSQL database. To know more about what is `PostgresVersion` crd and why there is `13.2` and `13.2-debian` variation, please visit [here](/docs/guides/postgres/concepts/catalog.md). You can also see supported PostgresVersion [here](/docs/guides/postgres/README.md#supported-postgresversion-crd).
 
 ## Create a PostgreSQL database
 
@@ -149,7 +160,7 @@ spec:
 
 Here,
 
-- `spec.version` is name of the PostgresVersion crd where the docker images are specified. In this tutorial, a PostgreSQL 10.2 database is created.
+- `spec.version` is name of the PostgresVersion crd where the docker images are specified. In this tutorial, a PostgreSQL 13.2 database is created.
 - `spec.storageType` specifies the type of storage that will be used for Postgres database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Postgres database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the size and StorageClass of PVC that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
 - `spec.terminationPolicy` specifies what KubeDB should do when user try to delete Postgres crd. Termination policy `DoNotTerminate` prevents a user from deleting this object if admission webhook is enabled.
@@ -172,102 +183,214 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 ```bash
 $  kubectl get pg -n demo quick-postgres -o wide
 NAME             VERSION   STATUS     AGE
-quick-postgres   10.2-v5   Creating   13s
+quick-postgres   13.2      Creating   13s
 ```
 
 Let's describe Postgres object `quick-postgres`
 
 ```bash
-$ kubectl dba describe pg -n demo quick-postgres
-Name:               quick-postgres
-Namespace:          demo
-CreationTimestamp:  Thu, 07 Feb 2019 17:03:11 +0600
-Labels:             <none>
-Annotations:        <none>
-Replicas:           1  total
-Status:             Running
-  StorageType:      Durable
-Volume:
-  StorageClass:  standard
-  Capacity:      1Gi
-  Access Modes:  RWO
-
-StatefulSet:          
-  Name:               quick-postgres
-  CreationTimestamp:  Thu, 07 Feb 2019 17:03:11 +0600
-  Labels:               app.kubernetes.io/name=postgreses.kubedb.com
-                        app.kubernetes.io/instance=quick-postgres
-  Annotations:        <none>
-  Replicas:           824641589664 desired | 1 total
-  Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
-
-Service:        
-  Name:         quick-postgres
-  Labels:         app.kubernetes.io/name=postgreses.kubedb.com
-                  app.kubernetes.io/instance=quick-postgres
-  Annotations:  <none>
-  Type:         ClusterIP
-  IP:           10.100.86.27
-  Port:         api  5432/TCP
-  TargetPort:   api/TCP
-  Endpoints:    172.17.0.8:5432
-
-Service:        
-  Name:         quick-postgres-replicas
-  Labels:         app.kubernetes.io/name=postgreses.kubedb.com
-                  app.kubernetes.io/instance=quick-postgres
-  Annotations:  <none>
-  Type:         ClusterIP
-  IP:           10.103.133.93
-  Port:         api  5432/TCP
-  TargetPort:   api/TCP
-  Endpoints:    172.17.0.8:5432
-
-Database Secret:
-  Name:         quick-postgres-auth
-  Labels:         app.kubernetes.io/name=postgreses.kubedb.com
-                  app.kubernetes.io/instance=quick-postgres
-  Annotations:  <none>
-  
-Type:  Opaque
-  
-Data
-====
-  POSTGRES_PASSWORD:  16 bytes
-  POSTGRES_USER:      8 bytes
-
-Topology:
-  Type     Pod               StartTime                      Phase
-  ----     ---               ---------                      -----
-  primary  quick-postgres-0  2019-02-07 17:03:12 +0600 +06  Running
-
-No Snapshots.
-
+$ kubectl describe -n demo postgres quick-postgres 
+Name:         quick-postgres
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  kubedb.com/v1alpha2
+Kind:         Postgres
+Metadata:
+  Creation Timestamp:  2022-05-30T09:15:36Z
+  Finalizers:
+    kubedb.com
+  Generation:  2
+  Managed Fields:
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:allowedSchemas:
+          .:
+          f:namespaces:
+            .:
+            f:from:
+        f:storage:
+          .:
+          f:accessModes:
+          f:resources:
+            .:
+            f:requests:
+              .:
+              f:storage:
+          f:storageClassName:
+        f:storageType:
+        f:terminationPolicy:
+        f:version:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2022-05-30T09:15:36Z
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .:
+          v:"kubedb.com":
+      f:spec:
+        f:authSecret:
+          .:
+          f:name:
+    Manager:      pg-operator
+    Operation:    Update
+    Time:         2022-05-30T09:15:37Z
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:         pg-operator
+    Operation:       Update
+    Subresource:     status
+    Time:            2022-05-30T09:16:26Z
+  Resource Version:  330717
+  UID:               aa9193d0-cd9b-4b63-8403-2b12ec1b04be
+Spec:
+  Allowed Schemas:
+    Namespaces:
+      From:  Same
+  Auth Secret:
+    Name:            quick-postgres-auth
+  Client Auth Mode:  md5
+  Coordinator:
+    Resources:
+      Limits:
+        Memory:  256Mi
+      Requests:
+        Cpu:     200m
+        Memory:  256Mi
+  Leader Election:
+    Election Tick:                10
+    Heartbeat Tick:               1
+    Maximum Lag Before Failover:  67108864
+    Period:                       300ms
+  Pod Template:
+    Controller:
+    Metadata:
+    Spec:
+      Affinity:
+        Pod Anti Affinity:
+          Preferred During Scheduling Ignored During Execution:
+            Pod Affinity Term:
+              Label Selector:
+                Match Labels:
+                  app.kubernetes.io/instance:    quick-postgres
+                  app.kubernetes.io/managed-by:  kubedb.com
+                  app.kubernetes.io/name:        postgreses.kubedb.com
+              Namespaces:
+                demo
+              Topology Key:  kubernetes.io/hostname
+            Weight:          100
+            Pod Affinity Term:
+              Label Selector:
+                Match Labels:
+                  app.kubernetes.io/instance:    quick-postgres
+                  app.kubernetes.io/managed-by:  kubedb.com
+                  app.kubernetes.io/name:        postgreses.kubedb.com
+              Namespaces:
+                demo
+              Topology Key:  failure-domain.beta.kubernetes.io/zone
+            Weight:          50
+      Container Security Context:
+        Capabilities:
+          Add:
+            IPC_LOCK
+            SYS_RESOURCE
+        Privileged:    false
+        Run As Group:  70
+        Run As User:   70
+      Resources:
+        Limits:
+          Memory:  1Gi
+        Requests:
+          Cpu:     500m
+          Memory:  1Gi
+      Security Context:
+        Fs Group:            70
+        Run As Group:        70
+        Run As User:         70
+      Service Account Name:  quick-postgres
+  Replicas:                  1
+  Ssl Mode:                  disable
+  Storage:
+    Access Modes:
+      ReadWriteOnce
+    Resources:
+      Requests:
+        Storage:         1Gi
+    Storage Class Name:  standard
+  Storage Type:          Durable
+  Termination Policy:    DoNotTerminate
+  Version:               13.2
+Status:
+  Conditions:
+    Last Transition Time:  2022-05-30T09:15:36Z
+    Message:               The KubeDB operator has started the provisioning of Postgres: demo/quick-postgres
+    Reason:                DatabaseProvisioningStartedSuccessfully
+    Status:                True
+    Type:                  ProvisioningStarted
+    Last Transition Time:  2022-05-30T09:16:26Z
+    Message:               All replicas are ready and in Running state
+    Observed Generation:   2
+    Reason:                AllReplicasReady
+    Status:                True
+    Type:                  ReplicaReady
+    Last Transition Time:  2022-05-30T09:16:26Z
+    Message:               The PostgreSQL: demo/quick-postgres is accepting client requests.
+    Observed Generation:   2
+    Reason:                DatabaseAcceptingConnectionRequest
+    Status:                True
+    Type:                  AcceptingConnection
+    Last Transition Time:  2022-05-30T09:16:26Z
+    Message:               DB is ready because of server getting Online and Running state
+    Observed Generation:   2
+    Reason:                ReadinessCheckSucceeded
+    Status:                True
+    Type:                  Ready
+    Last Transition Time:  2022-05-30T09:16:26Z
+    Message:               The PostgreSQL: demo/quick-postgres is successfully provisioned.
+    Observed Generation:   2
+    Reason:                DatabaseSuccessfullyProvisioned
+    Status:                True
+    Type:                  Provisioned
+  Observed Generation:     2
+  Phase:                   Ready
 Events:
-  Type    Reason      Age   From             Message
-  ----    ------      ----  ----             -------
-  Normal  Successful  51s   KubeDB operator  Successfully created Service
-  Normal  Successful  51s   KubeDB operator  Successfully created Service
-  Normal  Successful  25s   KubeDB operator  Successfully created StatefulSet
-  Normal  Successful  25s   KubeDB operator  Successfully created Postgres
-  Normal  Successful  25s   KubeDB operator  Successfully created appbinding
-  Normal  Successful  25s   KubeDB operator  Successfully patched StatefulSet
-  Normal  Successful  25s   KubeDB operator  Successfully patched Postgres
+  Type    Reason      Age   From               Message
+  ----    ------      ----  ----               -------
+  Normal  Successful  106s  Postgres operator  Successfully created governing service
+  Normal  Successful  106s  Postgres operator  Successfully created Service
+  Normal  Successful  105s  Postgres operator  Successfully created appbinding
 ```
 
 KubeDB has created two services for the Postgres object.
 
 ```bash
 $ kubectl get service -n demo --selector=app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=quick-postgres
-NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-quick-postgres            ClusterIP   10.108.152.107   <none>        5432/TCP   3m
-quick-postgres-replicas   ClusterIP   10.105.175.166   <none>        5432/TCP   3m
+NAME                  TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                      AGE
+quick-postgres        ClusterIP   10.96.52.28   <none>        5432/TCP,2379/TCP            3m19s
+quick-postgres-pods   ClusterIP   None          <none>        5432/TCP,2380/TCP,2379/TCP   3m19s
+
+
 ```
 
 Here,
 
 - Service *`quick-postgres`* targets only one Pod which is acting as *primary* server
-- Service *`quick-postgres-replicas`* targets all Pods created by StatefulSet
+- Service *`quick-postgres-pods`* targets all Pods created by StatefulSet
 
 KubeDB supports PostgreSQL clustering where Pod can be either *primary* or *standby*. To learn how to configure highly available PostgreSQL cluster, click [here](/docs/guides/postgres/clustering/ha_cluster.md).
 
@@ -344,7 +467,7 @@ In this tutorial, Postgres `quick-postgres` is created with `spec.terminationPol
 
 ```bash
 $  kubectl delete pg -n demo quick-postgres
-Error from server (BadRequest): admission webhook "postgres.validators.kubedb.com" denied the request: postgres "quick-postgres" can't be halted. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "postgreswebhook.validators.kubedb.com" denied the request: postgres "demo/quick-postgres" can't be terminated. To delete, change spec.terminationPolicy
 ```
 
 To halt the database, we have to set `spec.terminationPolicy:` to `Halt` by updating it,
@@ -355,7 +478,7 @@ spec:
   terminationPolicy: Halt
 ```
 
-Now, if you delete the Postgres object, KubeDB operator will create a matching DormantDatabase object. This DormantDatabase object can be used to resume the database. KubeDB operator will delete the StatefulSet and its Pods but leaves the Secret, PVCs unchanged.
+Now, if you delete the Postgres object, the KubeDB operator will delete every resource created for this Elasticsearch CR, but leaves the auth secrets, and PVCs.
 
 Let's delete the Postgres object,
 
@@ -363,120 +486,24 @@ Let's delete the Postgres object,
 $ kubectl delete pg -n demo quick-postgres
 postgres.kubedb.com "quick-postgres" deleted
 ```
-
-Check DormantDatabase has been created successfully,
-
+Check resources:
 ```bash
-$ kubectl get drmn -n demo quick-postgres
-NAME             STATUS    AGE
-quick-postgres   Halted    5m
+$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=quick-postgres'
+NAME                         TYPE                       DATA   AGE
+secret/quick-postgres-auth   kubernetes.io/basic-auth   2      27m
+
+NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-quick-postgres-0   Bound    pvc-b30e3255-a7ea-4f61-8637-f60e283236b2   1Gi        RWO            standard       27m
 ```
 
-In KubeDB parlance, we say that Postgres `quick-postgres`  has entered into the dormant state.
+## Resume Elasticsearch
+Say, the Postgres CR was deleted with `spec.terminationPolicy` to `Halt` and you want to re-create the Postgres using the existing auth secrets and the PVCs.
 
-Let's see, what we have in this DormantDatabase object
-
-```yaml
-$ kubectl get drmn -n demo quick-postgres -o yaml
-apiVersion: kubedb.com/v1alpha2
-kind: DormantDatabase
-metadata:
-  creationTimestamp: "2019-02-07T11:05:44Z"
-  finalizers:
-  - kubedb.com
-  generation: 1
-  labels:
-    app.kubernetes.io/name: postgreses.kubedb.com
-  name: quick-postgres
-  namespace: demo
-  resourceVersion: "39020"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/dormantdatabases/quick-postgres
-  uid: 50a9c42e-2ac8-11e9-9d44-080027154f61
-spec:
-  origin:
-    metadata:
-      creationTimestamp: "2019-02-07T11:03:11Z"
-      name: quick-postgres
-      namespace: demo
-    spec:
-      postgres:
-        authSecret:
-          name: quick-postgres-auth
-        leaderElection:
-          leaseDurationSeconds: 15
-          renewDeadlineSeconds: 10
-          retryPeriodSeconds: 2
-        podTemplate:
-          controller: {}
-          metadata: {}
-          spec:
-            resources: {}
-        replicas: 1
-        storage:
-          accessModes:
-          - ReadWriteOnce
-          dataSource: null
-          resources:
-            requests:
-              storage: 1Gi
-          storageClassName: standard
-        storageType: Durable
-        terminationPolicy: Halt
-        version: "10.2"-v5
-status:
-  observedGeneration: 1$8378748355133368567
-  pausingTime: "2019-02-07T11:05:56Z"
-  phase: Halted
-```
-
-Here,
-
-- `spec.origin` contains original Postgres object.
-- `status.phase` points to the current database state `Halted`.
-
-## Resume DormantDatabase
-
-To resume the database from the dormant state, create same Postgres object with same Spec.
-
-In this tutorial, the DormantDatabase `quick-postgres` can be resumed by creating original Postgres object.
-
-Let's create the original Postgres object,
-
+You can do it by simpily re-deploying the original Postgres object:
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres.yaml
 postgres.kubedb.com/quick-postgres created
 ```
-
-This will resume the previous database. All data that was inserted in previous database will be available again.
-
-When the database is resumed, respective DormantDatabase object will be removed. Verify that the DormantDatabase object has been removed,
-
-```bash
-$ kubectl get drmn -n demo quick-postgres
-Error from server (NotFound): dormantdatabases.kubedb.com "quick-postgres" not found
-```
-
-## WipeOut DormantDatabase
-
-You can wipe out a DormantDatabase while deleting the object by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `PostgresSQL` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
-
-```yaml
-$ kubectl edit drmn -n demo quick-postgres
-spec:
-  wipeOut: true
-```
-
-If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object, then only this object will be deleted and `kubedb-operator` won't delete related Secrets, PVCs, and Snapshots. So, users still can access the stored data in the cloud storage buckets as well as PVCs.
-
-## Delete DormantDatabase
-
-As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
-
-```bash
-$ kubectl delete drmn -n demo quick-postgres
-dormantdatabase.kubedb.com "quick-postgres" deleted
-```
-
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
