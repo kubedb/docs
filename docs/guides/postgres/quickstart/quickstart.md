@@ -478,7 +478,7 @@ spec:
   terminationPolicy: Halt
 ```
 
-Now, if you delete the Postgres object, the KubeDB operator will delete every resource created for this Elasticsearch CR, but leaves the auth secrets, and PVCs.
+Now, if you delete the Postgres object, the KubeDB operator will delete every resource created for this Postgres CR, but leaves the auth secrets, and PVCs.
 
 Let's delete the Postgres object,
 
@@ -496,7 +496,7 @@ NAME                                          STATUS   VOLUME                   
 persistentvolumeclaim/data-quick-postgres-0   Bound    pvc-b30e3255-a7ea-4f61-8637-f60e283236b2   1Gi        RWO            standard       27m
 ```
 
-## Resume Elasticsearch
+## Resume Postgres
 Say, the Postgres CR was deleted with `spec.terminationPolicy` to `Halt` and you want to re-create the Postgres using the existing auth secrets and the PVCs.
 
 You can do it by simpily re-deploying the original Postgres object:
@@ -520,7 +520,7 @@ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we create `DormantDatabase` and preserve all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will not create `DormantDatabase` and it will delete everything created by KubeDB for a particular Postgres crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/postgres/concepts/postgres.md#specterminationpolicy).
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we preserve all your `PVCs`, `Secrets`, etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will delete everything created by KubeDB for a particular Postgres crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/postgres/concepts/postgres.md#specterminationpolicy).
 
 ## Next Steps
 

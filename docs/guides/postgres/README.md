@@ -18,14 +18,14 @@ aliases:
 ## Supported PostgreSQL Features
 
 | Features                           | Availability |
-| ---------------------------------- | :----------: |
+| ---------------------------------- |:------------:|
 | Clustering                         |   &#10003;   |
 | Warm Standby                       |   &#10003;   |
 | Hot Standby                        |   &#10003;   |
-| Synchronous Replication            |   &#10007;   |
+| Synchronous Replication            |   &#10003;   |
 | Streaming Replication              |   &#10003;   |
 | Automatic Failover                 |   &#10003;   |
-| Continuous Archiving using `wal-g` |   &#10003;   |
+| Continuous Archiving using `wal-g` |   &#10007;   |
 | Initialization from WAL archive    |   &#10003;   |
 | Persistent Volume                  |   &#10003;   |
 | Instant Backup                     |   &#10003;   |
