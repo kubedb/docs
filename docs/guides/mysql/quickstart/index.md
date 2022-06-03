@@ -424,10 +424,7 @@ url: http://172.18.0.4:30158
 According to this example, the URL will be [ http://172.18.0.4:30158]( http://172.18.0.4:30158).You can also use the external-ip of the service.Also port forward your service to connect.
 
 
->Note: In MySQL: `8.0.14` connection to phpMyAdmin may give error as it is using `caching_sha2_password` and `sha256_password` authentication plugins over `mysql_native_password`. If the error happens do the following for work around. But, It's not recommended to change authentication plugins. See [here](https://stackoverflow.com/questions/49948350/phpmyadmin-on-mysql-8-0) for alternative solutions.
-```bash
-kubectl exec -it -n demo mysql-quickstart-0 -- mysql -u root --password='H(Y.s)pg&cX1Ds3J' -e "ALTER USER root IDENTIFIED WITH mysql_native_password BY 'H(Y.s)pg&cX1Ds3J';"
-```
+>Note: In MySQL: `8.0.14` connection to phpMyAdmin may give error as it is using `caching_sha2_password` and `sha256_password` authentication plugins over `mysql_native_password`. If the error happens do the following for work around. But, It's not recommended to change authentication plugins. See [here](https://stackoverflow.com/questions/49948350/phpmyadmin-on-mysql-8-0) for alternative solutions. You can use mysql_native_password try `kubectl exec -it -n demo mysql-quickstart-0 -- mysql -u root --password='H(Y.s)pg&cX1Ds3J' -e "ALTER USER root IDENTIFIED WITH mysql_native_password BY 'H(Y.s)pg&cX1Ds3J';"`
 ---
 To log into the phpMyAdmin, use host __`mysql-quickstart.demo`__ or __`10.244.0.30`__ , username __`root`__ and password __`H(Y.s)pg&cX1Ds3J`__.
 
