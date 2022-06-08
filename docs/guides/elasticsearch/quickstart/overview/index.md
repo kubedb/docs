@@ -204,60 +204,12 @@ Metadata:
   Finalizers:
     kubedb.com
   Generation:  1
-  Managed Fields:
-    API Version:  kubedb.com/v1alpha2
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:finalizers:
-          .:
-          v:"kubedb.com":
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:      es-operator
-    Operation:    Update
-    Time:         2022-06-08T09:16:26Z
-    API Version:  kubedb.com/v1alpha2
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:enableSSL:
-        f:heapSizePercentage:
-        f:replicas:
-        f:storage:
-          .:
-          f:accessModes:
-          f:resources:
-            .:
-            f:requests:
-              .:
-              f:storage:
-          f:storageClassName:
-        f:storageType:
-        f:terminationPolicy:
-        f:version:
-    Manager:         kubectl-client-side-apply
-    Operation:       Update
-    Time:            2022-06-08T09:16:26Z
   Resource Version:  46061
   UID:               4bf2cd90-b2b8-4fcd-8fe4-21431f90522c
 Spec:
   Auth Secret:
     Name:      es-quickstart-elastic-cred
   Enable SSL:  true
-  Health Check:
-    Disable Write Check:  false
-    Failure Threshold:    1
-    Period Seconds:       10
-    Timeout Seconds:      10
   Heap Size Percentage:   50
   Internal Users:
     apm_system:
