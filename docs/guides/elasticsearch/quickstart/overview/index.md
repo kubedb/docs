@@ -456,7 +456,7 @@ Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 
   ```bash
   $ kubectl get secret -n demo es-quickstart-elastic-cred -o jsonpath='{.data.password}' | base64 -d
-  q6XreFWkWi$;BsQy
+  vIHoIfHn=!Z8F4gP
   ```
 
 Now let's check the health of our Elasticsearch database.
