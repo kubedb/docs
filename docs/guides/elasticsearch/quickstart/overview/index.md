@@ -462,7 +462,7 @@ Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 Now let's check the health of our Elasticsearch database.
 
 ```bash
-$ curl -XGET -k -u 'elastic:q6XreFWkWi$;BsQy' "https://localhost:9200/_cluster/health?pretty"
+$ curl -XGET -k -u 'elastic:vIHoIfHn=!Z8F4gP' "https://localhost:9200/_cluster/health?pretty"
 
 {
   "cluster_name" : "es-quickstart",
@@ -470,8 +470,8 @@ $ curl -XGET -k -u 'elastic:q6XreFWkWi$;BsQy' "https://localhost:9200/_cluster/h
   "timed_out" : false,
   "number_of_nodes" : 3,
   "number_of_data_nodes" : 3,
-  "active_primary_shards" : 0,
-  "active_shards" : 0,
+  "active_primary_shards" : 3,
+  "active_shards" : 6,
   "relocating_shards" : 0,
   "initializing_shards" : 0,
   "unassigned_shards" : 0,
@@ -493,7 +493,7 @@ In this tutorial, Elasticsearch `es-quickstart` is created with `spec.terminatio
 
 ```bash
 $ kubectl delete elasticsearch -n demo es-quickstart 
-Error from server (BadRequest): admission webhook "elasticsearch.validators.kubedb.com" denied the request: elasticsearch "demo/es-quickstart" can't be terminated. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "elasticsearchwebhook.validators.kubedb.com" denied the request: elasticsearch "demo/es-quickstart" can't be terminated. To delete, change spec.terminationPolicy
 ```
 
 To halt the database, we have to set `spec.terminationPolicy:` to `Halt` by updating it,
@@ -516,13 +516,19 @@ Check resources:
 
 ```bash
 $ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-quickstart'
-NAME                                TYPE                       DATA   AGE
-secret/es-quickstart-elastic-cred   kubernetes.io/basic-auth   2      6h48m
+NAME                                               TYPE                       DATA   AGE
+secret/es-quickstart-apm-system-cred               kubernetes.io/basic-auth   2      5m39s
+secret/es-quickstart-beats-system-cred             kubernetes.io/basic-auth   2      5m39s
+secret/es-quickstart-elastic-cred                  kubernetes.io/basic-auth   2      5m39s
+secret/es-quickstart-kibana-system-cred            kubernetes.io/basic-auth   2      5m39s
+secret/es-quickstart-logstash-system-cred          kubernetes.io/basic-auth   2      5m39s
+secret/es-quickstart-remote-monitoring-user-cred   kubernetes.io/basic-auth   2      5m39s
 
 NAME                                         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-es-quickstart-0   Bound    pvc-9208f770-7308-45b3-a23e-233590087f45   1Gi        RWO            standard       6h48m
-persistentvolumeclaim/data-es-quickstart-1   Bound    pvc-0f12a74e-ba80-4e67-bece-3a00c3fcd28f   1Gi        RWO            standard       6h45m
-persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-6609582b-8988-4efb-8a4b-5b2757fd6066   1Gi        RWO            standard       6h45m
+persistentvolumeclaim/data-es-quickstart-0   Bound    pvc-5b657e2a-6c32-4631-bac9-eefebbcb129a   1Gi        RWO            standard       5m29s
+persistentvolumeclaim/data-es-quickstart-1   Bound    pvc-e44d7ab8-fc2b-4cfe-9bef-74f2a2d875f5   1Gi        RWO            standard       5m23s
+persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-dad75b1b-37ed-4318-a82a-5e38f04d36bc   1Gi        RWO            standard       5m18s
+
 ```
 
 ## Resume Elasticsearch
