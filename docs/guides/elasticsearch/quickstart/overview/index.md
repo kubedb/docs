@@ -59,68 +59,80 @@ When you install the KubeDB operator, it registers a CRD named [ElasticsearchVer
 
 ```bash
 $ kubectl get elasticsearchversions
-NAME                   VERSION   DB_IMAGE                                 AUTH_PLUGIN   DEPRECATED   AGE
-opendistro-1.0.2       7.0.1     kubedb/elasticsearch:1.0.2-opendistro    OpenDistro                 5m17s
-opendistro-1.0.2-v1    7.0.1     kubedb/elasticsearch:1.0.2-opendistro    OpenDistro                 5m17s
-opendistro-1.1.0       7.1.1     kubedb/elasticsearch:1.1.0-opendistro    OpenDistro                 5m17s
-opendistro-1.1.0-v1    7.1.1     kubedb/elasticsearch:1.1.0-opendistro    OpenDistro                 5m17s
-opendistro-1.10.1      7.9.1     kubedb/elasticsearch:1.10.1-opendistro   OpenDistro                 5m17s
-opendistro-1.11.0      7.9.1     kubedb/elasticsearch:1.11.0-opendistro   OpenDistro                 5m17s
-opendistro-1.12.0      7.10.0    kubedb/elasticsearch:1.12.0-opendistro   OpenDistro                 5m17s
-opendistro-1.2.1       7.2.1     kubedb/elasticsearch:1.2.1-opendistro    OpenDistro                 5m17s
-opendistro-1.2.1-v1    7.2.1     kubedb/elasticsearch:1.2.1-opendistro    OpenDistro                 5m17s
-opendistro-1.3.0       7.3.2     kubedb/elasticsearch:1.3.0-opendistro    OpenDistro                 5m17s
-opendistro-1.3.0-v1    7.3.2     kubedb/elasticsearch:1.3.0-opendistro    OpenDistro                 5m17s
-opendistro-1.4.0       7.4.2     kubedb/elasticsearch:1.4.0-opendistro    OpenDistro                 5m17s
-opendistro-1.4.0-v1    7.4.2     kubedb/elasticsearch:1.4.0-opendistro    OpenDistro                 5m17s
-opendistro-1.6.0       7.6.1     kubedb/elasticsearch:1.6.0-opendistro    OpenDistro                 5m17s
-opendistro-1.6.0-v1    7.6.1     kubedb/elasticsearch:1.6.0-opendistro    OpenDistro                 5m17s
-opendistro-1.7.0       7.6.1     kubedb/elasticsearch:1.7.0-opendistro    OpenDistro                 5m17s
-opendistro-1.7.0-v1    7.6.1     kubedb/elasticsearch:1.7.0-opendistro    OpenDistro                 5m17s
-opendistro-1.8.0       7.7.0     kubedb/elasticsearch:1.8.0-opendistro    OpenDistro                 5m17s
-opendistro-1.8.0-v1    7.7.0     kubedb/elasticsearch:1.8.0-opendistro    OpenDistro                 5m17s
-opendistro-1.9.0       7.8.0     kubedb/elasticsearch:1.9.0-opendistro    OpenDistro                 5m17s
-opendistro-1.9.0-v1    7.8.0     kubedb/elasticsearch:1.9.0-opendistro    OpenDistro                 5m17s
-searchguard-6.8.1      6.8.1     kubedb/elasticsearch:6.8.1-searchguard   SearchGuard                5m17s
-searchguard-6.8.1-v1   6.8.1     kubedb/elasticsearch:6.8.1-searchguard   SearchGuard                5m17s
-searchguard-7.0.1      7.0.1     kubedb/elasticsearch:7.0.1-searchguard   SearchGuard                5m17s
-searchguard-7.0.1-v1   7.0.1     kubedb/elasticsearch:7.0.1-searchguard   SearchGuard                5m17s
-searchguard-7.1.1      7.1.1     kubedb/elasticsearch:7.1.1-searchguard   SearchGuard                5m17s
-searchguard-7.1.1-v1   7.1.1     kubedb/elasticsearch:7.1.1-searchguard   SearchGuard                5m17s
-searchguard-7.3.2      7.3.2     kubedb/elasticsearch:7.3.2-searchguard   SearchGuard                5m17s
-searchguard-7.5.2      7.5.2     kubedb/elasticsearch:7.5.2-searchguard   SearchGuard                5m17s
-searchguard-7.5.2-v1   7.5.2     kubedb/elasticsearch:7.5.2-searchguard   SearchGuard                5m17s
-searchguard-7.8.1      7.8.1     kubedb/elasticsearch:7.8.1-searchguard   SearchGuard                5m17s
-searchguard-7.9.3      7.9.3     kubedb/elasticsearch:7.9.3-searchguard   SearchGuard                5m17s
-xpack-6.8.10           6.8.10    kubedb/elasticsearch:6.8.10-xpack        X-Pack                     5m17s
-xpack-6.8.10-v1        6.8.10    kubedb/elasticsearch:6.8.10-xpack        X-Pack                     5m17s
-xpack-7.0.1            7.0.1     kubedb/elasticsearch:7.0.1-xpack         X-Pack                     5m17s
-xpack-7.0.1-v1         7.0.1     kubedb/elasticsearch:7.0.1-xpack         X-Pack                     5m17s
-xpack-7.1.1            7.1.1     kubedb/elasticsearch:7.1.1-xpack         X-Pack                     5m17s
-xpack-7.1.1-v1         7.1.1     kubedb/elasticsearch:7.1.1-xpack         X-Pack                     5m17s
-xpack-7.2.1            7.2.1     kubedb/elasticsearch:7.2.1-xpack         X-Pack                     5m17s
-xpack-7.2.1-v1         7.2.1     kubedb/elasticsearch:7.2.1-xpack         X-Pack                     5m17s
-xpack-7.3.2            7.3.2     kubedb/elasticsearch:7.3.2-xpack         X-Pack                     5m17s
-xpack-7.3.2-v1         7.3.2     kubedb/elasticsearch:7.3.2-xpack         X-Pack                     5m17s
-xpack-7.4.2            7.4.2     kubedb/elasticsearch:7.4.2-xpack         X-Pack                     5m17s
-xpack-7.4.2-v1         7.4.2     kubedb/elasticsearch:7.4.2-xpack         X-Pack                     5m17s
-xpack-7.5.2            7.5.2     kubedb/elasticsearch:7.5.2-xpack         X-Pack                     5m17s
-xpack-7.5.2-v1         7.5.2     kubedb/elasticsearch:7.5.2-xpack         X-Pack                     5m17s
-xpack-7.6.2            7.6.2     kubedb/elasticsearch:7.6.2-xpack         X-Pack                     5m17s
-xpack-7.6.2-v1         7.6.2     kubedb/elasticsearch:7.6.2-xpack         X-Pack                     5m17s
-xpack-7.7.1            7.7.1     kubedb/elasticsearch:7.7.1-xpack         X-Pack                     5m17s
-xpack-7.7.1-v1         7.7.1     kubedb/elasticsearch:7.7.1-xpack         X-Pack                     5m17s
-xpack-7.8.0            7.8.0     kubedb/elasticsearch:7.8.0-xpack         X-Pack                     5m17s
-xpack-7.8.0-v1         7.8.0     kubedb/elasticsearch:7.8.0-xpack         X-Pack                     5m17s
-xpack-7.9.1            7.9.1     kubedb/elasticsearch:7.9.1-xpack         X-Pack                     5m17s
-xpack-7.9.1-v1         7.9.1     kubedb/elasticsearch:7.9.1-xpack         X-Pack                     5m17s
+NAME                        VERSION   DISTRIBUTION   DB_IMAGE                                              DEPRECATED   AGE
+kubedb-searchguard-5.6.16   5.6.16    KubeDB         kubedb/elasticsearch:5.6.16-searchguard-v2022.02.22                5d
+kubedb-xpack-7.12.0         7.12.0    KubeDB         kubedb/elasticsearch:7.12.0-xpack-v2021.08.23                      5d
+kubedb-xpack-7.13.2         7.13.2    KubeDB         kubedb/elasticsearch:7.13.2-xpack-v2021.08.23                      5d
+kubedb-xpack-7.14.0         7.14.0    KubeDB         kubedb/elasticsearch:7.14.0-xpack-v2021.08.23                      5d
+kubedb-xpack-7.16.2         7.16.2    KubeDB         kubedb/elasticsearch:7.16.2-xpack-v2021.12.24                      5d
+kubedb-xpack-7.9.1          7.9.1     KubeDB         kubedb/elasticsearch:7.9.1-xpack-v2021.08.23                       5d
+kubedb-xpack-8.2.0          8.2.0     KubeDB         kubedb/elasticsearch:8.2.0-xpack-v2022.05.24                       5d
+opendistro-1.0.2            7.0.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.0.2                          5d
+opendistro-1.0.2-v1         7.0.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.0.2                          5d
+opendistro-1.1.0            7.1.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.1.0                          5d
+opendistro-1.1.0-v1         7.1.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.1.0                          5d
+opendistro-1.10.1           7.9.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.10.1                         5d
+opendistro-1.11.0           7.9.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.10.1                         5d
+opendistro-1.12.0           7.10.0    OpenDistro     amazon/opendistro-for-elasticsearch:1.12.0                         5d
+opendistro-1.13.2           7.10.2    OpenDistro     amazon/opendistro-for-elasticsearch:1.13.2                         5d
+opendistro-1.2.1            7.2.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.2.1                          5d
+opendistro-1.2.1-v1         7.2.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.2.1                          5d
+opendistro-1.3.0            7.3.2     OpenDistro     amazon/opendistro-for-elasticsearch:1.3.0                          5d
+opendistro-1.3.0-v1         7.3.2     OpenDistro     amazon/opendistro-for-elasticsearch:1.3.0                          5d
+opendistro-1.4.0            7.4.2     OpenDistro     amazon/opendistro-for-elasticsearch:1.4.0                          5d
+opendistro-1.4.0-v1         7.4.2     OpenDistro     amazon/opendistro-for-elasticsearch:1.4.0                          5d
+opendistro-1.6.0            7.6.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.6.0                          5d
+opendistro-1.6.0-v1         7.6.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.6.0                          5d
+opendistro-1.7.0            7.6.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.7.0                          5d
+opendistro-1.7.0-v1         7.6.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.7.0                          5d
+opendistro-1.8.0            7.7.0     OpenDistro     amazon/opendistro-for-elasticsearch:1.8.0                          5d
+opendistro-1.8.0-v1         7.7.0     OpenDistro     amazon/opendistro-for-elasticsearch:1.8.0                          5d
+opendistro-1.9.0            7.8.0     OpenDistro     amazon/opendistro-for-elasticsearch:1.9.0                          5d
+opendistro-1.9.0-v1         7.8.0     OpenDistro     amazon/opendistro-for-elasticsearch:1.9.0                          5d
+opensearch-1.1.0            1.1.0     OpenSearch     opensearchproject/opensearch:1.1.0                                 5d
+opensearch-1.2.2            1.2.2     OpenSearch     opensearchproject/opensearch:1.2.2                                 5d
+opensearch-1.3.2            1.3.2     OpenSearch     opensearchproject/opensearch:1.3.2                                 5d
+searchguard-6.8.1           6.8.1     SearchGuard    floragunncom/sg-elasticsearch:6.8.1-oss-25.1                       5d
+searchguard-6.8.1-v1        6.8.1     SearchGuard    floragunncom/sg-elasticsearch:6.8.1-oss-25.1                       5d
+searchguard-7.0.1           7.0.1     SearchGuard    floragunncom/sg-elasticsearch:7.0.1-oss-35.0.0                     5d
+searchguard-7.0.1-v1        7.0.1     SearchGuard    floragunncom/sg-elasticsearch:7.0.1-oss-35.0.0                     5d
+searchguard-7.1.1           7.1.1     SearchGuard    floragunncom/sg-elasticsearch:7.1.1-oss-35.0.0                     5d
+searchguard-7.1.1-v1        7.1.1     SearchGuard    floragunncom/sg-elasticsearch:7.1.1-oss-35.0.0                     5d
+searchguard-7.10.2          7.10.2    SearchGuard    floragunncom/sg-elasticsearch:7.10.2-oss-49.0.0                    5d
+searchguard-7.14.2          7.14.2    SearchGuard    floragunncom/sg-elasticsearch:7.14.2-52.3.0                        5d
+searchguard-7.3.2           7.3.2     SearchGuard    floragunncom/sg-elasticsearch:7.3.2-oss-37.0.0                     5d
+searchguard-7.5.2           7.5.2     SearchGuard    floragunncom/sg-elasticsearch:7.5.2-oss-40.0.0                     5d
+searchguard-7.5.2-v1        7.5.2     SearchGuard    floragunncom/sg-elasticsearch:7.5.2-oss-40.0.0                     5d
+searchguard-7.8.1           7.8.1     SearchGuard    floragunncom/sg-elasticsearch:7.8.1-oss-43.0.0                     5d
+searchguard-7.9.3           7.9.3     SearchGuard    floragunncom/sg-elasticsearch:7.9.3-oss-47.1.0                     5d
+xpack-6.8.10-v1             6.8.10    ElasticStack   elasticsearch:6.8.10                                               5d
+xpack-6.8.16                6.8.16    ElasticStack   elasticsearch:6.8.16                                               5d
+xpack-6.8.22                6.8.22    ElasticStack   elasticsearch:6.8.22                                               5d
+xpack-7.0.1-v1              7.0.1     ElasticStack   elasticsearch:7.0.1                                                5d
+xpack-7.1.1-v1              7.1.1     ElasticStack   elasticsearch:7.1.1                                                5d
+xpack-7.12.0                7.12.0    ElasticStack   elasticsearch:7.12.0                                               5d
+xpack-7.12.0-v1             7.12.0    ElasticStack   elasticsearch:7.12.0                                               5d
+xpack-7.13.2                7.13.2    ElasticStack   elasticsearch:7.13.2                                               5d
+xpack-7.14.0                7.14.0    ElasticStack   elasticsearch:7.14.0                                               5d
+xpack-7.16.2                7.16.2    ElasticStack   elasticsearch:7.16.2                                               5d
+xpack-7.17.3                7.17.3    ElasticStack   elasticsearch:7.17.3                                               5d
+xpack-7.2.1-v1              7.2.1     ElasticStack   elasticsearch:7.2.1                                                5d
+xpack-7.3.2-v1              7.3.2     ElasticStack   elasticsearch:7.3.2                                                5d
+xpack-7.4.2-v1              7.4.2     ElasticStack   elasticsearch:7.4.2                                                5d
+xpack-7.5.2-v1              7.5.2     ElasticStack   elasticsearch:7.5.2                                                5d
+xpack-7.6.2-v1              7.6.2     ElasticStack   elasticsearch:7.6.2                                                5d
+xpack-7.7.1-v1              7.7.1     ElasticStack   elasticsearch:7.7.1                                                5d
+xpack-7.8.0-v1              7.8.0     ElasticStack   elasticsearch:7.8.0                                                5d
+xpack-7.9.1-v1              7.9.1     ElasticStack   elasticsearch:7.9.1                                                5d
+xpack-7.9.1-v2              7.9.1     ElasticStack   elasticsearch:7.9.1                                                5d
+xpack-8.2.0                 8.2.0     ElasticStack   elasticsearch:8.2.0                                                5d
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
-In this tutorial, we will use `xpack-7.9.1-v1` ElasticsearchVersion CR to create an Elasticsearch cluster.
+In this tutorial, we will use `xpack-8.2.0` ElasticsearchVersion CR to create an Elasticsearch cluster.
 
-> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, we are using `xpack-7.9.1-v1` over `7.9.1-xpack`.
+> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `xpack-7.9.1-v1` over `7.9.1-xpack`.
 
 ## Create an Elasticsearch Cluster
 
@@ -135,14 +147,14 @@ metadata:
   name: es-quickstart
   namespace: demo
 spec:
-  version: xpack-7.9.1-v1
+  version: xpack-8.2.0
   enableSSL: true
   replicas: 3
   storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -151,7 +163,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the ElasticsearchVersion CR. Here, an Elasticsearch of version `7.9.1` will be created with `x-pack` security plugin.
+- `spec.version` - is the name of the ElasticsearchVersion CR. Here, an Elasticsearch of version `8.2.0` will be created with `x-pack` security plugin.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.replicas` - specifies the number of Elasticsearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
@@ -171,10 +183,10 @@ The Elasticsearch's `STATUS` will go from `Provisioning` to `Ready` state within
 
 ```bash
 $ kubectl get elasticsearch -n demo -w
-NAME            VERSION          STATUS         AGE
-es-quickstart   xpack-7.9.1-v1   Provisioning   1m34s
+NAME            VERSION       STATUS         AGE
+es-quickstart   xpack-8.2.0   Provisioning   7s
 ... ...
-es-quickstart   xpack-7.9.1-v1   Ready          2m6s
+es-quickstart   xpack-8.2.0   Ready          39s
 ```
 
 Describe the Elasticsearch object to observe the progress if something goes wrong or the status is not changing for a long period of time:
@@ -188,16 +200,43 @@ Annotations:  <none>
 API Version:  kubedb.com/v1alpha2
 Kind:         Elasticsearch
 Metadata:
-  Creation Timestamp:  2021-02-26T05:29:30Z
+  Creation Timestamp:  2022-06-08T09:16:26Z
   Finalizers:
     kubedb.com
-  Generation:  2
-  Resource Version:  13279
-  UID:               04715366-cda8-4e44-b63b-8e722b986bbd
+  Generation:  1
+  Resource Version:  46061
+  UID:               4bf2cd90-b2b8-4fcd-8fe4-21431f90522c
 Spec:
   Auth Secret:
     Name:      es-quickstart-elastic-cred
   Enable SSL:  true
+  Heap Size Percentage:   50
+  Internal Users:
+    apm_system:
+      Backend Roles:
+        apm_system
+      Secret Name:  es-quickstart-apm-system-cred
+    beats_system:
+      Backend Roles:
+        beats_system
+      Secret Name:  es-quickstart-beats-system-cred
+    Elastic:
+      Backend Roles:
+        superuser
+      Secret Name:  es-quickstart-elastic-cred
+    kibana_system:
+      Backend Roles:
+        kibana_system
+      Secret Name:  es-quickstart-kibana-system-cred
+    logstash_system:
+      Backend Roles:
+        logstash_system
+      Secret Name:  es-quickstart-logstash-system-cred
+    remote_monitoring_user:
+      Backend Roles:
+        remote_monitoring_collector
+        remote_monitoring_agent
+      Secret Name:  es-quickstart-remote-monitoring-user-cred
   Kernel Settings:
     Privileged:  true
     Sysctls:
@@ -230,13 +269,19 @@ Spec:
                 demo
               Topology Key:  failure-domain.beta.kubernetes.io/zone
             Weight:          50
+      Container Security Context:
+        Capabilities:
+          Add:
+            IPC_LOCK
+            SYS_RESOURCE
+        Privileged:   false
+        Run As User:  1000
       Resources:
         Limits:
-          Cpu:     500m
-          Memory:  1Gi
+          Memory:  1.5Gi
         Requests:
           Cpu:               500m
-          Memory:            1Gi
+          Memory:            1.5Gi
       Service Account Name:  es-quickstart
   Replicas:                  3
   Storage:
@@ -271,51 +316,68 @@ Spec:
       Subject:
         Organizations:
           kubedb
-      Alias:  archiver
+      Alias:  client
       Private Key:
         Encoding:   PKCS8
-      Secret Name:  es-quickstart-archiver-cert
+      Secret Name:  es-quickstart-client-cert
       Subject:
         Organizations:
           kubedb
-  Version:  xpack-7.9.1-v1
+  Version:  xpack-8.2.0
 Status:
   Conditions:
-    Last Transition Time:  2021-02-26T05:29:30Z
+    Last Transition Time:  2022-06-08T09:16:26Z
     Message:               The KubeDB operator has started the provisioning of Elasticsearch: demo/es-quickstart
     Reason:                DatabaseProvisioningStartedSuccessfully
     Status:                True
     Type:                  ProvisioningStarted
-    Last Transition Time:  2021-02-26T05:32:44Z
+    Last Transition Time:  2022-06-08T09:16:26Z
+    Message:               Internal Users for Elasticsearch: demo/es-quickstart is ready.
+    Observed Generation:   1
+    Reason:                InternalUsersCredentialsSyncedSuccessfully
+    Status:                True
+    Type:                  InternalUsersSynced
+    Last Transition Time:  2022-06-08T09:16:43Z
     Message:               All desired replicas are ready.
     Reason:                AllReplicasReady
     Status:                True
     Type:                  ReplicaReady
-    Last Transition Time:  2021-02-26T05:34:35Z
+    Last Transition Time:  2022-06-08T09:17:03Z
     Message:               The Elasticsearch: demo/es-quickstart is accepting client requests.
-    Observed Generation:   2
+    Observed Generation:   1
     Reason:                DatabaseAcceptingConnectionRequest
     Status:                True
     Type:                  AcceptingConnection
-    Last Transition Time:  2021-02-26T05:34:36Z
+    Last Transition Time:  2022-06-08T09:17:04Z
     Message:               The Elasticsearch: demo/es-quickstart is ready.
-    Observed Generation:   2
+    Observed Generation:   1
     Reason:                ReadinessCheckSucceeded
     Status:                True
     Type:                  Ready
-    Last Transition Time:  2021-02-26T05:34:36Z
+    Last Transition Time:  2022-06-08T09:17:05Z
     Message:               The Elasticsearch: demo/es-quickstart is successfully provisioned.
-    Observed Generation:   2
+    Observed Generation:   1
     Reason:                DatabaseSuccessfullyProvisioned
     Status:                True
     Type:                  Provisioned
-  Observed Generation:     2
+  Observed Generation:     1
   Phase:                   Ready
 Events:
-  Type    Reason      Age    From                    Message
-  ----    ------      ----   ----                    -------
-  Normal  Successful  54m    Elasticsearch operator  Successfully  governing service
-  Normal  Successful  54m    Elasticsearch operator  Successfully patched Elasticsearch
+  Type    Reason      Age    From             Message
+  ----    ------      ----   ----             -------
+  Normal  Successful  2m58s  kubedb operator  Successfully  governing service
+  Normal  Successful  2m58s  kubedb operator  Successfully created Service
+  Normal  Successful  2m58s  kubedb operator  Successfully created Service
+  Normal  Successful  2m58s  kubedb operator  Successfully created Elasticsearch
+  Normal  Successful  2m58s  kubedb operator  Successfully created appbinding
+  Normal  Successful  2m58s  kubedb operator  Successfully  governing service
+  Normal  Successful  2m58s  kubedb operator  Successfully created governing service
+  Normal  Successful  2m41s  kubedb operator  Successfully  governing service
+  Normal  Successful  2m31s  kubedb operator  Successfully  governing service
+  Normal  Successful  2m21s  kubedb operator  Successfully  governing service
+  Normal  Successful  2m20s  kubedb operator  Successfully  governing service
+  Normal  Successful  2m19s  kubedb operator  Successfully  governing service
+  Normal  Successful  73s    kubedb operator  Successfully  governing service
 ```
 
 ### KubeDB Operator Generated Resources
@@ -325,28 +387,34 @@ On deployment of an Elasticsearch CR, the operator creates the following resourc
 ```bash
 $ kubectl get all,secret -n demo -l 'app.kubernetes.io/instance=es-quickstart'
 NAME                  READY   STATUS    RESTARTS   AGE
-pod/es-quickstart-0   1/1     Running   0          3h42m
-pod/es-quickstart-1   1/1     Running   0          3h39m
-pod/es-quickstart-2   1/1     Running   0          3h39m
+pod/es-quickstart-0   1/1     Running   0          4m3s
+pod/es-quickstart-1   1/1     Running   0          3m56s
+pod/es-quickstart-2   1/1     Running   0          3m51s
 
 NAME                           TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-service/es-quickstart          ClusterIP   10.96.239.14   <none>        9200/TCP   3h42m
-service/es-quickstart-master   ClusterIP   None           <none>        9300/TCP   3h42m
-service/es-quickstart-pods     ClusterIP   None           <none>        9200/TCP   3h42m
+service/es-quickstart          ClusterIP   10.96.143.48   <none>        9200/TCP   4m3s
+service/es-quickstart-master   ClusterIP   None           <none>        9300/TCP   4m3s
+service/es-quickstart-pods     ClusterIP   None           <none>        9200/TCP   4m3s
 
 NAME                             READY   AGE
-statefulset.apps/es-quickstart   3/3     3h42m
+statefulset.apps/es-quickstart   3/3     4m3s
 
 NAME                                               TYPE                       VERSION   AGE
-appbinding.appcatalog.appscode.com/es-quickstart   kubedb.com/elasticsearch   7.9.1     3h42m
+appbinding.appcatalog.appscode.com/es-quickstart   kubedb.com/elasticsearch   8.2.0     4m3s
 
-NAME                                  TYPE                       DATA   AGE
-secret/es-quickstart-archiver-cert    kubernetes.io/tls          3      3h42m
-secret/es-quickstart-ca-cert          kubernetes.io/tls          2      3h42m
-secret/es-quickstart-config           Opaque                     1      3h42m
-secret/es-quickstart-elastic-cred     kubernetes.io/basic-auth   2      3h42m
-secret/es-quickstart-http-cert        kubernetes.io/tls          3      3h42m
-secret/es-quickstart-transport-cert   kubernetes.io/tls          3      3h42m
+NAME                                               TYPE                       DATA   AGE
+secret/es-quickstart-apm-system-cred               kubernetes.io/basic-auth   2      4m3s
+secret/es-quickstart-beats-system-cred             kubernetes.io/basic-auth   2      4m3s
+secret/es-quickstart-ca-cert                       kubernetes.io/tls          2      4m3s
+secret/es-quickstart-client-cert                   kubernetes.io/tls          3      4m3s
+secret/es-quickstart-config                        Opaque                     1      4m3s
+secret/es-quickstart-elastic-cred                  kubernetes.io/basic-auth   2      4m3s
+secret/es-quickstart-http-cert                     kubernetes.io/tls          3      4m3s
+secret/es-quickstart-kibana-system-cred            kubernetes.io/basic-auth   2      4m3s
+secret/es-quickstart-logstash-system-cred          kubernetes.io/basic-auth   2      4m3s
+secret/es-quickstart-remote-monitoring-user-cred   kubernetes.io/basic-auth   2      4m3s
+secret/es-quickstart-transport-cert                kubernetes.io/tls          3      4m3s
+
 ```
 
 - `StatefulSet` - a StatefulSet named after the Elasticsearch instance. In topology mode, the operator creates 3 statefulSets with name `{Elasticsearch-Name}-{Sufix}`.
@@ -388,13 +456,13 @@ Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 
   ```bash
   $ kubectl get secret -n demo es-quickstart-elastic-cred -o jsonpath='{.data.password}' | base64 -d
-  q6XreFWkWi$;BsQy
+  vIHoIfHn=!Z8F4gP
   ```
 
 Now let's check the health of our Elasticsearch database.
 
 ```bash
-$ curl -XGET -k -u 'elastic:q6XreFWkWi$;BsQy' "https://localhost:9200/_cluster/health?pretty"
+$ curl -XGET -k -u 'elastic:vIHoIfHn=!Z8F4gP' "https://localhost:9200/_cluster/health?pretty"
 
 {
   "cluster_name" : "es-quickstart",
@@ -402,8 +470,8 @@ $ curl -XGET -k -u 'elastic:q6XreFWkWi$;BsQy' "https://localhost:9200/_cluster/h
   "timed_out" : false,
   "number_of_nodes" : 3,
   "number_of_data_nodes" : 3,
-  "active_primary_shards" : 0,
-  "active_shards" : 0,
+  "active_primary_shards" : 3,
+  "active_shards" : 6,
   "relocating_shards" : 0,
   "initializing_shards" : 0,
   "unassigned_shards" : 0,
@@ -425,7 +493,7 @@ In this tutorial, Elasticsearch `es-quickstart` is created with `spec.terminatio
 
 ```bash
 $ kubectl delete elasticsearch -n demo es-quickstart 
-Error from server (BadRequest): admission webhook "elasticsearch.validators.kubedb.com" denied the request: elasticsearch "demo/es-quickstart" can't be terminated. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "elasticsearchwebhook.validators.kubedb.com" denied the request: elasticsearch "demo/es-quickstart" can't be terminated. To delete, change spec.terminationPolicy
 ```
 
 To halt the database, we have to set `spec.terminationPolicy:` to `Halt` by updating it,
@@ -448,13 +516,19 @@ Check resources:
 
 ```bash
 $ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-quickstart'
-NAME                                TYPE                       DATA   AGE
-secret/es-quickstart-elastic-cred   kubernetes.io/basic-auth   2      6h48m
+NAME                                               TYPE                       DATA   AGE
+secret/es-quickstart-apm-system-cred               kubernetes.io/basic-auth   2      5m39s
+secret/es-quickstart-beats-system-cred             kubernetes.io/basic-auth   2      5m39s
+secret/es-quickstart-elastic-cred                  kubernetes.io/basic-auth   2      5m39s
+secret/es-quickstart-kibana-system-cred            kubernetes.io/basic-auth   2      5m39s
+secret/es-quickstart-logstash-system-cred          kubernetes.io/basic-auth   2      5m39s
+secret/es-quickstart-remote-monitoring-user-cred   kubernetes.io/basic-auth   2      5m39s
 
 NAME                                         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-es-quickstart-0   Bound    pvc-9208f770-7308-45b3-a23e-233590087f45   1Gi        RWO            standard       6h48m
-persistentvolumeclaim/data-es-quickstart-1   Bound    pvc-0f12a74e-ba80-4e67-bece-3a00c3fcd28f   1Gi        RWO            standard       6h45m
-persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-6609582b-8988-4efb-8a4b-5b2757fd6066   1Gi        RWO            standard       6h45m
+persistentvolumeclaim/data-es-quickstart-0   Bound    pvc-5b657e2a-6c32-4631-bac9-eefebbcb129a   1Gi        RWO            standard       5m29s
+persistentvolumeclaim/data-es-quickstart-1   Bound    pvc-e44d7ab8-fc2b-4cfe-9bef-74f2a2d875f5   1Gi        RWO            standard       5m23s
+persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-dad75b1b-37ed-4318-a82a-5e38f04d36bc   1Gi        RWO            standard       5m18s
+
 ```
 
 ## Resume Elasticsearch
