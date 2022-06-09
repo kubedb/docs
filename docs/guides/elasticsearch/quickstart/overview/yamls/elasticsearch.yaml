@@ -4,14 +4,14 @@ metadata:
   name: es-quickstart
   namespace: demo
 spec:
-  version: xpack-7.9.1-v1
+  version: xpack-8.2.0
   enableSSL: true
   replicas: 3
   storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
