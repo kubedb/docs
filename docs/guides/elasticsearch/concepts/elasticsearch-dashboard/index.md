@@ -83,11 +83,11 @@ The k8s secret must be of type: kubernetes.io/basic-auth with the following keys
 
 `spec.configSecret` is an optional field that allows users to provide custom configuration for `ElasticsearchDashboard`. It contains a k8s secret name that holds the configuration files for `ElasticsearchDashboard`. If not provided, operator generated configurations will be applied to dashboard. If `configSecret` is provided, it will be merged with the operator-generated configuration. The user-provided configuration has higher precedence over the operator-generated configuration. The configuration file names are used as secret keys.
 
-#### Kibana:
-- `kibana.yml` for configuring Kibana
+- Kibana:
+  - `kibana.yml` for configuring Kibana
 
-#### Opensearch_dashboards:
-- `opensearch_dashboards.yml` for configuring OpenSearch_Dashboards
+- Opensearch_dashboards:
+  - `opensearch_dashboards.yml` for configuring OpenSearch_Dashboards
 
 ### spec.databaseRef
 
@@ -103,7 +103,7 @@ KubeDB accepts the following fields to set in `spec.podTemplate`:
   - annotations (pod’s annotation)
 
 - controller
-  - annotations (statefulset’s annotation)
+  - annotations (deployment's annotation)
 
 - spec:
   - env
