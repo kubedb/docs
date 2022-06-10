@@ -1,0 +1,10 @@
+apiVersion: dashboard.kubedb.com/v1alpha1
+kind: ElasticsearchDashboard
+metadata:
+  name: es-cluster-dashboard
+  namespace: demo
+spec:
+  enableSSL: true
+  databaseRef:
+    name: es-cluster
+  terminationPolicy: WipeOut
