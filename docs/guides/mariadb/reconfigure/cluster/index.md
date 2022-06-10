@@ -99,7 +99,7 @@ Now, wait until `sample-mariadb` has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo 
 NAME             VERSION   STATUS   AGE
-sample-mariadb   10.5.8    Ready    71s
+sample-mariadb   10.6.4    Ready    71s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
@@ -121,7 +121,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -275,7 +275,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -303,7 +303,7 @@ MariaDB [(none)]> exit
 Bye
 ```
 
-As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and so as the `read_buffer_size`. So the reconfiguration of the database is successful.
+As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and and the `read_buffer_size` has been changed `1048576` to `122880`. . So the reconfiguration of the database is successful.
 
 
 ### Reconfigure Existing Config Secret
@@ -422,7 +422,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -507,7 +507,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
