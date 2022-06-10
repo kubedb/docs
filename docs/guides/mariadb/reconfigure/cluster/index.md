@@ -41,7 +41,7 @@ Now, we are going to deploy a  `MariaDB` Cluster using a supported version by `K
 
 ### Prepare MariaDB Cluster
 
-Now, we are going to deploy a `MariaDB` Cluster database with version `10.5.8`.
+Now, we are going to deploy a `MariaDB` Cluster database with version `10.6.4`.
 
 ### Deploy MariaDB
 
