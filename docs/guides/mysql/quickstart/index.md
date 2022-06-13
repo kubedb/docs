@@ -382,7 +382,11 @@ mysql> show databases;
 5 rows in set (0.00 sec)
 
 ```
-you can also connect with database management tools like [phpmyadmin](https://hub.docker.com/_/phpmyadmin).lets create a deployment of `phpmyadmin`
+you can also connect with database management tools like [phpmyadmin](https://hub.docker.com/_/phpmyadmin), [dbgate](https://hub.docker.com/r/dbgate/dbgate).
+
+__connecting with `phpmyadmin`__
+
+lets create a deployment of `phpmyadmin`
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/phpmyadmin.yaml
@@ -427,6 +431,52 @@ According to this example, the URL will be [ http://172.18.0.4:30158]( http://17
 >Note: In MySQL: `8.0.14` connection to phpMyAdmin may give error as it is using `caching_sha2_password` and `sha256_password` authentication plugins over `mysql_native_password`. If the error happens do the following for work around. But, It's not recommended to change authentication plugins. See [here](https://stackoverflow.com/questions/49948350/phpmyadmin-on-mysql-8-0) for alternative solutions. You can use mysql_native_password try `kubectl exec -it -n demo mysql-quickstart-0 -- mysql -u root --password='H(Y.s)pg&cX1Ds3J' -e "ALTER USER root IDENTIFIED WITH mysql_native_password BY 'H(Y.s)pg&cX1Ds3J';"`
 ---
 To log into the phpMyAdmin, use host __`mysql-quickstart.demo`__ or __`10.244.0.30`__ , username __`root`__ and password __`H(Y.s)pg&cX1Ds3J`__.
+
+__connecting with `dbgate`__
+
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/dbgate.yaml
+
+deployment/dbgate created
+service/dbgate created
+
+$ kubectl get pods -n demo --watch
+NAME                       READY   STATUS    RESTARTS   AGE
+demo                 dbgate-77d7fd4889-bfhb9                         1/1     Running   0          17m
+
+-85d86cf5b5-f4mq4   1/1     Running   0          8s
+mysql-quickstart-0         1/1     Running   0          12m
+
+
+$ kubectl get svc -n demo
+NAME                    TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+dbgate                  LoadBalancer   10.96.226.216   <pending>     3000:32475/TCP               51s
+mysql-quickstart        ClusterIP      10.96.150.194   <none>        3306/TCP       13m
+mysql-quickstart-pods   ClusterIP      None            <none>        3306/TCP       13m
+
+```
+
+Lets, open your browser and go to the following URL: _http://{node-ip}:{dbgate-svc-nodeport}_. For kind cluster, you can get this URL by running the following command:
+
+```bash
+$ kubectl get svc -n demo dbgate -o json | jq '.spec.ports[].nodePort'
+32475
+
+$ kubectl get node -o json | jq '.items[].status.addresses[].address'
+"172.18.0.3"
+"kind-control-plane"
+"172.18.0.4"
+"kind-worker"
+"172.18.0.2"
+"kind-worker2"
+
+# expected url will be:
+url: http://172.18.0.4:32475
+```
+According to this example, the URL will be [ http://172.18.0.4:30158]( http://172.18.0.4:30158).You can also use the external-ip of the service.Also port forward your service to connect.
+
+You can connect multiple different database using db gate. To log into  MySQL select the MYSQL driver and use server __`mysql-quickstart.demo`__ or __`10.244.0.30`__ , username __`root`__ and password __`H(Y.s)pg&cX1Ds3J`__.
 
 ## Database TerminationPolicy
 
