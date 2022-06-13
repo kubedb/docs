@@ -84,6 +84,9 @@ spec:
     resources:
       requests:
         storage: 1Gi
+  ephemeralStorage:
+    medium: "Memory"
+    sizeLimit: 500Mi
   init:
     script:
       configMap:
@@ -132,6 +135,33 @@ spec:
           port: 27017
           nodePort: 300006
   terminationPolicy: Halt
+  halted: false
+  arbiter:
+    podTemplate:
+      spec:
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "200Mi"
+    configSecret:
+      name: another-config
+  allowedSchemas:
+    namespaces:
+      from: Selector
+      selector:
+        matchExpressions:
+          - {key: kubernetes.io/metadata.name, operator: In, values: [dev]}
+    selector:
+      matchLabels:
+        "schema.kubedb.com": "mongo"
+  coordinator:
+    resources:
+      requests:
+        cpu: "300m"
+        memory: 500Mi
+    securityContext:
+      runAsUser: 1001
+
 ```
 
 ### spec.version
@@ -140,17 +170,16 @@ spec:
 
 - `3.4.17-v1`, `3.4.22-v1`
 - `3.6.13-v1`, `3.6.8-v1`, 
-- `4.0.3-v1`,
-- `4.0.5-v3`,
-- `4.1.4-v1`
-- `4.1.7-v3`
-- `4.1.13-v1`
-- `4.2.3`
-- `3.6.18-percona`, `4.0.10-percona`, `4.2.7-percona`
+- `4.0.3-v1`, `4.0.5-v3`, `4.0.11-v1`,
+- `4.1.4-v1`, `4.1.7-v3`, `4.1.13-v1`
+- `4.2.3`, `4.4.6`
+- `5.0.2`, `5.0.3`
+- `percona-3.6.18`
+- `percona-4.0.10`, `percona-4.2.7`, `percona-4.4.10`
 
 ### spec.replicas
 
-`spec.replicas` the number of members in `rs0` mongodb replicaset.
+`spec.replicas` the number of members(primary & secondary) in mongodb replicaset.
 
 If `spec.shardTopology` is set, then `spec.replicas` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.replicas`
 
@@ -213,6 +242,7 @@ When `spec.shardTopology` is set, the following fields needs to be empty, otherw
 - `spec.podTemplate`
 - `spec.configSecret`
 - `spec.storage`
+- `spec.ephemeralStorage`
 
 KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas of these shard components are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum and data integrity is maintained.
 
@@ -225,9 +255,10 @@ Available configurable fields:
 - `shards` represents number of shards for a mongodb deployment. Each shard is deployed as a [replicaset](/docs/guides/mongodb/clustering/replication_concept.md).
 - `replicas` represents number of replicas of each shard replicaset.
 - `prefix` represents the prefix of each shard node.
-- `configSecret` is an optional field to provide custom configuration file for shards (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
+- `configSecret` is an optional field to provide custom configuration file for shards (i.e. mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 - `storage` to specify pvc spec for each node of sharding. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/guides/mongodb/concepts/mongodb.md#specstorage) in details.
+- `ephemeralStorage` to specify the configuration of ephemeral storage type, If you want to use volatile temporary storage attached to your instances which is only present during the running lifetime of the instance.
 
 #### spec.shardTopology.configServer
 
@@ -240,6 +271,7 @@ Available configurable fields:
 - `configSecret` is an optional field to provide custom configuration file for config server (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 - `storage` to specify pvc spec for each node of configServer. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/guides/mongodb/concepts/mongodb.md#specstorage) in details.
+- `ephemeralStorage` to specify the configuration of ephemeral storage type, If you want to use volatile temporary storage attached to your instances which is only present during the running lifetime of the instance.
 
 #### spec.shardTopology.mongos
 
@@ -249,7 +281,7 @@ Available configurable fields:
 
 - `replicas` represents number of replicas of `Mongos` instance. Here, Mongos is deployed as stateless (deployment) instance.
 - `prefix` represents the prefix of mongos nodes.
-- `configSecret` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
+- `configSecret` is an optional field to provide custom configuration file for mongos (i.e. mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 
 ### spec.sslMode
@@ -271,7 +303,7 @@ The following fields are configurable in the `spec.tls` section:
 
 - `issuerRef` is a reference to the `Issuer` or `ClusterIssuer` CR of [cert-manager](https://cert-manager.io/docs/concepts/issuer/) that will be used by `KubeDB` to generate necessary certificates.
 
-  - `apiGroup` is the group name of the resource that is being referenced. Currently the only supported value is `cert-manager.io`.
+  - `apiGroup` is the group name of the resource that is being referenced. Currently, the only supported value is `cert-manager.io`.
   - `kind` is the type of resource that is being referenced. KubeDB supports both `Issuer` and `ClusterIssuer` as values for this field.
   - `name` is the name of the resource (`Issuer` or `ClusterIssuer`) being referenced.
 
@@ -291,7 +323,7 @@ The following fields are configurable in the `spec.tls` section:
     - `streetAddresses` (optional) are the list of a street address to be used on the Certificate.
     - `postalCodes` (optional) are the list of postal code to be used on the Certificate.
     - `serialNumber` (optional) is a serial number to be used on the Certificate.
-      You can found more details from [Here](https://golang.org/pkg/crypto/x509/pkix/#Name)
+      You can find more details from [Here](https://golang.org/pkg/crypto/x509/pkix/#Name)
   - `duration` (optional) is the period during which the certificate is valid.
   - `renewBefore` (optional) is a specifiable time before expiration duration.
   - `dnsNames` (optional) is a list of subject alt names to be used in the Certificate.
@@ -314,11 +346,12 @@ The authentication mode used for cluster authentication. This option can have on
 
 ### spec.storageType
 
-`spec.storageType` is an optional field that specifies the type of storage to use for database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MongoDB database using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume. In this case, you don't have to specify `spec.storage` field.
+`spec.storageType` is an optional field that specifies the type of storage to use for database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MongoDB database using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume. 
+In this case, you don't have to specify `spec.storage` field. Specify `spec.ephemeralStorage` spec instead.
 
 ### spec.storageEngine
 
-`spec.storageEngine` is an optional field that specifies the type of storage engine is going to be used by mongodb. There are two types of storage engine, `wiredTiger` and `inMemory`. Default value of storage engine is `wiredTiger`. `inMemory` storage engine is only supported by the percona variant of mongodb, i.e. the version that has the `-percona` suffix in the mongodbversion name.
+`spec.storageEngine` is an optional field that specifies the type of storage engine is going to be used by mongodb. There are two types of storage engine, `wiredTiger` and `inMemory`. Default value of storage engine is `wiredTiger`. `inMemory` storage engine is only supported by the percona variant of mongodb, i.e. the version that has the `percona-` prefix in the mongodb-version name.
 
 ### spec.storage
 
@@ -334,16 +367,25 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 NB. If `spec.shardTopology` is set, then `spec.storage` needs to be empty. Instead use `spec.shardTopology.<shard/configServer>.storage`
 
+### spec.ephemeralStorage
+Use this field to specify the configuration of ephemeral storage type, If you want to use volatile temporary storage attached to your instances which is only present during the running lifetime of the instance.
+- `spec.ephemeralStorage.medium` refers to the name of the storage medium.
+- `spec.ephemeralStorage.sizeLimit` to specify the sizeLimit of the emptyDir volume.
+
+For more details of these two fields, see :
+- https://github.com/kubernetes/api/blob/ed22bb34e3bbae9e2fafba51d66ee3f68ee304b2/core/v1/types.go#L700-L715
+
 ### spec.init
 
-`spec.init` is an optional section that can be used to initialize a newly created MongoDB database. MongoDB databases can be initialized in one of two ways:
+`spec.init` is an optional section that can be used to initialize a newly created MongoDB database. MongoDB databases can be initialized by :
 
-1. Initialize from Script
-2. Initialize from Snapshot
+1. Initialize via Script
+
+`Initialize from Snapshot` is still not supported.
 
 #### Initialize via Script
 
-To initialize a MongoDB database using a script (shell script, js script), set the `spec.init.script` section when creating a MongoDB object. It will execute files alphabetically with extensions `.sh` and `.js` that are found in the repository. script must have following information:
+To initialize a MongoDB database using a script (shell script, js script), set the `spec.init.script` section when creating a MongoDB object. It will execute files alphabetically with extensions `.sh` and `.js` that are found in the repository. script must have the following information:
 
 - [VolumeSource](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes): Where your script is loaded from.
 
@@ -364,6 +406,12 @@ spec:
 ```
 
 In the above example, KubeDB operator will launch a Job to execute all js script of `mongodb-init-script` in alphabetical order once StatefulSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mongodb/initialization/using-script.md).
+
+These are the fields of `spec.init` which you can make use of :
+- `spec.init.initialized` indicating that this database has been initialized or not. `false` by default.
+- `spec.init.script,scriptPath` to specify where all the init scripts should be mounted.
+- `spec.init.script.<volumeSource>` as described in the above example. To see all the volumeSource options go to [VolumeSource](https://github.com/kubernetes/api/blob/ed22bb34e3bbae9e2fafba51d66ee3f68ee304b2/core/v1/types.go#L49).
+- `spec.init.waitForInitialRestore` to tell the operator if it should wait for the initial restore process or not.
 
 ### spec.monitor
 
@@ -479,8 +527,10 @@ You can also provide template for the services created by KubeDB operator for Mo
 KubeDB allows following fields to set in `spec.serviceTemplates`:
 - `alias` represents the identifier of the service. It has the following possible value:
   - `primary` is used for the primary service identification.
+  - `standby` is used for the secondary service identification.
   - `stats` is used for the exporter service identification.
 - metadata:
+  - labels
   - annotations
 - spec:
   - type
@@ -493,7 +543,7 @@ KubeDB allows following fields to set in `spec.serviceTemplates`:
   - healthCheckNodePort
   - sessionAffinityConfig
 
-See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.21.1/api/v1/types.go#L237) to understand these fields in detail.
 
 ### spec.terminationPolicy
 
@@ -518,7 +568,29 @@ Following table show what KubeDB does when you delete MongoDB crd for different 
 | 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 7. Delete Snapshot data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.terminationPolicy` KubeDB uses `Halt` termination policy by default.
+If you don't specify `spec.terminationPolicy` KubeDB uses `Delete` termination policy by default.
+
+### spec.halted
+Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
+
+### spec.arbiter
+If `spec.arbiter` is not null, there will be one arbiter pod on each of the replicaset structure, including shards. It has two fields. 
+- `spec.arbiter.podTemplate` defines the arbiter-pod's template. See [spec.podTemplate](/docs/guides/mongodb/configuration/using-config-file.md) part for more details of this.
+- `spec.arbiter.configSecret` is an optional field that allows users to provide custom configurations for MongoDB arbiter. You just need to refer the configuration secret in `spec.arbiter.configSecret.name` field.
+> Please note that, the secret key needs to be `mongod.conf`.
+
+N.B. If `spec.replicaset` & `spec.shardTopology` both is empty, `spec.arbiter` has to be empty too.
+
+### spec.allowedSchemas
+It defines which consumers may refer to a database instance. We implemented double-optIn feature between database instance and schema-manager using this field.
+- `spec.allowedSchemas.namespace,from` indicates how you want to filter the namespaces, from which a schema-manager will be able to communicate with this db instance.
+Possible values are : i) `All` to allow all namespaces, ii) `Same` to allow only if schema-manager & MongoDB is deployed in same namespace & iii) `Selector` to select some namespaces through labels.
+- `spec.allowedSchemas.namespace,selector`. You need to set this field only if `spec.allowedSchemas.namespace,from` is set to `selector`. Here you will give the labels of the namespaces to allow.
+- `spec.allowedSchemas.selctor` denotes the labels of the schema-manager instances, which you want to give allowance to use this database. 
+
+### spec.coordinator
+We use a dedicated container, named `replication-mode-detector`, to continuously select primary pod and add label as primary. By specifying `spec.coordinator.resources` & `spec.coordinator.securityContext`, you can set the resources and securityContext of that mode-detector container.
+
 
 ## Next Steps
 
