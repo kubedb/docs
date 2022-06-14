@@ -303,7 +303,7 @@ MariaDB [(none)]> exit
 Bye
 ```
 
-As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and and the `read_buffer_size` has been changed `1048576` to `122880`. . So the reconfiguration of the database is successful.
+As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and and the `read_buffer_size` has been changed `1048576` to `122880`. So the reconfiguration of the database is successful.
 
 
 ### Reconfigure Existing Config Secret
@@ -325,14 +325,43 @@ spec:
       new-md-config.cnf: |
         [mysqld]
         max_connections = 230
-        read_buffer_size = 1068487
+        read_buffer_size = 1064960
+      innodb-config.cnf: |
+        [mysqld]
+        innodb_log_buffer_size = 17408000
 ```
-> Note: You can modify any field of your current configuration using `applyConfig`. If you don't have any secrets then `applyConfig` will create a secret for you.
+> Note: You can modify multiple fields of your current configuration using `applyConfig`. If you don't have any secrets then `applyConfig` will create a secret for you. Here, we modified value of our two existing fields which are `max_connections` and `read_buffer_size` also, we modified a new field `innodb_log_buffer_size` to our configuration. 
 
 Here,
 - `spec.databaseRef.name` specifies that we are reconfiguring `sample-mariadb` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.applyConfig.new-md-config.cnf` specifies configuration of the existing or new secret.
+- `spec.configuration.applyConfig` contains the configuration of existing or newly created secret.
+
+Before applying this yaml we are going to check the existing value of our new field,
+
+```bash
+$ kubectl exec -it sample-mariadb-0 -n demo -c mariadb -- bash
+root@sample-mariadb-0:/# mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 23
+Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> show variables like 'innodb_log_buffer_size';
++------------------------+----------+
+| Variable_name          | Value    |
++------------------------+----------+
+| innodb_log_buffer_size | 16777216 |
++------------------------+----------+
+1 row in set (0.001 sec)
+
+MariaDB [(none)]> exit
+Bye
+```
+Here, we can see the default value for `innodb_log_buffer_size` is `16777216`. 
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
@@ -365,47 +394,50 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MariaDBOpsRequest
 Metadata:
-  Creation Timestamp:  2022-06-10T06:33:01Z
+  Creation Timestamp:  2022-06-10T09:13:49Z
   Generation:          1
-  Resource Version:  1135158
-  UID:               8b2bd634-9fed-49c1-91cf-a117afb18b32
+  Resource Version:  14120
+  UID:               eb8d5df5-a0ce-4011-890c-c18c0200b5ac
 Spec:
   Configuration:
     Apply Config:
+      innodb-config.cnf:  [mysqld]
+innodb_log_buffer_size = 17408000
+
       new-md-config.cnf:  [mysqld]
 max_connections = 230
-read_buffer_size = 1068487
+read_buffer_size = 1064960
 
   Database Ref:
     Name:  sample-mariadb
   Type:    Reconfigure
 Status:
   Conditions:
-    Last Transition Time:  2022-06-10T06:33:01Z
+    Last Transition Time:  2022-06-10T09:13:49Z
     Message:               Controller has started to Progress the MariaDBOpsRequest: demo/mdops-reconfigure-apply-config
     Observed Generation:   1
     Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
-    Last Transition Time:  2022-06-10T06:33:01Z
+    Last Transition Time:  2022-06-10T09:13:49Z
     Message:               Successfully prepared user provided custom config secret
     Observed Generation:   1
     Reason:                PrepareSecureCustomConfig
     Status:                True
     Type:                  PrepareCustomConfig
-    Last Transition Time:  2022-06-10T06:36:36Z
+    Last Transition Time:  2022-06-10T09:17:24Z
     Message:               Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-reconfigure-apply-config
     Observed Generation:   1
     Reason:                SuccessfullyRestatedStatefulSet
     Status:                True
     Type:                  RestartStatefulSetPods
-    Last Transition Time:  2022-06-10T06:36:41Z
+    Last Transition Time:  2022-06-10T09:17:29Z
     Message:               Successfully reconfigured MariaDB for MariaDBOpsRequest: demo/mdops-reconfigure-apply-config
     Observed Generation:   1
     Reason:                SuccessfullyDBReconfigured
     Status:                True
     Type:                  DBReady
-    Last Transition Time:  2022-06-10T06:36:41Z
+    Last Transition Time:  2022-06-10T09:17:29Z
     Message:               Controller has successfully reconfigure the MariaDB demo/mdops-reconfigure-apply-config
     Observed Generation:   1
     Reason:                OpsRequestProcessedSuccessfully
@@ -446,11 +478,20 @@ MariaDB [(none)]> show variables like 'read_buffer_size';
 +------------------+---------+
 1 row in set (0.001 sec)
 
+# value of `innodb_log_buffer_size` is same as provided
+MariaDB [(none)]> show variables like 'innodb_log_buffer_size';
++------------------------+----------+
+| Variable_name          | Value    |
++------------------------+----------+
+| innodb_log_buffer_size | 17408000 |
++------------------------+----------+
+1 row in set (0.001 sec)
+
 MariaDB [(none)]> exit
 Bye
 ```
 
-As we can see from above the configuration has changed, the value of `max_connections` has been changed from `250` to `230` and the `read_buffer_size` has been changed `122880` to `1064960`. So the reconfiguration of the `sample-mariadb` database is successful.
+As we can see from above the configuration has been changed, the value of `max_connections` has been changed from `250` to `230` and the `read_buffer_size` has been changed `122880` to `1064960` also, `innodb_log_buffer_size` has been changed from `16777216` to `17408000`. So the reconfiguration of the `sample-mariadb` database is successful.
 
 
 ### Remove Custom Configuration
@@ -513,7 +554,7 @@ Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-# value of `max_conncetions` is same as provided 
+# value of `max_conncetions` is default
 MariaDB [(none)]> show variables like 'max_connections';
 +-----------------+-------+
 | Variable_name   | Value |
@@ -522,13 +563,22 @@ MariaDB [(none)]> show variables like 'max_connections';
 +-----------------+-------+
 1 row in set (0.001 sec)
 
-# value of `read_buffer_size` is same as provided
+# value of `read_buffer_size` is default
 MariaDB [(none)]> show variables like 'read_buffer_size';
 +------------------+---------+
 | Variable_name    | Value   |
 +------------------+---------+
 | read_buffer_size | 131072  |
 +------------------+---------+
+1 row in set (0.001 sec)
+
+# value of `innodb_log_buffer_size` is default
+MariaDB [(none)]> show variables like 'innodb_log_buffer_size';
++------------------------+----------+
+| Variable_name          | Value    |
++------------------------+----------+
+| innodb_log_buffer_size | 16777216 |
++------------------------+----------+
 1 row in set (0.001 sec)
 
 MariaDB [(none)]> exit
