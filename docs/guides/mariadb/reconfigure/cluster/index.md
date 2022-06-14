@@ -496,7 +496,7 @@ As we can see from above the configuration has been changed, the value of `max_c
 
 ### Remove Custom Configuration
 
-We can also remove exisiting custom config using `MariaDBOpsRequest`. Provide `true` to field `spec.configuration.removeCustomConfig` and make an Ops Request  to remove existing custom configuration.
+We can also remove exisiting custom config using `MariaDBOpsRequest`. Provide `true` to field `spec.configuration.removeCustomConfig` and make an Ops Request to remove existing custom configuration.
 
 #### Create MariaDBOpsRequest
 
@@ -538,7 +538,7 @@ Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following comman
 ```bash
 $ kubectl get mariadbopsrequest --all-namespaces
 NAMESPACE   NAME                       TYPE          STATUS       AGE
-demo        mdops-reconfigure-remove   Reconfigure   Successful   3m8s
+demo        mdops-reconfigure-remove   Reconfigure   Successful   2m1s
 ```
 
 Now let's connect to a mariadb instance and run a mariadb internal command to check the new configuration we have provided.
