@@ -330,7 +330,7 @@ spec:
         [mysqld]
         innodb_log_buffer_size = 17408000
 ```
-> Note: You can modify multiple fields of your current configuration using `applyConfig`. If you don't have any secrets then `applyConfig` will create a secret for you. Here, we modified value of our two existing fields which are `max_connections` and `read_buffer_size` also, we modified a new field `innodb_log_buffer_size` to our configuration. 
+> Note: You can modify multiple fields of your current configuration using `applyConfig`. If you don't have any secrets then `applyConfig` will create a secret for you. Here, we modified value of our two existing fields which are `max_connections` and `read_buffer_size` also, we modified a new field `innodb_log_buffer_size` of our configuration. 
 
 Here,
 - `spec.databaseRef.name` specifies that we are reconfiguring `sample-mariadb` database.
