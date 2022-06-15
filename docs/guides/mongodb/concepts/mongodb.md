@@ -372,14 +372,11 @@ Use this field to specify the configuration of ephemeral storage type, If you wa
 - `spec.ephemeralStorage.medium` refers to the name of the storage medium.
 - `spec.ephemeralStorage.sizeLimit` to specify the sizeLimit of the emptyDir volume.
 
-For more details of these two fields, see :
-- https://github.com/kubernetes/api/blob/ed22bb34e3bbae9e2fafba51d66ee3f68ee304b2/core/v1/types.go#L700-L715
+For more details of these two fields, see [EmptyDir struct](https://github.com/kubernetes/api/blob/ed22bb34e3bbae9e2fafba51d66ee3f68ee304b2/core/v1/types.go#L700-L715)
 
 ### spec.init
 
-`spec.init` is an optional section that can be used to initialize a newly created MongoDB database. MongoDB databases can be initialized by :
-
-1. Initialize via Script
+`spec.init` is an optional section that can be used to initialize a newly created MongoDB database. MongoDB databases can be initialized by Script.
 
 `Initialize from Snapshot` is still not supported.
 
@@ -409,7 +406,7 @@ In the above example, KubeDB operator will launch a Job to execute all js script
 
 These are the fields of `spec.init` which you can make use of :
 - `spec.init.initialized` indicating that this database has been initialized or not. `false` by default.
-- `spec.init.script,scriptPath` to specify where all the init scripts should be mounted.
+- `spec.init.script.scriptPath` to specify where all the init scripts should be mounted.
 - `spec.init.script.<volumeSource>` as described in the above example. To see all the volumeSource options go to [VolumeSource](https://github.com/kubernetes/api/blob/ed22bb34e3bbae9e2fafba51d66ee3f68ee304b2/core/v1/types.go#L49).
 - `spec.init.waitForInitialRestore` to tell the operator if it should wait for the initial restore process or not.
 
@@ -583,9 +580,9 @@ N.B. If `spec.replicaset` & `spec.shardTopology` both is empty, `spec.arbiter` h
 
 ### spec.allowedSchemas
 It defines which consumers may refer to a database instance. We implemented double-optIn feature between database instance and schema-manager using this field.
-- `spec.allowedSchemas.namespace,from` indicates how you want to filter the namespaces, from which a schema-manager will be able to communicate with this db instance.
+- `spec.allowedSchemas.namespace.from` indicates how you want to filter the namespaces, from which a schema-manager will be able to communicate with this db instance.
 Possible values are : i) `All` to allow all namespaces, ii) `Same` to allow only if schema-manager & MongoDB is deployed in same namespace & iii) `Selector` to select some namespaces through labels.
-- `spec.allowedSchemas.namespace,selector`. You need to set this field only if `spec.allowedSchemas.namespace,from` is set to `selector`. Here you will give the labels of the namespaces to allow.
+- `spec.allowedSchemas.namespace.selector`. You need to set this field only if `spec.allowedSchemas.namespace.from` is set to `selector`. Here you will give the labels of the namespaces to allow.
 - `spec.allowedSchemas.selctor` denotes the labels of the schema-manager instances, which you want to give allowance to use this database. 
 
 ### spec.coordinator
