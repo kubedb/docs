@@ -41,7 +41,7 @@ Now, we are going to deploy a  `MariaDB` Cluster using a supported version by `K
 
 ### Prepare MariaDB Cluster
 
-Now, we are going to deploy a `MariaDB` Cluster database with version `10.5.8`.
+Now, we are going to deploy a `MariaDB` Cluster database with version `10.6.4`.
 
 ### Deploy MariaDB
 
@@ -72,7 +72,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.6.4"
   replicas: 3
   configSecret:
     name: md-configuration
@@ -99,7 +99,7 @@ Now, wait until `sample-mariadb` has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo 
 NAME             VERSION   STATUS   AGE
-sample-mariadb   10.5.8    Ready    71s
+sample-mariadb   10.6.4    Ready    71s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
@@ -121,7 +121,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -192,7 +192,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `mdops-reconfigure-config` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `sample-mariadb` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.configuration.configSecret.name` specifies the name of the new secret.
 
@@ -222,34 +222,42 @@ $ kubectl describe mariadbopsrequest -n demo mdops-reconfigure-config
 Name:         mdops-reconfigure-config
 Namespace:    demo
 Labels:       <none>
-Annotations:  API Version:  ops.kubedb.com/v1alpha1
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
 Kind:         MariaDBOpsRequest
 Metadata:
-  ...
-  Resource Version:  71713
-  UID:               6978da49-b29e-42ec-b137-ba42d3f2868d
+  Creation Timestamp:  2022-06-10T04:43:50Z
+  Generation:          1
+  Resource Version:  1123451
+  UID:               27a73fc6-1d25-4019-8975-f7d4daf782b7
 Spec:
   Configuration:
     Config Secret:
-      Name:  new-md-config
+      Name:  new-md-configuration
   Database Ref:
     Name:  sample-mariadb
   Type:    Reconfigure
 Status:
   Conditions:
-    Last Transition Time:  2022-01-10T12:06:02Z
+    Last Transition Time:  2022-06-10T04:43:50Z
     Message:               Controller has started to Progress the MariaDBOpsRequest: demo/mdops-reconfigure-config
     Observed Generation:   1
     Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
-    Last Transition Time:  2022-01-10T12:13:57Z
-    Message:               Successfully reconfigured MariaDB pod for MariaDBOpsRequest: demo/mdops-reconfigure-config 
+    Last Transition Time:  2022-06-10T04:47:25Z
+    Message:               Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-reconfigure-config
+    Observed Generation:   1
+    Reason:                SuccessfullyRestatedStatefulSet
+    Status:                True
+    Type:                  RestartStatefulSetPods
+    Last Transition Time:  2022-06-10T04:47:30Z
+    Message:               Successfully reconfigured MariaDB for MariaDBOpsRequest: demo/mdops-reconfigure-config
     Observed Generation:   1
     Reason:                SuccessfullyDBReconfigured
     Status:                True
-    Type:                  Reconfigure
-    Last Transition Time:  2022-01-10T12:13:57Z
+    Type:                  DBReady
+    Last Transition Time:  2022-06-10T04:47:30Z
     Message:               Controller has successfully reconfigure the MariaDB demo/mdops-reconfigure-config
     Observed Generation:   1
     Reason:                OpsRequestProcessedSuccessfully
@@ -257,7 +265,7 @@ Status:
     Type:                  Successful
   Observed Generation:     3
   Phase:                   Successful
-  ...
+
 ```
 
 Now let's connect to a mariadb instance and run a mariadb internal command to check the new configuration we have provided.
@@ -267,7 +275,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -295,11 +303,200 @@ MariaDB [(none)]> exit
 Bye
 ```
 
-As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and so as the `read_buffer_size`. So the reconfiguration of the database is successful.
+As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and and the `read_buffer_size` has been changed `1048576` to `122880`. So the reconfiguration of the database is successful.
+
+
+### Reconfigure Existing Config Secret
+
+Now, we will create a new `MariaDBOpsRequest` to reconfigure our existing secret `new-md-configuration` by modifying our `new-md-config.cnf` file using `applyConfig`. The `MariaDBOpsRequest` yaml is given below,
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MariaDBOpsRequest
+metadata:
+  name: mdops-reconfigure-apply-config
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: sample-mariadb
+  configuration:   
+    applyConfig:
+      new-md-config.cnf: |
+        [mysqld]
+        max_connections = 230
+        read_buffer_size = 1064960
+      innodb-config.cnf: |
+        [mysqld]
+        innodb_log_buffer_size = 17408000
+```
+> Note: You can modify multiple fields of your current configuration using `applyConfig`. If you don't have any secrets then `applyConfig` will create a secret for you. Here, we modified value of our two existing fields which are `max_connections` and `read_buffer_size` also, we modified a new field `innodb_log_buffer_size` of our configuration. 
+
+Here,
+- `spec.databaseRef.name` specifies that we are reconfiguring `sample-mariadb` database.
+- `spec.type` specifies that we are performing `Reconfigure` on our database.
+- `spec.configuration.applyConfig` contains the configuration of existing or newly created secret.
+
+Before applying this yaml we are going to check the existing value of our new field,
+
+```bash
+$ kubectl exec -it sample-mariadb-0 -n demo -c mariadb -- bash
+root@sample-mariadb-0:/# mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 23
+Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> show variables like 'innodb_log_buffer_size';
++------------------------+----------+
+| Variable_name          | Value    |
++------------------------+----------+
+| innodb_log_buffer_size | 16777216 |
++------------------------+----------+
+1 row in set (0.001 sec)
+
+MariaDB [(none)]> exit
+Bye
+```
+Here, we can see the default value for `innodb_log_buffer_size` is `16777216`. 
+
+Let's create the `MariaDBOpsRequest` CR we have shown above,
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure/cluster/examples/mdops-reconfigure-apply-config.yaml
+mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-apply-config created
+```
+
+
+#### Verify the new configuration is working
+
+If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MariaDB` object.
+
+Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
+
+```bash
+$ kubectl get mariadbopsrequest mdops-reconfigure-apply-config -n demo
+NAME                             TYPE          STATUS       AGE
+mdops-reconfigure-apply-config   Reconfigure   Successful   4m59s
+```
+
+We can see from the above output that the `MariaDBOpsRequest` has succeeded. If we describe the `MariaDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
+
+```bash
+$ kubectl describe mariadbopsrequest -n demo mdops-reconfigure-apply-config
+Name:         mdops-reconfigure-apply-config
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         MariaDBOpsRequest
+Metadata:
+  Creation Timestamp:  2022-06-10T09:13:49Z
+  Generation:          1
+  Resource Version:  14120
+  UID:               eb8d5df5-a0ce-4011-890c-c18c0200b5ac
+Spec:
+  Configuration:
+    Apply Config:
+      innodb-config.cnf:  [mysqld]
+innodb_log_buffer_size = 17408000
+
+      new-md-config.cnf:  [mysqld]
+max_connections = 230
+read_buffer_size = 1064960
+
+  Database Ref:
+    Name:  sample-mariadb
+  Type:    Reconfigure
+Status:
+  Conditions:
+    Last Transition Time:  2022-06-10T09:13:49Z
+    Message:               Controller has started to Progress the MariaDBOpsRequest: demo/mdops-reconfigure-apply-config
+    Observed Generation:   1
+    Reason:                OpsRequestProgressingStarted
+    Status:                True
+    Type:                  Progressing
+    Last Transition Time:  2022-06-10T09:13:49Z
+    Message:               Successfully prepared user provided custom config secret
+    Observed Generation:   1
+    Reason:                PrepareSecureCustomConfig
+    Status:                True
+    Type:                  PrepareCustomConfig
+    Last Transition Time:  2022-06-10T09:17:24Z
+    Message:               Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-reconfigure-apply-config
+    Observed Generation:   1
+    Reason:                SuccessfullyRestatedStatefulSet
+    Status:                True
+    Type:                  RestartStatefulSetPods
+    Last Transition Time:  2022-06-10T09:17:29Z
+    Message:               Successfully reconfigured MariaDB for MariaDBOpsRequest: demo/mdops-reconfigure-apply-config
+    Observed Generation:   1
+    Reason:                SuccessfullyDBReconfigured
+    Status:                True
+    Type:                  DBReady
+    Last Transition Time:  2022-06-10T09:17:29Z
+    Message:               Controller has successfully reconfigure the MariaDB demo/mdops-reconfigure-apply-config
+    Observed Generation:   1
+    Reason:                OpsRequestProcessedSuccessfully
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     3
+  Phase:                   Successful
+```
+
+Now let's connect to a mariadb instance and run a mariadb internal command to check the new configuration we have provided.
+
+```bash
+$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 23
+Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+# value of `max_conncetions` is same as provided 
+MariaDB [(none)]> show variables like 'max_connections';
++-----------------+-------+
+| Variable_name   | Value |
++-----------------+-------+
+| max_connections | 230   |
++-----------------+-------+
+1 row in set (0.001 sec)
+
+# value of `read_buffer_size` is same as provided
+MariaDB [(none)]> show variables like 'read_buffer_size';
++------------------+---------+
+| Variable_name    | Value   |
++------------------+---------+
+| read_buffer_size | 1064960 |
++------------------+---------+
+1 row in set (0.001 sec)
+
+# value of `innodb_log_buffer_size` is same as provided
+MariaDB [(none)]> show variables like 'innodb_log_buffer_size';
++------------------------+----------+
+| Variable_name          | Value    |
++------------------------+----------+
+| innodb_log_buffer_size | 17408000 |
++------------------------+----------+
+1 row in set (0.001 sec)
+
+MariaDB [(none)]> exit
+Bye
+```
+
+As we can see from above the configuration has been changed, the value of `max_connections` has been changed from `250` to `230` and the `read_buffer_size` has been changed `122880` to `1064960` also, `innodb_log_buffer_size` has been changed from `16777216` to `17408000`. So the reconfiguration of the `sample-mariadb` database is successful.
+
 
 ### Remove Custom Configuration
 
-We can also remove exisiting custom config using `MariaDBOpsRequest`. Provide `true` to field `spec.configuration.removeCustomConfig` and make an Ops Request  to remove existing custom configuration.
+We can also remove exisiting custom config using `MariaDBOpsRequest`. Provide `true` to field `spec.configuration.removeCustomConfig` and make an Ops Request to remove existing custom configuration.
 
 #### Create MariaDBOpsRequest
 
@@ -341,7 +538,7 @@ Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following comman
 ```bash
 $ kubectl get mariadbopsrequest --all-namespaces
 NAMESPACE   NAME                       TYPE          STATUS       AGE
-demo        mdops-reconfigure-remove   Reconfigure   Successful   3m8s
+demo        mdops-reconfigure-remove   Reconfigure   Successful   2m1s
 ```
 
 Now let's connect to a mariadb instance and run a mariadb internal command to check the new configuration we have provided.
@@ -351,13 +548,13 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-# value of `max_conncetions` is same as provided 
+# value of `max_conncetions` is default
 MariaDB [(none)]> show variables like 'max_connections';
 +-----------------+-------+
 | Variable_name   | Value |
@@ -366,13 +563,22 @@ MariaDB [(none)]> show variables like 'max_connections';
 +-----------------+-------+
 1 row in set (0.001 sec)
 
-# value of `read_buffer_size` is same as provided
+# value of `read_buffer_size` is default
 MariaDB [(none)]> show variables like 'read_buffer_size';
 +------------------+---------+
 | Variable_name    | Value   |
 +------------------+---------+
 | read_buffer_size | 131072  |
 +------------------+---------+
+1 row in set (0.001 sec)
+
+# value of `innodb_log_buffer_size` is default
+MariaDB [(none)]> show variables like 'innodb_log_buffer_size';
++------------------------+----------+
+| Variable_name          | Value    |
++------------------------+----------+
+| innodb_log_buffer_size | 16777216 |
++------------------------+----------+
 1 row in set (0.001 sec)
 
 MariaDB [(none)]> exit
@@ -387,5 +593,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete mariadb -n demo sample-mariadb
-$ kubectl delete mariadbopsrequest -n demo mdops-reconfigure-config mdops-reconfigure-remove 
+$ kubectl delete mariadbopsrequest -n demo mdops-reconfigure-config mdops-reconfigure-apply-config mdops-reconfigure-remove
+$ kubectl delete ns demo
 ```
