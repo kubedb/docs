@@ -500,7 +500,7 @@ secret/mgo-quickstart-key    Opaque                                1      12m
 NAME                                             STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/datadir-mgo-quickstart-0   Bound    pvc-18c3c456-c9a9-40b2-bec8-4302cc0aeccc   1Gi        RWO            standard       12m
 persistentvolumeclaim/datadir-mgo-quickstart-1   Bound    pvc-7ac4c470-8fa7-47a9-b118-2ac20f01186d   1Gi        RWO            standard       9m57s
-persistentvolumeclaim/datadir-mgo-quickstart-2   Bound    pvc-2e6dfb71-056b-4186-927d-855db35d0014   1Gi        RWO            standard       9m30s         standard       9m43s
+persistentvolumeclaim/datadir-mgo-quickstart-2   Bound    pvc-2e6dfb71-056b-4186-927d-855db35d0014   1Gi        RWO            standard       9m30s
 ```
 
 
