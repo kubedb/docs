@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MariaDBOpsRequest
+metadata:
+  name: mdops-reconfigure-apply-config
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: sample-mariadb
+  configuration:   
+    applyConfig:
+      new-md-config.cnf: |
+        [mysqld]
+        max_connections = 230
+        read_buffer_size = 1064960
+      innodb-config.cnf: |
+        [mysqld]
+        innodb_log_buffer_size = 17408000
