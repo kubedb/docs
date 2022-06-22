@@ -60,19 +60,17 @@ PgBouncer is a connection-pooling middleware for PostgreSQL. Therefore you will 
 
 Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/quickstart/quickstart.md).
 
-In this tutorial, we will use a Postgres named `quick-postgres` in the `demo` namespace with a custom authentication secret `pg-custom-auth`.
+In this tutorial, we will use a Postgres named `quick-postgres` in the `demo` namespace.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/postgres-auth.yaml
-secret/pg-custom-auth created
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/quick-postgres.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 
-KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database custom secret `pg-custom-auth` holds this user's username and password. Following is the yaml file for it.
+KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database secret `quick-postgres-auth` holds this user's username and password. Following is the yaml file for it.
 
 ```yaml
-$ kubectl get secrets -n demo pg-custom-auth -o yaml
+$ kubectl get secrets -n demo quick-postgres-auth -o yaml
 
 apiVersion: v1
 data:
@@ -80,25 +78,27 @@ data:
   username: cG9zdGdyZXM=
 kind: Secret
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"Secret","metadata":{"annotations":{},"name":"pg-custom-auth","namespace":"demo"},"stringData":{"password":"ZFopeLnwkSf_f5Ys","username":"postgres"},"type":"kubernetes.io/basic-auth"}
   creationTimestamp: "2022-06-01T11:51:32Z"
-  name: pg-custom-auth
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: quick-postgres
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: postgreses.kubedb.com
+  name: quick-postgres-auth
   namespace: demo
-  resourceVersion: "72124"
-  uid: d7e40ae0-1f92-49e0-9d84-c2a0ccd52d31
+  resourceVersion: "195262"
+  uid: abe166bc-a1da-40d9-8a5e-996a8f5d6246
 type: kubernetes.io/basic-auth
 
 ```
 
-For the purpose of this tutorial, we will need to extract the username and password from database secret `pg-custom-auth`.
+For the purpose of this tutorial, we will need to extract the username and password from database secret `quick-postgres-auth`.
 
 ```bash
-$ kubectl get secrets -n demo pg-custom-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
 ZFopeLnwkSf_f5Ys⏎ 
 
-$ kubectl get secrets -n demo pg-custom-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\username}' | base64 -d
 postgres⏎ 
 ```
 
@@ -252,16 +252,13 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 Following table show what KubeDB does when you delete Postgres crd for different termination policies,
 
-| Behavior                                 | DoNotTerminate | Delete   | WipeOut  |
-| ---------------------------------------- | :------------: | :------: | :------: |
-| 1. Block Delete operation                |    &#10003;    | &#10007; | &#10007; |
-| 2. Create Dormant Database               |    &#10007;    | &#10007; | &#10007; |
-| 3. Delete StatefulSet                    |    &#10007;    | &#10003; | &#10003; |
-| 4. Delete Services                       |    &#10007;    | &#10003; | &#10003; |
-| 5. Delete PVCs                           |    &#10007;    | &#10003; | &#10003; |
-| 6. Delete Secrets                        |    &#10007;    | &#10007; | &#10003; |
-| 7. Delete Snapshots                      |    &#10007;    | &#10007; | &#10003; |
-| 8. Delete Snapshot data from bucket      |    &#10007;    | &#10007; | &#10003; |
+| Behavior                  | DoNotTerminate | Delete   | WipeOut  |
+|---------------------------| :------------: | :------: | :------: |
+| 1. Block Delete operation |    &#10003;    | &#10007; | &#10007; |
+| 2. Delete StatefulSet     |    &#10007;    | &#10003; | &#10003; |
+| 3. Delete Services        |    &#10007;    | &#10003; | &#10003; |
+| 4. Delete PVCs            |    &#10007;    | &#10003; | &#10003; |
+| 5. Delete Secrets         |    &#10007;    | &#10007; | &#10003; |
 
 
 Now that we've been introduced to the pgBouncer crd, let's create it,

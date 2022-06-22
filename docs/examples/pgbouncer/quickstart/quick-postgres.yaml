@@ -6,8 +6,6 @@ metadata:
 spec:
   replicas: 1
   version: "13.2"
-  authSecret:
-    name: "pg-custom-auth"
   storageType: Durable
   storage:
     storageClassName: "standard"

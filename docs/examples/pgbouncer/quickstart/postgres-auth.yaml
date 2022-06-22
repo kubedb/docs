@@ -1,9 +1,0 @@
-apiVersion: v1
-stringData:
-  password: ZFopeLnwkSf_f5Ys
-  username: postgres
-kind: Secret
-metadata:
-  name: pg-custom-auth
-  namespace: demo
-type: kubernetes.io/basic-auth
