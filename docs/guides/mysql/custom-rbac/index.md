@@ -57,14 +57,14 @@ $ kubectl get serviceaccount -n demo my-custom-serviceaccount -o yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: "2019-05-30T04:23:39Z"
+  creationTimestamp: "2022-06-28T13:43:26Z"
   name: my-custom-serviceaccount
   namespace: demo
-  resourceVersion: "21657"
-  selfLink: /api/v1/namespaces/demo/serviceaccounts/myserviceaccount
-  uid: b2ec2b05-8292-11e9-8d10-080027a8b217
+  resourceVersion: "1604181"
+  uid: bcc79af3-549e-4037-aece-beffab65a6ef
 secrets:
-- name: myserviceaccount-token-t8zxd
+- name: my-custom-serviceaccount-token-bvlb5
+
 ```
 
 Now, we need to create a role that has necessary access permissions for the MySQL instance named `quick-mysql`.
@@ -110,12 +110,11 @@ $ kubectl get rolebinding -n demo my-custom-rolebinding -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: "kubectl get rolebinding -n demo my-custom-rolebinding -o yaml"
+  creationTimestamp: "2022-06-28T13:45:58Z"
   name: my-custom-rolebinding
   namespace: demo
-  resourceVersion: "1405"
-  selfLink: /apis/rbac.authorization.k8s.io/v1/namespaces/demo/rolebindings/my-custom-rolebinding
-  uid: 123afc02-8297-11e9-8d10-080027a8b217
+  resourceVersion: "1604463"
+  uid: c1242a62-a206-45bf-a757-46e0e20484ca
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -143,7 +142,7 @@ metadata:
   name: quick-mysql
   namespace: demo
 spec:
-  version: "8.0.27"
+  version: "8.0.29"
   storageType: Durable
   podTemplate:
     spec:
@@ -173,18 +172,14 @@ Check the pod's log to see if the database is ready
 ```bash
 $ kubectl logs -f -n demo quick-mysql-0
 ...
-2020-08-27 06:01:50+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
+2022-06-28 13:46:46+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.29-1debian10 started.
+2022-06-28 13:46:46+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+2022-06-28 13:46:46+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.29-1debian10 started.
 
-2020-08-27T06:01:51.142462Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.21) starting as process 1
-2020-08-27T06:01:51.142509Z 0 [ERROR] [MY-010338] [Server] Can't find error-message file '/usr/share/mysql-8.0/errmsg.sys'. Check error-message file location and 'lc-messages-dir' configuration directive.
-2020-08-27T06:01:51.151516Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
-2020-08-27T06:01:51.681653Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
 ...
-2020-08-27T06:01:51.802033Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060
-2020-08-27T06:01:51.924095Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
-2020-08-27T06:01:51.924256Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
-2020-08-27T06:01:51.931573Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
-2020-08-27T06:01:51.955689Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+2022-06-28T13:47:02.915445Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock
+2022-06-28T13:47:02.915504Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.29'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+
 ```
 
 Once we see `MySQL init process done. Ready for start up.` in the log, the database is ready.
@@ -209,7 +204,7 @@ metadata:
   name: minute-mysql
   namespace: demo
 spec:
-  version: "8.0.27"
+  version: "8.0.29"
   storageType: Durable
   podTemplate:
     spec:
@@ -239,18 +234,17 @@ Check the pod's log to see if the database is ready
 
 ```bash
 ...
-2020-08-27 06:01:50+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
-
-2020-08-27T06:01:51.142462Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.21) starting as process 1
-2020-08-27T06:01:51.142509Z 0 [ERROR] [MY-010338] [Server] Can't find error-message file '/usr/share/mysql-8.0/errmsg.sys'. Check error-message file location and 'lc-messages-dir' configuration directive.
-2020-08-27T06:01:51.151516Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
-2020-08-27T06:01:51.681653Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2022-06-28 13:48:53+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.29-1debian10 started.
+2022-06-28 13:48:53+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+2022-06-28 13:48:53+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.29-1debian10 started.
+2022-06-28 13:48:53+00:00 [Note] [Entrypoint]: Initializing database files
+2022-06-28T13:48:53.986191Z 0 [System] [MY-013169] [Server] /usr/sbin/mysqld (mysqld 8.0.29) initializing of server in progress as process 43
 ...
-2020-08-27T06:01:51.802033Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060
-2020-08-27T06:01:51.924095Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
-2020-08-27T06:01:51.924256Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
-2020-08-27T06:01:51.931573Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
-2020-08-27T06:01:51.955689Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+2022-06-28T13:49:11.543893Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock
+2022-06-28T13:49:11.543917Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.29'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+
+
+
 ```
 
 `MySQL init process done. Ready for start up.` in the log signifies that the database is running successfully.
