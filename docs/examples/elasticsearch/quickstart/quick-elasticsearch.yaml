@@ -1,15 +1,15 @@
 apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
-  name: quick-elasticsearch
+  name: es-quickstart
   namespace: demo
 spec:
-  version: searchguard-7.9.3
+  version: xpack-8.2.0
   storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
