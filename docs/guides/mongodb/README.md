@@ -17,24 +17,36 @@ aliases:
 
 ## Supported MongoDB Features
 
-| Features                                     | Availability |
-| -------------------------------------------- | :----------: |
-| Clustering - Sharding                        |   &#10003;   |
-| Clustering - Replication                     |   &#10003;   |
-| Persistent Volume                            |   &#10003;   |
-| Instant Backup                               |   &#10003;   |
-| Scheduled Backup                             |   &#10003;   |
-| Initialize using Snapshot                    |   &#10003;   |
-| Initialize using Script (\*.js and/or \*.sh) |   &#10003;   |
-| Custom Configuration                         |   &#10003;   |
-| Using Custom docker image                    |   &#10003;   |
-| Builtin Prometheus Discovery                 |   &#10003;   |
-| Using Prometheus operator                    |   &#10003;   |
+
+| Features                                                                           | Community | Enterprise |
+|------------------------------------------------------------------------------------|:---------:|:----------:|
+| Clustering - Sharding                                                              | &#10003;  |  &#10003;  |
+| Clustering - Replication                                                           | &#10003;  |  &#10003;  |
+| Custom Configuration                                                               | &#10003;  |  &#10003;  |
+| Using Custom Docker Image                                                          | &#10003;  |  &#10003;  |
+| Initialization From Script (\*.js and/or \*.sh)                                    | &#10003;  |  &#10003;  |
+| Initializing from Snapshot ( [Stash](https://stash.run/) )                         | &#10003;  |  &#10003;  |
+| Authentication & Autorization                                                      | &#10003;  |  &#10003;  |
+| Arbiter support                                                                    | &#10003;  |  &#10003;  |
+| Persistent Volume                                                                  | &#10003;  |  &#10003;  |
+| Instant Backup                                                                     | &#10003;  |  &#10003;  |
+| Scheduled Backup                                                                   | &#10003;  |  &#10003;  |
+| Builtin Prometheus Discovery                                                       | &#10003;  |  &#10003;  |
+| Using Prometheus operator                                                          | &#10003;  |  &#10003;  |
+| Automated Version Upgrade                                                          | &#10007;  |  &#10003;  |
+| Automatic Vertical Scaling                                                         | &#10007;  |  &#10003;  |
+| Automated Horizontal Scaling                                                       | &#10007;  |  &#10003;  |
+| Automated db-configure Reconfiguration                                             | &#10007;  |  &#10003;  |
+| TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) ) | &#10007;  |  &#10003;  |
+| Automated Reprovision                                                              | &#10007;  |  &#10003;  |
+| Automated Volume Expansion                                                         | &#10007;  |  &#10003;  |
+| Autoscaling (vertically)                                                           | &#10007;  |  &#10003;  |
+
 
 ## Life Cycle of a MongoDB Object
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/images/mongodb/mgo-lifecycle.png">
+  <img alt="lifecycle"  src="/docs/images/mongodb/quick-start.png">
 </p>
 
 ## User Guide
