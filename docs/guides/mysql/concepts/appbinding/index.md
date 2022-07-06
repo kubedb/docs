@@ -34,51 +34,50 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"custom-mysql","namespace":"demo"},"spec":{"configSecret":{"name":"my-configuration"},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.27"}}
-  creationTimestamp: "2021-03-11T05:22:43Z"
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-group","namespace":"demo"},"spec":{"configSecret":{"name":"my-configuration"},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.29"}}
+  creationTimestamp: "2022-06-28T10:08:03Z"
   generation: 1
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: custom-mysql
+    app.kubernetes.io/instance: mysql-group
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mysqls.kubedb.com
-    ...
-    manager: my-operator
-    operation: Update
-    time: "2021-03-11T05:22:43Z"
-  name: custom-mysql
+  name: mysql-group
   namespace: demo
   ownerReferences:
   - apiVersion: kubedb.com/v1alpha2
     blockOwnerDeletion: true
     controller: true
     kind: MySQL
-    name: custom-mysql
-    uid: 8cb5c1cd-5bb8-44ef-a7c8-8df12c12a1d1
-  resourceVersion: "18470"
-  selfLink: /apis/appcatalog.appscode.com/v1alpha1/namespaces/demo/appbindings/custom-mysql
-  uid: e96fca7a-7254-43b2-87b0-e150e9987f38
+    name: mysql-group
+    uid: d79f61f1-bba0-46b3-a822-0117e9dcfec7
+  resourceVersion: "1577460"
+  uid: 3ac26b03-3de6-4394-a04b-3bc4a19955f4
 spec:
   clientConfig:
     service:
-      name: custom-mysql
+      name: mysql-group
       path: /
       port: 3306
       scheme: mysql
-    url: tcp(custom-mysql:3306)/
+    url: tcp(mysql-group.demo.svc:3306)/
   parameters:
     apiVersion: appcatalog.appscode.com/v1alpha1
     kind: StashAddon
     stash:
       addon:
         backupTask:
-          name: mysql-backup-8.0.27
+          name: mysql-backup-8.0.21
+          params:
+          - name: args
+            value: --all-databases --set-gtid-purged=OFF
         restoreTask:
-          name: mysql-restore-8.0.27
+          name: mysql-restore-8.0.21
   secret:
-    name: custom-mysql-auth
+    name: mysql-group-auth
   type: kubedb.com/mysql
-  version: 8.0.27
+  version: 8.0.29
+
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.
@@ -98,8 +97,8 @@ Here, the variables are parsed as follows:
 |       Variable        |                                                               Usage                                                               |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `TARGET_APP_GROUP`    | Represents the application group where the respective app belongs (i.e: `kubedb.com`).                                            |
-| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents (i.e: `postgres`).                           |
-| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` (i.e: `kubedb.com/postgres`). |
+| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents (i.e: `mysql`).                           |
+| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` (i.e: `kubedb.com/mysql`). |
 
 #### spec.secret
 

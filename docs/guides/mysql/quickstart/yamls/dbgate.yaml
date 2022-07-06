@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dbgate
+  namespace: demo
+  labels:
+    app: dbgate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dbgate
+  template:
+    metadata:
+      labels:
+        app: dbgate
+    spec:
+      containers:
+        - name: dbgate
+          image: dbgate/dbgate:beta
+          ports:
+            - containerPort: 3000
+              name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: dbgate
+  name: dbgate
+  namespace: demo
+spec:
+  ports:
+  - name: http
+    port: 3000
+    protocol: TCP
+    targetPort: http
+  selector:
+    app: dbgate
+  type: LoadBalance

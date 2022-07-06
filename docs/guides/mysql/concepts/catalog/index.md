@@ -32,26 +32,32 @@ kind: MySQLVersion
 metadata:
   annotations:
     meta.helm.sh/release-name: kubedb-catalog
-    meta.helm.sh/release-namespace: kube-system
+    meta.helm.sh/release-namespace: kubedb
+  creationTimestamp: "2022-06-16T13:52:58Z"
+  generation: 3
   labels:
     app.kubernetes.io/instance: kubedb-catalog
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kubedb-catalog
-    app.kubernetes.io/version: v0.16.2
-    helm.sh/chart: kubedb-catalog-v0.16.2
-  name: 8.0.27
+    app.kubernetes.io/version: v2022.03.28
+    helm.sh/chart: kubedb-catalog-v2022.03.28
+  name: 8.0.29
+  resourceVersion: "1575483"
+  uid: 4e605d5f-a6f0-42cb-a125-b4b4fd02e41e
 spec:
+  coordinator:
+    image: kubedb/mysql-coordinator:v0.4.0-2-g49a2d26-dirty_linux_amd64
   db:
-    image: kubedb/mysql:8.0.27
-  distribution: Oracle
+    image: mysql:8.0.29
+  distribution: Official
   exporter:
-    image: kubedb/mysqld-exporter:v0.11.0
+    image: kubedb/mysqld-exporter:v0.13.1
   initContainer:
-    image: kubedb/toybox:0.8.4
+    image: kubedb/mysql-init:8.0.29_linux_amd64
   podSecurityPolicies:
     databasePolicyName: mysql-db
   replicationModeDetector:
-    image: kubedb/replication-mode-detector:v0.4.0
+    image: kubedb/replication-mode-detector:v0.13.0
   stash:
     addon:
       backupTask:
@@ -61,10 +67,10 @@ spec:
   upgradeConstraints:
     denylist:
       groupReplication:
-      - < 8.0.23
+      - < 8.0.29
       standalone:
-      - < 8.0.23
-  version: 8.0.23
+      - < 8.0.29
+  version: 8.0.29
 ```
 
 ### metadata.name

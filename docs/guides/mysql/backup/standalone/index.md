@@ -57,7 +57,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.0.27"
+  version: "8.0.29"
   replicas: 1
   storageType: Durable
   storage:
@@ -83,7 +83,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get my -n demo sample-mysql
 NAME           VERSION   STATUS    AGE
-sample-mysql   8.0.21    Ready   4m22s
+sample-mysql   8.0.29    Ready   4m22s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -96,7 +96,7 @@ sample-mysql-auth   Opaque   2      4m58s
 $ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mysql
 NAME               TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 sample-mysql       ClusterIP   10.101.2.138   <none>        3306/TCP   5m33s
-sample-mysql-gvr   ClusterIP   None           <none>        3306/TCP   5m33s
+sample-mysql-pods   ClusterIP   None           <none>        3306/TCP   5m33s
 ```
 
 Here, we have to use service `sample-mysql` and secret `sample-mysql-auth` to connect with the database. KubeDB creates an [AppBinding](/docs/guides/mysql/concepts/appbinding/index.md) CRD that holds the necessary information to connect with the database.
@@ -121,7 +121,10 @@ $ kubectl get appbindings -n demo sample-mysql -o yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  creationTimestamp: "2019-09-27T05:07:34Z"
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"sample-mysql","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}}},"storageType":"Durable","terminationPolicy":"WipeOut","version":"8.0.29"}}
+  creationTimestamp: "2022-06-30T05:45:43Z"
   generation: 1
   labels:
     app.kubernetes.io/component: database
@@ -130,6 +133,15 @@ metadata:
     app.kubernetes.io/name: mysqls.kubedb.com
   name: sample-mysql
   namespace: demo
+  ownerReferences:
+  - apiVersion: kubedb.com/v1alpha2
+    blockOwnerDeletion: true
+    controller: true
+    kind: MySQL
+    name: sample-mysql
+    uid: 00dcc579-cdd8-4586-9118-1e108298c5d0
+  resourceVersion: "1693366"
+  uid: adb2c57f-51a6-4845-b964-2e71076202fc
 spec:
   clientConfig:
     service:
@@ -137,9 +149,7 @@ spec:
       path: /
       port: 3306
       scheme: mysql
-    url: tcp(sample-mysql:3306)/
-  secret:
-    name: sample-mysql-auth
+    url: tcp(sample-mysql.demo.svc:3306)/
   parameters:
     apiVersion: appcatalog.appscode.com/v1alpha1
     kind: StashAddon
@@ -147,10 +157,15 @@ spec:
       addon:
         backupTask:
           name: mysql-backup-8.0.21
+          params:
+          - name: args
+            value: --all-databases --set-gtid-purged=OFF
         restoreTask:
           name: mysql-restore-8.0.21
+  secret:
+    name: sample-mysql-auth
   type: kubedb.com/mysql
-  version: "8.0.21"
+  version: 8.0.29
 ```
 
 Stash uses the AppBinding CRD to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -358,8 +373,6 @@ Wait for a schedule to appear. Run the following command to watch `BackupSession
 ```bash
 $ watch -n 1 kubectl get backupsession -n demo -l=stash.appscode.com/backup-configuration=sample-mysql-backup
 
-Every 1.0s: kubectl get backupsession -n demo -l=stash.appscode.com/backup-configuration=sample-mysql-backup   workstation: Fri Sep 27 11:14:43 2019
-
 NAME                             INVOKER-TYPE          INVOKER-NAME          PHASE       AGE
 sample-mysql-backup-1569561245   BackupConfiguration   sample-mysql-backup   Succeeded   38s
 ```
@@ -432,7 +445,7 @@ metadata:
   name: restored-mysql
   namespace: demo
 spec:
-  version: "8.0.27"
+  version: "8.0.29"
   replicas: 1
   storageType: Durable
   storage:
@@ -458,7 +471,7 @@ If you check the database status, you will see it is stuck in **`Provisioning`**
 ```bash
 $ kubectl get my -n demo restored-mysql
 NAME             VERSION   STATUS         AGE
-restored-mysql   8.0.21    Provisioning   61s
+restored-mysql   8.0.29    Provisioning   61s
 ```
 
 #### Create RestoreSession:

@@ -135,7 +135,7 @@ metadata:
   annotations:
     stash.appscode.com/backup-blueprint: mysql-backup-template
 spec:
-  version: "8.0.27"
+  version: "8.0.29"
   replicas: 1
   storageType: Durable
   storage:
@@ -178,7 +178,7 @@ Now, let's check the YAML of the `Repository`.
 apiVersion: stash.appscode.com/v1alpha1
 kind: Repository
 metadata:
-  creationTimestamp: "2022-02-03T09:10:24Z"
+  creationTimestamp: "2022-06-30T05:45:43Z"
   finalizers:
   - stash
   generation: 1
@@ -214,7 +214,7 @@ Now, let's check the YAML of the `BackupConfiguration`.
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration
 metadata:
-  creationTimestamp: "2022-02-03T09:10:24Z"
+  creationTimestamp: "2022-06-30T05:45:43Z"
   finalizers:
   - stash.appscode.com
   generation: 1
@@ -248,23 +248,23 @@ spec:
   tempDir: {}
 status:
   conditions:
-  - lastTransitionTime: "2022-02-03T09:10:24Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Repository demo/app-sample-mysql exist.
     reason: RepositoryAvailable
     status: "True"
     type: RepositoryFound
-  - lastTransitionTime: "2022-02-03T09:10:24Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Backend Secret demo/gcs-secret exist.
     reason: BackendSecretAvailable
     status: "True"
     type: BackendSecretFound
-  - lastTransitionTime: "2022-02-03T09:10:24Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Backup target appcatalog.appscode.com/v1alpha1 appbinding/sample-mysql
       found.
     reason: TargetAvailable
     status: "True"
     type: BackupTargetFound
-  - lastTransitionTime: "2022-02-03T09:10:24Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Successfully created backup triggering CronJob.
     reason: CronJobCreationSucceeded
     status: "True"
@@ -321,7 +321,7 @@ metadata:
     stash.appscode.com/backup-blueprint: mysql-backup-template
     stash.appscode.com/schedule: "*/3 * * * *"
 spec:
-  version: "8.0.27"
+  version: "8.0.29"
   replicas: 1
   storageType: Durable
   storage:
@@ -364,7 +364,7 @@ Now, let's check the YAML of the `Repository`.
 apiVersion: stash.appscode.com/v1alpha1
 kind: Repository
 metadata:
-  creationTimestamp: "2022-02-03T09:26:15Z"
+  creationTimestamp: "2022-06-30T05:45:43Z"
   finalizers:
   - stash
   generation: 1
@@ -400,7 +400,7 @@ Now, let's check the YAML of the `BackupConfiguration`.
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration
 metadata:
-  creationTimestamp: "2022-02-03T09:30:35Z"
+  creationTimestamp: "2022-06-30T05:45:43Z"
   finalizers:
   - stash.appscode.com
   generation: 1
@@ -434,23 +434,23 @@ spec:
   tempDir: {}
 status:
   conditions:
-  - lastTransitionTime: "2022-02-03T09:30:35Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Repository demo-2/app-sample-mysql-2 exist.
     reason: RepositoryAvailable
     status: "True"
     type: RepositoryFound
-  - lastTransitionTime: "2022-02-03T09:30:35Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Backend Secret demo-2/gcs-secret exist.
     reason: BackendSecretAvailable
     status: "True"
     type: BackendSecretFound
-  - lastTransitionTime: "2022-02-03T09:30:35Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Backup target appcatalog.appscode.com/v1alpha1 appbinding/sample-mysql-2
       found.
     reason: TargetAvailable
     status: "True"
     type: BackupTargetFound
-  - lastTransitionTime: "2022-02-03T09:30:35Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Successfully created backup triggering CronJob.
     reason: CronJobCreationSucceeded
     status: "True"
@@ -510,7 +510,7 @@ metadata:
     stash.appscode.com/backup-blueprint: mysql-backup-template
     params.stash.appscode.com/args: --databases mysql
 spec:
-  version: "8.0.27"
+  version: "8.0.29"
   replicas: 1
   storageType: Durable
   storage:
@@ -553,7 +553,7 @@ Now, let's check the YAML of the `Repository`.
 apiVersion: stash.appscode.com/v1alpha1
 kind: Repository
 metadata:
-  creationTimestamp: "2022-02-03T10:10:13Z"
+  creationTimestamp: "2022-06-30T05:45:43Z"
   finalizers:
   - stash
   generation: 1
@@ -588,7 +588,7 @@ Now, let's check the YAML of the `BackupConfiguration`.
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration
 metadata:
-  creationTimestamp: "2022-02-03T10:10:13Z"
+  creationTimestamp: "2022-06-30T05:45:43Z"
   finalizers:
   - stash.appscode.com
   generation: 1
@@ -625,23 +625,23 @@ spec:
   tempDir: {}
 status:
   conditions:
-  - lastTransitionTime: "2022-02-03T10:10:13Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Repository demo-3/app-sample-mysql-3 exist.
     reason: RepositoryAvailable
     status: "True"
     type: RepositoryFound
-  - lastTransitionTime: "2022-02-03T10:10:13Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Backend Secret demo-3/gcs-secret exist.
     reason: BackendSecretAvailable
     status: "True"
     type: BackendSecretFound
-  - lastTransitionTime: "2022-02-03T10:10:13Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Backup target appcatalog.appscode.com/v1alpha1 appbinding/sample-mysql-3
       found.
     reason: TargetAvailable
     status: "True"
     type: BackupTargetFound
-  - lastTransitionTime: "2022-02-03T10:10:14Z"
+  - lastTransitionTime: "2022-06-30T05:45:43Z"
     message: Successfully created backup triggering CronJob.
     reason: CronJobCreationSucceeded
     status: "True"

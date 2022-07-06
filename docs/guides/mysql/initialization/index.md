@@ -89,7 +89,7 @@ metadata:
   name: mysql-init-script
   namespace: demo
 spec:
-  version: "8.0.27"
+  version: "8.0.29"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -118,65 +118,65 @@ KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL`
 $ kubectl dba describe my -n demo mysql-init-scrip
 Name:               mysql-init-script
 Namespace:          demo
-CreationTimestamp:  Thu, 27 Aug 2020 12:42:04 +0600
+CreationTimestamp:  Thu, 30 Jun 2022 12:21:15 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"scriptS...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script"...
 Replicas:           1  total
-Status:             Running
+Status:             Provisioning
 StorageType:        Durable
 Volume:
   StorageClass:      standard
   Capacity:          1Gi
   Access Modes:      RWO
-Halted:              false
+Paused:              false
 Halted:              false
 Termination Policy:  Delete
 
 StatefulSet:          
   Name:               mysql-init-script
-  CreationTimestamp:  Thu, 27 Aug 2020 12:42:04 +0600
+  CreationTimestamp:  Thu, 30 Jun 2022 12:21:15 +0600
   Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=mysql-init-script
                         app.kubernetes.io/managed-by=kubedb.com
                         app.kubernetes.io/name=mysqls.kubedb.com
-                        app.kubernetes.io/instance=mysql-init-script
   Annotations:        <none>
-  Replicas:           824637371096 desired | 1 total
+  Replicas:           824644789336 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:        
   Name:         mysql-init-script
   Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=mysql-init-script
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=mysql-init-script
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.103.202.117
-  Port:         db  3306/TCP
+  IP:           10.96.198.184
+  Port:         primary  3306/TCP
   TargetPort:   db/TCP
-  Endpoints:    10.244.2.9:3306
+  Endpoints:    10.244.0.23:3306
 
 Service:        
-  Name:         mysql-init-script-gvr
+  Name:         mysql-init-script-pods
   Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=mysql-init-script
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=mysql-init-script
-  Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
+  Annotations:  <none>
   Type:         ClusterIP
   IP:           None
   Port:         db  3306/TCP
-  TargetPort:   3306/TCP
-  Endpoints:    10.244.2.9:3306
+  TargetPort:   db/TCP
+  Endpoints:    10.244.0.23:3306
 
-Database Secret:
+Auth Secret:
   Name:         mysql-init-script-auth
   Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=mysql-init-script
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=mysql-init-script
   Annotations:  <none>
-  Type:         Opaque
+  Type:         kubernetes.io/basic-auth
   Data:
     password:  16 bytes
     username:  4 bytes
@@ -191,17 +191,14 @@ Init:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.27"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.29"}}
 
-    Creation Timestamp:  2020-08-27T06:43:15Z
+    Creation Timestamp:  2022-06-30T06:21:15Z
     Labels:
       app.kubernetes.io/component:   database
       app.kubernetes.io/instance:    mysql-init-script
       app.kubernetes.io/managed-by:  kubedb.com
-      app.kubernetes.io/name:        mysql
-      app.kubernetes.io/version:     8.0.27
       app.kubernetes.io/name:        mysqls.kubedb.com
-      app.kubernetes.io/instance:               mysql-init-script
     Name:                            mysql-init-script
     Namespace:                       demo
   Spec:
@@ -211,19 +208,34 @@ AppBinding:
         Path:    /
         Port:    3306
         Scheme:  mysql
-      URL:       tcp(mysql-init-script:3306)/
+      URL:       tcp(mysql-init-script.demo.svc:3306)/
+    Parameters:
+      API Version:  appcatalog.appscode.com/v1alpha1
+      Kind:         StashAddon
+      Stash:
+        Addon:
+          Backup Task:
+            Name:  mysql-backup-8.0.21
+            Params:
+              Name:   args
+              Value:  --all-databases --set-gtid-purged=OFF
+          Restore Task:
+            Name:  mysql-restore-8.0.21
     Secret:
       Name:   mysql-init-script-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.27
+    Version:  8.0.29
 
 Events:
-  Type    Reason      Age   From            Message
-  ----    ------      ----  ----            -------
-  Normal  Successful  1m    MySQL operator  Successfully created Service
-  Normal  Successful  7s    MySQL operator  Successfully created StatefulSet
-  Normal  Successful  7s    MySQL operator  Successfully created MySQL
-  Normal  Successful  7s    MySQL operator  Successfully created appbinding
+  Type     Reason      Age   From               Message
+  ----     ------      ----  ----               -------
+  Normal   Successful  10s   KubeDB operator  Successfully created governing service
+  Normal   Successful  10s   KubeDB operator  Successfully created service for primary/standalone
+  Normal   Successful  10s   KubeDB operator  Successfully created database auth secret
+  Normal   Successful  10s   KubeDB operator  Successfully created StatefulSet
+  Normal   Successful  10s   KubeDB operator  Successfully created MySQL
+  Normal   Successful  10s   KubeDB operator  Successfully created appbinding
+
 
 $ kubectl get statefulset -n demo
 NAME                READY   AGE
@@ -241,7 +253,7 @@ $ kubectl get service -n demo
 NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
 myadmin                 LoadBalancer   10.104.142.213   <pending>     80:31529/TCP   23m
 mysql-init-script       ClusterIP      10.103.202.117   <none>        3306/TCP       3m49s
-mysql-init-script-gvr   ClusterIP      None             <none>        3306/TCP       3m49s
+mysql-init-script-pods   ClusterIP      None             <none>        3306/TCP       3m49s
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MySQL object:
@@ -253,22 +265,28 @@ kind: MySQL
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.27"}}
-  creationTimestamp: "2020-08-27T06:42:04Z"
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.29"}}
+  creationTimestamp: "2022-06-30T06:21:15Z"
   finalizers:
   - kubedb.com
-  generation: 2
-    operation: Update
-    time: "2020-08-27T06:43:15Z"
+  generation: 3
   name: mysql-init-script
   namespace: demo
-  resourceVersion: "11901"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mysqls/mysql-init-script
-  uid: 2903f636-09cb-4299-af5d-c7a2e799ec61
+  resourceVersion: "1697522"
+  uid: 932c1fe3-6692-4ddc-b4cd-fe34e0d5ebc8
 spec:
+  allowedReadReplicas:
+    namespaces:
+      from: Same
+  allowedSchemas:
+    namespaces:
+      from: Same
   authSecret:
     name: mysql-init-script-auth
+  coordinator:
+    resources: {}
   init:
+    initialized: true
     script:
       configMap:
         name: my-init-script
@@ -276,7 +294,14 @@ spec:
     controller: {}
     metadata: {}
     spec:
-      resources: {}
+      affinity:
+      ...
+      resources:
+        limits:
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 1Gi
       serviceAccountName: mysql-init-script
   replicas: 1
   storage:
@@ -288,10 +313,18 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Delete
-  version: 8.0.27
+  useAddressType: DNS
+  version: 8.0.29
 status:
+  conditions:
+    ...
+    observedGeneration: 2
+    reason: DatabaseSuccessfullyProvisioned
+    status: "True"
+    type: Provisioned
   observedGeneration: 2
-  phase: Running
+  phase: Ready
+
 ```
 
 KubeDB operator has created a new Secret called `mysql-init-script-auth` *(format: {mysql-object-name}-auth)* for storing the password for MySQL superuser. This secret contains a `username` key which contains the *username* for MySQL superuser and a `password` key which contains the *password* for MySQL superuser.

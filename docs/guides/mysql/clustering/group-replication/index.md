@@ -48,12 +48,10 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.0.27"
+  version: "8.0.29"
   replicas: 3
   topology:
     mode: GroupReplication
-    group:
-      name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -84,78 +82,78 @@ KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL`
 $ kubectl dba describe my -n demo my-group
 Name:               my-group
 Namespace:          demo
-CreationTimestamp:  Tue, 25 Aug 2020 16:42:10 +0600
+CreationTimestamp:  Tue, 28 Jun 2022 17:54:10 +0600
 Labels:             <none>
 Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
 Replicas:           3  total
-Status:             Running
+Status:             Provisioning
 StorageType:        Durable
 Volume:
   StorageClass:      standard
   Capacity:          1Gi
   Access Modes:      RWO
-Halted:              false
+Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
 StatefulSet:          
   Name:               my-group
-  CreationTimestamp:  Tue, 25 Aug 2020 16:42:10 +0600
+  CreationTimestamp:  Tue, 28 Jun 2022 17:54:10 +0600
   Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=my-group
                         app.kubernetes.io/managed-by=kubedb.com
                         app.kubernetes.io/name=mysqls.kubedb.com
-                        app.kubernetes.io/instance=my-group
   Annotations:        <none>
-  Replicas:           824638237768 desired | 3 total
+  Replicas:           824640792392 desired | 3 total
   Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:        
   Name:         my-group
   Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.109.225.127
-  Port:         db  3306/TCP
+  IP:           10.96.223.45
+  Port:         primary  3306/TCP
   TargetPort:   db/TCP
-  Endpoints:    10.244.1.4:3306,10.244.1.6:3306,10.244.2.4:3306
+  Endpoints:    10.244.0.44:3306
 
 Service:        
   Name:         my-group-pods
   Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
-  Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
+  Annotations:  <none>
   Type:         ClusterIP
   IP:           None
   Port:         db  3306/TCP
-  TargetPort:   3306/TCP
-  Endpoints:    10.244.1.4:3306,10.244.1.6:3306,10.244.2.4:3306
+  TargetPort:   db/TCP
+  Endpoints:    10.244.0.44:3306,10.244.0.46:3306,10.244.0.48:3306
 
 Service:        
-  Name:         my-group-primary
+  Name:         my-group-standby
   Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.111.57.60
-  Port:         db  3306/TCP
+  IP:           10.96.70.224
+  Port:         standby  3306/TCP
   TargetPort:   db/TCP
-  Endpoints:    10.244.2.4:3306
+  Endpoints:    <none>
 
-Database Secret:
+Auth Secret:
   Name:         my-group-auth
   Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
-  Type:         Opaque
+  Type:         kubernetes.io/basic-auth
   Data:
     password:  16 bytes
     username:  4 bytes
@@ -163,17 +161,14 @@ Database Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"baseServerID":100,"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.27"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.29"}}
 
-    Creation Timestamp:  2020-08-25T10:50:59Z
+    Creation Timestamp:  2022-06-28T11:54:10Z
     Labels:
       app.kubernetes.io/component:   database
       app.kubernetes.io/instance:    my-group
       app.kubernetes.io/managed-by:  kubedb.com
-      app.kubernetes.io/name:        mysql
-      app.kubernetes.io/version:     8.0.27
       app.kubernetes.io/name:        mysqls.kubedb.com
-      app.kubernetes.io/instance:               my-group
     Name:                            my-group
     Namespace:                       demo
   Spec:
@@ -183,43 +178,59 @@ AppBinding:
         Path:    /
         Port:    3306
         Scheme:  mysql
-      URL:       tcp(my-group:3306)/
+      URL:       tcp(my-group.demo.svc:3306)/
+    Parameters:
+      API Version:  appcatalog.appscode.com/v1alpha1
+      Kind:         StashAddon
+      Stash:
+        Addon:
+          Backup Task:
+            Name:  mysql-backup-8.0.21
+            Params:
+              Name:   args
+              Value:  --all-databases --set-gtid-purged=OFF
+          Restore Task:
+            Name:  mysql-restore-8.0.21
     Secret:
       Name:   my-group-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.27
+    Version:  8.0.29
 
 Events:
-  Type    Reason      Age   From            Message
-  ----    ------      ----  ----            -------
-  Normal  Successful  12m   MySQL operator  Successfully created Service
-  Normal  Successful  12m   MySQL operator  Successfully created primary service
-  Normal  Successful  4m    MySQL operator  Successfully created StatefulSet
-  Normal  Successful  4m    MySQL operator  Successfully created MySQL
-  Normal  Successful  4m    MySQL operator  Successfully created appbinding
+  Type     Reason      Age   From               Message
+  ----     ------      ----  ----               -------
+  Normal   Successful  1m    Kubedb operator  Successfully created governing service
+  Normal   Successful  1m    Kubedb operator  Successfully created service for primary/standalone
+  Normal   Successful  1m    Kubedb operator  Successfully created service for secondary replicas
+  Normal   Successful  1m    Kubedb operator  Successfully created database auth secret
+  Normal   Successful  1m    Kubedb operator  Successfully created StatefulSet
+  Normal   Successful  1m    Kubedb operator  Successfully created MySQL
+  Normal   Successful  1m    Kubedb operator  Successfully created appbinding
 
 
 $ kubectl get statefulset -n demo
 NAME       READY   AGE
-my-group   3/3     49m
+my-group   3/3     3m47s
 
 $ kubectl get pvc -n demo
 NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-data-my-group-0   Bound    pvc-ea20656d-6809-11e9-89c6-080027fc7fb2   1Gi        RWO            standard       49m
-data-my-group-1   Bound    pvc-4a2d43b0-680a-11e9-89c6-080027fc7fb2   1Gi        RWO            standard       47m
-data-my-group-2   Bound    pvc-60558ef0-680a-11e9-89c6-080027fc7fb2   1Gi        RWO            standard       46m
+data-my-group-0   Bound    pvc-4f8538f6-a6ce-4233-b533-8566852f5b98   1Gi        RWO            standard       4m16s
+data-my-group-1   Bound    pvc-8823d3ad-d614-4172-89ac-c2284a17f502   1Gi        RWO            standard       4m11s
+data-my-group-2   Bound    pvc-94f1c312-50e3-41e1-94a8-a820be0abc08   1Gi        RWO            standard       4m7s
+s
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
-pvc-4a2d43b0-680a-11e9-89c6-080027fc7fb2   1Gi        RWO            Delete           Bound    demo/data-my-group-1   standard                56m
-pvc-60558ef0-680a-11e9-89c6-080027fc7fb2   1Gi        RWO            Delete           Bound    demo/data-my-group-2   standard                55m
-pvc-ea20656d-6809-11e9-89c6-080027fc7fb2   1Gi        RWO            Delete           Bound    demo/data-my-group-0   standard                59m
+pvc-4f8538f6-a6ce-4233-b533-8566852f5b98   1Gi        RWO            Delete           Bound    demo/data-my-group-0   standard                4m39s
+pvc-8823d3ad-d614-4172-89ac-c2284a17f502   1Gi        RWO            Delete           Bound    demo/data-my-group-1   standard                4m35s
+pvc-94f1c312-50e3-41e1-94a8-a820be0abc08   1Gi        RWO            Delete           Bound    demo/data-my-group-2   standard                4m31s
 
 $ kubectl get service -n demo
-NAME               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-my-group           ClusterIP   10.109.225.127   <none>        3306/TCP   17m
-my-group-pods      ClusterIP   None             <none>        3306/TCP   17m
-my-group-primary   ClusterIP   10.111.57.60     <none>        3306/TCP   17m
+NAME               TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+my-group           ClusterIP      10.96.223.45    <none>        3306/TCP       5m13s
+my-group-pods      ClusterIP      None            <none>        3306/TCP       5m13s
+my-group-standby   ClusterIP      10.96.70.224    <none>        3306/TCP       5m13s
+
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `MySQL` object:
@@ -281,7 +292,7 @@ spec:
     group:
       name: dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b
     mode: GroupReplication
-  version: 8.0.27
+  version: 8.0.29
 status:
   observedGeneration: 2$4213139756412538772
   phase: Running
@@ -300,7 +311,7 @@ $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | ba
 root
 
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
-dlNiQpjULZvEqo3B
+d)q2MVmJK$Oex=mW
 ```
 
 The operator creates a group according to the newly created `MySQL` object. This group has 3 members (one primary and two secondary).
@@ -311,28 +322,29 @@ You can connect to any of these group members. In that case you just need to spe
 # first list the mysql pods list
 $ kubectl get pods -n demo -l app.kubernetes.io/instance=my-group
 NAME         READY   STATUS    RESTARTS   AGE
-my-group-0   2/2     Running   1          19m
-my-group-1   2/2     Running   0          15m
-my-group-2   2/2     Running   1          12m
+my-group-0   2/2     Running   0          8m23s
+my-group-1   2/2     Running   0          8m18s
+my-group-2   2/2     Running   0          8m14s
 
 
 # get the governing service
 $ kubectl get service my-group-pods -n demo
-NAME           TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
-my-group-pods  ClusterIP   None         <none>        3306/TCP   137m
+NAME            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
+my-group-pods   ClusterIP   None         <none>        3306/TCP   8m49s
 
 # list the pods with PodIP
 $ kubectl get pods -n demo -l app.kubernetes.io/instance=my-group -o jsonpath='{range.items[*]}{.metadata.name} ........... {.status.podIP} ............ {.metadata.name}.my-group-pods.{.metadata.namespace}{"\\n"}{end}'
-my-group-0 ........... 172.17.0.5 ............ my-group-0.my-group-pods.demo
-my-group-1 ........... 172.17.0.6 ............ my-group-1.my-group-pods.demo
-my-group-2 ........... 172.17.0.7 ............ my-group-2.my-group-pods.demo
+my-group-0 ........... 10.244.0.44 ............ my-group-0.my-group-pods.demo
+my-group-1 ........... 10.244.0.46 ............ my-group-1.my-group-pods.demo
+my-group-2 ........... 10.244.0.48 ............ my-group-2.my-group-pods.demo
+
 ```
 
 Now you can connect to these database using the above info. Ignore the warning message. It is happening for using password in the command.
 
 ```bash
 # connect to the 1st server
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-pods.demo -e "select 1;"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW' --host=my-group-0.my-group-pods.demo -e "select 1;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 | 1 |
@@ -341,7 +353,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 
 # connect to the 2nd server
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-pods.demo -e "select 1;"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW'  --host=my-group-1.my-group-pods.demo -e "select 1;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 | 1 |
@@ -350,7 +362,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 
 # connect to the 3rd server
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-pods.demo -e "select 1;"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW'  --host=my-group-2.my-group-pods.demo -e "select 1;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 | 1 |
@@ -364,27 +376,29 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 Now, you are ready to check newly created group status. Connect and run the following commands from any of the hosts and you will get the same results.
 
 ```bash
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-pods.demo -e "show status like '%primary%'"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW'  --host=my-group-0.my-group-pods.demo -e "show status like '%primary%'"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------------------------+--------------------------------------+
 | Variable_name                    | Value                                |
 +----------------------------------+--------------------------------------+
-| group_replication_primary_member | fc4a4935-e6bf-11ea-bf42-9a7560d22b8f |
+| group_replication_primary_member | 1ace16b5-f6d9-11ec-9a26-9ae7d6def698 |
 +----------------------------------+--------------------------------------+
+
 ```
 
-The value **fc4a4935-e6bf-11ea-bf42-9a7560d22b8f** in the above table is the ID of the primary member of the group.
+The value **1ace16b5-f6d9-11ec-9a26-9ae7d6def698** in the above table is the ID of the primary member of the group.
 
 ```bash
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=MpPhZ9xbVlxvoC4d --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW'  --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
 mysql: [Warning] Using a password on the command line interface can be insecure.
-+---------------------------+--------------------------------------+-------------------------------+-------------+--------------+-------------+----------------+
-| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                   | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
-+---------------------------+--------------------------------------+-------------------------------+-------------+--------------+-------------+----------------+
-| group_replication_applier | 768c83e2-e6c0-11ea-bfa5-5a3f7e8f0c23 | my-group-1.my-group-pods.demo |        3306 | ONLINE       | SECONDARY   | 8.0.23         |
-| group_replication_applier | 9ea36443-e6c0-11ea-b4d9-beec0709d261 | my-group-2.my-group-pods.demo |        3306 | ONLINE       | SECONDARY   | 8.0.23         |
-| group_replication_applier | fc4a4935-e6bf-11ea-bf42-9a7560d22b8f | my-group-0.my-group-pods.demo |        3306 | ONLINE       | PRIMARY     | 8.0.23         |
-+---------------------------+--------------------------------------+-------------------------------+-------------+--------------+-------------+----------------+
++---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                       | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
++---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
+| group_replication_applier | 13aad5a5-f6d9-11ec-87bb-96e838330519 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.29         | XCom                       |
+| group_replication_applier | 1739589f-f6d9-11ec-956c-c2c213efafa8 | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.29         | XCom                       |
+| group_replication_applier | 1ace16b5-f6d9-11ec-9a26-9ae7d6def698 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.29         | XCom                       |
++---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
+
 ```
 
 ## Data Availability
@@ -395,45 +409,45 @@ In a MySQL group, only the primary member can write not the secondary. But you c
 
 ```bash
 # create a database on primary
-$ kubectl exec -it -n demo my-group-0 -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-pods.demo -e "CREATE DATABASE playground;"
+$ kubectl exec -it -n demo my-group-0 -- mysql -u root --password='d)q2MVmJK$Oex=mW' --host=my-group-0.my-group-pods.demo -e "CREATE DATABASE playground;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 
 # create a table
-$ kubectl exec -it -n demo my-group-0 -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-pods.demo -e "CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));"
+$ kubectl exec -it -n demo my-group-0 -- mysql -u root --password='d)q2MVmJK$Oex=mW' --host=my-group-0.my-group-pods.demo -e "CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 
 
 # insert a row
-$  kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');"
+$  kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW' --host=my-group-0.my-group-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 
 # read from primary
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW' --host=my-group-0.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
-|  7 | slide |     2 | blue  |
+|  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
 ```
 In the previous step we have inserted into the primary pod. In the next step we will read from secondary pods to determine whether the data has been successfully copied to the secondary pods.
 ```bash
 # read from secondary-1
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW'  --host=my-group-1.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
-|  7 | slide |     2 | blue  |
+|  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
 
 # read from secondary-2
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW'  --host=my-group-2.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
-|  7 | slide |     2 | blue  |
+|  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
 ```
 
@@ -443,13 +457,13 @@ Only, primary member preserves the write permission. No secondary can write data
 
 ```bash
 # try to write on secondary-1
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW'  --host=my-group-1.my-group-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement
 command terminated with exit code 1
 
 # try to write on secondary-2
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW'  --host=my-group-2.my-group-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement
 command terminated with exit code 1
@@ -467,47 +481,49 @@ $ kubectl delete pod my-group-0 -n demo
 pod "my-group-0" deleted
 
 # check the new primary ID
-kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-pods.demo -e "show status like '%primary%'"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW' --host=my-group-0.my-group-pods.demo -e "show status like '%primary%'"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------------------------+--------------------------------------+
 | Variable_name                    | Value                                |
 +----------------------------------+--------------------------------------+
-| group_replication_primary_member | 4c97e5a4-680a-11e9-9f6b-0242ac110006 |
+| group_replication_primary_member |  1739589f-f6d9-11ec-956c-c2c213efafa8|
 +----------------------------------+--------------------------------------+
 
+
 # now check the group status
-kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW' --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
 mysql: [Warning] Using a password on the command line interface can be insecure.
-+---------------------------+--------------------------------------+-------------------------------+-------------+--------------+
-| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                   | MEMBER_PORT | MEMBER_STATE |
-+---------------------------+--------------------------------------+-------------------------------+-------------+--------------+
-| group_replication_applier | 37ed2c72-680a-11e9-8ac3-0242ac110005 | my-group-0.my-group-pods.demo |        3306 | ONLINE       |
-| group_replication_applier | 4c97e5a4-680a-11e9-9f6b-0242ac110006 | my-group-1.my-group-pods.demo |        3306 | ONLINE       |
-| group_replication_applier | 625714bc-680a-11e9-9e94-0242ac110007 | my-group-2.my-group-pods.demo |        3306 | ONLINE       |
-+---------------------------+--------------------------------------+-------------------------------+-------------+--------------+
++---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                       | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
++---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
+| group_replication_applier | 13aad5a5-f6d9-11ec-87bb-96e838330519 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY     | 8.0.29         | XCom                       |
+| group_replication_applier | 1739589f-f6d9-11ec-956c-c2c213efafa8 | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY   | 8.0.29         | XCom                       |
+| group_replication_applier | 1ace16b5-f6d9-11ec-9a26-9ae7d6def698 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.29         | XCom                       |
++---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
+
 
 # read data from new primary my-group-1.my-group-pods.demo
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW' --host=my-group-1.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
-|  7 | slide |     2 | blue  |
+|  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
 ```
 Now Let's read the data from secondary pods to see if the data is consistant.
 ```bash
 # read data from secondary-1 my-group-0.my-group-pods.demo
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW' --host=my-group-0.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
-|  7 | slide |     2 | blue  |
+|  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
 
 # read data from secondary-2 my-group-2.my-group-pods.demo
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='d)q2MVmJK$Oex=mW' --host=my-group-2.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
