@@ -199,12 +199,21 @@ spec:
   version: "2.3.2"
   replicas: 1
   mode: GroupReplication
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 256Mi
+    storageClassName: standard
+  storageType: Durable
   backend:
     ref:
       apiGroup: "kubedb.com"
       kind: MySQL
-      name: my-group
+      name: mysql-server
     replicas: 3
+  terminationPolicy: WipeOut
 ```
 
 Now, create this,
@@ -242,7 +251,7 @@ Here, we have to use service `proxy-my-group` and secret `proxy-my-group-auth` t
 
 ### Route Read/Write Requests through ProxySQL
 
-So, KubeDB creates two different users (`proxysql` and `admin`) in the MySQL database for proxysql. The `admin` user is responsible for setting up admin configuration for proxysql and the `proxysql` user is for requesting query to the MySQL servers. KubeDB stores the credentials of `proxysql` user in the Secret `proxy-my-group-auth`, where the username and password of the `admin` user are fixed and they are `admin` and `admin` respectively.
+So, KubeDB creates users `proxysql` in the MySQL database for proxysql. The `proxysql` acts as the monitor user for ProxySQL in the MySQL server. KubeDB stores the credentials of `proxysql` user in the Secret `proxy-my-group-auth`.
 
 ```bash
 kubectl describe secret -n demo proxy-my-group-auth
