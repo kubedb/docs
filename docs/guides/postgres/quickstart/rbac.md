@@ -18,12 +18,13 @@ If RBAC is enabled in clusters, some PostgreSQL specific RBAC permissions are re
 
 Here is the list of additional permissions required by StatefulSet of Postgres:
 
-| Kubernetes Resource | Resource Names                 | Permission required |
-|---------------------|--------------------------------|---------------------|
-| statefulsets        | `{postgres-name}`              | get                 |
-| pods                |                                | list, patch         |
-| configmaps          |                                | create              |
-| configmaps          | `{postgres-name}-leader-lock`  | get, update         |
+| Kubernetes Resource | Resource Names    | Permission required |
+|---------------------|-------------------|---------------------|
+| statefulsets        | `{postgres-name}` | get                 |
+| pods                |                   | list, patch         |
+| pods/exec           |                   | create              |
+| Postgreses          |                   | get                 |
+| configmaps          | `{postgres-name}` | get, update, create |
 
 ## Before You Begin
 
@@ -83,49 +84,79 @@ $ kubectl get role -n demo quick-postgres -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: "2019-02-07T11:08:56Z"
+  creationTimestamp: "2022-05-31T05:20:19Z"
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: quick-postgres
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: postgreses.kubedb.com
   name: quick-postgres
   namespace: demo
   ownerReferences:
-  - apiVersion: kubedb.com/v1alpha2
-    blockOwnerDeletion: false
-    kind: Postgres
-    name: quick-postgres
-    uid: c2f4d63c-2ac8-11e9-9d44-080027154f61
-  resourceVersion: "39422"
-  selfLink: /apis/rbac.authorization.k8s.io/v1/namespaces/demo/roles/quick-postgres
-  uid: c31e7f33-2ac8-11e9-9d44-080027154f61
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: Postgres
+      name: quick-postgres
+      uid: c118d264-85b7-4140-bc3f-d459c58c0523
+  resourceVersion: "367334"
+  uid: e72f25a5-5945-4687-9e8f-8af33c1a6b13
 rules:
-- apiGroups:
-  - apps
-  resourceNames:
-  - quick-postgres
-  resources:
-  - statefulsets
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - list
-  - patch
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - create
-- apiGroups:
-  - ""
-  resourceNames:
-  - quick-postgres-leader-lock
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - update
+  - apiGroups:
+      - apps
+    resourceNames:
+      - quick-postgres
+    resources:
+      - statefulsets
+    verbs:
+      - get
+  - apiGroups:
+      - kubedb.com
+    resourceNames:
+      - quick-postgres
+    resources:
+      - postgreses
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - pods/exec
+    verbs:
+      - create
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - create
+      - get
+      - update
+  - apiGroups:
+      - policy
+    resourceNames:
+      - postgres-db
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use
+
 ```
 
 ### ServiceAccount
@@ -137,20 +168,24 @@ $ kubectl get serviceaccount -n demo quick-postgres -o yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: "2019-02-07T11:08:56Z"
+  creationTimestamp: "2022-05-31T05:20:19Z"
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: quick-postgres
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: postgreses.kubedb.com
   name: quick-postgres
   namespace: demo
   ownerReferences:
-  - apiVersion: kubedb.com/v1alpha2
-    blockOwnerDeletion: false
-    kind: Postgres
-    name: quick-postgres
-    uid: c2f4d63c-2ac8-11e9-9d44-080027154f61
-  resourceVersion: "39425"
-  selfLink: /api/v1/namespaces/demo/serviceaccounts/quick-postgres
-  uid: c31fd2b1-2ac8-11e9-9d44-080027154f61
-secrets:
-- name: quick-postgres-token-b6zk2
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: Postgres
+      name: quick-postgres
+      uid: c118d264-85b7-4140-bc3f-d459c58c0523
+  resourceVersion: "367333"
+  uid: 1a1db587-d5a6-4cfc-aa82-dc960b7e1f28
+
 ```
 
 This ServiceAccount is used in StatefulSet created for Postgres object.
@@ -164,31 +199,35 @@ $ kubectl get rolebinding -n demo quick-postgres -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: "2019-02-07T11:08:56Z"
+  creationTimestamp: "2022-05-31T05:20:19Z"
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: quick-postgres
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: postgreses.kubedb.com
   name: quick-postgres
   namespace: demo
   ownerReferences:
-  - apiVersion: kubedb.com/v1alpha2
-    blockOwnerDeletion: false
-    kind: Postgres
-    name: quick-postgres
-    uid: c2f4d63c-2ac8-11e9-9d44-080027154f61
-  resourceVersion: "39426"
-  selfLink: /apis/rbac.authorization.k8s.io/v1/namespaces/demo/rolebindings/quick-postgres
-  uid: c3231382-2ac8-11e9-9d44-080027154f61
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: Postgres
+      name: quick-postgres
+      uid: c118d264-85b7-4140-bc3f-d459c58c0523
+  resourceVersion: "367335"
+  uid: 1fc9f872-8adc-4940-b93d-18f70bec38d5
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: quick-postgres
 subjects:
-- kind: ServiceAccount
-  name: quick-postgres
-  namespace: demo
+  - kind: ServiceAccount
+    name: quick-postgres
+    namespace: demo
+
 ```
 
 This  object binds Role `quick-postgres` with ServiceAccount `quick-postgres`.
-
-Leader Election process get access to Kubernetes API using these RBAC permissions.
 
 ## Cleaning up
 
