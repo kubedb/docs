@@ -7,7 +7,7 @@ rules:
   - apiGroups:
       - policy
     resourceNames:
-      - postgres-db
+      - mysql-db
     resources:
       - podsecuritypolicies
     verbs:

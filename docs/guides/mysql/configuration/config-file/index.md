@@ -78,14 +78,13 @@ data:
   my-config.cnf: W215c3FsZF0KbWF4X2Nvbm5lY3Rpb25zID0gMjAwCnJlYWRfYnVmZmVyX3NpemUgPSAxMDQ4NTc2Cg==
 kind: Secret
 metadata:
-  creationTimestamp: "2021-03-11T05:06:07Z"
+  creationTimestamp: "2022-06-28T13:20:42Z"
   name: my-configuration
   namespace: demo
-  resourceVersion: "15421"
-  selfLink: /api/v1/namespaces/demo/secrets/my-configuration
-  uid: f593d7f4-1486-47d9-9240-10ae46fad32f
+  resourceVersion: "1601408"
+  uid: 82e1a722-d80f-448e-89b5-c64de81ed262
 type: Opaque
-  ...
+
 ```
 
 Now, create MySQL crd specifying `spec.configSecret` field.
@@ -104,7 +103,7 @@ metadata:
   name: custom-mysql
   namespace: demo
 spec:
-  version: "8.0.27"
+  version: "8.0.29"
   configSecret:
     name: my-configuration
   storage:
@@ -130,16 +129,28 @@ Check the pod's log to see if the database is ready
 
 ```bash
 $ kubectl logs -f -n demo custom-mysql-0
-2021-03-11T05:24:36.823328Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
-2021-03-11T05:24:37.355855Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2022-06-28 13:22:10+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.29-1debian10 started.
+2022-06-28 13:22:10+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
 ....
-2021-03-11 05:24:45+00:00 [Note] [Entrypoint]: Stopping temporary server
-2021-03-11T05:24:45.237891Z 10 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.0.23).
-2021-03-11T05:24:48.264718Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.23)  MySQL Community Server - GPL.
-2021-03-11 05:24:49+00:00 [Note] [Entrypoint]: Temporary server stopped
+
+2022-06-28 13:22:20+00:00 [Note] [Entrypoint]: Database files initialized
+2022-06-28 13:22:20+00:00 [Note] [Entrypoint]: Starting temporary server
+2022-06-28T13:22:20.233556Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.29) starting as process 92
+2022-06-28T13:22:20.252075Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2022-06-28T13:22:20.543772Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
 ...
-2021-03-11 05:24:49+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up. accessible to all OS users. Consider choosing a different directory.
-2021-03-11T05:24:50.503953Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.23'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+2022-06-28 13:22:22+00:00 [Note] [Entrypoint]: Stopping temporary server
+2022-06-28T13:22:22.354537Z 10 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.0.29).
+2022-06-28T13:22:24.495121Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.29)  MySQL Community Server - GPL.
+2022-06-28 13:22:25+00:00 [Note] [Entrypoint]: Temporary server stopped
+
+2022-06-28 13:22:25+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
+
+....
+2022-06-28T13:22:26.064259Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+2022-06-28T13:22:26.076352Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock
+2022-06-28T13:22:26.076407Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.29'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+
 ....
 ```
 
