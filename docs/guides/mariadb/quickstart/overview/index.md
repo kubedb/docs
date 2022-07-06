@@ -49,9 +49,10 @@ When you have installed KubeDB, it has created `MariaDBVersion` crd for all supp
 
 ```bash
 $ kubectl get mariadbversions
-NAME      VERSION   DB_IMAGE                 DEPRECATED   AGE
-10.4.17   10.4.17   kubedb/mariadb:10.4.17                15h
-10.5.8    10.5.8    kubedb/mariadb:10.5.8                 15h
+NAME      VERSION   DB_IMAGE          DEPRECATED   AGE
+10.4.17   10.4.17   mariadb:10.4.17                9s
+10.5.8    10.5.8    mariadb:10.5.8                 9s
+10.6.4    10.6.4    mariadb:10.6.4                 9s
 ```
 
 ## Create a MariaDB database
@@ -98,17 +99,28 @@ $ kubectl describe -n demo mariadb sample-mariadb
 Name:         sample-mariadb
 Namespace:    demo
 Labels:       <none>
-Annotations:  API Version:  kubedb.com/v1alpha2
+Annotations:  <none>
+API Version:  kubedb.com/v1alpha2
 Kind:         MariaDB
 Metadata:
-  Creation Timestamp:  2021-03-10T04:31:09Z
+  Creation Timestamp:  2022-06-06T04:42:27Z
   Finalizers:
     kubedb.com
-  ...  
+  Generation:  2
+  ...
+  Resource Version:  2673
+  UID:               2f9c9453-6e78-4521-91ea-34ad2da398bc
 Spec:
+  Allowed Schemas:
+    Namespaces:
+      From:  Same
   Auth Secret:
     Name:  sample-mariadb-auth
-  ...
+  Coordinator:
+    Resources:
+  Pod Template:
+    ...
+  Replicas:                  1
   Storage:
     Access Modes:
       ReadWriteOnce
@@ -121,29 +133,27 @@ Spec:
   Version:               10.5.8
 Status:
   Conditions:
-    Last Transition Time:  2021-03-10T04:31:09Z
+    Last Transition Time:  2022-06-06T04:42:27Z
     Message:               The KubeDB operator has started the provisioning of MariaDB: demo/sample-mariadb
     Reason:                DatabaseProvisioningStartedSuccessfully
     Status:                True
     Type:                  ProvisioningStarted
-    Last Transition Time:  2021-03-10T04:31:19Z
-    Message:               The MariaDB: demo/sample-mariadb is accepting client requests.
-    Observed Generation:   2
-    Reason:                DatabaseAcceptingConnectionRequest
-    Status:                True
-    Type:                  AcceptingConnection
-    Last Transition Time:  2021-03-10T04:32:49Z
-    Message:               The MySQL: demo/sample-mariadb is ready.
-    Observed Generation:   2
-    Reason:                ReadinessCheckSucceeded
+    Last Transition Time:  2022-06-06T04:43:37Z
+    Message:               database sample-mariadb/demo is ready
+    Reason:                AllReplicasReady
     Status:                True
     Type:                  Ready
-    Last Transition Time:  2021-03-10T04:32:39Z
+    Last Transition Time:  2022-06-06T04:43:37Z
+    Message:               database sample-mariadb/demo is accepting connection
+    Reason:                AcceptingConnection
+    Status:                True
+    Type:                  AcceptingConnection
+    Last Transition Time:  2022-06-06T04:43:26Z
     Message:               All desired replicas are ready.
     Reason:                AllReplicasReady
     Status:                True
     Type:                  ReplicaReady
-    Last Transition Time:  2021-03-10T04:32:49Z
+    Last Transition Time:  2022-06-06T04:43:37Z
     Message:               The MariaDB: demo/sample-mariadb is successfully provisioned.
     Observed Generation:   2
     Reason:                DatabaseSuccessfullyProvisioned
@@ -152,14 +162,14 @@ Status:
   Observed Generation:     2
   Phase:                   Ready
 Events:
-  Type    Reason      Age   From              Message
-  ----    ------      ----  ----              -------
-  Normal  Successful  21m   MariaDB operator  Successfully created governing service
-  Normal  Successful  21m   MariaDB operator  Successfully created Service
-  Normal  Successful  21m   MariaDB operator  Successfully created StatefulSet demo/sample-mariadb
-  Normal  Successful  21m   MariaDB operator  Successfully created appbinding
-  Normal  Successful  21m   MariaDB operator  Successfully patched governing service
-  Normal  Successful  21m   MariaDB operator  Successfully patched StatefulSet demo/sample-mariadb
+  Type    Reason      Age    From             Message
+  ----    ------      ----   ----             -------
+  Normal  Successful  3m49s  KubeDB Operator  Successfully created governing service
+  Normal  Successful  3m49s  KubeDB Operator  Successfully created Service
+  Normal  Successful  3m49s  KubeDB Operator  Successfully created StatefulSet demo/sample-mariadb
+  Normal  Successful  3m49s  KubeDB Operator  Successfully created MariaDB
+  Normal  Successful  3m49s  KubeDB Operator  Successfully created appbinding
+
   
   
 $ kubectl get statefulset -n demo
