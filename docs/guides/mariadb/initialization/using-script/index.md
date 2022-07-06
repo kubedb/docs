@@ -17,7 +17,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to initialize a MariaDB database with \*.sql, \*.sh and/or \*.sql.gz script.
 In this tutorial we will use .sql script stored in GitHub repository [kubedb/mysql-init-scripts](https://github.com/kubedb/mysql-init-scripts).
 
-> Note: The yaml files that are used in this tutorial are stored [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}docs/guides/mariadb/initialization/using-script/example) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files that are used in this tutorial are stored [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/initialization/using-script/example) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Before You Begin
 
