@@ -19,7 +19,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to run a PgBouncer.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/images/postgres/lifecycle.png">
+  <img alt="lifecycle"  src="/docs/images/pgbouncer/quickstart/lifecycle.png">
 </p>
 
 ## Before You Begin
@@ -46,8 +46,8 @@ When you have installed KubeDB, it has created `PgBouncerVersion` crd for all su
 ```bash
 $ kubectl get pgbouncerversions
 
-    NAME     VERSION   PGBOUNCER_IMAGE           DEPRECATED   AGE
-    1.17.0   1.17.0    kubedb/pgbouncer:1.17.0                2d23h
+  NAME     VERSION   PGBOUNCER_IMAGE           DEPRECATED   AGE
+  1.17.0   1.17.0    kubedb/pgbouncer:1.17.0                2d23h
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this PgBouncerVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PgBouncerVersion.
@@ -70,39 +70,36 @@ postgres.kubedb.com/quick-postgres created
 KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database secret `quick-postgres-auth` holds this user's username and password. Following is the yaml file for it.
 
 ```yaml
-$kubectl get secrets -n demo quick-postgres-auth -o yaml
+$ kubectl get secrets -n demo quick-postgres-auth -o yaml
 
 apiVersion: v1
 data:
-  POSTGRES_PASSWORD: cVRPenVkYnp1c2xzNk5UWg==
-  POSTGRES_USER: cG9zdGdyZXM=
+  password: WkZvcGVMbndrU2ZfZjVZcw==
+  username: cG9zdGdyZXM=
 kind: Secret
 metadata:
-  creationTimestamp: "2019-08-30T06:08:44Z"
+  creationTimestamp: "2022-06-01T11:51:32Z"
   labels:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: quick-postgres
     app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: postgres
-    app.kubernetes.io/version: 11.1-v1
     app.kubernetes.io/name: postgreses.kubedb.com
-    app.kubernetes.io/instance: quick-postgres
   name: quick-postgres-auth
   namespace: demo
-  resourceVersion: "12567"
-  selfLink: /api/v1/namespaces/demo/secrets/quick-postgres-auth
-  uid: 57c3a271-a834-460f-a802-2544fb608752
-type: Opaque
+  resourceVersion: "195262"
+  uid: abe166bc-a1da-40d9-8a5e-996a8f5d6246
+type: kubernetes.io/basic-auth
+
 ```
 
 For the purpose of this tutorial, we will need to extract the username and password from database secret `quick-postgres-auth`.
 
 ```bash
-$kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
-qTOzudbzusls6NTZ⏎
+$ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
+ZFopeLnwkSf_f5Ys⏎ 
 
-$ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
-postgres⏎
+$ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\username}' | base64 -d
+postgres⏎ 
 ```
 
 Now, to test connection with this database using the credentials obtained above, we will expose the service port associated with `quick-postgres`  to localhost.
@@ -113,15 +110,15 @@ Forwarding from 127.0.0.1:5432 -> 5432
 Forwarding from [::1]:5432 -> 5432
 ```
 
-With that done , we should now be able to connect to `postgres` database using username `postgres`, and password `qTOzudbzusls6NTZ`.
+With that done , we should now be able to connect to `postgres` database using username `postgres`, and password `ZFopeLnwkSf_f5Ys`.
 
 ```bash
-$ export PGPASSWORD=qTOzudbzusls6NTZ
+$ export PGPASSWORD=ZFopeLnwkSf_f5Ys
 $ psql --host=localhost --port=5432 --username=postgres postgres
-psql (11.5 (Ubuntu 11.5-1.pgdg18.04+1), server 11.1)
+psql (14.1 (Ubuntu 14.1-2.pgdg20.04+1), server 13.2)
 Type "help" for help.
 
-postgres=#
+postgres=# 
 ```
 
 After establishing connection successfully, we will create a table in `postgres` database and populate it with data.
@@ -182,6 +179,7 @@ spec:
     - admin1
   userListSecretRef:
     name: db-user-pass
+  terminationPolicy: WipeOut
 ```
 
 Here,
@@ -191,6 +189,7 @@ Here,
 - `spec.databases` specifies the databases that are going to be served via PgBouncer.
 - `spec.connectionPool` specifies the configurations for connection pool.
 - `spec.userListSecretRef` specifies the secret that contains the standard pgbouncer `userlist` file.
+- `spec.terminationPolicy` specifies what policy to apply while deletion.
 
 ### spec.databases
 
@@ -224,20 +223,43 @@ UserList field is used to specify a secret that contains the list of authorized 
 
 - `spec.userListSecretRef.name`: specifies the name of the secret containing userlist in the same namespace as the PgBouncer crd.
 
-In this tutorial we will use a standard userlist text file to create a secret for spec.userListSecretRef. In the userlist text file we have added `pgbouncer` as user and  `qTOzudbzusls6NTZ` as corresponding password. The file looks like this:
+In this tutorial we will use a standard userlist text file to create a secret for spec.userListSecretRef. In the userlist text file we have added `pgbouncer` as user and  `ZFopeLnwkSf_f5Ys` as corresponding password. The file looks like this:
 
 ```
-"postgres" "qTOzudbzusls6NTZ"
+"postgres" "ZFopeLnwkSf_f5Ys"
 "myuser" "mypass"
 ```
 
 We will need user `myuser` with password  `mypass` later in this tutorial.
 
 ```bash
-$ kubectl create secret generic -n demo db-user-pass --from-file=https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/userlist.txt
+$ wget https://raw.githubusercontent.com/kubedb/docs/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/userlist
+
+2022-06-01 12:29:02 (1.02 MB/s) - ‘userlist’ saved [47/47]
+$ kubectl create secret generic -n demo db-user-pass --from-file=./userlist.txt
 
 secret/db-user-pass created
 ```
+### spec.terminationPolicy
+
+`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PgBouncer` crd or which resources KubeDB should keep or delete when you delete `PgBouncer` crd. KubeDB provides following four termination policies:
+
+- DoNotTerminate
+- Delete (`Default`)
+- WipeOut
+
+When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+
+Following table show what KubeDB does when you delete Postgres crd for different termination policies,
+
+| Behavior                  | DoNotTerminate | Delete   | WipeOut  |
+|---------------------------| :------------: | :------: | :------: |
+| 1. Block Delete operation |    &#10003;    | &#10007; | &#10007; |
+| 2. Delete StatefulSet     |    &#10007;    | &#10003; | &#10003; |
+| 3. Delete Services        |    &#10007;    | &#10003; | &#10003; |
+| 4. Delete PVCs            |    &#10007;    | &#10003; | &#10003; |
+| 5. Delete Secrets         |    &#10007;    | &#10007; | &#10003; |
+
 
 Now that we've been introduced to the pgBouncer crd, let's create it,
 
@@ -261,8 +283,8 @@ Forwarding from [::1]:5432 -> 5432
 Now, let's connect to `postgres` database via PgBouncer using psql.
 
 ``` bash
-$ env PGPASSWORD=qTOzudbzusls6NTZ psql --host=localhost --port=5432 --username=postgres postgres
-psql (11.5 (Ubuntu 11.5-1.pgdg18.04+1), server 11.1)
+$ env PGPASSWORD=ZFopeLnwkSf_f5Ys psql --host=localhost --port=5432 --username=postgres postgres
+psql (14.1 (Ubuntu 14.1-2.pgdg20.04+1), server 13.2)
 Type "help" for help.
 
 postgres=# \q
@@ -271,7 +293,7 @@ postgres=# \q
 If everything goes well, we'll be connected to the `postgres` database and be able to execute commands. Let's confirm if the company data we inserted in the  `postgres` database before are available via PgBouncer:
 
 ```bash
-$ env PGPASSWORD=qTOzudbzusls6NTZ psql --host=localhost --port=5432 --username=postgres postgres --command='SELECT * FROM company ORDER BY name;'
+$ env PGPASSWORD=ZFopeLnwkSf_f5Ys psql --host=localhost --port=5432 --username=postgres postgres --command='SELECT * FROM company ORDER BY name;'
   name  | employee
 --------+----------
  Apple  |       10
@@ -286,16 +308,24 @@ We will add a new user and a new database to our PostgreSQL server `quick-postgr
 First lets create a new user `myuser` with password `mypass`
 
 ```bash
-$ env PGPASSWORD=qTOzudbzusls6NTZ psql --host=localhost --port=5432 --username=postgres postgres --command="create user myuser with encrypted password 'mypass'"
+$ env PGPASSWORD=ZFopeLnwkSf_f5Ys psql --host=localhost --port=5432 --username=postgres postgres --command="create user myuser with encrypted password 'mypass'"
 CREATE ROLE
 ```
 
 And then create a new database `mydb`
 
 ```bash
-$ env PGPASSWORD=qTOzudbzusls6NTZ psql --host=localhost --port=5432 --username=postgres postgres --command="CREATE DATABASE mydb;"
+$ env PGPASSWORD=ZFopeLnwkSf_f5Ys psql --host=localhost --port=5432 --username=postgres postgres --command="CREATE DATABASE mydb;"
 CREATE DATABASE
 ```
+
+And then grant privileges on database `mydb` to `myuser`
+
+```bash
+$ env PGPASSWORD=ZFopeLnwkSf_f5Ys psql --host=localhost --port=5432 --username=postgres postgres --command="grant all privileges on database mydb to myuser"
+GRANT
+```
+
 
 Now we will need to edit our PgBouncer's spec.databases to add this database to the connection pool.
 
@@ -329,12 +359,13 @@ spec:
     - admin1
   userListSecretRef:
     name: db-user-pass
+  terminationPolicy: WipeOut
 ```
 
 We have given our newly added database an alias `tmpdb`.  We will now apply this modified file.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-mod.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-mod.yaml
 pgbouncer.kubedb.com/pgbouncer-server configured
 ```
 
@@ -342,22 +373,22 @@ Let's try to connect to `mydb` via PgBouncer.
 
 ```bash
 $ env PGPASSWORD=mypass psql --host=localhost --port=5432 --username=myuser tmpdb
-psql (11.5 (Ubuntu 11.5-1.pgdg18.04+1), server 11.1)
+psql (14.1 (Ubuntu 14.1-2.pgdg20.04+1), server 13.2)
 Type "help" for help.
 
-tmpdb=>
+tmpdb=> 
 ```
 
 We can now switch our connection between our existing databases `postgres` and `mydb` as well.
 
 ```bash
-tmpdb=>\c postgres
-psql (11.5 (Ubuntu 11.5-1.pgdg18.04+1), server 11.1)
+tmpdb=> \c postgres
+psql (14.1 (Ubuntu 14.1-2.pgdg20.04+1), server 13.2)
 You are now connected to database "postgres" as user "myuser".
-postgres=>\c mydb
-psql (11.5 (Ubuntu 11.5-1.pgdg18.04+1), server 11.1)
-You are now connected to database "mydb" as user "myuser".
-tmpdb=>\q
+postgres=> \c tmpdb
+psql (14.1 (Ubuntu 14.1-2.pgdg20.04+1), server 13.2)
+You are now connected to database "tmpdb" as user "myuser".
+tmpdb=> \q
 ```
 
 KubeDB operator watches for PgBouncer objects using Kubernetes api. When a PgBouncer object is created, KubeDB operator will create a new StatefulSet and a Service with the matching name. KubeDB operator will also create a governing service for StatefulSet with the name `kubedb`, if one is not already present.
@@ -377,66 +408,142 @@ $ kubectl dba describe pb -n demo pgbouncer-server
 Name:         pgbouncer-server
 Namespace:    demo
 Labels:       <none>
-Annotations:  kubectl.kubernetes.io/last-applied-configuration:
-                {"apiVersion":"kubedb.com/v1alpha2","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-server","namespace":"demo"},"spec":{"c...
+Annotations:  <none>
 API Version:  kubedb.com/v1alpha2
 Kind:         PgBouncer
 Metadata:
-  Creation Timestamp:  2019-10-31T10:34:04Z
+  Creation Timestamp:  2022-06-01T11:18:39Z
   Finalizers:
     kubedb.com
-  Generation:        1
-  Resource Version:  4733
-  Self Link:         /apis/kubedb.com/v1alpha2/namespaces/demo/pgbouncers/pgbouncer-server
-  UID:               158b7c58-ecb2-4a77-bceb-081489b4921a
+  Generation:  2
+  Managed Fields:
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:connectionPool:
+          .:
+          f:adminUsers:
+          f:maxClientConnections:
+          f:reservePoolSize:
+        f:databases:
+        f:replicas:
+        f:userListSecretRef:
+          .:
+          f:name:
+        f:version:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2022-06-01T11:18:39Z
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .:
+          v:"kubedb.com":
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:         kubedb-provisioner
+    Operation:       Update
+    Time:            2022-06-01T11:18:39Z
+  Resource Version:  69045
+  UID:               eba4cf43-a489-40fc-bf7c-04b27097dcd1
 Spec:
   Connection Pool:
     Admin Users:
       admin
       admin1
-    Pool Mode:          session
-    Port:               5432
-    Reserve Pool Size:  5
+    Auth Type:               md5
+    Max Client Connections:  20
+    Pool Mode:               session
+    Port:                    5432
+    Reserve Pool Size:       5
   Databases:
     Alias:          postgres
     Database Name:  postgres
     Database Ref:
       Name:         quick-postgres
-      Namespace:
+      Namespace:    demo
     Alias:          tmpdb
     Database Name:  mydb
     Database Ref:
       Name:       quick-postgres
-      Namespace:
-  Monitor:
-    Agent:  prometheus.io/builtin
-    Prometheus:
-      Port:  56790
-    Resources:
+      Namespace:  demo
   Pod Template:
     Controller:
     Metadata:
     Spec:
       Resources:
-  Replicas:  1
-  Service Template:
-    Metadata:
-    Spec:
+        Limits:
+          Memory:  1Gi
+        Requests:
+          Cpu:         500m
+          Memory:      1Gi
+  Replicas:            1
+  Ssl Mode:            disable
+  Termination Policy:  Delete
   User List Secret Ref:
     Name:   db-user-pass
   Version:  1.17.0
 Status:
-  Observed Generation:  1$6208915667192219204
-  Phase:                Running
-Events:                 <none>
+  Conditions:
+    Last Transition Time:  2022-06-01T11:18:39Z
+    Message:               The KubeDB operator has started the provisioning of PgBouncer: demo/pgbouncer-server
+    Reason:                DatabaseProvisioningStartedSuccessfully
+    Status:                True
+    Type:                  ProvisioningStarted
+    Last Transition Time:  2022-06-01T11:22:08Z
+    Message:               All replicas are ready and in Running state
+    Observed Generation:   2
+    Reason:                AllReplicasReady
+    Status:                True
+    Type:                  ReplicaReady
+    Last Transition Time:  2022-06-01T11:22:08Z
+    Message:               The PgBouncer: demo/pgbouncer-server is accepting client requests.
+    Observed Generation:   2
+    Reason:                DatabaseAcceptingConnectionRequest
+    Status:                True
+    Type:                  AcceptingConnection
+    Last Transition Time:  2022-06-01T11:22:08Z
+    Message:               DB is ready because of server getting Online and Running state
+    Observed Generation:   2
+    Reason:                ReadinessCheckSucceeded
+    Status:                True
+    Type:                  Ready
+    Last Transition Time:  2022-06-01T11:18:48Z
+    Message:               The PgBouncer: demo/pgbouncer-server is successfully provisioned.
+    Observed Generation:   1
+    Reason:                DatabaseSuccessfullyProvisioned
+    Status:                True
+    Type:                  Provisioned
+  Observed Generation:     1
+  Phase:                   Ready
+Events:
+  Type    Reason      Age    From             Message
+  ----    ------      ----   ----             -------
+  Normal  Successful  6m26s  KubeDB Operator  Successfully created governing service
+  Normal  Successful  6m26s  KubeDB Operator  Successfully created Service
+  Normal  Successful  6m26s  KubeDB Operator  Successfully created PgBouncer
+  Normal  Successful  6m26s  KubeDB Operator  Successfully created appbinding
+  Normal  Successful  3m6s   KubeDB Operator  Successfully patched appbinding
 ```
 
 KubeDB has created a service for the PgBouncer object.
 
 ```bash
 $ kubectl get service -n demo --selector=app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-server
-NAME               TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-pgbouncer-server   ClusterIP   10.97.188.32   <none>        5432/TCP   2h
+NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+pgbouncer-server        ClusterIP   10.96.136.130   <none>        5432/TCP   7m48s
+pgbouncer-server-pods   ClusterIP   None            <none>        5432/TCP   7m48s
 ```
 
 Here, Service *`pgbouncer-server`* targets random pods to carry out connection-pooling.
@@ -446,13 +553,17 @@ Here, Service *`pgbouncer-server`* targets random pods to carry out connection-p
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete -n demo pg/quick-postgres
+$ kubectl delete -n demo pg/quick-postgres
+postgres.kubedb.com "quick-postgres" deleted
 
-kubectl delete -n demo pb/pgbouncer-server
+$ kubectl delete -n demo pb/pgbouncer-server
+pgbouncer.kubedb.com "pgbouncer-server" deleted
 
-kubectl delete secret -n demo db-user-pass
+$ kubectl delete secret -n demo db-user-pass
+secret "db-user-pass" deleted
 
-kubectl delete ns demo
+$ kubectl delete ns demo
+namespace "demo" deleted
 ```
 
 ## Next Steps

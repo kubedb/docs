@@ -20,3 +20,4 @@ spec:
       - admin1
   userListSecretRef:
     name: db-user-pass
+  terminationPolicy: WipeOut
