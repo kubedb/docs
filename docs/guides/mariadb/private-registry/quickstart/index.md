@@ -118,7 +118,7 @@ spec:
 Now run the command to deploy this `MariaDB` object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}docs/guides/mariadb/private-registry/quickstart/examples/demo.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/private-registry/quickstart/examples/demo.yaml
 mariadb.kubedb.com/md-pvt-reg created
 ```
 
