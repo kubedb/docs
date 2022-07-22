@@ -179,7 +179,7 @@ spec:
     - admin1
   userListSecretRef:
     name: db-user-pass
-  terminationPolicy: WipeOut
+  terminationPolicy: Delete
 ```
 
 Here,
@@ -359,7 +359,7 @@ spec:
     - admin1
   userListSecretRef:
     name: db-user-pass
-  terminationPolicy: WipeOut
+  terminationPolicy: Delete
 ```
 
 We have given our newly added database an alias `tmpdb`.  We will now apply this modified file.
