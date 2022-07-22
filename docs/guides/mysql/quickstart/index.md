@@ -80,7 +80,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  terminationPolicy: Delete
 ```
 
 ```bash
@@ -302,7 +302,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: DoNotTerminate
+  terminationPolicy: Delete
   useAddressType: DNS
   version: 8.0.29
 status:

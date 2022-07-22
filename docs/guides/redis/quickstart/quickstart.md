@@ -282,7 +282,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: DoNotTerminate
+  terminationPolicy: Delete
   version: 6.0.6
 status:
   conditions:
