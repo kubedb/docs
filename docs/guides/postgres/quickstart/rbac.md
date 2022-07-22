@@ -61,7 +61,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  terminationPolicy: Delete
 ```
 
 Create above Postgres object with following command

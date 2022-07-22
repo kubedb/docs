@@ -155,7 +155,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  terminationPolicy: Delete
 ```
 
 Here,
@@ -462,13 +462,6 @@ Now, go to pgAdmin dashboard and connect to the database using the connection in
 ## Halt Database
 
 KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` termination policy. If admission webhook is enabled, it prevents user from deleting the database as long as the `spec.terminationPolicy` is set `DoNotTerminate`.
-
-In this tutorial, Postgres `quick-postgres` is created with `spec.terminationPolicy: DoNotTerminate`. So if you try to delete this Postgres object, admission webhook will nullify the delete operation.
-
-```bash
-$  kubectl delete pg -n demo quick-postgres
-Error from server (BadRequest): admission webhook "postgreswebhook.validators.kubedb.com" denied the request: postgres "demo/quick-postgres" can't be terminated. To delete, change spec.terminationPolicy
-```
 
 To halt the database, we have to set `spec.terminationPolicy:` to `Halt` by updating it,
 

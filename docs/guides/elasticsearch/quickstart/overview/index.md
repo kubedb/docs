@@ -158,7 +158,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  terminationPolicy: Delete
 ```
 
 Here,
@@ -168,7 +168,7 @@ Here,
 - `spec.replicas` - specifies the number of Elasticsearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete Elasticsearch CR. Termination policy `DoNotTerminate` prevents a user from deleting this object if the admission webhook is enabled.
+- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete Elasticsearch CR. Termination policy `Delete` will delete the database pods, secret and PVC when the Elasticsearch CR is deleted.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
 
@@ -488,13 +488,6 @@ From the health information above, we can see that our Elasticsearch cluster's s
 ## Halt Elasticsearch
 
 KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` termination policy. If admission webhook is enabled, it prevents the user from deleting the database as long as the `spec.terminationPolicy` is set `DoNotTerminate`.
-
-In this tutorial, Elasticsearch `es-quickstart` is created with `spec.terminationPolicy: DoNotTerminate`. So if you try to delete this Elasticsearch object, the admission webhook will nullify the delete operation.
-
-```bash
-$ kubectl delete elasticsearch -n demo es-quickstart 
-Error from server (BadRequest): admission webhook "elasticsearchwebhook.validators.kubedb.com" denied the request: elasticsearch "demo/es-quickstart" can't be terminated. To delete, change spec.terminationPolicy
-```
 
 To halt the database, we have to set `spec.terminationPolicy:` to `Halt` by updating it,
 

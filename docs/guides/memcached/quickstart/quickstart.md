@@ -74,7 +74,7 @@ spec:
         requests:
           cpu: 250m
           memory: 64Mi
-  terminationPolicy: DoNotTerminate
+  terminationPolicy: Delete
 ```
 
 ```bash
@@ -166,7 +166,7 @@ spec:
           cpu: 250m
           memory: 64Mi
   replicas: 3
-  terminationPolicy: Halt
+  terminationPolicy: Delete
   version: 1.5.4-v1
 status:
   observedGeneration: 1$4210395375389091791
