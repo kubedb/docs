@@ -22,11 +22,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` Community, Enterprise and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Community, Ops-Manager and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
-
-- Install `Vertical Pod Autoscaler` from [here](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation)
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MariaDB](/docs/guides/mariadb/concepts/mariadb)
@@ -46,7 +44,7 @@ Here, we are going to deploy a `MariaDB` Cluster using a supported version by `K
 
 #### Deploy MariaDB Cluster
 
-In this section, we are going to deploy a MariaDB Cluster with version `10.5.8`. Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
+In this section, we are going to deploy a MariaDB Cluster with version `10.6.4`. Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
 > If you want to autoscale MariaDB `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
@@ -56,15 +54,15 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.6.4"
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: "topolvm-provisioner"
+    storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
-      requests: 
+      requests:
         storage: 1Gi
   podTemplate:
     spec:
@@ -100,13 +98,11 @@ $ kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].reso
 {
   "limits": {
     "cpu": "200m",
-    "memory": "300Mi",
-    "topolvm.cybozu.com/capacity": "1"
+    "memory": "300Mi"
   },
   "requests": {
     "cpu": "200m",
-    "memory": "300Mi",
-    "topolvm.cybozu.com/capacity": "1"
+    "memory": "300Mi"
   }
 }
 ```
@@ -142,21 +138,26 @@ In order to set up compute resource autoscaling for this database cluster, we ha
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: MariaDBAutoscaler
 metadata:
-  name: mdas-compute
+  name: compute
   namespace: demo
 spec:
   databaseRef:
     name: sample-mariadb
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
   compute:
     mariadb:
       trigger: "On"
       podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
       minAllowed:
         cpu: 250m
-        memory: 350Mi
+        memory: 400Mi
       maxAllowed:
         cpu: 1
         memory: 1Gi
+      containerControlledValues: "RequestsAndLimits"
       controlledResources: ["cpu", "memory"]
 ```
 
@@ -165,9 +166,14 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing compute resource scaling operation on `sample-mariadb` database.
 - `spec.compute.mariadb.trigger` specifies that compute autoscaling is enabled for this database.
 - `spec.compute.mariadb.podLifeTimeThreshold` specifies the minimum lifetime for at least one of the pod to initiate a vertical scaling.
+- `spec.compute.mariadb.resourceDiffPercentage` specifies the minimum resource difference in percentage. The default is 10%.
+If the difference between current & recommended resource is less than ResourceDiffPercentage, Autoscaler Operator will ignore the updating.
 - `spec.compute.mariadb.minAllowed` specifies the minimum allowed resources for the database.
 - `spec.compute.mariadb.maxAllowed` specifies the maximum allowed resources for the database.
 - `spec.compute.mariadb.controlledResources` specifies the resources that are controlled by the autoscaler.
+- `spec.compute.mariadb.containerControlledValues` specifies which resource values should be controlled. The default is "RequestsAndLimits".
+- `spec.opsRequestOptions.timeout` Timeout is used for each step of the ops request (in second). If a step doesn't finish within the specified timeout, the ops request will result in failure.
+- `spec.opsRequestOptions.apply` is to control the execution of OpsRequest depending on the database state. It can have one from `IfReady` & `Always`. 
 
 Let's create the `MariaDBAutoscaler` CR we have shown above,
 
@@ -182,25 +188,74 @@ Let's check that the `mariadbautoscaler` resource is created successfully,
 
 ```bash
 $ kubectl get mariadbautoscaler -n demo
-NAME           AGE
-mdas-compute   5m13s
+NAME      AGE
+compute   5m56s
 
 $ kubectl describe mariadbautoscaler mdas-compute -n demo
-Name:         mdas-compute
+Name:         compute
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  autoscaling.kubedb.com/v1alpha1
 Kind:         MariaDBAutoscaler
 Metadata:
-  Creation Timestamp:  2022-01-13T13:05:56Z
+  Creation Timestamp:  2022-09-16T11:26:58Z
   Generation:          1
-  ...
-  Resource Version:  50664
-  UID:               e2f7f6cc-f2b1-46b5-88b4-2767e1a04b68
+  Managed Fields:
+    API Version:  autoscaling.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:compute:
+          .:
+          f:mariadb:
+            .:
+            f:containerControlledValues:
+            f:controlledResources:
+            f:maxAllowed:
+              .:
+              f:cpu:
+              f:memory:
+            f:minAllowed:
+              .:
+              f:cpu:
+              f:memory:
+            f:podLifeTimeThreshold:
+            f:resourceDiffPercentage:
+            f:trigger:
+        f:databaseRef:
+          .:
+          f:name:
+        f:opsRequestOptions:
+          .:
+          f:apply:
+          f:timeout:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2022-09-16T11:26:58Z
+    API Version:  autoscaling.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:checkpoints:
+        f:conditions:
+        f:vpas:
+    Manager:         kubedb-autoscaler
+    Operation:       Update
+    Subresource:     status
+    Time:            2022-09-16T11:27:07Z
+  Resource Version:  846645
+  UID:               44bd46c3-bbc5-4c4a-aff4-00c7f84c6f58
 Spec:
   Compute:
     Mariadb:
+      Container Controlled Values:  RequestsAndLimits
       Controlled Resources:
         cpu
         memory
@@ -208,161 +263,101 @@ Spec:
         Cpu:     1
         Memory:  1Gi
       Min Allowed:
-        Cpu:                    250m
-        Memory:                 350Mi
-      Pod Life Time Threshold:  5m
-      Trigger:                  On
+        Cpu:                     250m
+        Memory:                  400Mi
+      Pod Life Time Threshold:   5m0s
+      Resource Diff Percentage:  20
+      Trigger:                   On
   Database Ref:
     Name:  sample-mariadb
+  Ops Request Options:
+    Apply:    IfReady
+    Timeout:  2m0s
 Status:
+  Checkpoints:
+    Cpu Histogram:
+      Bucket Weights:
+        Index:              0
+        Weight:             10000
+        Index:              46
+        Weight:             555
+      Reference Timestamp:  2022-09-16T00:00:00Z
+      Total Weight:         2.648440345821337
+    First Sample Start:     2022-09-16T11:26:48Z
+    Last Sample Start:      2022-09-16T11:32:52Z
+    Last Update Time:       2022-09-16T11:33:02Z
+    Memory Histogram:
+      Bucket Weights:
+        Index:              1
+        Weight:             10000
+      Reference Timestamp:  2022-09-17T00:00:00Z
+      Total Weight:         1.391848625060675
+    Ref:
+      Container Name:     md-coordinator
+      Vpa Object Name:    sample-mariadb
+    Total Samples Count:  19
+    Version:              v3
+    Cpu Histogram:
+      Bucket Weights:
+        Index:              0
+        Weight:             10000
+        Index:              3
+        Weight:             556
+      Reference Timestamp:  2022-09-16T00:00:00Z
+      Total Weight:         2.648440345821337
+    First Sample Start:     2022-09-16T11:26:48Z
+    Last Sample Start:      2022-09-16T11:32:52Z
+    Last Update Time:       2022-09-16T11:33:02Z
+    Memory Histogram:
+      Reference Timestamp:  2022-09-17T00:00:00Z
+    Ref:
+      Container Name:     mariadb
+      Vpa Object Name:    sample-mariadb
+    Total Samples Count:  19
+    Version:              v3
   Conditions:
-    Last Transition Time:  2022-01-13T13:07:05Z
-    Message:               Successfully created mariaDBOpsRequest demo/mdops-vpa-sample-mariadb-z43wc8
+    Last Transition Time:  2022-09-16T11:27:07Z
+    Message:               Successfully created mariaDBOpsRequest demo/mdops-sample-mariadb-6xc1kc
     Observed Generation:   1
     Reason:                CreateOpsRequest
     Status:                True
     Type:                  CreateOpsRequest
-Events:                    <none>
+  Vpas:
+    Conditions:
+      Last Transition Time:  2022-09-16T11:27:02Z
+      Status:                True
+      Type:                  RecommendationProvided
+    Recommendation:
+      Container Recommendations:
+        Container Name:  mariadb
+        Lower Bound:
+          Cpu:     250m
+          Memory:  400Mi
+        Target:
+          Cpu:     250m
+          Memory:  400Mi
+        Uncapped Target:
+          Cpu:     25m
+          Memory:  262144k
+        Upper Bound:
+          Cpu:     1
+          Memory:  1Gi
+    Vpa Name:      sample-mariadb
+Events:            <none>
 
 ```
 So, the `mariadbautoscaler` resource is created successfully.
 
-Now, lets verify that the vertical pod autoscaler (vpa) resource is created successfully,
+We can verify from the above output that `status.vpas` contains the `RecommendationProvided` condition to true. And in the same time, `status.vpas.recommendation.containerRecommendations` contain the actual generated recommendation.
 
-```bash
-$ kubectl get vpa -n demo
-NAME                 MODE   CPU    MEM     PROVIDED   AGE
-vpa-sample-mariadb   Off    250m   350Mi   True       6m3s
-
-$ kubectl describe vpa -n demo 
-Name:         vpa-sample-mariadb
-Namespace:    demo
-Labels:       <none>
-Annotations:  <none>
-API Version:  autoscaling.k8s.io/v1
-Kind:         VerticalPodAutoscaler
-Metadata:
-  Creation Timestamp:  2022-01-13T13:05:56Z
-  Generation:          2
-  ...
-  Owner References:
-    API Version:           autoscaling.kubedb.com/v1alpha1
-    Block Owner Deletion:  true
-    Controller:            true
-    Kind:                  MariaDBAutoscaler
-    Name:                  mdas-compute
-    UID:                   e2f7f6cc-f2b1-46b5-88b4-2767e1a04b68
-  Resource Version:        50458
-  UID:                     5c876135-fa94-4a80-ab60-d3eb2b3fc69f
-Spec:
-  Resource Policy:
-    Container Policies:
-      Container Name:  mariadb
-      Controlled Resources:
-        cpu
-        memory
-      Controlled Values:  RequestsAndLimits
-      Max Allowed:
-        Cpu:     1
-        Memory:  1Gi
-      Min Allowed:
-        Cpu:           250m
-        Memory:        350Mi
-      Container Name:  exporter
-      Mode:            Off
-      Container Name:  md-coordinator
-      Mode:            Off
-  Target Ref:
-    API Version:  apps/v1
-    Kind:         StatefulSet
-    Name:         sample-mariadb
-  Update Policy:
-    Update Mode:  Off
-Status:
-  Conditions:
-    Last Transition Time:  2022-01-13T13:06:13Z
-    Status:                False
-    Type:                  RecommendationProvided
-  Recommendation:
-Events:          <none>
-```
-
-So, we can verify from the above output that the `vpa` resource is created successfully. But you can see that the `RecommendationProvided` is false and also the `Recommendation` section of the `vpa` is empty. Let's wait some time and describe the vpa again.
-
-```shell
-$ kubectl describe vpa vpa-sample-mariadb -n demo
-Name:         vpa-sample-mariadb
-Namespace:    demo
-Labels:       <none>
-Annotations:  <none>
-API Version:  autoscaling.k8s.io/v1
-Kind:         VerticalPodAutoscaler
-Metadata:
-  Creation Timestamp:  2021-03-06T19:10:46Z
-  Generation: ...
-  Owner References:
-    API Version:           autoscaling.kubedb.com/v1alpha1
-    Block Owner Deletion:  true
-    Controller:            true
-    Kind:                  MariaDBAutoscaler
-    Name:                  mg-as-rs
-    UID:                   9be99253-7475-43fe-a68a-34eaec3225c6
-  Resource Version:        839239
-  Self Link:               /apis/autoscaling.k8s.io/v1/namespaces/demo/verticalpodautoscalers/vpa-sample-mariadb
-  UID:                     fd2d9896-2eee-43df-85a6-1b968f8d2862
-Spec:
-  Resource Policy:
-    Container Policies:
-      Container Name:  mariadb
-      Controlled Resources:
-        cpu
-        memory
-      Controlled Values:  RequestsAndLimits
-      Max Allowed:
-        Cpu:     1
-        Memory:  1Gi
-      Min Allowed:
-        Cpu:           250m
-        Memory:        350Mi
-      Container Name:  replication-mode-detector
-      Mode:            Off
-  Target Ref:
-    API Version:  apps/v1
-    Kind:         StatefulSet
-    Name:         sample-mariadb
-  Update Policy:
-    Update Mode:  Off
-Status:
-  Conditions:
-    Last Transition Time:  2021-03-06T19:10:59Z
-    Status:                True
-    Type:                  RecommendationProvided
-  Recommendation:
-    Container Recommendations:
-      Container Name:  mariadb
-      Lower Bound:
-        Cpu:     250m
-        Memory:  350Mi
-      Target:
-        Cpu:     250m
-        Memory:  350Mi
-      Uncapped Target:
-        Cpu:     182m
-        Memory:  262144k
-      Upper Bound:
-        Cpu:     1
-        Memory:  1Gi
-Events:          <none>
-```
-
-As you can see from the output the vpa has generated a recommendation for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `mariadbopsrequest` based on the recommendations, if the database pods are needed to scaled up or down. If you see that the `RecommendationProvided` is false and also the `Recommendation` section of the `vpa` is empty then wait couple of minutes and describe the vpa again.
+Our autoscaler operator continuously watches the recommendation generated and creates an `mariadbopsrequest` based on the recommendations, if the database pod resources are needed to scaled up or down. 
 
 Let's watch the `mariadbopsrequest` in the demo namespace to see if any `mariadbopsrequest` object is created. After some time you'll see that a `mariadbopsrequest` will be created based on the recommendation.
 
 ```bash
 $ kubectl get mariadbopsrequest -n demo
-NAME                              TYPE              STATUS       AGE
-mdops-vpa-sample-mariadb-z43wc8   VerticalScaling   Progressing  11s
+NAME                          TYPE              STATUS       AGE
+mdops-sample-mariadb-6xc1kc   VerticalScaling   Progressing  7s
 ```
 
 Let's wait for the ops request to become successful.
@@ -370,76 +365,130 @@ Let's wait for the ops request to become successful.
 ```bash
 $ kubectl get mariadbopsrequest -n demo
 NAME                              TYPE              STATUS       AGE
-mdops-vpa-sample-mariadb-z43wc8   VerticalScaling   Successful   2m32s
+mdops-vpa-sample-mariadb-z43wc8   VerticalScaling   Successful   3m32s
 ```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. If we describe the `MariaDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
 $ kubectl describe mariadbopsrequest -n demo mdops-vpa-sample-mariadb-z43wc8
-Name:         mdops-vpa-sample-mariadb-z43wc8
+Name:         mdops-sample-mariadb-6xc1kc
 Namespace:    demo
-Labels:       app.kubernetes.io/component=database
-              app.kubernetes.io/instance=sample-mariadb
-              app.kubernetes.io/managed-by=kubedb.com
-              app.kubernetes.io/name=mariadbs.kubedb.com
+Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MariaDBOpsRequest
 Metadata:
-  Creation Timestamp:  2022-01-13T13:07:05Z
+  Creation Timestamp:  2022-09-16T11:27:07Z
   Generation:          1
-  ...
+  Managed Fields:
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:ownerReferences:
+          .:
+          k:{"uid":"44bd46c3-bbc5-4c4a-aff4-00c7f84c6f58"}:
+      f:spec:
+        .:
+        f:apply:
+        f:databaseRef:
+          .:
+          f:name:
+        f:timeout:
+        f:type:
+        f:verticalScaling:
+          .:
+          f:mariadb:
+            .:
+            f:limits:
+              .:
+              f:cpu:
+              f:memory:
+            f:requests:
+              .:
+              f:cpu:
+              f:memory:
+    Manager:      kubedb-autoscaler
+    Operation:    Update
+    Time:         2022-09-16T11:27:07Z
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:      kubedb-ops-manager
+    Operation:    Update
+    Subresource:  status
+    Time:         2022-09-16T11:27:07Z
   Owner References:
     API Version:           autoscaling.kubedb.com/v1alpha1
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  MariaDBAutoscaler
-    Name:                  mdas-compute
-    UID:                   e2f7f6cc-f2b1-46b5-88b4-2767e1a04b68
-  Resource Version:        51793
-  UID:                     15338f3d-b394-4276-bbd0-52bbf771d06b
+    Name:                  compute
+    UID:                   44bd46c3-bbc5-4c4a-aff4-00c7f84c6f58
+  Resource Version:        846324
+  UID:                     c2b30107-c6d3-44bb-adf3-135edc5d615b
 Spec:
+  Apply:  IfReady
   Database Ref:
-    Name:  sample-mariadb
-  Type:    VerticalScaling
+    Name:   sample-mariadb
+  Timeout:  2m0s
+  Type:     VerticalScaling
   Vertical Scaling:
     Mariadb:
       Limits:
         Cpu:     250m
-        Memory:  350Mi
+        Memory:  400Mi
       Requests:
         Cpu:     250m
-        Memory:  350Mi
+        Memory:  400Mi
 Status:
   Conditions:
-    Last Transition Time:  2022-01-13T13:07:05Z
-    Message:               Controller has started to Progress the MariaDBOpsRequest: demo/mdops-vpa-sample-mariadb-z43wc8
+    Last Transition Time:  2022-09-16T11:27:07Z
+    Message:               Controller has started to Progress the MariaDBOpsRequest: demo/mdops-sample-mariadb-6xc1kc
     Observed Generation:   1
     Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
-    Last Transition Time:  2022-01-13T13:07:05Z
-    Message:               Vertical scaling started in MariaDB: demo/sample-mariadb for MariaDBOpsRequest: mdops-vpa-sample-mariadb-z43wc8
+    Last Transition Time:  2022-09-16T11:30:42Z
+    Message:               Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-sample-mariadb-6xc1kc
     Observed Generation:   1
-    Reason:                VerticalScalingStarted
+    Reason:                SuccessfullyRestatedStatefulSet
     Status:                True
-    Type:                  Scaling
-    Last Transition Time:  2022-01-13T13:11:11Z
-    Message:               Vertical scaling performed successfully in MariaDB: demo/sample-mariadb for MariaDBOpsRequest: mdops-vpa-sample-mariadb-z43wc8
+    Type:                  RestartStatefulSet
+    Last Transition Time:  2022-09-16T11:30:47Z
+    Message:               Vertical scale successful for MariaDBOpsRequest: demo/mdops-sample-mariadb-6xc1kc
     Observed Generation:   1
     Reason:                SuccessfullyPerformedVerticalScaling
     Status:                True
     Type:                  VerticalScaling
-    Last Transition Time:  2022-01-13T13:11:11Z
-    Message:               Controller has successfully scaled the MariaDB demo/mdops-vpa-sample-mariadb-z43wc8
+    Last Transition Time:  2022-09-16T11:30:47Z
+    Message:               Controller has successfully scaled the MariaDB demo/mdops-sample-mariadb-6xc1kc
     Observed Generation:   1
     Reason:                OpsRequestProcessedSuccessfully
     Status:                True
     Type:                  Successful
-  Observed Generation:     3
+  Observed Generation:     1
   Phase:                   Successful
-...
+Events:
+  Type    Reason      Age    From                        Message
+  ----    ------      ----   ----                        -------
+  Normal  Starting    8m48s  KubeDB Enterprise Operator  Start processing for MariaDBOpsRequest: demo/mdops-sample-mariadb-6xc1kc
+  Normal  Starting    8m48s  KubeDB Enterprise Operator  Pausing MariaDB databse: demo/sample-mariadb
+  Normal  Successful  8m48s  KubeDB Enterprise Operator  Successfully paused MariaDB database: demo/sample-mariadb for MariaDBOpsRequest: mdops-sample-mariadb-6xc1kc
+  Normal  Starting    8m43s  KubeDB Enterprise Operator  Restarting Pod: demo/sample-mariadb-0
+  Normal  Starting    7m33s  KubeDB Enterprise Operator  Restarting Pod: demo/sample-mariadb-1
+  Normal  Starting    6m23s  KubeDB Enterprise Operator  Restarting Pod: demo/sample-mariadb-2
+  Normal  Successful  5m13s  KubeDB Enterprise Operator  Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-sample-mariadb-6xc1kc
+  Normal  Successful  5m8s   KubeDB Enterprise Operator  Vertical scale successful for MariaDBOpsRequest: demo/mdops-sample-mariadb-6xc1kc
+  Normal  Starting    5m8s   KubeDB Enterprise Operator  Resuming MariaDB database: demo/sample-mariadb
+  Normal  Successful  5m8s   KubeDB Enterprise Operator  Successfully resumed MariaDB database: demo/sample-mariadb
+  Normal  Successful  5m8s   KubeDB Enterprise Operator  Controller has Successfully scaled the MariaDB database: demo/sample-mariadb
 ```
 
 Now, we are going to verify from the Pod, and the MariaDB yaml whether the resources of the replicaset database has updated to meet up the desired state, Let's check,
@@ -449,11 +498,11 @@ $ kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].reso
 {
   "limits": {
     "cpu": "250m",
-    "memory": "350Mi"
+    "memory": "400Mi"
   },
   "requests": {
     "cpu": "250m",
-    "memory": "350Mi"
+    "memory": "400Mi"
   }
 }
 
@@ -461,17 +510,17 @@ $ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.podTemplate.spe
 {
   "limits": {
     "cpu": "250m",
-    "memory": "350Mi"
+    "memory": "400Mi"
   },
   "requests": {
     "cpu": "250m",
-    "memory": "350Mi"
+    "memory": "400Mi"
   }
 }
 ```
 
 
-The above output verifies that we have successfully auto scaled the resources of the MariaDB replicaset database.
+The above output verifies that we have successfully autoscaled the resources of the MariaDB replicaset database.
 
 ## Cleaning Up
 
