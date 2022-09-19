@@ -138,7 +138,7 @@ In order to set up compute resource autoscaling for this database cluster, we ha
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: MariaDBAutoscaler
 metadata:
-  name: compute
+  name: md-as-compute
   namespace: demo
 spec:
   databaseRef:
@@ -183,11 +183,11 @@ Let's check that the `mariadbautoscaler` resource is created successfully,
 
 ```bash
 $ kubectl get mariadbautoscaler -n demo
-NAME      AGE
-compute   5m56s
+NAME            AGE
+md-as-compute   5m56s
 
-$ kubectl describe mariadbautoscaler mdas-compute -n demo
-Name:         compute
+$ kubectl describe mariadbautoscaler md-as-compute -n demo
+Name:         md-as-compute
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -417,7 +417,7 @@ Metadata:
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  MariaDBAutoscaler
-    Name:                  compute
+    Name:                  md-as-compute
     UID:                   44bd46c3-bbc5-4c4a-aff4-00c7f84c6f58
   Resource Version:        846324
   UID:                     c2b30107-c6d3-44bb-adf3-135edc5d615b
@@ -516,6 +516,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete mariadb -n demo sample-mariadb
-kubectl delete mariadbautoscaler -n demo mdas-compute
+kubectl delete mariadbautoscaler -n demo md-as-compute
 kubectl delete ns demo
 ```

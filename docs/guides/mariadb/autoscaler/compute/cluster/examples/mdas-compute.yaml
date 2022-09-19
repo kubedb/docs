@@ -1,7 +1,7 @@
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: MariaDBAutoscaler
 metadata:
-  name: compute
+  name: md-as-compute
   namespace: demo
 spec:
   databaseRef:
