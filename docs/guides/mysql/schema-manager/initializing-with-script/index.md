@@ -341,6 +341,6 @@ $ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [MySQLDatabase object](/docs/guides/mysql/concepts/mysqldatabase/index.md).
-- Go through the concepts of [KubeVault] (https://kubevault.com/docs/latest/guides).
+- Go through the concepts of [KubeVault](https://kubevault.com/docs/latest/guides).
 - Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
 - Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog/index.md).
