@@ -20,9 +20,7 @@ Want to contribute to KubeDB?
 
 ## Getting Help
 
-We use Slack for public discussions. To chit chat with us or the rest of the community, join us in the [Kubernetes Slack team](https://kubernetes.slack.com/messages/C8149MREV/) channel `#kubedb`. To sign up, use our [Slack inviter](http://slack.kubernetes.io/).
-
-To receive product announcements, please follow us on [Twitter](https://twitter.com/KubeDB).
+To speak with us, please leave a message on [our website](https://appscode.com/contact/). To receive product announcements, follow us on [Twitter](https://twitter.com/KubeDB).
 
 ## Bugs/Feature request
 
@@ -30,4 +28,4 @@ If you have found a bug with KubeDB or want to request for new features, please 
 
 ## Spread the word
 
-If you have written blog post or tutorial on KubeDB, please share it with us on [Twitter](https://twitter.com/KubeDB) or the [Kubernetes Slack team](http://slack.kubernetes.io) channel `#kubedb`.
+If you have written blog post or tutorial on KubeDB, please share it with us on [Twitter](https://twitter.com/KubeDB).
