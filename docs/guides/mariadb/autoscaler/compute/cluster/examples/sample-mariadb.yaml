@@ -4,15 +4,15 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.6.4"
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: "topolvm-provisioner"
+    storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
-      requests: 
+      requests:
         storage: 1Gi
   podTemplate:
     spec:
