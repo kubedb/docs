@@ -6,9 +6,9 @@ metadata:
 spec:
   databaseRef:
     name: sample-mariadb
-  opsRequestOptions:
-    timeout: 3m
-    apply: IfReady
+#  opsRequestOptions:
+#    timeout: 3m
+#    apply: IfReady
   compute:
     mariadb:
       trigger: "On"
