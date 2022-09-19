@@ -1,0 +1,25 @@
+apiVersion: schema.kubedb.com/v1alpha1
+kind: MySQLDatabase
+metadata:
+  name: schema-manager
+  namespace: demox
+spec:
+  database:
+    serverRef:
+      name: mysql-server
+      namespace: demo
+    config:
+      name: demo_user
+      characterSet: utf8
+      encryption: disabled
+      readOnly: 0
+  vaultRef:
+    name: vault
+    namespace: demo
+  accessPolicy:
+    subjects:
+      - kind: ServiceAccount
+        name: "tester"
+        namespace: "demox"
+    defaultTTL: "5m"
+  deletionPolicy: "Delete"
