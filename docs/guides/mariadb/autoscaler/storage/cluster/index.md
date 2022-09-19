@@ -26,8 +26,6 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Maria
 
 - Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
 
-- Install `Vertical Pod Autoscaler` from [here](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation)
-
 - Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
 
 - You must have a `StorageClass` that supports volume expansion.
