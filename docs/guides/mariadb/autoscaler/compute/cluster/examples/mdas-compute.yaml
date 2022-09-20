@@ -1,14 +1,14 @@
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: MariaDBAutoscaler
 metadata:
-  name: compute
+  name: md-as-compute
   namespace: demo
 spec:
   databaseRef:
     name: sample-mariadb
-  opsRequestOptions:
-    timeout: 3m
-    apply: IfReady
+#  opsRequestOptions:
+#    timeout: 3m
+#    apply: IfReady
   compute:
     mariadb:
       trigger: "On"

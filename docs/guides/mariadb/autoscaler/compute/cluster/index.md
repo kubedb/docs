@@ -138,14 +138,11 @@ In order to set up compute resource autoscaling for this database cluster, we ha
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: MariaDBAutoscaler
 metadata:
-  name: compute
+  name: md-as-compute
   namespace: demo
 spec:
   databaseRef:
     name: sample-mariadb
-  opsRequestOptions:
-    timeout: 3m
-    apply: IfReady
   compute:
     mariadb:
       trigger: "On"
@@ -172,8 +169,6 @@ If the difference between current & recommended resource is less than ResourceDi
 - `spec.compute.mariadb.maxAllowed` specifies the maximum allowed resources for the database.
 - `spec.compute.mariadb.controlledResources` specifies the resources that are controlled by the autoscaler.
 - `spec.compute.mariadb.containerControlledValues` specifies which resource values should be controlled. The default is "RequestsAndLimits".
-- `spec.opsRequestOptions.timeout` Timeout is used for each step of the ops request (in second). If a step doesn't finish within the specified timeout, the ops request will result in failure.
-- `spec.opsRequestOptions.apply` is to control the execution of OpsRequest depending on the database state. It can have one from `IfReady` & `Always`. 
 
 Let's create the `MariaDBAutoscaler` CR we have shown above,
 
@@ -188,11 +183,11 @@ Let's check that the `mariadbautoscaler` resource is created successfully,
 
 ```bash
 $ kubectl get mariadbautoscaler -n demo
-NAME      AGE
-compute   5m56s
+NAME            AGE
+md-as-compute   5m56s
 
-$ kubectl describe mariadbautoscaler mdas-compute -n demo
-Name:         compute
+$ kubectl describe mariadbautoscaler md-as-compute -n demo
+Name:         md-as-compute
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -231,10 +226,6 @@ Metadata:
         f:databaseRef:
           .:
           f:name:
-        f:opsRequestOptions:
-          .:
-          f:apply:
-          f:timeout:
     Manager:      kubectl-client-side-apply
     Operation:    Update
     Time:         2022-09-16T11:26:58Z
@@ -270,9 +261,6 @@ Spec:
       Trigger:                   On
   Database Ref:
     Name:  sample-mariadb
-  Ops Request Options:
-    Apply:    IfReady
-    Timeout:  2m0s
 Status:
   Checkpoints:
     Cpu Histogram:
@@ -429,7 +417,7 @@ Metadata:
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  MariaDBAutoscaler
-    Name:                  compute
+    Name:                  md-as-compute
     UID:                   44bd46c3-bbc5-4c4a-aff4-00c7f84c6f58
   Resource Version:        846324
   UID:                     c2b30107-c6d3-44bb-adf3-135edc5d615b
@@ -528,6 +516,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete mariadb -n demo sample-mariadb
-kubectl delete mariadbautoscaler -n demo mdas-compute
+kubectl delete mariadbautoscaler -n demo md-as-compute
 kubectl delete ns demo
 ```
