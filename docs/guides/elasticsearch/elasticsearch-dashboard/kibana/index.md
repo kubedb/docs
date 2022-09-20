@@ -356,7 +356,7 @@ Events:
 
 ### KubeDB Operator Generated Resources
 
-Let's check the kubernetes resources created by the operator on the deployment of Elasticsearch CRO:
+Let's check the Kubernetes resources created by the operator on the deployment of Elasticsearch CRO:
 
 ```bash
 $ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-cluster'
@@ -551,7 +551,7 @@ Now, Let's remove that index by using `DELETE` query.
 
 ## Cleaning Up
 
-To cleanup the kubernetes resources created by this tutorial, run:
+To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete elasticsearchdashboard -n demo es-cluster-dashboard

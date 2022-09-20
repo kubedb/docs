@@ -542,7 +542,7 @@ Now, Let's remove that index by using `DELETE` query.
 
 ## Cleaning Up
 
-To cleanup the kubernetes resources created by this tutorial, run:
+To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete elasticsearchdashboard -n demo os-cluster-dashboard

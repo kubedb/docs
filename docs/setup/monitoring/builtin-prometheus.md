@@ -108,7 +108,7 @@ Now, we are ready to configure our Prometheus server to scrape those metrics.
 
 ## Configure Prometheus Server
 
-Now, we have to configure a Prometheus scraping job to scrape the metrics using this service. We are going to configure scraping job similar to this [kubernetes-service-endpoints](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin#kubernetes-service-endpoints) job. However, as we are going to collect metrics from a TLS secured endpoint that exports kubernetes extension apiserver metrics, we have to add following configurations:
+Now, we have to configure a Prometheus scraping job to scrape the metrics using this service. We are going to configure scraping job similar to this [kubernetes-service-endpoints](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin#kubernetes-service-endpoints) job. However, as we are going to collect metrics from a TLS secured endpoint that exports Kubernetes extension apiserver metrics, we have to add following configurations:
 - [tls_config](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tls_config) section to establish TLS secured connection.
 - `bearer_token_file` to authorize Prometheus server to KubeDB extension apiserver.
 
@@ -138,7 +138,7 @@ Let's configure a Prometheus scraping job to collect the operator metrics.
     server_name: kubedb.kubedb.svc
   # bearer_token_file is required for authorizing prometheus server to extension apiserver
   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-  # by default Prometheus server select all kubernetes services as possible target.
+  # by default Prometheus server select all Kubernetes services as possible target.
   # relabel_config is used to filter only desired endpoints
   relabel_configs:
   # keep only those services that has "prometheus.io/scrape: true" anootation.
@@ -248,7 +248,7 @@ data:
         server_name: kubedb.kubedb.svc
       # bearer_token_file is required for authorizing prometheus server to extension apiserver
       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-      # by default Prometheus server select all kubernetes services as possible target.
+      # by default Prometheus server select all Kubernetes services as possible target.
       # relabel_config is used to filter only desired endpoints
       relabel_configs:
       # keep only those services that has "prometheus.io/scrape: true" anootation.

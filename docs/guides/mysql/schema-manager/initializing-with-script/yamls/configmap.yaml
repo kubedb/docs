@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: scripter
+  namespace:  demox
+data:
+  script.sql: |-
+    use demo_script;
+    create table Product(Name varchar(50),Title varchar(50));
+    insert into Product(Name,Title) value('KubeDB','Database Management Solution');
+    insert into Product(Name,Title) value('Stash','Backup and Recovery Solution');
