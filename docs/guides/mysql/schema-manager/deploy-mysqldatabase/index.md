@@ -226,8 +226,8 @@ $ kubectl get mysqldatabase schema-manager -n demox -o=jsonpath='{.status.authSe
 schema-manager-mysql-req-o2j0jk
 
 $ kubectl view-secret schema-manager-mysql-req-o2j0jk -n demox -a
-password=iVNHOZ6ooMwLSmLmv-VJ
-username=v-kubernetes-k8s.dc833e-IP72do73
+password=bCfsp77bWztyZwH-i4F6
+username=v-kubernetes-k8s.dc833e-txGUfwPa
 ```
 
 ### Insert Sample Data

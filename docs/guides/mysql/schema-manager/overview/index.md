@@ -48,7 +48,7 @@ The process consists of the following steps:
 
 5. After successful database creation, the `Vault` server creates a user in the `MySQL` server. The user gets all the privileges on our target database and its credentials are served with a secret.
 
-6. The user credentials secret reference is patched with the `MySQLDatabase` object yaml in the *** field.
+6. The user credentials secret reference is patched with the `MySQLDatabase` object yaml in the `.status.authSecret.name` field.
 
 7. If there is any `init script` associated with the `MySQLDatabase` object, it will be executed in this step with the `Schema Manager` operator. 
 
