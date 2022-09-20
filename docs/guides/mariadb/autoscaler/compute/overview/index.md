@@ -46,7 +46,7 @@ The Auto Scaling process consists of the following steps:
 
 5. `KubeDB` Autoscaler operator watches the `MariaDBAutoscaler` CRO.
 
-6. `KubeDB` Autoscaler operator utilizes the modified version of kubernetes official [VPA-Recommender](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/pkg) for different components of the database, as specified in the `mariadbautoscaler` CRO.
+6. `KubeDB` Autoscaler operator utilizes the modified version of Kubernetes official [VPA-Recommender](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/pkg) for different components of the database, as specified in the `mariadbautoscaler` CRO.
 It generates recommendations based on resource usages, & store them in the `status` section of the autoscaler CRO.
 
 7. If the generated recommendation doesn't match the current resources of the database, then `KubeDB` Autoscaler operator creates a `MariaDBOpsRequest` CRO to scale the database to match the recommendation provided by the VPA object.

@@ -24,7 +24,7 @@ section_menu_id: guides
 
 ## What is Schema Manager
 
-`Schema Manager` is a kubernetes operator developed by AppsCode that implements multi-tenancy inside KubeDB provisioned database servers like MySQL, MariaDB, PosgreSQL and MongoDB etc. With `Schema Manager` one can create database into specific database server. An user will also be created with KubeVault and assigned to that database. Using the newly created user credential one can access the database and run operations into it. One may pass the database server reference, configuration, user access policy through a single yaml and `Schema Manager` will do all the task above mentioned. `Schema Manager` also allows initializing the database and restore snapshot while bootstrap.
+`Schema Manager` is a Kubernetes operator developed by AppsCode that implements multi-tenancy inside KubeDB provisioned database servers like MySQL, MariaDB, PosgreSQL and MongoDB etc. With `Schema Manager` one can create database into specific database server. An user will also be created with KubeVault and assigned to that database. Using the newly created user credential one can access the database and run operations into it. One may pass the database server reference, configuration, user access policy through a single yaml and `Schema Manager` will do all the task above mentioned. `Schema Manager` also allows initializing the database and restore snapshot while bootstrap.
 
 
 ## How MySQL Schema Manager Process Works
