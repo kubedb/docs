@@ -295,7 +295,7 @@ The above output verifies that we have successfully scaled up the resources of t
 
 ## Cleaning up
 
-To clean up the kubernetes resources created by this turorial, run:
+To clean up the Kubernetes resources created by this turorial, run:
 
 ```bash
 kubectl delete redis -n demo redis-cluster

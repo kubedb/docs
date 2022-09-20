@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: mysql-server
+  namespace: demo
+spec:
+  version: "8.0.29"
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 200Mi
+  allowedSchemas:
+    namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          app: schemaManager
+  terminationPolicy: WipeOut

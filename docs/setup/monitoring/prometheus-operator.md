@@ -94,7 +94,7 @@ spec:
       release: kubedb
 ```
 
-KubeDB operator exports  kubernetes extension apiserver metrics in TLS secured `api` endpoint. So, KubeDB has added flowing two section in `ServicMonitor` specification.
+KubeDB operator exports Kubernetes extension apiserver metrics in TLS secured `api` endpoint. So, KubeDB has added flowing two section in `ServicMonitor` specification.
 
 - `tlsConfig` section to establish TLS secured connection.
 - `bearerTokenFile` to authorize Prometheus server to KubeDB extension apiserver.

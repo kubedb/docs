@@ -137,7 +137,7 @@ Let's configure a Prometheus scraping job to collect metrics from this service.
   scheme: http
   kubernetes_sd_configs:
   - role: endpoints
-  # by default Prometheus server select all kubernetes services as possible target.
+  # by default Prometheus server select all Kubernetes services as possible target.
   # relabel_config is used to filter only desired endpoints
   relabel_configs:
   # keep only those services that has "prometheus.io/scrape","prometheus.io/path" and "prometheus.io/port" anootations
@@ -222,7 +222,7 @@ data:
       scheme: http
       kubernetes_sd_configs:
       - role: endpoints
-      # by default Prometheus server select all kubernetes services as possible target.
+      # by default Prometheus server select all Kubernetes services as possible target.
       # relabel_config is used to filter only desired endpoints
       relabel_configs:
       # keep only those services that has "prometheus.io/scrape","prometheus.io/path" and "prometheus.io/port" anootations

@@ -23,7 +23,7 @@ data:
         server_name: kubedb-operator.kube-system.svc
       # bearer_token_file is required for authorizing prometheus server to extension apiserver
       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-      # by default Prometheus server select all kubernetes services as possible target.
+      # by default Prometheus server select all Kubernetes services as possible target.
       # relabel_config is used to filter only desired endpoints
       relabel_configs:
       # keep only those services that has "prometheus.io/scrape: true" anootation.
