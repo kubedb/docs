@@ -46,7 +46,7 @@ Here, we are going to deploy a `MySQL Server` by using `KubeDB` operator. Also, 
 
 ### Deploy MySQL Server
 
-In this section, we are going to deploy a MySQL Server. Below is the YAML of the `MySQL` CR that we are going to create,
+In this section, we are going to deploy a MySQL Server. Let's deploy it using this following yaml,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -73,7 +73,7 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-In this yaml,
+Here,
 
 - `spec.version` is the name of the MySQLVersion CR. Here, we are using MySQL version `8.0.29`.
 - `spec.storageType` specifies the type of storage that will be used for MySQL. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the MySQL using `EmptyDir` volume.
@@ -91,7 +91,7 @@ mysql.kubedb.com/mysql-server created
 
 ### Deploy Vault Server
 
-In this section, we are going to deploy a Vault Server. Below is the YAML of the `VaultServer` CR that we are going to create,
+In this section, we are going to deploy a Vault Server. Let's deploy it using this following yaml,
 
 ```yaml
 apiVersion: kubevault.com/v1alpha1
@@ -127,7 +127,7 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-In this yaml,
+Here,
 
 - `spec.version` is a required field that specifies the original version of Vault that has been used to build the docker image specified in `spec.vault.image` field.
 - `spec.replicas` specifies the number of Vault nodes to deploy. It has to be a positive number.
@@ -146,7 +146,7 @@ vaultserver.kubevault.com/vault created
 ```
 ### Create Separate Namespace For Schema Manager
 
-In this section, we are going to create a new `Namespace` and we will only allow this namespace for our `Schema Manager`. Below is the YAML of the `Namespace` that we are going to create,
+In this section, we are going to create a new `Namespace` and we will only allow this namespace for our `Schema Manager`. Let's deploy it using this following yaml,
 
 ```yaml
 apiVersion: v1
@@ -189,7 +189,7 @@ configmap/scripter created
 
 ### Deploy Schema Manager Initialize with Script
 
-Here, we are going to deploy `Schema Manager` with the new `Namespace` that we have created above. Below is the YAML of the `Schema Manager` that we are going to create,
+Here, we are going to deploy `Schema Manager` with the new `Namespace` that we have created above. Let's deploy it using this following yaml,
 
 ```yaml
 apiVersion: schema.kubedb.com/v1alpha1
@@ -221,7 +221,7 @@ spec:
         name: scripter
   deletionPolicy: "Delete"
 ```
-In this yaml,
+Here,
 
 - `spec.database` is a required field specifying the database server reference and the desired database configuration.
 - `spec.vaultRef` is a required field that specifies which KubeVault server to use for user management.

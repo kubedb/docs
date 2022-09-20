@@ -14,6 +14,9 @@ section_menu_id: guides
 
 # MySQLDatabase
 
+## What is MySQLDatabase ?
+`MySQLDatabase` is a Kubernetes Custom Resource Definitions (CRD). It provides a declarative way of implementing multitenancy inside KubeDB provisioned MySQL server. You need to describe the target database, desired database configuration, the vault server reference for managing the user in a `MySQLDatabase` object, and the KubeDB Schema Manager operator will create Kubernetes objects in the desired state for you.
+
 ## MySQLDatabase Specification
 
 As with all other Kubernetes objects, an `MySQLDatabase` needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `spec` section.
