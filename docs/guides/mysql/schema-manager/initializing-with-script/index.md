@@ -258,9 +258,9 @@ password=DueiiR-JyGpa3rejG2Zd
 username=v-kubernetes-k8s.dc833e-yb9r7uhs
 ```
 
-### Insert Sample Data
+### Verify Initialization
 
-Here, we are going to connect to the database with the login credentials and insert some sample data into it. 
+Here, we are going to connect to the database with the login credentials and verify the database initialization, 
 
 ```bash
 $ kubectl exec -it mysql-server-0 -n demo -c mysql -- bash

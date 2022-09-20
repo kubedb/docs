@@ -409,6 +409,7 @@ mysql> SHOW CREATE DATABASE demo_user;
 ```
 Here, we can see that the `spec.database.config.characterSet` is changed to `big5`. So, our database altering has been successful. 
 
+> Note: When the Schema Manager is deleted, the associated database and user will also be deleted.
 
 ## Cleaning Up
 
