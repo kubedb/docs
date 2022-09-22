@@ -82,6 +82,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
+    terminationPolicy: DoNotTerminate
 ```
 
 ```bash
