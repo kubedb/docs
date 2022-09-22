@@ -373,7 +373,7 @@ persistentvolumeclaim/data-redis-quickstart-0   Bound    pvc-13dce65a-6cc8-4089-
 ```
 
 ## Resume Redis
-Say, the Redis CR was deleted with spec.terminationPolicy to Halt and you want to re-create the Elasticsearch cluster using the existing auth secrets and the PVCs.
+Say, the Redis CR was deleted with spec.terminationPolicy to Halt and you want to re-create the Redis cluster using the existing auth secrets and the PVCs.
 
 You can do it by simply re-deploying the original Redis object:
 ```bash
