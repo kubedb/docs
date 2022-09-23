@@ -1,0 +1,30 @@
+apiVersion: schema.kubedb.com/v1alpha1
+kind: MongoDBDatabase
+metadata:
+  name: schema-restore
+  namespace: demo
+spec:
+  database:
+    serverRef:
+      name: mongodb
+      namespace: db
+    config:
+      name: products
+  vaultRef:
+    name: vault
+    namespace: demo
+  accessPolicy:
+    subjects:
+      - name: "saname"
+        namespace: db
+        kind: "ServiceAccount"
+        apiGroup: ""
+    defaultTTL: "5m"
+    maxTTL: "200h"
+  init:
+    initialized: false
+    snapshot:
+      repository:
+        name: repo
+        namespace: demo
+  deletionPolicy: Delete

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-script
+  namespace: dev
+data:
+  init.js: |-
+    use initdb;
+    db.product.insert({"name" : "KubeDB"});

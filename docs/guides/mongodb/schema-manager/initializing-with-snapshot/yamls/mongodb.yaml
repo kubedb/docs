@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MongoDB
+metadata:
+  name: mongodb
+  namespace: db
+spec:
+  allowedSchemas:
+    namespaces:
+      from: demo
+  version: "4.4.6"
+  replicaSet:
+    name: "replicaset"
+  podTemplate:
+    spec:
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "100Mi"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 100Mi
+  terminationPolicy: WipeOut
