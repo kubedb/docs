@@ -40,7 +40,7 @@ The process consists of the following steps:
 
 1. At first the user will deploy a `MongoDBDatabase` object.
 
-2. Once a `MongoDBDatabase` object is deployed to the cluster, the `Schema Manager` operator first verifies the object by checking the `Double-OptIn`. 
+2. Once a `MongoDBDatabase` object is deployed to the cluster, the `Schema Manager` operator first verifies if it has the required permission to be able to interact with the referred database-server by checking `Double-OptIn`.
 
 3. After the `Double-OptIn` verification `Schema Manager` operator checks in the `MongoDB` server if the target database is already present or not. If the database already present there, then the `MongoDBDatabase` object will be immediately denied. 
 

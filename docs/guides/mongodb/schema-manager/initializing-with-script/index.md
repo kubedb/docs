@@ -16,7 +16,7 @@ section_menu_id: guides
 
 # Initializing with Script
 
-This guide will show you how to to create database and initialize script with MongoDB `Schema Manager` using `KubeDB Enterprise Operator`.
+This guide will show you how to to create database and initialize script with MongoDB `Schema Manager` using `Schema Manager Operator`.
 
 ## Before You Begin
 
@@ -29,6 +29,7 @@ This guide will show you how to to create database and initialize script with Mo
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
   - [MongoDBDatabase](/docs/guides/mongodb/concepts/mongodbdatabase.md)
   - [Schema Manager Overview](/docs/guides/mongodb/schema-manager/overview/index.md)
+  - [Stash Overview](https://stash.run/docs/latest/concepts/what-is-stash/overview/)  
   - [KubeVault Overview](https://kubevault.com/docs/latest/concepts/overview/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.

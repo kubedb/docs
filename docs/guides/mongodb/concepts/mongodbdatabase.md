@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # MongoDBDatabase
 
-## What is MongoDBDatabase ?
+## What is MongoDBDatabase?
 
 `MongoDBDatabase` is a Kubernetes Custom Resource Definitions (CRD). It provides a declarative way of implementing multitenancy inside KubeDB provisioned MongoDB server. You need to describe the target database, desired database configuration, the vault server reference for managing the user in a `MongoDBDatabase` object, and the KubeDB Schema Manager operator will create Kubernetes objects in the desired state for you.
 
@@ -35,9 +35,6 @@ spec:
       namespace: dev
     config: 
       name: myDB
-      characterSet: big5
-      encryption: disable
-      readOnly: 0
   vaultRef:
     name: vault
     namespace: dev
@@ -47,8 +44,8 @@ spec:
         name: "tester"
         namespace: "demo"
     defaultTTL: "10m"
+    maxTTL: "200h"
   init: 
-    initialized: false
     snapshot:
       repository:
         name: repository
@@ -57,6 +54,19 @@ spec:
       scriptPath: "etc/config"
       configMap:
         name: scripter
+      podTemplate:
+        spec:
+          containers:
+            - env:
+              - name: "HAVE_A_TRY"
+                value: "whoo! It works"
+              name: cnt
+              image: nginx
+              command:
+               - /bin/sh
+               - -c
+              args:
+               - ls
   deletionPolicy: "Delete"
 ```
 
@@ -77,9 +87,6 @@ KubeDB accepts the following fields to set in `spec.database`:
 
  - config:
    - name
-   - characterSet
-   - encryption
-   - readOnly
 
 
 ### spec.vaultRef
@@ -96,6 +103,7 @@ KubeDB accepts the following fields to set in `spec.database`:
 
 - `subjects` refers to the user or service account which is allowed to access the credentials.
 - `defaultTTL` specifies for how long the credential would be valid.
+- `maxTTL`  specifies the maximum time-to-live for the credentials associated with this role.
 
 KubeDB accepts the following fields to set in `spec.accessPolicy`:
 
@@ -106,19 +114,22 @@ KubeDB accepts the following fields to set in `spec.accessPolicy`:
 
 - defaultTTL
 
+- maxTTL
+
 
 ### spec.init
 
 `spec.init` is an optional field, containing the information of a script or a snapshot using which the database should be initialized during creation. You need to specify the following fields in `spec.init`,
 
-- `script` refers to the information regarding the .sql file which should be used for initialization.
+- `script` refers to the information regarding the .js file which should be used for initialization.
 - `snapshot` carries information about the  repository and snapshot_id to initialize the database by restoring the snapshot. 
 
 KubeDB accepts the following fields to set in `spec.init`:
 
 - script:
-  - `scriptPath` accepts a directory location at which the operator should mount the .sql file.
-  - `volumeSource` this can be either secret or configmap. The referred volume source should carry the .sql file in it. 
+  - `scriptPath` accepts a directory location at which the operator should mount the .js file.
+  - `volumeSource` can be `secret`, `configmap`, `emptyDir`, `nfs`, `persistantVolumeClaim`, `hostPath` etc. The referred volume source should carry the .js file in it. 
+  - `podTemplate `specifies pod-related details, like environment variables, arguments, images etc. & lastly there are several `volumeSources` as the subfield of `spec.init.script` like `configMap`, `secret` etc. which actually holds the Mongodb script file.
 
 - snapshot:
   - `repository` refers to the repository cr which carries necessary information about the snapshot location .
@@ -128,8 +139,7 @@ KubeDB accepts the following fields to set in `spec.init`:
 
 ### spec.deletionPolicy
 
-`spec.deletionPolicy` is a required field that gives flexibility whether to `nullify` (reject) the delete operation or which resources KubeDB should keep or delete when you delete the CRD.
-
+`spec.deletionPolicy` is a optional field that gives flexibility whether to `nullify` (reject) the delete operation.
 
 
 ## Next Steps

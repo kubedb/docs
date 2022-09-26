@@ -16,7 +16,7 @@ section_menu_id: guides
 
 # Create Database with MongoDB Schema Manager
 
-This guide will show you how to create database with MongoDB Schema Manager using `KubeDB Enterprise Operator`.
+This guide will show you how to create database with MongoDB Schema Manager using `Schema Manager Operator`.
 
 ## Before You Begin
 
@@ -29,6 +29,7 @@ This guide will show you how to create database with MongoDB Schema Manager usin
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
   - [MongoDBDatabase](/docs/guides/mongodb/concepts/mongodbdatabase.md)
   - [Schema Manager Overview](/docs/guides/mongodb/schema-manager/overview/index.md)
+  - [Stash Overview](https://stash.run/docs/latest/concepts/what-is-stash/overview/)  
   - [KubeVault Overview](https://kubevault.com/docs/latest/concepts/overview/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -90,7 +91,7 @@ Here,
 - `spec.version` is the name of the MongoDBVersion CR. Here, we are using MongoDB version `4.4.6`.
 - `spec.storageType` specifies the type of storage that will be used for MongoDB. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the MongoDB using `EmptyDir` volume.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.allowedSchemas` specifies the namespace of allowed `Schema Manager`.
+- `spec.allowedSchemas` specifies the namespace and selectors of allowed `Schema Manager`.
 - `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete the operation of MySQL CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mongodb/concepts/mongodb/#specterminationpolicy).
 
 

@@ -16,7 +16,7 @@ section_menu_id: guides
 
 # Initializing with Snapshot
 
-This guide will show you how to to create database and initialize snapshot with MongoDB `Schema Manager` using `KubeDB Enterprise Operator`.
+This guide will show you how to to create database and initialize snapshot with MongoDB `Schema Manager` using `Schema Manager Operator`.
 
 ## Before You Begin
 
@@ -29,6 +29,7 @@ This guide will show you how to to create database and initialize snapshot with 
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
   - [MongoDBDatabase](/docs/guides/mongodb/concepts/mongodbdatabase.md)
   - [Schema Manager Overview](/docs/guides/mongodb/schema-manager/overview/index.md)
+  - [Stash Overview](https://stash.run/docs/latest/concepts/what-is-stash/overview/)  
   - [KubeVault Overview](https://kubevault.com/docs/latest/concepts/overview/)
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mongodb/schema-manager/initializing-with-snapshot/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mongodb/schema-manager/initializing-with-snapshot/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
@@ -106,7 +107,7 @@ Here,
 - `spec.storageType` specifies the type of storage that will be used for MongoDB. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the MongoDB using `EmptyDir` volume.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.allowedSchemas` specifies the namespace of allowed `Schema Manager`.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete the operation of MySQL CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mongodb/concepts/mongodb/#specterminationpolicy).
+- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete the operation of MongoDB CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mongodb/concepts/mongodb/#specterminationpolicy).
 
 Let’s save this yaml configuration into `mongodb.yaml` Then create the above `MongoDB` CR
 
@@ -173,7 +174,9 @@ vaultserver.kubevault.com/vault created
 
 ### Create Repository Secret
 
-Here, we are creating a Secret for our Repository,
+Here, we are using local backend for storing data snapshots. It can be a cloud storage like GCS bucket, AWS S3, Azure Blob Storage etc. or a Kubernetes persistent volume like HostPath, PersistentVolumeClaim, NFS etc. For more information check [HERE](https://stash.run/docs/latest/guides/backends/overview/)
+
+Let's, create a Secret for our Repository,
 
 ```bash
 $ echo -n 'changeit' > RESTIC_PASSWORD
@@ -224,54 +227,7 @@ After creating the repository we've backed up one of our MongoDB database with s
 
 ### Configure Snapshot Restore
 
-Now, We are going to create a ServiceAccount, ClusterRole and ClusterRoleBinding. Stash does not grant necessary RBAC permissions to the restore job for taking restore from a different namespace. In this case, we have to provide the RBAC permissions manually. This helps to prevent unauthorized namespaces from getting access to a database via Stash.
-
-### Create ServiceAccount, ClusterRole and ClusterRoleBinding
-
-```yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: cross-namespace-target-reader
-  namespace: demo
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: cross-namespace-target-reader
-rules:
-- apiGroups: [""]
-  resources: ["secrets","pods","endpoints"]
-  verbs: ["get","list"]
-- apiGroups: ["appcatalog.appscode.com"]
-  resources: ["appbindings"]
-  verbs: ["get","list"]
----
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: cross-namespace-target-reader
-subjects:
-- kind: ServiceAccount
-  name: cross-namespace-target-reader
-  namespace: demo
-roleRef:
-  kind: ClusterRole
-  name: cross-namespace-target-reader
-  apiGroup: rbac.authorization.k8s.io
-```
-
-Let’s save this yaml configuration into `permissions.yaml` then apply it,
-
-
-```bash
-$ kubectl apply -f permissions.yaml 
-serviceaccount/cross-namespace-target-reader created
-clusterrole.rbac.authorization.k8s.io/cross-namespace-target-reader created
-clusterrolebinding.rbac.authorization.k8s.io/cross-namespace-target-reader created
-```
+Now, We are going to create a ServiceAccount, ClusterRole and ClusterRoleBinding. Stash does not grant necessary RBAC permissions to the restore job for taking restore from a different namespace. In this case, we have to provide the RBAC permissions manually. This helps to prevent unauthorized namespaces from getting access to a database via Stash. You can configure this process through this [Documentation](https://stash.run/docs/latest/guides/managed-backup/dedicated-backup-namespace/#configure-restore)
 
 ### Deploy Schema Manager Initialize with Snapshot
 
