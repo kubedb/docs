@@ -92,7 +92,7 @@ Here,
 - `spec.storageType` specifies the type of storage that will be used for MongoDB. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the MongoDB using `EmptyDir` volume.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.allowedSchemas` specifies the namespace and selectors of allowed `Schema Manager`.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete the operation of MySQL CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mongodb/concepts/mongodb/#specterminationpolicy).
+- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete the operation of MongoDB CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mongodb/concepts/mongodb/#specterminationpolicy).
 
 
 Let’s save this yaml configuration into `mongodb.yaml` Then create the above `MongoDB` CR
@@ -216,7 +216,7 @@ Here,
 - `spec.database` is a required field specifying the database server reference and the desired database configuration.
 - `spec.vaultRef` is a required field that specifies which KubeVault server to use for user management.
 - `spec.accessPolicy` is a required field that specifies the access permissions like which service account or cluster user have the access and also for how long they can access through it.
-- `spec.deletionPolicy` is a required field that gives flexibility whether to `nullify` (reject) the delete operation or which resources KubeDB should keep or delete when you delete the CRD.
+- `spec.deletionPolicy` is an optional field that gives flexibility whether to `nullify` (reject) the delete operation.
 
 Let’s save this yaml configuration into `mongodb-schema.yaml` and apply it,
 

@@ -119,7 +119,7 @@ KubeDB accepts the following fields to set in `spec.accessPolicy`:
 
 ### spec.init
 
-`spec.init` is an optional field, containing the information of a script or a snapshot using which the database should be initialized during creation. You need to specify the following fields in `spec.init`,
+`spec.init` is an optional field, containing the information of a script or a snapshot using which the database should be initialized during creation. You can only specify either script or snapshot fields in `spec.init`,
 
 - `script` refers to the information regarding the .js file which should be used for initialization.
 - `snapshot` carries information about the  repository and snapshot_id to initialize the database by restoring the snapshot. 
@@ -139,7 +139,7 @@ KubeDB accepts the following fields to set in `spec.init`:
 
 ### spec.deletionPolicy
 
-`spec.deletionPolicy` is a optional field that gives flexibility whether to `nullify` (reject) the delete operation.
+`spec.deletionPolicy` is an optional field that gives flexibility whether to `nullify` (reject) the delete operation.
 
 
 ## Next Steps

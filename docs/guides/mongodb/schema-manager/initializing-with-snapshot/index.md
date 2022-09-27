@@ -16,7 +16,7 @@ section_menu_id: guides
 
 # Initializing with Snapshot
 
-This guide will show you how to to create database and initialize snapshot with MongoDB `Schema Manager` using `Schema Manager Operator`.
+This guide will show you how to create database and initialize snapshot with MongoDB `Schema Manager` using `Schema Manager Operator`.
 
 ## Before You Begin
 
@@ -106,7 +106,7 @@ Here,
 - `spec.version` is the name of the MongoDBVersion CR. Here, we are using MongoDB version `4.4.6`.
 - `spec.storageType` specifies the type of storage that will be used for MongoDB. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the MongoDB using `EmptyDir` volume.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.allowedSchemas` specifies the namespace of allowed `Schema Manager`.
+- `spec.allowedSchemas` specifies the namespace and selectors of allowed `Schema Manager`.
 - `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete the operation of MongoDB CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mongodb/concepts/mongodb/#specterminationpolicy).
 
 Let’s save this yaml configuration into `mongodb.yaml` Then create the above `MongoDB` CR
@@ -174,7 +174,7 @@ vaultserver.kubevault.com/vault created
 
 ### Create Repository Secret
 
-Here, we are using local backend for storing data snapshots. It can be a cloud storage like GCS bucket, AWS S3, Azure Blob Storage etc. or a Kubernetes persistent volume like HostPath, PersistentVolumeClaim, NFS etc. For more information check [HERE](https://stash.run/docs/latest/guides/backends/overview/)
+Here, we are using local backend for storing data snapshots. It can be a cloud storage like GCS bucket, AWS S3, Azure Blob Storage, NFS etc. or a Kubernetes native resources like HostPath, PersistentVolumeClaim etc. For more information check [HERE](https://stash.run/docs/latest/guides/backends/overview/)
 
 Let's, create a Secret for our Repository,
 
@@ -272,7 +272,7 @@ Here,
 - `spec.vaultRef` is a required field that specifies which KubeVault server to use for user management.
 - `spec.accessPolicy` is a required field that specifies the access permissions like which service account or cluster user have the access and also for how long they can access through it.
 - `spec.init` is an optional field, containing the information of a script or a snapshot using which the database should be initialized during creation.
-- `spec.deletionPolicy` is a required field that gives flexibility whether to `nullify` (reject) the delete operation or which resources KubeDB should keep or delete when you delete the CRD.
+- `spec.deletionPolicy` is an optional field that gives flexibility whether to `nullify` (reject) the delete operation.
 
 Let’s save this yaml configuration into `schema-restore.yaml` and apply it,
 
