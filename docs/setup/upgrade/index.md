@@ -198,7 +198,11 @@ Follow the below instructions to update the license:
 #### Using Helm 3
 
 ```bash
-helm upgrade kubedb -n kubedb appscode/kubedb \
+# detect current version
+helm ls -A | grep kubedb
+
+# update license key keeping the current version
+helm upgrade kubedb -n kubedb appscode/kubedb --version=<cur_version> \
   --reuse-values \
   --set-file global.license=/path/to/new/license.txt
 ```
@@ -211,7 +215,11 @@ helm upgrade kubedb -n kubedb appscode/kubedb \
 **Update License of Community Edition:**
 
 ```bash
-helm template kubedb appscode/kubedb \
+# detect current version
+helm ls -A | grep kubedb
+
+# update license key keeping the current version
+helm template kubedb appscode/kubedb --version=<cur_version> \
   --namespace kubedb --create-namespace \
   --set global.skipCleaner=true \
   --show-only appscode/kubedb-community/templates/license.yaml \
@@ -221,7 +229,11 @@ helm template kubedb appscode/kubedb \
 **Update License of Enterprise Edition:**
 
 ```bash
-helm template kubedb appscode/kubedb \
+# detect current version
+helm ls -A | grep kubedb
+
+# update license key keeping the current version
+helm template kubedb appscode/kubedb --version=<cur_version> \
   --namespace kubedb --create-namespace \
   --set kubedb-ops-manager.enabled=true \
   --set kubedb-autoscaler.enabled=true \
