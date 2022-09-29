@@ -112,7 +112,7 @@ Here,
 Let’s save this yaml configuration into `mongodb.yaml` Then create the above `MongoDB` CR
 
 ```bash
-$ kc apply -f mongodb.yaml 
+$ kubectl apply -f mongodb.yaml 
 mongodb.kubedb.com/mongodb created
 ```
 
