@@ -230,7 +230,6 @@ spec:
     defaultTTL: "5m"
     maxTTL: "200h"
   init:
-    initialized: false
     script:
       scriptPath: "/etc/config"
       configMap:
@@ -256,6 +255,9 @@ Here,
 - `spec.vaultRef` is a required field that specifies which KubeVault server to use for user management.
 - `spec.accessPolicy` is a required field that specifies the access permissions like which service account or cluster user have the access and also for how long they can access through it.
 - `spec.init` is an optional field, containing the information of a script or a snapshot using which the database should be initialized during creation.
+- `spec.init.script` refers to the information regarding the .js file which should be used for initialization.
+- `spec.init.script.scriptPath` accepts a directory location at which the operator should mount the .js file. 
+- `spec.init.script.podTemplate` specifies pod-related details, like environment variables, arguments, images etc.
 - `spec.deletionPolicy` is an optional field that gives flexibility whether to `nullify` (reject) the delete operation.
 
 Let’s save this yaml configuration into `sample-script.yaml` and apply it,

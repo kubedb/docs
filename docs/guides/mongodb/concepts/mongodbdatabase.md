@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # MongoDBDatabase
 
-## What is MongoDBDatabase?
+## What is MongoDBDatabase
 
 `MongoDBDatabase` is a Kubernetes Custom Resource Definitions (CRD). It provides a declarative way of implementing multitenancy inside KubeDB provisioned MongoDB server. You need to describe the target database, desired database configuration, the vault server reference for managing the user in a `MongoDBDatabase` object, and the KubeDB Schema Manager operator will create Kubernetes objects in the desired state for you.
 
@@ -129,7 +129,7 @@ KubeDB accepts the following fields to set in `spec.init`:
 - script:
   - `scriptPath` accepts a directory location at which the operator should mount the .js file.
   - `volumeSource` can be `secret`, `configmap`, `emptyDir`, `nfs`, `persistantVolumeClaim`, `hostPath` etc. The referred volume source should carry the .js file in it. 
-  - `podTemplate `specifies pod-related details, like environment variables, arguments, images etc. & lastly there are several `volumeSources` as the subfield of `spec.init.script` like `configMap`, `secret` etc. which actually holds the Mongodb script file.
+  - `podTemplate` specifies pod-related details, like environment variables, arguments, images etc.
 
 - snapshot:
   - `repository` refers to the repository cr which carries necessary information about the snapshot location .

@@ -258,7 +258,6 @@ spec:
     defaultTTL: "5m"
     maxTTL: "200h"
   init:
-    initialized: false
     snapshot:
       repository:
         name: repo
@@ -288,12 +287,19 @@ Let's check the `STATUS` of `Schema Manager`,
 $ kubectl get mongodbdatabase -A
 NAMESPACE   NAME              DB_SERVER   DB_NAME    STATUS    AGE
 demo        schema-restore    mongodb     products   Current   56s
-
 ```
-
 Here,
 
 > In `STATUS` section, `Current` means that the current `Secret` of `Schema Manager` is vaild, and it will automatically `Expired` after it reaches the limit of `defaultTTL` that we've defined in the above yaml. 
+
+Also, check the `STATUS` of `restoresession`
+
+```bash
+$ kubectl get restoresession -n demo
+NAME                      REPOSITORY   PHASE       DURATION   AGE
+schema-restore-mongo-rs   repo         Succeeded   5s         21s
+```
+
 
 Now, let's get the secret name from `schema-manager`, and the login credentials for connecting to the database,
 
