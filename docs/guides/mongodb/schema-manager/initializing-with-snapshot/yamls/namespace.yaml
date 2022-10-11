@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: db
+  labels:
+    kubernetes.io/metadata.name: db
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+  labels:
+    kubernetes.io/metadata.name: demo

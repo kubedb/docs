@@ -1,0 +1,44 @@
+apiVersion: schema.kubedb.com/v1alpha1
+kind: MongoDBDatabase
+metadata:
+  name: sample-script
+  namespace: dev
+  labels:
+    "schema.kubedb.com": "mongo"
+spec:
+  database:
+    serverRef:
+      name: mongodb
+      namespace: demo
+    config:
+      name: initdb
+  vaultRef:
+    name: vault
+    namespace: demo
+  accessPolicy:
+    subjects:
+      - name: "saname"
+        namespace: dev
+        kind: "ServiceAccount"
+        apiGroup: ""
+    defaultTTL: "5m"
+    maxTTL: "200h"
+  init:
+    script:
+      scriptPath: "/etc/config"
+      configMap:
+        name: "test-script"
+      podTemplate:
+        spec:
+          containers:
+            - env:
+              - name: "HAVE_A_TRY"
+                value: "whoo! It works"
+              name: cnt
+              image: nginx
+              command:
+               - /bin/sh
+               - -c
+              args:
+               - ls
+  deletionPolicy: Delete
