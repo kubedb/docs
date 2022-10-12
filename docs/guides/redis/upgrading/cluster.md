@@ -102,7 +102,7 @@ metadata:
   name: upgrade-cluster
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   databaseRef:
     name: redis-cluster
   upgrade:

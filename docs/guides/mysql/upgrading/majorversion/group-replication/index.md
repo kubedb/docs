@@ -230,7 +230,7 @@ metadata:
   name: my-upgrade-major-group
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   databaseRef:
     name: my-group
   upgrade:

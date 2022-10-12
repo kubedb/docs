@@ -79,7 +79,7 @@ metadata:
 spec:
   allowedSchemas:
     namespaces:
-      from: demo
+      from: All
   version: "4.4.6"
   replicaSet:
     name: "replicaset"
@@ -258,6 +258,7 @@ spec:
     defaultTTL: "5m"
     maxTTL: "200h"
   init:
+    initialized: false
     snapshot:
       repository:
         name: repo

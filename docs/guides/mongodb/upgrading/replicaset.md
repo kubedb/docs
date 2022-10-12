@@ -100,7 +100,7 @@ metadata:
   name: mops-replicaset-upgrade
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   databaseRef:
     name: mg-replicaset
   upgrade:

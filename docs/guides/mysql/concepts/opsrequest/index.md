@@ -37,7 +37,7 @@ metadata:
 spec:
   databaseRef:
     name: my-group
-  type: Upgrade
+  type: UpdateVersion
   upgrade:
     targetVersion: 8.0.29
 status:

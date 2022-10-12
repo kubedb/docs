@@ -254,7 +254,7 @@ metadata:
   name: pg-upgrade
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   upgrade:
     targetVersion: "13.2"
   databaseRef:

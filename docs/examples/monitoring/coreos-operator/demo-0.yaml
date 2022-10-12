@@ -78,7 +78,7 @@ subjects:
   name: prometheus-operator
   namespace: demo
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: prometheus-operator
@@ -87,6 +87,9 @@ metadata:
     operator: prometheus
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      operator: prometheus
   template:
     metadata:
       labels:

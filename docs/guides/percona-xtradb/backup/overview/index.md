@@ -129,5 +129,4 @@ For a Percona XtraDB Cluster, the Stash operator creates a number (equal to the 
 
 ## Next Steps
 
-- Backup a standalone Precona XtraDB server using Stash by following the guides from [here](/docs/guides/percona-xtradb/backup/standalone/index.md).
 - Backup a Precona XtraDB cluster using Stash by following the guides from [here](/docs/guides/percona-xtradb/backup/cluster/index.md).
