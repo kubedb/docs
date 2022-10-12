@@ -196,15 +196,11 @@ metadata:
   name: proxy-my-group
   namespace: demo
 spec:
-  version: "2.3.2"
+  version: "2.3.2-debian"
   replicas: 1
   mode: GroupReplication
   backend:
-    ref:
-      apiGroup: "kubedb.com"
-      kind: MySQL
-      name: mysql-server
-    replicas: 3
+    name: mysql-server
   terminationPolicy: Delete
 ```
 
