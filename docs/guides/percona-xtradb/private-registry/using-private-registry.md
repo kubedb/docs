@@ -44,7 +44,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: PerconaXtraDBVersion
   metadata:
-    name: 5.7-cluster
+    name: 8.0.26
   spec:
     db:
       image: PRIVATE_REGISTRY/percona-xtradb-cluster:5.7
@@ -60,7 +60,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
           name: perconaxtradb-backup-5.7
         restoreTask:
           name: perconaxtradb-restore-5.7
-    version: "5.7"
+    version: "8.0.26"
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -105,7 +105,7 @@ metadata:
   name: px-pvt-reg
   namespace: demo
 spec:
-  version: "5.7-cluster"
+  version: "8.0.26"
   replicas: 3
   storageType: Durable
   storage:

@@ -151,7 +151,7 @@ metadata:
   name: px-custom-rbac
   namespace: demo
 spec:
-  version: "5.7"
+  version: "8.0.26"
   replicas: 1
   storageType: Durable
   podTemplate:
@@ -261,7 +261,7 @@ metadata:
   name: px-custom-rbac-two
   namespace: demo
 spec:
-  version: "5.7"
+  version: "8.0.26"
   replicas: 1
   storageType: Durable
   podTemplate:

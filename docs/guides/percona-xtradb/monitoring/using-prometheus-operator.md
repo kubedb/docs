@@ -94,7 +94,7 @@ metadata:
   name: px-coreos-prom
   namespace: demo
 spec:
-  version: "5.7-cluster"
+  version: "8.0.26"
   replicas: 3
   storageType: Durable
   storage:
@@ -135,7 +135,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get px -n demo px-coreos-prom
 NAME             VERSION       STATUS    AGE
-px-coreos-prom   5.7-cluster   Running   5m4s
+px-coreos-prom   8.0.26   Running   5m4s
 ```
 
 KubeDB will create a separate stats service with name `{PerconaXtraDB_obj_name}-stats` for monitoring purpose.

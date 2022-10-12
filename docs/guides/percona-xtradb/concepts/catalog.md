@@ -30,7 +30,7 @@ As with all other Kubernetes objects, a PerconaXtraDBVersion needs `apiVersion`,
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PerconaXtraDBVersion
 metadata:
-  name: 5.7-cluster
+  name: 8.0.26
 spec:
   db:
     image: kubedb/percona-xtradb-cluster:5.7
@@ -46,7 +46,7 @@ spec:
         name: perconaxtradb-backup-5.7
       restoreTask:
         name: perconaxtradb-restore-5.7
-  version: "5.7"
+  version: "8.0.26"
 ```
 
 ### .metadata.name

@@ -51,7 +51,7 @@ When you have installed KubeDB, it has created `PerconaXtraDBVersion` objects fo
 $ kubectl get pxversion
 NAME          VERSION   DB_IMAGE                            DEPRECATED   AGE
 5.7           5.7       kubedb/percona:5.7                               14m
-5.7-cluster   5.7       kubedb/percona-xtradb-cluster:5.7                14m
+8.0.26   5.7       kubedb/percona-xtradb-cluster:5.7                14m
 ```
 
 ## Create a PerconaXtraDB database
@@ -65,7 +65,7 @@ metadata:
   name: demo-quickstart
   namespace: demo
 spec:
-  version: "5.7"
+  version: "8.0.26"
   replicas: 1
   storageType: Durable
   storage:
@@ -230,7 +230,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Delete
-  version: "5.7"
+  version: "8.0.26"
 status:
   observedGeneration: 2
   phase: Running
@@ -383,7 +383,7 @@ spec:
           storageClassName: standard
         storageType: Durable
         terminationPolicy: Halt
-        version: "5.7"
+        version: "8.0.26"
 status:
   observedGeneration: 1
   pausingTime: "2019-12-23T13:40:55Z"
