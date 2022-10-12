@@ -59,7 +59,7 @@ metadata:
   name: px-init-script
   namespace: demo
 spec:
-  version: "5.7"
+  version: "8.0.26"
   replicas: 1
   storageType: Durable
   storage:
@@ -189,7 +189,7 @@ kind: PerconaXtraDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"px-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"px-init-script"}}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","updateStrategy":{"type":"RollingUpdate"},"version":"5.7"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"px-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"px-init-script"}}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","updateStrategy":{"type":"RollingUpdate"},"version":"8.0.26"}}
   creationTimestamp: "2020-01-09T13:45:43Z"
   finalizers:
   - kubedb.com
@@ -235,7 +235,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: DoNotTerminate
-  version: "5.7"
+  version: "8.0.26"
 status:
   observedGeneration: 2
   phase: Running

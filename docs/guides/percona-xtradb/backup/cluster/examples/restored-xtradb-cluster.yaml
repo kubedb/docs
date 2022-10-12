@@ -4,7 +4,7 @@ metadata:
   name: restored-xtradb-cluster
   namespace: demo
 spec:
-  version: "5.7-cluster"
+  version: "8.0.26"
   replicas: 3
   authSecret:
     name: sample-xtradb-cluster-auth
