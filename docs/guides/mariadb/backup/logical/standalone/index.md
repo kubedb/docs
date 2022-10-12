@@ -585,7 +585,7 @@ If you want to restore the backed up data into a different database of the same 
 
 ### Restore Into Different Namespace
 
-If you want to restore into a different namespace of the same cluster, you have to create the Repository, backend Secret in the desired namespace. You can use [Stash kubectl plugin](https://stash.run/docs/latest/guides/cli/cli/) to easily copy the resources into a new namespace. Then, you have to create the `RestoreSession` object in the desired namespace pointing to the Repository, AppBinding of that namespace.
+If you want to restore into a different namespace of the same cluster, you have to create the Repository, backend Secret in the desired namespace. You can use [Stash kubectl plugin](https://stash.run/docs/latest/guides/cli/kubectl-plugin/) to easily copy the resources into a new namespace. Then, you have to create the `RestoreSession` object in the desired namespace pointing to the Repository, AppBinding of that namespace.
 
 ### Restore Into Different Cluster
 
