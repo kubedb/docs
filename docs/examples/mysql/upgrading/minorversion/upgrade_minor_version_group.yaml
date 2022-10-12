@@ -4,7 +4,7 @@ metadata:
   name: my-upgrade-minor-group
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   databaseRef:
     name: my-group
   upgrade:

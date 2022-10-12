@@ -96,7 +96,7 @@ metadata:
   name: upgrade-standalone
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   databaseRef:
     name: redis-quickstart
   upgrade:

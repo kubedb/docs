@@ -107,7 +107,7 @@ metadata:
   name: mops-shard-upgrade
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   databaseRef:
     name: mg-sharding
   upgrade:
