@@ -82,7 +82,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    terminationPolicy: DoNotTerminate
+  terminationPolicy: DoNotTerminate
 ```
 
 ```bash
