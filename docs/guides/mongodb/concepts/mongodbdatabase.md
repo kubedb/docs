@@ -45,7 +45,8 @@ spec:
         namespace: "demo"
     defaultTTL: "10m"
     maxTTL: "200h"
-  init: 
+  init:
+    initialized: false
     snapshot:
       repository:
         name: repository

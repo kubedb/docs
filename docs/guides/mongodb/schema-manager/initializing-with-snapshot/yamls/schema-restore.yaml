@@ -22,6 +22,7 @@ spec:
     defaultTTL: "5m"
     maxTTL: "200h"
   init:
+    initialized: false
     snapshot:
       repository:
         name: repo
