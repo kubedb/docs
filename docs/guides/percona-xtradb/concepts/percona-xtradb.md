@@ -29,7 +29,7 @@ metadata:
   name: demo-px
   namespace: demo
 spec:
-  version: "5.7"
+  version: "8.0.26"
   replicas: 3
   authSecret:
     name: demo-px-auth
@@ -92,7 +92,7 @@ spec:
 `.spec.version` is a required field specifying the name of the [PerconaXtraDBVersion](/docs/guides/percona-xtradb/concepts/catalog.md) object where the docker images are specified. Currently, when you install KubeDB, it creates the following `PerconaXtraDBVersion` resources,
 
 - `5.7`
-- `5.7-cluster`
+- `8.0.26`
 
 ### .spec.replicas
 
@@ -169,7 +169,7 @@ metadata:
   name: init-demo-px
   namespace: demo
 spec:
-  version: "5.7"
+  version: "8.0.26"
   init:
     script:
       configMap:

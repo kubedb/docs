@@ -105,7 +105,7 @@ metadata:
   name: custom-px
   namespace: demo
 spec:
-  version: "5.7"
+  version: "8.0.26"
   replicas: 1
   configSecret:
     name: my-custom-config

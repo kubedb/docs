@@ -57,7 +57,7 @@ metadata:
   name: sample-xtradb-cluster
   namespace: demo
 spec:
-  version: "5.7-cluster"
+  version: "8.0.26"
   replicas: 3
   storageType: Durable
   storage:
@@ -84,7 +84,7 @@ Let's check if the database is ready to use,
 ```bash
 $  kubectl get px -n demo sample-xtradb-cluster
 NAME                    VERSION       STATUS  AGE
-sample-xtradb-cluster   5.7-cluster   Ready   7m46s
+sample-xtradb-cluster   8.0.26   Ready   7m46s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -163,7 +163,7 @@ spec:
   secret:
     name: sample-xtradb-cluster-auth
   type: kubedb.com/perconaxtradb
-  version: "5.7-cluster"
+  version: "8.0.26"
 ```
 
 Stash uses the AppBinding CRD to connect with the target database. It requires the following two fields to be set in the AppBinding's `.spec` section.
@@ -436,7 +436,7 @@ metadata:
   name: restored-xtradb-cluster
   namespace: demo
 spec:
-  version: "5.7-cluster"
+  version: "8.0.26"
   replicas: 3
   authSecret:
     name: sample-xtradb-cluster-auth
@@ -465,7 +465,7 @@ If you check the database status, you will see it is stuck in **`Provisioning`**
 ```bash
 $ kubectl get px -n demo restored-xtradb-cluster
 NAME                      VERSION       STATUS         AGE
-restored-xtradb-cluster   5.7-cluster   Provisioning   4m10s
+restored-xtradb-cluster   8.0.26   Provisioning   4m10s
 ```
 
 #### Create RestoreSession
@@ -549,9 +549,9 @@ At first, check if the database has gone into **`Ready`** state,
 ```bash
 $ kubectl get px -n demo restored-xtradb-cluster --watch
 NAME                      VERSION       STATUS         AGE
-restored-xtradb-cluster   5.7-cluster   Provisioning   3m36s
-restored-xtradb-cluster   5.7-cluster   Provisioning   4m4s
-restored-xtradb-cluster   5.7-cluster   Ready        4m4s
+restored-xtradb-cluster   8.0.26   Provisioning   3m36s
+restored-xtradb-cluster   8.0.26   Provisioning   4m4s
+restored-xtradb-cluster   8.0.26   Ready        4m4s
 ```
 
 Now, find out the database Pod,
