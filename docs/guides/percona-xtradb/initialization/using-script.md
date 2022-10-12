@@ -146,7 +146,7 @@ fi
   Version:  5.7
 Status:
   Observed Generation:  2
-  Phase:                Running
+  Phase:                Ready
 Events:
   Type    Reason      Age    From                    Message
   ----    ------      ----   ----                    -------
@@ -175,7 +175,7 @@ px-init-script       ClusterIP   10.97.113.212   <none>        3306/TCP   6m47s
 px-init-script-gvr   ClusterIP   None            <none>        3306/TCP   6m47s
 ```
 
-KubeDB operator sets the `.status.phase` to `Running` once the database is successfully created. Run the following command to see the modified PerconaXtraDB object:
+KubeDB operator sets the `.status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified PerconaXtraDB object:
 
 ```bash
 $ kubectl get px -n demo px-init-script -o yaml
@@ -238,7 +238,7 @@ spec:
   version: "8.0.26"
 status:
   observedGeneration: 2
-  phase: Running
+  phase: Ready
 ```
 
 ## Connect with PerconaXtraDB database
