@@ -230,6 +230,7 @@ spec:
     defaultTTL: "5m"
     maxTTL: "200h"
   init:
+    initialized: false
     script:
       scriptPath: "/etc/config"
       configMap:

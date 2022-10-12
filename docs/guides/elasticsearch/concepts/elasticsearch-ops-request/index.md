@@ -31,7 +31,7 @@ metadata:
   name: es-upgrade
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   databaseRef:
     name: es
   upgrade:
@@ -89,7 +89,7 @@ metadata:
   name: es-topology-upgrade
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   databaseRef:
     name: es
   upgrade:

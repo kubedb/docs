@@ -35,7 +35,7 @@ metadata:
   name: mdops-upgrade
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   databaseRef:
     name: sample-mariadb
   upgrade:

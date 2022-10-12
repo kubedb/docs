@@ -37,7 +37,7 @@ metadata:
 spec:
   databaseRef:
     name: pg-group
-  type: Upgrade
+  type: UpdateVersion
   upgrade:
     targetVersion: 8.0.27
 status:

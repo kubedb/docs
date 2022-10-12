@@ -204,7 +204,7 @@ metadata:
 spec:
   databaseRef:
     name: my-standalone
-  type: Upgrade
+  type: UpdateVersion
   upgrade:
     targetVersion: "5.7.36"
 ```

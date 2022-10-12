@@ -203,7 +203,7 @@ metadata:
 spec:
   databaseRef:
     name: my-standalone
-  type: Upgrade
+  type: UpdateVersion
   upgrade:
     targetVersion: "8.0.29"
 ```

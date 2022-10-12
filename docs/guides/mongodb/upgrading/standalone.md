@@ -96,7 +96,7 @@ metadata:
   name: mops-upgrade
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   databaseRef:
     name: mg-standalone
   upgrade:

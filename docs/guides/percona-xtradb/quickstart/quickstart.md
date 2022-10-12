@@ -148,7 +148,7 @@ fi
   Version:  5.7
 Status:
   Observed Generation:  2
-  Phase:                Running
+  Phase:                Ready
 Events:
   Type    Reason      Age   From                    Message
   ----    ------      ----  ----                    -------
@@ -177,7 +177,7 @@ demo-quickstart       ClusterIP   10.96.88.71   <none>        3306/TCP   19m
 demo-quickstart-gvr   ClusterIP   None          <none>        3306/TCP   19m
 ```
 
-KubeDB operator sets the `.status.phase` to `"Running"` once the database is successfully created. Run the following command to see the modified `PerconaXtraDB` object:
+KubeDB operator sets the `.status.phase` to `"Ready"` once the database is successfully created. Run the following command to see the modified `PerconaXtraDB` object:
 
 ```bash
 $ kubectl get px -n demo demo-quickstart -o yaml
@@ -233,7 +233,7 @@ spec:
   version: "8.0.26"
 status:
   observedGeneration: 2
-  phase: Running
+  phase: Ready
 ```
 
 ## Connect with PerconaXtraDB database
