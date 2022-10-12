@@ -96,15 +96,11 @@ metadata:
   name: builtin-prom-proxysql
   namespace: demo
 spec:
-  version: "2.3.2"
+  version: "2.3.2-debian"
   replicas: 1
   mode: GroupReplication
   backend:
-    ref:
-      apiGroup: "kubedb.com"
-      kind: MySQL
-      name: my-group
-    replicas: 3
+    name: my-group
   monitor:
     agent: prometheus.io/builtin
     prometheus:
