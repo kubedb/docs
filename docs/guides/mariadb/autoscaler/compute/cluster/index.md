@@ -143,6 +143,9 @@ metadata:
 spec:
   databaseRef:
     name: sample-mariadb
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
   compute:
     mariadb:
       trigger: "On"
@@ -169,6 +172,11 @@ If the difference between current & recommended resource is less than ResourceDi
 - `spec.compute.mariadb.maxAllowed` specifies the maximum allowed resources for the database.
 - `spec.compute.mariadb.controlledResources` specifies the resources that are controlled by the autoscaler.
 - `spec.compute.mariadb.containerControlledValues` specifies which resource values should be controlled. The default is "RequestsAndLimits".
+- `spec.opsRequestOptions.apply` has two supported value : `IfReady` & `Always`.
+Use `IfReady` if you want to process the opsReq only when the database is Ready. And use `Always` if you want to process the execution of opsReq irrespective of the Database state.
+- `spec.opsRequestOptions.timeout` specifies the maximum time for each step of the opsRequest(in seconds).
+If a step doesn't finish within the specified timeout, the ops request will result in failure.
+
 
 Let's create the `MariaDBAutoscaler` CR we have shown above,
 
@@ -226,6 +234,10 @@ Metadata:
         f:databaseRef:
           .:
           f:name:
+        f:opsRequestOptions:
+          .:
+          f:apply:
+          f:timeout:
     Manager:      kubectl-client-side-apply
     Operation:    Update
     Time:         2022-09-16T11:26:58Z
@@ -261,6 +273,9 @@ Spec:
       Trigger:                   On
   Database Ref:
     Name:  sample-mariadb
+  Ops Request Options:
+    Apply:    IfReady
+    Timeout:  3m0s
 Status:
   Checkpoints:
     Cpu Histogram:
