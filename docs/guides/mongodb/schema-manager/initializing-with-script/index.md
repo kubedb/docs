@@ -2,7 +2,7 @@
 title: Initializing with Script
 menu:
   docs_{{ .version }}:
-    identifier: initializing-with-script
+    identifier: mg-initializing-with-script
     name: Initializing with Script
     parent: mg-schema-manager
     weight: 20
