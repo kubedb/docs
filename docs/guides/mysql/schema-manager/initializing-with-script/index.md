@@ -2,7 +2,7 @@
 title: Initializing with Script
 menu:
   docs_{{ .version }}:
-    identifier: initializing-with-script
+    identifier: mysql-initializing-with-script
     name: Initializing with Script
     parent: guides-mysql-schema-manager
     weight: 20
