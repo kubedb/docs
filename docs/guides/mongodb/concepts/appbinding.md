@@ -32,33 +32,53 @@ An `AppBinding` object created by `KubeDB` for PostgreSQL database is shown belo
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  name: quick-postgres
-  namespace: demo
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mgo-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.2.3"}}
+  creationTimestamp: "2022-10-26T04:42:05Z"
+  generation: 1
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: quick-postgres
+    app.kubernetes.io/instance: sample-mgo-rs
     app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: postgres
-    app.kubernetes.io/version: "10.2"-v2
+    app.kubernetes.io/name: mongodbs.kubedb.com
+  name: sample-mgo-rs
+  namespace: demo
+  ownerReferences:
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: MongoDB
+      name: sample-mgo-rs
+      uid: 658bf7d1-3772-4c89-84db-5ac74a6c5851
+  resourceVersion: "577375"
+  uid: b0cd9885-53d9-4a2b-93a9-cf9fa90594fd
 spec:
-  type: kubedb.com/postgres
-  secret:
-    name: quick-postgres-auth
+  appRef:
+    apiGroup: kubedb.com
+    kind: MongoDB
+    name: sample-mgo-rs
+    namespace: demo
   clientConfig:
     service:
-      name: quick-postgres
-      path: /
-      port: 5432
-      query: sslmode=disable
-      scheme: postgresql
-  secretTransforms:
-    - renameKey:
-        from: POSTGRES_USER
-        to: username
-    - renameKey:
-        from: POSTGRES_PASSWORD
-        to: password
-  version: "13.2"
+      name: sample-mgo-rs
+      port: 27017
+      scheme: mongodb
+  parameters:
+    apiVersion: config.kubedb.com/v1alpha1
+    kind: MongoConfiguration
+    replicaSets:
+      host-0: rs0/sample-mgo-rs-0.sample-mgo-rs-pods.demo.svc:27017,sample-mgo-rs-1.sample-mgo-rs-pods.demo.svc:27017,sample-mgo-rs-2.sample-mgo-rs-pods.demo.svc:27017
+    stash:
+      addon:
+        backupTask:
+          name: mongodb-backup-4.2.3
+        restoreTask:
+          name: mongodb-restore-4.2.3
+  secret:
+    name: sample-mgo-rs-auth
+  type: kubedb.com/mongodb
+  version: 4.2.3
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.
@@ -115,6 +135,10 @@ Elasticsearch:
 | `ADMIN_USERNAME` | Admin username          |
 | `ADMIN_PASSWORD` | Password for admin user |
 
+
+#### spec.appRef
+appRef refers to the underlying application. It has 4 fields named `apiGroup`, `kind`, `name` & `namespace`.
+
 #### spec.clientConfig
 
 `spec.clientConfig` defines how to communicate with the target database. You can use either an URL or a Kubernetes service to connect with the database. You don't have to specify both of them.
@@ -125,7 +149,7 @@ You can configure following fields in `spec.clientConfig` section:
 
   `spec.clientConfig.url` gives the location of the database, in standard URL form (i.e. `[scheme://]host:port/[path]`). This is particularly useful when the target database is running outside of the Kubernetes cluster. If your database is running inside the cluster, use `spec.clientConfig.service` section instead.
 
-  > Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
+> Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
 
 - **spec.clientConfig.service**
 

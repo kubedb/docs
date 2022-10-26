@@ -29,10 +29,13 @@ metadata:
   name: mgo1
   namespace: demo
 spec:
+  autoOps:
+    disabled: true
   version: "4.2.3"
   replicas: 3
   authSecret:
     name: mgo1-auth
+    externallyManaged: false
   replicaSet:
     name: rs0
   shardTopology:
@@ -77,6 +80,7 @@ spec:
           - abc@appscode.com
   clusterAuthMode: x509
   storageType: "Durable"
+  storageEngine: wiredTiger
   storage:
     storageClassName: "standard"
     accessModes:
@@ -104,9 +108,13 @@ spec:
     metadata:      
       annotations:
         passMe: ToDatabasePod
+      labels:
+        thisLabel: willGoToPod
     controller:
       annotations:
         passMe: ToStatefulSet
+      labels:
+        thisLabel: willGoToSts
     spec:
       serviceAccountName: my-service-account
       schedulerName: my-scheduler
@@ -161,8 +169,15 @@ spec:
         memory: 500Mi
     securityContext:
       runAsUser: 1001
-
+  healthChecker:
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 2
+    disableWriteCheck: false
 ```
+
+### spec.autoOps
+AutoOps is an optional field to control the generation of versionUpgrade & TLS-related recommendations.
 
 ### spec.version
 
@@ -189,9 +204,25 @@ KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are 
 
 ### spec.authSecret
 
-`spec.authSecret` is an optional field that points to a Secret used to hold credentials for `mongodb` superuser. If not set, KubeDB operator creates a new Secret `{mongodb-object-name}-auth` for storing the password for `mongodb` superuser for each MongoDB object. If you want to use an existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`.
+`spec.authSecret` is an optional field that points to a Secret used to hold credentials for `mongodb` superuser. If not set, KubeDB operator creates a new Secret `{mongodb-object-name}-auth` for storing the password for `mongodb` superuser for each MongoDB object. 
 
-This secret contains a `user` key and a `password` key which contains the `username` and `password` respectively for `mongodb` superuser.
+We can use this field in 3 mode. 
+1. Using an external secret. In this case, You need to create an auth secret first with required fields, then specify the secret name when creating the MongoDB object using `spec.authSecret.name` & set `spec.authSecret.externallyManaged` to true.
+```yaml
+authSecret:
+  name: <your-created-auth-secret-name>
+  externallyManaged: true
+```
+
+2. Specifying the secret name only. In this case, You need to specify the secret name when creating the MongoDB object using `spec.authSecret.name`. `externallyManaged` is by default false.
+```yaml
+authSecret:
+  name: <intended-auth-secret-name>
+```
+
+3. Let KubeDB do everything for you. In this case, no work for you.
+
+AuthSecret contains a `user` key and a `password` key which contains the `username` and `password` respectively for `mongodb` superuser.
 
 Example:
 
@@ -435,8 +466,10 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 
 - metadata:
   - annotations (pod's annotation)
+  - labels (pod's labels)
 - controller:
   - annotations (statefulset's annotation)
+  - labels (statefulset's labels)
 - spec:
   - args
   - env
@@ -455,7 +488,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - readinessProbe
   - lifecycle
 
-Uses of some field of `spec.podTemplate` is described below,
+You can checkout the full list [here](https://github.com/kmodules/offshoot-api/blob/ea366935d5bad69d7643906c7556923271592513/api/v1/types.go#L42-L259). Uses of some field of `spec.podTemplate` is described below,
 
 NB. If `spec.shardTopology` is set, then `spec.podTemplate` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.podTemplate`
 
@@ -588,6 +621,15 @@ Possible values are : i) `All` to allow all namespaces, ii) `Same` to allow only
 ### spec.coordinator
 We use a dedicated container, named `replication-mode-detector`, to continuously select primary pod and add label as primary. By specifying `spec.coordinator.resources` & `spec.coordinator.securityContext`, you can set the resources and securityContext of that mode-detector container.
 
+
+## spec.healthChecker
+It defines the attributes for the health checker. 
+- `spec.healthChecker.periodSeconds` specifies how often to perform the health check.
+- `spec.healthChecker.timeoutSeconds` specifies the number of seconds after which the probe times out.
+- `spec.healthChecker.failureThreshold` specifies minimum consecutive failures for the healthChecker to be considered failed.
+- `spec.healthChecker.disableWriteCheck` specifies whether to disable the writeCheck or not.
+
+Know details about KubeDB Health checking from this [blog post](https://blog.byte.builders/post/kubedb-health-checker/).
 
 ## Next Steps
 

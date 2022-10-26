@@ -22,11 +22,9 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Mongo
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` Community, Enterprise and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner, Ops-manager and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
-
-- Install `Vertical Pod Autoscaler` from [here](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation)
 
 - Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
 
@@ -143,6 +141,7 @@ Here,
 - `spec.storage.standalone.trigger` specifies that storage autoscaling is enabled for this database.
 - `spec.storage.standalone.usageThreshold` specifies storage usage threshold, if storage usage exceeds `60%` then storage autoscaling will be triggered.
 - `spec.storage.standalone.scalingThreshold` specifies the scaling threshold. Storage will be scaled to `50%` of the current amount.
+- It has another field `spec.storage.replicaSet.expansionMode` to set the opsRequest volumeExpansionMode, which support two values: `Online` & `Offline`. Default value is `Online`.
 
 Let's create the `MongoDBAutoscaler` CR we have shown above,
 
@@ -350,14 +349,14 @@ Status:
 Events:
   Type    Reason                     Age   From                        Message
   ----    ------                     ----  ----                        -------
-  Normal  PauseDatabase              110s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-standalone
-  Normal  PauseDatabase              110s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-standalone
-  Normal  StandaloneVolumeExpansion  55s   KubeDB Enterprise Operator  Successfully Expanded Volume
-  Normal                             50s   KubeDB Enterprise Operator  Successfully Expanded Volume
-  Normal  ResumeDatabase             50s   KubeDB Enterprise Operator  Resuming MongoDB demo/mg-standalone
-  Normal  ResumeDatabase             50s   KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-standalone
-  Normal  ReadyStatefulSets          45s   KubeDB Enterprise Operator  StatefulSet is recreated
-  Normal  Successful                 45s   KubeDB Enterprise Operator  Successfully Expanded Volume
+  Normal  PauseDatabase              110s  KubeDB Ops-manager operator  Pausing MongoDB demo/mg-standalone
+  Normal  PauseDatabase              110s  KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-standalone
+  Normal  StandaloneVolumeExpansion  55s   KubeDB Ops-manager operator  Successfully Expanded Volume
+  Normal                             50s   KubeDB Ops-manager operator  Successfully Expanded Volume
+  Normal  ResumeDatabase             50s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-standalone
+  Normal  ResumeDatabase             50s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-standalone
+  Normal  ReadyStatefulSets          45s   KubeDB Ops-manager operator  StatefulSet is recreated
+  Normal  Successful                 45s   KubeDB Ops-manager operator  Successfully Expanded Volume
 ```
 
 Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,

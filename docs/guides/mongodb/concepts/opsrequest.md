@@ -546,7 +546,7 @@ A `MongoDBOpsRequest` object has the following fields in the `spec` section.
 
 `spec.type` specifies the kind of operation that will be applied to the database. Currently, the following types of operations are allowed in `MongoDBOpsRequest`.
 
-- `Upgrade`
+- `Upgrade` / `UpdateVersion`
 - `HorizontalScaling`
 - `VerticalScaling`
 - `VolumeExpansion`
@@ -554,13 +554,20 @@ A `MongoDBOpsRequest` object has the following fields in the `spec` section.
 - `ReconfigureTLS`
 - `Restart`
 
-> You can perform only one type of operation on a single `MongoDBOpsRequest` CR. For example, if you want to upgrade your database and scale up its replica then you have to create two separate `MongoDBOpsRequest`. At first, you have to create a `MongoDBOpsRequest` for upgrading. Once it is completed, then you can create another `MongoDBOpsRequest` for scaling. You should not create two `MongoDBOpsRequest` simultaneously.
+> You can perform only one type of operation on a single `MongoDBOpsRequest` CR. For example, if you want to upgrade your database and scale up its replica then you have to create two separate `MongoDBOpsRequest`. At first, you have to create a `MongoDBOpsRequest` for upgrading. Once it is completed, then you can create another `MongoDBOpsRequest` for scaling. 
+
+> Note: There is an exception to the above statement. It is possible to specify both `spec.configuration` & `spec.verticalScaling` in a OpsRequest of type `VerticalScaling`.
 
 ### spec.upgrade
 
 If you want to upgrade you MongoDB version, you have to specify the `spec.upgrade` section that specifies the desired version information. This field consists of the following sub-field:
 
 - `spec.upgrade.targetVersion` refers to a [MongoDBVersion](/docs/guides/mongodb/concepts/catalog.md) CR that contains the MongoDB version information where you want to upgrade.
+
+Have a look on the [`upgradeConstraints`](/docs/guides/mongodb/concepts/catalog.md#specupgradeconstraints) of the mongodbVersion spec to know which versions are supported for upgrading from the current version.
+```yaml
+kubectl get mgversion <current-version> -o=jsonpath='{.spec.upgradeConstraints}' | jq
+```
 
 > You can only upgrade between MongoDB versions. KubeDB does not support downgrade for MongoDB.
 
@@ -585,6 +592,8 @@ If you want to scale-up or scale-down your MongoDB cluster or different componen
 - `spec.verticalScaling.configServer` indicates the desired resources for ConfigServer nodes of Sharded MongoDB database after scaling.
 - `spec.verticalScaling.shard` indicates the desired resources for Shard nodes of Sharded MongoDB database after scaling.
 - `spec.verticalScaling.exporter` indicates the desired resources for the `exporter` container.
+- `spec.verticalScaling.arbiter` indicates the desired resources for arbiter node of MongoDB database after scaling.
+- `spec.verticalScaling.coordinator` indicates the desired resources for the coordinator container.
 
 All of them has the below structure:
 
@@ -605,6 +614,7 @@ Here, when you specify the resource request, the scheduler uses this information
 
 If you want to expand the volume of your MongoDB cluster or different components of it, you have to specify `spec.volumeExpansion` section. This field consists of the following sub-field:
 
+- `spec.mode` specifies the volume expansion mode. Supported values are `Online` & `Offline`. The default is `Online`.
 - `spec.volumeExpansion.standalone` indicates the desired size for the persistent volume of a standalone MongoDB database.
 - `spec.volumeExpansion.replicaSet` indicates the desired size for the persistent volume of replicaSets of a MongoDB database.
 - `spec.volumeExpansion.configServer` indicates the desired size for the persistent volume of the config server of a sharded MongoDB database.
@@ -631,11 +641,34 @@ If you want to reconfigure your Running MongoDB cluster or different components 
 - `spec.configuration.configServer` indicates the desired new custom configuration for config servers of a sharded MongoDB database.
 - `spec.configuration.mongos` indicates the desired new custom configuration for the mongos nodes of a sharded MongoDB database.
 - `spec.configuration.shard` indicates the desired new custom configuration for the shard nodes of a sharded MongoDB database.
+- `spec.verticalScaling.arbiter` indicates the desired new custom configuration for arbiter node of MongoDB database after scaling.
 
 All of them has the following sub-fields:
 
 - `configSecret` points to a secret in the same namespace of a MongoDB resource, which contains the new custom configurations. If there are any configSecret set before in the database, this secret will replace it.
-- `inlineConfig` contains the new custom config as a string which will be merged with the previous configuration.
+- `inlineConfig` contains the new custom config as a string which will be merged with the previous configuration. 
+> Note: You can use `inlineConfig` only for `mongod.conf` configurations. This field is deprecated & will be removed in some future KubeDB release.
+
+- `applyConfig` is the replacement of `inlineConfig`. It is a map where key supports 3 values, namely `mongod.conf`, `replicaset.json`, `configuration.js`. And value represents the corresponding configurations.
+For your information, replicaset.json is used to modify replica set configurations, which we see in the output of `rs.config()`. And `configurarion.js` is used to apply a js script to configure mongodb at runtime.
+KubeDB provisioner operator applies these two directly while reconciling.
+
+```yaml
+  applyConfig:
+    configuration.js: |
+      print("hello world!!!!")
+    replicaset.json: |
+      {
+        "settings" : {
+          "electionTimeoutMillis" : 4000
+        }
+      }
+    mongod.conf: |
+      net:
+        maxIncomingConnections: 30000   
+```
+
+- `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed mongodb server.
 
 ### spec.tls
 
@@ -646,6 +679,30 @@ If you want to reconfigure the TLS configuration of your database i.e. add TLS, 
 - `spec.tls.rotateCertificates` specifies that we want to rotate the certificate of this database.
 - `spec.tls.remove` specifies that we want to remove tls from this database.
 
+### spec.readinessCriteria
+
+`spec.readinessCriteria` is the criteria for checking readiness of a MongoDB pod after restarting it. It has two fields. 
+- `spec.readinessCriteria.oplogMaxLagSeconds` defines the maximum allowed lagging time between the primary & secondary.
+- `spec.readinessCriteria.objectsCountDiffPercentage` denotes the maximum allowed object-count-difference between the primary & secondary.
+
+```yaml
+...
+spec:
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+...
+```
+Exceeding these thresholds results in opsRequest failure. One thing to note that, readinessCriteria field will make impact only if pod restarting is associated with the opsRequest type.
+
+### spec.timeout
+As we internally retry the ops request steps multiple times, This `timeout` field helps the users to specify the timeout for those steps of the ops request (in second). 
+If a step doesn't finish within the specified timeout, the ops request will result in failure.
+
+### spec.apply
+This field controls the execution of obsRequest depending on the database state. It has two supported values: `Always` & `IfReady`.
+Use IfReady, if you want to process the opsRequest only when the database is Ready. And use Always, if you want to process the execution of opsReq irrespective of the Database state.
+
 
 ### MongoDBOpsRequest `Status`
 
@@ -655,11 +712,15 @@ If you want to reconfigure the TLS configuration of your database i.e. add TLS, 
 
 `status.phase` indicates the overall phase of the operation for this `MongoDBOpsRequest`. It can have the following three values:
 
-| Phase      | Meaning                                                                            |
-| ---------- | ---------------------------------------------------------------------------------- |
-| Successful | KubeDB has successfully performed the operation requested in the MongoDBOpsRequest |
-| Failed     | KubeDB has failed the operation requested in the MongoDBOpsRequest                 |
-| Denied     | KubeDB has denied the operation requested in the MongoDBOpsRequest                 |
+| Phase       | Meaning                                                                            |
+|-------------|------------------------------------------------------------------------------------|
+| Successful  | KubeDB has successfully performed the operation requested in the MongoDBOpsRequest |
+| Progressing | KubeDB has started the execution of the applied MongoDBOpsRequest                  |
+| Failed      | KubeDB has failed the operation requested in the MongoDBOpsRequest                 |
+| Denied      | KubeDB has denied the operation requested in the MongoDBOpsRequest                 |
+| Skipped     | KubeDB has skipped the operation requested in the MongoDBOpsRequest                |
+
+Important: Ops-manager Operator can skip an opsRequest, only if its execution has not been started yet & there is a newer opsRequest applied in the cluster. `spec.type` has to be same as the skipped one, in this case.
 
 ### status.observedGeneration
 

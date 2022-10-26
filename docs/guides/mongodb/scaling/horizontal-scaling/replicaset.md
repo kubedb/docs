@@ -16,13 +16,13 @@ section_menu_id: guides
 
 # Horizontal Scale MongoDB Replicaset
 
-This guide will show you how to use `KubeDB` Enterprise operator to scale the replicaset of a MongoDB database.
+This guide will show you how to use `KubeDB` Ops-manager operator to scale the replicaset of a MongoDB database.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
@@ -235,7 +235,7 @@ mongodbopsrequest.ops.kubedb.com/mops-hscale-up-replicaset created
 
 #### Verify Replicaset replicas scaled up successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the replicas of `MongoDB` object and related `StatefulSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -324,12 +324,12 @@ Status:
 Events:
   Type    Reason             Age   From                        Message
   ----    ------             ----  ----                        -------
-  Normal  PauseDatabase      91s   KubeDB Enterprise Operator  Pausing MongoDB demo/mg-replicaset
-  Normal  PauseDatabase      91s   KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-replicaset
-  Normal  ScaleUpReplicaSet  45s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Up ReplicaSet
-  Normal  ResumeDatabase     45s   KubeDB Enterprise Operator  Resuming MongoDB demo/mg-replicaset
-  Normal  ResumeDatabase     45s   KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-replicaset
-  Normal  Successful         45s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
+  Normal  PauseDatabase      91s   KubeDB Ops-manager operator  Pausing MongoDB demo/mg-replicaset
+  Normal  PauseDatabase      91s   KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-replicaset
+  Normal  ScaleUpReplicaSet  45s   KubeDB Ops-manager operator  Successfully Horizontally Scaled Up ReplicaSet
+  Normal  ResumeDatabase     45s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-replicaset
+  Normal  ResumeDatabase     45s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-replicaset
+  Normal  Successful         45s   KubeDB Ops-manager operator  Successfully Horizontally Scaled Database
 ```
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
@@ -492,7 +492,7 @@ mongodbopsrequest.ops.kubedb.com/mops-hscale-down-replicaset created
 
 #### Verify Replicaset replicas scaled down successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the replicas of `MongoDB` object and related `StatefulSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -581,12 +581,12 @@ Status:
 Events:
   Type    Reason               Age   From                        Message
   ----    ------               ----  ----                        -------
-  Normal  PauseDatabase        50s   KubeDB Enterprise Operator  Pausing MongoDB demo/mg-replicaset
-  Normal  PauseDatabase        50s   KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-replicaset
-  Normal  ScaleDownReplicaSet  30s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Down ReplicaSet
-  Normal  ResumeDatabase       30s   KubeDB Enterprise Operator  Resuming MongoDB demo/mg-replicaset
-  Normal  ResumeDatabase       30s   KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-replicaset
-  Normal  Successful           30s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
+  Normal  PauseDatabase        50s   KubeDB Ops-manager operator  Pausing MongoDB demo/mg-replicaset
+  Normal  PauseDatabase        50s   KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-replicaset
+  Normal  ScaleDownReplicaSet  30s   KubeDB Ops-manager operator  Successfully Horizontally Scaled Down ReplicaSet
+  Normal  ResumeDatabase       30s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-replicaset
+  Normal  ResumeDatabase       30s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-replicaset
+  Normal  Successful           30s   KubeDB Ops-manager operator  Successfully Horizontally Scaled Database
 ```
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,

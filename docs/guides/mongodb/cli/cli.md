@@ -47,10 +47,10 @@ cat mongodb-demo.yaml | kubectl create -f -
 ```bash
 $ kubectl get mongodb
 NAME           VERSION   STATUS    AGE
-mongodb-demo   3.4-v3    Running   13m
-mongodb-dev    3.4-v3    Running   11m
-mongodb-prod   3.4-v3    Running   11m
-mongodb-qa     3.4-v3    Running   10m
+mongodb-demo   3.4-v3    Ready     13m
+mongodb-dev    3.4-v3    Ready     11m
+mongodb-prod   3.4-v3    Ready     11m
+mongodb-qa     3.4-v3    Ready     10m
 ```
 
 To get YAML of an object, use `--output=yaml` flag.
@@ -111,7 +111,7 @@ spec:
   version: 3.4-v3
 status:
   observedGeneration: 2$4213139756412538772
-  phase: Running
+  phase: Ready
 ```
 
 To get JSON of an object, use `--output=json` flag.
@@ -125,10 +125,10 @@ To list all KubeDB objects, use following command:
 ```bash
 $ kubectl get kubedb -o wide
 NAME                VERSION     STATUS  AGE
-mg/mongodb-demo     3.4         Running 3h
-mg/mongodb-dev      3.4         Running 3h
-mg/mongodb-prod     3.4         Running 3h
-mg/mongodb-qa       3.4         Running 3h
+mg/mongodb-demo     3.4         Ready   3h
+mg/mongodb-dev      3.4         Ready   3h
+mg/mongodb-prod     3.4         Ready   3h
+mg/mongodb-qa       3.4         Ready   3h
 
 NAME                                DATABASE                BUCKET              STATUS      AGE
 snap/mongodb-demo-20170605-073557   mg/mongodb-demo         gs:bucket-name      Succeeded   9m
@@ -185,7 +185,7 @@ CreationTimestamp:  Wed, 06 Feb 2019 16:31:04 +0600
 Labels:             <none>
 Annotations:        <none>
 Replicas:           1  total
-Status:             Running
+Status:             Ready
   StorageType:      Durable
 Volume:
   StorageClass:  standard

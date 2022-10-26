@@ -39,6 +39,10 @@ MongoDB allows configuring database via configuration file. The default configur
 
 At first, you have to create a secret with your configuration file contents as the value of this key `mongod.conf`. Then, you have to specify the name of this secret in `spec.configSecret.name` section while creating MongoDB crd. KubeDB will mount this secret into `/configdb-readonly/` directory of the database pod.
 
+Here one important thing to note that, `spec.configSecret.name` will be used for standard replicaset members & standalone mongodb only. If you want to configure a specific type of mongo nodes, you have to set the name in respective fields.
+For example, to configure shard topology node, set `spec.shardTopology.<shard / configServer / mongos>.configSecret.name` field.
+Similarly, To configure arbiter node, set `spec.arbiter.configSecret.name` field.
+
 In this tutorial, we will configure [net.maxIncomingConnections](https://docs.mongodb.com/manual/reference/configuration-options/#net.maxIncomingConnections) (default value: 65536) via a custom config file.
 
 ## Custom Configuration

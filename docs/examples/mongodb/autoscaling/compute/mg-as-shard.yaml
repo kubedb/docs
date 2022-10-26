@@ -6,14 +6,19 @@ metadata:
 spec:
   databaseRef:
     name: mg-sh
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
   compute:
     shard:
       trigger: "On"
       podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
       minAllowed:
-        cpu: 250m
-        memory: 350Mi
+        cpu: 400m
+        memory: 400Mi
       maxAllowed:
         cpu: 1
         memory: 1Gi
       controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"

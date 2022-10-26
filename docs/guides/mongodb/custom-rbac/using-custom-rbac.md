@@ -39,7 +39,7 @@ If a service account name is given, but there's no existing service account by t
 
 If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
 
-This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a MongoDB instance named `quick-postges` to provide the bare minimum access permissions.
+This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a MongoDB instance named `quick-mongodb` to provide the bare minimum access permissions.
 
 ## Custom RBAC for MongoDB
 
@@ -110,7 +110,7 @@ $ kubectl get rolebinding -n demo my-custom-rolebinding -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: "kubectl get rolebinding -n demo my-custom-rolebinding -o yaml"
+  creationTimestamp: "2019-05-30T04:33:39Z"
   name: my-custom-rolebinding
   namespace: demo
   resourceVersion: "1405"

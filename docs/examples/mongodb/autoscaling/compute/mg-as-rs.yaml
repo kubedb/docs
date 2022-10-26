@@ -6,14 +6,19 @@ metadata:
 spec:
   databaseRef:
     name: mg-rs
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
   compute:
     replicaSet:
       trigger: "On"
       podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
       minAllowed:
-        cpu: 200m
-        memory: 300Mi
+        cpu: 400m
+        memory: 400Mi
       maxAllowed:
         cpu: 1
         memory: 1Gi
       controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"

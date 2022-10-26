@@ -30,15 +30,15 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `MongoDB` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Auto Scaling process of MongoDB" src="/docs/images/day-2-operation/mongodb/mg-auto-scaling.svg">
-<figcaption align="center">Fig: Auto Scaling process of MongoDB</figcaption>
+  <img alt="Compute Auto Scaling process of MongoDB" src="/docs/images/mongodb/compute-process.svg">
+<figcaption align="center">Fig: Compute Auto Scaling process of MongoDB</figcaption>
 </figure>
 
 The Auto Scaling process consists of the following steps:
 
 1. At first, a user creates a `MongoDB` Custom Resource Object (CRO).
 
-2. `KubeDB` Community operator watches the `MongoDB` CRO.
+2. `KubeDB` Provisioner  operator watches the `MongoDB` CRO.
 
 3. When the operator finds a `MongoDB` CRO, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
 
@@ -46,14 +46,12 @@ The Auto Scaling process consists of the following steps:
 
 5. `KubeDB` Autoscaler operator watches the `MongoDBAutoscaler` CRO.
 
-6. `KubeDB` Autoscaler operator creates required number of Vertical Pod Autoscaler [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#intro) for different components of the database, as specified in the `mongodbautoscaler` CRO.
+6. `KubeDB` Autoscaler operator generates recommendation using the modified version of kubernetes [official recommender](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/pkg/recommender) for different components of the database, as specified in the `MongoDBAutoscaler` CRO.
 
-7. Then `KubeDB` Autoscaler operator continuously watches the VPA objects for recommendation.
+7. If the generated recommendation doesn't match the current resources of the database, then `KubeDB` Autoscaler operator creates a `MongoDBOpsRequest` CRO to scale the database to match the recommendation generated.
 
-8. If the VPA generated recommendation doesn't match the current resources of the database, then `KubeDB` Autoscaler operator creates a `MongoDBOpsRequest` CRO to scale the database to match the recommendation provided by the VPA object.
+8. `KubeDB` Ops-manager operator watches the `MongoDBOpsRequest` CRO.
 
-9. `KubeDB` Enterprise operator watches the `MongoDBOpsRequest` CRO.
-
-10. Then the `KubeDB` Enterprise operator will scale the database component vertically as specified on the `MongoDBOpsRequest` CRO.
+9. Then the `KubeDB` Ops-manager operator will scale the database component vertically as specified on the `MongoDBOpsRequest` CRO.
 
 In the next docs, we are going to show a step by step guide on Autoscaling of various MongoDB database components using `MongoDBAutoscaler` CRD.
