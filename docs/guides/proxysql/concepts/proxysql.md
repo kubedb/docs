@@ -37,16 +37,39 @@ spec:
   backend:
     name: my-group
   authSecret:
-    name: demo-proxysql-for-mysql-auth
+    name: proxysql-cluster-auth
+    externallyManaged: true
   monitor:
     agent: prometheus.io/operator
     prometheus:
       serviceMonitor:
         labels:
-          app: kubedb
+          release: prometheus
         interval: 10s
+  initConfig:
+    mysqlUsers:
+      - username: test
+        active: 1
+        default_hostgroup: 2
+    adminVariables:
+      restapi_enabled: true
+      restapi_port: 6070
   configSecret:
     name: my-custom-config
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: proxy-issuer
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+          - kubedb:server
+      dnsNames:
+        - localhost
+      ipAddresses:
+        - "127.0.0.1"
   podTemplate:
     metadata:
       annotations:
@@ -83,52 +106,50 @@ spec:
       ports:
       - name:  http
         port:  6033
+  terminationPolicy: WipeOut
+  healthChecker:
+    failureThreshold: 3
 ```
 
 ### .spec.version
 
 `.spec.version` is a required field specifying the name of the [ProxySQLVersion](/docs/guides/proxysql/concepts/catalog.md) CRD where the docker images are specified. Currently, when you install KubeDB, it creates the following `ProxySQLVersion` resources,
 
-- `2.3.2`
+- `2.3.2-debian`
+- `2.3.2-centos`
+- `2.4.1-debian`
+- `2.4.1-centos`
 
 ### .spec.backend
 
-`.spec.backend` specifies the information about backend MySQL/PerconaXtraDB/MariaDB.
-
-You can specify the following fields in `.spec.backend` field,
-
-- `.spec.backend.ref` lets one locate the typed referenced object. In this case, it is the MySQL/PerconaXtraDB/MariaDB object in the same namespace as the ProxySQL object.
-
-  - `apiGroup` is the group for the resource being referenced. Here it is `"kubedb.com"`.
-  - `kind` is the type of resource being referenced. Here it is `"MySQL"`.
-  - `name` specifies the name of the resource being referenced. Here it is `"my-group"`.
+`.spec.backend` specifies the information about the appbinding of the backend MySQL/PerconaXtraDB/MariaDB. The appbinding should contain the basic informations like connections url, server type , ssl infos etc. To know more about what appbinding is, you can refer to the Appbinding page in the concept section. 
 
 ### .spec.authSecret
 
-`.spec.authSecret` is an optional field that points to a Secret used to hold credentials for `proxysql` user. If not set, the KubeDB operator creates a new Secret `{proxysql-object-name}-auth` for storing the password for `proxysql` user for each ProxySQL object. If you want to use an existing secret please specify that when creating the ProxySQL object using `.spec.proxysqlSecret.secretName`.
+`.spec.authSecret` is an optional field that points to a Secret used to hold credentials for `proxysql cluster admin` user. If not set, the KubeDB operator creates a new Secret `{proxysql-object-name}-auth` for storing the password for `proxysql cluster admin` user for each ProxySQL object. If you want to use an existing secret please specify that when creating the ProxySQL object using `.spec.authSecret`. Turn the `.spec.authSecret.extenallyManaged` field `true` in that case.
 
-This secret contains a `proxysqluser` key and a `proxysqlpass` key which contains the username and password respectively for `proxysql` user. If no Secret is found, KubeDB sets the value of `proxysqluser` key to be `proxysql`.
+This secret contains a `username` key and a `password` key which contains the username and password respectively for `proxysql cluster admin` user. The password should always be alpha-numeric.  If no Secret is found, KubeDB sets the value of `username` key to be `"cluster"`.
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
 Example:
 
 ```bash
-$ kubectl create secret generic demo-proxysql-for-mysql-auth -n demo \
---from-literal=proxysqluser=proxysql \
---from-literal=proxysqlpass=6q8u_2jMOW-OOZXk
-secret "demo-proxysql-for-mysql-auth" created
+$ kubectl create secret generic proxysql-cluster-auth -n demo \
+--from-literal=username=cluster \
+--from-literal=password=6q8u2jMOWOOZXk
+secret "proxysql-cluster-auth" created
 ```
 
 ```yaml
 apiVersion: v1
 data:
-  proxysqlpass: NnE4dV8yak1PVy1PT1pYaw==
-  proxysqluser: cHJveHlzcWw=
+  password: NnE4dTJqTU9XT09aWGs=
+  username: Y2x1c3Rlcg==
 kind: Secret
 metadata:
   ...
-  name: demo-proxysql-for-mysql-auth
+  name: proxysql-cluster-auth
   namespace: demo
   ...
 type: Opaque
@@ -141,9 +162,120 @@ ProxySQL managed by KubeDB can be monitored with builtin-Prometheus and Promethe
 - [Monitor ProxySQL with builtin Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md)
 - [Monitor ProxySQL with Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md)
 
+### .spec.InitConfig
+
+`spec.initConfig` is the field where we can set the proxysql bootstrap configuration. In ProxySQL an initial configuration file is needed to bootstrap, named `proxysql.cnf`. In that file you should write down all the necessary configuration related to various proxysql tables and variables in a specific format.  In KubeDB ProxySQL we have eased this initial configuration setup with declarative yaml. All you need to do is to pass the configuration in the yaml in yaml format and the operator will turn that into a `proxysql.cnf` file with proper formatting . The `proxysql.cnf` file will be available in a secret with name `<proxysql-crd-name>-configuration` . When you change any configuration with the proxysqlOpsRequest , the secret will be auto updated with the new configuration. 
+
+`.spec.initConfig` contains four subsections : `mysqlUsers`, `mysqlQueryRules`, `adminVariables`, `mysqlVariables`. The detailed description is given below. 
+
+`.spec.initConfig.mysqlUsers` section carries info for the `mysql_users` table. All the information provided through this field will eventually be used for setting up the `mysql_users` table inside the proxysql server. This section is an array field where each element of the array carries the necessary information for each individual users. An important note to be mentioned is that you don't need to fill up the password field for any user. The password will be automatically fetched by the KubeDB operator from the backend server.   
+
+`.spec.initConfig.mysqlQueryRules`section carries info for the `mysql_query_rules` table. This section is also an array field and each element of the array should be a `query_rule` as per proxysql accepts.
+
+`.spec.initConfig.mysqlVariables` section carries all the `mysql_variables` info that you want to set for the proxysql. You need to mention the variables you want to set with its value in a key-value format under this section and the KubeDB operator will bootstrap the proxysql with this.
+
+`.spec.initConfig.adminVariables` section carries all the `admin_variables` info that you want to set for the proxysql. You need to mention the variables you want to set with its value in a key-value format under this section and the KubeDB operator will bootstrap the proxysql with this.
+
 ### .spec.configSecret
 
-`.spec.configSecret` is an optional field that allows users to provide custom configuration for ProxySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/proxysql/configuration/using-config-file.md).
+`.spec.configSecret` is another field to pass the bootstrap configuration for the proxysql. If you want to pass the configuration through a secret you can just mention the secret name under this field. The secret should look something like the following 
+
+```bash
+$ kubectl view-secret -n demo my-config-secret -a                                                                            18:00
+AdminVariables.cnf=admin_variables=
+{
+    checksum_mysql_query_rules: true
+    refresh_interval: 2000
+    connect_timeout_server: 3000
+}
+MySQLQueryRules.cnf=mysql_query_rules=
+(
+    {
+        rule_id=1
+        active=1
+        match_pattern="^SELECT .* FOR UPDATE$"
+        destination_hostgroup=2
+        apply=1
+    },
+    {
+        rule_id=2
+        active=1
+        match_pattern="^SELECT"
+        destination_hostgroup=3
+        apply=1
+    }
+)
+
+MySQLUsers.cnf=mysql_users=
+(
+    {
+        username = "user2"
+        password = "pass2"
+        default_hostgroup = 2
+        active = 1
+    },
+    {
+        username = "user3"
+        password = "pass3"
+        default_hostgroup = 2
+        max_connections=1000      
+        default_schema="test"
+        active = 1
+    },
+    { username = "user4" , password = "pass4" , default_hostgroup = 0 , active = 1 ,comment = "hello all"}
+)
+MySQLVariables.cnf=mysql_variables=
+{
+    max_connections=1024
+    default_schema="information_schema"
+}
+```
+
+The secret should contain keys none other than `AdminVariables.cnf`, `MySQLVariables.cnf`, `MySQLUsers.cnf`, `MySQLVariables.cnf` . The key names define the contents of the values itself. Important info to add is that the value provided with the keys will be patched to the `proxysql.cnf` file exactly as it is. So be careful with the format when you are going to bootstrap proxysql in this way. 
+
+### .spec.syncUsers
+
+`spec.syncUsers` is a boolean field. While true, KubeDB Operator fetches all the users from the backend and puts them into the `mysql_users` table. Any update regarding a user in the backend will also reflect in the proxysql server. This field can be turned off by simply changing the value to false and applying the yaml. It is set false by default though.   
+
+
+### spec.tls
+
+`spec.tls` specifies the TLS/SSL configurations for the ProxySQL frontend connections.
+
+The following fields are configurable in the `spec.tls` section:
+
+- `issuerRef` is a reference to the `Issuer` or `ClusterIssuer` CR of [cert-manager](https://cert-manager.io/docs/concepts/issuer/) that will be used by `KubeDB` to generate necessary certificates.
+
+  - `apiGroup` is the group name of the resource being referenced. The value for `Issuer` or   `ClusterIssuer` is "cert-manager.io"   (cert-manager v0.12.0 and later).
+  - `kind` is the type of resource being referenced. KubeDB supports both `Issuer`   and `ClusterIssuer` as values for this field.
+  - `name` is the name of the resource (`Issuer` or `ClusterIssuer`) being referenced.
+
+- `certificates` (optional) are a list of certificates used to configure the server and/or client certificate. It has the following fields:
+
+  - `alias` represents the identifier of the certificate. It has the following possible value:
+    - `server` is used for server certificate identification.
+    - `client` is used for client certificate identification.
+    - `metrics-exporter` is used for metrics exporter certificate identification.
+  - `secretName` (optional) specifies the k8s secret name that holds the certificates.
+    This field is optional. If the user does not specify this field, the default secret name will be created in the following format: `<database-name>-<cert-alias>-cert`.
+  - `subject` (optional) specifies an `X.509` distinguished name. It has the following possible field,
+    - `organizations` (optional) are the list of different organization names to be used on the Certificate.
+    - `organizationalUnits` (optional) are the list of different organization unit name to be used on the Certificate.
+    - `countries` (optional) are the list of country names to be used on the Certificate.
+    - `localities` (optional) are the list of locality names to be used on the Certificate.
+    - `provinces` (optional) are the list of province names to be used on the Certificate.
+    - `streetAddresses` (optional) are the list of a street address to be used on the Certificate.
+    - `postalCodes` (optional) are the list of postal code to be used on the Certificate.
+    - `serialNumber` (optional) is a serial number to be used on the Certificate.
+      You can found more details from [Here](https://golang.org/pkg/crypto/x509/pkix/#Name)
+
+  - `duration` (optional) is the period during which the certificate is valid.
+  - `renewBefore` (optional) is a specifiable time before expiration duration.
+  - `dnsNames` (optional) is a list of subject alt names to be used in the Certificate.
+  - `ipAddresses` (optional) is a list of IP addresses to be used in the Certificate.
+  - `uriSANs` (optional) is a list of URI Subject Alternative Names to be set in the Certificate.
+  - `emailSANs` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
+
 
 ### .spec.podTemplate
 
