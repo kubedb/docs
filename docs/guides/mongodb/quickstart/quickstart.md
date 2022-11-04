@@ -99,7 +99,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/replicaset.yaml
 mongodb.kubedb.com/mgo-quickstart created
 ```
 

@@ -252,10 +252,11 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 `spec.replicaSet` represents the configuration for replicaset. When `spec.replicaSet` is set, KubeDB will deploy a mongodb replicaset where number of replicaset member is spec.replicas.
 
 - `name` denotes the name of mongodb replicaset.
-
-- `keyFileSecret.name` denotes the name of the secret that contains the `key.txt`, which provides the security between replicaset members using internal authentication. See [Keyfile Authentication](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/) for more information.
-
 NB. If `spec.shardTopology` is set, then `spec.replicaset` needs to be empty.
+
+### spec.keyFileSecret
+`keyFileSecret.name` denotes the name of the secret that contains the `key.txt`, which provides the security between replicaset members using internal authentication. See [Keyfile Authentication](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/) for more information.
+It will make impact only if the ClusterAuthMode is `keyFile` or `sendKeyFile`.
 
 ### spec.shardTopology
 
@@ -345,6 +346,7 @@ The following fields are configurable in the `spec.tls` section:
     - `metrics-exporter` is used for metrics exporter certificate identification.
   - `secretName` (optional) specifies the k8s secret name that holds the certificates.
     > This field is optional. If the user does not specify this field, the default secret name will be created in the following format: `<database-name>-<cert-alias>-cert`.
+  
   - `subject` (optional) specifies an `X.509` distinguished name. It has the following possible field,
     - `organizations` (optional) are the list of different organization names to be used on the Certificate.
     - `organizationalUnits` (optional) are the list of different organization unit name to be used on the Certificate.

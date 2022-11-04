@@ -147,7 +147,7 @@ spec:
 Now run the command to deploy this `MongoDB` object:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/private-registry/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/private-registry/replicaset.yaml
 mongodb.kubedb.com/mgo-pvt-reg created
 ```
 
