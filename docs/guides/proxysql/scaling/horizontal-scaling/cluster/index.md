@@ -25,10 +25,10 @@ This guide will show you how to use `KubeDB` Enterprise operator to scale the cl
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [MariaDB](/docs/guides/mariadb/concepts/mariadb/)
-    - [MariaDB Cluster](/docs/guides/mariadb/clustering/galera-cluster/)
-    - [MariaDBOpsRequest](/docs/guides/mariadb/concepts/opsrequest/)
-    - [Horizontal Scaling Overview](/docs/guides/mariadb/scaling/horizontal-scaling/overview/)
+    - [ProxySQL](/docs/guides/proxysql/concepts/proxysql/)
+    - [ProxySQL Cluster](/docs/guides/proxysql/clustering/galera-cluster/)
+    - [ProxySQLOpsRequest](/docs/guides/proxysql/concepts/opsrequest/)`
+    - [Horizontal Scaling Overview](/docs/guides/proxysql/scaling/horizontal-scaling/overview/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -60,6 +60,11 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: WipeOut
+```
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/vertical-scaling/cluster/example/sample-mysql.yaml
+mysql.kubedb.com/mysql-server created 
 ```
 
 After applying the above yaml wait for the MySQL to be Ready.
@@ -132,9 +137,6 @@ root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "select * fro
 | proxy-server-1.proxy-server-pods.demo | 6032 | 1      |         |
 | proxy-server-0.proxy-server-pods.demo | 6032 | 1      |         |
 +---------------------------------------+------+--------+---------+
-root@proxy-server-1:/# 
-
-
 ```
 
 We can see from the above output that the cluster has 3 nodes.
@@ -289,8 +291,6 @@ root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "select * fro
 | proxy-server-0.proxy-server-pods.demo | 6032 | 1      |         |
 | proxy-server-3.proxy-server-pods.demo | 6032 | 1      |         |
 +---------------------------------------+------+--------+---------+
-root@proxy-server-1:/# 
-
 ```
 
 From all the above outputs we can see that the replicas of the cluster is `4`. That means we have successfully scaled down the replicas of the ProxySQL replicaset.
