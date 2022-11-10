@@ -1,0 +1,19 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: update-user
+  namespace: demo
+spec:
+  type: Reconfigure  
+  proxyRef:
+    name: proxy-server
+  configuration:
+    mysqlUsers:
+      users: 
+      - username: testA
+        active: 0
+        default_hostgroup: 3
+      - username: testB
+        active: 1
+        default_hostgroup: 3
+      reqType: update
