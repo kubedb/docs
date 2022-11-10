@@ -3,17 +3,15 @@ title: ProxySQL Monitoring Overview
 description: ProxySQL Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: prx-monitoring-overview
+    identifier: guides-proxysql-monitoring-overview
     name: Overview
-    parent: prx-monitoring-proxysql
+    parent: guides-proxysql-monitoring
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
-
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
 
 # Monitoring ProxySQL with KubeDB
 

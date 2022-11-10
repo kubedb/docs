@@ -1,10 +1,10 @@
 ---
-title: ProxySQL Monitoring
+title: Monitoring ProxySQL
 menu:
   docs_{{ .version }}:
-    identifier: prx-monitoring-proxysql
+    identifier: guides-proxysql-monitoring
     name: Monitoring
-    parent: prx-proxysql-guides
-    weight: 50
+    parent: guides-proxysql
+    weight: 120
 menu_name: docs_{{ .version }}
 ---
