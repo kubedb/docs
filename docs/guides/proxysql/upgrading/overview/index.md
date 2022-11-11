@@ -29,7 +29,7 @@ This guide will give you an overview on how KubeDB Enterprise operator upgrade t
 The following diagram shows how KubeDB Enterprise operator used to upgrade the version of `ProxySQL`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Upgrading Process of ProxySQL" src="/docs/guides/proxysql/upgrading/overview/images/proxyops-upgrade.jpeg">
+  <img alt="Upgrading Process of ProxySQL" src="/docs/guides/proxysql/upgrading/overview/images/proxysql-upgrade.jpeg">
 <figcaption align="center">Fig: Upgrading Process of ProxySQL</figcaption>
 </figure>
 
@@ -41,7 +41,7 @@ The upgrading process consists of the following steps:
 
 3. When the operator finds a `ProxySQL` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
 
-4. Then, in order to upgrade the version of the `ProxySQL` database the user creates a `ProxySQLOpsRequest` CR with the desired version.
+4. Then, in order to upgrade the version of the `ProxySQL` the user creates a `ProxySQLOpsRequest` CR with the desired version.
 
 5. `KubeDB` Enterprise operator watches the `ProxySQLOpsRequest` CR.
 
@@ -49,8 +49,8 @@ The upgrading process consists of the following steps:
 
 7. By looking at the target version from `ProxySQLOpsRequest` CR, `KubeDB` Enterprise operator updates the images of all the `StatefulSets`. After each image update, the operator performs some checks such as if the oplog is synced and database size is almost same or not.
 
-8. After successfully updating the `StatefulSets` and their `Pods` images, the `KubeDB` Enterprise operator updates the image of the `ProxySQL` object to reflect the updated state of the database.
+8. After successfully updating the `StatefulSets` and their `Pods` images, the `KubeDB` Enterprise operator updates the image of the `ProxySQL` object to reflect the updated state of the server.
 
 9. After successfully updating of `ProxySQL` object, the `KubeDB` Enterprise operator resumes the `ProxySQL` object so that the `KubeDB` Community operator can resume its usual operations.
 
-In the next doc, we are going to show a step by step guide on upgrading of a ProxySQL database using upgrade operation.
+In the next doc, we are going to show a step by step guide on upgrading of a ProxySQL using upgrade operation.
