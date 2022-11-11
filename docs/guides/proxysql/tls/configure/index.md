@@ -18,7 +18,7 @@ section_menu_id: guides
 
 `KubeDB` supports providing TLS/SSL encryption for `ProxySQL`. This tutorial will show you how to use `KubeDB` to deploy a `ProxySQL` with TLS/SSL configuration.
 
-> While talking about TLS secured connections in ProxySQL, we know there are two types of connections in ProxySQL. The first one is the client-to-proxy and second one is proxy-to-backend. The first type is refered as frontend  connection and the second one as backend. As for the backend connection, is will be TLS secured automatically if the necessary ca_bundle is provided with the appbinding. And as for the frontend connections to be TLS secured, in this tutorial we are going to discuss how to achieve it with KubeDB operator.
+> While talking about TLS secured connections in `ProxySQL`, we know there are two types of connections in `ProxySQL`. The first one is the client-to-proxy and second one is proxy-to-backend. The first type is refered as frontend  connection and the second one as backend. As for the backend connection, it will be TLS secured automatically if the necessary ca_bundle is provided with the `appbinding`. And as for the frontend connections to be TLS secured, in this tutorial we are going to discuss how to achieve it with KubeDB operator.
 
 
 ## Before You Begin
@@ -36,7 +36,12 @@ section_menu_id: guides
   namespace/demo created
   ```
 
-Also we need a mysql backend for the proxysql server. So we are  creating one with the below yaml. 
+> Note: YAML files used in this tutorial are stored in [docs/guides/mariadb/tls/configure/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+
+
+### Deploy KubeDB MySQL instance as the backend
+
+We need a mysql backend for the proxysql server. So we are creating one with the following yaml. 
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -61,17 +66,15 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/vertical-scaling/cluster/example/sample-mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples/sample-mysql.yaml
 mysql.kubedb.com/mysql-server created 
 ```
 
 After applying the above yaml wait for the MySQL to be Ready.
 
-> Note: YAML files used in this tutorial are stored in [docs/guides/proxysql/tls/configure/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+## Deploy ProxySQL with TLS/SSL configuration
 
-### Deploy ProxySQL with TLS/SSL configuration
-
-As pre-requisite, at first, we are going to create an Issuer/ClusterIssuer. This Issuer/ClusterIssuer is used to create certificates. Then we are going to deploy a ProxySQL cluster that will be configured with these certificates by `KubeDB` operator.
+As pre-requisite, at first, we are going to create an Issuer/ClusterIssuer. This Issuer/ClusterIssuer is used to create certificates. Then we are going to deploy a `ProxySQL` cluster that will be configured with these certificates by `KubeDB` operator.
 
 ### Create Issuer/ClusterIssuer
 
@@ -113,7 +116,7 @@ spec:
 Let’s create the `Issuer` cr we have shown above,
 
 ```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples/issuer.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples/issuer.yaml
 issuer.cert-manager.io/proxy-issuer created
 ```
 
@@ -201,7 +204,7 @@ proxy-server-client-cert             kubernetes.io/tls                     3    
 
 **Verify ProxySQL Cluster configured with TLS/SSL:**
 
-Now, we are going to connect to the proxysql server for verifying the `ProxySQL` server has configured with TLS/SSL encryption.
+Now, we are going to connect to the proxysql server for verifying the proxysql server has configured with TLS/SSL encryption.
 
 Let's exec into the pod to verify TLS/SSL configuration,
 
@@ -234,7 +237,7 @@ ProxySQLAdmin [(none)]> quit;
 Bye
 ```
 
-The above output shows that the `ProxySQL` server is configured to TLS/SSL. You can also see that the `.crt` and `.key` files are stored in `/var/lib/frontend/client/` and `/var/lib/frontend/server/` directory for client and server respectively.
+The above output shows that the proxy server is configured to TLS/SSL. You can also see that the `.crt` and `.key` files are stored in `/var/lib/frontend/client/` and `/var/lib/frontend/server/` directory for client and server respectively.
 
 **Verify secure connection for user:**
 
@@ -243,6 +246,22 @@ Now, you can create an user that will be used to connect to the server with a se
 First, lets create the user in the backend mysql server.
 
 ```bash
+$ kubectl exec -it -n demo mysql-server-0 -- bash 
+Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
+root@mysql-server-0:/# mysql -uroot -p$MYSQL_ROOT_PASSWORD
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 26692
+Server version: 5.7.36-log MySQL Community Server (GPL)
+
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
 mysql> create user 'test'@'%' identified by 'pass';
 Query OK, 0 rows affected (0.00 sec)
 
@@ -256,7 +275,7 @@ Query OK, 0 rows affected (0.00 sec)
 As we deployed the ProxySQL with `.spec.syncUsers` turned true, the user will automatically be fetched into the proxysql server. 
 
 ```bash
-MySQL [(none)]> select username,active,use_ssl from mysql_users;
+ProxySQLAdmin [(none)]> select username,active,use_ssl from mysql_users;
 +----------+--------+---------+
 | username | active | use_ssl |
 +----------+--------+---------+
@@ -320,10 +339,6 @@ Uptime:			2 hours 30 min 27 sec
 Threads: 1  Questions: 12  Slow queries: 12
 --------------
 
-
-ProxySQL [(none)]> exit
-Bye
-
 ```
 
 In the above output section we can see there is cipher in user at the SSL field. Which means the connection is TLS secured. 
@@ -333,8 +348,8 @@ In the above output section we can see there is cipher in user at the SSL field.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete  proxysql demo  proxy-server
-proxysql.kubedb.com "proxy-server" deleted
+$ kubectl delete  proxysql -n demo  proxy-server
+$ kubectl delete mysql -n demo mysql-server
+$ kubectl delete issuer -n demo --all
 $ kubectl delete ns demo
-namespace "demo" deleted
 ```

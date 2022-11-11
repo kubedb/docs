@@ -42,7 +42,7 @@ Read about the fields in details from [proxysql concept](/docs/guides/proxysql/c
 The following figure shows how `KubeDB` enterprise is used to configure TLS/SSL in ProxySQL. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Stash Backup Flow" src="/docs/guides/proxysql/tls/overview/images/proxy-tls-ssl.png">
+  <img alt="ProxySQL TLS" src="/docs/guides/proxysql/tls/overview/images/proxy-tls-ssl.png">
 <figcaption align="center">Fig: Deploy ProxySQL with TLS/SSL</figcaption>
 </figure>
 
