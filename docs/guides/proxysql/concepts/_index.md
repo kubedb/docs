@@ -2,9 +2,9 @@
 title: ProxySQL Concepts
 menu:
   docs_{{ .version }}:
-    identifier: prx-concepts-proxysql
+    identifier: guides-proxysql-concepts
     name: Concepts
-    parent: prx-proxysql-guides
+    parent: guides-proxysql
     weight: 20
 menu_name: docs_{{ .version }}
 ---

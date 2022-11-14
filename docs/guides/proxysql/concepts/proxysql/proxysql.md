@@ -2,17 +2,15 @@
 title: ProxySQL CRD
 menu:
   docs_{{ .version }}:
-    identifier: prx-proxysql-concepts
+    identifier: guides-proxysql-concepts-proxysql
     name: ProxySQL
-    parent: prx-concepts-proxysql
+    parent: guides-proxysql-concepts
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
-
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
 
 # ProxySQL
 
@@ -314,40 +312,6 @@ Usage of some field of `.spec.podTemplate` is described below,
 #### .spec.podTemplate.spec.env
 
 `.spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the ProxySQL docker image. Here is a list of currently supported environment variables to the ProxySQL image:
-
-- `MYSQL_ROOT_PASSWORD`
-- `MYSQL_PROXY_USER`
-- `MYSQL_PROXY_PASSWORD`
-- `PEERS`
-- `LOAD_BALANCE_MODE`
-
-Note that, KubeDB does not allow the following environment variables to set in `.spec.env`.
-
-- `MYSQL_ROOT_PASSWORD`
-- `MYSQL_PROXY_USER`
-- `MYSQL_PROXY_PASSWORD`
-
-If you try to set any of the forbidden environment variables i.e. `MYSQL_ROOT_PASSWORD` in ProxySQL object, KubeDB operator will reject the request with the following error,
-
-```ini
-Error from server (Forbidden): error when creating "./proxysql.yaml": admission webhook "proxysql.validators.kubedb.com" denied the request: environment variable MYSQL_ROOT_PASSWORD is forbidden to use in ProxySQL spec
-```
-
-Also note that KubeDB does not allow to update the environment variables as updating them does not have any effect once the ProxySQL is created.  If you try to update environment variables, KubeDB operator will reject the request with following error,
-
-```ini
-Error from server (BadRequest): error when applying patch:
-...
-for: "./proxysql.yaml": admission webhook "proxysql.validators.kubedb.com" denied the request: precondition failed for:
-...At least one of the following was changed:
-    apiVersion
-    kind
-    name
-    namespace
-    spec.authSecret
-    spec.podTemplate.spec.nodeSelector
-    spec.podTemplate.spec.env
-```
 
 #### .spec.podTemplate.spec.imagePullSecrets
 

@@ -2,10 +2,10 @@
 title: AppBinding CRD
 menu:
   docs_{{ .version }}:
-    identifier: prx-appbinding-concepts
+    identifier: guides-proxysql-concepts-appbinding
     name: AppBinding
-    parent: prx-concepts-proxysql
-    weight: 20
+    parent: guides-proxysql-concepts
+    weight: 25
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -26,41 +26,30 @@ KubeDB uses [Stash](https://appscode.com/products/stash/) to perform backup/reco
 
 Like any official Kubernetes resource, an `AppBinding` has `TypeMeta`, `ObjectMeta` and `Spec` sections. However, unlike other Kubernetes resources, it does not have a `Status` section.
 
-An `AppBinding` object created by `KubeDB` for PostgreSQL database is shown below,
+An `AppBinding` object created by `KubeDB` for MariaDB database is shown below,
 
 ```yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  name: quick-postgres
-  namespace: demo
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: quick-postgres
+    app.kubernetes.io/instance: sample-mariadb
     app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: postgres
-    app.kubernetes.io/version: "10.2"-v2
-    app.kubernetes.io/name: postgreses.kubedb.com
-    app.kubernetes.io/instance: quick-postgres
+    app.kubernetes.io/name: mariadbs.kubedb.com
+  name: sample-mariadb
+  namespace: demo
 spec:
-  type: kubedb.com/postgres
-  secret:
-    name: quick-postgres-auth
   clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJekNDQWd1Z0F3SUJBZ0lVVUg1V24wOSt6MnR6RU5ESnF4N1AxZFg5aWM4d0RRWUpLb1pJaHZjTkFRRUwKQlFBd0lURU9NQXdHQTFVRUF3d0ZiWGx6Y1d3eER6QU5CZ05WQkFvTUJtdDFZbVZrWWpBZUZ3MHlNVEF5TURrdwpPVEkxTWpCYUZ3MHlNakF5TURrd09USTFNakJhTUNFeERqQU1CZ05WQkFNTUJXMTVjM0ZzTVE4d0RRWURWUVFLCkRBWnJkV0psWkdJd2dnRWlNQTBHQ1NxR1NJYjNEUUVCQVFVQUE0SUJEd0F3Z2dFS0FvSUJBUUM3ZDl5YUtMQ3UKYy9NclRBb0NkV1VORld3ckdqbVdvUEVTRWNMR0pjT0JVSTZ5NXZ5QXVGMG1TakZvNzR3SEdSbWRmS2ExMWh0Ygo4TWZ2UFNwWXVGWFpUSi9GbnkwNnU2ekZMVm5xV2h3MUdiZ2ZCUE5XK0w1ZGkzZmVjanBEZmtLbTcrd0ZUVnNmClVzWGVVcUR0VHFpdlJHVUQ5aURUTzNTUmdheVI5U0J0RnRxcHRtV0YrODFqZGlSS2pRTVlCVGJ2MDRueW9UdHUKK0hJZlFjbE40Q1p3NzJPckpUdFdiYnNiWHVlMU5RZU9nQzJmSVhkZEF0WEkxd3lOT04zckxuTFF1SUIrakVLSQpkZTlPandKSkJhSFVzRVZEbllnYlJLSTdIcVdFdk5kL29OU2VZRXF2TXk3K1hwTFV0cDBaVXlxUDV2cC9PSXJ3CmlVMWVxZGNZMzJDcEFnTUJBQUdqVXpCUk1CMEdBMVVkRGdRV0JCUlNnNDVpazFlT3lCU1VKWHkvQllZVDVLck8KeWpBZkJnTlZIU01FR0RBV2dCUlNnNDVpazFlT3lCU1VKWHkvQllZVDVLck95akFQQmdOVkhSTUJBZjhFQlRBRApBUUgvTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElCQVFCNTlhNlFGQm1YMTh1b1dzQ3dGT1Y0R25GYnVBL2NoaVN6CkFwRVVhcjI1L2RNK2RpT0RVNkJuMXM3Wmpqem45WU9aVVJJL3UyRGRhdmNnQUNYR2FXWHJhSS84UUYxZDB3OGsKNXFlRmMxQWE5UEhFeEsxVm1xb21MV2xhMkdTOW1EbFpEOEtueDdjU3lpRmVqRXJYdWtld1B1VXA0dUUzTjAraApwQjQ0MDVRU2d4VVc3SmVhamFQdTNXOHgyRUFKMnViTkdMVEk5L0x4V1Z0YkxGcUFoSFphbGRjaXpOSHdTUGYzCkdMWEo3YTBWTW1JY0NuMWh5a0k2UkNrUTRLSE9tbDNOcXRRS2F5RnhUVHVpdzRiZ3k3czA1UnNzRlVUaWN1VmcKc3hnMjFVQUkvYW9WaXpQOVpESGE2TmV0YnpNczJmcmZBeHhBZk9pWDlzN1JuTmM0WHd4VAotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
     service:
-      name: quick-postgres
-      path: /
-      port: 5432
-      query: sslmode=disable
-      scheme: postgresql
-  secretTransforms:
-    - renameKey:
-        from: POSTGRES_USER
-        to: username
-    - renameKey:
-        from: POSTGRES_PASSWORD
-        to: password
-  version: "10.2"
+      name: sample-mariadb
+      port: 3306
+      scheme: mysql
+  secret:
+    name: sample-mariadb-auth
+  type: kubedb.com/mariadb
+  version: 10.5.8
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.
@@ -73,15 +62,15 @@ An `AppBinding` object has the following fields in the `spec` section:
 
 `spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to. Stash uses this field to resolve the values of `TARGET_APP_TYPE`, `TARGET_APP_GROUP` and `TARGET_APP_RESOURCE` variables of [BackupBlueprint](https://appscode.com/products/stash/latest/concepts/crds/backupblueprint/) object.
 
-This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `postgres` resource under `kubedb.com` group.
+This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `mariadb` resource under `kubedb.com` group.
 
 Here, the variables are parsed as follows:
 
 |       Variable        |                                                               Usage                                                               |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | `TARGET_APP_GROUP`    | Represents the application group where the respective app belongs (i.e: `kubedb.com`).                                            |
-| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents (i.e: `postgres`).                           |
-| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` (i.e: `kubedb.com/postgres`). |
+| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents (i.e: `mariadb`).                            |
+| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` (i.e: `kubedb.com/mariadb`).  |
 
 #### spec.secret
 
@@ -103,6 +92,13 @@ MySQL :
 | `username` | Username of the target database.               |
 | `password` | Password for the user specified by `username`. |
 
+MariaDB :
+
+| Key        | Usage                                          |
+| ---------- | ---------------------------------------------- |
+| `username` | Username of the target database.               |
+| `password` | Password for the user specified by `username`. |
+
 MongoDB :
 
 | Key        | Usage                                          |
@@ -110,7 +106,7 @@ MongoDB :
 | `username` | Username of the target database.               |
 | `password` | Password for the user specified by `username`. |
 
-Elasticsearch:
+MariaDB:
 
 |       Key        |          Usage          |
 | ---------------- | ----------------------- |
@@ -126,8 +122,7 @@ You can configure following fields in `spec.clientConfig` section:
 - **spec.clientConfig.url**
 
   `spec.clientConfig.url` gives the location of the database, in standard URL form (i.e. `[scheme://]host:port/[path]`). This is particularly useful when the target database is running outside of the Kubernetes cluster. If your database is running inside the cluster, use `spec.clientConfig.service` section instead.
-
-  > Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
+  Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
 
 - **spec.clientConfig.service**
 
@@ -144,8 +139,3 @@ You can configure following fields in `spec.clientConfig` section:
 - **spec.clientConfig.caBundle**
 
   `spec.clientConfig.caBundle` is a PEM encoded CA bundle which will be used to validate the serving certificate of the database.
-
-## Next Steps
-
-- Learn how to use KubeDB to manage various databases [here](/docs/guides/README.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
