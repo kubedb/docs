@@ -29,7 +29,7 @@ This guide will give an overview on how KubeDB Enterprise operator reconfigures 
 The following diagram shows how KubeDB Enterprise operator reconfigures TLS of a `ProxySQL` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Reconfiguring TLS process of ProxySQL" src="/docs/guides/proxysql/reconfigure-tls/overview/images/reconfigure-tls.jpeg">
+  <img alt="Reconfiguring TLS process of ProxySQL" src="/docs/guides/proxysql/reconfigure-tls/overview/images/reconfigure-tls.png">
 <figcaption align="center">Fig: Reconfiguring TLS process of ProxySQL</figcaption>
 </figure>
 

@@ -26,7 +26,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to reconfigure 
 
 - You should be familiar with the following `KubeDB` concepts:
   - [ProxySQL](/docs/guides/proxysql/concepts/proxysql)
-  - [ProxySQL Cluster](/docs/guides/proxysql/clustering/galera-cluster)
+  - [ProxySQL Cluster](/docs/guides/proxysql/clustering/proxysql-cluster)
   - [ProxySQLOpsRequest](/docs/guides/proxysql/concepts/opsrequest)
   - [Reconfigure Overview](/docs/guides/proxysql/reconfigure/overview)
 
@@ -71,7 +71,7 @@ mysql.kubedb.com/mysql-server created
 Let's wait for the MySQL to be Ready. 
 
 ```bash
- $ kubectl get mysql -n demo 
+$ kubectl get mysql -n demo 
 NAME           VERSION   STATUS   AGE
 mysql-server   5.7.36    Ready    3m51s
 ```
@@ -215,7 +215,7 @@ NAME       TYPE          STATUS       AGE
 add-user   Reconfigure   Successful   20s
 ```
 
-Now let's check the mysql_users table in the proxysql server.
+Now let's check the `mysql_users` table in the proxysql server.
 
 ```bash
 ProxySQLAdmin > select username,password,active,default_hostgroup from mysql_users;
@@ -228,13 +228,13 @@ ProxySQLAdmin > select username,password,active,default_hostgroup from mysql_use
 2 rows in set (0.001 sec)
 ```
 
-We can see that the users has been successfuly added to the mysql_users table.
+We can see that the users has been successfuly added to the `mysql_users` table.
 
 ### Update Users
 
-We have successfuly added new users in the mysql_users table with proxysqlopsrequest in the last section. Now we will see how to update any user information with proxysqlopsrequest. 
+We have successfuly added new users in the `mysql_users` table with proxysqlopsrequest in the last section. Now we will see how to update any user information with proxysqlopsrequest. 
 
-Suppose we want to update the active status and the default_hostgroup for the users testA and testB. We can create an ops-request like the following. As in the mysql_users table the username is the primary key, we should always provide the username in the information. To update just change the reqType to update.
+Suppose we want to update the `active` status and the `default_hostgroup` for the users "testA" and "testB". We can create an ops-request like the following. As in the `mysql_users` table the `username` is the primary key, we should always provide the `username` in the information. To update just change the `.spec.reqType` to `"update"`.
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -265,7 +265,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 proxysqlopsrequest.ops.kubedb.com/update-user created
 ```
 
-Now wait for the ops-request to be successful.
+Now wait for the ops-request to be Successful.
 
 ```bash
 $ kubectl get proxysqlopsrequest -n demo     
@@ -274,7 +274,7 @@ add-user      Reconfigure   Successful   2m36s
 update-user   Reconfigure   Successful   6s
 ```
 
-Let's check the mysql_users table from the admin interface. 
+Let's check the `mysql_users` table from the admin interface. 
 
 ```bash
 ProxySQLAdmin > select username,password,active,default_hostgroup from mysql_users;
@@ -291,7 +291,7 @@ From the above output we can see that the user information has been successfuly 
 
 ### Delete Users 
 
-To delete user from the mysql_users table, all we need to do is just provide the usernames in the spec.configuration.mysqlUsers.users array and set the reqType to delete. Let's have a look at the below yaml.
+To delete user from the `mysql_users` table, all we need to do is just provide the usernames in the `spec.configuration.mysqlUsers.users` array and set the `spec.reqType` to delete. Let's have a look at the following yaml.
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -325,7 +325,7 @@ delete-user   Reconfigure   Successful   12s
 update-user   Reconfigure   Successful   2m59s
 ```
 
-Now check the mysql_users table in the proxysql server.
+Now check the `mysql_users` table in the proxysql server.
 
 ```bash
 ProxySQLAdmin > select username,password,active,default_hostgroup from mysql_users;
@@ -345,8 +345,8 @@ With `KubeDB` `ProxySQL` ops-request you can reconfigure `mysql_query_rules` tab
 
 ### Check current mysql_query_rules table in ProxySQL
 
-Let's check the current mysql_query_rules table in the proxysql server.
-We might see some of the rules are already present. It happens when no rules are set in the initConfig section while deploying the proxysql. The operator adds some of the default query rules so that the basic operations can be run through the proxysql server. 
+Let's check the current `mysql_query_rules` table in the proxysql server.
+We might see some of the rules are already present. It happens when no rules are set in the `.spec.initConfig` section while deploying the proxysql. The operator adds some of the default query rules so that the basic operations can be run through the proxysql server. 
 
 ```bash
 ProxySQLAdmin > select rule_id,active,match_digest,destination_hostgroup,apply from mysql_query_ru
@@ -363,7 +363,7 @@ les;
 
 ### Add Query Rules
 
-Let's add a query rule to the mysql_query_rules table with the proxysqlopsrequest. We should create a yaml like the following.
+Let's add a query rule to the `mysql_query_rules` table with the proxysqlopsrequest. We should create a yaml like the following.
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -413,13 +413,13 @@ ProxySQLAdmin > select rule_id,active,match_digest,destination_hostgroup,apply f
 +---------+--------+------------------------+-----------------------+-------+
 4 rows in set (0.001 sec)
 ```
-We can see that the users has been successfuly added to the mysql_query_rules table.
+We can see that the users has been successfuly added to the `mysql_query_rules` table.
 
 ### Update Query Rules
 
-We have successfuly added new rule in the mysql_query_rules table with proxysqlopsrequest in the last section. Now we will see how to update any rules information with proxysqlopsrequest. 
+We have successfuly added new rule in the `mysql_query_rules` table with proxysqlopsrequest in the last section. Now we will see how to update any rules information with proxysqlopsrequest. 
 
-Suppose we want to update the active status ruel 4. We can create an ops-request like the following. As in the mysql_query_rules table the rule_id is the primary key, we should always provide the rule_id in the information. To update just change the reqType to update.
+Suppose we want to update the `active` status rule 4. We can create an ops-request like the following. As in the `mysql_query_rules` table the `rule_id` is the primary key, we should always provide the `rule_id` in the information. To update just change the `.spec.reqType` to update.
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ProxySQLOpsRequest
@@ -450,7 +450,7 @@ $ kubectl get proxysqlopsrequest -n demo | grep rule
 add-rule      Reconfigure   Successful   3m10s
 update-rule   Reconfigure   Successful   71s
 ```
-Let's check the mysql_query_rules table from the admin interface. 
+Let's check the `mysql_query_rules` table from the admin interface. 
 
 ```bash
 ProxySQLAdmin > select rule_id,active,match_digest,destination_hostgroup,apply from mysql_query_rules;
@@ -468,7 +468,7 @@ From the above output we can see that the rules information has been successfuly
 
 ### Delete Query Rules
 
-To delete rules from the mysql_query_rules table, all we need to do is just provide the rule_id in the spec.configuration.mysqlQueryRules.rules array and set the reqType to delete. Let's have a look at the below yaml.
+To delete rules from the `mysql_query_rules` table, all we need to do is just provide the `rule_id` in the `spec.configuration.mysqlQueryRules.rules` array and set the `.spec.reqType` to `"delete"`. Let's have a look at the below yaml.
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -492,7 +492,7 @@ Let's apply the yaml.
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-remove-rules.yaml
 proxysqlopsrequest.ops.kubedb.com/delete-rule created
 ```
-Let's wait for the ops-request to be successful. 
+Let's wait for the ops-request to be Successful. 
 
 ```bash
 $ kubectl get proxysqlopsrequest -n demo | grep rule
@@ -501,7 +501,7 @@ delete-rule   Reconfigure   Successful   12s
 update-rule   Reconfigure   Successful   2m14s
 ```
 
-Now check the mysql_query_rules table in the proxysql server.
+Now check the `mysql_query_rules` table in the proxysql server.
 
 ```bash
 ProxySQLAdmin > select rule_id,active,match_digest,destination_hostgroup,apply from mysql_query_rules;
@@ -518,7 +518,7 @@ We can see that the user is successfuly deleted.
 
 ## Reconfigure Global Variables
 
-With KubeDB ProxySQL ops-request you can reconfigure mysql variables and admin variables. You can reconfigure almost all the global variables except mysql-interfaces, mysql-monitor_username, mysql-monitor_password, mysql-ssl_p2s_cert, mysql-ssl_p2s_key, mysql-ssl_p2s_ca, admin-admin_credentials and admin-mysql_interface. To reconfigure any variable, you need to set the .spec.type to Reconfigure, provide the KubeDB ProxySQL instance name under the spec.proxyRef section and provide the desired configuration under the spec.configuration.adminVariables and the spec.cofiguration.mysqlVariables section. Below there are some samples for corresponding request type.
+With `KubeDB` `ProxySQL` ops-request you can reconfigure mysql variables and admin variables. You can reconfigure almost all the global variables except `mysql-interfaces`, `mysql-monitor_username`, `mysql-monitor_password`, `mysql-ssl_p2s_cert`, `mysql-ssl_p2s_key`, `mysql-ssl_p2s_ca`, `admin-admin_credentials` and `admin-mysql_interface`. To reconfigure any variable, you need to set the `.spec.type` to Reconfigure, provide the KubeDB ProxySQL instance name under the `spec.proxyRef` section and provide the desired configuration under the `spec.configuration.adminVariables` and the `spec.cofiguration.mysqlVariables` section. Below there are some samples for corresponding request type.
 
 Suppose we want to update 4 global variables. Among these 2 are admin variables : cluster_check_interval_ms and refresh_interval . The other 2 are mysql variables : max_stmts_per_connection and max_transaction_time.
 
@@ -542,7 +542,7 @@ ProxySQLAdmin > show global variables;
 193 rows in set (0.001 sec)
 ```
 
-To reconfigure these variables all we need to do is create a yaml like the following. Just mention the variable name and its desired value in a key-value style under corresponding variable type i.e mysqlVariables and adminVariables. 
+To reconfigure these variables all we need to do is create a yaml like the following. Just mention the variable name and its desired value in a key-value style under corresponding variable type i.e `mysqlVariables` and `adminVariables`. 
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -566,7 +566,7 @@ spec:
 Let's apply the yaml.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-recon-vars.yaml  12:18
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-recon-vars.yaml
 proxysqlopsrequest.ops.kubedb.com/recofigure-vars created
 ```
 

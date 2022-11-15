@@ -29,7 +29,7 @@ This guide will give you an overview on how KubeDB Enterprise operator upgrade t
 The following diagram shows how KubeDB Enterprise operator used to upgrade the version of `ProxySQL`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Upgrading Process of ProxySQL" src="/docs/guides/proxysql/upgrading/overview/images/proxysql-upgrade.jpeg">
+  <img alt="Upgrading Process of ProxySQL" src="/docs/guides/proxysql/upgrading/overview/images/proxysql-upgrade.png">
 <figcaption align="center">Fig: Upgrading Process of ProxySQL</figcaption>
 </figure>
 

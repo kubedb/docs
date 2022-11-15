@@ -272,7 +272,7 @@ issuer.cert-manager.io/proxy-issuer created
 
 ### Apply ops-request to add TLS
 
-We are all set to go! now lets create an ReconfigureTLS ops-request like below. We have set a desired configuration under the spec.tls section here as you can see. You can checkout the api documentation of this field here #edit
+We are all set to go! now lets create an ReconfigureTLS ops-request like below. We have set a desired configuration under the `.spec.tls` section here as you can see. You can checkout the api documentation of this field [here](https://pkg.go.dev/kubedb.dev/apimachinery@v0.29.1/apis/ops/v1alpha1#ProxySQLOpsRequestSpec).
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -323,7 +323,7 @@ proxy-server-server-cert             kubernetes.io/tls                     3    
 proxy-server-client-cert             kubernetes.io/tls                     3      4m53s 
 ```
 
-The directory /var/lib/frontend/ should carry the certificates and other files within the directories as seen below. 
+The directory `/var/lib/frontend/` should carry the certificates and other files within the directories as seen below. 
 ```bash
 root@proxy-server-0:/# ls /var/lib/frontend/
 client	server
@@ -335,7 +335,7 @@ root@proxy-server-0:/# ls /var/lib/frontend/server
 ca.crt   tls.crt   tls.key
 ```
 
-The mysql-have_ssl variables should be true by this time. 
+The `mysql-have_ssl` variables should be true by this time. 
 
 ```bash
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032
@@ -560,7 +560,7 @@ recon-tls-rotate      ReconfigureTLS   Successful    5m
 
 ### Check ops-request effect
 
-Let's check the if the expiration time has been updated or not. 
+Let's check if the expiration time has been updated or not. 
 
 ```bash
 root@proxy-server-0:/# openssl x509 -in /var/lib/frontend/client/tls.crt -inform  PEM -enddate -nameopt RFC2253 -noout
@@ -723,11 +723,11 @@ subject=CN=proxy-server,O=kubedb:server
 md.alifbiswas@gmail.com
 ```
 
-We can see the email has been successfuly updated. You can configure other field as well. To know more about the .spec.tls field refer to the link here #edit.
+We can see the email has been successfuly updated. You can configure other field as well. To know more about the .spec.tls field refer to the link [here](https://pkg.go.dev/kubedb.dev/apimachinery@v0.29.1/apis/ops/v1alpha1#TLSSpec) .
 
 ## Remove TLS
 
-To remove TLS from a KubeDB ProxySQL instance, all you need to do is apply a similar yaml like below. Just change the .spec.proxyRef.name field with your own proxysql instance name. 
+To remove TLS from a KubeDB ProxySQL instance, all you need to do is apply a similar yaml like below. Just change the `.spec.proxyRef.name` field with your own ProxySQL instance name. 
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -759,7 +759,7 @@ recon-tls-rotate      ReconfigureTLS   Successful    12m
 
 ### Check ops-request effect
 
-Let's check the effect . 
+Let's check the effect. 
 
 ```bash
 root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032

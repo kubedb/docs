@@ -26,7 +26,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to scale the cl
 
 - You should be familiar with the following `KubeDB` concepts:
     - [ProxySQL](/docs/guides/proxysql/concepts/proxysql/)
-    - [ProxySQL Cluster](/docs/guides/proxysql/clustering/galera-cluster/)
+    - [ProxySQL Cluster](/docs/guides/proxysql/clustering/proxysql-cluster/)
     - [ProxySQLOpsRequest](/docs/guides/proxysql/concepts/opsrequest/)`
     - [Horizontal Scaling Overview](/docs/guides/proxysql/scaling/horizontal-scaling/overview/)
 
@@ -63,7 +63,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/vertical-scaling/cluster/example/sample-mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/example/sample-mysql.yaml
 mysql.kubedb.com/mysql-server created 
 ```
 
@@ -72,10 +72,6 @@ After applying the above yaml wait for the MySQL to be Ready.
 ## Apply Horizontal Scaling on Cluster
 
 Here, we are going to deploy a  `ProxySQL` cluster using a supported version by `KubeDB` operator. Then we are going to apply horizontal scaling on it.
-
-### Prepare ProxySQL Cluster
-
-Now, we are going to deploy a `ProxySQL` cluster with version `2.3.2-debian`.
 
 ### Deploy ProxySQL Cluster
 
@@ -147,7 +143,7 @@ We are now ready to apply the `ProxySQLOpsRequest` CR to scale this server.
 
 Here, we are going to scale up the replicas of the replicaset to meet the desired number of replicas after scaling.
 
-#### Create ProxySQLOpsRequest
+### Create ProxySQLOpsRequest
 
 In order to scale up the replicas of the replicaset of the server, we have to create a `ProxySQLOpsRequest` CR with our desired replicas. Below is the YAML of the `ProxySQLOpsRequest` CR that we are going to create,
 
@@ -179,7 +175,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 proxysqlopsrequest.ops.kubedb.com/scale-up created
 ```
 
-#### Verify Cluster replicas scaled up successfully
+### Verify Cluster replicas scaled up successfully
 
 If everything goes well, `KubeDB` Enterprise operator will update the replicas of `ProxySQL` object and related `StatefulSets` and `Pods`.
 
@@ -222,11 +218,11 @@ root@proxy-server-1:/#
 
 From all the above outputs we can see that the replicas of the cluster is `5`. That means we have successfully scaled up the replicas of the ProxySQL replicaset.
 
-### Scale Down Replicas
+## Scale Down Replicas
 
 Here, we are going to scale down the replicas of the cluster to meet the desired number of replicas after scaling.
 
-#### Create ProxySQLOpsRequest
+### Create ProxySQLOpsRequest
 
 In order to scale down the cluster of the server, we have to create a `ProxySQLOpsRequest` CR with our desired replicas. Below is the YAML of the `ProxySQLOpsRequest` CR that we are going to create,
 
@@ -274,9 +270,9 @@ We can see from the above output that the `ProxySQLOpsRequest` has succeeded. No
 
 ```bash
 $ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas' 
-3
+4
 $ kubectl get sts -n demo proxy-server -o json | jq '.spec.replicas'
-3
+4
 ```
 
 Now let's connect to a proxysql instance and run a proxysql internal command to check the number of replicas,
