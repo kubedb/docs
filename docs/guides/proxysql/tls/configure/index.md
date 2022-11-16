@@ -100,7 +100,7 @@ kubectl create secret tls proxy-ca \
 secret/proxy-ca created
 ```
 
-Now, we are going to create an `Issuer` using the `proxy-ca` secret that hols the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
+Now, we are going to create an `Issuer` using the `proxy-ca` secret that holds the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -176,7 +176,7 @@ Now, wait for `ProxySQL` going on `Ready` state and also wait for `StatefulSet` 
 
 ```bash
 $ kubectl get proxysql -n demo proxy-server
-NAME             VERSION   STATUS   AGE
+NAME             VERSION       STATUS   AGE
 proxy-server   2.3.2-debian    Ready    5m48s
 
 $ kubectl get sts -n demo proxy-server

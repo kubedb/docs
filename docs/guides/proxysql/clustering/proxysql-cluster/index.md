@@ -69,7 +69,7 @@ mysql.kubedb.com/mysql-server created
 Let's wait for the MySQL to be Ready. 
 
 ```bash
- $ kubectl get mysql -n demo 
+$ kubectl get mysql -n demo 
 NAME           VERSION   STATUS   AGE
 mysql-server   5.7.36    Ready    3m51s
 ```

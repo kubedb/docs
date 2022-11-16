@@ -2,9 +2,9 @@
 title: Monitor ProxySQL using Prometheus Operator
 menu:
   docs_{{ .version }}:
-    identifier: prx-using-prometheus-operator-monitoring
+    identifier: guides-proxysql-monitoring-prometheusoperator
     name: Prometheus Operator
-    parent: prx-monitoring-proxysql
+    parent: guides-proxysql-monitoring
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -24,14 +24,9 @@ section_menu_id: guides
 
 - To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/proxysql/monitoring/overview.md).
 
-- To keep Prometheus resources isolated, we are going to use two different namespaces called,
-- `monitoring` to deploy respective monitoring resources
-- `demo` to deploy respective resources from KubeDB
+- To keep database resources isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster:
 
   ```bash
-  $ kubectl create ns monitoring
-  namespace/monitoring created
-
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -100,15 +95,13 @@ So, let's deploy a MySQL database with Group Replication support. Below is the M
 apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
-  name: my-group
+  name: mysql-server
   namespace: demo
 spec:
   version: "5.7.36"
   replicas: 3
   topology:
     mode: GroupReplication
-    group:
-      name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -123,16 +116,16 @@ spec:
 Let's create the MySQL object we have shown above.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-my-group.yaml
-mysql.kubedb.com/my-group created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/monitoring/prometheus-operator/examples/sample-mysql.yaml
+mysql.kubedb.com/mysql-server created
 ```
 
 Now, wait for the database to go into the `Running` state.
 
 ```bash
-$ kubectl get my -n demo my-group
-NAME       VERSION   STATUS    AGE
-my-group   5.7.25    Running   3m
+$ kubectl get mysql -n demo mysql-server
+NAME           VERSION   STATUS    AGE
+mysql-server   5.7.36    Running   3m
 ```
 
 ### Deploy ProxySQL
@@ -143,19 +136,17 @@ Now we are going to create a sample ProxySQL object to load balance the previous
 apiVersion: kubedb.com/v1alpha2
 kind: ProxySQL
 metadata:
-  name: builtin-prom-proxysql
+  name: proxy-server
   namespace: demo
 spec:
   version: "2.3.2-debian"
-  replicas: 1
+  replicas: 3
   mode: GroupReplication
   backend:
-    name: my-group
+    name: mysql-server
   monitor:
     agent: prometheus.io/operator
     prometheus:
-      exporter:
-        port: 42004
       serviceMonitor:
         labels:
           k8s-app: prometheus
@@ -165,70 +156,68 @@ spec:
 Here,
 
 - `.spec.monitor.agent: prometheus.io/operator` indicates that we are going to monitor this server using the Prometheus operator.
-- `.spec.monitor.prometheus.port` specifies the port at which ProxySQL exporter will serve the metrics and from this port, the Prometheus server collects them.
-- `.spec.monitor.prometheus.namespace: monitoring` specifies that KubeDB should create `ServiceMonitor` in `monitoring` namespace.
 - `.spec.monitor.prometheus.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
 - `.spec.monitor.prometheus.interval` indicates that the Prometheus server should scrape metrics from ProxySQL exporter with 10 seconds interval.
 
 Let's create the ProxySQL object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/coreos-prom-proxysql.yaml
-proxysql.kubedb.com/coreos-prom-mysql created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/monitoring/prometheus-operator/examples/sample-proxysql.yaml
+proxysql.kubedb.com/proxy-server created
 ```
 
 ```bash
-$ kubectl get proxysql -n demo coreos-prom-proxysql
-NAME                   VERSION   STATUS    AGE
-coreos-prom-proxysql   2.3.2     Running   14s
+$ kubectl get proxysql -n demo proxy-server
+NAME                   VERSION       STATUS    AGE
+proxy-server        2.3.2-debian     Running   14s
 ```
 
 KubeDB will create a separate stats service with the name `{ProxySQL object name}-stats` for monitoring purposes.
 
 ```bash
-$ kubectl get svc -n demo --selector="proxysql.app.kubernetes.io/instance=coreos-prom-proxysql"
-NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-coreos-prom-proxysql         ClusterIP   10.101.10.235   <none>        6033/TCP    73s
-coreos-prom-proxysql-stats   ClusterIP   10.111.242.54   <none>        42004/TCP   68s
+$ kubectl get svc -n demo --selector="proxysql.app.kubernetes.io/instance=proxy-server"
+NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+proxy-server         ClusterIP   10.101.10.235   <none>        6033/TCP    73s
+proxy-server-stats   ClusterIP   10.111.242.54   <none>        6070/TCP    68s
 ```
 
-Here, `coreos-prom-proxysql-stats` service has been created for monitoring purposes.
+Here, `proxy-server-stats` service has been created for monitoring purposes.
 
 Let's describe this stats service.
 
 ```yaml
-$ kubectl describe svc -n demo coreos-prom-proxysql-stats
-Name:              coreos-prom-proxysql-stats
+$ kubectl describe svc -n demo proxy-server-stats
+Name:              proxy-server-stats
 Namespace:         demo
 Labels:            app.kubernetes.io/name=proxysqls.kubedb.com
                    kubedb.com/role=stats
                    proxysql.kubedb.com/load-balance=GroupReplication
-                   proxysql.app.kubernetes.io/instance=coreos-prom-proxysql
+                   proxysql.app.kubernetes.io/instance=proxy-server
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          app.kubernetes.io/name=proxysqls.kubedb.com,proxysql.kubedb.com/load-balance=GroupReplication,proxysql.app.kubernetes.io/instance=coreos-prom-proxysql
+Selector:          app.kubernetes.io/name=proxysqls.kubedb.com,proxysql.kubedb.com/load-balance=GroupReplication,proxysql.app.kubernetes.io/instance=proxy-server
 Type:              ClusterIP
 IP:                10.111.242.54
-Port:              prom-http  42004/TCP
+Port:              prom-http  6070/TCP
 TargetPort:        prom-http/TCP
-Endpoints:         10.244.2.14:42004
+Endpoints:         10.244.2.14:6070
 Session Affinity:  None
 Events:            <none>
 ```
 
 Notice the `Labels` and `Port` fields. `ServiceMonitor` will use this information to target its endpoints.
 
-KubeDB will also create a `ServiceMonitor` object in `monitoring` namespace that select the endpoints of `coreos-prom-proxysql-stats` service. Verify that the `ServiceMonitor` object has been created.
+KubeDB will also create a `ServiceMonitor` object in `monitoring` namespace that select the endpoints of `proxy-server-stats` service. Verify that the `ServiceMonitor` object has been created.
 
 ```bash
 $ kubectl get servicemonitor -n monitoring
 NAME                               AGE
-kubedb-demo-coreos-prom-proxysql   3m22s
+kubedb-demo-proxy-server   3m22s
 ```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `.spec.monitor` section of ProxySQL object.
 
 ```yaml
-$ kubectl get servicemonitor -n monitoring kubedb-demo-coreos-prom-proxysql -o yaml
+$ kubectl get servicemonitor -n monitoring kubedb-demo-proxy-server -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -236,17 +225,17 @@ metadata:
   generation: 1
   labels:
     k8s-app: prometheus
-    monitoring.appscode.com/service: coreos-prom-proxysql-stats.demo
-  name: kubedb-demo-coreos-prom-proxysql
+    monitoring.appscode.com/service: proxy-server-stats.demo
+  name: kubedb-demo-proxy-server
   namespace: monitoring
   ownerReferences:
   - apiVersion: v1
     blockOwnerDeletion: true
     kind: Service
-    name: coreos-prom-proxysql-stats
+    name: proxy-server-stats
     uid: a37585e6-14b3-41b2-a8d2-81763845cb8d
   resourceVersion: "30358"
-  selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/servicemonitors/kubedb-demo-coreos-prom-proxysql
+  selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/servicemonitors/kubedb-demo-proxy-server
   uid: 09dc865e-73c0-44e1-b972-540b58efc660
 spec:
   endpoints:
@@ -262,12 +251,12 @@ spec:
       app.kubernetes.io/name: proxysqls.kubedb.com
       kubedb.com/role: stats
       proxysql.kubedb.com/load-balance: GroupReplication
-      proxysql.app.kubernetes.io/instance: coreos-prom-proxysql
+      proxysql.app.kubernetes.io/instance: proxy-server
 ```
 
 Notice that the `ServiceMonitor` has `k8s-app: prometheus` label that we had specified in ProxySQL object.
 
-Also, notice that the `ServiceMonitor` has a selector that matches the labels we have seen in the `coreos-prom-proxysql-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
+Also, notice that the `ServiceMonitor` has a selector that matches the labels we have seen in the `proxy-server-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
 
 ## Verify Monitoring Metrics
 
@@ -289,7 +278,7 @@ Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `coreos-prom-proxysql-stats` service as one of the targets.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `proxy-server-stats` service as one of the targets.
 
 <p align="center">
   <img alt="Prometheus Target" src="/docs/images/proxysql/proxysql-coreos-prom-target.png" style="padding:10px">
@@ -316,8 +305,8 @@ $ kubectl delete clusterrolebinding prometheus-operator
 $ kubectl delete clusterrole prometheus-operator
 
 # cleanup proxysql and mysql resources
-$ kubectl delete -n demo proxysql/coreos-prom-proxysql
-$ kubectl delete -n demo my/my-group
+$ kubectl delete -n demo proxysql/proxy-server
+$ kubectl delete -n demo my/mysql-server
 
 # delete namespace
 $ kubectl delete ns monitoring

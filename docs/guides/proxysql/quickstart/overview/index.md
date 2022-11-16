@@ -1,18 +1,16 @@
 ---
-title: Load Balance MySQL Group Replication Using ProxySQL
+title: ProxySQL Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: prx-load-balance-mysql-group-replication-quickstart
-    name: Load Balance MySQL Group Replication Using ProxySQL
-    parent: prx-quickstart-proxysql
+    identifier: guides-proxysql-quickstart-overview
+    name: Overview
+    parent: guides-proxysql-quickstart
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
-
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
 
 # Load Balance MySQL Group Replication Using ProxySQL
 
@@ -34,11 +32,11 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples).
+> Note: YAML files used in this tutorial are stored [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/overview/examples).
 
 ## Load Balance Using ProxySQL
 
-This section will demonstrate how to load balance a MySQL Group Replication (both the single-primary mode and multi-primary mode) using ProxySQL. Since KubeDB currently supports group replication only for the single-primary mode, we we are going to deploy a single-primary MySQL replication group using KubeDB. Then, we are going to load balance the read-write query requests to the MySQL database using ProxySQL.
+This section will demonstrate how to load balance a MySQL Group Replication using ProxySQL. Since KubeDB currently supports group replication only for the single-primary mode, we we are going to deploy a single-primary MySQL replication group using KubeDB. Then, we are going to load balance the read-write query requests to the MySQL database using ProxySQL.
 
 ### Deploy Sample MySQL Group Replication
 
@@ -52,31 +50,29 @@ Below is the YAML of a sample `MySQL` object with group replication that we are 
 apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
-  name: my-group
+  name: mysql-server
   namespace: demo
 spec:
   version: "5.7.36"
   replicas: 3
   topology:
     mode: GroupReplication
-    group:
-      name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  terminationPolicy: WipeOut
 ```
 
 Create the above `MySQL` object,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-my-group.yaml
-mysql.kubedb.com/my-group created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/overview/examples/sample-mysql.yaml
+mysql.kubedb.com/mysql-server created
 ```
 
 KubeDB will deploy a single primary MySQL Group Replication according to the above specification. It will also create the necessary Secrets and Services to access the database.
@@ -84,47 +80,47 @@ KubeDB will deploy a single primary MySQL Group Replication according to the abo
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get my -n demo my-group
-NAME       VERSION   STATUS    AGE
-my-group   5.7.25    Running   5m37s
+$ kubectl get my -n demo mysql-server
+NAME           VERSION   STATUS    AGE
+mysql-server   5.7.36    Running   5m37s
 ```
 
 The database is `Running`. Verify that KubeDB has created necessary Secret for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=app.kubernetes.io/instance=my-group
-NAME            TYPE     DATA   AGE
-my-group-auth   Opaque   2      10m
+$ kubectl get secret -n demo -l=app.kubernetes.io/instance=mysql-server
+NAME                 TYPE     DATA    AGE
+mysql-server-auth   Opaque     2      10m
 ```
 
-Here, we have to use the secret `my-group-auth` to connect with the database.
+Here, we have to use the secret `mysql-server-auth` to connect with the database.
 
 #### Insert Sample Data
 
 Now, we are going to exec into the database pod and create some sample data. At first, find out the database Pod using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=my-group"
-NAME         READY   STATUS    RESTARTS   AGE
-my-group-0   1/1     Running   0          12m
-my-group-1   1/1     Running   0          12m
-my-group-2   1/1     Running   0          12m
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=mysql-server"
+NAME             READY   STATUS    RESTARTS   AGE
+mysql-server-0   1/1     Running   0          12m
+mysql-server-1   1/1     Running   0          12m
+mysql-server-2   1/1     Running   0          12m
 ```
 
 Copy the username and password of the `root` user to access into `mysql` shell.
 
 ```bash
-$ kubectl get secret -n demo  my-group-auth -o jsonpath='{.data.username}'| base64 -d
+$ kubectl get secret -n demo  mysql-server-auth -o jsonpath='{.data.username}'| base64 -d
 root⏎
 
-$ kubectl get secret -n demo  my-group-auth -o jsonpath='{.data.password}'| base64 -d
+$ kubectl get secret -n demo  mysql-server-auth -o jsonpath='{.data.password}'| base64 -d
 tiIKEbjwnKLxAJP9⏎
 ```
 
 Now, let's exec into the Pod to enter into `mysql` shell and create a database and a table,
 
 ```bash
-$ kubectl exec -it -n demo my-group-0 -- mysql --user=root --password=tiIKEbjwnKLxAJP9
+$ kubectl exec -it -n demo mysql-server-0 -- mysql --user=root --password=tiIKEbjwnKLxAJP9
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 25395
@@ -187,13 +183,13 @@ KubeDB has a CRD named `ProxySQL` that can identify the reads, writes and route 
 
 #### Create ProxySQL Object
 
-Let's create a ProxySQL object called `proxy-my-group` pointing to the previously created MySQL database. Below is the YAML of the ProxySQL object we are going to create,
+Let's create a ProxySQL object called `proxy-server` pointing to the previously created MySQL database. Below is the YAML of the ProxySQL object we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: ProxySQL
 metadata:
-  name: proxy-my-group
+  name: proxy-server
   namespace: demo
 spec:
   version: "2.3.2-debian"
@@ -207,47 +203,47 @@ spec:
 Now, create this,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-proxy-my-group.yaml
-proxysql.kubedb.com/proxy-my-group created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/overview/examples/sample-proxysql.yaml
+proxysql.kubedb.com/sample-proxy created
 ```
 
 #### Verify ProxySQL Creation
 
-KubeDB will deploy one replica for proxysql pointing to backend MySQL servers as we specified `.spec.backend.ref` as the previously created MySQL object named `my-group`. KubeDB will also create a Secret and a Service for it.
+KubeDB will deploy one replica for proxysql pointing to backend MySQL servers as we specified `.spec.backend.ref` as the previously created MySQL object named `mysql-server`. KubeDB will also create a Secret and a Service for it.
 
 Let's check if the ProxySQL object is ready to use,
 
 ```bash
-$ kubectl get proxysql -n demo proxy-my-group
-NAME             VERSION   STATUS    AGE
-proxy-my-group   2.3.2     Running   129m
+$ kubectl get proxysql -n demo proxy-server
+NAME             VERSION        STATUS    AGE
+proxy-server   2.3.2-debian     Ready   129m
 ```
 
-The status is `Running`. Verify that KubeDB has created necessary Secret and Service for this object using the following commands,
+The status is `Ready`. Verify that KubeDB has created necessary Secret and Service for this object using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=proxysql.app.kubernetes.io/instance=proxy-my-group
+$ kubectl get secret -n demo -l=proxysql.app.kubernetes.io/instance=proxy-server
 NAME                  TYPE     DATA   AGE
-proxy-my-group-auth   Opaque   2      132m
+proxy-server-auth   Opaque   2      132m
 
-$ kubectl get service -n demo -l=proxysql.app.kubernetes.io/instance=proxy-my-group
+$ kubectl get service -n demo -l=proxysql.app.kubernetes.io/instance=proxy-server
 NAME             TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
-proxy-my-group   ClusterIP   10.32.6.128   <none>        6033/TCP   133m
+proxy-server   ClusterIP   10.32.6.128   <none>        6033/TCP   133m
 ```
 
-Here, we have to use service `proxy-my-group` and secret `proxy-my-group-auth` to connect with the database through proxysql.
+Here, we have to use service `proxy-server` and secret `proxy-server-auth` to connect with the database through proxysql.
 
 ### Route Read/Write Requests through ProxySQL
 
-So, KubeDB creates users `proxysql` in the MySQL database for proxysql. The `proxysql` acts as the monitor user for ProxySQL in the MySQL server. KubeDB stores the credentials of `proxysql` user in the Secret `proxy-my-group-auth`.
+So, KubeDB creates users `proxysql` in the MySQL database for proxysql. The `proxysql` acts as the monitor user for ProxySQL in the MySQL server. KubeDB stores the credentials of `proxysql` user in the Secret `proxy-server-auth`.
 
 ```bash
-kubectl describe secret -n demo proxy-my-group-auth
-Name:         proxy-my-group-auth
+kubectl describe secret -n demo proxy-server-auth
+Name:         proxy-server-auth
 Namespace:    demo
 Labels:       app.kubernetes.io/name=proxysqls.kubedb.com
               proxysql.kubedb.com/load-balance=GroupReplication
-              proxysql.app.kubernetes.io/instance=proxy-my-group
+              proxysql.app.kubernetes.io/instance=proxy-server
 Annotations:  <none>
 
 Type:  Opaque
@@ -261,10 +257,10 @@ proxysqluser:  8 bytes
 Copy the username and password of the `proxysql` user to access into `mysql` shell.
 
 ```bash
-$ kubectl get secret -n demo  proxy-my-group-auth -o jsonpath='{.data.proxysqluser}'| base64 -d
+$ kubectl get secret -n demo  proxy-server-auth -o jsonpath='{.data.proxysqluser}'| base64 -d
 proxysql⏎
 
-$ kubectl get secret -n demo  proxy-my-group-auth -o jsonpath='{.data.proxysqlpass}'| base64 -d
+$ kubectl get secret -n demo  proxy-server-auth -o jsonpath='{.data.proxysqlpass}'| base64 -d
 jxOlSObHgvvjOk1v⏎
 ```
 
@@ -273,7 +269,7 @@ jxOlSObHgvvjOk1v⏎
 Now, let's exec into the proxysql Pod to enter into `mysql` shell using `proxysql` user credentials and read the existing database and table,
 
 ```bash
-$ kubectl exec -it -n demo proxy-my-group-0 -- mysql --user=proxysql --password=jxOlSObHgvvjOk1v --host proxy-my-group.demo --port=6033 --prompt='MySQL [proxysql]> '
+$ kubectl exec -it -n demo proxy-server-0 -- mysql --user=proxysql --password=jxOlSObHgvvjOk1v --host proxy-server.demo --port=6033 --prompt='MySQL [proxysql]> '
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 9
 Server version: 5.5.30 (ProxySQL)
@@ -317,7 +313,7 @@ Bye
 Exec into the Pod to enter into `mysql` shell using `admin` user credentials and see the query counts,
 
 ```bash
-kubectl exec -it -n demo proxy-my-group-0 -- mysql --user=admin --password=admin --host 127.0.0.1 --port=6032 --prompt='MySQL [admin]> '
+kubectl exec -it -n demo proxy-server-0 -- mysql --user=admin --password=admin --host 127.0.0.1 --port=6032 --prompt='MySQL [admin]> '
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 12
 Server version: 5.5.30 (ProxySQL Admin Module)
@@ -394,7 +390,7 @@ Bye
 This time exec into the proxysql Pod to enter into `mysql` shell using `proxysql` user credentials to create new database and table,
 
 ```bash
-kubectl exec -it -n demo proxy-my-group-0 -- mysql --user=proxysql --password=jxOlSObHgvvjOk1v --host proxy-my-group.demo --port=6033 --prompt='MySQL [proxysql]> '
+kubectl exec -it -n demo proxy-server-0 -- mysql --user=proxysql --password=jxOlSObHgvvjOk1v --host proxy-server.demo --port=6033 --prompt='MySQL [proxysql]> '
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 13
 Server version: 5.5.30 (ProxySQL)
@@ -427,7 +423,7 @@ Bye
 Again, exec into the Pod to enter into `mysql` shell using `admin` user credentials and see the query counts,
 
 ```bash
-kubectl exec -it -n demo proxy-my-group-0 -- mysql --user=admin --password=admin --host 127.0.0.1 --port=6032 --prompt='MySQL [admin]> '
+kubectl exec -it -n demo proxy-server-0 -- mysql --user=admin --password=admin --host 127.0.0.1 --port=6032 --prompt='MySQL [admin]> '
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 14
 Server version: 5.5.30 (ProxySQL Admin Module)
@@ -504,8 +500,8 @@ Bye
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete proxysql -n demo proxy-my-group
-$ kubectl delete my -n demo my-group
+$ kubectl delete proxysql -n demo proxy-server
+$ kubectl delete my -n demo mysql-server
 ```
 
 ## Next Steps

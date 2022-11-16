@@ -1,41 +1,40 @@
 ---
-title: Initialize ProxySQL using Script
+title: ProxySQL Declarative Configuration
 menu:
   docs_{{ .version }}:
-    identifier: guides-proxysql-initialization-declarativeConfiguration
-    name: Using Script
-    parent: guides-proxysql-initialization
-    weight: 10
+    identifier: guides-proxysql-concepts-declarativeconfiguration
+    name: ProxySQLOpsRequest
+    parent: guides-proxysql-concepts
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Initialize ProxySQL with yaml
+# ProxySQL Declarative Configuration
 
-This tutorial will show you how to use KubeDB to initialize a ProxySQL server using declarative configuration.
+## What is ProxySQL Declarative Configuration
 
-> Note: The yaml files that are used in this tutorial are stored [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/initialization/declarativeConfiguration/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+To bootstrap a native ProxySQL server with desired configuration we need to pass a configuration file named `proxysql.cnf`. Through the proxysql.cnf file we can pass some initial configuration for various tables and global variables with a specific format. You can check the link for a sample proxysql.cnf and its grammar [here](https://github.com/sysown/proxysql/blob/v2.x/etc/proxysql.cnf).
 
-## Before You Begin
+With kubedb proxysql we have eased this process with declarative yaml. We have scoped the CRD in a specific way so that you can provide the desired configuration in a yaml format. 
 
-- At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+## How it works 
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+User will provide the configuration under the `.spec.initConfig` section of the proxysql yaml. The operator parses the yaml and creates a configuration file. A secret is then created, holding that configuration file inside. Each time a new pod is created it is created with the configuration file inside that secret. 
 
-- To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
+<p align="center">
+  <img alt="ProxySQL Declarative Configuration"  src="/docs/guides/proxysql/concepts/declarativeConfiguration/images/configuration.png">
+</p>
 
-```bash
-$ kubectl create ns demo
-namespace/demo created
-```
+At any time the user might need to change the configuration. To serve that purpose we have introduced ProxySQLOpsRequest. When an ops-request is being created the enterprise operator updates the configuration secret and applies the changes to the proxysql cluster nodes. This is how the the configuration secret remains as a source of truth for the ProxySQL CRO and any changes are made in a declarative way. 
 
-## ProxySQL Declarative Configuration
+> User can exec into any proxysql pod and change any configuration from the admin panel anytime. But that won't update the configuration secret. We recommend the ops-request to keep things declarative and keep the proxysql.cnf file always updated. 
 
-To bootstrap a native proxysql server with desired configuration we need to pass a configuration file named `proxysql.cnf`. Through the proxysql.cnf file we can pass some initial configuration for various tables and global variables with a specific format. You can check the link for a sample proxyysql.cnf and its grammer [here](https://github.com/sysown/proxysql/blob/v2.x/etc/proxysql.cnf).
+## API Description
 
-With kubedb proxysql we have eased this process with declarative yaml. You can write the configuration in yaml format under the `spec.initConfig` section and the operator would do the rest. `spec.initConfig` section is devided into four sections : `spec.initConfig.mysqlUsers` , `spec.initConfig.mysqlQueryRules`, `spec.initConfig.mysqlVariables`, `spec.initConfig.adminVariables`. You can configure the `mysql_users` and `mysql_query_rules` tables and also the global variables under the corresponding fields. This is the [api](https://pkg.go.dev/kubedb.dev/apimachinery@v0.29.1/apis/kubedb/v1alpha2#ProxySQLConfiguration) documentation. We will discuss in detail about each of the fields. 
+You can write the configuration in yaml format under the `spec.initConfig` section and the operator would do the rest. `spec.initConfig` section is devided into four sections : `spec.initConfig.mysqlUsers` , `spec.initConfig.mysqlQueryRules`, `spec.initConfig.mysqlVariables`, `spec.initConfig.adminVariables`. You can configure the `mysql_users` and `mysql_query_rules` tables and also the global variables under the corresponding fields. This is the [api](https://pkg.go.dev/kubedb.dev/apimachinery@v0.29.1/apis/kubedb/v1alpha2#ProxySQLConfiguration) documentation. We will discuss in detail about each of the fields. 
 
 ### initConfig.mysqlUsers
 
