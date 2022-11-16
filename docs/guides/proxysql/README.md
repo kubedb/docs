@@ -2,9 +2,9 @@
 title: ProxySQL
 menu:
   docs_{{ .version }}:
-    identifier: prx-readme-proxysql
+    identifier: guides-proxysql
     name: ProxySQL
-    parent: prx-proxysql-guides
+    parent: guides
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -24,7 +24,8 @@ aliases:
 | Load balance MySQL Group Replication |   &#10003;   |
 | Load balance PerconaXtraDB Cluster   |   &#10007;   |
 | Custom Configuration                 |   &#10003;   |
-| Using Custom docker image            |   &#10003;   |
+| Declarative Configuration            |   &#10003;   |
+| Version Update                       |   &#10003;   |
 | Builtin Prometheus Discovery         |   &#10003;   |
 | Using Prometheus operator            |   &#10003;   |
 | ProxySQL server cluster              |   &#10003;   |
@@ -34,13 +35,18 @@ aliases:
 
 ## User Guide
 
-- Overview of ProxySQL [here](/docs/guides/proxysql/overview/overview.md).
-- Configure ProxySQL for Group Replication [here](/docs/guides/proxysql/overview/configure-proxysql.md).
-- Learn to use ProxySQL to Load Balance MySQL Group Replication with KubeDB Operator [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
-- Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
-- Monitor your ProxySQL with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md).
-- Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
-- Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-config-file.md).
-- Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/proxysql.md).
-- Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+#TODO : edit the links after adding all 
+- Overview of KubeDB ProxySQL CRD 
+- Configure KubeDB ProxySQL for MySQL Group Replication
+- Deploy ProxySQL cluster with KubeDB 
+- Initialize KubeDB ProxySQL with declarative configuration 
+- Initialize KubeDB ProxySQL with configuration secret
+- Reconfigure KubeDB ProxySQL with ops-request
+- Deploy TLS/SSL secured KubeDB ProxySQL
+- Reconfigure TLS/SSL for KubeDB ProxySQL
+- Detail concepts of ProxySQLVersion CRD 
+- Upgrade KubeDB ProxySQL version with ops-request
+- Scale horizontally and vertically KubeDB ProxySQL with ops-request
+- Learn auto-scaling for KubeDB ProxySQL
+- Monitor your ProxySQL with KubeDB using prometheus
+- Want to hack on KubeDB? Check our 
