@@ -312,7 +312,7 @@ Usage of some field of `.spec.podTemplate` is described below,
 
 #### .spec.podTemplate.spec.imagePullSecrets
 
-`KubeDB` provides the flexibility of deploying ProxySQL from a private Docker registry. `.spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker images if you are using a private docker registry. To learn how to deploy SQL from a private registry, please visit [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
+`KubeDB` provides the flexibility of deploying ProxySQL from a private Docker registry. `.spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker images if you are using a private docker registry.
 
 #### .spec.podTemplate.spec.nodeSelector
 
