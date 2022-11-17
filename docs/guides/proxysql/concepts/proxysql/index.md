@@ -356,5 +356,4 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 ## Next Steps
 
 #TODO: edit the links
-- Learn how to use KubeDB to load balance MySQL Group Replication [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+- Learn how to use KubeDB to load balance MySQL Group Replication 
