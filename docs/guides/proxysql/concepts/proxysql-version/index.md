@@ -45,7 +45,7 @@ spec:
 
 ### .metadata.name
 
-`.metadata.name` is a required field that specifies the name of the `ProxySQLVersion` object. You have to specify this name in `.spec.version` field of [ProxySQL](/docs/guides/proxysql/concepts/proxysql.md) object.
+`.metadata.name` is a required field that specifies the name of the `ProxySQLVersion` object. You have to specify this name in `.spec.version` field of [ProxySQL](/docs/guides/proxysql/concepts/proxysql/index.md) object.
 
 We follow this convention for naming ProxySQLVersion object:
 
