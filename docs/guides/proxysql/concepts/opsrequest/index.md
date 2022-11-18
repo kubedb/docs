@@ -26,7 +26,7 @@ Like any official Kubernetes resource, a `ProxySQLOpsRequest` has `TypeMeta`, `O
 
 Here, some sample `ProxySQLOpsRequest` CRs for different administrative operations is given below:
 
-**Sample `ProxySQLOpsRequest` for upgrading database:**
+**Sample ProxySQLOpsRequest for upgrading database:**
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -42,7 +42,7 @@ spec:
     targetVersion: "2.4.4-debian"
 ```
 
-**Sample `ProxySQLOpsRequest` Objects for Horizontal Scaling of proxysql cluster:**
+**Sample ProxySQLOpsRequest Objects for Horizontal Scaling of proxysql cluster:**
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -59,7 +59,7 @@ spec:
 
 ```
 
-**Sample `ProxySQLOpsRequest` Objects for Vertical Scaling of the proxysql cluster:**
+**Sample ProxySQLOpsRequest Objects for Vertical Scaling of the proxysql cluster:**
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -81,7 +81,7 @@ spec:
         cpu: "0.6"
 ```
 
-**Sample `ProxySQLOpsRequest` Objects for Reconfiguring ProxySQL cluster:**
+**Sample ProxySQLOpsRequest Objects for Reconfiguring ProxySQL cluster:**
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -102,7 +102,7 @@ spec:
       max_stmts_per_connection: 19
 ```
 
-**Sample `ProxySQLOpsRequest` Objects for Reconfiguring TLS of the ProxySQL:**
+**Sample ProxySQLOpsRequest Objects for Reconfiguring TLS of the ProxySQL:**
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -230,7 +230,7 @@ If you want to reconfigure the TLS configuration of your database i.e. add TLS, 
 - `spec.tls.remove` specifies that we want to remove tls from this proxysql.
 
 
-### ProxySQLOpsRequest `Status`
+### ProxySQLOpsRequest Status
 
 `.status` describes the current state and progress of a `ProxySQLOpsRequest` operation. It has the following fields:
 

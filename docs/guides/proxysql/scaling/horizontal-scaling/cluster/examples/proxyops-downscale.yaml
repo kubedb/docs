@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: scale-down
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  proxyRef:
+    name: proxy-server
+  horizontalScaling:
+    member: 4
