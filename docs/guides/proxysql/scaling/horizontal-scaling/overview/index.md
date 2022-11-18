@@ -1,11 +1,11 @@
 ---
 title: ProxySQL Horizontal Scaling Overview
 menu:
-docs_{{ .version }}:
-identifier: guides-proxysql-scaling-horizontal-overview
-name: Overview
-parent: guides-proxysql-scaling-horizontal
-weight: 10
+  docs_{{ .version }}:
+    identifier: guides-proxysql-scaling-horizontal-overview
+    name: Overview
+    parent: guides-proxysql-scaling-horizontal
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
