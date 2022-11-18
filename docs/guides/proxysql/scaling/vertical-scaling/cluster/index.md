@@ -1,11 +1,11 @@
 ---
 title: Vertical Scaling ProxySQL Cluster
 menu:
-docs_{{ .version }}:
-identifier: guides-proxysql-scaling-vertical-cluster
-name: Cluster
-parent: guides-proxysql-scaling-vertical
-weight: 30
+  docs_{{ .version }}:
+    identifier: guides-proxysql-scaling-vertical-cluster
+    name: Cluster
+    parent: guides-proxysql-scaling-vertical
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
