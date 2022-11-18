@@ -1,0 +1,17 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: proxyops-vscale
+  namespace: demo
+spec:
+  type: VerticalScaling
+  proxyRef:
+    name: proxy-server
+  verticalScaling:
+    proxysql:
+      requests:
+        memory: "1.2Gi"
+        cpu: "0.6"
+      limits:
+        memory: "1.2Gi"
+        cpu: "0.6"
