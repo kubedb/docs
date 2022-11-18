@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: recon-tls-rotate
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  proxyRef:
+    name: proxy-server
+  tls:
+    rotateCertificates: true
