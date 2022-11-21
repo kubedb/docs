@@ -110,7 +110,6 @@ $ kubectl get mysql -n demo
 NAME    VERSION   STATUS   AGE
 mysql   8.0.31    Ready    97s
 ```
-....
 
 ## Connect with MySQL database
 
