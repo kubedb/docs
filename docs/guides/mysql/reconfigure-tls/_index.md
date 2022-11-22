@@ -2,9 +2,9 @@
 title: Reconfigure MySQL TLS/SSL
 menu:
   docs_{{ .version }}:
-    identifier: my-reconfigure-tls
+    identifier: guides-mysql-reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: guides-mysql
-    weight: 46
+    weight: 20
 menu_name: docs_{{ .version }}
 ---

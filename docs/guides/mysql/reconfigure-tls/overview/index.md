@@ -7,7 +7,7 @@ menu:
     parent: guides-mysql-reconfigure-tls
     weight: 11
 menu_name: docs_{{ .version }}
-section_menu_id: guides-test
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).

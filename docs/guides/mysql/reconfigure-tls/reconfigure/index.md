@@ -1,8 +1,8 @@
 ---
 title: Reconfigure MySQL TLS/SSL Encryption
-menu: MySQL
+menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-reconfigure-tls
+    identifier: guides-mysql-reconfigure-tls-readme
     name: Reconfigure MySQL TLS/SSL Encryption
     parent: guides-mysql-reconfigure-tls
     weight: 10
