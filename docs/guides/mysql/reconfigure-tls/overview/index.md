@@ -29,7 +29,7 @@ This guide will give an overview on how KubeDB Enterprise operator reconfigures 
 The following diagram shows how the KubeDB enterprise operator reconfigure TLS of  the `MySQL` database server. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Stash Backup Flow" src="/docs/guides/mysql/scaling/vertical-scaling/overview/images/my-vertical_scaling.png">
+  <img alt="reconfigure tls " src="/docs/guides/mysql/reconfigure-tls/overview/images/reconfigure-tls.jpg">
 <figcaption align="center">Fig: Vertical scaling process of MySQL</figcaption>
 </figure>
 
@@ -54,4 +54,4 @@ The Reconfiguring MySQL TLS process consists of the following steps:
 9. After the successful reconfiguring of the `MySQL` TLS, the `KubeDB` Enterprise operator resumes the `MySQL` object so that the `KubeDB` Community operator resumes its usual operations.
 
 
-In the next docs, we are going to show a step-by-step guide on reconfiguring tls of MySQL database using vertical scaling operation.
+In the next docs, we are going to show a step-by-step guide on reconfiguring tls of MySQL database using reconfigure-tls operation.
