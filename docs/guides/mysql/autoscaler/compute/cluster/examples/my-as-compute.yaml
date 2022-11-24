@@ -10,7 +10,7 @@ spec:
     timeout: 3m
     apply: IfReady
   compute:
-    mariadb:
+    mysql:
       trigger: "On"
       podLifeTimeThreshold: 5m
       resourceDiffPercentage: 20

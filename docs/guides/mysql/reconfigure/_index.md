@@ -3,8 +3,8 @@ title: Reconfigure MySQL Configuration
 menu:
   docs_{{ .version }}:
     identifier: guides-mysql-reconfigure
-    name: Cluster
+    name: Reconfigure
     parent: guides-mysql
-    weight: 30
+    weight: 41
 menu_name: docs_{{ .version }}
 ---

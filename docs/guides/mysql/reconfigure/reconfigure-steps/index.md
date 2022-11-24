@@ -91,7 +91,7 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/yamls/sample-mysql-config.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/sample-mysql-config.yaml
 mysql.kubedb.com/sample-mysql created
 ```
 
@@ -203,7 +203,7 @@ Here,
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/yamls/reconfigure-using-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/reconfigure-using-secret.yaml
 mysqlopsrequest.ops.kubedb.com/myops-reconfigure-config created
 ```
 
@@ -388,7 +388,7 @@ Here,
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/yamls/reconfigure-remove.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/yamls/reconfigure-steps/reconfigure-remove.yaml
 mysqlopsrequest.ops.kubedb.com/mdops-reconfigure-remove created
 ```
 

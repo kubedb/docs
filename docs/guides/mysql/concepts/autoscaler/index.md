@@ -62,9 +62,9 @@ A `MySQLAutoscaler` object has the following fields in the `spec` section.
 
 ### spec.databaseRef
 
-`spec.databaseRef` is a required field that point to the [MySQL](/docs/guides/mysql/concepts/mysql) object for which the autoscaling will be performed. This field consists of the following sub-field:
+`spec.databaseRef` is a required field that point to the [MySQL](/docs/guides/mysql/concepts/mysqldatabase) object for which the autoscaling will be performed. This field consists of the following sub-field:
 
-- **spec.databaseRef.name :** specifies the name of the [MySQL](/docs/guides/mysql/concepts/mysql) object.
+- **spec.databaseRef.name :** specifies the name of the [MySQL](/docs/guides/mysql/concepts/mysqldatabase) object.
 
 ### spec.compute
 

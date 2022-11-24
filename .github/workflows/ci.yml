@@ -33,8 +33,7 @@ jobs:
 
       - name: Check links
         run: |
-          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*appscode.com.*|.*docs.search-guard.com.*)$'
-
+          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*stackoverflow.com.*|.*redis.io.*|.*www.elastic.co.*)$'
       - name: Create Kubernetes cluster
         id: kind
         uses: engineerd/setup-kind@v0.5.0

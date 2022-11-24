@@ -7,7 +7,7 @@ spec:
   databaseRef:
     name: sample-mysql
   storage:
-    mariadb:
+    mysql:
       trigger: "On"
       usageThreshold: 20
       scalingThreshold: 20

@@ -65,7 +65,7 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/yamls/mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/mysql.yaml
 mysql.kubedb.com/mysql created
 ```
 
@@ -237,7 +237,6 @@ Binary data as:		Hexadecimal
 Uptime:			11 min 44 sec
 
 Threads: 2  Questions: 454  Slow queries: 0  Opens: 185  Flush tables: 3  Open tables: 104  Queries per second avg: 0.644
---------------
 
 
 ```
@@ -285,7 +284,7 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/issuer.yaml
 issuer.cert-manager.io/my-issuer created
 ```
 
@@ -328,7 +327,7 @@ Here,
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/myops-add-tls.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/myops-add-tls.yaml
 mysqlopsrequest.ops.kubedb.com/myops-add-tls created
 ```
 
@@ -566,7 +565,7 @@ Here,
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/myops-rotate.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/myops-rotate.yaml
 mysqlopsrequest.ops.kubedb.com/myops-rotate created
 ```
 
@@ -736,7 +735,7 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/new-issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/new-issuer.yaml
 issuer.cert-manager.io/my-new-issuer created
 ```
 
@@ -770,7 +769,7 @@ Here,
 Let's create the `MysqlOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/myops-change-issuer.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/myops-change-issuer.yaml
 mysqlopsrequest.ops.kubedb.com/mops-change-issuer created
 ```
 
@@ -932,7 +931,7 @@ Here,
 Let's create the `mysqlOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/myops-remove.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/myops-remove.yaml
 mysqlopsrequest.ops.kubedb.com/mops-remove created
 ```
 

@@ -27,7 +27,7 @@ This guide will show you how to use `KubeDB` enterprise operator to update the r
 - You should be familiar with the following `KubeDB` concepts:
   - [MySQL](/docs/guides/mysql/concepts/database/index.md)
   - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest/index.md)
-  - [Vertical Scaling Overview](/docs/guides/mysql/scaling/vertical-scaling/overview/imdex.md)
+  - [Vertical Scaling Overview](/docs/guides/mysql/scaling/vertical-scaling/overview/index.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
