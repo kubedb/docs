@@ -31,7 +31,7 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a MySQL
 - You must have a `StorageClass` that supports volume expansion.
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MySQL](/docs/guides/mysql/concepts/mysql)
+  - [MySQL](/docs/guides/mysql/concepts/mysqldatabase)
   - [MySQLAutoscaler](/docs/guides/mysql/concepts/autoscaler)
   - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest)
   - [Storage Autoscaling Overview](/docs/guides/mysql/autoscaler/storage/overview)

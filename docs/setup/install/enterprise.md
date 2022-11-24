@@ -41,7 +41,7 @@ kubectl get ns kube-system -o=jsonpath='{.metadata.uid}'
 ```
 
 - Then, you have to agree with the terms and conditions. We recommend reading it before checking the box.
-- Now, you can submit the form. After you submit the form, the AppsCode License server will send an email to the provided email address with a link to your license file.
+- Now, you can submit the form. After you submit the form, the AppsCode License server will email to the provided email address with a link to your license file.
 - Navigate to the provided link and save the license into a file. Here, we save the license to a `license.txt` file.
 
 Here is a screenshot of the license form.

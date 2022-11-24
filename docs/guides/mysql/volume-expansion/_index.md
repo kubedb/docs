@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-volume-expansion
     name: MySQL Volume Expansion
     parent: guides-mysql
-    weight: 20
+    weight: 46
 menu_name: docs_{{ .version }}
 ---

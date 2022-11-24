@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: guides-mysql
-    weight: 20
+    weight: 43
 menu_name: docs_{{ .version }}
 ---
