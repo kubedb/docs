@@ -1,0 +1,14 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: MySQLAutoscaler
+metadata:
+  name: my-as-st
+  namespace: demo
+spec:
+  databaseRef:
+    name: sample-mysql
+  storage:
+    mariadb:
+      trigger: "On"
+      usageThreshold: 20
+      scalingThreshold: 20
+      expansionMode: "Online"
