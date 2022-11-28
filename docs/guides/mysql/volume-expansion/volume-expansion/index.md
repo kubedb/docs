@@ -62,6 +62,28 @@ Now, we are going to deploy a `MySQL` database of 3 replicas with version `8.0.3
 
 In this section, we are going to deploy a MySQL Cluster with 1GB volume. Then, in the next section we will expand its volume to 2GB using `MySQLOpsRequest` CRD. Below is the YAML of the `MySQL` CR that we are going to create,
 
+<ul class="nav nav-tabs" id="definationTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="gr-tab" data-toggle="tab" href="#groupReplication" role="tab" aria-controls="groupReplication" aria-selected="true">Group Replication</a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" id="ic-tab" data-toggle="tab" href="#innodbCluster" role="tab" aria-controls="innodbCluster" aria-selected="false">Innodb Cluster</a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" id="sc-tab" data-toggle="tab" href="#semisync" role="tab" aria-controls="semisync" aria-selected="false">Semi sync </a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" id="st-tab" data-toggle="tab" href="#standAlone" role="tab" aria-controls="standAlone" aria-selected="false">Stand Alone</a>
+  </li>
+</ul>
+
+
+<div class="tab-content" id="definationTabContent">
+  <div class="tab-pane fade show active" id="groupReplication" role="tabpanel" aria-labelledby="gr-tab">
+
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MySQL
@@ -88,9 +110,113 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/sample-mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/group_replication.yaml
 mysql.kubedb.com/sample-mysql created
 ```
+  </div>
+
+  <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: sample-mysql
+  namespace: demo
+spec:
+  version: "8.0.31-innodb"
+  replicas: 3
+  topology:
+    mode: InnoDBCluster
+    innoDBCluster:
+      router:
+        replicas: 1
+  storageType: Durable
+  storage:
+    storageClassName: "topolvm-provisioner"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
+```
+
+Let's create the `MySQL` CR we have shown above,
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/innodb.yaml
+mysql.kubedb.com/sample-mysql created
+````
+  </div>
+
+  <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: sample-mysql
+  namespace: demo
+spec:
+  version: "8.0.31"
+  replicas: 3
+  topology:
+    mode: SemiSync
+    semiSync:
+      sourceWaitForReplicaCount: 1
+      sourceTimeout: 23h
+      errantTransactionRecoveryPolicy: PseudoTransaction
+  storageType: Durable
+  storage:
+    storageClassName: "topolvm-provisioner"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
+```
+
+Let's create the `MySQL` CR we have shown above,
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/semi-sync.yaml
+mysql.kubedb.com/sample-mysql created
+````
+
+  </div>
+
+  <div class="tab-pane fade" id="standAlone" role="tabpanel" aria-labelledby="st-tab">
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: sample-mysql
+  namespace: demo
+spec:
+  version: "8.0.31"
+  storageType: Durable
+  storage:
+    storageClassName: "topolvm-provisioner"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
+```
+
+Let's create the `MySQL` CR we have shown above,
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/standalone.yaml
+mysql.kubedb.com/sample-mysql created
+````
+  </div>
+
+</div>
 
 Now, wait until `sample-mysql` has status `Ready`. i.e,
 
