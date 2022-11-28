@@ -97,6 +97,7 @@ mysql.kubedb.com/mysql created
   </div>
 
   <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
+
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MySQL
@@ -131,6 +132,7 @@ mysql.kubedb.com/mysql created
   </div>
 
   <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
+
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MySQL
@@ -168,6 +170,7 @@ mysql.kubedb.com/mysql created
 
 
   <div class="tab-pane fade show active" id="standAlone" role="tabpanel" aria-labelledby="st-tab">
+
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MySQL
