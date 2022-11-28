@@ -43,6 +43,131 @@ Here, We are going to create a MySQL database without TLS and then reconfigure t
 
 In this section, we are going to deploy a MySQL database without TLS. In the next few sections we will reconfigure TLS using `MySQLOpsRequest` CRD. Below is the YAML of the `MySQL` CR that we are going to create,
 
+<ul class="nav nav-tabs" id="definationTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link" id="st-tab" data-toggle="tab" href="#standAlone" role="tab" aria-controls="standAlone" aria-selected="true">Stand Alone</a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link active" id="gr-tab" data-toggle="tab" href="#groupReplication" role="tab" aria-controls="groupReplication" aria-selected="false">Group Replication</a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" id="ic-tab" data-toggle="tab" href="#innodbCluster" role="tab" aria-controls="innodbCluster" aria-selected="false">Innodb Cluster</a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" id="sc-tab" data-toggle="tab" href="#semisync" role="tab" aria-controls="semisync" aria-selected="false">Semi sync </a>
+  </li>
+
+</ul>
+
+
+<div class="tab-content" id="definationTabContent">
+  <div class="tab-pane fade" id="groupReplication" role="tabpanel" aria-labelledby="gr-tab">
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: mysql
+  namespace: demo
+spec:
+  version: "8.0.31"
+  topology:
+    mode: GroupReplication
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: Delete
+```
+
+Let's create the `MySQL` CR we have shown above,
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/group-replication.yaml
+mysql.kubedb.com/mysql created
+```
+
+  </div>
+
+  <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: mysql
+  namespace: demo
+spec:
+  version: "8.0.31-innodb"
+  topology:
+    mode: InnoDBCluster
+    innoDBCluster:
+      router:
+        replicas: 1
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: Delete
+```
+
+Let's create the `MySQL` CR we have shown above,
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/innodb-cluster.yaml
+mysql.kubedb.com/mysql created
+```
+
+  </div>
+
+  <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: semi-sync-mysql
+  namespace: demo
+spec:
+  version: "8.0.31"
+  replicas: 3
+  topology:
+    mode: SemiSync
+    semiSync:
+      sourceWaitForReplicaCount: 1
+      sourceTimeout: 23h
+      errantTransactionRecoveryPolicy: PseudoTransaction
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
+```
+
+Let's create the `MySQL` CR we have shown above,
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/semi-sync.yaml
+mysql.kubedb.com/mysql created
+```
+
+  </div>
+
+
+  <div class="tab-pane fade show active" id="standAlone" role="tabpanel" aria-labelledby="st-tab">
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MySQL
@@ -60,14 +185,20 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: Delete
+
 ```
 
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls/standalone.yaml
 mysql.kubedb.com/mysql created
 ```
+  </div>
+
+</div>
+
+
 
 Now, wait until `mysql` has status `Ready`. i.e,
 
