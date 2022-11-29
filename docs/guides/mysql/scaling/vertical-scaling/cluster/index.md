@@ -1,9 +1,9 @@
 ---
-title: Vertical Scaling MySQL group replication
+title: Vertical Scaling MySQL Cluster
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-scaling-vertical-group
-    name: Group Replication
+    identifier: guides-mysql-scaling-vertical-cluster
+    name: Cluster
     parent: guides-mysql-scaling-vertical
     weight: 30
 menu_name: docs_{{ .version }}
@@ -14,9 +14,9 @@ section_menu_id: guides
 
 {{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
 
-# Vertical Scale MySQL Group Replication
+# Vertical Scale MySQL Cluster
 
-This guide will show you how to use `KubeDB` enterprise operator to update the resources of the members of a `MySQL` Group Replication.
+This guide will show you how to use `KubeDB` enterprise operator to update the resources of the members of a `MySQL` Cluster.
 
 ## Before You Begin
 
@@ -36,15 +36,15 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/scaling/vertical-scaling/group-replication/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/group-replication/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/scaling/vertical-scaling/cluster/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
 ### Apply Vertical Scaling on MySQL Group Replication
 
 Here, we are going to deploy a  `MySQL` group replication using a supported version by `KubeDB` operator. Then we are going to apply vertical scaling on it.
 
-#### Prepare Group Replication
+#### Prepare MySQL Cluster
 
-At first, we are going to deploy a group replication server using a supported `MySQL` version. Then, we are going to update the resources of the members through vertical scaling.
+At first, we are going to deploy a cluster using a supported `MySQL` version. Then, we are going to update the resources of the members through vertical scaling.
 
 **Find supported MySQL Version:**
 
@@ -52,21 +52,40 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 
 ```bash
 $ kubectl get mysqlversion
-NAME        VERSION   DB_IMAGE                  DEPRECATED   AGE
-5.7.25-v2   5.7.25    kubedb/mysql:5.7.25-v2                 3h55m
-5.7.36   5.7.29    kubedb/mysql:5.7.36                 3h55m
-5.7.36   5.7.31    kubedb/mysql:5.7.36                 3h55m
-5.7.36   5.7.33    kubedb/mysql:5.7.36                 3h55m
-8.0.14-v2   8.0.14    kubedb/mysql:8.0.14-v2                 3h55m
-8.0.20-v1   8.0.20    kubedb/mysql:8.0.20-v1                 3h55m
-8.0.27   8.0.21    kubedb/mysql:8.0.27                 3h55m
-8.0.27      8.0.27    kubedb/mysql:8.0.27                    3h55m
-8.0.3-v2    8.0.3     kubedb/mysql:8.0.3-v2                  3h55m
+NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED   AGE
+5.7.35-v1       5.7.35    Official       mysql:5.7.35                             4d2h
+5.7.36          5.7.36    Official       mysql:5.7.36                             4d2h
+8.0.17          8.0.17    Official       mysql:8.0.17                             4d2h
+8.0.27          8.0.27    Official       mysql:8.0.27                             4d2h
+8.0.27-innodb   8.0.27    MySQL          mysql/mysql-server:8.0.27                4d2h
+8.0.29          8.0.29    Official       mysql:8.0.29                             4d2h
+8.0.3-v4        8.0.3     Official       mysql:8.0.3                              4d2h
+8.0.31          8.0.31    Official       mysql:8.0.31                             4d2h
+8.0.31-innodb   8.0.31    MySQL          mysql/mysql-server:8.0.31                4d2h
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `8.0.27`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `8.0.31`.
 
-**Deploy MySQL Group Replication:**
+**Deploy MySQL Cluster:**
+
+<ul class="nav nav-tabs" id="definationTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active" id="gr-tab" data-toggle="tab" href="#groupReplication" role="tab" aria-controls="groupReplication" aria-selected="true">Group Replication</a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" id="ic-tab" data-toggle="tab" href="#innodbCluster" role="tab" aria-controls="innodbCluster" aria-selected="false">Innodb Cluster</a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" id="sc-tab" data-toggle="tab" href="#semisync" role="tab" aria-controls="semisync" aria-selected="false">Semi sync </a>
+  </li>
+
+</ul>
+
+
+<div class="tab-content" id="definationTabContent">
+  <div class="tab-pane fade show active" id="groupReplication" role="tabpanel" aria-labelledby="gr-tab">
 
 In this section, we are going to deploy a MySQL group replication with 3 members. Then, in the next section we will update the resources of the members using vertical scaling. Below is the YAML of the `MySQL` cr that we are going to create,
 
@@ -77,7 +96,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.0.27"
+  version: "8.0.31"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -97,9 +116,90 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/group-replication/yamls/group-replication.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/group-replication.yaml
 mysql.kubedb.com/my-group created
 ```
+  </div>
+
+  <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
+In this section, we are going to deploy a MySQL Innodb Cluster with 3 members. Then, in the next section we will update the resources of the members using vertical scaling. Below is the YAML of the `MySQL` cr that we are going to create,
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: my-group
+  namespace: demo
+spec:
+  version: "8.0.31-innodb"
+  replicas: 3
+  topology:
+    mode: InnoDBCluster
+    innoDBCluster:
+      router:
+        replicas: 1
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
+```
+
+Let's create the `MySQL` cr we have shown above,
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/innodb.yaml
+mysql.kubedb.com/my-group created
+```
+
+  </div>
+
+  <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
+
+In this section, we are going to deploy a MySQL group replication with 3 members. Then, in the next section we will update the resources of the members using vertical scaling. Below is the YAML of the `MySQL` cr that we are going to create,
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: my-group
+  namespace: demo
+spec:
+  version: "8.0.31"
+  replicas: 3
+  topology:
+    mode: SemiSync
+    semiSync:
+      sourceWaitForReplicaCount: 1
+      sourceTimeout: 24h
+      errantTransactionRecoveryPolicy: PseudoTransaction
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
+```
+
+Let's create the `MySQL` cr we have shown above,
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/group-replication.yaml
+mysql.kubedb.com/my-group created
+```
+
+  </div>
+
+</div>
+
+
 
 **Wait for the cluster to be ready:**
 
@@ -111,7 +211,7 @@ $ watch -n 3 kubectl get my -n demo my-group
 Every 3.0s: kubectl get my -n demo my-group                     suaas-appscode: Tue Jun 30 22:43:57 2020
 
 NAME       VERSION   STATUS    AGE
-my-group   8.0.27    Running   16m
+my-group   8.0.31    Running   16m
 
 $ watch -n 3 kubectl get sts -n demo my-group
 Every 3.0s: kubectl get sts -n demo my-group                     Every 3.0s: kubectl get sts -n demo my-group                    suaas-appscode: Tue Jun 30 22:44:35 2020
@@ -174,7 +274,7 @@ Here,
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/group-replication/yamls/my-scale-group.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/my-scale-group.yaml
 mysqlopsrequest.ops.kubedb.com/my-scale-group created
 ```
 
