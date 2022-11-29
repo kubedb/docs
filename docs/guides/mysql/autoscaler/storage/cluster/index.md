@@ -184,7 +184,7 @@ Spec:
   Database Ref:
     Name:  sample-mysql
   Storage:
-    Mariadb:
+    MySQL:
       Scaling Threshold:  20
       Trigger:            On
       Usage Threshold:    20
@@ -260,7 +260,7 @@ Spec:
     Name:  sample-mysql
   Type:    VolumeExpansion
   Volume Expansion:
-    Mariadb:  1594884096
+    MySQL:  1594884096
 Status:
   Conditions:
     Last Transition Time:  2022-01-14T06:13:10Z

@@ -1,10 +1,16 @@
 apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
-  name: my-standalone-tls
+  name: some-mysql
   namespace: demo
 spec:
-  version: "8.0.27"
+  version: "8.0.31-innodb"
+  replicas: 3
+  topology:
+    mode: InnoDBCluster
+    innoDBCluster:
+      router:
+        replicas: 1
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -12,7 +18,7 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi   
+        storage: 1Gi
   requireSSL: true
   tls:
     issuerRef:
@@ -20,12 +26,12 @@ spec:
       kind: Issuer
       name: mysql-issuer
     certificates:
-    - alias: server
-      subject:
-        organizations:
-        - kubedb:server
-      dnsNames:
-      - localhost
-      ipAddresses:
-      - "127.0.0.1"
+      - alias: server
+        subject:
+          organizations:
+            - kubedb:server
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
   terminationPolicy: WipeOut
