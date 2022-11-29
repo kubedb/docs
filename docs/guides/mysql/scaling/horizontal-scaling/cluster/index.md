@@ -36,7 +36,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/scaling/horizontal-scaling/group-replication/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/group-replication/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
 ### Apply Horizontal Scaling on MySQL Group Replication
 
@@ -64,7 +64,12 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED 
 8.0.31-innodb   8.0.31    MySQL          mysql/mysql-server:8.0.31                4d2h
 ```
 
+
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using `MySQL`  `8.0.31`.
+
+**Deploy MySQL Cluster:**
+
+
 <ul class="nav nav-tabs" id="definationTab" role="tablist">
   <li class="nav-item">
     <a class="nav-link active" id="gr-tab" data-toggle="tab" href="#groupReplication" role="tab" aria-controls="groupReplication" aria-selected="true">Group Replication</a>
@@ -79,7 +84,7 @@ The version above that does not show `DEPRECATED` `true` is supported by `KubeDB
   </li>
 </ul>
 
-**Deploy MySQL Cluster:**
+
 <div class="tab-content" id="definationTabContent">
   <div class="tab-pane fade show active" id="groupReplication" role="tabpanel" aria-labelledby="gr-tab">
 
@@ -115,7 +120,7 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/group-replication/yamls/group-replication.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/group-replication.yaml
 mysql.kubedb.com/my-group created
 ```
 
@@ -156,7 +161,7 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/group-replication/yamls/innodb.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/innodb.yaml
 mysql.kubedb.com/my-group created
 ```
 
@@ -198,7 +203,7 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/group-replication/yamls/semi-sync.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/semi-sync.yaml
 mysql.kubedb.com/my-group created
 ```
 
@@ -288,7 +293,7 @@ Here,
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/group-replication/yamls/scale_up.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/scale_up.yaml
 mysqlopsrequest.ops.kubedb.com/my-scale-up created
 ```
 
@@ -421,7 +426,7 @@ spec:
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/group-replication/yamls/scale_down.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/scale_down.yaml
 mysqlopsrequest.ops.kubedb.com/my-scale-down created
 ```
 
