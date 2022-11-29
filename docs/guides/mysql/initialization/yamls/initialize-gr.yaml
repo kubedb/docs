@@ -4,11 +4,14 @@ metadata:
   name: mysql-init-script
   namespace: demo
 spec:
-  version: "8.0.29"
+  version: "8.0.31"
+  topology:
+    mode: GroupReplication
+  replicas: 3
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
