@@ -4,12 +4,14 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.0.27"
+  version: "8.0.31"
   replicas: 3
   topology:
-    mode: GroupReplication
-    group:
-      name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
+    mode: SemiSync
+    semiSync:
+      sourceWaitForReplicaCount: 1
+      sourceTimeout: 23h
+      errantTransactionRecoveryPolicy: PseudoTransaction
   storageType: Durable
   storage:
     storageClassName: "standard"
