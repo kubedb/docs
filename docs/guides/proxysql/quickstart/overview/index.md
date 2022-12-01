@@ -3,7 +3,7 @@ title: Proxy Load To MySQL Group Replication With KubeDB Provisioned ProxySQL
 menu:
   docs_{{ .version }}:
     identifier: guides-proxysql-quickstart-overview
-    name: Quickstart
+    name: KubeDB MySQL Group Replication Backend
     parent: guides-proxysql-quickstart
     weight: 20
 menu_name: docs_{{ .version }}
@@ -13,7 +13,7 @@ menu_name: docs_{{ .version }}
 
 {{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
 
-# KubeDB ProxySQL Quickstart
+# KubeDB ProxySQL Quickstart with KubeDB MySQL Group Replication
 
 This guide will show you how to use `KubeDB` Enterprise operator to set up a `ProxySQL` server for KubeDB managed MySQL.
 
