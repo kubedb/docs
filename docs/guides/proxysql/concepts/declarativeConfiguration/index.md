@@ -3,7 +3,7 @@ title: ProxySQL Declarative Configuration
 menu:
   docs_{{ .version }}:
     identifier: guides-proxysql-concepts-declarativeconfiguration
-    name: ProxySQLOpsRequest
+    name: Declarative Configuration
     parent: guides-proxysql-concepts
     weight: 15
 menu_name: docs_{{ .version }}
