@@ -3,7 +3,7 @@ title: Proxy Load To MySQL Group Replication With KubeDB Provisioned ProxySQL
 menu:
   docs_{{ .version }}:
     identifier: guides-proxysql-quickstart-overview
-    name: Concepts
+    name: Quickstart
     parent: guides-proxysql-quickstart
     weight: 20
 menu_name: docs_{{ .version }}
