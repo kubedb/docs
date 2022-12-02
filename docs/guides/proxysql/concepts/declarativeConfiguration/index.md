@@ -25,7 +25,7 @@ With kubedb proxysql we have eased this process with declarative yaml. We have s
 User will provide the configuration under the `.spec.initConfig` section of the proxysql yaml. The operator parses the yaml and creates a configuration file. A secret is then created, holding that configuration file inside. Each time a new pod is created it is created with the configuration file inside that secret. 
 
 <p align="center">
-  <img alt="ProxySQL Declarative Configuration"  src="/docs/guides/proxysql/concepts/declarativeConfiguration/images/configuration.png">
+<img alt="ProxySQL Declarative Configuration"  src="/docs/guides/proxysql/concepts/declarativeConfiguration/images/configuration.png">
 </p>
 
 At any time the user might need to change the configuration. To serve that purpose we have introduced ProxySQLOpsRequest. When an ops-request is being created the enterprise operator updates the configuration secret and applies the changes to the proxysql cluster nodes. This is how the the configuration secret remains as a source of truth for the ProxySQL CRO and any changes are made in a declarative way. 
