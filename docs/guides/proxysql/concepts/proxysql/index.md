@@ -120,7 +120,7 @@ spec:
 
 ### .spec.backend
 
-`.spec.backend` specifies the information about the appbinding of the backend MySQL/PerconaXtraDB/MariaDB. The appbinding should contain the basic informations like connections url, server type , ssl infos etc. To know more about what appbinding is, you can refer to the Appbinding page in the concept section. See the api [here](https://pkg.go.dev/kubedb.dev/apimachinery@v0.29.1/apis/kubedb/v1alpha2#:~:text=//%20Backend%20refers%20to%20the%20AppBinding%20of%20the%20backend%20MySQL/MariaDB/Percona%2DXtraDB%20server%0A%09Backend%20*core.LocalObjectReference%20%60json%3A%22backend%2Comitempty%22%60).
+`.spec.backend` specifies the information about the appbinding of the backend MySQL/PerconaXtraDB/MariaDB. The appbinding should contain the basic informations like connections url, server type , ssl infos etc. To know more about what appbinding is, you can refer to the [Appbinding](/docs/guides/proxysql/concepts/appbinding/index.md) page in the concept section. See the api [here](https://pkg.go.dev/kubedb.dev/apimachinery@v0.29.1/apis/kubedb/v1alpha2#:~:text=//%20Backend%20refers%20to%20the%20AppBinding%20of%20the%20backend%20MySQL/MariaDB/Percona%2DXtraDB%20server%0A%09Backend%20*core.LocalObjectReference%20%60json%3A%22backend%2Comitempty%22%60).
 
 ### .spec.authSecret
 
@@ -170,6 +170,8 @@ ProxySQL managed by KubeDB can be monitored with builtin-Prometheus and Promethe
 `.spec.initConfig.mysqlVariables` section carries all the `mysql_variables` info that you want to set for the proxysql. You need to mention the variables you want to set with its value in a key-value format under this section and the KubeDB operator will bootstrap the proxysql with this.
 
 `.spec.initConfig.adminVariables` section carries all the `admin_variables` info that you want to set for the proxysql. You need to mention the variables you want to set with its value in a key-value format under this section and the KubeDB operator will bootstrap the proxysql with this.
+
+Checkout this [link](/docs/guides/proxysql/concepts/declarativeConfiguration/index.md) for detailed overview on declarative configuration. 
 
 ### .spec.configSecret
 

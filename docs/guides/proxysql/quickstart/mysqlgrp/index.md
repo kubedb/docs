@@ -61,7 +61,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/overview/examples/sample-mysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-mysql.yaml
 mysql.kubedb.com/mysql-server created
 ```
 
@@ -143,7 +143,7 @@ This is the simplest version of a KubeDB ProxySQL server. Here in the `.spec.ver
 Now let's apply the yaml. 
 
 ```yaml
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/overview/examples/sample-proxysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-proxysql.yaml
   proxysql.kubedb.com/proxysql-server created
 ```
 
@@ -261,7 +261,7 @@ spec:
 Let's apply the yaml. 
 
 ```yaml
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/overview/examples/ubuntu.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/ubuntu.yaml
 deployment.apps/ubuntu created
 ```
 
