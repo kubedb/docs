@@ -3,9 +3,9 @@ title: Proxy Load To Percona XtraDB Galera cluster With KubeDB Provisioned Proxy
 menu:
   docs_{{ .version }}:
     identifier: guides-proxysql-quickstart-external
-    name: External XtraDB Group Replication Backend
+    name: External XtraDB Galera Cluster Backend
     parent: guides-proxysql-quickstart
-    weight: 20
+    weight: 15
 menu_name: docs_{{ .version }}
 ---
 
