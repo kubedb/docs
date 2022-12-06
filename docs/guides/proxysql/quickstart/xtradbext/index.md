@@ -219,10 +219,10 @@ appbinding.appcatalog.appscode.com/xtradb-galera-appbinding created
 
 We are ready with our backend appbinding. But before we proceed to the ProxySQL server, lets first create some test user and database so that we can use them for testing.
 
-Let's first create a user in the backend mysql server and a database to test the proxy traffic .
+Let's first create a user in the backend xtradb server and a database to test the proxy traffic .
 
 ```bash
-$ kubectl exec -it -n demo mysql-server-0 -- bash
+$ kubectl exec -it -n demo xtradb-galera-0 -- bash
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.

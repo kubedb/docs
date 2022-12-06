@@ -5,7 +5,7 @@ menu:
     identifier: guides-proxysql-concepts-appbinding
     name: AppBinding
     parent: guides-proxysql-concepts
-    weight: 25
+    weight: 17
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

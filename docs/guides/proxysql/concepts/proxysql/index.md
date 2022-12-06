@@ -5,7 +5,7 @@ menu:
     identifier: guides-proxysql-concepts-proxysql
     name: ProxySQL
     parent: guides-proxysql-concepts
-    weight: 10
+    weight: 5
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -357,5 +357,4 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 
 ## Next Steps
 
-#TODO: edit the links
-- Learn how to use KubeDB to load balance MySQL Group Replication 
+- Learn how to use KubeDB ProxySQL to load balance MySQL Group Replication [here](/docs/guides/proxysql/quickstart/mysqlgrp/index.md)
