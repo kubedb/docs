@@ -34,4 +34,4 @@ Replication means there are multiple proxy server who are doing proxy with the t
 
 ## Next Steps
 
-- [Deploy ProxySQL Cluster](/docs/guides/proxysql/clustering/proxysql-cluster) using KubeDB.
+- [Deploy ProxySQL Cluster](/docs/guides/proxysql/clustering/proxysql-cluster/index.md) using KubeDB.

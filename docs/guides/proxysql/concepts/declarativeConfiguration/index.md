@@ -5,7 +5,7 @@ menu:
     identifier: guides-proxysql-concepts-declarativeconfiguration
     name: Declarative Configuration
     parent: guides-proxysql-concepts
-    weight: 15
+    weight: 12
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -85,7 +85,7 @@ spec:
 
 ### initConfig.mysqlVariables
 
-This is a [runtime.rawExtension](https://pkg.go.dev/k8s.io/apimachinery/pkg/runtime#RawExtension) field. You can pass all the [MySQL Variables](https://proxysql.com/Documentation/global-variables/mysql-variables/) you want to configure in a key-value format under this section. You can configure almost all the mysql variables except `interfaces`, `monitor_username`, `monitor_password`, `ssl_p2s_cert`, `ssl_p2s_key`, `ssl_p2s_ca`. We have protected the `interface` variable because a lot of our operator logic depends on it. As for the `monitor_username` and `monitor_password` you can refer to [this](#edit) section how this is configured. And as for the other three, please refer to [this]#edit link.  
+This is a [runtime.rawExtension](https://pkg.go.dev/k8s.io/apimachinery/pkg/runtime#RawExtension) field. You can pass all the [MySQL Variables](https://proxysql.com/Documentation/global-variables/mysql-variables/) you want to configure in a key-value format under this section. You can configure almost all the mysql variables except `interfaces`, `monitor_username`, `monitor_password`, `ssl_p2s_cert`, `ssl_p2s_key`, `ssl_p2s_ca`. We have protected the `interface` variable because a lot of our operator logic depends on it.  
 
 ```yaml
 spec:

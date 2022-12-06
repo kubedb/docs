@@ -5,7 +5,7 @@ menu:
     identifier: guides-proxysql-concepts-proxysqlversion
     name: ProxySQLVersion
     parent: guides-proxysql-concepts
-    weight: 15
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -76,5 +76,5 @@ The default value of this field is `false`. If `.spec.deprecated` is set `true`,
 `spec.podSecurityPolicies.databasePolicyName` is a required field that specifies the name of the pod security policy required to get the ProxySQL pod(s) running.
 
 ## Next Steps
-#TODO: edit the link
-- Deploy your first ProxySQL to load balance MySQL Group Replication with KubeDB by following the guide 
+
+- Learn how to use KubeDB ProxySQL to load balance MySQL Group Replication [here](/docs/guides/proxysql/quickstart/mysqlgrp/index.md)

@@ -168,7 +168,7 @@ A `ProxySQLOpsRequest` object has the following fields in the `spec` section.
 
 `spec.type` specifies the kind of operation that will be applied to the database. Currently, the following types of operations are allowed in `ProxySQLOpsRequest`.
 
-- `Upgrade`
+- `UpdateVersion`
 - `HorizontalScaling`
 - `VerticalScaling`
 - `Reconfigure`
@@ -187,8 +187,7 @@ If you want to upgrade your ProxySQL version, you have to specify the `spec.upgr
 
 ### spec.horizontalScaling
 
-If you want to scale-up or scale-down your ProxySQL cluster or different components of it, you have to specify `spec.horizontalScaling` section. This field consists of the following sub-field:
-- `spec.horizontalScaling.member` indicates the desired number of nodes for ProxySQL cluster after scaling. For example, if your cluster currently has 4 nodes, and you want to add additional 2 nodes then you have to specify 6 in `spec.horizontalScaling.member` field. Similarly, if you want to remove one node from the cluster, you have to specify 3 in `spec.horizontalScaling.` field.
+If you want to scale-up or scale-down your ProxySQL cluster or different components of it, you have to specify `spec.horizontalScaling` section. `spec.horizontalScaling.member` indicates the desired number of nodes for ProxySQL cluster after scaling. For example, if your cluster currently has 4 nodes, and you want to add additional 2 nodes then you have to specify 6 in `spec.horizontalScaling.member` field. Similarly, if you want to remove one node from the cluster, you have to specify 3 in `spec.horizontalScaling.` field.
 
 ### spec.verticalScaling
 
