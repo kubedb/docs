@@ -25,8 +25,8 @@ This guide will show you how to use `KubeDB` Enterprise operator to set up a `Pr
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [ProxySQL](/docs/guides/proxysql/concepts/proxysql)
-  - [ProxySQL Cluster](/docs/guides/proxysql/clustering/overview)
+  - [ProxySQL](/docs/guides/proxysql/concepts/proxysql/index.md)
+  - [ProxySQL Cluster](/docs/guides/proxysql/clustering/overview/index.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -172,7 +172,7 @@ Let's check the proxysql_servers table inside the ProxySQL pods.
 ```bash 
 #first node
 $ kubectl exec -it -n demo proxy-server-0 -- bash 
-root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin >"
+root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin > "
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 316
 Server version: 8.0.27 (ProxySQL Admin Module)
@@ -191,7 +191,7 @@ ProxySQLAdmin > select * from runtime_proxysql_servers;
 +---------------------------------------+------+--------+---------+
 3 rows in set (0.000 sec)
 
-ProxySQLAdmin >exit
+ProxySQLAdmin > exit
 Bye
 ```
 ```bash 
@@ -248,7 +248,7 @@ Bye
 
 From the above output we can see that the proxysql_servers tables has been successfuly set up. 
 
-## Create test user in proxysql 
+## Create test user in proxysql server
 
 Let's insert the test user inside the proxysql server 
 
@@ -278,7 +278,7 @@ Query OK, 0 rows affected (0.009 sec)
 
 Now lets check the load balancing through the cluster. 
 
-First we need to create a script to sent load over the ProxySQL. We will use the test user and the test table to check send the load.
+First we need to create a script to sent load over the ProxySQL. We will use the test user and the test table to check and send the load.
 
 ```bash
 $ kubectl exec -it -n demo proxy-server-1 -- bash

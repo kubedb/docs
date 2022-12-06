@@ -1,5 +1,5 @@
 ---
-title: Proxy Load To MySQL Group Replication With KubeDB Provisioned ProxySQL
+title: Load Balance To MySQL Group Replication With KubeDB Provisioned ProxySQL
 menu:
   docs_{{ .version }}:
     identifier: guides-proxysql-quickstart-overview
@@ -24,7 +24,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to set up a `Pr
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [ProxySQL](/docs/guides/proxysql/concepts/proxysql)
+  - [ProxySQL](/docs/guides/proxysql/concepts/proxysql/index.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
