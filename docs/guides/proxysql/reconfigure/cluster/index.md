@@ -3,7 +3,7 @@ title: Reconfigure ProxySQL Cluster
 menu:
   docs_{{ .version }}:
     identifier: guides-proxysql-reconfigure-cluster
-    name: Cluster
+    name: Demo
     parent: guides-proxysql-reconfigure
     weight: 30
 menu_name: docs_{{ .version }}

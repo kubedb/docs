@@ -3,7 +3,7 @@ title: ProxySQL Cluster Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: guides-proxysql-autoscaling-compute-cluster
-    name: Cluster
+    name: Demo
     parent: guides-proxysql-autoscaling-compute
     weight: 20
 menu_name: docs_{{ .version }}

@@ -31,10 +31,10 @@ section_menu_id: guides
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```bash
-  $ kubectl create ns demo
-  namespace/demo created
-  ```
+```bash
+$ kubectl create ns demo
+namespace/demo created
+```
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/proxysql/tls/configure/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -337,8 +337,6 @@ TCP port:		6033
 Uptime:			2 hours 30 min 27 sec
 
 Threads: 1  Questions: 12  Slow queries: 12
---------------
-
 ```
 
 In the above output section we can see there is cipher in user at the SSL field. Which means the connection is TLS secured. 

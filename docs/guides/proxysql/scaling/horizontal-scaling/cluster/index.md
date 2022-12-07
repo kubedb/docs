@@ -3,7 +3,7 @@ title: Horizontal Scaling ProxySQL
 menu:
   docs_{{ .version }}:
     identifier: guides-proxysql-scaling-horizontal-cluster
-    name: Cluster
+    name: Demo
     parent: guides-proxysql-scaling-horizontal
     weight: 20
 menu_name: docs_{{ .version }}
