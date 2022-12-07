@@ -207,56 +207,7 @@ Metadata:
   Creation Timestamp:  2022-09-16T11:26:58Z
   Generation:          1
   Managed Fields:
-    API Version:  autoscaling.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:compute:
-          .:
-          f:mysql:
-            .:
-            f:containerControlledValues:
-            f:controlledResources:
-            f:maxAllowed:
-              .:
-              f:cpu:
-              f:memory:
-            f:minAllowed:
-              .:
-              f:cpu:
-              f:memory:
-            f:podLifeTimeThreshold:
-            f:resourceDiffPercentage:
-            f:trigger:
-        f:databaseRef:
-          .:
-          f:name:
-        f:opsRequestOptions:
-          .:
-          f:apply:
-          f:timeout:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2022-09-16T11:26:58Z
-    API Version:  autoscaling.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:checkpoints:
-        f:conditions:
-        f:vpas:
-    Manager:         kubedb-autoscaler
-    Operation:       Update
-    Subresource:     status
-    Time:            2022-09-16T11:27:07Z
-  Resource Version:  846645
-  UID:               44bd46c3-bbc5-4c4a-aff4-00c7f84c6f58
+    ...
 Spec:
   Compute:
     MySQL:
@@ -387,48 +338,7 @@ Metadata:
   Creation Timestamp:  2022-09-16T11:27:07Z
   Generation:          1
   Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:ownerReferences:
-          .:
-          k:{"uid":"44bd46c3-bbc5-4c4a-aff4-00c7f84c6f58"}:
-      f:spec:
-        .:
-        f:apply:
-        f:databaseRef:
-          .:
-          f:name:
-        f:timeout:
-        f:type:
-        f:verticalScaling:
-          .:
-          f:mysql:
-            .:
-            f:limits:
-              .:
-              f:cpu:
-              f:memory:
-            f:requests:
-              .:
-              f:cpu:
-              f:memory:
-    Manager:      kubedb-autoscaler
-    Operation:    Update
-    Time:         2022-09-16T11:27:07Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:      kubedb-ops-manager
-    Operation:    Update
-    Subresource:  status
-    Time:         2022-09-16T11:27:07Z
+   ...
   Owner References:
     API Version:           autoscaling.kubedb.com/v1alpha1
     Block Owner Deletion:  true
@@ -534,5 +444,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl delete mysql -n demo sample-mysql
 kubectl delete mysqlautoscaler -n demo my-as-compute
+kubectl delete mysqlopsrequest -n demo myops-vpa-sample-mysql-z43wc8 
+kubectl delete mysqlopsrequest -n demo myops-sample-mysql-6xc1kc
 kubectl delete ns demo
 ```

@@ -74,7 +74,7 @@ mysql.kubedb.com/mysql created
 ```
 Here,
 
- - `spec.AllowReadReplicas`  defines the types of read replicas that MAY be attached to a MySQL instance and the trusted namespaces where those Read Replica resources MAY be present.You will be able to set namespace `spec.allowReadReplicas.NameSpace` and labels `spec.allowReadReplicas.selector`.For more see [here](https://github.com/kubedb/apimachinery/blob/master/apis/kubedb/v1alpha2/mysql_types.go#L159).
+ - `spec.AllowReadReplicas`  defines the types of read replicas that may be attached to a MySQL instance and the trusted namespaces where those Read Replica resources may be present.You will be able to set namespace `spec.allowReadReplicas.NameSpace` and labels `spec.allowReadReplicas.selector`.For more see [here](https://github.com/kubedb/apimachinery/blob/master/apis/kubedb/v1alpha2/mysql_types.go#L159).
  - `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete the operation of MySQL CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mysql/concepts/database/#specterminationpolicy).
 
 Now a MySQL instance in `demo` namespace having the label `kubedb.com/instance_name: ReadReplica` will be able to connect to this database as a read replica
