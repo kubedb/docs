@@ -3,7 +3,7 @@ title: Upgrading ProxySQL Cluster
 menu:
   docs_{{ .version }}:
     identifier: guides-proxysql-upgrading-cluster
-    name: Cluster
+    name: Demo
     parent: guides-proxysql-upgrading
     weight: 30
 menu_name: docs_{{ .version }}
