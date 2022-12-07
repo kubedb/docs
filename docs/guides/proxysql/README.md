@@ -46,4 +46,4 @@ aliases:
 - [Upgrade KubeDB ProxySQL version with ops-request](/docs/guides/proxysql/upgrading/cluster/index.md)
 - [Scale horizontally and vertically KubeDB ProxySQL with ops-request](/docs/guides/proxysql/scaling/horizontal-scaling/cluster/index.md)
 - [Learn auto-scaling for KubeDB ProxySQL](/docs/guides/proxysql/autoscaler/compute/cluster/index.md)
-- [Want to hack on KubeDB? Check our] 
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
