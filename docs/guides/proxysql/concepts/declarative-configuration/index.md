@@ -2,7 +2,7 @@
 title: ProxySQL Declarative Configuration
 menu:
   docs_{{ .version }}:
-    identifier: guides-proxysql-concepts-declarativeconfiguration
+    identifier: guides-proxysql-concepts-declarative-configuration
     name: Declarative Configuration
     parent: guides-proxysql-concepts
     weight: 12
