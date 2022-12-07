@@ -38,7 +38,7 @@ aliases:
 - [Overview of KubeDB ProxySQL CRD](/docs/guides/proxysql/concepts/proxysql/index.md) 
 - [Configure KubeDB ProxySQL for MySQL Group Replication](/docs/guides/proxysql/quickstart/mysqlgrp/index.md)
 - [Deploy ProxySQL cluster with KubeDB](/docs/guides/proxysql/clustering/proxysql-cluster/index.md) 
-- [Initialize KubeDB ProxySQL with declarative configuration](/docs/guides/proxysql/concepts/declarativeConfiguration/index.md) 
+- [Initialize KubeDB ProxySQL with declarative configuration](/docs/guides/proxysql/concepts/declarativeconfiguration/index.md) 
 - [Reconfigure KubeDB ProxySQL with ops-request](/docs/guides/proxysql/concepts/opsrequest/index.md)
 - [Deploy TLS/SSL secured KubeDB ProxySQL](/docs/guides/proxysql/tls/configure/index.md)
 - [Reconfigure TLS/SSL for KubeDB ProxySQL](/docs/guides/proxysql/reconfigure-tls/cluster/index.md)
