@@ -22,7 +22,7 @@ aliases:
 | Features                             | Availability |
 | ------------------------------------ | :----------: |
 | Load balance MySQL Group Replication |   &#10003;   |
-| Load balance PerconaXtraDB Cluster   |   &#10007;   |
+| Load balance PerconaXtraDB Cluster   |   &#10003;   |
 | Custom Configuration                 |   &#10003;   |
 | Declarative Configuration            |   &#10003;   |
 | Version Update                       |   &#10003;   |
@@ -35,12 +35,10 @@ aliases:
 
 ## User Guide
 
-#TODO : edit the links after adding all 
 - [Overview of KubeDB ProxySQL CRD](/docs/guides/proxysql/concepts/proxysql/index.md) 
 - [Configure KubeDB ProxySQL for MySQL Group Replication](/docs/guides/proxysql/quickstart/mysqlgrp/index.md)
 - [Deploy ProxySQL cluster with KubeDB](/docs/guides/proxysql/clustering/proxysql-cluster/index.md) 
 - [Initialize KubeDB ProxySQL with declarative configuration](/docs/guides/proxysql/concepts/declarativeConfiguration/index.md) 
-- [Initialize KubeDB ProxySQL with configuration secret]
 - [Reconfigure KubeDB ProxySQL with ops-request](/docs/guides/proxysql/concepts/opsrequest/index.md)
 - [Deploy TLS/SSL secured KubeDB ProxySQL](/docs/guides/proxysql/tls/configure/index.md)
 - [Reconfigure TLS/SSL for KubeDB ProxySQL](/docs/guides/proxysql/reconfigure-tls/cluster/index.md)
@@ -48,5 +46,4 @@ aliases:
 - [Upgrade KubeDB ProxySQL version with ops-request](/docs/guides/proxysql/upgrading/cluster/index.md)
 - [Scale horizontally and vertically KubeDB ProxySQL with ops-request](/docs/guides/proxysql/scaling/horizontal-scaling/cluster/index.md)
 - [Learn auto-scaling for KubeDB ProxySQL](/docs/guides/proxysql/autoscaler/compute/cluster/index.md)
-- [Monitor your ProxySQL with KubeDB using prometheus]
 - [Want to hack on KubeDB? Check our] 

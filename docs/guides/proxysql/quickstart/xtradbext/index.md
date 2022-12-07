@@ -5,7 +5,7 @@ menu:
     identifier: guides-proxysql-quickstart-external
     name: External XtraDB Galera Cluster Backend
     parent: guides-proxysql-quickstart
-    weight: 15
+    weight: 25
 menu_name: docs_{{ .version }}
 ---
 
