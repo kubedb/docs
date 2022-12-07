@@ -171,7 +171,7 @@ ProxySQL managed by KubeDB can be monitored with builtin-Prometheus and Promethe
 
 `.spec.initConfig.adminVariables` section carries all the `admin_variables` info that you want to set for the proxysql. You need to mention the variables you want to set with its value in a key-value format under this section and the KubeDB operator will bootstrap the proxysql with this.
 
-Checkout this [link](/docs/guides/proxysql/concepts/declarativeConfiguration/index.md) for detailed overview on declarative configuration. 
+Checkout this [link](/docs/guides/proxysql/concepts/declarative-configuration/index.md) for detailed overview on declarative configuration. 
 
 ### .spec.configSecret
 
