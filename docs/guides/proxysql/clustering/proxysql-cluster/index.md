@@ -314,6 +314,8 @@ root@proxy-server-1:/# chmod +x load.sh
 root@proxy-server-1:/# ./load.sh
 ```
 
+> You can find the load.sh file [here](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/clustering/proxysql-cluster/examples/load.sh)
+
 ```bash
 $ kubectl exec -it -n demo proxy-server-1 -- bash 
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin >"

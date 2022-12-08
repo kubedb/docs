@@ -665,7 +665,7 @@ tasdid@appscode.com
 
 ### Apply ops-request to update TLS
 
-We can see the informations. Suppose we want to update the email address . We want to change it to md.alifbiswas@gmail.com. Let's create a ops-request for that in the following manner. 
+We can see the informations. Suppose we want to update the email address . We want to change it to mikebaker@gmail.com. Let's create a ops-request for that in the following manner. 
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -688,7 +688,7 @@ spec:
       ipAddresses:
       - "127.0.0.1"
       emailAddresses:
-      - "md.alifbiswas@gmail.com"
+      - "mikebaker@gmail.com"
       certificates:
     - alias: client
       subject:
@@ -699,7 +699,7 @@ spec:
       ipAddresses:
       - "127.0.0.1"
       emailAddresses:
-      - "md.alifbiswas@gmail.com"
+      - "mikebaker@gmail.com"
 ```
 
 Let's apply and then wait for it to be succeed. 
@@ -720,7 +720,7 @@ Let's check the info now.
 ```bash
 root@proxy-server-1:/# openssl x509 -in /var/lib/frontend/server/tls.crt -inform PEM  -subject -email -nameopt RFC2253 -noout
 subject=CN=proxy-server,O=kubedb:server
-md.alifbiswas@gmail.com
+mikebaker@gmail.com
 ```
 
 We can see the email has been successfuly updated. You can configure other field as well. To know more about the .spec.tls field refer to the link [here](https://pkg.go.dev/kubedb.dev/apimachinery@v0.29.1/apis/ops/v1alpha1#TLSSpec) .
