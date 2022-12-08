@@ -299,7 +299,7 @@ spec:
       ipAddresses:
       - "127.0.0.1"
       emailAddresses: 
-        - "tasdid@appscode.com"   
+        - "spike@appscode.com"   
 ```
 
 Let's apply and wait for the ops-request to be succeeded. 
@@ -491,7 +491,7 @@ Spec:
     proxy-server
     proxy-server.demo.svc
   Email Addresses:
-    tasdid@appscode.com
+    spike@appscode.com
   Ip Addresses:
     127.0.0.1
   Issuer Ref:
@@ -604,7 +604,7 @@ Spec:
     proxy-server
     proxy-server.demo.svc
   Email Addresses:
-    tasdid@appscode.com
+    spike@appscode.com
   Ip Addresses:
     127.0.0.1
   Issuer Ref:
@@ -660,7 +660,7 @@ Let's check the current info first.
 ```bash
 root@proxy-server-0:/# openssl x509 -in /var/lib/proxysql/proxysql-cert.pem -inform PEM  -subject -email -nameopt RFC2253 -noout
 subject=CN=proxy-server,O=kubedb:server
-tasdid@appscode.com
+spike@appscode.com
 ```
 
 ### Apply ops-request to update TLS

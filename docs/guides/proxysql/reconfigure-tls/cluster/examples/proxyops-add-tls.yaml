@@ -22,4 +22,4 @@ spec:
       ipAddresses:
       - "127.0.0.1"
       emailAddresses: 
-        - "tasdid@appscode.com"
+        - "spike@appscode.com"
