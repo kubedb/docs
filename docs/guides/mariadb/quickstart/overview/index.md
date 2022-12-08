@@ -79,7 +79,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/mysqlgrp/examples/sample-mariadb.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 
