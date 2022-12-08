@@ -175,7 +175,7 @@ Here,
 Let's create the Elasticsearch CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/mysqlgrp/yamls/elasticsearch.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/yamls/elasticsearch.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 
@@ -531,7 +531,7 @@ Say, the Elasticsearch CR was deleted with `spec.terminationPolicy` to `Halt` an
 You can do it by simpily re-deploying the original Elasticsearch object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/mysqlgrp/yamls/elasticsearch.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/yamls/elasticsearch.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 

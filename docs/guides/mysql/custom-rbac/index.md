@@ -70,7 +70,7 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the MySQL instance named `quick-mysql`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/custom-rbac/yamls/prx-custom-role.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/custom-rbac/yamls/my-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
