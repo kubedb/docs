@@ -2,9 +2,9 @@
 title: ProxySQL Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: prx-quickstart-proxysql
+    identifier: guides-proxysql-quickstart
     name: Quickstart
-    parent: prx-proxysql-guides
-    weight: 15
+    parent: guides-proxysql
+    weight: 20
 menu_name: docs_{{ .version }}
 ---

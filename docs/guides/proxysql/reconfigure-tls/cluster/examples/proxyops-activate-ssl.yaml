@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: activate-ssl
+  namespace: demo
+spec:
+  type: Reconfigure  
+  proxyRef:
+    name: proxy-server
+  configuration:
+    mysqlUsers:
+      users: 
+      - username: test
+        use_ssl: 1
+      reqType: update

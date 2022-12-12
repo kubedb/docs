@@ -1,0 +1,27 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ProxySQL
+metadata:
+  name: proxy-server
+  namespace: demo
+spec:
+  version: "2.3.2-debian"  
+  replicas: 3
+  mode: GroupReplication
+  backend:
+    name: mysql-server
+  sycnUsers: true
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: proxy-issuer
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
+  terminationPolicy: WipeOut
