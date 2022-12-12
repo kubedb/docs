@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql
     name: MySQL
     parent: guides
-    weight: 10
+    weight: 40
 menu_name: docs_{{ .version }}
 ---
