@@ -3,7 +3,7 @@ title: Initialize MySQL using Script
 menu:
   docs_{{ .version }}:
     identifier: guides-mysql-initialization
-    name: Using Script
+    name: Initialization Using Script
     parent: guides-mysql
     weight: 41
 menu_name: docs_{{ .version }}
@@ -82,6 +82,29 @@ configmap/my-init-script created
 
 Below is the `MySQL` object created in this tutorial.
 
+<ul class="nav nav-tabs" id="definationTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link active  " id="st-tab" data-toggle="tab" href="#standAlone" role="tab" aria-controls="standAlone" aria-selected="true">Stand Alone</a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link active" id="gr-tab" data-toggle="tab" href="#groupReplication" role="tab" aria-controls="groupReplication" aria-selected="false">Group Replication</a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" id="ic-tab" data-toggle="tab" href="#innodbCluster" role="tab" aria-controls="innodbCluster" aria-selected="false">Innodb Cluster</a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link" id="sc-tab" data-toggle="tab" href="#semisync" role="tab" aria-controls="semisync" aria-selected="false">Semi sync </a>
+  </li>
+
+</ul>
+
+
+<div class="tab-content" id="definationTabContent">
+  <div class="tab-pane fade show active" id="groupReplication" role="tabpanel" aria-labelledby="gr-tab">
+
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MySQL
@@ -89,7 +112,115 @@ metadata:
   name: mysql-init-script
   namespace: demo
 spec:
-  version: "8.0.29"
+  version: "8.0.31"
+  topology:
+    mode: GroupReplication
+  replicas: 3
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  init:
+    script:
+      configMap:
+        name: my-init-script
+
+```
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-gr.yaml
+mysql.kubedb.com/mysql-init-script created
+```
+
+  </div>
+
+  <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: mysql-init-script
+  namespace: demo
+spec:
+  version: "8.0.31-innodb"
+  replicas: 3
+  topology:
+    mode: InnoDBCluster
+    innoDBCluster:
+      router:
+        replicas: 1
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  init:
+    script:
+      configMap:
+        name: my-init-script
+
+```
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-innodb.yaml
+mysql.kubedb.com/mysql-init-script created
+```
+  </div>
+
+  <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: mysql-init-script
+  namespace: demo
+spec:
+  version: "8.0.31"
+  replicas: 3
+  topology:
+    mode: SemiSync
+    semiSync:
+      sourceWaitForReplicaCount: 1
+      sourceTimeout: 23h
+      errantTransactionRecoveryPolicy: PseudoTransaction
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  init:
+    script:
+      configMap:
+        name: my-init-script
+
+```
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-mysql.yaml
+mysql.kubedb.com/mysql-init-script created
+```
+
+  </div>
+
+  <div class="tab-pane fade" id="standAlone" role="tabpanel" aria-labelledby="st-tab">
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: mysql-init-script
+  namespace: demo
+spec:
+  version: "8.0.31"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -107,6 +238,10 @@ spec:
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-mysql.yaml
 mysql.kubedb.com/mysql-init-script created
 ```
+  </div>
+
+</div>
+
 
 Here,
 
@@ -191,7 +326,7 @@ Init:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.29"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.31"}}
 
     Creation Timestamp:  2022-06-30T06:21:15Z
     Labels:
@@ -224,7 +359,7 @@ AppBinding:
     Secret:
       Name:   mysql-init-script-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.29
+    Version:  8.0.31
 
 Events:
   Type     Reason      Age   From               Message
@@ -265,7 +400,7 @@ kind: MySQL
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.29"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.31"}}
   creationTimestamp: "2022-06-30T06:21:15Z"
   finalizers:
   - kubedb.com
@@ -314,7 +449,7 @@ spec:
   storageType: Durable
   terminationPolicy: Delete
   useAddressType: DNS
-  version: 8.0.29
+  version: 8.0.31
 status:
   conditions:
     ...

@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: sample-mysql
+  namespace: demo
+spec:
+  version: "8.0.31"
+  configSecret:
+    name: my-configuration
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut

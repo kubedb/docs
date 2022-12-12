@@ -74,22 +74,32 @@ spec:
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
   podTemplate:
+    metadata:
+      labels:
+        pass-to: pod
+      annotations:
+        annotate-to: pod
+    controller:
+      labels:
+        pass-to: statefulset
+      annotations:
+        annotate-to: statfulset
     spec:
       env:
-      - name: MYSQL_DATABASE
-        value: myDB
+        - name: MYSQL_DATABASE
+          value: myDB
       args:
-      - --character-set-server=utf8mb4
+        - --character-set-server=utf8mb4
       resources:
         requests:
           memory: "1Gi"
           cpu: "250m"
-  terminationPolicy: WipeOut
+  terminationPolicy: Halt
 ```
 
 ```bash

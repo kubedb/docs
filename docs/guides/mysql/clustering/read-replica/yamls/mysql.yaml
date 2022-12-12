@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: mysql
+  namespace: demo
+spec:
+  allowedReadReplicas:
+    namespaces:
+      from: Same
+    selector:
+      matchLabels:
+        kubedb.com/instance_name: ReadReplica
+  version: "8.0.31"
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: Delete

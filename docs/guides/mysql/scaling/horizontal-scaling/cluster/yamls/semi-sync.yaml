@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: my-group
+  namespace: demo
+spec:
+  version: "8.0.31"
+  replicas: 3
+  topology:
+    mode: SemiSync
+    semiSync:
+      sourceWaitForReplicaCount: 1
+      sourceTimeout: 23h
+      errantTransactionRecoveryPolicy: PseudoTransaction
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
