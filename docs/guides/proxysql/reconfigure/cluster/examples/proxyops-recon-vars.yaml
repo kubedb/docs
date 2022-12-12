@@ -1,0 +1,16 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: reconfigure-vars
+  namespace: demo
+spec:
+  type: Reconfigure  
+  proxyRef:
+    name: proxy-server
+  configuration:
+    adminVariables:
+      refresh_interval: 2055
+      cluster_check_interval_ms: 205
+    mysqlVariables:
+      max_transaction_time: 1540000
+      max_stmts_per_connection: 19
