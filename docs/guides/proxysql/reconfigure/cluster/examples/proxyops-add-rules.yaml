@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: add-rule
+  namespace: demo
+spec:
+  type: Reconfigure  
+  proxyRef:
+    name: proxy-server
+  configuration:
+    mysqlQueryRules:
+      rules: 
+      - rule_id: 4
+        active: 1
+        match_digest: "^SELECT .* FOR DELETE$"
+        destination_hostgroup: 2
+        apply: 1
+      reqType: add
