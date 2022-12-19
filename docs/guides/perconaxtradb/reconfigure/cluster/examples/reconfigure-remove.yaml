@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PerconaXtraDBOpsRequest
+metadata:
+  name: mdops-reconfigure-remove
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: sample-pxc
+  configuration:   
+    removeCustomConfig: true

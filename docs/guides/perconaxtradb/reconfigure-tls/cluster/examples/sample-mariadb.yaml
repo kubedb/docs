@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1alpha2
+kind: PerconaXtraDB
+metadata:
+  name: sample-pxc
+  namespace: demo
+spec:
+  version: "8.0.26"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
+

@@ -65,7 +65,7 @@ spec:
 Let's create the `MariaDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure-tls/cluster/examples/sample-mariadb.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure-tls/cluster/examples/sample-pxc.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 

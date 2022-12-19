@@ -1,0 +1,32 @@
+apiVersion: kubedb.com/v1alpha2
+kind: PerconaXtraDB
+metadata:
+  name: md-cluster-tls
+  namespace: demo
+spec:
+  version: "8.0.26"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi   
+  requireSSL: true
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: md-issuer
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
+  terminationPolicy: WipeOut

@@ -87,7 +87,7 @@ spec:
 Let's create the `MariaDB` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/autoscaler/storage/cluster/examples/sample-mariadb.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/autoscaler/storage/cluster/examples/sample-pxc.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 

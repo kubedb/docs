@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: PerconaXtraDB
+metadata:
+  name: md-pvt-reg
+  namespace: demo
+spec:
+  version: "8.0.26"
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  podTemplate:
+    spec:
+      imagePullSecrets:
+      - name: myregistrykey
+  terminationPolicy: WipeOut
