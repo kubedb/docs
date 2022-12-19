@@ -25,7 +25,6 @@ aliases:
 | Instant Backup                                          |   &#10003;   |
 | Scheduled Backup                                        |   &#10003;   |
 | Initialize using Snapshot                               |   &#10003;   |
-| Initialize using Script (\*.sql, \*sql.gz and/or \*.sh) |   &#10003;   |
 | Custom Configuration                                    |   &#10003;   |
 | Using Custom docker image                               |   &#10003;   |
 | Builtin Prometheus Discovery                            |   &#10003;   |

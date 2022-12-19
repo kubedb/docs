@@ -32,7 +32,7 @@ Here, some sample `PerconaXtraDBAutoscaler` CROs for autoscaling different compo
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: PerconaXtraDBAutoscaler
 metadata:
-  name: md-as
+  name: px-as
   namespace: demo
 spec:
   databaseRef:

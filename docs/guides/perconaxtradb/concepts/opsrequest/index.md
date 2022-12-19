@@ -32,7 +32,7 @@ Here, some sample `PerconaXtraDBOpsRequest` CRs for different administrative ope
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-upgrade
+  name: px-version-update
   namespace: demo
 spec:
   type: UpdateVersion
@@ -58,7 +58,7 @@ status:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdps-scale-horizontal
+  name: px-scale-horizontal
   namespace: demo
 spec:
   type: HorizontalScaling
@@ -84,7 +84,7 @@ status:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: md-scale-vertical
+  name: px-scale-vertical
   namespace: demo
 spec:
   type: VerticalScaling  
@@ -116,7 +116,7 @@ status:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: md-reconfigure
+  name: px-reconfigure
   namespace: demo
 spec:
   type: Reconfigure
@@ -144,7 +144,7 @@ status:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: md-volume-expansion
+  name: px-volume-expansion
   namespace: demo
 spec:
   type: VolumeExpansion  
@@ -171,7 +171,7 @@ status:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: md-recon-tls-add
+  name: px-recon-tls-add
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -182,7 +182,7 @@ spec:
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
-      name: md-issuer
+      name: px-issuer
     certificates:
     - alias: server
       subject:
@@ -198,7 +198,7 @@ spec:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: md-recon-tls-rotate
+  name: px-recon-tls-rotate
   namespace: demo
 spec:
   type: ReconfigureTLS

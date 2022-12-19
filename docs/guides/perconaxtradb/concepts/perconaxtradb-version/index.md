@@ -31,33 +31,36 @@ apiVersion: catalog.kubedb.com/v1alpha1
 kind: PerconaXtraDBVersion
 metadata:
   annotations:
-    meta.helm.sh/release-name: kubedb-catalog
-    meta.helm.sh/release-namespace: kube-system
-  creationTimestamp: "2021-03-09T13:00:51Z"
+    meta.helm.sh/release-name: kubedb
+    meta.helm.sh/release-namespace: kubedb
+  creationTimestamp: "2022-12-19T09:39:14Z"
   generation: 1
   labels:
-    app.kubernetes.io/instance: kubedb-catalog
+    app.kubernetes.io/instance: kubedb
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kubedb-catalog
-    app.kubernetes.io/version: v0.16.2
-    helm.sh/chart: kubedb-catalog-v0.16.2
-  ...
+    app.kubernetes.io/version: v2022.12.13-rc.0
+    helm.sh/chart: kubedb-catalog-v2022.12.13-rc.0
   name: 8.0.26
+  resourceVersion: "1611"
+  uid: 38161f93-0501-4caf-98a5-4d8d168951ca
 spec:
+  coordinator:
+    image: kubedb/percona-xtradb-coordinator:v0.3.0-rc.0
   db:
-    image: kubedb/perconaxtradb:8.0.26
+    image: percona/percona-xtradb-cluster:8.0.26
   exporter:
-    image: kubedb/mysqld-exporter:v0.11.0
+    image: prom/mysqld-exporter:v0.13.0
   initContainer:
-    image: kubedb/busybox
+    image: kubedb/percona-xtradb-init:0.2.0
   podSecurityPolicies:
-    databasePolicyName: maria-db
+    databasePolicyName: percona-xtradb-db
   stash:
     addon:
       backupTask:
-        name: perconaxtradb-backup-8.0.26
+        name: perconaxtradb-backup-5.7
       restoreTask:
-        name: perconaxtradb-restore-8.0.26
+        name: perconaxtradb-restore-5.7
   version: 8.0.26
 ```
 

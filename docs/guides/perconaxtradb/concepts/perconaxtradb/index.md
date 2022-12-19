@@ -29,84 +29,39 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  authSecret:
-    name: sample-pxc-auth
-  monitor:
-    agent: prometheus.io
-    prometheus:
-      exporter:
-        port: 56790
-        resources: {}
-      serviceMonitor:
-        interval: 10s
-        labels:
-          k8s-app: prometheus
-  podTemplate:
-    controller: {}
-    metadata: {}
-    spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: sample-pxc
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: perconaxtradbs.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: sample-pxc
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: perconaxtradbs.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
-      serviceAccountName: sample-pxc
+  version: "8.0.26"
   replicas: 3
-  requireSSL: true
+  storageType: Durable
   storage:
+    storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-    storageClassName: standard
-  storageType: Durable
-  terminationPolicy: WipeOut
   tls:
-    certificates:
-    - alias: server
-      dnsNames:
-      - localhost
-      ipAddresses:
-      - 127.0.0.1
-      secretName: sample-pxc-server-cert
-      subject:
-        organizations:
-        - kubedb:server
-    - alias: archiver
-      secretName: sample-pxc-archiver-cert
-    - alias: metrics-exporter
-      secretName: sample-pxc-metrics-exporter-cert
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
-      name: md-issuer
-  version: 8.0.26
+      name: px-issuer
+    certificates:
+      - alias: server
+        subject:
+          organizations:
+            - kubedb:server
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
+  requireSSL: true
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+  terminationPolicy: WipeOut
 ```
 
 ### spec.version
@@ -144,6 +99,21 @@ metadata:
 type: Opaque
 ```
 
+### spec.systemUserSecrets
+`spec.systemUserSecrets` points the secrets of system users inside perconaxtradb cluster. Currently, KubeDB is using `monitor` and `replication` system user secrets.
+In the given secrets below, `sample-pxc-monitor` and `sample-pxc-replication` are the system user secrets under `sample-pxc` PerconaXtraDB object.
+
+```bash
+$ kubectl get secret -n demo
+NAME                     TYPE                                  DATA   AGE
+default-token-r556j      kubernetes.io/service-account-token   3      157m
+sample-pxc-auth          kubernetes.io/basic-auth              2      157m
+sample-pxc-monitor       kubernetes.io/basic-auth              2      157m
+sample-pxc-replication   kubernetes.io/basic-auth              2      157m
+sample-pxc-token-p25ww   kubernetes.io/service-account-token   3      141m
+
+```
+
 ### spec.storageType
 
 `spec.storageType` is an optional field that specifies the type of storage to use for the database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create PerconaXtraDB database using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume. In this case, you don't have to specify `spec.storage` field.
@@ -166,30 +136,6 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 - Initialize from Script
 - Initialize from Stash Restore
-
-#### Initialize via Script
-
-To initialize a PerconaXtraDB database using a script (shell script, sql script, etc.), set the `spec.init.script` section when creating a PerconaXtraDB object. It will execute files alphabetically with extensions `.sh` , `.sql`  and `.sql.gz` that is found in the repository. The scripts inside child folders will be skipped. script must have the following information:
-
-- [VolumeSource](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes): Where your script is loaded from.
-
-Below is an example showing how a script from a configMap can be used to initialize a PerconaXtraDB database.
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: PerconaXtraDB
-metadata:
-  name: sample-pxc
-  namespace: demo
-spec:
-  version: 8.0.26
-  init:
-    script:
-      configMap:
-        name: md-init-script
-```
-
-In the above example, KubeDB operator will launch a Job to execute all js script of `md-init-script` in alphabetical order once StatefulSet pods are running.
 
 ### spec.monitor
 
