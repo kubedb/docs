@@ -15,7 +15,7 @@ concurrency:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v1
 
@@ -33,8 +33,7 @@ jobs:
 
       - name: Check links
         run: |
-          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*)$'
-
+          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*stackoverflow.com.*|.*redis.io.*|.*www.elastic.co.*|.*mysql.com.*)$'
       - name: Create Kubernetes cluster
         id: kind
         uses: engineerd/setup-kind@v0.5.0
@@ -62,7 +61,7 @@ jobs:
           kubectl create -f https://github.com/stashed/installer/raw/master/crds/stash-crds.yaml
           kubectl create -f https://github.com/kubevault/installer/raw/master/crds/kubevault-crds.yaml
           kubectl create -f https://github.com/kubedb/installer/raw/master/crds/kubedb-crds.yaml
-
+          
       - name: Check codespan schema
         run: |
           codespan-schema-checker --content=./docs

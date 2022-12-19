@@ -50,7 +50,7 @@ See the following figure:
 
 Ref: [group-replication-primary-secondary-replication](https://dev.mysql.com/doc/refman/5.7/en/group-replication-primary-secondary-replication.html)
 
-## MySQL Semisynchronous Replication
+## MySQL Semi synchronous Replication
 
 There is a semi-synchronous variant of the above asynchronous replication. It adds one additional synchronous step to the protocol.
 

@@ -44,52 +44,32 @@ In order to enable monitoring for a database, you have to configure `spec.monito
 
 ## Sample Configuration
 
-A sample YAML for Redis crd with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
+A sample YAML for MySQL crd with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: Redis
+kind: MySQL
 metadata:
-  name: sample-redis
-  namespace: databases
+  name: prom-operator-mysql
+  namespace: demo
 spec:
-  version: 6.0.6
+  version: "8.0.27"
   terminationPolicy: WipeOut
-  configSecret: # configure Redis to use password for authentication
-    name: redis-config
-  storageType: Durable
   storage:
-    storageClassName: default
+    storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
-        storage: 5Gi
+        storage: 1Gi
   monitor:
     agent: prometheus.io/operator
     prometheus:
       serviceMonitor:
         labels:
           k8s-app: prometheus
-      exporter:
-        args:
-        - --redis.password=$(REDIS_PASSWORD)
-        env:
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: _name_of_secret_with_redis_password
-              key: password # key with the password
-        resources:
-          requests:
-            memory: 512Mi
-            cpu: 200m
-          limits:
-            memory: 512Mi
-            cpu: 250m
-        securityContext:
-          runAsUser: 2000
-          allowPrivilegeEscalation: false
+        interval: 10s
+
 ```
 
 Assume that above Redis is configured to use basic authentication. So, exporter image also need to provide password to collect metrics. We have provided it through `spec.monitor.args` field.

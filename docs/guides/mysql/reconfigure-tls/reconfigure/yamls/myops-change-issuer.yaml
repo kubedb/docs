@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: myops-change-issuer
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: mysql
+  tls:
+    issuerRef:
+      name: my-new-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"

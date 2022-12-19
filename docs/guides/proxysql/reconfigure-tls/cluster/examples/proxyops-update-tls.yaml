@@ -1,0 +1,32 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: recon-tls-update
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  proxyRef:
+    name: proxy-server
+  tls:
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
+      emailAddresses:
+      - "mikebaker@gmail.com"
+      certificates:
+    - alias: client
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
+      emailAddresses:
+      - "mikebaker@gmail.com"
