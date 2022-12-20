@@ -54,7 +54,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "10.4.17"
+  version: "8.0.26"
   replicas: 3
   storageType: Durable
   storage:
@@ -80,14 +80,14 @@ Now, wait until `sample-pxc` created has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo                                                                                                                                             
 NAME             VERSION    STATUS     AGE
-sample-pxc   10.4.17    Ready     3m15s
+sample-pxc   8.0.26    Ready     3m15s
 ```
 
 We are now ready to apply the `PerconaXtraDBOpsRequest` CR to upgrade this database.
 
 ### Upgrade PerconaXtraDB Version
 
-Here, we are going to upgrade `PerconaXtraDB` cluster from `10.4.17` to `8.0.26`.
+Here, we are going to upgrade `PerconaXtraDB` cluster from `8.0.26` to `8.0.28`.
 
 #### Create PerconaXtraDBOpsRequest:
 
@@ -97,27 +97,27 @@ In order to upgrade the database cluster, we have to create a `PerconaXtraDBOpsR
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-upgrade
+  name: pxops-upgrade
   namespace: demo
 spec:
   type: UpdateVersion
   databaseRef:
     name: sample-pxc
   upgrade:
-    targetVersion: "8.0.26"
+    targetVersion: "8.0.28"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `sample-pxc` PerconaXtraDB database.
 - `spec.type` specifies that we are going to perform `Upgrade` on our database.
-- `spec.upgrade.targetVersion` specifies the expected version of the database `8.0.26`.
+- `spec.upgrade.targetVersion` specifies the expected version of the database `8.0.28`.
 
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/upgrading/cluster/examples/mdops-upgrade.yaml
-perconaxtradbopsrequest.ops.kubedb.com/mdops-upgrade created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/upgrading/cluster/examples/pxops-upgrade.yaml
+perconaxtradbopsrequest.ops.kubedb.com/pxops-upgrade created
 ```
 
 #### Verify PerconaXtraDB version upgraded successfully 
@@ -130,7 +130,7 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 $ kubectl get perconaxtradbopsrequest -n demo
 Every 2.0s: kubectl get perconaxtradbopsrequest -n demo
 NAME                TYPE      STATUS       AGE
-mdops-upgrade      Upgrade   Successful    84s
+pxops-upgrade      Upgrade   Successful    84s
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded.
@@ -139,13 +139,13 @@ Now, we are going to verify whether the `PerconaXtraDB` and the related `Statefu
 
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc -o=jsonpath='{.spec.version}{"\n"}'
-8.0.26
+8.0.28
 
 $ kubectl get sts -n demo sample-pxc -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-perconaxtradb:8.0.26
+percona/percona-xtradb-cluster:8.0.28
 
 $ kubectl get pods -n demo sample-pxc-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-perconaxtradb:8.0.26
+percona/percona-xtradb-cluster:8.0.28
 ```
 
 You can see from above, our `PerconaXtraDB` cluster database has been updated with the new version. So, the upgrade process is successfully completed.
@@ -156,5 +156,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete perconaxtradb -n demo sample-pxc
-$ kubectl delete perconaxtradbopsrequest -n demo mdops-upgrade
+$ kubectl delete perconaxtradbopsrequest -n demo pxops-upgrade
 ```

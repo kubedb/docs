@@ -29,7 +29,7 @@ This guide will give you an overview on how KubeDB Enterprise operator upgrade t
 The following diagram shows how KubeDB Enterprise operator used to upgrade the version of `PerconaXtraDB`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Upgrading Process of PerconaXtraDB" src="/docs/guides/perconaxtradb/upgrading/overview/images/mdops-upgrade.jpeg">
+  <img alt="Upgrading Process of PerconaXtraDB" src="/docs/guides/perconaxtradb/upgrading/overview/images/pxops-upgrade.jpeg">
 <figcaption align="center">Fig: Upgrading Process of PerconaXtraDB</figcaption>
 </figure>
 

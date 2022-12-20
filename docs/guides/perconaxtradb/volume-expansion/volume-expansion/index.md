@@ -127,7 +127,7 @@ In order to expand the volume of the database, we have to create a `PerconaXtraD
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: md-online-volume-expansion
+  name: px-online-volume-expansion
   namespace: demo
 spec:
   type: VolumeExpansion  
@@ -151,7 +151,7 @@ Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/volume-expansion/volume-expansion/example/online-volume-expansion.yaml
-perconaxtradbopsrequest.ops.kubedb.com/md-online-volume-expansion created
+perconaxtradbopsrequest.ops.kubedb.com/px-online-volume-expansion created
 ```
 
 #### Verify PerconaXtraDB volume expanded successfully
@@ -163,14 +163,14 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 ```bash
 $ kubectl get perconaxtradbopsrequest -n demo
 NAME                         TYPE              STATUS       AGE
-md-online-volume-expansion   VolumeExpansion   Successful   96s
+px-online-volume-expansion   VolumeExpansion   Successful   96s
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. If we describe the `PerconaXtraDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe perconaxtradbopsrequest -n demo md-online-volume-expansion
-Name:         md-online-volume-expansion
+$ kubectl describe perconaxtradbopsrequest -n demo px-online-volume-expansion
+Name:         px-online-volume-expansion
 Namespace:    demo
 Labels:       <none>
 Annotations:  API Version:  ops.kubedb.com/v1alpha1
@@ -187,19 +187,19 @@ Spec:
 Status:
   Conditions:
     Last Transition Time:  2022-01-07T06:38:29Z
-    Message:               Controller has started to Progress the PerconaXtraDBOpsRequest: demo/md-online-volume-expansion
+    Message:               Controller has started to Progress the PerconaXtraDBOpsRequest: demo/px-online-volume-expansion
     Observed Generation:   1
     Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
     Last Transition Time:  2022-01-07T06:39:49Z
-    Message:               Online Volume Expansion performed successfully in PerconaXtraDB pod for PerconaXtraDBOpsRequest: demo/md-online-volume-expansion
+    Message:               Online Volume Expansion performed successfully in PerconaXtraDB pod for PerconaXtraDBOpsRequest: demo/px-online-volume-expansion
     Observed Generation:   1
     Reason:                SuccessfullyVolumeExpanded
     Status:                True
     Type:                  VolumeExpansion
     Last Transition Time:  2022-01-07T06:39:49Z
-    Message:               Controller has successfully expand the volume of PerconaXtraDB demo/md-online-volume-expansion
+    Message:               Controller has successfully expand the volume of PerconaXtraDB demo/px-online-volume-expansion
     Observed Generation:   1
     Reason:                OpsRequestProcessedSuccessfully
     Status:                True
@@ -209,10 +209,10 @@ Status:
 Events:
   Type    Reason      Age   From                        Message
   ----    ------      ----  ----                        -------
-  Normal  Starting    2m1s  KubeDB Enterprise Operator  Start processing for PerconaXtraDBOpsRequest: demo/md-online-volume-expansion
+  Normal  Starting    2m1s  KubeDB Enterprise Operator  Start processing for PerconaXtraDBOpsRequest: demo/px-online-volume-expansion
   Normal  Starting    2m1s  KubeDB Enterprise Operator  Pausing PerconaXtraDB databse: demo/sample-pxc
-  Normal  Successful  2m1s  KubeDB Enterprise Operator  Successfully paused PerconaXtraDB database: demo/sample-pxc for PerconaXtraDBOpsRequest: md-online-volume-expansion
-  Normal  Successful  41s   KubeDB Enterprise Operator  Online Volume Expansion performed successfully in PerconaXtraDB pod for PerconaXtraDBOpsRequest: demo/md-online-volume-expansion
+  Normal  Successful  2m1s  KubeDB Enterprise Operator  Successfully paused PerconaXtraDB database: demo/sample-pxc for PerconaXtraDBOpsRequest: px-online-volume-expansion
+  Normal  Successful  41s   KubeDB Enterprise Operator  Online Volume Expansion performed successfully in PerconaXtraDB pod for PerconaXtraDBOpsRequest: demo/px-online-volume-expansion
   Normal  Starting    41s   KubeDB Enterprise Operator  Updating PerconaXtraDB storage
   Normal  Successful  41s   KubeDB Enterprise Operator  Successfully Updated PerconaXtraDB storage
   Normal  Starting    41s   KubeDB Enterprise Operator  Resuming PerconaXtraDB database: demo/sample-pxc
@@ -242,5 +242,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete perconaxtradb -n demo sample-pxc
-$ kubectl delete perconaxtradbopsrequest -n demo md-online-volume-expansion
+$ kubectl delete perconaxtradbopsrequest -n demo px-online-volume-expansion
 ```

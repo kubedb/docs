@@ -1,7 +1,7 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: md-online-volume-expansion
+  name: px-online-volume-expansion
   namespace: demo
 spec:
   type: VolumeExpansion  

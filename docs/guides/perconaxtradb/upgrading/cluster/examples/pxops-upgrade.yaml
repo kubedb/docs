@@ -1,11 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-upgrade
+  name: pxops-upgrade
   namespace: demo
 spec:
   type: UpdateVersion
   databaseRef:
     name: sample-pxc
   upgrade:
-    targetVersion: "8.0.26"
+    targetVersion: "8.0.28"

@@ -68,7 +68,11 @@ spec:
 
 `spec.version` is a required field specifying the name of the [PerconaXtraDBVersion](/docs/guides/perconaxtradb/concepts/perconaxtradb-version) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PerconaXtraDBVersion` resources,
 
-- `8.0.26`, `10.4.17`
+- `8.0.26`, `8.0.28`
+
+### spec.replicas
+
+`spec.version` is the number of replicas in the database cluster. The default value of Percona XtraDB Cluster size is 3.
 
 ### spec.authSecret
 
