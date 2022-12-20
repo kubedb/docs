@@ -117,7 +117,7 @@ In order to update the resources of the database, we have to create a `PerconaXt
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-vscale
+  name: pxops-vscale
   namespace: demo
 spec:
   type: VerticalScaling
@@ -142,8 +142,8 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/scaling/vertical-scaling/cluster/example/mdops-vscale.yaml
-perconaxtradbopsrequest.ops.kubedb.com/mdops-vscale created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/scaling/vertical-scaling/cluster/example/pxops-vscale.yaml
+perconaxtradbopsrequest.ops.kubedb.com/pxops-vscale created
 ```
 
 #### Verify PerconaXtraDB Cluster resources updated successfully 
@@ -156,7 +156,7 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 $ kubectl get perconaxtradbopsrequest -n demo
 Every 2.0s: kubectl get perconaxtradbopsrequest -n demo
 NAME                     TYPE              STATUS       AGE
-mdops-vscale        VerticalScaling      Successful    3m56s
+pxops-vscale        VerticalScaling      Successful    3m56s
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, we are going to verify from one of the Pod yaml whether the resources of the database has updated to meet up the desired state, Let's check,
@@ -183,5 +183,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete perconaxtradb -n demo sample-pxc
-$ kubectl delete perconaxtradbopsrequest -n demo mdops-vscale
+$ kubectl delete perconaxtradbopsrequest -n demo pxops-vscale
 ```

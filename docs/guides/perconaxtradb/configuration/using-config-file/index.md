@@ -37,24 +37,24 @@ KubeDB supports providing custom configuration for PerconaXtraDB. This tutorial 
 
 ## Overview
 
-PerconaXtraDB allows to configure database via configuration file. The default configuration for PerconaXtraDB can be found in `/etc/mysql/my.cnf` file. When PerconaXtraDB starts, it will look for custom configuration file in `/etc/mysql/conf.d` directory. If configuration file exist, PerconaXtraDB instance will use combined startup setting from both `/etc/mysql/my.cnf` and `*.cnf` files in `/etc/mysql/conf.d` directory. This custom configuration will overwrite the existing default one. To know more about configuring PerconaXtraDB see [here](https://perconaxtradb.com/kb/en/configuring-perconaxtradb-with-option-files/).
+PerconaXtraDB allows to configure database via configuration file. The default configuration for PerconaXtraDB can be found in `/etc/my.cnf` file. KubeDB adds a new custom configuration directory `/etc/mysql/custom.conf.d` if it's enabled. When PerconaXtraDB starts, it will look for custom configuration file in `/etc/mysql/custom.conf.d` directory. If configuration file exist, PerconaXtraDB instance will use combined startup setting from both `/etc/my.cnf` and `*.cnf` files in `/etc/mysql/conf.d` and `/etc/mysql/custom.conf.d` directory. This custom configuration will overwrite the existing default one.
 
-At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSecret` section while creating PerconaXtraDB crd. KubeDB will mount this volume into `/etc/mysql/conf.d` directory of the database pod.
+At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSecret` section while creating PerconaXtraDB crd. KubeDB will mount this volume into `/etc/mysql/custom.conf.d` directory of the database pod.
 
-In this tutorial, we will configure [max_connections](https://perconaxtradb.com/docs/reference/mdb/system-variables/max_connections/) and [read_buffer_size](https://perconaxtradb.com/docs/reference/mdb/system-variables/read_buffer_size/) via a custom config file. We will use Secret as volume source.
+In this tutorial, we will configure [max_connections](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_max_connections/) and [read_buffer_size](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_read_buffer_size) via a custom config file. We will use Secret as volume source.
 
 ## Custom Configuration
 
-At first, let's create `md-config.cnf` file setting `max_connections` and `read_buffer_size` parameters.
+At first, let's create `px-config.cnf` file setting `max_connections` and `read_buffer_size` parameters.
 
 ```bash
-cat <<EOF > md-config.cnf
+cat <<EOF > px-config.cnf
 [mysqld]
 max_connections = 200
 read_buffer_size = 1048576
 EOF
 
-$ cat md-config.cnf
+$ cat px-config.cnf
 [mysqld]
 max_connections = 200
 read_buffer_size = 1048576
@@ -65,23 +65,23 @@ Here, `read_buffer_size` is set to 1MB in bytes.
 Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo md-configuration --from-file=./md-config.cnf
+$ kubectl create secret generic -n demo px-configuration --from-file=./px-config.cnf
 secret/md-configuration created
 ```
 
 Verify the Secret has the configuration file.
 
-```yaml
-$ kubectl get secret -n demo md-configuration -o yaml
+```bash
+$ kubectl get secret -n demo px-configuration -o yaml
 apiVersion: v1
 stringData:
-  md-config.cnf: |
+  px-config.cnf: |
     [mysqld]
     max_connections = 200
     read_buffer_size = 1048576
 kind: Secret
 metadata:
-  name: md-configuration
+  name: px-configuration
   namespace: demo
   ...
 ```
@@ -89,7 +89,7 @@ metadata:
 Now, create PerconaXtraDB crd specifying `spec.configSecret` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/configuration/using-config-file/examples/md-custom.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/configuration/using-config-file/examples/px-custom.yaml
 mysql.kubedb.com/custom-mysql created
 ```
 
@@ -104,7 +104,7 @@ metadata:
 spec:
   version: "8.0.26"
   configSecret:
-    name: md-configuration
+    name: px-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -122,44 +122,54 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 Check that the statefulset's pod is running
 
 ```bash
- $ kubectl get pod -n demo
-NAME               READY   STATUS    RESTARTS   AGE
-sample-pxc-0   1/1     Running   0          21s
+$ kubectl get pod -n demo
+NAME           READY   STATUS    RESTARTS   AGE
+sample-pxc-0   2/2     Running   0          75m
+sample-pxc-1   2/2     Running   0          95m
+sample-pxc-2   2/2     Running   0          95m
 
 $ kubectl get perconaxtradb -n demo 
 NAME             VERSION   STATUS   AGE
-sample-pxc   8.0.26    Ready    71s
+NAME         VERSION   STATUS   AGE
+sample-pxc   8.0.26    Ready    96m
 ```
 
-We can see the database is in ready phase so it can accept conncetion.
+We can see the database is in ready phase so it can accept connection.
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
 ```bash
-# Connceting to the database
- $ kubectl exec -it -n demo sample-pxc-0 -- bash
-root@sample-pxc-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 23
-Server version: 8.0.26-PerconaXtraDB-1:8.0.26+maria~focal perconaxtradb.org binary distribution
+# Connecting to the database
+$ kubectl exec -it -n demo sample-pxc-0 -- bash
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$  mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 1390
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-# value of `max_conncetions` is same as provided 
-PerconaXtraDB [(none)]> show variables like 'max_connections';
+mysql> show variables like 'max_connections';
 +-----------------+-------+
 | Variable_name   | Value |
 +-----------------+-------+
 | max_connections | 200   |
 +-----------------+-------+
-1 row in set (0.001 sec)
+1 row in set (0.01 sec)
+
 
 # value of `read_buffer_size` is same as provided
-PerconaXtraDB [(none)]> show variables like 'read_buffer_size';
+mysql> show variables like 'read_buffer_size';
 +------------------+---------+
 | Variable_name    | Value   |
 +------------------+---------+
@@ -167,7 +177,7 @@ PerconaXtraDB [(none)]> show variables like 'read_buffer_size';
 +------------------+---------+
 1 row in set (0.001 sec)
 
-PerconaXtraDB [(none)]> exit
+mysql> exit
 Bye
 ```
 

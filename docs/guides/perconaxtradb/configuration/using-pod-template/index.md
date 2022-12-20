@@ -103,22 +103,19 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 Check that the statefulset's pod is running
 
 ```bash
-$ $ kubectl get pod -n demo
-NAME               READY   STATUS    RESTARTS   AGE
-sample-pxc-0   1/1     Running   0          96s
+$ kubectl get pod -n demo
+NAME           READY   STATUS    RESTARTS   AGE
+sample-pxc-0   2/2     Running   0          3m30s
+sample-pxc-1   2/2     Running   0          3m30s
+sample-pxc-2   2/2     Running   0          3m30s
 ```
 
-Check the pod's log to see if the database is ready
+Check the perconaxtradb CRD status if the database is ready
 
 ```bash
-$ kubectl logs -f -n demo sample-pxc-0
-2021-03-18 06:06:17+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:8.0.26+maria~focal started.
-2021-03-18 06:06:18+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
-2021-03-18 06:06:18+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:8.0.26+maria~focal started.
-2021-03-18 06:06:19+00:00 [Note] [Entrypoint]: Initializing database files
-...
-2021-03-18  6:06:33 0 [Note] mysqld: ready for connections.
-Version: '8.0.26-PerconaXtraDB-1:8.0.26+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  perconaxtradb.org binary distribution
+$ kubectl get perconaxtradb --all-namespaces
+NAMESPACE   NAME         VERSION   STATUS   AGE
+demo        sample-pxc   8.0.26    Ready    4m8s
 ```
 
 Once we see `Note] mysqld: ready for connections.` in the log, the database is ready.
@@ -127,44 +124,52 @@ Now, we will check if the database has started with the custom configuration we 
 
 ```bash
 $ kubectl exec -it -n demo sample-pxc-0 -- bash
-root@sample-pxc-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 22
-Server version: 8.0.26-PerconaXtraDB-1:8.0.26+maria~focal perconaxtradb.org binary distribution
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 110
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-# Check mdDB
-PerconaXtraDB [(none)]> show databases;
+mysql> show databases;
 +--------------------+
 | Database           |
 +--------------------+
 | information_schema |
+| kubedb_system      |
 | mdDB               |
 | mysql              |
 | performance_schema |
+| sys                |
 +--------------------+
-4 rows in set (0.001 sec)
+6 rows in set (0.01 sec)
 
 # Check character_set_server
-PerconaXtraDB [(none)]> show variables like 'char%';
-+--------------------------+----------------------------+
-| Variable_name            | Value                      |
-+--------------------------+----------------------------+
-| character_set_client     | latin1                     |
-| character_set_connection | latin1                     |
-| character_set_database   | utf8mb4                    |
-| character_set_filesystem | binary                     |
-| character_set_results    | latin1                     |
-| character_set_server     | utf8mb4                    |
-| character_set_system     | utf8                       |
-| character_sets_dir       | /usr/share/mysql/charsets/ |
-+--------------------------+----------------------------+
-8 rows in set (0.001 sec)
+mysql> show variables like 'char%';
++--------------------------+---------------------------------------------+
+| Variable_name            | Value                                       |
++--------------------------+---------------------------------------------+
+| character_set_client     | latin1                                      |
+| character_set_connection | latin1                                      |
+| character_set_database   | utf8mb4                                     |
+| character_set_filesystem | binary                                      |
+| character_set_results    | latin1                                      |
+| character_set_server     | utf8mb4                                     |
+| character_set_system     | utf8mb3                                     |
+| character_sets_dir       | /usr/share/percona-xtradb-cluster/charsets/ |
++--------------------------+---------------------------------------------+
+8 rows in set (0.01 sec)
 
-PerconaXtraDB [(none)]> quit;
+mysql> quit;
 Bye
 ```
 

@@ -81,7 +81,7 @@ Now, wait until `sample-pxc` has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo
 NAME             VERSION   STATUS   AGE
-sample-pxc   8.0.26    Ready    2m36s
+sample-pxc       8.0.26    Ready    2m36s
 ```
 
 Let's check the number of replicas this database has from the PerconaXtraDB object, number of pods the statefulset have,
@@ -135,7 +135,7 @@ In order to scale up the replicas of the replicaset of the database, we have to 
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-scale-horizontal-up
+  name: pxops-scale-horizontal-up
   namespace: demo
 spec:
   type: HorizontalScaling
@@ -154,8 +154,8 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/scaling/horizontal-scaling/cluster/example/mdops-upscale.yaml
-perconaxtradbopsrequest.ops.kubedb.com/mdops-scale-horizontal-up created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/scaling/horizontal-scaling/cluster/example/pxops-upscale.yaml
+perconaxtradbopsrequest.ops.kubedb.com/pxops-scale-horizontal-up created
 ```
 
 #### Verify Cluster replicas scaled up successfully 
@@ -168,7 +168,7 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 $ watch kubectl get perconaxtradbopsrequest -n demo
 Every 2.0s: kubectl get perconaxtradbopsrequest -n demo
 NAME                        TYPE                STATUS       AGE
-mdps-scale-horizontal    HorizontalScaling    Successful     106s
+pxps-scale-horizontal    HorizontalScaling    Successful     106s
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the PerconaXtraDB object, number of pods the statefulset have,
@@ -206,7 +206,7 @@ In order to scale down the cluster of the database, we have to create a `Percona
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-scale-horizontal-down
+  name: pxops-scale-horizontal-down
   namespace: demo
 spec:
   type: HorizontalScaling
@@ -225,8 +225,8 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/scaling/horizontal-scaling/cluster/example/mdops-downscale.yaml
-perconaxtradbopsrequest.ops.kubedb.com/mdops-scale-horizontal-down created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/scaling/horizontal-scaling/cluster/example/pxops-downscale.yaml
+perconaxtradbopsrequest.ops.kubedb.com/pxops-scale-horizontal-down created
 ```
 
 #### Verify Cluster replicas scaled down successfully 
@@ -270,5 +270,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete perconaxtradb -n demo sample-pxc
-$ kubectl delete perconaxtradbopsrequest -n demo  mdops-scale-horizontal-up mdops-scale-horizontal-down
+$ kubectl delete perconaxtradbopsrequest -n demo  pxops-scale-horizontal-up pxops-scale-horizontal-down
 ```

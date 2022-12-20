@@ -1,11 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-scale-horizontal-down
+  name: pxops-scale-horizontal-up
   namespace: demo
 spec:
   type: HorizontalScaling
   databaseRef:
     name: sample-pxc
   horizontalScaling:
-    member : 3
+    member : 5
