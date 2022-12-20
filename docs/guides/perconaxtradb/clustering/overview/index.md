@@ -16,15 +16,7 @@ section_menu_id: guides
 
 Here we'll discuss some concepts about PerconaXtraDB Galera Cluster.
 
-## So What is Replication
-
-Replication means data being copied from one PerconaXtraDB server to one or more other PerconaXtraDB servers, instead of only stored in one server. One can read or write in any server of the cluster. The following figure shows a cluster of four PerconaXtraDB servers:
-
-![PerconaXtraDB Cluster](/docs/guides/perconaxtradb/clustering/overview/images/galera_small.png)
-
-Image ref: <https://perconaxtradb.com/kb/en/what-is-perconaxtradb-galera-cluster/+image/galera_small>
-
-## Galera Replication
+## Galera Clustering
 
 PerconaXtraDB Galera Cluster is a [virtually synchronous](https://perconaxtradb.com/kb/en/about-galera-replication/#synchronous-vs-asynchronous-replication) multi-master cluster for PerconaXtraDB. The Server replicates a transaction at commit time by broadcasting the write set associated with the transaction to every node in the cluster. The client connects directly to the DBMS and experiences behavior that is similar to native PerconaXtraDB in most cases. The wsrep API (write set replication API) defines the interface between Galera replication and PerconaXtraDB.
 
@@ -40,7 +32,7 @@ Ref: [About Galera Replication](https://perconaxtradb.com/kb/en/about-galera-rep
 - True parallel replication, on row level
 - Direct client connections, native PerconaXtraDB look & feel
 
-Ref: [What is PerconaXtraDB Galera Cluster?](https://perconaxtradb.com/kb/en/what-is-perconaxtradb-galera-cluster/#features)
+Ref: [Common Operations of PerconaXtraDB Galera Cluster and Group Replication?](https://www.percona.com/blog/2020/04/28/group-replication-and-percona-xtradb-cluster-overview-of-common-operations/)
 
 ### Limitations
 

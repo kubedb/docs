@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # KubeDB - PerconaXtraDB Cluster
 
-This tutorial will show you how to use KubeDB to provision a PerconaXtraDB replication group in single-primary mode.
+This tutorial will show you how to create a 3 node PerconaXtraDB Cluster using KubeDB.
 
 ## Before You Begin
 
@@ -79,19 +79,65 @@ metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
       {"apiVersion":"kubedb.com/v1alpha2","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"sample-pxc","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"8.0.26"}}
-  creationTimestamp: "2021-03-16T09:39:01Z"
+  creationTimestamp: "2022-12-20T05:15:56Z"
   finalizers:
   - kubedb.com
-  generation: 2
-  managedFields:
-    ...
+  generation: 4
   name: sample-pxc
   namespace: demo
+  resourceVersion: "8919"
+  uid: 5202f646-1f14-4008-9034-cddd481a0ea3
 spec:
+  allowedSchemas:
+    namespaces:
+      from: Same
   authSecret:
     name: sample-pxc-auth
+  autoOps: {}
+  coordinator:
+    resources: {}
+  healthChecker:
+    failureThreshold: 1
+    periodSeconds: 10
+    timeoutSeconds: 10
   podTemplate:
-    ...
+    controller: {}
+    metadata: {}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/instance: sample-pxc
+                  app.kubernetes.io/managed-by: kubedb.com
+                  app.kubernetes.io/name: perconaxtradbs.kubedb.com
+              namespaces:
+              - demo
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/instance: sample-pxc
+                  app.kubernetes.io/managed-by: kubedb.com
+                  app.kubernetes.io/name: perconaxtradbs.kubedb.com
+              namespaces:
+              - demo
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 50
+      resources:
+        limits:
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 1Gi
+      securityContext:
+        fsGroup: 1001
+        runAsGroup: 1001
+        runAsUser: 1001
+      serviceAccountName: sample-pxc
   replicas: 3
   storage:
     accessModes:
@@ -101,143 +147,172 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
+  systemUserSecrets:
+    monitorUserSecret:
+      name: sample-pxc-monitor
+    replicationUserSecret:
+      name: sample-pxc-replication
   terminationPolicy: WipeOut
   version: 8.0.26
 status:
   conditions:
-  - lastTransitionTime: "2021-03-16T09:39:01Z"
+  - lastTransitionTime: "2022-12-20T05:15:56Z"
     message: 'The KubeDB operator has started the provisioning of PerconaXtraDB: demo/sample-pxc'
     reason: DatabaseProvisioningStartedSuccessfully
     status: "True"
     type: ProvisioningStarted
-  - lastTransitionTime: "2021-03-16T09:40:00Z"
+  - lastTransitionTime: "2022-12-20T05:17:30Z"
     message: All desired replicas are ready.
     reason: AllReplicasReady
     status: "True"
     type: ReplicaReady
-  - lastTransitionTime: "2021-03-16T09:39:09Z"
-    message: 'The PerconaXtraDB: demo/sample-pxc is accepting client requests.'
-    observedGeneration: 2
-    reason: DatabaseAcceptingConnectionRequest
-    status: "True"
-    type: AcceptingConnection
-  - lastTransitionTime: "2021-03-16T09:39:50Z"
-    message: 'The MySQL: demo/sample-pxc is ready.'
-    observedGeneration: 2
+  - lastTransitionTime: "2022-12-20T05:19:02Z"
+    message: database sample-pxc/demo is ready
+    observedGeneration: 4
     reason: ReadinessCheckSucceeded
     status: "True"
     type: Ready
-  - lastTransitionTime: "2021-03-16T09:40:00Z"
+  - lastTransitionTime: "2022-12-20T05:18:12Z"
+    message: database sample-pxc/demo is accepting connection
+    observedGeneration: 4
+    reason: AcceptingConnection
+    status: "True"
+    type: AcceptingConnection
+  - lastTransitionTime: "2022-12-20T05:19:07Z"
     message: 'The PerconaXtraDB: demo/sample-pxc is successfully provisioned.'
-    observedGeneration: 2
+    observedGeneration: 4
     reason: DatabaseSuccessfullyProvisioned
     status: "True"
     type: Provisioned
-  observedGeneration: 2
+  observedGeneration: 4
   phase: Ready
 
-
 $ kubectl get sts,svc,secret,pvc,pv,pod -n demo
-NAME                              READY   AGE
-statefulset.apps/sample-pxc   3/3     116m
+NAME                          READY   AGE
+statefulset.apps/sample-pxc   3/3     7m5s
 
-NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-service/sample-pxc        ClusterIP   10.97.162.171   <none>        3306/TCP   116m
-service/sample-pxc-pods   ClusterIP   None            <none>        3306/TCP   116m
+NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+service/sample-pxc        ClusterIP   10.96.207.41   <none>        3306/TCP   7m11s
+service/sample-pxc-pods   ClusterIP   None           <none>        3306/TCP   7m11s
 
-NAME                                TYPE                                  DATA   AGE
-secret/default-token-696cj          kubernetes.io/service-account-token   3      121m
-secret/sample-pxc-auth          kubernetes.io/basic-auth              2      116m
-secret/sample-pxc-token-dk4dx   kubernetes.io/service-account-token   3      116m
+NAME                            TYPE                                  DATA   AGE
+secret/default-token-bbgjp      kubernetes.io/service-account-token   3      7m19s
+secret/sample-pxc-auth          kubernetes.io/basic-auth              2      7m11s
+secret/sample-pxc-monitor       kubernetes.io/basic-auth              2      7m11s
+secret/sample-pxc-replication   kubernetes.io/basic-auth              2      7m11s
+secret/sample-pxc-token-gbzg6   kubernetes.io/service-account-token   3      7m11s
 
-NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-sample-pxc-0   Bound    pvc-1e259abc-5937-421a-990c-b903a83d2d8a   1Gi        RWO            standard       116m
-persistentvolumeclaim/data-sample-pxc-1   Bound    pvc-1d0b5bcd-2699-4b87-b57b-3072ddc1027f   1Gi        RWO            standard       116m
-persistentvolumeclaim/data-sample-pxc-2   Bound    pvc-5b85a06e-17f5-487a-9150-e928f5cf4590   1Gi        RWO            standard       116m
+NAME                                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-sample-pxc-0   Bound    pvc-cb4f41de-1ead-4124-98a7-e3e950c8d10f   1Gi        RWO            standard       7m5s
+persistentvolumeclaim/data-sample-pxc-1   Bound    pvc-3c2887f5-5a7c-4df3-b7ca-34a6bcf91904   1Gi        RWO            standard       7m5s
+persistentvolumeclaim/data-sample-pxc-2   Bound    pvc-521f81f1-6261-4252-a2a8-32bfe472000e   1Gi        RWO            standard       7m5s
 
-NAME                                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS   REASON   AGE
-persistentvolume/pvc-1d0b5bcd-2699-4b87-b57b-3072ddc1027f   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-1   standard                116m
-persistentvolume/pvc-1e259abc-5937-421a-990c-b903a83d2d8a   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-0   standard                116m
-persistentvolume/pvc-5b85a06e-17f5-487a-9150-e928f5cf4590   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-2   standard                116m
+NAME                                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                    STORAGECLASS   REASON   AGE
+persistentvolume/pvc-3c2887f5-5a7c-4df3-b7ca-34a6bcf91904   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-1   standard                7m3s
+persistentvolume/pvc-521f81f1-6261-4252-a2a8-32bfe472000e   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-2   standard                7m1s
+persistentvolume/pvc-cb4f41de-1ead-4124-98a7-e3e950c8d10f   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-0   standard                7m2s
 
-NAME                   READY   STATUS    RESTARTS   AGE
-pod/sample-pxc-0   1/1     Running   0          116m
-pod/sample-pxc-1   1/1     Running   0          116m
-pod/sample-pxc-2   1/1     Running   0          116m
+NAME               READY   STATUS    RESTARTS   AGE
+pod/sample-pxc-0   2/2     Running   0          7m5s
+pod/sample-pxc-1   2/2     Running   0          7m5s
+pod/sample-pxc-2   2/2     Running   0          7m5s
+
 ```
 
 ## Connect with PerconaXtraDB database
 
-Once the database is in running state we can conncet to each of three nodes. We will use login credentials `MYSQL_ROOT_USERNAME` and `MYSQL_ROOT_PASSWORD` saved as container's environment variable.
+Once the database is in running state we can connect to each of three nodes. We will use login credentials `MYSQL_ROOT_USERNAME` and `MYSQL_ROOT_PASSWORD` saved as container's environment variable.
 
 ```bash
 # First Node
 $ kubectl exec -it -n demo sample-pxc-0 -- bash
-root@sample-pxc-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 26
-Server version: 8.0.26-PerconaXtraDB-1:8.0.26+maria~focal perconaxtradb.org binary distribution
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 133
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-PerconaXtraDB [(none)]> SELECT 1; 
+mysql> SELECT 1; 
 +---+
 | 1 |
 +---+
 | 1 |
 +---+
-1 row in set (0.000 sec)
+1 row in set (0.00 sec)
 
-PerconaXtraDB [(none)]> quit;
+mysql> quit;
 Bye
 
 
 # Second Node
 $ kubectl exec -it -n demo sample-pxc-1 -- bash
-root@sample-pxc-1:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 94
-Server version: 8.0.26-PerconaXtraDB-1:8.0.26+maria~focal perconaxtradb.org binary distribution
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 123
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-PerconaXtraDB [(none)]> SELECT 1;
+mysql> SELECT 1; 
 +---+
 | 1 |
 +---+
 | 1 |
 +---+
-1 row in set (0.000 sec)
+1 row in set (0.00 sec)
 
-PerconaXtraDB [(none)]> quit;
+mysql> quit;
 Bye
 
 
 # Third Node
 $ kubectl exec -it -n demo sample-pxc-2 -- bash
-root@sample-pxc-2:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 78
-Server version: 8.0.26-PerconaXtraDB-1:8.0.26+maria~focal perconaxtradb.org binary distribution
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 139
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-PerconaXtraDB [(none)]> SELECT 1;
+mysql> SELECT 1;
 +---+
 | 1 |
 +---+
 | 1 |
 +---+
-1 row in set (0.000 sec)
+1 row in set (0.00 sec)
 
-PerconaXtraDB [(none)]> quit;
+mysql> quit;
 Bye
+
 ```
 
 ## Check the Cluster Status
@@ -246,22 +321,33 @@ Now, we are ready to check newly created cluster status. Connect and run the fol
 
 ```bash
 $ kubectl exec -it -n demo sample-pxc-0 -- bash
-root@sample-pxc-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 137
-Server version: 8.0.26-PerconaXtraDB-1:8.0.26+maria~focal perconaxtradb.org binary distribution
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 231
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-PerconaXtraDB [(none)]> show status like 'wsrep_cluster_size';
+mysql> show status like 'wsrep_cluster_size';
 +--------------------+-------+
 | Variable_name      | Value |
 +--------------------+-------+
 | wsrep_cluster_size | 3     |
 +--------------------+-------+
-1 row in set (0.001 sec)
+1 row in set (0.00 sec)
+
+mysql> quit;
+Bye
+
 ```
 
 ## Data Availability
@@ -272,104 +358,119 @@ In a PerconaXtraDB Galera Cluster, Each member can read and write. In this secti
 
 ```bash
 $ kubectl exec -it -n demo sample-pxc-0 -- bash
-root@sample-pxc-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 202
-Server version: 8.0.26-PerconaXtraDB-1:8.0.26+maria~focal perconaxtradb.org binary distribution
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 260
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-PerconaXtraDB [(none)]> CREATE DATABASE playground;
-Query OK, 1 row affected (0.013 sec)
+mysql> CREATE DATABASE playground;
+Query OK, 1 row affected (0.01 sec)
 
-# Create table in Node 1
-PerconaXtraDB [(none)]> CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));
-Query OK, 0 rows affected (0.053 sec)
+mysql> CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));
+Query OK, 0 rows affected (0.02 sec)
 
-# Insert sample data into Node 1
-PerconaXtraDB [(none)]> INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');
-Query OK, 1 row affected (0.003 sec)
+mysql> INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');
+Query OK, 1 row affected (0.00 sec)
 
-# Read data from Node 1
-PerconaXtraDB [(none)]> SELECT * FROM playground.equipment;
+mysql> SELECT * FROM playground.equipment;
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
-1 row in set (0.001 sec)
+1 row in set (0.00 sec)
 
-PerconaXtraDB [(none)]> quit;
+mysql> quit;
 Bye
-root@sample-pxc-0:/ exit
+bash-4.4$ exit
 exit
-~ $ kubectl exec -it -n demo sample-pxc-1 -- bash
-root@sample-pxc-1:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 209
-Server version: 8.0.26-PerconaXtraDB-1:8.0.26+maria~focal perconaxtradb.org binary distribution
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+$ kubectl exec -it -n demo sample-pxc-2 -- bash
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 253
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
+
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-# Read data from Node 2
-PerconaXtraDB [(none)]> SELECT * FROM playground.equipment;
+mysql> SELECT * FROM playground.equipment;
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
-1 row in set (0.001 sec)
+1 row in set (0.00 sec)
 
-#Insert data into node 2
-PerconaXtraDB [(none)]> INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 4, 'red');
-Query OK, 1 row affected (0.032 sec)
+mysql> INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 4, 'red');
+Query OK, 1 row affected (0.00 sec)
 
-# Read data from Node 2 after insertion
-PerconaXtraDB [(none)]> SELECT * FROM playground.equipment;
+mysql> SELECT * FROM playground.equipment;
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
-|  5 | slide |     4 | red   |
-+----+-------+-------+-------+
-2 rows in set (0.000 sec)
-
-PerconaXtraDB [(none)]> quit;
-Bye
-root@sample-pxc-1:/ exit
-exit
-~ $ kubectl exec -it -n demo sample-pxc-2 -- bash
-root@sample-pxc-2:/  mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 209
-Server version: 8.0.26-PerconaXtraDB-1:8.0.26+maria~focal perconaxtradb.org binary distribution
-
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-# Insert data into Node 3
-PerconaXtraDB [(none)]> INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 4, 'red');
-Query OK, 1 row affected (0.005 sec)
-
-# Read data from Node 3
-PerconaXtraDB [(none)]> SELECT * FROM playground.equipment;
-+----+-------+-------+-------+
-| id | type  | quant | color |
-+----+-------+-------+-------+
-|  1 | slide |     2 | blue  |
-|  5 | slide |     4 | red   |
 |  6 | slide |     4 | red   |
 +----+-------+-------+-------+
-3 rows in set (0.000 sec)
+2 rows in set (0.00 sec)
 
-PerconaXtraDB [(none)]> quit
+mysql> quit;
 Bye
-root@sample-pxc-2:/# exit
+bash-4.4$ exit
+exit
+
+$ kubectl exec -it -n demo sample-pxc-2 -- bash
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 283
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
+
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 4, 'red');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> SELECT * FROM playground.equipment;
++----+-------+-------+-------+
+| id | type  | quant | color |
++----+-------+-------+-------+
+|  1 | slide |     2 | blue  |
+|  6 | slide |     4 | red   |
+|  9 | slide |     4 | red   |
++----+-------+-------+-------+
+3 rows in set (0.00 sec)
+
+mysql> quit;
+Bye
+bash-4.4$ exit
 exit
 ```
 
@@ -380,31 +481,38 @@ To test automatic failover, we will force the one of three pods to restart and c
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
 ```bash
-kubectl exec -it -n demo sample-pxc-0 -- bash
-root@sample-pxc-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 11
-Server version: 8.0.26-PerconaXtraDB-1:8.0.26+maria~focal perconaxtradb.org binary distribution
+$ kubectl exec -it -n demo sample-pxc-0 -- bash
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 332
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-# Check current data
-PerconaXtraDB [(none)]> SELECT * FROM playground.equipment;
+mysql> SELECT * FROM playground.equipment;
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
-|  5 | slide |     4 | red   |
 |  6 | slide |     4 | red   |
+|  9 | slide |     4 | red   |
 +----+-------+-------+-------+
-3 rows in set (0.002 sec)
+3 rows in set (0.00 sec)
 
-PerconaXtraDB [(none)]> quit;
+mysql> quit;
 Bye
-root@sample-pxc-0:/ exit
+bash-4.4$ exit
 exit
+
 
 # Forcefully delete Node 1
 ~ $ kubectl delete pod -n demo sample-pxc-0
@@ -412,28 +520,34 @@ pod "sample-pxc-0" deleted
 
 # Wait for sample-pxc-0 to restart
 $ kubectl exec -it -n demo sample-pxc-0 -- bash
-root@sample-pxc-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 10
-Server version: 8.0.26-PerconaXtraDB-1:8.0.26+maria~focal perconaxtradb.org binary distribution
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 49
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-# Check data after rejoining
-PerconaXtraDB [(none)]> SELECT * FROM playground.equipment;
+mysql> SELECT * FROM playground.equipment;
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
-|  5 | slide |     4 | red   |
 |  6 | slide |     4 | red   |
+|  9 | slide |     4 | red   |
 +----+-------+-------+-------+
-3 rows in set (0.002 sec)
+3 rows in set (0.00 sec)
 
 # Check cluster size
-PerconaXtraDB [(none)]> show status like 'wsrep_cluster_size';
+mysql [(none)]> show status like 'wsrep_cluster_size';
 +--------------------+-------+
 | Variable_name      | Value |
 +--------------------+-------+
@@ -441,9 +555,8 @@ PerconaXtraDB [(none)]> show status like 'wsrep_cluster_size';
 +--------------------+-------+
 1 row in set (0.002 sec)
 
-PerconaXtraDB [(none)]> quit
+mysql> quit
 Bye
-
 ```
 
 ## Cleaning up
