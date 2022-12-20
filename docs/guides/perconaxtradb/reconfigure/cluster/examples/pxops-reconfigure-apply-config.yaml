@@ -1,7 +1,7 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-reconfigure-apply-config
+  name: pxops-reconfigure-apply-config
   namespace: demo
 spec:
   type: Reconfigure

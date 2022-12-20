@@ -45,10 +45,10 @@ Now, we are going to deploy a `PerconaXtraDB` Cluster database with version `10.
 
 ### Deploy PerconaXtraDB
 
-At first, we will create `md-config.cnf` file containing required configuration settings.
+At first, we will create `px-config.cnf` file containing required configuration settings.
 
 ```ini
-$ cat md-config.cnf 
+$ cat px-config.cnf 
 [mysqld]
 max_connections = 200
 read_buffer_size = 1048576
@@ -59,8 +59,8 @@ Here, `max_connections` is set to `200`, whereas the default value is `151`. Lik
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo md-configuration --from-file=./md-config.cnf
-secret/md-configuration created
+$ kubectl create secret generic -n demo px-configuration --from-file=./px-config.cnf
+secret/px-configuration created
 ```
 
 In this section, we are going to create a PerconaXtraDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
@@ -75,7 +75,7 @@ spec:
   version: "10.6.4"
   replicas: 3
   configSecret:
-    name: md-configuration
+    name: px-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -99,7 +99,7 @@ Now, wait until `sample-pxc` has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo 
 NAME             VERSION   STATUS   AGE
-sample-pxc   10.6.4    Ready    71s
+sample-pxc       8.0.26    Ready    71s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
@@ -118,34 +118,42 @@ Now, we will check if the database has started with the custom configuration we 
 
 ```bash
 $ kubectl exec -it -n demo sample-pxc-0 -- bash
-root@sample-pxc-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 23
-Server version: 10.6.4-PerconaXtraDB-1:10.6.4+maria~focal perconaxtradb.org binary distribution
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 3699
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-# value of `max_conncetions` is same as provided 
-PerconaXtraDB [(none)]> show variables like 'max_connections';
+mysql> show variables like 'max_connections';
 +-----------------+-------+
 | Variable_name   | Value |
 +-----------------+-------+
 | max_connections | 200   |
 +-----------------+-------+
-1 row in set (0.001 sec)
+1 row in set (0.00 sec)
 
-# value of `read_buffer_size` is same as provided
-PerconaXtraDB [(none)]> show variables like 'read_buffer_size';
-+------------------+---------+
-| Variable_name    | Value   |
-+------------------+---------+
+
+# value of `read_buffer_size` is same as provided 
+mysql> show variables like 'read_buffer_size';
++------------------+--------+
+| Variable_name    | Value  |
++------------------+--------+
 | read_buffer_size | 1048576 |
-+------------------+---------+
-1 row in set (0.001 sec)
++------------------+--------+
+1 row in set (0.00 sec)
 
-PerconaXtraDB [(none)]> exit
+
+mysql> exit
 Bye
 ```
 
@@ -155,10 +163,10 @@ As we can see from the configuration of ready perconaxtradb, the value of `max_c
 
 Now we will reconfigure this database to set `max_connections` to `250` and `read_buffer_size` to `122880`.
 
-Now, we will create new file `new-md-config.cnf` containing required configuration settings.
+Now, we will create new file `new-px-config.cnf` containing required configuration settings.
 
 ```ini
-$ cat new-md-config.cnf 
+$ cat new-px-config.cnf 
 [mysqld]
 max_connections = 250
 read_buffer_size = 122880
@@ -167,8 +175,8 @@ read_buffer_size = 122880
 Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-md-configuration --from-file=./new-md-config.cnf
-secret/new-md-configuration created
+$ kubectl create secret generic -n demo new-px-configuration --from-file=./new-px-config.cnf
+secret/new-px-configuration created
 ```
 
 #### Create PerconaXtraDBOpsRequest
@@ -179,7 +187,7 @@ Now, we will use this secret to replace the previous secret using a `PerconaXtra
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-reconfigure-config
+  name: pxops-reconfigure-config
   namespace: demo
 spec:
   type: Reconfigure
@@ -187,7 +195,7 @@ spec:
     name: sample-pxc
   configuration:   
     configSecret:
-      name: new-md-configuration
+      name: new-px-configuration
 ```
 
 Here,
@@ -200,7 +208,7 @@ Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure/cluster/examples/reconfigure-using-secret.yaml
-perconaxtradbopsrequest.ops.kubedb.com/mdops-reconfigure-config created
+perconaxtradbopsrequest.ops.kubedb.com/pxops-reconfigure-config created
 ```
 
 #### Verify the new configuration is working
@@ -212,14 +220,14 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 ```bash
 $ kubectl get perconaxtradbopsrequest --all-namespaces
 NAMESPACE   NAME                       TYPE          STATUS       AGE
-demo        mdops-reconfigure-config   Reconfigure   Successful   3m8s
+demo        pxops-reconfigure-config   Reconfigure   Successful   3m8s
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. If we describe the `PerconaXtraDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe perconaxtradbopsrequest -n demo mdops-reconfigure-config
-Name:         mdops-reconfigure-config
+$ kubectl describe perconaxtradbopsrequest -n demo pxops-reconfigure-config
+Name:         pxops-reconfigure-config
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -233,32 +241,32 @@ Metadata:
 Spec:
   Configuration:
     Config Secret:
-      Name:  new-md-configuration
+      Name:  new-px-configuration
   Database Ref:
     Name:  sample-pxc
   Type:    Reconfigure
 Status:
   Conditions:
     Last Transition Time:  2022-06-10T04:43:50Z
-    Message:               Controller has started to Progress the PerconaXtraDBOpsRequest: demo/mdops-reconfigure-config
+    Message:               Controller has started to Progress the PerconaXtraDBOpsRequest: demo/pxops-reconfigure-config
     Observed Generation:   1
     Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
     Last Transition Time:  2022-06-10T04:47:25Z
-    Message:               Successfully restarted PerconaXtraDB pods for PerconaXtraDBOpsRequest: demo/mdops-reconfigure-config
+    Message:               Successfully restarted PerconaXtraDB pods for PerconaXtraDBOpsRequest: demo/pxops-reconfigure-config
     Observed Generation:   1
     Reason:                SuccessfullyRestatedStatefulSet
     Status:                True
     Type:                  RestartStatefulSetPods
     Last Transition Time:  2022-06-10T04:47:30Z
-    Message:               Successfully reconfigured PerconaXtraDB for PerconaXtraDBOpsRequest: demo/mdops-reconfigure-config
+    Message:               Successfully reconfigured PerconaXtraDB for PerconaXtraDBOpsRequest: demo/pxops-reconfigure-config
     Observed Generation:   1
     Reason:                SuccessfullyDBReconfigured
     Status:                True
     Type:                  DBReady
     Last Transition Time:  2022-06-10T04:47:30Z
-    Message:               Controller has successfully reconfigure the PerconaXtraDB demo/mdops-reconfigure-config
+    Message:               Controller has successfully reconfigure the PerconaXtraDB demo/pxops-reconfigure-config
     Observed Generation:   1
     Reason:                OpsRequestProcessedSuccessfully
     Status:                True
@@ -272,49 +280,58 @@ Now let's connect to a perconaxtradb instance and run a perconaxtradb internal c
 
 ```bash
 $ kubectl exec -it -n demo sample-pxc-0 -- bash
-root@sample-pxc-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 23
-Server version: 10.6.4-PerconaXtraDB-1:10.6.4+maria~focal perconaxtradb.org binary distribution
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 3699
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-# value of `max_conncetions` is same as provided 
-PerconaXtraDB [(none)]> show variables like 'max_connections';
+mysql> show variables like 'max_connections';
 +-----------------+-------+
 | Variable_name   | Value |
 +-----------------+-------+
 | max_connections | 250   |
 +-----------------+-------+
-1 row in set (0.001 sec)
+1 row in set (0.00 sec)
 
-# value of `read_buffer_size` is same as provided
-PerconaXtraDB [(none)]> show variables like 'read_buffer_size';
-+------------------+---------+
-| Variable_name    | Value   |
-+------------------+---------+
-| read_buffer_size | 122880  |
-+------------------+---------+
-1 row in set (0.001 sec)
 
-PerconaXtraDB [(none)]> exit
+# value of `read_buffer_size` is same as provided 
+mysql> show variables like 'read_buffer_size';
++------------------+--------+
+| Variable_name    | Value  |
++------------------+--------+
+| read_buffer_size | 122880 |
++------------------+--------+
+1 row in set (0.00 sec)
+
+
+mysql> exit
 Bye
 ```
+
 
 As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and and the `read_buffer_size` has been changed `1048576` to `122880`. So the reconfiguration of the database is successful.
 
 
 ### Reconfigure Existing Config Secret
 
-Now, we will create a new `PerconaXtraDBOpsRequest` to reconfigure our existing secret `new-md-configuration` by modifying our `new-md-config.cnf` file using `applyConfig`. The `PerconaXtraDBOpsRequest` yaml is given below,
+Now, we will create a new `PerconaXtraDBOpsRequest` to reconfigure our existing secret `new-px-configuration` by modifying our `new-px-config.cnf` file using `applyConfig`. The `PerconaXtraDBOpsRequest` yaml is given below,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-reconfigure-apply-config
+  name: pxops-reconfigure-apply-config
   namespace: demo
 spec:
   type: Reconfigure
@@ -322,7 +339,7 @@ spec:
     name: sample-pxc
   configuration:   
     applyConfig:
-      new-md-config.cnf: |
+      new-px-config.cnf: |
         [mysqld]
         max_connections = 230
         read_buffer_size = 1064960
@@ -340,34 +357,44 @@ Here,
 Before applying this yaml we are going to check the existing value of our new field,
 
 ```bash
-$ kubectl exec -it sample-pxc-0 -n demo -c perconaxtradb -- bash
-root@sample-pxc-0:/# mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 23
-Server version: 10.6.4-PerconaXtraDB-1:10.6.4+maria~focal perconaxtradb.org binary distribution
+$ kubectl exec -it -n demo sample-pxc-0 -- bash
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 3699
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-PerconaXtraDB [(none)]> show variables like 'innodb_log_buffer_size';
+mysql> show variables like 'innodb_log_buffer_size';
 +------------------------+----------+
 | Variable_name          | Value    |
 +------------------------+----------+
 | innodb_log_buffer_size | 16777216 |
 +------------------------+----------+
-1 row in set (0.001 sec)
+1 row in set (0.00 sec)
 
 PerconaXtraDB [(none)]> exit
 Bye
 ```
+
+16777216
+
 Here, we can see the default value for `innodb_log_buffer_size` is `16777216`. 
 
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure/cluster/examples/mdops-reconfigure-apply-config.yaml
-perconaxtradbopsrequest.ops.kubedb.com/mdops-reconfigure-apply-config created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure/cluster/examples/pxops-reconfigure-apply-config.yaml
+perconaxtradbopsrequest.ops.kubedb.com/pxops-reconfigure-apply-config created
 ```
 
 
@@ -378,16 +405,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the `configSec
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 
 ```bash
-$ kubectl get perconaxtradbopsrequest mdops-reconfigure-apply-config -n demo
+$ kubectl get perconaxtradbopsrequest pxops-reconfigure-apply-config -n demo
 NAME                             TYPE          STATUS       AGE
-mdops-reconfigure-apply-config   Reconfigure   Successful   4m59s
+pxops-reconfigure-apply-config   Reconfigure   Successful   4m59s
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. If we describe the `PerconaXtraDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe perconaxtradbopsrequest -n demo mdops-reconfigure-apply-config
-Name:         mdops-reconfigure-apply-config
+$ kubectl describe perconaxtradbopsrequest -n demo pxops-reconfigure-apply-config
+Name:         pxops-reconfigure-apply-config
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -404,7 +431,7 @@ Spec:
       innodb-config.cnf:  [mysqld]
 innodb_log_buffer_size = 17408000
 
-      new-md-config.cnf:  [mysqld]
+      new-px-config.cnf:  [mysqld]
 max_connections = 230
 read_buffer_size = 1064960
 
@@ -414,7 +441,7 @@ read_buffer_size = 1064960
 Status:
   Conditions:
     Last Transition Time:  2022-06-10T09:13:49Z
-    Message:               Controller has started to Progress the PerconaXtraDBOpsRequest: demo/mdops-reconfigure-apply-config
+    Message:               Controller has started to Progress the PerconaXtraDBOpsRequest: demo/pxops-reconfigure-apply-config
     Observed Generation:   1
     Reason:                OpsRequestProgressingStarted
     Status:                True
@@ -426,19 +453,19 @@ Status:
     Status:                True
     Type:                  PrepareCustomConfig
     Last Transition Time:  2022-06-10T09:17:24Z
-    Message:               Successfully restarted PerconaXtraDB pods for PerconaXtraDBOpsRequest: demo/mdops-reconfigure-apply-config
+    Message:               Successfully restarted PerconaXtraDB pods for PerconaXtraDBOpsRequest: demo/pxops-reconfigure-apply-config
     Observed Generation:   1
     Reason:                SuccessfullyRestatedStatefulSet
     Status:                True
     Type:                  RestartStatefulSetPods
     Last Transition Time:  2022-06-10T09:17:29Z
-    Message:               Successfully reconfigured PerconaXtraDB for PerconaXtraDBOpsRequest: demo/mdops-reconfigure-apply-config
+    Message:               Successfully reconfigured PerconaXtraDB for PerconaXtraDBOpsRequest: demo/pxops-reconfigure-apply-config
     Observed Generation:   1
     Reason:                SuccessfullyDBReconfigured
     Status:                True
     Type:                  DBReady
     Last Transition Time:  2022-06-10T09:17:29Z
-    Message:               Controller has successfully reconfigure the PerconaXtraDB demo/mdops-reconfigure-apply-config
+    Message:               Controller has successfully reconfigure the PerconaXtraDB demo/pxops-reconfigure-apply-config
     Observed Generation:   1
     Reason:                OpsRequestProcessedSuccessfully
     Status:                True
@@ -451,17 +478,23 @@ Now let's connect to a perconaxtradb instance and run a perconaxtradb internal c
 
 ```bash
 $ kubectl exec -it -n demo sample-pxc-0 -- bash
-root@sample-pxc-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 23
-Server version: 10.6.4-PerconaXtraDB-1:10.6.4+maria~focal perconaxtradb.org binary distribution
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 3699
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
 # value of `max_conncetions` is same as provided 
-PerconaXtraDB [(none)]> show variables like 'max_connections';
+mysql> show variables like 'max_connections';
 +-----------------+-------+
 | Variable_name   | Value |
 +-----------------+-------+
@@ -470,7 +503,7 @@ PerconaXtraDB [(none)]> show variables like 'max_connections';
 1 row in set (0.001 sec)
 
 # value of `read_buffer_size` is same as provided
-PerconaXtraDB [(none)]> show variables like 'read_buffer_size';
+mysql> show variables like 'read_buffer_size';
 +------------------+---------+
 | Variable_name    | Value   |
 +------------------+---------+
@@ -479,7 +512,7 @@ PerconaXtraDB [(none)]> show variables like 'read_buffer_size';
 1 row in set (0.001 sec)
 
 # value of `innodb_log_buffer_size` is same as provided
-PerconaXtraDB [(none)]> show variables like 'innodb_log_buffer_size';
+mysql> show variables like 'innodb_log_buffer_size';
 +------------------------+----------+
 | Variable_name          | Value    |
 +------------------------+----------+
@@ -487,7 +520,7 @@ PerconaXtraDB [(none)]> show variables like 'innodb_log_buffer_size';
 +------------------------+----------+
 1 row in set (0.001 sec)
 
-PerconaXtraDB [(none)]> exit
+mysql> exit
 Bye
 ```
 
@@ -496,7 +529,7 @@ As we can see from above the configuration has been changed, the value of `max_c
 
 ### Remove Custom Configuration
 
-We can also remove exisiting custom config using `PerconaXtraDBOpsRequest`. Provide `true` to field `spec.configuration.removeCustomConfig` and make an Ops Request to remove existing custom configuration.
+We can also remove existing custom config using `PerconaXtraDBOpsRequest`. Provide `true` to field `spec.configuration.removeCustomConfig` and make an Ops Request to remove existing custom configuration.
 
 #### Create PerconaXtraDBOpsRequest
 
@@ -506,7 +539,7 @@ Lets create an `PerconaXtraDBOpsRequest` having `spec.configuration.removeCustom
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-reconfigure-remove
+  name: pxops-reconfigure-remove
   namespace: demo
 spec:
   type: Reconfigure
@@ -518,7 +551,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `mdops-reconfigure-remove` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `pxops-reconfigure-remove` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.configuration.removeCustomConfig` is a bool field that should be `true` when you want to remove existing custom configuration.
 
@@ -526,7 +559,7 @@ Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure/cluster/examples/reconfigure-remove.yaml
-perconaxtradbopsrequest.ops.kubedb.com/mdops-reconfigure-remove created
+perconaxtradbopsrequest.ops.kubedb.com/pxops-reconfigure-remove created
 ```
 
 #### Verify the new configuration is working
@@ -538,23 +571,30 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 ```bash
 $ kubectl get perconaxtradbopsrequest --all-namespaces
 NAMESPACE   NAME                       TYPE          STATUS       AGE
-demo        mdops-reconfigure-remove   Reconfigure   Successful   2m1s
+demo        pxops-reconfigure-remove   Reconfigure   Successful   2m1s
 ```
 
 Now let's connect to a perconaxtradb instance and run a perconaxtradb internal command to check the new configuration we have provided.
 
 ```bash
 $ kubectl exec -it -n demo sample-pxc-0 -- bash
-root@sample-pxc-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
-Your PerconaXtraDB connection id is 23
-Server version: 10.6.4-PerconaXtraDB-1:10.6.4+maria~focal perconaxtradb.org binary distribution
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 3699
+Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
-Copyright (c) 2000, 2018, Oracle, PerconaXtraDB Corporation Ab and others.
+Copyright (c) 2009-2021 Percona LLC and/or its affiliates
+Copyright (c) 2000, 2021, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-# value of `max_conncetions` is default
+# value of `max_connections` is default
 PerconaXtraDB [(none)]> show variables like 'max_connections';
 +-----------------+-------+
 | Variable_name   | Value |
@@ -593,6 +633,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete perconaxtradb -n demo sample-pxc
-$ kubectl delete perconaxtradbopsrequest -n demo mdops-reconfigure-config mdops-reconfigure-apply-config mdops-reconfigure-remove
+$ kubectl delete perconaxtradbopsrequest -n demo pxops-reconfigure-config pxops-reconfigure-apply-config pxops-reconfigure-remove
 $ kubectl delete ns demo
 ```
