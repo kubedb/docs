@@ -39,6 +39,17 @@ aliases:
 | Using Custom Docker Image                                                                                                                                                                                                                                                       |   &#10003;    |   &#10003;    |
 | Initialization From Script                                                                                                                                                                                                                                                      |   &#10007;    |   &#10007;    |
 
+## Lifecycle of Elasticsearch Object
+
+<!---
+ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
+--->
+<p align="center">
+  <img alt="lifecycle"  src="/docs/guides/elasticsearch/quickstart/overview/images/Lifecycle-of-an-Elasticsearch-CRD-complete.png">
+</p>
+
+
+
 ## Available Elasticsearch Versions
 
 
@@ -49,6 +60,7 @@ aliases:
 
 | Version | ElasticSearch | Dashboard(Kibana) |
 |:-------:|:-------------:|:-----------------:|
+|  8.5.x  |   &#10003;    |     &#10003;      |
 |  8.2.x  |   &#10003;    |     &#10003;      |
 | 7.17.x  |   &#10003;    |     &#10003;      |
 | 7.16.x  |   &#10003;    |     &#10003;      |
