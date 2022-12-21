@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
-  name: md-cluster-tls
+  name: sample-pxc
   namespace: demo
 spec:
   version: "8.0.26"
@@ -19,7 +19,7 @@ spec:
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
-      name: md-issuer
+      name: px-issuer
     certificates:
     - alias: server
       subject:

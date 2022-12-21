@@ -2,7 +2,7 @@
 title: PerconaXtraDB Storage Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: mguides-perconaxtradb-autoscaling-storage-overview
+    identifier: guides-perconaxtradb-autoscaling-storage-overview
     name: Overview
     parent: guides-perconaxtradb-autoscaling-storage
     weight: 10
@@ -30,7 +30,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `PerconaXtraDB` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Storage Autoscaling process of PerconaXtraDB" src="/docs/guides/perconaxtradb/autoscaler/storage/overview/images/mdas-storage.jpeg">
+  <img alt="Storage Autoscaling process of PerconaXtraDB" src="/docs/guides/perconaxtradb/autoscaler/storage/overview/images/pxas-storage.jpeg">
 <figcaption align="center">Fig: Storage Autoscaling process of PerconaXtraDB</figcaption>
 </figure>
 
@@ -54,4 +54,4 @@ The Auto Scaling process consists of the following steps:
 9. `KubeDB` Enterprise operator watches the `PerconaXtraDBOpsRequest` CRO.
 10. Then the `KubeDB` Enterprise operator will expand the storage of the database component as specified on the `PerconaXtraDBOpsRequest` CRO.
 
-In the next docs, we are going to show a step by step guide on Autoscaling storage of various PerconaXtraDB database components using `PerconaXtraDBAutoscaler` CRD.
+In the next docs, we are going to show a step-by-step guide on Autoscaling storage of various PerconaXtraDB database components using `PerconaXtraDBAutoscaler` CRD.

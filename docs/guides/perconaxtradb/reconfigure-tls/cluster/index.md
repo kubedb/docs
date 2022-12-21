@@ -74,7 +74,7 @@ Now, wait until `sample-pxc` has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo
 NAME             VERSION   STATUS   AGE
-sample-pxc   8.0.26    Ready    9m17s
+sample-pxc       8.0.26    Ready    9m17s
 ```
 
 ```bash
@@ -132,31 +132,31 @@ writing new private key to './ca.key'
 - create a secret using the certificate files we have just generated,
 
 ```bash
-kubectl create secret tls md-ca \
+kubectl create secret tls px-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/md-ca created
+secret/px-ca created
 ```
 
-Now, we are going to create an `Issuer` using the `md-ca` secret that hols the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
+Now, we are going to create an `Issuer` using the `px-ca` secret that hols the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
 
 ```yaml
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: md-issuer
+  name: px-issuer
   namespace: demo
 spec:
   ca:
-    secretName: md-ca
+    secretName: px-ca
 ```
 
 Let’s create the `Issuer` cr we have shown above,
 
 ```bash
 kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}//docs/guides/perconaxtradb/reconfigure-tls/cluster/examples/issuer.yaml
-issuer.cert-manager.io/md-issuer created
+issuer.cert-manager.io/px-issuer created
 ```
 
 ### Create PerconaXtraDBOpsRequest
@@ -167,7 +167,7 @@ In order to add TLS to the database, we have to create a `PerconaXtraDBOpsReques
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-add-tls
+  name: pxops-add-tls
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -178,7 +178,7 @@ spec:
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
-      name: md-issuer
+      name: px-issuer
     certificates:
     - alias: server
       subject:
@@ -201,8 +201,8 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure-tls/cluster/examples/mdops-add-tls.yaml
-perconaxtradbopsrequest.ops.kubedb.com/mdops-add-tls created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure-tls/cluster/examples/pxops-add-tls.yaml
+perconaxtradbopsrequest.ops.kubedb.com/pxops-add-tls created
 ```
 
 #### Verify TLS Enabled Successfully
@@ -212,7 +212,7 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 ```bash
 $ kubectl get perconaxtradbopsrequest --all-namespaces
 NAMESPACE   NAME            TYPE             STATUS       AGE
-demo        mdops-add-tls   ReconfigureTLS   Successful   6m6s
+demo        pxops-add-tls   ReconfigureTLS   Successful   6m6s
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded.
@@ -291,7 +291,7 @@ Now we are going to increase it using a PerconaXtraDBOpsRequest. Below is the ya
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-rotate-tls
+  name: pxops-rotate-tls
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -310,8 +310,8 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure-tls/cluster/examples/mdops-rotate-tls.yaml
-perconaxtradbopsrequest.ops.kubedb.com/mdops-rotate-tls created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure-tls/cluster/examples/pxops-rotate-tls.yaml
+perconaxtradbopsrequest.ops.kubedb.com/pxops-rotate-tls created
 ```
 
 #### Verify Certificate Rotated Successfully
@@ -321,7 +321,7 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 ```bash
 $ kubectl get perconaxtradbopsrequest --all-namespaces
 NAMESPACE   NAME               TYPE             STATUS       AGE
-demo        mdops-rotate-tls   ReconfigureTLS   Successful    3m
+demo        pxops-rotate-tls   ReconfigureTLS   Successful    3m
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, let's check the expiration date of the certificate.
@@ -379,7 +379,7 @@ Spec:
   Issuer Ref:
     Group:      cert-manager.io
     Kind:       Issuer
-    Name:       md-issuer
+    Name:       px-issuer
   Secret Name:  sample-pxc-server-cert
   Subject:
     Organizations:
@@ -423,7 +423,7 @@ Below is the YAML of the `PerconaXtraDBOpsRequest` CRO that we are going to crea
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-update-tls
+  name: pxops-update-tls
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -450,8 +450,8 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure-tls/cluster/examples/mdops-update-tls.yaml
-perconaxtradbopsrequest.ops.kubedb.com/mdops-update-tls created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure-tls/cluster/examples/pxops-update-tls.yaml
+perconaxtradbopsrequest.ops.kubedb.com/pxops-update-tls created
 ```
 
 #### Verify certificate is updated successfully
@@ -462,7 +462,7 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 $ kubectl get perconaxtradbopsrequest -n demo
 Every 2.0s: kubectl get perconaxtradbopsrequest -n demo
 NAME                  TYPE             STATUS        AGE
-mdops-update-tls   ReconfigureTLS     Successful      7m
+pxops-update-tls   ReconfigureTLS     Successful      7m
 
 ```
 
@@ -493,7 +493,7 @@ Below is the YAML of the `PerconaXtraDBOpsRequest` CRO that we are going to crea
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-remove-tls
+  name: pxops-remove-tls
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -512,8 +512,8 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure-tls/cluster/examples/mdops-remove-tls.yaml
-perconaxtradbopsrequest.ops.kubedb.com/mdops-remove-tls created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/reconfigure-tls/cluster/examples/pxops-remove-tls.yaml
+perconaxtradbopsrequest.ops.kubedb.com/pxops-remove-tls created
 ```
 
 #### Verify TLS Removed Successfully
@@ -523,7 +523,7 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 ```bash
 $ kubectl get perconaxtradbopsrequest --all-namespaces
 NAMESPACE   NAME               TYPE             STATUS       AGE
-demo        mdops-remove-tls   ReconfigureTLS   Successful   6m27s
+demo        pxops-remove-tls   ReconfigureTLS   Successful   6m27s
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. If we describe the `PerconaXtraDBOpsRequest` we will get an overview of the steps that were followed.

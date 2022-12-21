@@ -1,7 +1,7 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-remove-tls
+  name: pxops-remove-tls
   namespace: demo
 spec:
   type: ReconfigureTLS

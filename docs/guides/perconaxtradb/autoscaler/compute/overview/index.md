@@ -30,7 +30,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `PerconaXtraDB` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Auto Scaling process of PerconaXtraDB" src="/docs/guides/perconaxtradb/autoscaler/compute/overview/images/mdas-compute.png">
+  <img alt="Auto Scaling process of PerconaXtraDB" src="/docs/guides/perconaxtradb/autoscaler/compute/overview/images/pxas-compute.png">
 <figcaption align="center">Fig: Auto Scaling process of PerconaXtraDB</figcaption>
 </figure>
 

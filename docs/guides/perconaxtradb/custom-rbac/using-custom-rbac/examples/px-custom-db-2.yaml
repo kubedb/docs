@@ -1,11 +1,14 @@
 apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
-  name: builtin-prom-md
+  name: another-perconaxtradb
   namespace: demo
 spec:
   version: "8.0.26"
-  terminationPolicy: WipeOut
+  storageType: Durable
+  podTemplate:
+    spec:
+      serviceAccountName: px-custom-serviceaccount
   storage:
     storageClassName: "standard"
     accessModes:
@@ -13,5 +16,4 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  monitor:
-    agent: prometheus.io/builtin
+  terminationPolicy: WipeOut

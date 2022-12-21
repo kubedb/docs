@@ -1,7 +1,7 @@
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: PerconaXtraDBAutoscaler
 metadata:
-  name: md-as-st
+  name: px-as-st
   namespace: demo
 spec:
   databaseRef:

@@ -1,14 +1,14 @@
 apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
-  name: another-perconaxtradb
+  name: sample-pxc
   namespace: demo
 spec:
   version: "8.0.26"
   storageType: Durable
   podTemplate:
     spec:
-      serviceAccountName: md-custom-serviceaccount
+      serviceAccountName: px-custom-serviceaccount
   storage:
     storageClassName: "standard"
     accessModes:

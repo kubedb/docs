@@ -1,7 +1,7 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-update-tls
+  name: pxops-update-tls
   namespace: demo
 spec:
   type: ReconfigureTLS

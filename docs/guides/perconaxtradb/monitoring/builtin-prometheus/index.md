@@ -46,7 +46,7 @@ At first, let's deploy an PerconaXtraDB database with monitoring enabled. Below 
 apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
-  name: builtin-prom-md
+  name: builtin-prom-px
   namespace: demo
 spec:
   version: "8.0.26"
@@ -69,35 +69,35 @@ Here,
 Let's create the PerconaXtraDB crd we have shown above.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/monitoring/builtin-prometheus/examples/builtin-prom-md.yaml
-perconaxtradb.kubedb.com/builtin-prom-md created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/monitoring/builtin-prometheus/examples/builtin-prom-px.yaml
+perconaxtradb.kubedb.com/builtin-prom-px created
 ```
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get perconaxtradb -n demo builtin-prom-md
+$ kubectl get perconaxtradb -n demo builtin-prom-px
 NAME              VERSION   STATUS   AGE
-builtin-prom-md   8.0.26    Ready    76s
+builtin-prom-px   8.0.26    Ready    76s
 ```
 
 KubeDB will create a separate stats service with name `{PerconaXtraDB crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-md"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-px"
 NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-builtin-prom-md         ClusterIP   10.106.32.194   <none>        3306/TCP    2m3s
-builtin-prom-md-pods    ClusterIP   None            <none>        3306/TCP    2m3s
-builtin-prom-md-stats   ClusterIP   10.109.106.92   <none>        56790/TCP   2m2s
+builtin-prom-px         ClusterIP   10.106.32.194   <none>        3306/TCP    2m3s
+builtin-prom-px-pods    ClusterIP   None            <none>        3306/TCP    2m3s
+builtin-prom-px-stats   ClusterIP   10.109.106.92   <none>        56790/TCP   2m2s
 ```
 
-Here, `builtin-prom-md-stats ` service has been created for monitoring purpose. Let's describe the service.
+Here, `builtin-prom-px-stats ` service has been created for monitoring purpose. Let's describe the service.
 
 ```bash
-$ kubectl describe svc -n demo builtin-prom-md-stats
-Name:              builtin-prom-md-stats
+$ kubectl describe svc -n demo builtin-prom-px-stats
+Name:              builtin-prom-px-stats
 Namespace:         demo
-Labels:            app.kubernetes.io/instance=builtin-prom-md
+Labels:            app.kubernetes.io/instance=builtin-prom-px
                    app.kubernetes.io/managed-by=kubedb.com
                    app.kubernetes.io/name=perconaxtradbs.kubedb.com
                    kubedb.com/role=stats
@@ -105,7 +105,7 @@ Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
                    prometheus.io/path: /metrics
                    prometheus.io/port: 56790
                    prometheus.io/scrape: true
-Selector:          app.kubernetes.io/instance=builtin-prom-md,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=perconaxtradbs.kubedb.com
+Selector:          app.kubernetes.io/instance=builtin-prom-px,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=perconaxtradbs.kubedb.com
 Type:              ClusterIP
 IP:                10.109.106.92
 Port:              metrics  56790/TCP
@@ -325,13 +325,13 @@ Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see the endpoint of `builtin-prom-md-stats` service as one of the targets.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see the endpoint of `builtin-prom-px-stats` service as one of the targets.
 
 <p align="center">
   <img alt="Prometheus Target" height="100%" src="/docs/guides/perconaxtradb/monitoring/builtin-prometheus/images/built-prom.png" style="padding:10px">
 </p>
 
-Check the labels marked with red rectangle. These labels confirm that the metrics are coming from `PerconaXtraDB` database `builtin-prom-md` through stats service `builtin-prom-md-stats`.
+Check the labels marked with red rectangle. These labels confirm that the metrics are coming from `PerconaXtraDB` database `builtin-prom-px` through stats service `builtin-prom-px-stats`.
 
 Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.
 
@@ -340,7 +340,7 @@ Now, you can view the collected metrics and create a graph from homepage of this
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
 ```bash
-kubectl delete perconaxtradb -n demo builtin-prom-md
+kubectl delete perconaxtradb -n demo builtin-prom-px
 
 kubectl delete -n monitoring deployment.apps/prometheus
 

@@ -108,7 +108,7 @@ At first, let's deploy an PerconaXtraDB database with monitoring enabled. Below 
 apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
-  name: coreos-prom-md
+  name: coreos-prom-px
   namespace: demo
 spec:
   version: "8.0.26"
@@ -140,42 +140,42 @@ Here,
 Let's create the PerconaXtraDB object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/monitoring/prometheus-operator/examples/prom-operator-md.yaml
-perconaxtradb.kubedb.com/coreos-prom-md created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/monitoring/prometheus-operator/examples/prom-operator-px.yaml
+perconaxtradb.kubedb.com/coreos-prom-px created
 ```
 
 Now, wait for the database to go into `Ready` state.
 
 ```bash
-$ kubectl get perconaxtradb -n demo coreos-prom-md
+$ kubectl get perconaxtradb -n demo coreos-prom-px
 NAME             VERSION   STATUS   AGE
-coreos-prom-md   8.0.26    Ready    59s
+coreos-prom-px   8.0.26    Ready    59s
 ```
 
 KubeDB will create a separate stats service with name `{PerconaXtraDB crd name}-stats` for monitoring purpose.
 
 ```bash
-$ $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-md"
+$ $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-px"
 NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-coreos-prom-md         ClusterIP   10.99.96.226    <none>        3306/TCP    107s
-coreos-prom-md-pods    ClusterIP   None            <none>        3306/TCP    107s
-coreos-prom-md-stats   ClusterIP   10.101.190.67   <none>        56790/TCP   107s
+coreos-prom-px         ClusterIP   10.99.96.226    <none>        3306/TCP    107s
+coreos-prom-px-pods    ClusterIP   None            <none>        3306/TCP    107s
+coreos-prom-px-stats   ClusterIP   10.101.190.67   <none>        56790/TCP   107s
 ```
 
-Here, `coreos-prom-md-stats` service has been created for monitoring purpose.
+Here, `coreos-prom-px-stats` service has been created for monitoring purpose.
 
 Let's describe this stats service.
 
-```yaml
-$ kubectl describe svc -n demo coreos-prom-md-stats
-Name:              coreos-prom-md-stats
+```bash
+$ kubectl describe svc -n demo coreos-prom-px-stats
+Name:              coreos-prom-px-stats
 Namespace:         demo
-Labels:            app.kubernetes.io/instance=coreos-prom-md
+Labels:            app.kubernetes.io/instance=coreos-prom-px
                    app.kubernetes.io/managed-by=kubedb.com
                    app.kubernetes.io/name=perconaxtradbs.kubedb.com
                    kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          app.kubernetes.io/instance=coreos-prom-md,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=perconaxtradbs.kubedb.com
+Selector:          app.kubernetes.io/instance=coreos-prom-px,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=perconaxtradbs.kubedb.com
 Type:              ClusterIP
 IP:                10.101.190.67
 Port:              metrics  56790/TCP
@@ -187,18 +187,18 @@ Events:            <none>
 
 Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these information to target its endpoints.
 
-KubeDB will also create a `ServiceMonitor` crd in `demo` namespace that select the endpoints of `coreos-prom-md-stats` service. Verify that the `ServiceMonitor` crd has been created.
+KubeDB will also create a `ServiceMonitor` crd in `demo` namespace that select the endpoints of `coreos-prom-px-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
 $ kubectl get servicemonitor -n demo
 NAME                   AGE
-coreos-prom-md-stats   4m8s
+coreos-prom-px-stats   4m8s
 ```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of PerconaXtraDB crd.
 
-```yaml
-$ kubectl get servicemonitor -n demo coreos-prom-md-stats -o yaml
+```bash
+$ kubectl get servicemonitor -n demo coreos-prom-px-stats -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -206,51 +206,23 @@ metadata:
   generation: 1
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: coreos-prom-md
+    app.kubernetes.io/instance: coreos-prom-px
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: perconaxtradbs.kubedb.com
     k8s-app: prometheus
   managedFields:
-  - apiVersion: monitoring.coreos.com/v1
-    fieldsType: FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:labels:
-          .: {}
-          f:app.kubernetes.io/component: {}
-          f:app.kubernetes.io/instance: {}
-          f:app.kubernetes.io/managed-by: {}
-          f:app.kubernetes.io/name: {}
-          f:k8s-app: {}
-        f:ownerReferences: {}
-      f:spec:
-        .: {}
-        f:endpoints: {}
-        f:namespaceSelector:
-          .: {}
-          f:matchNames: {}
-        f:selector:
-          .: {}
-          f:matchLabels:
-            .: {}
-            f:app.kubernetes.io/instance: {}
-            f:app.kubernetes.io/managed-by: {}
-            f:app.kubernetes.io/name: {}
-            f:kubedb.com/role: {}
-    manager: perconaxtradb-operator
-    operation: Update
-    time: "2021-03-19T10:09:03Z"
-  name: coreos-prom-md-stats
+    ...
+  name: coreos-prom-px-stats
   namespace: demo
   ownerReferences:
   - apiVersion: v1
     blockOwnerDeletion: true
     controller: true
     kind: Service
-    name: coreos-prom-md-stats
+    name: coreos-prom-px-stats
     uid: 08260a99-0984-4d90-bf68-34080ad0ee5b
   resourceVersion: "241637"
-  selfLink: /apis/monitoring.coreos.com/v1/namespaces/demo/servicemonitors/coreos-prom-md-stats
+  selfLink: /apis/monitoring.coreos.com/v1/namespaces/demo/servicemonitors/coreos-prom-px-stats
   uid: 4f022d98-d2d8-490f-9548-f6367d03ae1f
 spec:
   endpoints:
@@ -265,7 +237,7 @@ spec:
     - demo
   selector:
     matchLabels:
-      app.kubernetes.io/instance: coreos-prom-md
+      app.kubernetes.io/instance: coreos-prom-px
       app.kubernetes.io/managed-by: kubedb.com
       app.kubernetes.io/name: perconaxtradbs.kubedb.com
       kubedb.com/role: stats
@@ -273,7 +245,7 @@ spec:
 
 Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in PerconaXtraDB crd.
 
-Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `coreos-prom-md-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
+Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `coreos-prom-px-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
 
 ## Verify Monitoring Metrics
 
@@ -283,6 +255,8 @@ At first, let's find out the respective Prometheus pod for `prometheus` Promethe
 $ kubectl get pod -n default -l=app=prometheus
 NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          16m
+prometheus-prometheus-1   3/3     Running   1          16m
+prometheus-prometheus-2   3/3     Running   1          16m
 ```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
@@ -295,7 +269,7 @@ Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `coreos-prom-md-stats` service as one of the targets.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `coreos-prom-px-stats` service as one of the targets.
 
 <p align="center">
   <img alt="Prometheus Target" src="/docs/guides/perconaxtradb/monitoring/prometheus-operator/images/prom-end.png" style="padding:10px">
@@ -309,7 +283,7 @@ To cleanup the Kubernetes resources created by this tutorial, run following comm
 
 ```bash
 # cleanup database
-kubectl delete perconaxtradb -n demo coreos-prom-md
+kubectl delete perconaxtradb -n demo coreos-prom-px
 
 # cleanup Prometheus resources
 kubectl delete -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/operator/artifacts/prometheus.yaml

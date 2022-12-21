@@ -1,7 +1,7 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
-  name: mdops-add-tls
+  name: pxops-add-tls
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -12,7 +12,7 @@ spec:
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
-      name: md-issuer
+      name: px-issuer
     certificates:
     - alias: server
       subject:

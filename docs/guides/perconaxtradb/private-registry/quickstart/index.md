@@ -24,19 +24,19 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - You will also need a docker private [registry](https://docs.docker.com/registry/) or [private repository](https://docs.docker.com/docker-hub/repos/#private-repositories).  In this tutorial we will use private repository of [docker hub](https://hub.docker.com/).
 
-- You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/u/kubedb) into your private registry. For mysql, push `DB_IMAGE`, `EXPORTER_IMAGE`, `INITCONTAINER_IMAGE` of following PerconaXtraDBVersions, where `deprecated` is not true, to your private registry.
+- You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/u/kubedb) into your private registry. For perconaxtradb, push `DB_IMAGE`, `EXPORTER_IMAGE`, `INITCONTAINER_IMAGE` of following PerconaXtraDBVersions, where `deprecated` is not true, to your private registry.
 
 ```bash
 $ kubectl get perconaxtradbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
-NAME      VERSION   DB_IMAGE                 EXPORTER_IMAGE                   INITCONTAINER_IMAGE   DEPRECATED
-10.4.17   10.4.17   kubedb/perconaxtradb:10.4.17   kubedb/mysqld-exporter:v0.11.0   kubedb/busybox        <none>
-8.0.26    8.0.26    kubedb/perconaxtradb:8.0.26    kubedb/mysqld-exporter:v0.11.0   kubedb/busybox        <none>
+NAME     VERSION   DB_IMAGE                                EXPORTER_IMAGE                 INITCONTAINER_IMAGE                DEPRECATED
+8.0.26   8.0.26    percona/percona-xtradb-cluster:8.0.26   prom/mysqld-exporter:v0.13.0   kubedb/percona-xtradb-init:0.2.0   <none>
+8.0.28   8.0.28    percona/percona-xtradb-cluster:8.0.28   prom/mysqld-exporter:v0.13.0   kubedb/percona-xtradb-init:0.2.0   <none>
 ```
 
 Docker hub repositories:
 
 - [kubedb/operator](https://hub.docker.com/r/kubedb/operator)
-- [kubedb/perconaxtradb](https://hub.docker.com/r/kubedb/perconaxtradb)
+- [kubedb/perconaxtradb](https://hub.docker.com/r/percona/percona-xtradb-cluster)
 - [kubedb/mysqld-exporter](https://hub.docker.com/r/kubedb/mysqld-exporter)
 
 - Update KubeDB catalog for private Docker registry. Ex:
@@ -54,7 +54,7 @@ Docker hub repositories:
     initContainer:
       image: PRIVATE_REGISTRY/busybox
     podSecurityPolicies:
-      databasePolicyName: maria-db
+      databasePolicyName: perconaxtra-db
     version: 8.0.26
   ```
 
@@ -72,12 +72,12 @@ ImagePullSecrets is a type of a Kubernete Secret whose sole purpose is to pull p
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret docker-registry -n demo myregistrykey \
+$ kubectl create secret docker-registry -n demo pxregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-secret/myregistrykey created
+secret/pxregistrykey created
 ```
 
 If you wish to follow other ways to pull private images see [official docs](https://kubernetes.io/docs/concepts/containers/images/) of Kubernetes.
@@ -90,14 +90,14 @@ When installing KubeDB operator, set the flags `--docker-registry` and `--image-
 
 ## Deploy PerconaXtraDB database from Private Registry
 
-While deploying `PerconaXtraDB` from private repository, you have to add `myregistrykey` secret in `PerconaXtraDB` `spec.imagePullSecrets`.
+While deploying `PerconaXtraDB` from private repository, you have to add `pxregistrykey` secret in `PerconaXtraDB` `spec.imagePullSecrets`.
 Below is the PerconaXtraDB CRD object we will create.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
-  name: md-pvt-reg
+  name: px-pvt-reg
   namespace: demo
 spec:
   version: "8.0.26"
@@ -111,7 +111,7 @@ spec:
   podTemplate:
     spec:
       imagePullSecrets:
-      - name: myregistrykey
+      - name: pxregistrykey
   terminationPolicy: WipeOut
 ```
 
@@ -119,7 +119,7 @@ Now run the command to deploy this `PerconaXtraDB` object:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/private-registry/quickstart/examples/demo.yaml
-perconaxtradb.kubedb.com/md-pvt-reg created
+perconaxtradb.kubedb.com/px-pvt-reg created
 ```
 
 To check if the images pulled successfully from the repository, see if the `PerconaXtraDB` is in running state:
@@ -127,7 +127,7 @@ To check if the images pulled successfully from the repository, see if the `Perc
 ```bash
 $ kubectl get pods -n demo
 NAME              READY     STATUS    RESTARTS   AGE
-md-pvt-reg-0   1/1       Running   0          56s
+px-pvt-reg-0   1/1       Running   0          56s
 ```
 
 ## Cleaning up
@@ -135,8 +135,8 @@ md-pvt-reg-0   1/1       Running   0          56s
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo md-pvt-reg
-perconaxtradb.kubedb.com "md-pvt-reg" deleted
+$ kubectl delete perconaxtradb -n demo px-pvt-reg
+perconaxtradb.kubedb.com "px-pvt-reg" deleted
 $ kubectl delete ns demo
 namespace "demo" deleted
 ```

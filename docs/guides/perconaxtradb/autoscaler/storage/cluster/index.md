@@ -96,7 +96,7 @@ Now, wait until `sample-pxc` has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo
 NAME             VERSION   STATUS   AGE
-sample-pxc   8.0.26    Ready    3m46s
+sample-pxc      8.0.26    Ready    3m46s
 ```
 
 Let's check volume size from statefulset, and from the persistent volume,
@@ -128,7 +128,7 @@ In order to set up vertical autoscaling for this replicaset database, we have to
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: PerconaXtraDBAutoscaler
 metadata:
-  name: md-as-st
+  name: px-as-st
   namespace: demo
 spec:
   databaseRef:
@@ -152,8 +152,8 @@ Here,
 Let's create the `PerconaXtraDBAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/autoscaler/storage/cluster/examples/mdas-storage.yaml
-perconaxtradbautoscaler.autoscaling.kubedb.com/md-as-st created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/autoscaler/storage/cluster/examples/pxas-storage.yaml
+perconaxtradbautoscaler.autoscaling.kubedb.com/px-as-st created
 ```
 
 #### Storage Autoscaling is set up successfully
@@ -163,10 +163,10 @@ Let's check that the `perconaxtradbautoscaler` resource is created successfully,
 ```bash
 $ kubectl get perconaxtradbautoscaler -n demo
 NAME           AGE
-md-as-st   33s
+px-as-st   33s
 
-$ kubectl describe perconaxtradbautoscaler md-as-st -n demo
-Name:         md-as-st
+$ kubectl describe perconaxtradbautoscaler px-as-st -n demo
+Name:         px-as-st
 Namespace:    demo
 Labels:       <none>
 Annotations:  API Version:  autoscaling.kubedb.com/v1alpha1
@@ -249,7 +249,7 @@ Metadata:
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  PerconaXtraDBAutoscaler
-    Name:                  md-as-st
+    Name:                  px-as-st
     UID:                   4f45a3b3-fc72-4d04-b52c-a770944311f6
   Resource Version:        25557
   UID:                     90763a49-a03f-407c-a233-fb20c4ab57d7
@@ -315,6 +315,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete perconaxtradb -n demo sample-pxc
-kubectl delete perconaxtradbautoscaler -n demo md-as-st
+kubectl delete perconaxtradbautoscaler -n demo px-as-st
 kubectl delete ns demo
 ```

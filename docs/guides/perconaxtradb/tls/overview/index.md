@@ -43,7 +43,7 @@ When, `requireSSL` is set, the users must specify the `tls.issuerRef` field. `Ku
 The following figure shows how `KubeDB` enterprise is used to configure TLS/SSL in PerconaXtraDB. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Stash Backup Flow" src="/docs/guides/perconaxtradb/tls/overview/images/md-tls-ssl.png">
+  <img alt="Stash Backup Flow" src="/docs/guides/perconaxtradb/tls/overview/images/px-tls-ssl.png">
 <figcaption align="center">Fig: Deploy PerconaXtraDB with TLS/SSL</figcaption>
 </figure>
 

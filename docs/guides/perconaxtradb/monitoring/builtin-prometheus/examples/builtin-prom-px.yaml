@@ -1,10 +1,11 @@
 apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
-  name: sample-pxc
+  name: builtin-prom-px
   namespace: demo
 spec:
   version: "8.0.26"
+  terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
     accessModes:
@@ -12,8 +13,5 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  init:
-    script:
-      configMap:
-        name: md-init-script
-  terminationPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/builtin

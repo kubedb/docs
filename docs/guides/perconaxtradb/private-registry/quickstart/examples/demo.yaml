@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
-  name: md-pvt-reg
+  name: px-pvt-reg
   namespace: demo
 spec:
   version: "8.0.26"
@@ -15,5 +15,5 @@ spec:
   podTemplate:
     spec:
       imagePullSecrets:
-      - name: myregistrykey
+      - name: pxregistrykey
   terminationPolicy: WipeOut

@@ -46,32 +46,32 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 At first, let's create a `Service Acoount` in `demo` namespace.
 
 ```bash
-$ kubectl create serviceaccount -n demo md-custom-serviceaccount
-serviceaccount/md-custom-serviceaccount created
+$ kubectl create serviceaccount -n demo px-custom-serviceaccount
+serviceaccount/px-custom-serviceaccount created
 ```
 
 It should create a service account.
 
-```yaml
-$ kubectl get serviceaccount -n demo md-custom-serviceaccount -o yaml
+```bash
+$ kubectl get serviceaccount -n demo px-custom-serviceaccount -o yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   creationTimestamp: "2021-03-18T04:38:59Z"
-  name: md-custom-serviceaccount
+  name: px-custom-serviceaccount
   namespace: demo
   resourceVersion: "84669"
-  selfLink: /api/v1/namespaces/demo/serviceaccounts/md-custom-serviceaccount
+  selfLink: /api/v1/namespaces/demo/serviceaccounts/px-custom-serviceaccount
   uid: 788bd6c6-3eae-4797-b6ca-5722ef64c9dc
 secrets:
-- name: md-custom-serviceaccount-token-jnhvd
+- name: px-custom-serviceaccount-token-jnhvd
 ```
 
 Now, we need to create a role that has necessary access permissions for the PerconaXtraDB instance named `sample-pxc`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/custom-rbac/using-custom-rbac/examples/md-custom-role.yaml
-role.rbac.authorization.k8s.io/md-custom-role created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/custom-rbac/using-custom-rbac/examples/px-custom-role.yaml
+role.rbac.authorization.k8s.io/px-custom-role created
 ```
 
 Below is the YAML for the Role we just created.
@@ -80,13 +80,13 @@ Below is the YAML for the Role we just created.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: md-custom-role
+  name: px-custom-role
   namespace: demo
 rules:
 - apiGroups:
   - policy
   resourceNames:
-  - maria-db
+  - perconaxtra-db
   resources:
   - podsecuritypolicies
   verbs:
@@ -98,11 +98,11 @@ This permission is required for PerconaXtraDB pods running on PSP enabled cluste
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
 ```bash
-$ kubectl create rolebinding md-custom-rolebinding --role=md-custom-role --serviceaccount=demo:md-custom-serviceaccount --namespace=demo
-rolebinding.rbac.authorization.k8s.io/md-custom-rolebinding created
+$ kubectl create rolebinding px-custom-rolebinding --role=px-custom-role --serviceaccount=demo:px-custom-serviceaccount --namespace=demo
+rolebinding.rbac.authorization.k8s.io/px-custom-rolebinding created
 ```
 
-It should bind `md-custom-role` and `md-custom-serviceaccount` successfully.
+It should bind `px-custom-role` and `px-custom-serviceaccount` successfully.
 
 SO, All required resources for RBAC are created.
 
@@ -110,19 +110,19 @@ SO, All required resources for RBAC are created.
 $ kubectl get serviceaccount,role,rolebindings -n demo
 NAME                                      SECRETS   AGE
 serviceaccount/default                    1         38m
-serviceaccount/md-custom-serviceaccount   1         36m
+serviceaccount/px-custom-serviceaccount   1         36m
 
 NAME                                            CREATED AT
-role.rbac.authorization.k8s.io/md-custom-role   2021-03-18T05:13:27Z
+role.rbac.authorization.k8s.io/px-custom-role   2021-03-18T05:13:27Z
 
 NAME                                                          ROLE                  AGE
-rolebinding.rbac.authorization.k8s.io/md-custom-rolebinding   Role/md-custom-role   79s
+rolebinding.rbac.authorization.k8s.io/px-custom-rolebinding   Role/px-custom-role   79s
 ```
 
-Now, create a PerconaXtraDB crd specifying `spec.podTemplate.spec.serviceAccountName` field to `md-custom-serviceaccount`.
+Now, create a PerconaXtraDB crd specifying `spec.podTemplate.spec.serviceAccountName` field to `px-custom-serviceaccount`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/custom-rbac/using-custom-rbac/examples/md-custom-db.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/custom-rbac/using-custom-rbac/examples/px-custom-db.yaml
 perconaxtradb.kubedb.com/sample-pxc created
 ```
 
@@ -135,11 +135,12 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
+  replicas: 3
   version: "8.0.26"
   storageType: Durable
   podTemplate:
     spec:
-      serviceAccountName: md-custom-serviceaccount
+      serviceAccountName: px-custom-serviceaccount
   storage:
     storageClassName: "standard"
     accessModes:
@@ -155,36 +156,30 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, Stateful
 Check that the statefulset's pod is running
 
 ```bash
-$ kubectl get pod -n demo sample-pxc-0
-NAME            READY   STATUS    RESTARTS   AGE
-sample-pxc-0   1/1     Running   0          2m44s
+$ kubectl get pod -n demo
+NAME           READY   STATUS    RESTARTS   AGE
+sample-pxc-0   2/2     Running   0          84m
+sample-pxc-1   2/2     Running   0          84m
+sample-pxc-2   2/2     Running   0          84m
+
 ```
 
-Check the pod's log to see if the database is ready
+Check the PerconaXtraDB custom resource to see if the database cluster is ready:
 
 ```bash
-$ kubectl logs -f -n demo sample-pxc-0
-2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:8.0.26+maria~focal started.
-2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
-2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:8.0.26+maria~focal started.
-2021-03-18 05:35:14+00:00 [Note] [Entrypoint]: Initializing database files
-...
-2021-03-18  5:35:22 0 [Note] Reading of all Master_info entries succeeded
-2021-03-18  5:35:22 0 [Note] Added new Master_info '' to hash table
-2021-03-18  5:35:22 0 [Note] mysqld: ready for connections.
-Version: '8.0.26-PerconaXtraDB-1:8.0.26+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  perconaxtradb.org binary distribution
+~ $ kubectl get perconaxtradb --all-namespaces
+NAMESPACE   NAME         VERSION   STATUS   AGE
+demo        sample-pxc   8.0.26    Ready    83m
 ```
-
-Once we see `mysqld: ready for connections.` in the log, the database is ready.
 
 ## Reusing Service Account
 
 An existing service account can be reused in another PerconaXtraDB instance. No new access permission is required to run the new PerconaXtraDB instance.
 
-Now, create PerconaXtraDB crd `another-perconaxtradb` using the existing service account name `md-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
+Now, create PerconaXtraDB crd `another-perconaxtradb` using the existing service account name `px-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/custom-rbac/using-custom-rbac/examples/md-custom-db-2.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/custom-rbac/using-custom-rbac/examples/px-custom-db-2.yaml
 perconaxtradb.kubedb.com/another-perconaxtradb created
 ```
 
@@ -197,11 +192,12 @@ metadata:
   name: another-perconaxtradb
   namespace: demo
 spec:
+  replicas: 3
   version: "8.0.26"
   storageType: Durable
   podTemplate:
     spec:
-      serviceAccountName: md-custom-serviceaccount
+      serviceAccountName: px-custom-serviceaccount
   storage:
     storageClassName: "standard"
     accessModes:
@@ -219,24 +215,16 @@ Check that the statefulset's pod is running
 ```bash
 $ kubectl get pod -n demo another-perconaxtradb-0
 NAME                READY   STATUS    RESTARTS   AGE
-another-perconaxtradb-0   1/1     Running   0          37s
+another-perconaxtradb-0   2/2     Running   0          37s
 ```
 
-Check the pod's log to see if the database is ready
+Check the PerconaXtraDB custom resource to see if the database cluster is ready:
 
 ```bash
-...
-$ kubectl logs -f -n demo another-perconaxtradb-0
-2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:8.0.26+maria~focal started.
-2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
-2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:8.0.26+maria~focal started.
-2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Initializing database files
-...
-2021-03-18  5:39:59 0 [Note] mysqld: ready for connections.
-Version: '8.0.26-PerconaXtraDB-1:8.0.26+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  perconaxtradb.org binary distribution
+~ $ kubectl get perconaxtradb --all-namespaces
+NAMESPACE                NAME         VERSION   STATUS   AGE
+another-perconaxtradb    sample-pxc   8.0.26    Ready    83m
 ```
-
-`mysqld: ready for connections.` in the log signifies that the database is running successfully.
 
 ## Cleaning up
 
@@ -247,12 +235,12 @@ $ kubectl delete perconaxtradb -n demo sample-pxc
 perconaxtradb.kubedb.com "sample-pxc" deleted
 $ kubectl delete perconaxtradb -n demo another-perconaxtradb
 perconaxtradb.kubedb.com "another-perconaxtradb" deleted
-$ kubectl delete -n demo role md-custom-role
-role.rbac.authorization.k8s.io "md-custom-role" deleted
-$ kubectl delete -n demo rolebinding md-custom-rolebinding
-rolebinding.rbac.authorization.k8s.io "md-custom-rolebinding" deleted
-$ kubectl delete sa -n demo md-custom-serviceaccount
-serviceaccount "md-custom-serviceaccount" deleted
+$ kubectl delete -n demo role px-custom-role
+role.rbac.authorization.k8s.io "px-custom-role" deleted
+$ kubectl delete -n demo rolebinding px-custom-rolebinding
+rolebinding.rbac.authorization.k8s.io "px-custom-rolebinding" deleted
+$ kubectl delete sa -n demo px-custom-serviceaccount
+serviceaccount "px-custom-serviceaccount" deleted
 $ kubectl delete ns demo
 namespace "demo" deleted
 ```

@@ -44,7 +44,7 @@ Here, we are going to deploy a `PerconaXtraDB` Cluster using a supported version
 
 #### Deploy PerconaXtraDB Cluster
 
-In this section, we are going to deploy a PerconaXtraDB Cluster with version `10.6.4`. Then, in the next section we will set up autoscaling for this database using `PerconaXtraDBAutoscaler` CRD. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
+In this section, we are going to deploy a PerconaXtraDB Cluster with version `8.0.26`. Then, in the next section we will set up autoscaling for this database using `PerconaXtraDBAutoscaler` CRD. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
 > If you want to autoscale PerconaXtraDB `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
@@ -54,7 +54,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "10.6.4"
+  version: "8.0.26"
   replicas: 3
   storageType: Durable
   storage:
@@ -88,7 +88,7 @@ Now, wait until `sample-pxc` has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo
 NAME             VERSION   STATUS   AGE
-sample-pxc   8.0.26    Ready    14m
+sample-pxc       8.0.26    Ready    14m
 ```
 
 Let's check the Pod containers resources,
@@ -138,7 +138,7 @@ In order to set up compute resource autoscaling for this database cluster, we ha
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: PerconaXtraDBAutoscaler
 metadata:
-  name: md-as-compute
+  name: px-as-compute
   namespace: demo
 spec:
   databaseRef:
@@ -182,7 +182,7 @@ Let's create the `PerconaXtraDBAutoscaler` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/perconaxtradb/autoscaler/compute/cluster/examples/pxas-compute.yaml
-perconaxtradbautoscaler.autoscaling.kubedb.com/mdas-compute created
+perconaxtradbautoscaler.autoscaling.kubedb.com/pxas-compute created
 ```
 
 #### Verify Autoscaling is set up successfully
@@ -192,10 +192,10 @@ Let's check that the `perconaxtradbautoscaler` resource is created successfully,
 ```bash
 $ kubectl get perconaxtradbautoscaler -n demo
 NAME            AGE
-md-as-compute   5m56s
+px-as-compute   5m56s
 
-$ kubectl describe perconaxtradbautoscaler md-as-compute -n demo
-Name:         md-as-compute
+$ kubectl describe perconaxtradbautoscaler px-as-compute -n demo
+Name:         px-as-compute
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -205,54 +205,7 @@ Metadata:
   Creation Timestamp:  2022-09-16T11:26:58Z
   Generation:          1
   Managed Fields:
-    API Version:  autoscaling.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:compute:
-          .:
-          f:perconaxtradb:
-            .:
-            f:containerControlledValues:
-            f:controlledResources:
-            f:maxAllowed:
-              .:
-              f:cpu:
-              f:memory:
-            f:minAllowed:
-              .:
-              f:cpu:
-              f:memory:
-            f:podLifeTimeThreshold:
-            f:resourceDiffPercentage:
-            f:trigger:
-        f:databaseRef:
-          .:
-          f:name:
-        f:opsRequestOptions:
-          .:
-          f:apply:
-          f:timeout:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2022-09-16T11:26:58Z
-    API Version:  autoscaling.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:checkpoints:
-        f:conditions:
-        f:vpas:
-    Manager:         kubedb-autoscaler
-    Operation:       Update
-    Subresource:     status
-    Time:            2022-09-16T11:27:07Z
+  ...
   Resource Version:  846645
   UID:               44bd46c3-bbc5-4c4a-aff4-00c7f84c6f58
 Spec:
@@ -296,7 +249,7 @@ Status:
       Reference Timestamp:  2022-09-17T00:00:00Z
       Total Weight:         1.391848625060675
     Ref:
-      Container Name:     md-coordinator
+      Container Name:     px-coordinator
       Vpa Object Name:    sample-pxc
     Total Samples Count:  19
     Version:              v3
@@ -320,7 +273,7 @@ Status:
     Version:              v3
   Conditions:
     Last Transition Time:  2022-09-16T11:27:07Z
-    Message:               Successfully created mariaDBOpsRequest demo/mdops-sample-pxc-6xc1kc
+    Message:               Successfully created mariaDBOpsRequest demo/pxops-sample-pxc-6xc1kc
     Observed Generation:   1
     Reason:                CreateOpsRequest
     Status:                True
@@ -360,7 +313,7 @@ Let's watch the `perconaxtradbopsrequest` in the demo namespace to see if any `p
 ```bash
 $ kubectl get perconaxtradbopsrequest -n demo
 NAME                          TYPE              STATUS       AGE
-mdops-sample-pxc-6xc1kc   VerticalScaling   Progressing  7s
+pxops-sample-pxc-6xc1kc   VerticalScaling   Progressing  7s
 ```
 
 Let's wait for the ops request to become successful.
@@ -368,14 +321,14 @@ Let's wait for the ops request to become successful.
 ```bash
 $ kubectl get perconaxtradbopsrequest -n demo
 NAME                              TYPE              STATUS       AGE
-mdops-vpa-sample-pxc-z43wc8   VerticalScaling   Successful   3m32s
+pxops-vpa-sample-pxc-z43wc8   VerticalScaling   Successful   3m32s
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. If we describe the `PerconaXtraDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe perconaxtradbopsrequest -n demo mdops-vpa-sample-pxc-z43wc8
-Name:         mdops-sample-pxc-6xc1kc
+$ kubectl describe perconaxtradbopsrequest -n demo pxops-vpa-sample-pxc-z43wc8
+Name:         pxops-sample-pxc-6xc1kc
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -432,7 +385,7 @@ Metadata:
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  PerconaXtraDBAutoscaler
-    Name:                  md-as-compute
+    Name:                  px-as-compute
     UID:                   44bd46c3-bbc5-4c4a-aff4-00c7f84c6f58
   Resource Version:        846324
   UID:                     c2b30107-c6d3-44bb-adf3-135edc5d615b
@@ -453,25 +406,25 @@ Spec:
 Status:
   Conditions:
     Last Transition Time:  2022-09-16T11:27:07Z
-    Message:               Controller has started to Progress the PerconaXtraDBOpsRequest: demo/mdops-sample-pxc-6xc1kc
+    Message:               Controller has started to Progress the PerconaXtraDBOpsRequest: demo/pxops-sample-pxc-6xc1kc
     Observed Generation:   1
     Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
     Last Transition Time:  2022-09-16T11:30:42Z
-    Message:               Successfully restarted PerconaXtraDB pods for PerconaXtraDBOpsRequest: demo/mdops-sample-pxc-6xc1kc
+    Message:               Successfully restarted PerconaXtraDB pods for PerconaXtraDBOpsRequest: demo/pxops-sample-pxc-6xc1kc
     Observed Generation:   1
     Reason:                SuccessfullyRestatedStatefulSet
     Status:                True
     Type:                  RestartStatefulSet
     Last Transition Time:  2022-09-16T11:30:47Z
-    Message:               Vertical scale successful for PerconaXtraDBOpsRequest: demo/mdops-sample-pxc-6xc1kc
+    Message:               Vertical scale successful for PerconaXtraDBOpsRequest: demo/pxops-sample-pxc-6xc1kc
     Observed Generation:   1
     Reason:                SuccessfullyPerformedVerticalScaling
     Status:                True
     Type:                  VerticalScaling
     Last Transition Time:  2022-09-16T11:30:47Z
-    Message:               Controller has successfully scaled the PerconaXtraDB demo/mdops-sample-pxc-6xc1kc
+    Message:               Controller has successfully scaled the PerconaXtraDB demo/pxops-sample-pxc-6xc1kc
     Observed Generation:   1
     Reason:                OpsRequestProcessedSuccessfully
     Status:                True
@@ -481,14 +434,14 @@ Status:
 Events:
   Type    Reason      Age    From                        Message
   ----    ------      ----   ----                        -------
-  Normal  Starting    8m48s  KubeDB Enterprise Operator  Start processing for PerconaXtraDBOpsRequest: demo/mdops-sample-pxc-6xc1kc
+  Normal  Starting    8m48s  KubeDB Enterprise Operator  Start processing for PerconaXtraDBOpsRequest: demo/pxops-sample-pxc-6xc1kc
   Normal  Starting    8m48s  KubeDB Enterprise Operator  Pausing PerconaXtraDB databse: demo/sample-pxc
-  Normal  Successful  8m48s  KubeDB Enterprise Operator  Successfully paused PerconaXtraDB database: demo/sample-pxc for PerconaXtraDBOpsRequest: mdops-sample-pxc-6xc1kc
+  Normal  Successful  8m48s  KubeDB Enterprise Operator  Successfully paused PerconaXtraDB database: demo/sample-pxc for PerconaXtraDBOpsRequest: pxops-sample-pxc-6xc1kc
   Normal  Starting    8m43s  KubeDB Enterprise Operator  Restarting Pod: demo/sample-pxc-0
   Normal  Starting    7m33s  KubeDB Enterprise Operator  Restarting Pod: demo/sample-pxc-1
   Normal  Starting    6m23s  KubeDB Enterprise Operator  Restarting Pod: demo/sample-pxc-2
-  Normal  Successful  5m13s  KubeDB Enterprise Operator  Successfully restarted PerconaXtraDB pods for PerconaXtraDBOpsRequest: demo/mdops-sample-pxc-6xc1kc
-  Normal  Successful  5m8s   KubeDB Enterprise Operator  Vertical scale successful for PerconaXtraDBOpsRequest: demo/mdops-sample-pxc-6xc1kc
+  Normal  Successful  5m13s  KubeDB Enterprise Operator  Successfully restarted PerconaXtraDB pods for PerconaXtraDBOpsRequest: demo/pxops-sample-pxc-6xc1kc
+  Normal  Successful  5m8s   KubeDB Enterprise Operator  Vertical scale successful for PerconaXtraDBOpsRequest: demo/pxops-sample-pxc-6xc1kc
   Normal  Starting    5m8s   KubeDB Enterprise Operator  Resuming PerconaXtraDB database: demo/sample-pxc
   Normal  Successful  5m8s   KubeDB Enterprise Operator  Successfully resumed PerconaXtraDB database: demo/sample-pxc
   Normal  Successful  5m8s   KubeDB Enterprise Operator  Controller has Successfully scaled the PerconaXtraDB database: demo/sample-pxc
@@ -531,6 +484,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete perconaxtradb -n demo sample-pxc
-kubectl delete perconaxtradbautoscaler -n demo md-as-compute
+kubectl delete perconaxtradbautoscaler -n demo px-as-compute
 kubectl delete ns demo
 ```

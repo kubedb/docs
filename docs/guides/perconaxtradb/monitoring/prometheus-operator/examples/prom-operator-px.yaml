@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
-  name: coreos-prom-md
+  name: coreos-prom-px
   namespace: demo
 spec:
   version: "8.0.26"

@@ -1,8 +1,8 @@
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: md-issuer
+  name: px-issuer
   namespace: demo
 spec:
   ca:
-    secretName: md-ca
+    secretName: px-ca
