@@ -35,6 +35,12 @@ In Helm 3, release names are [scoped to a namespace](https://v3.helm.sh/docs/faq
 $ helm uninstall kubedb-enterprise --namespace kubedb
 ```
 
+Helm does not delete CRD objects. You can delete the ones KubeDB created with the following commands:
+
+```bash
+$ kubectl get crd -o name | grep kubedb.com | xargs kubectl delete
+```
+
 </div>
 <div class="tab-pane fade" id="script" role="tabpanel" aria-labelledby="script-tab">
 

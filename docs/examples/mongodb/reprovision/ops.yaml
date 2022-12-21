@@ -1,0 +1,9 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: repro
+  namespace: demo
+spec:
+  type: Reprovision
+  databaseRef:
+    name: mongo
