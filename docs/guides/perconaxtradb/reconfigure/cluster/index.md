@@ -72,7 +72,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "10.6.4"
+  version: "8.0.26"
   replicas: 3
   configSecret:
     name: px-configuration

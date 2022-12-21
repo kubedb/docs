@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is PerconaXtraDBAutoscaler
 
-`PerconaXtraDBAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling [PerconaXtraDB](https://www.perconaxtradb.com/) compute resources and storage of database components in a Kubernetes native way.
+`PerconaXtraDBAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling [PerconaXtraDB](https://docs.percona.com/percona-xtradb-cluster/8.0//) compute resources and storage of database components in a Kubernetes native way.
 
 ## PerconaXtraDBAutoscaler CRD Specifications
 

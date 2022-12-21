@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is PerconaXtraDBOpsRequest
 
-`PerconaXtraDBOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [PerconaXtraDB](https://www.perconaxtradb.com/) administrative operations like database version upgrading, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
+`PerconaXtraDBOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [PerconaXtraDB](https://docs.percona.com/percona-xtradb-cluster/8.0//) administrative operations like database version upgrading, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
 
 ## PerconaXtraDBOpsRequest CRD Specifications
 

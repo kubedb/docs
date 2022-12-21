@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is PerconaXtraDBVersion
 
-`PerconaXtraDBVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [PerconaXtraDB](https://www.perconaxtradb.com) database deployed with KubeDB in a Kubernetes native way.
+`PerconaXtraDBVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [PerconaXtraDB](https://docs.percona.com/percona-xtradb-cluster/8.0/) database deployed with KubeDB in a Kubernetes native way.
 
 When you install KubeDB, a `PerconaXtraDBVersion` custom resource will be created automatically for every supported PerconaXtraDB versions. You have to specify the name of `PerconaXtraDBVersion` crd in `spec.version` field of [PerconaXtraDB](/docs/guides/perconaxtradb/concepts/perconaxtradb) crd. Then, KubeDB will use the docker images specified in the `PerconaXtraDBVersion` crd to create your expected database.
 
@@ -102,5 +102,5 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 ### spec.stash
 
-`spec.stash` is an optional field that specifies the name of the task for stash backup and restore. Learn more about [Stash PerconaXtraDB addon](https://stash.run/docs/v2021.03.08/addons/perconaxtradb/)
+`spec.stash` is an optional field that specifies the name of the task for stash backup and restore. Learn more about [Stash PerconaXtraDB addon](https://stash.run/docs/v2022.12.11/addons/percona-xtradb/)
 

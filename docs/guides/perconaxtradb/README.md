@@ -45,6 +45,4 @@ aliases:
 - Create [PerconaXtraDB with Custom Configuration](/docs/guides/perconaxtradb/configuration/using-config-file).
 - Use [Custom RBAC](/docs/guides/perconaxtradb/custom-rbac/using-custom-rbac).
 - Use [private Docker registry](/docs/guides/perconaxtradb/private-registry/quickstart) to deploy MySQL with KubeDB.
-- Initialize [PerconaXtraDB with Script](/docs/guides/perconaxtradb/initialization/using-script).
-- Backup and Restore [PerconaXtraDB](/docs/guides/perconaxtradb/backup/overview).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is PerconaXtraDB
 
-`PerconaXtraDB` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [PerconaXtraDB](https://www.perconaxtradb.com/) in a Kubernetes native way. You only need to describe the desired database configuration in a PerconaXtraDB object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`PerconaXtraDB` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [PerconaXtraDB](https://docs.percona.com/percona-xtradb-cluster/8.0//) in a Kubernetes native way. You only need to describe the desired database configuration in a PerconaXtraDB object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## PerconaXtraDB Spec
 
@@ -147,7 +147,7 @@ PerconaXtraDB managed by KubeDB can be monitored with builtin-Prometheus and Pro
 
 ### spec.requireSSL
 
-`spec.requireSSL` specifies whether the client connections require SSL. If `spec.requireSSL` is `true` then the server permits only TCP/IP connections that use SSL, or connections that use a socket file (on Unix) or shared memory (on Windows). The server rejects any non-secure connection attempt. For more details, please visit [here](https://perconaxtradb.com/kb/en/securing-connections-for-client-and-server/#requiring-tls-for-specific-user-accounts)
+`spec.requireSSL` specifies whether the client connections require SSL. If `spec.requireSSL` is `true` then the server permits only TCP/IP connections that use SSL, or connections that use a socket file (on Unix) or shared memory (on Windows). The server rejects any non-secure connection attempt.
 
 ### spec.tls
 
@@ -223,7 +223,7 @@ Uses of some field of `spec.podTemplate` is described below,
 
 #### spec.podTemplate.spec.args
 
-`spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments for database installation. To learn about available args of `mysqld`, visit [here](https://perconaxtradb.com/kb/en/mysqld-options/).
+`spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments for database installation.
 
 #### spec.podTemplate.spec.env
 
