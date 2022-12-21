@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: mongo
+  readinessCriteria:
+    oplogMaxLagSeconds: 10
+    objectsCountDiffPercentage: 15
+  timeout: 3m
+  apply: Always

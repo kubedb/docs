@@ -1,0 +1,35 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MongoDB
+metadata:
+  name: mongo-sh-hid
+  namespace: demo
+spec:
+  version: "percona-4.4.10"
+  shardTopology:
+    configServer:
+      replicas: 3
+      ephemeralStorage: {}
+    mongos:
+      replicas: 2
+    shard:
+      replicas: 3
+      shards: 2
+      ephemeralStorage: {}
+  storageEngine: inMemory
+  storageType: Ephemeral
+  hidden:
+    podTemplate:
+      spec:
+        resources:
+          requests:
+            cpu: "400m"
+            memory: "400Mi"
+    replicas: 2
+    storage:
+      storageClassName: "standard"
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+  terminationPolicy: WipeOut

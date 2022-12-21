@@ -1,10 +1,10 @@
 ---
-title: Run mongodb with Arbiter
+title: Reprovision MongoDB
 menu:
   docs_{{ .version }}:
-    identifier: mg-arbiter
-    name: Arbiter
+    identifier: mg-reprovision
+    name: Reprovision
     parent: mg-mongodb-guides
-    weight: 27
+    weight: 46
 menu_name: docs_{{ .version }}
 ---
