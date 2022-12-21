@@ -1,10 +1,10 @@
 ---
-title: Run mongodb with Arbiter
+title: Restart MongoDB
 menu:
   docs_{{ .version }}:
-    identifier: mg-arbiter
-    name: Arbiter
+    identifier: mg-restart
+    name: Restart
     parent: mg-mongodb-guides
-    weight: 27
+    weight: 46
 menu_name: docs_{{ .version }}
 ---

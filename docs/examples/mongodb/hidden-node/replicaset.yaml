@@ -1,0 +1,36 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MongoDB
+metadata:
+  name: mongo-rs-hid
+  namespace: demo
+spec:
+  version: "percona-4.4.10"
+  replicaSet:
+    name: "replicaset"
+  podTemplate:
+    spec:
+      resources:
+        requests:
+          cpu: "600m"
+          memory: "600Mi"
+  replicas: 3
+  storageEngine: inMemory
+  storageType: Ephemeral
+  ephemeralStorage:
+    sizeLimit: "900Mi"
+  hidden:
+    podTemplate:
+      spec:
+        resources:
+          requests:
+            cpu: "400m"
+            memory: "400Mi"
+    replicas: 2
+    storage:
+      storageClassName: "standard"
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+  terminationPolicy: WipeOut
