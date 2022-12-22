@@ -29,8 +29,11 @@ metadata:
   name: myes
   namespace: demo
 spec:
+  autoOps:
+    disabled: true
   authSecret:
     name: es-admin-cred
+    externallyManaged: false
   configSecret:
     name: es-custom-config
   enableSSL: true
@@ -146,6 +149,11 @@ spec:
       subject:
         organizations:
         - kubedb
+  healthChecker:
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 2
+    disableWriteCheck: false
   version: searchguard-7.9.3
 ```
 
@@ -158,7 +166,7 @@ AutoOps is an optional field to control the generation of versionUpgrade & TLS-r
 
 - Name format: `{Security Plugin Name}-{Application Version}-{Modification Tag}`
 
-- Samples: `searchguard-7.9.3`, `xpack-7.9.1-v1`, `opendistro-1.12.0`, etc.
+- Samples: `xpack-8.2.0`, `xpack-7.9.1-v1`, `opensearch-1.3.0`, etc.
 
 ```yaml
 spec:
@@ -199,11 +207,16 @@ spec:
 
 ### spec.internalUsers
 
-`spec.internalUsers` provides an alternative way to configure the existing internal users or create new users without using the `internal_users.yml` file. Only works with `SearchGurad` and `OpenDistro` security plugins. This field expects the input format to be in the `map[username]UserSpec` format. The KubeDB operator creates secure passwords for those users and stores in k8s secrets. The k8s secret names are formed by the following format: `{Elasticsearch Instance Name}-{Username}-cred`.
+`spec.internalUsers` provides an alternative way to configure the existing internal users or create new users without using the `internal_users.yml` file. This field expects the input format to be in the `map[username]ElasticsearchUserSpec` format. The KubeDB operator creates and synchronizes secure passwords for those users and stores in k8s secrets.  The k8s secret names are formed by the following format: `{Elasticsearch Instance Name}-{Username}-cred`.
 
-The `UserSpec` contains the following fields:
-
-- `reserved` ( `bool` | `false` ) - specifies the reserved status. The resources that have this set to `true` cannot be changed using the REST API or Kibana.
+The `ElasticsearchUserSpec` contains the following fields:
+-  `hash` ( `string` | `""` ) - Specifies the hash of the password.
+-  `full_name` ( `string` | `""` ) - Specifies The full name of the user. Only applicable for xpack authplugin.
+-  `metadata` ( `map[string]string` | `""` ) - Specifies Arbitrary metadata that you want to associate with the user. Only applicable for xpack authplugin.
+-  `secretName` ( `string` | `""` ) - Specifies the k8s secret name that holds the user credentials. Defaults to "<resource-name>-<username>-cred".
+-  `roles` ( `[]string` | `nil` ) - A set of roles the user has. The roles determine the user’s access permissions. To create a user without any roles, specify an empty list: []. Only applicable for xpack authplugin.
+-  `email` ( `string` | `""` ) - Specifies the email of the user. Only applicable for xpack authplugin.
+-  `reserved` ( `bool` | `false` ) - specifies the reserved status. The resources that have this set to `true` cannot be changed using the REST API or Kibana.
 -  `hidden` ( `bool` | `false` ) - specifies the hidden status. The resources that have this set to true are not returned by the REST API and not visible in Kibana.
 -  `backendRoles` (`[]string` | `nil`) - specifies a list of backend roles assigned to this user. The backend roles can come from the internal user database, LDAP groups, JSON web token claims, or SAML assertions.
 -  `searchGuardRoles` ( `[]string` | `nil` ) - specifies a list of SearchGuard security plugin roles assigned to this user.
@@ -211,6 +224,7 @@ The `UserSpec` contains the following fields:
 -  `attributes` ( `map[string]string` | `nil` )- specifies one or more custom attributes which can be used in index names and DLS queries.
 -  `description` ( `string` | `""` ) - specifies the description of the user.
 
+Here's how `.spec.internalUsers` can be configured for `searchguard` or `opendistro` auth plugins.
 
 ```yaml
 spec:
@@ -231,6 +245,47 @@ spec:
       description: "Custom readall user"
 ```
 
+Here's how `.spec.internalUsers` can be configured for `xpack` auth plugins.
+
+```yaml
+spec:
+  internalUsers:
+    apm_system:
+      backendRoles:
+      - apm_system
+      secretName: es-cluster-apm-system-cred
+    beats_system:
+      backendRoles:
+      - beats_system
+      secretName: es-cluster-beats-system-cred
+    elastic:
+      backendRoles:
+      - superuser
+      secretName: es-cluster-elastic-cred
+    kibana_system:
+      backendRoles:
+      - kibana_system
+      secretName: es-cluster-kibana-system-cred
+    logstash_system:
+      backendRoles:
+      - logstash_system
+      secretName: es-cluster-logstash-system-cred
+    remote_monitoring_user:
+      backendRoles:
+      - remote_monitoring_collector
+      - remote_monitoring_agent
+      secretName: es-cluster-remote-monitoring-user-cred
+```
+**ElasticStack:**
+
+Default Users: [Official Docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-users.html)
+
+- `elastic` - Has direct read-only access to restricted indices, such as .security. This user also has the ability to manage security and create roles with unlimited privileges
+- `kibana_system` -  The user Kibana uses to connect and communicate with Elasticsearch.
+- `logstash_system` - The user Logstash uses when storing monitoring information in Elasticsearch.
+- `beats_system` - The user the Beats use when storing monitoring information in Elasticsearch.
+- `apm_system` - The user the APM server uses when storing monitoring information in Elasticsearch.
+- `remote_monitoring_user` - The user Metricbeat uses when collecting and storing monitoring information in Elasticsearch. It has the remote_monitoring_agent and remote_monitoring_collector built-in roles.
 
 **SearchGuard:**
 
@@ -281,6 +336,19 @@ For the default roles visit the [SearchGurad docs](https://docs.search-guard.com
 ### spec.topology
 
 `spec.topology` is an `optional` field that provides a way to configure different types of nodes for the Elasticsearch cluster. This field enables you to specify how many nodes you want to act as `master`, `data` and `ingest`. You can also specify how much storage and resources to allocate for each type of node independently.
+
+Currently supported node types are -
+- data
+- ingest
+- master
+- dataHot
+- dataWarm
+- dataCold
+- dataFrozen
+- dataContent
+- ml
+- transform
+- coordinating
 
 ```yaml
   topology:
