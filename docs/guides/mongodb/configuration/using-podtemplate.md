@@ -39,8 +39,10 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 
 - metadata:
   - annotations (pod's annotation)
+  - labels (pod's labels)
 - controller:
   - annotations (statefulset's annotation)
+  - labels (statefulset's labels)
 - spec:
   - args
   - env
@@ -49,11 +51,15 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - imagePullSecrets
   - nodeSelector
   - affinity
+  - serviceAccountName
   - schedulerName
   - tolerations
   - priorityClassName
   - priority
   - securityContext
+  - livenessProbe
+  - readinessProbe
+  - lifecycle
 
 Read about the fields in details in [PodTemplate concept](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate),
 

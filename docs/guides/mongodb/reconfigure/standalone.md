@@ -16,13 +16,13 @@ section_menu_id: guides
 
 # Reconfigure MongoDB Standalone Database
 
-This guide will show you how to use `KubeDB` Enterprise operator to reconfigure a MongoDB standalone database.
+This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure a MongoDB standalone database.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
@@ -186,6 +186,11 @@ spec:
     standalone:
       configSecret:
         name: new-custom-config
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -193,6 +198,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-standalone` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.configuration.standalone.configSecret.name` specifies the name of the new secret.
+- Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
@@ -203,7 +209,7 @@ mongodbopsrequest.ops.kubedb.com/mops-reconfigure-standalone created
 
 #### Verify the new configuration is working 
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MongoDB` object.
+If everything goes well, `KubeDB` Ops-manager operator will update the `configSecret` of `MongoDB` object.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -237,6 +243,7 @@ Metadata:
           f:kubectl.kubernetes.io/last-applied-configuration:
       f:spec:
         .:
+        f:apply:
         f:configuration:
           .:
           f:standalone:
@@ -247,6 +254,11 @@ Metadata:
         f:databaseRef:
           .:
           f:name:
+        f:readinessCriteria:
+          .:
+          f:objectsCountDiffPercentage:
+          f:oplogMaxLagSeconds:
+        f:timeout:
         f:type:
     Manager:      kubectl-client-side-apply
     Operation:    Update
@@ -276,12 +288,17 @@ Metadata:
   Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-standalone
   UID:               f63bb606-9df5-4516-9901-97dfe5b46b15
 Spec:
+  Apply: IfReady
   Configuration:
     Standalone:
       Config Secret:
         Name:  new-custom-config
   Database Ref:
     Name:  mg-standalone
+  Readiness Criteria:
+    Objects Count Diff Percentage:  10
+    Oplog Max Lag Seconds:          20
+  Timeout:                          5m
   Type:    Reconfigure
 Status:
   Conditions:
@@ -308,12 +325,12 @@ Status:
 Events:
   Type    Reason                 Age   From                        Message
   ----    ------                 ----  ----                        -------
-  Normal  PauseDatabase          60s   KubeDB Enterprise Operator  Pausing MongoDB demo/mg-standalone
-  Normal  PauseDatabase          60s   KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-standalone
-  Normal  ReconfigureStandalone  35s   KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ResumeDatabase         35s   KubeDB Enterprise Operator  Resuming MongoDB demo/mg-standalone
-  Normal  ResumeDatabase         35s   KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-standalone
-  Normal  Successful             35s   KubeDB Enterprise Operator  Successfully Reconfigured Database
+  Normal  PauseDatabase          60s   KubeDB Ops-manager operator  Pausing MongoDB demo/mg-standalone
+  Normal  PauseDatabase          60s   KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-standalone
+  Normal  ReconfigureStandalone  35s   KubeDB Ops-manager operator  Successfully Reconfigured MongoDB
+  Normal  ResumeDatabase         35s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-standalone
+  Normal  ResumeDatabase         35s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-standalone
+  Normal  Successful             35s   KubeDB Ops-manager operator  Successfully Reconfigured Database
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
@@ -379,6 +396,11 @@ spec:
       inlineConfig: |
         net:
           maxIncomingConnections: 30000
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -396,7 +418,7 @@ mongodbopsrequest.ops.kubedb.com/mops-reconfigure-inline-standalone created
 
 #### Verify the new configuration is working 
 
-If everything goes well, `KubeDB` Enterprise operator will merge this new config with the existing configuration.
+If everything goes well, `KubeDB` Ops-manager operator will merge this new config with the existing configuration.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -430,6 +452,7 @@ Metadata:
           f:kubectl.kubernetes.io/last-applied-configuration:
       f:spec:
         .:
+         f:apply:
         f:configuration:
           .:
           f:standalone:
@@ -438,6 +461,11 @@ Metadata:
         f:databaseRef:
           .:
           f:name:
+        f:readinessCriteria:
+          .:
+          f:objectsCountDiffPercentage:
+          f:oplogMaxLagSeconds:
+        f:timeout:
         f:type:
     Manager:      kubectl-client-side-apply
     Operation:    Update
@@ -467,6 +495,7 @@ Metadata:
   Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-inline-standalone
   UID:               33eea32f-e2af-4e36-b612-c528549e3d65
 Spec:
+  Apply: IfReady
   Configuration:
     Standalone:
       Inline Config:  net:
@@ -474,6 +503,10 @@ Spec:
 
   Database Ref:
     Name:  mg-standalone
+  Readiness Criteria:
+    Objects Count Diff Percentage:  10
+    Oplog Max Lag Seconds:          20
+  Timeout:                          5m
   Type:    Reconfigure
 Status:
   Conditions:
@@ -500,12 +533,12 @@ Status:
 Events:
   Type    Reason                 Age   From                        Message
   ----    ------                 ----  ----                        -------
-  Normal  PauseDatabase          118s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-standalone
-  Normal  PauseDatabase          118s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-standalone
-  Normal  ReconfigureStandalone  93s   KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ResumeDatabase         93s   KubeDB Enterprise Operator  Resuming MongoDB demo/mg-standalone
-  Normal  ResumeDatabase         93s   KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-standalone
-  Normal  Successful             93s   KubeDB Enterprise Operator  Successfully Reconfigured Database
+  Normal  PauseDatabase          118s  KubeDB Ops-manager operator  Pausing MongoDB demo/mg-standalone
+  Normal  PauseDatabase          118s  KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-standalone
+  Normal  ReconfigureStandalone  93s   KubeDB Ops-manager operator  Successfully Reconfigured MongoDB
+  Normal  ResumeDatabase         93s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-standalone
+  Normal  ResumeDatabase         93s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-standalone
+  Normal  Successful             93s   KubeDB Ops-manager operator  Successfully Reconfigured Database
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.

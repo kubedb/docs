@@ -40,14 +40,14 @@ section_menu_id: guides
 
 ## Find out required labels for ServiceMonitor
 
-We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd. We are going to provide these labels in `spec.monitor.prometheus.labels` field of MongoDB crd so that KubeDB creates `ServiceMonitor` object accordingly.
+We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd. We are going to provide these labels in `spec.monitor.prometheus.serviceMonitor.labels` field of MongoDB crd so that KubeDB creates `ServiceMonitor` object accordingly.
 
 At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
 $ kubectl get prometheus --all-namespaces
 NAMESPACE    NAME                                    VERSION   REPLICAS   AGE
-monitoring   prometheus-kube-prometheus-prometheus   v2.24.0   1          6h48m
+monitoring   prometheus-kube-prometheus-prometheus   v2.39.0   1          13d
 ```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
@@ -62,88 +62,21 @@ metadata:
   annotations:
     meta.helm.sh/release-name: prometheus
     meta.helm.sh/release-namespace: monitoring
-  creationTimestamp: "2021-03-09T10:47:17Z"
+  creationTimestamp: "2022-10-11T07:12:20Z"
   generation: 1
   labels:
     app: kube-prometheus-stack-prometheus
+    app.kubernetes.io/instance: prometheus
     app.kubernetes.io/managed-by: Helm
-    chart: kube-prometheus-stack-13.13.0
+    app.kubernetes.io/part-of: kube-prometheus-stack
+    app.kubernetes.io/version: 40.5.0
+    chart: kube-prometheus-stack-40.5.0
     heritage: Helm
     release: prometheus
-  managedFields:
-    - apiVersion: monitoring.coreos.com/v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        f:metadata:
-          f:annotations:
-            .: {}
-            f:meta.helm.sh/release-name: {}
-            f:meta.helm.sh/release-namespace: {}
-          f:labels:
-            .: {}
-            f:app: {}
-            f:app.kubernetes.io/managed-by: {}
-            f:chart: {}
-            f:heritage: {}
-            f:release: {}
-        f:spec:
-          .: {}
-          f:alerting:
-            .: {}
-            f:alertmanagers: {}
-          f:enableAdminAPI: {}
-          f:externalUrl: {}
-          f:image: {}
-          f:listenLocal: {}
-          f:logFormat: {}
-          f:logLevel: {}
-          f:paused: {}
-          f:podMonitorNamespaceSelector: {}
-          f:podMonitorSelector:
-            .: {}
-            f:matchLabels:
-              .: {}
-              f:release: {}
-          f:portName: {}
-          f:probeNamespaceSelector: {}
-          f:probeSelector:
-            .: {}
-            f:matchLabels:
-              .: {}
-              f:release: {}
-          f:replicas: {}
-          f:retention: {}
-          f:routePrefix: {}
-          f:ruleNamespaceSelector: {}
-          f:ruleSelector:
-            .: {}
-            f:matchLabels:
-              .: {}
-              f:app: {}
-              f:release: {}
-          f:securityContext:
-            .: {}
-            f:fsGroup: {}
-            f:runAsGroup: {}
-            f:runAsNonRoot: {}
-            f:runAsUser: {}
-          f:serviceAccountName: {}
-          f:serviceMonitorNamespaceSelector: {}
-          f:serviceMonitorSelector:
-            .: {}
-            f:matchLabels:
-              .: {}
-              f:release: {}
-          f:shards: {}
-          f:version: {}
-      manager: Go-http-client
-      operation: Update
-      time: "2021-03-09T10:47:17Z"
   name: prometheus-kube-prometheus-prometheus
   namespace: monitoring
-  resourceVersion: "100084"
-  selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/prometheuses/prometheus-kube-prometheus-prometheus
-  uid: 4b7a8c5b-09c4-4858-8232-13cbb71c766b
+  resourceVersion: "490475"
+  uid: 7e36caf3-228a-40f3-bff9-a1c0c78dedb0
 spec:
   alerting:
     alertmanagers:
@@ -151,10 +84,11 @@ spec:
         name: prometheus-kube-prometheus-alertmanager
         namespace: monitoring
         pathPrefix: /
-        port: web
+        port: http-web
   enableAdminAPI: false
+  evaluationInterval: 30s
   externalUrl: http://prometheus-kube-prometheus-prometheus.monitoring:9090
-  image: quay.io/prometheus/prometheus:v2.24.0
+  image: quay.io/prometheus/prometheus:v2.39.0
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -163,19 +97,19 @@ spec:
   podMonitorSelector:
     matchLabels:
       release: prometheus
-  portName: web
+  portName: http-web
   probeNamespaceSelector: {}
   probeSelector:
     matchLabels:
       release: prometheus
   replicas: 1
-  retention: "10d"
+  retention: 10d
   routePrefix: /
   ruleNamespaceSelector: {}
   ruleSelector:
     matchLabels:
-      app: kube-prometheus-stack
       release: prometheus
+  scrapeInterval: 30s
   securityContext:
     fsGroup: 2000
     runAsGroup: 2000
@@ -187,10 +121,11 @@ spec:
     matchLabels:
       release: prometheus
   shards: 1
-  version: v2.24.0
+  version: v2.39.0
+  walCompression: true
 ```
 
-Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of MongoDB crd.
+Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.serviceMonitor.labels` field of MongoDB crd.
 
 ## Deploy MongoDB with Monitoring Enabled
 
@@ -224,8 +159,7 @@ spec:
 Here,
 
 - `monitor.agent:  prometheus.io/operator` indicates that we are going to monitor this server using Prometheus operator.
-- `monitor.prometheus.namespace: monitoring` specifies that KubeDB should create `ServiceMonitor` in `monitoring` namespace.
-- `monitor.prometheus.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
+- `monitor.prometheus.serviceMonitor.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
 - `monitor.prometheus.interval` indicates that the Prometheus server should scrape metrics from this database with 10 seconds interval.
 
 Let's create the MongoDB object that we have shown above,
@@ -261,21 +195,24 @@ Let's describe this stats service.
 $ kubectl describe svc -n demo coreos-prom-mgo-stats
 Name:              coreos-prom-mgo-stats
 Namespace:         demo
-Labels:            app.kubernetes.io/instance=coreos-prom-mgo
+Labels:            app.kubernetes.io/component=database
+  app.kubernetes.io/instance=coreos-prom-mgo
   app.kubernetes.io/managed-by=kubedb.com
   app.kubernetes.io/name=mongodbs.kubedb.com
   kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
 Selector:          app.kubernetes.io/instance=coreos-prom-mgo,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mongodbs.kubedb.com
 Type:              ClusterIP
-IP Families:       <none>
-IP:                10.96.218.41
-IPs:               <none>
+IP Family Policy:  SingleStack
+IP Families:       IPv4
+IP:                10.96.240.52
+IPs:               10.96.240.52
 Port:              metrics  56790/TCP
 TargetPort:        metrics/TCP
-Endpoints:         10.244.0.110:56790
+Endpoints:         10.244.0.149:56790
 Session Affinity:  None
 Events:            <none>
+
 ```
 
 Notice the `Labels` and `Port` fields. `ServiceMonitor` will use this information to target its endpoints.
@@ -295,7 +232,7 @@ $ kubectl get servicemonitor -n demo coreos-prom-mgo-stats -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  creationTimestamp: "2021-03-09T17:40:16Z"
+  creationTimestamp: "2022-10-24T11:51:08Z"
   generation: 1
   labels:
     app.kubernetes.io/component: database
@@ -303,36 +240,6 @@ metadata:
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodbs.kubedb.com
     release: prometheus
-  managedFields:
-    - apiVersion: monitoring.coreos.com/v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        f:metadata:
-          f:labels:
-            .: {}
-            f:app.kubernetes.io/component: {}
-            f:app.kubernetes.io/instance: {}
-            f:app.kubernetes.io/managed-by: {}
-            f:app.kubernetes.io/name: {}
-            f:release: {}
-          f:ownerReferences: {}
-        f:spec:
-          .: {}
-          f:endpoints: {}
-          f:namespaceSelector:
-            .: {}
-            f:matchNames: {}
-          f:selector:
-            .: {}
-            f:matchLabels:
-              .: {}
-              f:app.kubernetes.io/instance: {}
-              f:app.kubernetes.io/managed-by: {}
-              f:app.kubernetes.io/name: {}
-              f:kubedb.com/role: {}
-      manager: mg-operator
-      operation: Update
-      time: "2021-03-09T17:40:16Z"
   name: coreos-prom-mgo-stats
   namespace: demo
   ownerReferences:
@@ -341,10 +248,9 @@ metadata:
       controller: true
       kind: Service
       name: coreos-prom-mgo-stats
-      uid: 906358eb-90dc-4a06-b9d3-89f557ad6ef4
-  resourceVersion: "184540"
-  selfLink: /apis/monitoring.coreos.com/v1/namespaces/demo/servicemonitors/coreos-prom-mgo-stats
-  uid: b0df2b5e-b6dd-4e8b-bf48-9da14f099d83
+      uid: 68b0e8c4-cba4-4dcb-9016-4e1901ca1fd0
+  resourceVersion: "528373"
+  uid: 56eb596b-d2cf-4d2c-a204-c43dbe8fe896
 spec:
   endpoints:
     - bearerTokenSecret:
@@ -358,6 +264,7 @@ spec:
       - demo
   selector:
     matchLabels:
+      app.kubernetes.io/component: database
       app.kubernetes.io/instance: coreos-prom-mgo
       app.kubernetes.io/managed-by: kubedb.com
       app.kubernetes.io/name: mongodbs.kubedb.com
@@ -373,9 +280,9 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app=prometheus
+$ kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
 NAME                                                 READY   STATUS    RESTARTS   AGE
-prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   1          6h58m
+prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   1          13d
 ```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-kube-prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.

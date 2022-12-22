@@ -16,13 +16,13 @@ section_menu_id: guides
 
 # Vertical Scale MongoDB Standalone
 
-This guide will show you how to use `KubeDB` Enterprise operator to update the resources of a MongoDB standalone database.
+This guide will show you how to use `KubeDB` Ops-manager operator to update the resources of a MongoDB standalone database.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
@@ -129,6 +129,11 @@ spec:
       limits:
         memory: "2Gi"
         cpu: "1"
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -136,6 +141,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `mops-vscale-standalone` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.standalone` specifies the desired resources after scaling.
+- Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
@@ -146,7 +152,7 @@ mongodbopsrequest.ops.kubedb.com/mops-vscale-standalone created
 
 #### Verify MongoDB Standalone resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the resources of `MongoDB` object and related `StatefulSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -168,7 +174,7 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MongoDBOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-02T17:19:38Z
+  Creation Timestamp:  2022-10-26T10:54:01Z
   Generation:          1
   Managed Fields:
     API Version:  ops.kubedb.com/v1alpha1
@@ -180,9 +186,13 @@ Metadata:
           f:kubectl.kubernetes.io/last-applied-configuration:
       f:spec:
         .:
+        f:apply:
         f:databaseRef:
+        f:readinessCriteria:
           .:
-          f:name:
+          f:objectsCountDiffPercentage:
+          f:oplogMaxLagSeconds:
+        f:timeout:
         f:type:
         f:verticalScaling:
           .:
@@ -198,7 +208,7 @@ Metadata:
               f:memory:
     Manager:      kubectl-client-side-apply
     Operation:    Update
-    Time:         2021-03-02T17:19:38Z
+    Time:         2022-10-26T10:54:01Z
     API Version:  ops.kubedb.com/v1alpha1
     Fields Type:  FieldsV1
     fieldsV1:
@@ -207,16 +217,21 @@ Metadata:
         f:conditions:
         f:observedGeneration:
         f:phase:
-    Manager:         kubedb-enterprise
+    Manager:         kubedb-ops-manager
     Operation:       Update
-    Time:            2021-03-02T17:19:38Z
-  Resource Version:  158587
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-vscale-standalone
-  UID:               364672b6-31b7-4fbe-878d-3de6c05161c9
+    Subresource:     status
+    Time:            2022-10-26T10:54:52Z
+  Resource Version:  613933
+  UID:               c3bf9c3d-cf96-49ae-877f-a895e0b1d280
 Spec:
+  Apply:  IfReady
   Database Ref:
     Name:  mg-standalone
-  Type:    VerticalScaling
+  Readiness Criteria:
+    Objects Count Diff Percentage:  10
+    Oplog Max Lag Seconds:          20
+  Timeout:                          5m
+  Type:                             VerticalScaling
   Vertical Scaling:
     Standalone:
       Limits:
@@ -227,25 +242,19 @@ Spec:
         Memory:  2Gi
 Status:
   Conditions:
-    Last Transition Time:  2021-03-02T17:19:38Z
+    Last Transition Time:  2022-10-26T10:54:21Z
     Message:               MongoDB ops request is vertically scaling database
     Observed Generation:   1
     Reason:                VerticalScaling
     Status:                True
     Type:                  VerticalScaling
-    Last Transition Time:  2021-03-02T17:19:39Z
-    Message:               Successfully updated StatefulSets Resources
-    Observed Generation:   1
-    Reason:                UpdateStatefulSetResources
-    Status:                True
-    Type:                  UpdateStatefulSetResources
-    Last Transition Time:  2021-03-02T17:20:15Z
+    Last Transition Time:  2022-10-26T10:54:51Z
     Message:               Successfully Vertically Scaled Standalone Resources
     Observed Generation:   1
     Reason:                UpdateStandaloneResources
     Status:                True
     Type:                  UpdateStandaloneResources
-    Last Transition Time:  2021-03-02T17:20:15Z
+    Last Transition Time:  2022-10-26T10:54:52Z
     Message:               Successfully Vertically Scaled Database
     Observed Generation:   1
     Reason:                Successful
@@ -254,16 +263,20 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason                      Age   From                        Message
-  ----    ------                      ----  ----                        -------
-  Normal  PauseDatabase               43s   KubeDB Enterprise Operator  Pausing MongoDB demo/mg-standalone
-  Normal  PauseDatabase               42s   KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-standalone
-  Normal  Starting                    42s   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-standalone
-  Normal  UpdateStatefulSetResources  42s   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  UpdateStandaloneResources   6s    KubeDB Enterprise Operator  Successfully Vertically Scaled Standalone Resources
-  Normal  ResumeDatabase              6s    KubeDB Enterprise Operator  Resuming MongoDB demo/mg-standalone
-  Normal  ResumeDatabase              6s    KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-standalone
-  Normal  Successful                  6s    KubeDB Enterprise Operator  Successfully Vertically Scaled Database
+  Type    Reason                     Age   From                         Message
+  ----    ------                     ----  ----                         -------
+  Normal  PauseDatabase              34s   KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-standalone
+  Normal  PauseDatabase              34s   KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-standalone
+  Normal  Starting                   34s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-standalone
+  Normal  UpdateStandaloneResources  34s   KubeDB Ops-manager Operator  Successfully updated standalone Resources
+  Normal  Starting                   34s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-standalone
+  Normal  UpdateStandaloneResources  34s   KubeDB Ops-manager Operator  Successfully updated standalone Resources
+  Normal  UpdateStandaloneResources  4s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Standalone Resources
+  Normal  UpdateStandaloneResources  4s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Standalone Resources
+  Normal  ResumeDatabase             4s    KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-standalone
+  Normal  ResumeDatabase             3s    KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mg-standalone
+  Normal  Successful                 3s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Database
+
 ```
 
 Now, we are going to verify from the Pod yaml whether the resources of the standalone database has updated to meet up the desired state, Let's check,

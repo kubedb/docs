@@ -62,7 +62,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/replicaset.yaml
 mongodb.kubedb.com/mgo-replicaset created
 ```
 

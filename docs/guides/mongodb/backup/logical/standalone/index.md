@@ -121,21 +121,38 @@ $ kubectl get appbindings -n demo sample-mongodb -o yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mongodb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"4.2.3"}}
+  creationTimestamp: "2022-10-26T05:13:07Z"
+  generation: 1
   labels:
     app.kubernetes.io/component: database
+    app.kubernetes.io/instance: sample-mongodb
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodbs.kubedb.com
-    app.kubernetes.io/instance: sample-mongodb
   name: sample-mongodb
   namespace: demo
+  ownerReferences:
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: MongoDB
+      name: sample-mongodb
+      uid: 51676df9-682a-40ab-8f99-c6050b35f2f2
+  resourceVersion: "580968"
+  uid: ca88e369-a15a-4149-9386-24e876c5aa4b
 spec:
+  appRef:
+    apiGroup: kubedb.com
+    kind: MongoDB
+    name: sample-mongodb
+    namespace: demo
   clientConfig:
     service:
       name: sample-mongodb
       port: 27017
       scheme: mongodb
-  secret:
-    name: sample-mongodb-auth
   parameters:
     apiVersion: config.kubedb.com/v1alpha1
     kind: MongoConfiguration
@@ -145,12 +162,16 @@ spec:
           name: mongodb-backup-4.2.3
         restoreTask:
           name: mongodb-restore-4.2.3
+  secret:
+    name: sample-mongodb-auth
   type: kubedb.com/mongodb
-  version: "4.2.3"
+  version: 4.2.3
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
 
+- `spec.appRef` refers to the underlying application.
+- `spec.clientConfig` defines how to communicate with the application.
 - `spec.clientConfig.service.name` specifies the name of the service that connects to the database.
 - `spec.secret` specifies the name of the secret that holds necessary credentials to access the database.
 - `spec.parameters.stash` contains the Stash Addon information that will be used to backup/restore this MongoDB database.

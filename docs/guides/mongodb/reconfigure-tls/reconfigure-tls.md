@@ -293,6 +293,11 @@ spec:
             - mongo
           organizationalUnits:
             - client
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -419,13 +424,13 @@ Status:
 Events:
   Type    Reason             Age    From                        Message
   ----    ------             ----   ----                        -------
-  Normal  PauseDatabase      2m10s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-rs
-  Normal  PauseDatabase      2m10s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-rs
-  Normal  TLSAdded           2m10s  KubeDB Enterprise Operator  Successfully Updated StatefulSets
-  Normal  RestartReplicaSet  10s    KubeDB Enterprise Operator  Successfully Restarted ReplicaSet nodes
-  Normal  ResumeDatabase     10s    KubeDB Enterprise Operator  Resuming MongoDB demo/mg-rs
-  Normal  ResumeDatabase     10s    KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-rs
-  Normal  Successful         10s    KubeDB Enterprise Operator  Successfully Reconfigured TLS
+  Normal  PauseDatabase      2m10s  KubeDB Ops-manager operator  Pausing MongoDB demo/mg-rs
+  Normal  PauseDatabase      2m10s  KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-rs
+  Normal  TLSAdded           2m10s  KubeDB Ops-manager operator  Successfully Updated StatefulSets
+  Normal  RestartReplicaSet  10s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
+  Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Resuming MongoDB demo/mg-rs
+  Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-rs
+  Normal  Successful         10s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
 ```
 
 Now, Let's exec into a database primary node and find out the username to connect in a mongo shell,
@@ -609,9 +614,9 @@ Status:
 Events:
   Type    Reason                        Age    From                        Message
   ----    ------                        ----   ----                        -------
-  Normal  CertificateIssuingSuccessful  2m10s  KubeDB Enterprise Operator  Successfully Issued New Certificates
-  Normal  RestartReplicaSet             25s    KubeDB Enterprise Operator  Successfully Restarted ReplicaSet nodes
-  Normal  Successful                    25s    KubeDB Enterprise Operator  Successfully Reconfigured TLS
+  Normal  CertificateIssuingSuccessful  2m10s  KubeDB Ops-manager operator  Successfully Issued New Certificates
+  Normal  RestartReplicaSet             25s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
+  Normal  Successful                    25s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
 ```
 
 Now, let's check the expiration date of the certificate.
@@ -805,9 +810,9 @@ Status:
 Events:
   Type    Reason                        Age    From                        Message
   ----    ------                        ----   ----                        -------
-  Normal  CertificateIssuingSuccessful  2m27s  KubeDB Enterprise Operator  Successfully Issued New Certificates
-  Normal  RestartReplicaSet             42s    KubeDB Enterprise Operator  Successfully Restarted ReplicaSet nodes
-  Normal  Successful                    42s    KubeDB Enterprise Operator  Successfully Reconfigured TLS
+  Normal  CertificateIssuingSuccessful  2m27s  KubeDB Ops-manager operator  Successfully Issued New Certificates
+  Normal  RestartReplicaSet             42s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
+  Normal  Successful                    42s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
 ```
 
 Now, Let's exec into a database node and find out the ca subject to see if it matches the one we have provided.
@@ -950,13 +955,13 @@ Status:
 Events:
   Type    Reason             Age   From                        Message
   ----    ------             ----  ----                        -------
-  Normal  PauseDatabase      2m5s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-rs
-  Normal  PauseDatabase      2m5s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-rs
-  Normal  TLSRemoved         2m5s  KubeDB Enterprise Operator  Successfully Updated StatefulSets
-  Normal  RestartReplicaSet  35s   KubeDB Enterprise Operator  Successfully Restarted ReplicaSet nodes
-  Normal  ResumeDatabase     35s   KubeDB Enterprise Operator  Resuming MongoDB demo/mg-rs
-  Normal  ResumeDatabase     35s   KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-rs
-  Normal  Successful         35s   KubeDB Enterprise Operator  Successfully Reconfigured TLS
+  Normal  PauseDatabase      2m5s  KubeDB Ops-manager operator  Pausing MongoDB demo/mg-rs
+  Normal  PauseDatabase      2m5s  KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-rs
+  Normal  TLSRemoved         2m5s  KubeDB Ops-manager operator  Successfully Updated StatefulSets
+  Normal  RestartReplicaSet  35s   KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
+  Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-rs
+  Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-rs
+  Normal  Successful         35s   KubeDB Ops-manager operator  Successfully Reconfigured TLS
 ```
 
 Now, Let's exec into the database primary node and find out that TLS is disabled or not.

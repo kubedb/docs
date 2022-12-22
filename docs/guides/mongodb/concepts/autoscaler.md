@@ -37,6 +37,12 @@ metadata:
 spec:
   databaseRef:
     name: mg-standalone
+  opsRequestOptions:
+    readinessCriteria:
+      oplogMaxLagSeconds: 20
+      objectsCountDiffPercentage: 10
+    timeout: 3m
+    apply: IfReady
   compute:
     standalone:
       trigger: "On"
@@ -68,6 +74,12 @@ metadata:
 spec:
   databaseRef:
     name: mg-rs
+  opsRequestOptions:
+    readinessCriteria:
+      oplogMaxLagSeconds: 20
+      objectsCountDiffPercentage: 10
+    timeout: 3m
+    apply: IfReady
   compute:
     replicaSet:
       trigger: "On"
@@ -99,6 +111,12 @@ metadata:
 spec:
   databaseRef:
     name: mg-sh
+  opsRequestOptions:
+    readinessCriteria:
+      oplogMaxLagSeconds: 20
+      objectsCountDiffPercentage: 10
+    timeout: 3m
+    apply: IfReady
   compute:
     shard:
       trigger: "On"
@@ -157,6 +175,9 @@ A `MongoDBAutoscaler` object has the following fields in the `spec` section.
 
 - **spec.databaseRef.name :** specifies the name of the [MongoDB](/docs/guides/mongodb/concepts/mongodb.md) object.
 
+### spec.opsRequestOptions
+These are the options to pass in the internally created opsRequest CRO. `opsRequestOptions` has three fields. They have been described in details [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria).
+
 ### spec.compute
 
 `spec.compute` specifies the autoscaling configuration for the compute resources i.e. cpu and memory of the database components. This field consists of the following sub-field:
@@ -166,6 +187,7 @@ A `MongoDBAutoscaler` object has the following fields in the `spec` section.
 - `spec.compute.configServer` indicates the desired compute autoscaling configuration for config servers of a sharded MongoDB database.
 - `spec.compute.mongos` indicates the desired compute autoscaling configuration for the mongos nodes of a sharded MongoDB database.
 - `spec.compute.shard` indicates the desired compute autoscaling configuration for the shard nodes of a sharded MongoDB database.
+- `spec.compute.arbiter` indicates the desired compute autoscaling configuration for the arbiter node.
 
 All of them has the following sub-fields:
 
@@ -176,7 +198,10 @@ All of them has the following sub-fields:
 - `containerControlledValues` specifies which resource values should be controlled. Allowed values are "RequestsAndLimits" and "RequestsOnly".
 - `resourceDiffPercentage` specifies the minimum resource difference between recommended value and the current value in percentage. If the difference percentage is greater than this value than autoscaling will be triggered.
 - `podLifeTimeThreshold` specifies the minimum pod lifetime of at least one of the pods before triggering autoscaling.
-- `InMemoryScalingThreshold` the percentage of the Memory that will be passed as inMemorySizeGB for inmemory database engine, which is only available for the percona variant of the mongodb.
+
+There are two more fields, those are only specifiable for the percona variant inMemory databases.
+- `inMemoryStorage.UsageThresholdPercentage` If db uses more than usageThresholdPercentage of the total memory, memoryStorage should be increased.
+- `inMemoryStorage.ScalingFactorPercentage` If db uses more than usageThresholdPercentage of the total memory, memoryStorage should be increased by this given scaling percentage.
 
 ### spec.storage
 
@@ -192,3 +217,4 @@ All of them has the following sub-fields:
 - `trigger` indicates if storage autoscaling is enabled for this component of the database. If "On" then storage autoscaling is enabled. If "Off" then storage autoscaling is disabled.
 - `usageThreshold` indicates usage percentage threshold, if the current storage usage exceeds then storage autoscaling will be triggered.
 - `scalingThreshold` indicates the percentage of the current storage that will be scaled.
+- `expansionMode` indicates the volume expansion mode.

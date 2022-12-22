@@ -16,13 +16,13 @@ section_menu_id: guides
 
 # Horizontal Scale MongoDB Shard
 
-This guide will show you how to use `KubeDB` Enterprise operator to scale the shard of a MongoDB database.
+This guide will show you how to use `KubeDB` Ops-manager operator to scale the shard of a MongoDB database.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
@@ -446,7 +446,7 @@ mongodbopsrequest.ops.kubedb.com/mops-hscale-up-shard created
 
 #### Verify scaling up is successful 
 
-If everything goes well, `KubeDB` Enterprise operator will update the shard and replicas of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the shard and replicas of `MongoDB` object and related `StatefulSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -568,23 +568,23 @@ Status:
 Events:
   Type    Reason                Age    From                        Message
   ----    ------                ----   ----                        -------
-  Normal  PauseDatabase         13m    KubeDB Enterprise Operator  Pausing MongoDB demo/mg-sharding
-  Normal  PauseDatabase         13m    KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-sharding
-  Normal  ScaleUpShardReplicas  11m    KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard Replicas
-  Normal  ResumeDatabase        11m    KubeDB Enterprise Operator  Resuming MongoDB demo/mg-sharding
-  Normal  ResumeDatabase        11m    KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-sharding
-  Normal  ScaleUpShardReplicas  11m    KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard Replicas
-  Normal  ScaleUpShardReplicas  11m    KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard Replicas
-  Normal  Progressing           8m20s  KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  Progressing           4m5s   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  ScaleUpShard          3m59s  KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard
-  Normal  PauseDatabase         3m59s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-sharding
-  Normal  PauseDatabase         3m59s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-sharding
-  Normal  ScaleUpConfigServer   2m31s  KubeDB Enterprise Operator  Successfully Horizontally Scaled Up ConfigServer
-  Normal  ScaleMongos           36s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Mongos
-  Normal  ResumeDatabase        36s    KubeDB Enterprise Operator  Resuming MongoDB demo/mg-sharding
-  Normal  ResumeDatabase        36s    KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-sharding
-  Normal  Successful            36s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
+  Normal  PauseDatabase         13m    KubeDB Ops-manager operator  Pausing MongoDB demo/mg-sharding
+  Normal  PauseDatabase         13m    KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-sharding
+  Normal  ScaleUpShardReplicas  11m    KubeDB Ops-manager operator  Successfully Horizontally Scaled Up Shard Replicas
+  Normal  ResumeDatabase        11m    KubeDB Ops-manager operator  Resuming MongoDB demo/mg-sharding
+  Normal  ResumeDatabase        11m    KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-sharding
+  Normal  ScaleUpShardReplicas  11m    KubeDB Ops-manager operator  Successfully Horizontally Scaled Up Shard Replicas
+  Normal  ScaleUpShardReplicas  11m    KubeDB Ops-manager operator  Successfully Horizontally Scaled Up Shard Replicas
+  Normal  Progressing           8m20s  KubeDB Ops-manager operator  Successfully updated StatefulSets Resources
+  Normal  Progressing           4m5s   KubeDB Ops-manager operator  Successfully updated StatefulSets Resources
+  Normal  ScaleUpShard          3m59s  KubeDB Ops-manager operator  Successfully Horizontally Scaled Up Shard
+  Normal  PauseDatabase         3m59s  KubeDB Ops-manager operator  Pausing MongoDB demo/mg-sharding
+  Normal  PauseDatabase         3m59s  KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-sharding
+  Normal  ScaleUpConfigServer   2m31s  KubeDB Ops-manager operator  Successfully Horizontally Scaled Up ConfigServer
+  Normal  ScaleMongos           36s    KubeDB Ops-manager operator  Successfully Horizontally Scaled Mongos
+  Normal  ResumeDatabase        36s    KubeDB Ops-manager operator  Resuming MongoDB demo/mg-sharding
+  Normal  ResumeDatabase        36s    KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-sharding
+  Normal  Successful            36s    KubeDB Ops-manager operator  Successfully Horizontally Scaled Database
 ```
 
 #### Verify Number of Shard and Shard Replicas
@@ -989,7 +989,7 @@ mongodbopsrequest.ops.kubedb.com/mops-hscale-down-shard created
 
 #### Verify scaling down is successful 
 
-If everything goes well, `KubeDB` Enterprise operator will update the shards and replicas `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the shards and replicas `MongoDB` object and related `StatefulSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -1117,17 +1117,17 @@ Status:
 Events:
   Type    Reason                  Age    From                        Message
   ----    ------                  ----   ----                        -------
-  Normal  PauseDatabase           6m29s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-sharding
-  Normal  PauseDatabase           6m29s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-sharding
-  Normal  ScaleDownShardReplicas  5m29s  KubeDB Enterprise Operator  Successfully Horizontally Scaled Down Shard Replicas
-  Normal  StartingBalancer        5m29s  KubeDB Enterprise Operator  Starting Balancer
-  Normal  StartingBalancer        5m28s  KubeDB Enterprise Operator  Successfully Started Balancer
-  Normal  ScaleDownShard          4m37s  KubeDB Enterprise Operator  Successfully Horizontally Scaled Down Shard
-  Normal  ScaleDownConfigServer   4m16s  KubeDB Enterprise Operator  Successfully Horizontally Scaled Down ConfigServer
-  Normal  ScaleMongos             4m6s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Mongos
-  Normal  ResumeDatabase          4m6s   KubeDB Enterprise Operator  Resuming MongoDB demo/mg-sharding
-  Normal  ResumeDatabase          4m6s   KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-sharding
-  Normal  Successful              4m6s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
+  Normal  PauseDatabase           6m29s  KubeDB Ops-manager operator  Pausing MongoDB demo/mg-sharding
+  Normal  PauseDatabase           6m29s  KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-sharding
+  Normal  ScaleDownShardReplicas  5m29s  KubeDB Ops-manager operator  Successfully Horizontally Scaled Down Shard Replicas
+  Normal  StartingBalancer        5m29s  KubeDB Ops-manager operator  Starting Balancer
+  Normal  StartingBalancer        5m28s  KubeDB Ops-manager operator  Successfully Started Balancer
+  Normal  ScaleDownShard          4m37s  KubeDB Ops-manager operator  Successfully Horizontally Scaled Down Shard
+  Normal  ScaleDownConfigServer   4m16s  KubeDB Ops-manager operator  Successfully Horizontally Scaled Down ConfigServer
+  Normal  ScaleMongos             4m6s   KubeDB Ops-manager operator  Successfully Horizontally Scaled Mongos
+  Normal  ResumeDatabase          4m6s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-sharding
+  Normal  ResumeDatabase          4m6s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-sharding
+  Normal  Successful              4m6s   KubeDB Ops-manager operator  Successfully Horizontally Scaled Database
 ```
 
 ##### Verify Number of Shard and Shard Replicas

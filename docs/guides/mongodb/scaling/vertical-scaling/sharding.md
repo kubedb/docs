@@ -16,13 +16,13 @@ section_menu_id: guides
 
 # Vertical Scale MongoDB Replicaset
 
-This guide will show you how to use `KubeDB` Enterprise operator to update the resources of a MongoDB replicaset database.
+This guide will show you how to use `KubeDB` Ops-manager operator to update the resources of a MongoDB replicaset database.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
@@ -178,6 +178,11 @@ spec:
       limits:
         memory: "1100Mi"
         cpu: "0.55"
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -187,6 +192,8 @@ Here,
 - `spec.VerticalScaling.shard` specifies the desired resources after scaling for the shard nodes.
 - `spec.VerticalScaling.configServer` specifies the desired resources after scaling for the configServer nodes.
 - `spec.VerticalScaling.mongos` specifies the desired resources after scaling for the mongos nodes.
+- `spec.VerticalScaling.arbiter` could also be specified in similar fashion to get the desired resources for arbiter pod.
+- Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 > **Note:** If you don't want to scale all the components together, you can only specify the components (shard, configServer and mongos) that you want to scale.
 
@@ -199,7 +206,7 @@ mongodbopsrequest.ops.kubedb.com/mops-vscale-shard created
 
 #### Verify MongoDB Shard resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `MongoDB` object and related `StatefulSets` and `Pods` of shard nodes.
+If everything goes well, `KubeDB` Ops-manager operator will update the resources of `MongoDB` object and related `StatefulSets` and `Pods` of shard nodes.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -221,7 +228,7 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MongoDBOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-02T17:10:43Z
+  Creation Timestamp:  2022-10-26T10:45:56Z
   Generation:          1
   Managed Fields:
     API Version:  ops.kubedb.com/v1alpha1
@@ -233,9 +240,13 @@ Metadata:
           f:kubectl.kubernetes.io/last-applied-configuration:
       f:spec:
         .:
+        f:apply:
         f:databaseRef:
+        f:readinessCriteria:
           .:
-          f:name:
+          f:objectsCountDiffPercentage:
+          f:oplogMaxLagSeconds:
+        f:timeout:
         f:type:
         f:verticalScaling:
           .:
@@ -243,64 +254,58 @@ Metadata:
             .:
             f:limits:
               .:
+              f:cpu:
               f:memory:
             f:requests:
               .:
+              f:cpu:
               f:memory:
           f:mongos:
             .:
             f:limits:
               .:
+              f:cpu:
               f:memory:
             f:requests:
               .:
+              f:cpu:
               f:memory:
           f:shard:
             .:
             f:limits:
               .:
+              f:cpu:
               f:memory:
             f:requests:
               .:
+              f:cpu:
               f:memory:
     Manager:      kubectl-client-side-apply
     Operation:    Update
-    Time:         2021-03-02T17:10:43Z
+    Time:         2022-10-26T10:45:56Z
     API Version:  ops.kubedb.com/v1alpha1
     Fields Type:  FieldsV1
     fieldsV1:
-      f:spec:
-        f:verticalScaling:
-          f:configServer:
-            f:limits:
-              f:cpu:
-            f:requests:
-              f:cpu:
-          f:mongos:
-            f:limits:
-              f:cpu:
-            f:requests:
-              f:cpu:
-          f:shard:
-            f:limits:
-              f:cpu:
-            f:requests:
-              f:cpu:
       f:status:
         .:
         f:conditions:
         f:observedGeneration:
         f:phase:
-    Manager:         kubedb-enterprise
+    Manager:         kubedb-ops-manager
     Operation:       Update
-    Time:            2021-03-02T17:10:43Z
-  Resource Version:  157614
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-vscale-shard
-  UID:               6354eabe-0008-4ef7-8ec7-30ce58985012
+    Subresource:     status
+    Time:            2022-10-26T10:52:28Z
+  Resource Version:  613274
+  UID:               a186cc72-3629-4034-bbf8-988839f6ec23
 Spec:
+  Apply:  IfReady
   Database Ref:
     Name:  mg-sharding
-  Type:    VerticalScaling
+  Readiness Criteria:
+    Objects Count Diff Percentage:  10
+    Oplog Max Lag Seconds:          20
+  Timeout:                          5m
+  Type:                             VerticalScaling
   Vertical Scaling:
     Config Server:
       Limits:
@@ -325,37 +330,31 @@ Spec:
         Memory:  1100Mi
 Status:
   Conditions:
-    Last Transition Time:  2021-03-02T17:10:43Z
+    Last Transition Time:  2022-10-26T10:48:06Z
     Message:               MongoDB ops request is vertically scaling database
     Observed Generation:   1
     Reason:                VerticalScaling
     Status:                True
     Type:                  VerticalScaling
-    Last Transition Time:  2021-03-02T17:10:43Z
-    Message:               Successfully updated StatefulSets Resources
-    Observed Generation:   1
-    Reason:                UpdateStatefulSetResources
-    Status:                True
-    Type:                  UpdateStatefulSetResources
-    Last Transition Time:  2021-03-02T17:12:39Z
+    Last Transition Time:  2022-10-26T10:49:37Z
     Message:               Successfully Vertically Scaled ConfigServer Resources
     Observed Generation:   1
     Reason:                UpdateConfigServerResources
     Status:                True
     Type:                  UpdateConfigServerResources
-    Last Transition Time:  2021-03-02T17:16:33Z
-    Message:               Successfully Vertically Scaled Shard Resources
-    Observed Generation:   1
-    Reason:                UpdateShardResources
-    Status:                True
-    Type:                  UpdateShardResources
-    Last Transition Time:  2021-03-02T17:17:44Z
+    Last Transition Time:  2022-10-26T10:50:07Z
     Message:               Successfully Vertically Scaled Mongos Resources
     Observed Generation:   1
     Reason:                UpdateMongosResources
     Status:                True
     Type:                  UpdateMongosResources
-    Last Transition Time:  2021-03-02T17:17:44Z
+    Last Transition Time:  2022-10-26T10:52:28Z
+    Message:               Successfully Vertically Scaled Shard Resources
+    Observed Generation:   1
+    Reason:                UpdateShardResources
+    Status:                True
+    Type:                  UpdateShardResources
+    Last Transition Time:  2022-10-26T10:52:28Z
     Message:               Successfully Vertically Scaled Database
     Observed Generation:   1
     Reason:                Successful
@@ -364,26 +363,26 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason                       Age    From                        Message
-  ----    ------                       ----   ----                        -------
-  Normal  UpdateStatefulSetResources   7m9s   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  PauseDatabase                7m9s   KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-sharding
-  Normal  Starting                     7m9s   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-mongos
-  Normal  Starting                     7m9s   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-configsvr
-  Normal  Starting                     7m9s   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-shard0
-  Normal  Starting                     7m9s   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-shard1
-  Normal  UpdateStatefulSetResources   7m9s   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  Starting                     7m9s   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-mongos
-  Normal  Starting                     7m9s   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-configsvr
-  Normal  Starting                     7m9s   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-shard0
-  Normal  Starting                     7m9s   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-shard1
-  Normal  PauseDatabase                7m9s   KubeDB Enterprise Operator  Pausing MongoDB demo/mg-sharding
-  Normal  UpdateConfigServerResources  5m13s  KubeDB Enterprise Operator  Successfully Vertically Scaled ConfigServer Resources
-  Normal  UpdateShardResources         79s    KubeDB Enterprise Operator  Successfully Vertically Scaled Shard Resources
-  Normal  UpdateMongosResources        8s     KubeDB Enterprise Operator  Successfully Vertically Scaled Mongos Resources
-  Normal  ResumeDatabase               8s     KubeDB Enterprise Operator  Resuming MongoDB demo/mg-sharding
-  Normal  ResumeDatabase               8s     KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-sharding
-  Normal  Successful                   8s     KubeDB Enterprise Operator  Successfully Vertically Scaled Database
+  Type    Reason                       Age    From                         Message
+  ----    ------                       ----   ----                         -------
+  Normal  PauseDatabase                4m51s  KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-sharding
+  Normal  Starting                     4m51s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sharding-configsvr
+  Normal  UpdateConfigServerResources  4m51s  KubeDB Ops-manager Operator  Successfully updated configServer Resources
+  Normal  Starting                     4m51s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sharding-configsvr
+  Normal  UpdateConfigServerResources  4m51s  KubeDB Ops-manager Operator  Successfully updated configServer Resources
+  Normal  PauseDatabase                4m51s  KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-sharding
+  Normal  UpdateConfigServerResources  3m20s  KubeDB Ops-manager Operator  Successfully Vertically Scaled ConfigServer Resources
+  Normal  Starting                     3m20s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sharding-mongos
+  Normal  UpdateMongosResources        3m20s  KubeDB Ops-manager Operator  Successfully updated Mongos Resources
+  Normal  UpdateShardResources         2m50s  KubeDB Ops-manager Operator  Successfully updated Shard Resources
+  Normal  Starting                     2m50s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sharding-shard0
+  Normal  Starting                     2m50s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sharding-shard1
+  Normal  UpdateMongosResources        2m50s  KubeDB Ops-manager Operator  Successfully Vertically Scaled Mongos Resources
+  Normal  UpdateShardResources         29s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Shard Resources
+  Normal  ResumeDatabase               29s    KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-sharding
+  Normal  ResumeDatabase               29s    KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mg-sharding
+  Normal  Successful                   29s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Database
+  Normal  UpdateShardResources         28s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Shard Resources
 ```
 
 Now, we are going to verify from one of the Pod yaml whether the resources of the shard nodes has updated to meet up the desired state, Let's check,

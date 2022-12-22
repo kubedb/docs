@@ -34,18 +34,27 @@ metadata:
   labels:
     app: kubedb
 spec:
-  version: "4.2.3"
-  deprecated: false
   db:
-    image: "${KUBEDB_DOCKER_REGISTRY}/mongo:4.2.3"
+    image: mongo:4.2.3
+  distribution: Official
   exporter:
-    image: "${KUBEDB_DOCKER_REGISTRY}/percona-mongodb-exporter:v0.8.0"
+    image: kubedb/mongodb_exporter:v0.32.0
   initContainer:
-    image: "${KUBEDB_DOCKER_REGISTRY}/mongodb-init:4.2-v1"
+    image: kubedb/mongodb-init:4.2-v7
   podSecurityPolicies:
     databasePolicyName: mongodb-db
   replicationModeDetector:
-    image: "${KUBEDB_DOCKER_REGISTRY}/replication-mode-detector:v0.3.2"
+    image: kubedb/replication-mode-detector:v0.16.0
+  stash:
+    addon:
+      backupTask:
+        name: mongodb-backup-4.2.3
+      restoreTask:
+        name: mongodb-restore-4.2.3
+  upgradeConstraints:
+    allowlist:
+      - '>= 4.4.0, < 5.0.0'
+  version: 4.2.3
 ```
 
 ### metadata.name
@@ -72,13 +81,21 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 
 `spec.db.image` is a required field that specifies the docker image which will be used to create Statefulset by KubeDB operator to create expected MongoDB database.
 
+### spec.initContainer.image
+`spec.initContainer.image` is a required field that specifies the image for init container.
+
+
 ### spec.exporter.image
 
 `spec.exporter.image` is a required field that specifies the image which will be used to export Prometheus metrics.
 
-### spec.tools.image
+### spec.stash
+This holds the Backup & Restore task definitions, where a `TaskRef` has a `Name` & `Params` section. Params specifies a list of parameters to pass to the task.
 
-`spec.tools.image` is a required field that specifies the image which will be used to take backup and initialize database from a snapshot.
+### spec.upgradeConstraints
+UpgradeConstraints specifies the constraints that need to be considered during version upgrade. Here `allowList` contains the versions those are allowed for upgrading from the current version.
+An empty list of AllowList indicates all the versions are accepted except the denyList.
+On the other hand, `DenyList` contains all the rejected versions for the upgrade request. An empty list indicates no version is rejected.
 
 ### spec.podSecurityPolicies.databasePolicyName
 

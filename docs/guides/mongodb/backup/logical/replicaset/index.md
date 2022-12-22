@@ -124,6 +124,11 @@ $ kubectl get appbindings -n demo sample-mgo-rs -o yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mgo-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.2.3"}}
+  creationTimestamp: "2022-10-26T04:42:05Z"
+  generation: 1
   labels:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: sample-mgo-rs
@@ -131,7 +136,21 @@ metadata:
     app.kubernetes.io/name: mongodbs.kubedb.com
   name: sample-mgo-rs
   namespace: demo
+  ownerReferences:
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: MongoDB
+      name: sample-mgo-rs
+      uid: 658bf7d1-3772-4c89-84db-5ac74a6c5851
+  resourceVersion: "577375"
+  uid: b0cd9885-53d9-4a2b-93a9-cf9fa90594fd
 spec:
+  appRef:
+    apiGroup: kubedb.com
+    kind: MongoDB
+    name: sample-mgo-rs
+    namespace: demo
   clientConfig:
     service:
       name: sample-mgo-rs
@@ -141,7 +160,7 @@ spec:
     apiVersion: config.kubedb.com/v1alpha1
     kind: MongoConfiguration
     replicaSets:
-      host-0: rs0/sample-mgo-rs-0.sample-mgo-rs-gvr.demo.svc,sample-mgo-rs-1.sample-mgo-rs-gvr.demo.svc,sample-mgo-rs-2.sample-mgo-rs-gvr.demo.svc
+      host-0: rs0/sample-mgo-rs-0.sample-mgo-rs-pods.demo.svc:27017,sample-mgo-rs-1.sample-mgo-rs-pods.demo.svc:27017,sample-mgo-rs-2.sample-mgo-rs-pods.demo.svc:27017
     stash:
       addon:
         backupTask:
@@ -151,11 +170,13 @@ spec:
   secret:
     name: sample-mgo-rs-auth
   type: kubedb.com/mongodb
-  version: "4.2.3"
+  version: 4.2.3
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
 
+- `spec.appRef` refers to the underlying application.
+- `spec.clientConfig` defines how to communicate with the application.
 - `spec.clientConfig.service.name` specifies the name of the service that connects to the database.
 - `spec.secret` specifies the name of the secret that holds necessary credentials to access the database.
 - `spec.parameters.replicaSets` contains the dsn of replicaset. The DSNs are in key-value pair. If there is only one replicaset (replicaset can be multiple, because of sharding), then ReplicaSets field contains only one key-value pair where the key is host-0 and the value is dsn of that replicaset.
@@ -643,8 +664,8 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
 $ kubectl get mg -n demo restored-mongodb
-NAME               VERSION        STATUS    AGE
-restored-mongodb   4.2.3         Running   2m
+NAME               VERSION       STATUS    AGE
+restored-mongodb   4.2.3         Ready   2m
 ```
 
 Now, exec into the database pod and list available tables,
