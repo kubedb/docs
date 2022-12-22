@@ -147,7 +147,7 @@ Notice the `annotations` section. We are pointing to the `BackupBlueprint` that 
 Let's create the above MariaDB CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/auto-backup/examples/sample-pxc.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/auto-backup/examples/sample-mariadb.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 

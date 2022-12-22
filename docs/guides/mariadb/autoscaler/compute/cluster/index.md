@@ -79,7 +79,7 @@ spec:
 Let's create the `MariaDB` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/autoscaler/compute/cluster/examples/sample-pxc.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/autoscaler/compute/cluster/examples/sample-mariadb.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 
@@ -181,7 +181,7 @@ If a step doesn't finish within the specified timeout, the ops request will resu
 Let's create the `MariaDBAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/autoscaler/compute/cluster/examples/pxas-compute.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/autoscaler/compute/cluster/examples/mdas-compute.yaml
 mariadbautoscaler.autoscaling.kubedb.com/mdas-compute created
 ```
 
