@@ -149,6 +149,9 @@ spec:
   version: searchguard-7.9.3
 ```
 
+### spec.autoOps
+AutoOps is an optional field to control the generation of versionUpgrade & TLS-related recommendations.
+
 ### spec.version
 
 `spec.version` is a `required` field that specifies the name of the [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md) CRD where the docker images are specified.
@@ -760,6 +763,15 @@ Following table show what KubeDB does when you delete Elasticsearch CRD for diff
 
 
 If the `spec.terminationPolicy` is not specified, the KubeDB operator defaults it to `Delete`.
+
+## spec.healthChecker
+It defines the attributes for the health checker.
+- `spec.healthChecker.periodSeconds` specifies how often to perform the health check.
+- `spec.healthChecker.timeoutSeconds` specifies the number of seconds after which the probe times out.
+- `spec.healthChecker.failureThreshold` specifies minimum consecutive failures for the healthChecker to be considered failed.
+- `spec.healthChecker.disableWriteCheck` specifies whether to disable the writeCheck or not.
+
+Know details about KubeDB Health checking from this [blog post](https://blog.byte.builders/post/kubedb-health-checker/).
 
 ## Next Steps
 
