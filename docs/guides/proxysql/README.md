@@ -4,8 +4,8 @@ menu:
   docs_{{ .version }}:
     identifier: guides-proxysql-readme
     name: ProxySQL
-    parent: guides
-    weight: 10
+    parent: guides-proxysql
+    weight: 5
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 url: /docs/{{ .version }}/guides/proxysql/
