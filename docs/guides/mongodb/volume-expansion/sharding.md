@@ -16,7 +16,7 @@ section_menu_id: guides
 
 # MongoDB Sharded Database Volume Expansion
 
-This guide will show you how to use `KubeDB` Enterprise operator to expand the volume of a MongoDB Sharded Database.
+This guide will show you how to use `KubeDB` Ops-manager operator to expand the volume of a MongoDB Sharded Database.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to expand the v
 
 - You must have a `StorageClass` that supports volume expansion.
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
@@ -171,7 +171,7 @@ mongodbopsrequest.ops.kubedb.com/mops-volume-exp-shard created
 
 #### Verify MongoDB shard volumes expanded successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the volume size of `MongoDB` object and related `StatefulSets` and `Persistent Volumes`.
+If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `MongoDB` object and related `StatefulSets` and `Persistent Volumes`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`. Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -242,11 +242,11 @@ Status:
 Events:
   Type    Reason                       Age    From                        Message
   ----    ------                       ----   ----                        -------
-  Normal  ConfigServerVolumeExpansion  3m25s  KubeDB Enterprise Operator  Successfully Expanded Volume
-  Normal  ShardVolumeExpansion         55s    KubeDB Enterprise Operator  Successfully Expanded Volume
-  Normal  ResumeDatabase               50s    KubeDB Enterprise Operator  Resuming MongoDB
-  Normal  ResumeDatabase               50s    KubeDB Enterprise Operator  Successfully Resumed mongodb
-  Normal  Successful                   50s    KubeDB Enterprise Operator  Successfully Expanded Volume
+  Normal  ConfigServerVolumeExpansion  3m25s  KubeDB Ops-manager operator  Successfully Expanded Volume
+  Normal  ShardVolumeExpansion         55s    KubeDB Ops-manager operator  Successfully Expanded Volume
+  Normal  ResumeDatabase               50s    KubeDB Ops-manager operator  Resuming MongoDB
+  Normal  ResumeDatabase               50s    KubeDB Ops-manager operator  Successfully Resumed mongodb
+  Normal  Successful                   50s    KubeDB Ops-manager operator  Successfully Expanded Volume
 ```
 
 Now, we are going to verify from the `Statefulset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,

@@ -135,6 +135,11 @@ $ kubectl get appbindings -n demo sample-mgo-sh -o yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mgo-sh","namespace":"demo"},"spec":{"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"replicas":3,"shards":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}}},"terminationPolicy":"WipeOut","version":"4.2.3"}}
+  creationTimestamp: "2022-10-26T05:11:20Z"
+  generation: 1
   labels:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: sample-mgo-sh
@@ -142,7 +147,21 @@ metadata:
     app.kubernetes.io/name: mongodbs.kubedb.com
   name: sample-mgo-sh
   namespace: demo
+  ownerReferences:
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: MongoDB
+      name: sample-mgo-sh
+      uid: 22f704c3-1a4d-468c-9404-7efa739ad0da
+  resourceVersion: "580483"
+  uid: 69092658-2f4a-45f2-a899-14884bf74a8b
 spec:
+  appRef:
+    apiGroup: kubedb.com
+    kind: MongoDB
+    name: sample-mgo-sh
+    namespace: demo
   clientConfig:
     service:
       name: sample-mgo-sh
@@ -150,12 +169,12 @@ spec:
       scheme: mongodb
   parameters:
     apiVersion: config.kubedb.com/v1alpha1
+    configServer: cnfRepSet/sample-mgo-sh-configsvr-0.sample-mgo-sh-configsvr-pods.demo.svc:27017,sample-mgo-sh-configsvr-1.sample-mgo-sh-configsvr-pods.demo.svc:27017,sample-mgo-sh-configsvr-2.sample-mgo-sh-configsvr-pods.demo.svc:27017
     kind: MongoConfiguration
-    configServer: cnfRepSet/sample-mgo-sh-configsvr-0.sample-mgo-sh-configsvr-gvr.demo.svc:27017,sample-mgo-sh-configsvr-1.sample-mgo-sh-configsvr-gvr.demo.svc:27017,sample-mgo-sh-configsvr-2.sample-mgo-sh-configsvr-gvr.demo.svc:27017
     replicaSets:
-      host-0: shard0/sample-mgo-sh-shard0-0.sample-mgo-sh-shard0-gvr.demo.svc:27017,sample-mgo-sh-shard0-1.sample-mgo-sh-shard0-gvr.demo.svc:27017,sample-mgo-sh-shard0-2.sample-mgo-sh-shard0-gvr.demo.svc:27017
-      host-1: shard1/sample-mgo-sh-shard1-0.sample-mgo-sh-shard1-gvr.demo.svc:27017,sample-mgo-sh-shard1-1.sample-mgo-sh-shard1-gvr.demo.svc:27017,sample-mgo-sh-shard1-2.sample-mgo-sh-shard1-gvr.demo.svc:27017
-      host-2: shard2/sample-mgo-sh-shard2-0.sample-mgo-sh-shard2-gvr.demo.svc:27017,sample-mgo-sh-shard2-1.sample-mgo-sh-shard2-gvr.demo.svc:27017,sample-mgo-sh-shard2-2.sample-mgo-sh-shard2-gvr.demo.svc:27017
+      host-0: shard0/sample-mgo-sh-shard0-0.sample-mgo-sh-shard0-pods.demo.svc:27017,sample-mgo-sh-shard0-1.sample-mgo-sh-shard0-pods.demo.svc:27017,sample-mgo-sh-shard0-2.sample-mgo-sh-shard0-pods.demo.svc:27017
+      host-1: shard1/sample-mgo-sh-shard1-0.sample-mgo-sh-shard1-pods.demo.svc:27017,sample-mgo-sh-shard1-1.sample-mgo-sh-shard1-pods.demo.svc:27017,sample-mgo-sh-shard1-2.sample-mgo-sh-shard1-pods.demo.svc:27017
+      host-2: shard2/sample-mgo-sh-shard2-0.sample-mgo-sh-shard2-pods.demo.svc:27017,sample-mgo-sh-shard2-1.sample-mgo-sh-shard2-pods.demo.svc:27017,sample-mgo-sh-shard2-2.sample-mgo-sh-shard2-pods.demo.svc:27017
     stash:
       addon:
         backupTask:
@@ -170,6 +189,8 @@ spec:
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
 
+- `spec.appRef` refers to the underlying application.
+- `spec.clientConfig` defines how to communicate with the application.
 - `spec.clientConfig.service.name` specifies the name of the service that connects to the database.
 - `spec.secret` specifies the name of the secret that holds necessary credentials to access the database.
 - `spec.parameters.configServer` specifies the dsn of config server of mongodb sharding. The dsn includes the port no too.

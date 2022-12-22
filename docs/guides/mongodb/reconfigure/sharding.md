@@ -16,13 +16,13 @@ section_menu_id: guides
 
 # Reconfigure MongoDB Shard
 
-This guide will show you how to use `KubeDB` Enterprise operator to reconfigure a MongoDB shard.
+This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure a MongoDB shard.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
@@ -207,6 +207,11 @@ spec:
     mongos:
       configSecret:
         name: new-custom-config   
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -216,6 +221,8 @@ Here,
 - `spec.configuration.shard.configSecret.name` specifies the name of the new secret for shard nodes.
 - `spec.configuration.configServer.configSecret.name` specifies the name of the new secret for configServer nodes.
 - `spec.configuration.mongos.configSecret.name` specifies the name of the new secret for mongos nodes.
+- `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
+- Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 > **Note:** If you don't want to reconfigure all the components together, you can only specify the components (shard, configServer and mongos) that you want to reconfigure.
 
@@ -228,7 +235,7 @@ mongodbopsrequest.ops.kubedb.com/mops-reconfigure-shard created
 
 #### Verify the new configuration is working 
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MongoDB` object.
+If everything goes well, `KubeDB` Ops-manager operator will update the `configSecret` of `MongoDB` object.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -313,6 +320,11 @@ spec:
       inlineConfig: |
           net:
             maxIncomingConnections: 30000
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -322,6 +334,8 @@ Here,
 - `spec.configuration.shard.inlineConfig` specifies the new configuration that will be merged in the existing secret for shard nodes.
 - `spec.configuration.configServer.inlineConfig` specifies the new configuration that will be merged in the existing secret for configServer nodes.
 - `spec.configuration.mongos.inlineConfig` specifies the new configuration that will be merged in the existing secret for mongos nodes.
+- `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
+- Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 > **Note:** If you don't want to reconfigure all the components together, you can only specify the components (shard, configServer and mongos) that you want to reconfigure.
 
@@ -334,7 +348,7 @@ mongodbopsrequest.ops.kubedb.com/mops-reconfigure-inline-shard created
 
 #### Verify the new configuration is working 
 
-If everything goes well, `KubeDB` Enterprise operator will merge this new config with the existing configuration.
+If everything goes well, `KubeDB` Ops-manager operator will merge this new config with the existing configuration.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -368,6 +382,7 @@ Metadata:
           f:kubectl.kubernetes.io/last-applied-configuration:
       f:spec:
         .:
+        f:apply:
         f:configuration:
           .:
           f:configServer:
@@ -388,6 +403,11 @@ Metadata:
         f:databaseRef:
           .:
           f:name:
+        f:readinessCriteria:
+          .:
+          f:objectsCountDiffPercentage:
+          f:oplogMaxLagSeconds:
+        f:timeout:
         f:type:
     Manager:      kubectl-client-side-apply
     Operation:    Update
@@ -433,6 +453,7 @@ Metadata:
   Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-inline-shard
   UID:               ab454bcb-164c-4fa2-9eaa-dd47c60fe874
 Spec:
+  Apply: IfReady
   Configuration:
     Config Server:
       Inline Config:  net:
@@ -448,6 +469,10 @@ Spec:
   
   Database Ref:
     Name:  mg-sharding
+  Readiness Criteria:
+    Objects Count Diff Percentage:  10
+    Oplog Max Lag Seconds:          20
+  Timeout:                          5m
   Type:    Reconfigure
 Status:
   Conditions:
@@ -486,14 +511,14 @@ Status:
 Events:
   Type    Reason                   Age    From                        Message
   ----    ------                   ----   ----                        -------
-  Normal  PauseDatabase            13m    KubeDB Enterprise Operator  Pausing MongoDB demo/mg-sharding
-  Normal  PauseDatabase            13m    KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-sharding
-  Normal  ReconfigureConfigServer  12m    KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ReconfigureShard         9m7s   KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ReconfigureMongos        8m12s  KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ResumeDatabase           8m12s  KubeDB Enterprise Operator  Resuming MongoDB demo/mg-sharding
-  Normal  ResumeDatabase           8m12s  KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-sharding
-  Normal  Successful               8m12s  KubeDB Enterprise Operator  Successfully Reconfigured Database
+  Normal  PauseDatabase            13m    KubeDB Ops-manager operator  Pausing MongoDB demo/mg-sharding
+  Normal  PauseDatabase            13m    KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-sharding
+  Normal  ReconfigureConfigServer  12m    KubeDB Ops-manager operator  Successfully Reconfigured MongoDB
+  Normal  ReconfigureShard         9m7s   KubeDB Ops-manager operator  Successfully Reconfigured MongoDB
+  Normal  ReconfigureMongos        8m12s  KubeDB Ops-manager operator  Successfully Reconfigured MongoDB
+  Normal  ResumeDatabase           8m12s  KubeDB Ops-manager operator  Resuming MongoDB demo/mg-sharding
+  Normal  ResumeDatabase           8m12s  KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-sharding
+  Normal  Successful               8m12s  KubeDB Ops-manager operator  Successfully Reconfigured Database
 ```
 
 Now let's connect to a mongodb instance from each type of nodes and run a mongodb internal command to check the new configuration we have provided.

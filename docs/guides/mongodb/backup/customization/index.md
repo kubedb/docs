@@ -21,7 +21,7 @@ In this section, we are going to show you how to customize the backup process. H
 
 ### Passing arguments to the backup process
 
-Stash MongoDB addon uses [mongoump](https://docs.mongodb.com/database-tools/mongodump/) for backup. You can pass arguments to the `mysqldump` through `args` param under `task.params` section.
+Stash MongoDB addon uses [mongoump](https://docs.mongodb.com/database-tools/mongodump/) for backup. You can pass arguments to the `mongodump` through `args` param under `task.params` section.
 
 The below example shows how you can pass the `--db testdb` to take backup for a specific mongodb databases named `testdb`.
 
@@ -271,3 +271,12 @@ spec:
   rules:
   - snapshots: [latest]
 ```
+
+## Cleanup
+To cleanup the resources crated by this tutorial, run the following commands,
+
+```bash
+❯ kubectl delete backupconfiguration -n demo <backup-configuration-name>
+❯ kubectl delete restoresession -n demo <restore-session-name>
+```
+

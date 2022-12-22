@@ -16,13 +16,13 @@ section_menu_id: guides
 
 # Reconfigure MongoDB Replicaset Database
 
-This guide will show you how to use `KubeDB` Enterprise operator to reconfigure a MongoDB Replicaset.
+This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure a MongoDB Replicaset.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
@@ -206,6 +206,11 @@ spec:
     replicaSet:
       configSecret:
         name: new-custom-config
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -213,6 +218,8 @@ Here,
 - `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-replicaset` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.customConfig.replicaSet.configSecret.name` specifies the name of the new secret.
+- `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
+- Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
@@ -223,7 +230,7 @@ mongodbopsrequest.ops.kubedb.com/mops-reconfigure-replicaset created
 
 #### Verify the new configuration is working 
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MongoDB` object.
+If everything goes well, `KubeDB` Ops-manager operator will update the `configSecret` of `MongoDB` object.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -257,6 +264,7 @@ Metadata:
           f:kubectl.kubernetes.io/last-applied-configuration:
       f:spec:
         .:
+        f:apply:
         f:configuration:
           .:
           f:replicaSet:
@@ -267,6 +275,11 @@ Metadata:
         f:databaseRef:
           .:
           f:name:
+        f:readinessCriteria:
+          .:
+          f:objectsCountDiffPercentage:
+          f:oplogMaxLagSeconds:
+        f:timeout:
         f:type:
     Manager:      kubectl-client-side-apply
     Operation:    Update
@@ -296,12 +309,17 @@ Metadata:
   Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-replicaset
   UID:               064733d6-19db-4153-82f7-bc0580116ee6
 Spec:
+  Apply: IfReady
   Configuration:
     Replica Set:
       Config Secret:
         Name:  new-custom-config
   Database Ref:
     Name:  mg-replicaset
+  Readiness Criteria:
+    Objects Count Diff Percentage:  10
+    Oplog Max Lag Seconds:          20
+  Timeout:                          5m
   Type:    Reconfigure
 Status:
   Conditions:
@@ -328,12 +346,12 @@ Status:
 Events:
   Type    Reason                 Age    From                        Message
   ----    ------                 ----   ----                        -------
-  Normal  PauseDatabase          2m55s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-replicaset
-  Normal  PauseDatabase          2m55s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-replicaset
-  Normal  ReconfigureReplicaset  65s    KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ResumeDatabase         65s    KubeDB Enterprise Operator  Resuming MongoDB demo/mg-replicaset
-  Normal  ResumeDatabase         65s    KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-replicaset
-  Normal  Successful             65s    KubeDB Enterprise Operator  Successfully Reconfigured Database
+  Normal  PauseDatabase          2m55s  KubeDB Ops-manager operator  Pausing MongoDB demo/mg-replicaset
+  Normal  PauseDatabase          2m55s  KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-replicaset
+  Normal  ReconfigureReplicaset  65s    KubeDB Ops-manager operator  Successfully Reconfigured MongoDB
+  Normal  ResumeDatabase         65s    KubeDB Ops-manager operator  Resuming MongoDB demo/mg-replicaset
+  Normal  ResumeDatabase         65s    KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-replicaset
+  Normal  Successful             65s    KubeDB Ops-manager operator  Successfully Reconfigured Database
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
@@ -415,6 +433,11 @@ spec:
       inlineConfig: |
           net:
             maxIncomingConnections: 30000
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -422,6 +445,8 @@ Here,
 - `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-inline-replicaset` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.configuration.replicaSet.inlineConfig` specifies the new configuration that will be merged in the existing secret.
+- `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
+- Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
@@ -432,7 +457,7 @@ mongodbopsrequest.ops.kubedb.com/mops-reconfigure-inline-replicaset created
 
 #### Verify the new configuration is working 
 
-If everything goes well, `KubeDB` Enterprise operator will merge this new config with the existing configuration.
+If everything goes well, `KubeDB` Ops-manager operator will merge this new config with the existing configuration.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -466,6 +491,7 @@ Metadata:
           f:kubectl.kubernetes.io/last-applied-configuration:
       f:spec:
         .:
+        f:apply:
         f:configuration:
           .:
           f:replicaSet:
@@ -474,6 +500,11 @@ Metadata:
         f:databaseRef:
           .:
           f:name:
+        f:readinessCriteria:
+          .:
+          f:objectsCountDiffPercentage:
+          f:oplogMaxLagSeconds:
+        f:timeout:
         f:type:
     Manager:      kubectl-client-side-apply
     Operation:    Update
@@ -503,6 +534,7 @@ Metadata:
   Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-inline-replicaset
   UID:               0137442b-1b04-43ed-8de7-ecd913b44065
 Spec:
+  Apply: IfReady
   Configuration:
     Replica Set:
       Inline Config:  net:
@@ -510,6 +542,10 @@ Spec:
 
   Database Ref:
     Name:  mg-replicaset
+  Readiness Criteria:
+    Objects Count Diff Percentage:  10
+    Oplog Max Lag Seconds:          20
+  Timeout:                          5m
   Type:    Reconfigure
 Status:
   Conditions:
@@ -536,12 +572,12 @@ Status:
 Events:
   Type    Reason                 Age    From                        Message
   ----    ------                 ----   ----                        -------
-  Normal  PauseDatabase          9m20s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-replicaset
-  Normal  PauseDatabase          9m20s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-replicaset
-  Normal  ReconfigureReplicaset  7m45s  KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ResumeDatabase         7m45s  KubeDB Enterprise Operator  Resuming MongoDB demo/mg-replicaset
-  Normal  ResumeDatabase         7m45s  KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-replicaset
-  Normal  Successful             7m45s  KubeDB Enterprise Operator  Successfully Reconfigured Database
+  Normal  PauseDatabase          9m20s  KubeDB Ops-manager operator  Pausing MongoDB demo/mg-replicaset
+  Normal  PauseDatabase          9m20s  KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-replicaset
+  Normal  ReconfigureReplicaset  7m45s  KubeDB Ops-manager operator  Successfully Reconfigured MongoDB
+  Normal  ResumeDatabase         7m45s  KubeDB Ops-manager operator  Resuming MongoDB demo/mg-replicaset
+  Normal  ResumeDatabase         7m45s  KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-replicaset
+  Normal  Successful             7m45s  KubeDB Ops-manager operator  Successfully Reconfigured Database
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.

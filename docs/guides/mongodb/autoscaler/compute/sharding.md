@@ -22,11 +22,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` Community, Enterprise and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner, Ops-manager and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
-
-- Install `Vertical Pod Autoscaler` from [here](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation)
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
@@ -164,17 +162,22 @@ metadata:
 spec:
   databaseRef:
     name: mg-sh
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
   compute:
     shard:
       trigger: "On"
       podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
       minAllowed:
-        cpu: 250m
-        memory: 350Mi
+        cpu: 400m
+        memory: 400Mi
       maxAllowed:
         cpu: 1
         memory: 1Gi
       controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"
 ```
 
 Here,
@@ -182,11 +185,33 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing compute resource scaling operation on `mg-sh` database.
 - `spec.compute.shard.trigger` specifies that compute autoscaling is enabled for the shard pods of this database.
 - `spec.compute.shard.podLifeTimeThreshold` specifies the minimum lifetime for at least one of the pod to initiate a vertical scaling.
+- `spec.compute.replicaset.resourceDiffPercentage` specifies the minimum resource difference in percentage. The default is 10%.
+  If the difference between current & recommended resource is less than ResourceDiffPercentage, Autoscaler Operator will ignore the updating.
 - `spec.compute.shard.minAllowed` specifies the minimum allowed resources for the database.
 - `spec.compute.shard.maxAllowed` specifies the maximum allowed resources for the database.
 - `spec.compute.shard.controlledResources` specifies the resources that are controlled by the autoscaler.
+- `spec.compute.shard.containerControlledValues` specifies which resource values should be controlled. The default is "RequestsAndLimits".
+- `spec.opsRequestOptions` contains the options to pass to the created OpsRequest. It has 3 fields. Know more about them here : [readinessCriteria](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria), [timeout](/docs/guides/mongodb/concepts/opsrequest.md#spectimeout), [apply](/docs/guides/mongodb/concepts/opsrequest.md#specapply).
+> Note: In this demo we are only setting up the autoscaling for the shard pods, that's why we only specified the shard section of the autoscaler. You can enable autoscaling for mongos and configServer pods in the same yaml, by specifying the `spec.compute.mongos` and `spec.compute.configServer` section, similar to the `spec.comput.shard` section we have configured in this demo. 
 
-> Note: In this demo we are only setting up the autoscaling for the shard pods, that's why we only specified the shard section of the autoscaler. You can enable autoscaling for mongos and configServer pods in the same yaml, by specifying the `spec.mongos` and `spec.configServer` section, similar to the `spec.shard` section we have configured in this demo. 
+If it was an `InMemory database`, we could also autoscaler the inMemory resources using MongoDB compute autoscaler, like below.
+
+#### Autoscale inMemory database
+To autoscale inMemory databases, you need to specify the `spec.compute.shard.inMemoryStorage` section.
+
+```yaml
+  ...
+  inMemoryStorage:
+    usageThresholdPercentage: 80
+    scalingFactorPercentage: 30
+  ...
+```
+It has two fields inside it.
+- `usageThresholdPercentage`. If db uses more than usageThresholdPercentage of the total memory, memoryStorage should be increased. Default usage threshold is 70%.
+- `scalingFactorPercentage`. If db uses more than usageThresholdPercentage of the total memory, memoryStorage should be increased by this given scaling percentage. Default scaling percentage is 50%.
+
+> Note: To inform you, We use `db.serverStatus().inMemory.cache["bytes currently in the cache"]` & `db.serverStatus().inMemory.cache["maximum bytes configured"]` to calculate the used & maximum inMemory storage respectively.
+
 
 Let's create the `MongoDBAutoscaler` CR we have shown above,
 
@@ -212,7 +237,7 @@ Annotations:  <none>
 API Version:  autoscaling.kubedb.com/v1alpha1
 Kind:         MongoDBAutoscaler
 Metadata:
-  Creation Timestamp:  2021-03-07T16:49:09Z
+  Creation Timestamp:  2022-10-27T09:46:48Z
   Generation:          1
   Managed Fields:
     API Version:  autoscaling.kubedb.com/v1alpha1
@@ -228,6 +253,7 @@ Metadata:
           .:
           f:shard:
             .:
+            f:containerControlledValues:
             f:controlledResources:
             f:maxAllowed:
               .:
@@ -238,28 +264,34 @@ Metadata:
               f:cpu:
               f:memory:
             f:podLifeTimeThreshold:
+            f:resourceDiffPercentage:
             f:trigger:
         f:databaseRef:
+        f:opsRequestOptions:
           .:
-          f:name:
+          f:apply:
+          f:timeout:
     Manager:      kubectl-client-side-apply
     Operation:    Update
-    Time:         2021-03-07T16:49:09Z
+    Time:         2022-10-27T09:46:48Z
     API Version:  autoscaling.kubedb.com/v1alpha1
     Fields Type:  FieldsV1
     fieldsV1:
       f:status:
         .:
+        f:checkpoints:
         f:conditions:
+        f:vpas:
     Manager:         kubedb-autoscaler
     Operation:       Update
-    Time:            2021-03-07T16:50:13Z
-  Resource Version:  879550
-  Self Link:         /apis/autoscaling.kubedb.com/v1alpha1/namespaces/demo/mongodbautoscalers/mg-as-sh
-  UID:               7e6880f1-42ba-4d78-ba1c-02aa9ea522e9
+    Subresource:     status
+    Time:            2022-10-27T09:47:08Z
+  Resource Version:  654853
+  UID:               36878e8e-f100-409e-aa76-e6f46569df76
 Spec:
   Compute:
     Shard:
+      Container Controlled Values:  RequestsAndLimits
       Controlled Resources:
         cpu
         memory
@@ -267,227 +299,106 @@ Spec:
         Cpu:     1
         Memory:  1Gi
       Min Allowed:
-        Cpu:                    250m
-        Memory:                 350Mi
-      Pod Life Time Threshold:  5m0s
-      Trigger:                  On
+        Cpu:                     400m
+        Memory:                  400Mi
+      Pod Life Time Threshold:   5m0s
+      Resource Diff Percentage:  20
+      Trigger:                   On
   Database Ref:
     Name:  mg-sh
+  Ops Request Options:
+    Apply:    IfReady
+    Timeout:  3m0s
 Status:
-Events:                    <none>
+  Checkpoints:
+    Cpu Histogram:
+      Bucket Weights:
+        Index:              1
+        Weight:             5001
+        Index:              2
+        Weight:             10000
+      Reference Timestamp:  2022-10-27T00:00:00Z
+      Total Weight:         0.397915611757652
+    First Sample Start:     2022-10-27T09:46:43Z
+    Last Sample Start:      2022-10-27T09:46:57Z
+    Last Update Time:       2022-10-27T09:47:06Z
+    Memory Histogram:
+      Reference Timestamp:  2022-10-28T00:00:00Z
+    Ref:
+      Container Name:     mongodb
+      Vpa Object Name:    mg-sh-shard0
+    Total Samples Count:  3
+    Version:              v3
+    Cpu Histogram:
+      Bucket Weights:
+        Index:              1
+        Weight:             10000
+      Reference Timestamp:  2022-10-27T00:00:00Z
+      Total Weight:         0.39793263724156597
+    First Sample Start:     2022-10-27T09:46:50Z
+    Last Sample Start:      2022-10-27T09:46:56Z
+    Last Update Time:       2022-10-27T09:47:06Z
+    Memory Histogram:
+      Reference Timestamp:  2022-10-28T00:00:00Z
+    Ref:
+      Container Name:     mongodb
+      Vpa Object Name:    mg-sh-shard1
+    Total Samples Count:  3
+    Version:              v3
+  Conditions:
+    Last Transition Time:  2022-10-27T09:47:08Z
+    Message:               Successfully created mongoDBOpsRequest demo/mops-vpa-mg-sh-shard-ml75qi
+    Observed Generation:   1
+    Reason:                CreateOpsRequest
+    Status:                True
+    Type:                  CreateOpsRequest
+  Vpas:
+    Conditions:
+      Last Transition Time:  2022-10-27T09:47:06Z
+      Status:                True
+      Type:                  RecommendationProvided
+    Recommendation:
+      Container Recommendations:
+        Container Name:  mongodb
+        Lower Bound:
+          Cpu:     400m
+          Memory:  400Mi
+        Target:
+          Cpu:     400m
+          Memory:  400Mi
+        Uncapped Target:
+          Cpu:     35m
+          Memory:  262144k
+        Upper Bound:
+          Cpu:     1
+          Memory:  1Gi
+    Vpa Name:      mg-sh-shard0
+    Conditions:
+      Last Transition Time:  2022-10-27T09:47:06Z
+      Status:                True
+      Type:                  RecommendationProvided
+    Recommendation:
+      Container Recommendations:
+        Container Name:  mongodb
+        Lower Bound:
+          Cpu:     400m
+          Memory:  400Mi
+        Target:
+          Cpu:     400m
+          Memory:  400Mi
+        Uncapped Target:
+          Cpu:     25m
+          Memory:  262144k
+        Upper Bound:
+          Cpu:     1
+          Memory:  1Gi
+    Vpa Name:      mg-sh-shard1
+Events:            <none>
+
 ```
 So, the `mongodbautoscaler` resource is created successfully.
 
-Now, lets verify that the vertical pod autoscaler (vpa) resource is created successfully,
-
-```bash
-$ kubectl get vpa -n demo
-NAME                AGE
-vpa-mg-sh-shard0    110s
-vpa-mg-sh-shard1    110s
-
-$ kubectl describe vpa vpa-mg-sh-shard0  -n demo
-Name:         vpa-mg-sh-shard0
-Namespace:    demo
-Labels:       <none>
-Annotations:  <none>
-API Version:  autoscaling.k8s.io/v1
-Kind:         VerticalPodAutoscaler
-Metadata:
-  Creation Timestamp:  2021-03-07T16:49:09Z
-  Generation:          2
-  Managed Fields:
-    API Version:  autoscaling.k8s.io/v1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:ownerReferences:
-          .:
-          k:{"uid":"7e6880f1-42ba-4d78-ba1c-02aa9ea522e9"}:
-            .:
-            f:apiVersion:
-            f:blockOwnerDeletion:
-            f:controller:
-            f:kind:
-            f:name:
-            f:uid:
-      f:spec:
-        .:
-        f:resourcePolicy:
-          .:
-          f:containerPolicies:
-        f:targetRef:
-          .:
-          f:apiVersion:
-          f:kind:
-          f:name:
-        f:updatePolicy:
-          .:
-          f:updateMode:
-      f:status:
-    Manager:      kubedb-autoscaler
-    Operation:    Update
-    Time:         2021-03-07T16:49:09Z
-    API Version:  autoscaling.k8s.io/v1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        f:conditions:
-        f:recommendation:
-          .:
-          f:containerRecommendations:
-    Manager:    recommender
-    Operation:  Update
-    Time:       2021-03-07T16:50:03Z
-  Owner References:
-    API Version:           autoscaling.kubedb.com/v1alpha1
-    Block Owner Deletion:  true
-    Controller:            true
-    Kind:                  MongoDBAutoscaler
-    Name:                  mg-as-sh
-    UID:                   7e6880f1-42ba-4d78-ba1c-02aa9ea522e9
-  Resource Version:        879512
-  Self Link:               /apis/autoscaling.k8s.io/v1/namespaces/demo/verticalpodautoscalers/vpa-mg-sh-shard0
-  UID:                     e73e9920-5c4d-4e8e-887e-38b06120c9a6
-Spec:
-  Resource Policy:
-    Container Policies:
-      Container Name:  mongodb
-      Controlled Resources:
-        cpu
-        memory
-      Controlled Values:  RequestsAndLimits
-      Max Allowed:
-        Cpu:     1
-        Memory:  1Gi
-      Min Allowed:
-        Cpu:     250m
-        Memory:  350Mi
-  Target Ref:
-    API Version:  apps/v1
-    Kind:         StatefulSet
-    Name:         mg-sh-shard0
-  Update Policy:
-    Update Mode:  Off
-Status:
-  Conditions:
-    Last Transition Time:  2021-03-07T16:50:03Z
-    Status:                False
-    Type:                  RecommendationProvided
-  Recommendation:
-Events:          <none>
-```
-
-So, we can verify from the above output that two `vpa` resources are created for our two shard successfully, but you can see that the `RecommendationProvided` condition is false and also the `Recommendation` section of the `vpa` is empty. Let's wait some time and describe the vpa again.
-
-```shell
-$ kubectl describe vpa vpa-mg-sh-shard0  -n demo
-Name:         vpa-mg-sh-shard0
-Namespace:    demo
-Labels:       <none>
-Annotations:  <none>
-API Version:  autoscaling.k8s.io/v1
-Kind:         VerticalPodAutoscaler
-Metadata:
-  Creation Timestamp:  2021-03-07T16:49:09Z
-  Generation:          2
-  Managed Fields:
-    API Version:  autoscaling.k8s.io/v1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:ownerReferences:
-          .:
-          k:{"uid":"7e6880f1-42ba-4d78-ba1c-02aa9ea522e9"}:
-            .:
-            f:apiVersion:
-            f:blockOwnerDeletion:
-            f:controller:
-            f:kind:
-            f:name:
-            f:uid:
-      f:spec:
-        .:
-        f:resourcePolicy:
-          .:
-          f:containerPolicies:
-        f:targetRef:
-          .:
-          f:apiVersion:
-          f:kind:
-          f:name:
-        f:updatePolicy:
-          .:
-          f:updateMode:
-      f:status:
-    Manager:      kubedb-autoscaler
-    Operation:    Update
-    Time:         2021-03-07T16:49:09Z
-    API Version:  autoscaling.k8s.io/v1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        f:conditions:
-        f:recommendation:
-          .:
-          f:containerRecommendations:
-    Manager:    recommender
-    Operation:  Update
-    Time:       2021-03-07T16:50:03Z
-  Owner References:
-    API Version:           autoscaling.kubedb.com/v1alpha1
-    Block Owner Deletion:  true
-    Controller:            true
-    Kind:                  MongoDBAutoscaler
-    Name:                  mg-as-sh
-    UID:                   7e6880f1-42ba-4d78-ba1c-02aa9ea522e9
-  Resource Version:        879512
-  Self Link:               /apis/autoscaling.k8s.io/v1/namespaces/demo/verticalpodautoscalers/vpa-mg-sh-shard0
-  UID:                     e73e9920-5c4d-4e8e-887e-38b06120c9a6
-Spec:
-  Resource Policy:
-    Container Policies:
-      Container Name:  mongodb
-      Controlled Resources:
-        cpu
-        memory
-      Controlled Values:  RequestsAndLimits
-      Max Allowed:
-        Cpu:     1
-        Memory:  1Gi
-      Min Allowed:
-        Cpu:     250m
-        Memory:  350Mi
-  Target Ref:
-    API Version:  apps/v1
-    Kind:         StatefulSet
-    Name:         mg-sh-shard0
-  Update Policy:
-    Update Mode:  Off
-Status:
-  Conditions:
-    Last Transition Time:  2021-03-07T16:50:03Z
-    Status:                True
-    Type:                  RecommendationProvided
-  Recommendation:
-    Container Recommendations:
-      Container Name:  mongodb
-      Lower Bound:
-        Cpu:     250m
-        Memory:  350Mi
-      Target:
-        Cpu:     250m
-        Memory:  350Mi
-      Uncapped Target:
-        Cpu:     203m
-        Memory:  262144k
-      Upper Bound:
-        Cpu:     1
-        Memory:  1Gi
-Events:          <none>
-```
-
-As you can see from the output the vpa has generated a recommendation for the shard pod of the database. Our autoscaler operator continuously watches the recommendation generated and creates an `mongodbopsrequest` based on the recommendations, if the database pods are needed to scaled up or down.
+you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `mongodbopsrequest` based on the recommendations, if the database pods are needed to scaled up or down.
 
 Let's watch the `mongodbopsrequest` in the demo namespace to see if any `mongodbopsrequest` object is created. After some time you'll see that a `mongodbopsrequest` will be created based on the recommendation.
 
@@ -495,7 +406,7 @@ Let's watch the `mongodbopsrequest` in the demo namespace to see if any `mongodb
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                          TYPE              STATUS       AGE
-mops-vpa-mg-sh-shard-3uqbrq   VerticalScaling   Progressing  19s
+mops-vpa-mg-sh-shard-ml75qi   VerticalScaling   Progressing  19s
 ```
 
 Let's wait for the ops request to become successful.
@@ -504,43 +415,35 @@ Let's wait for the ops request to become successful.
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                            TYPE              STATUS       AGE
-mops-vpa-mg-sh-shard-3uqbrq     VerticalScaling   Successful   5m8s
+mops-vpa-mg-sh-shard-ml75qi     VerticalScaling   Successful   5m8s
 ```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-vpa-mg-sh-shard-3uqbrq
-Name:         mops-vpa-mg-sh-shard-3uqbrq
+$ kubectl describe mongodbopsrequest -n demo mops-vpa-mg-sh-shard-ml75qi
+Name:         mops-vpa-mg-sh-shard-ml75qi
 Namespace:    demo
-Labels:       app.kubernetes.io/component=database
-              app.kubernetes.io/instance=mg-sh
-              app.kubernetes.io/managed-by=kubedb.com
-              app.kubernetes.io/name=mongodbs.kubedb.com
+Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MongoDBOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-07T16:50:13Z
+  Creation Timestamp:  2022-10-27T09:47:08Z
   Generation:          1
   Managed Fields:
     API Version:  ops.kubedb.com/v1alpha1
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
-        f:labels:
-          .:
-          f:app.kubernetes.io/component:
-          f:app.kubernetes.io/instance:
-          f:app.kubernetes.io/managed-by:
-          f:app.kubernetes.io/name:
         f:ownerReferences:
+          .:
+          k:{"uid":"36878e8e-f100-409e-aa76-e6f46569df76"}:
       f:spec:
         .:
-        f:configuration:
+        f:apply:
         f:databaseRef:
-          .:
-          f:name:
+        f:timeout:
         f:type:
         f:verticalScaling:
           .:
@@ -548,7 +451,6 @@ Metadata:
             .:
             f:limits:
               .:
-              f:cpu:
               f:memory:
             f:requests:
               .:
@@ -556,7 +458,7 @@ Metadata:
               f:memory:
     Manager:      kubedb-autoscaler
     Operation:    Update
-    Time:         2021-03-07T16:50:13Z
+    Time:         2022-10-27T09:47:08Z
     API Version:  ops.kubedb.com/v1alpha1
     Fields Type:  FieldsV1
     fieldsV1:
@@ -565,53 +467,47 @@ Metadata:
         f:conditions:
         f:observedGeneration:
         f:phase:
-    Manager:    kubedb-enterprise
-    Operation:  Update
-    Time:       2021-03-07T16:50:13Z
+    Manager:      kubedb-ops-manager
+    Operation:    Update
+    Subresource:  status
+    Time:         2022-10-27T09:49:49Z
   Owner References:
     API Version:           autoscaling.kubedb.com/v1alpha1
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  MongoDBAutoscaler
     Name:                  mg-as-sh
-    UID:                   7e6880f1-42ba-4d78-ba1c-02aa9ea522e9
-  Resource Version:        880864
-  Self Link:               /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-vpa-mg-sh-shard-3uqbrq
-  UID:                     a9eb9a92-3a93-441c-90b9-a272cfff4e85
+    UID:                   36878e8e-f100-409e-aa76-e6f46569df76
+  Resource Version:        655347
+  UID:                     c44fbd53-40f9-42ca-9b4c-823d8e998d01
 Spec:
-  Configuration:
+  Apply:  IfReady
   Database Ref:
-    Name:  mg-sh
-  Type:    VerticalScaling
+    Name:   mg-sh
+  Timeout:  3m0s
+  Type:     VerticalScaling
   Vertical Scaling:
     Shard:
       Limits:
-        Cpu:     250m
-        Memory:  350Mi
+        Memory:  400Mi
       Requests:
-        Cpu:     250m
-        Memory:  350Mi
+        Cpu:     400m
+        Memory:  400Mi
 Status:
   Conditions:
-    Last Transition Time:  2021-03-07T16:50:13Z
+    Last Transition Time:  2022-10-27T09:47:08Z
     Message:               MongoDB ops request is vertically scaling database
     Observed Generation:   1
     Reason:                VerticalScaling
     Status:                True
     Type:                  VerticalScaling
-    Last Transition Time:  2021-03-07T16:50:13Z
-    Message:               Successfully updated StatefulSets Resources
-    Observed Generation:   1
-    Reason:                UpdateStatefulSetResources
-    Status:                True
-    Type:                  UpdateStatefulSetResources
-    Last Transition Time:  2021-03-07T16:55:21Z
+    Last Transition Time:  2022-10-27T09:49:49Z
     Message:               Successfully Vertically Scaled Shard Resources
     Observed Generation:   1
     Reason:                UpdateShardResources
     Status:                True
     Type:                  UpdateShardResources
-    Last Transition Time:  2021-03-07T16:55:21Z
+    Last Transition Time:  2022-10-27T09:49:49Z
     Message:               Successfully Vertically Scaled Database
     Observed Generation:   1
     Reason:                Successful
@@ -620,17 +516,20 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason                      Age    From                        Message
-  ----    ------                      ----   ----                        -------
-  Normal  PauseDatabase               14m    KubeDB Enterprise Operator  Pausing MongoDB demo/mg-sh
-  Normal  PauseDatabase               14m    KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-sh
-  Normal  Starting                    14m    KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sh-shard0
-  Normal  Starting                    14m    KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sh-shard1
-  Normal  UpdateStatefulSetResources  14m    KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  UpdateShardResources        9m13s  KubeDB Enterprise Operator  Successfully Vertically Scaled Shard Resources
-  Normal  ResumeDatabase              9m13s  KubeDB Enterprise Operator  Resuming MongoDB demo/mg-sh
-  Normal  ResumeDatabase              9m13s  KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-sh
-  Normal  Successful                  9m13s  KubeDB Enterprise Operator  Successfully Vertically Scaled Database
+  Type    Reason                Age    From                         Message
+  ----    ------                ----   ----                         -------
+  Normal  PauseDatabase         3m27s  KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-sh
+  Normal  PauseDatabase         3m27s  KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-sh
+  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sh-shard0
+  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sh-shard1
+  Normal  UpdateShardResources  3m27s  KubeDB Ops-manager Operator  Successfully updated Shard Resources
+  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sh-shard0
+  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sh-shard1
+  Normal  UpdateShardResources  3m27s  KubeDB Ops-manager Operator  Successfully updated Shard Resources
+  Normal  UpdateShardResources  46s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Shard Resources
+  Normal  ResumeDatabase        46s    KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-sh
+  Normal  ResumeDatabase        46s    KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mg-sh
+  Normal  Successful            46s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Database
 ```
 
 Now, we are going to verify from the Pod, and the MongoDB yaml whether the resources of the shard pod of the database has updated to meet up the desired state, Let's check,
@@ -639,26 +538,26 @@ Now, we are going to verify from the Pod, and the MongoDB yaml whether the resou
 $ kubectl get pod -n demo mg-sh-shard0-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
-    "cpu": "250m",
-    "memory": "350Mi"
+    "memory": "400Mi"
   },
   "requests": {
-    "cpu": "250m",
-    "memory": "350Mi"
+    "cpu": "400m",
+    "memory": "400Mi"
   }
 }
+
 
 $ kubectl get mongodb -n demo mg-sh -o json | jq '.spec.shardTopology.shard.podTemplate.spec.resources'
 {
   "limits": {
-    "cpu": "250m",
-    "memory": "350Mi"
+    "memory": "400Mi"
   },
   "requests": {
-    "cpu": "250m",
-    "memory": "350Mi"
+    "cpu": "400m",
+    "memory": "400Mi"
   }
 }
+
 ```
 
 

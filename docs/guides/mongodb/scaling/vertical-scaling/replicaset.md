@@ -16,13 +16,13 @@ section_menu_id: guides
 
 # Vertical Scale MongoDB Replicaset
 
-This guide will show you how to use `KubeDB` Enterprise operator to update the resources of a MongoDB replicaset database.
+This guide will show you how to use `KubeDB` Ops-manager operator to update the resources of a MongoDB replicaset database.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
@@ -133,6 +133,11 @@ spec:
       limits:
         memory: "1.2Gi"
         cpu: "0.6"
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -140,6 +145,8 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `mops-vscale-replicaset` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.replicaSet` specifies the desired resources after scaling.
+- `spec.VerticalScaling.arbiter` could also be specified in similar fashion to get the desired resources for arbiter pod.
+- Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
@@ -150,7 +157,7 @@ mongodbopsrequest.ops.kubedb.com/mops-vscale-replicaset created
 
 #### Verify MongoDB Replicaset resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the resources of `MongoDB` object and related `StatefulSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -172,7 +179,7 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MongoDBOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-02T17:03:37Z
+  Creation Timestamp:  2022-10-26T10:41:56Z
   Generation:          1
   Managed Fields:
     API Version:  ops.kubedb.com/v1alpha1
@@ -184,46 +191,52 @@ Metadata:
           f:kubectl.kubernetes.io/last-applied-configuration:
       f:spec:
         .:
+        f:apply:
         f:databaseRef:
+        f:readinessCriteria:
           .:
-          f:name:
+          f:objectsCountDiffPercentage:
+          f:oplogMaxLagSeconds:
+        f:timeout:
         f:type:
         f:verticalScaling:
           .:
           f:replicaSet:
             .:
             f:limits:
+              .:
+              f:cpu:
+              f:memory:
             f:requests:
+              .:
+              f:cpu:
+              f:memory:
     Manager:      kubectl-client-side-apply
     Operation:    Update
-    Time:         2021-03-02T17:03:37Z
+    Time:         2022-10-26T10:41:56Z
     API Version:  ops.kubedb.com/v1alpha1
     Fields Type:  FieldsV1
     fieldsV1:
-      f:spec:
-        f:verticalScaling:
-          f:replicaSet:
-            f:limits:
-              f:cpu:
-              f:memory:
-            f:requests:
-              f:cpu:
-              f:memory:
       f:status:
         .:
         f:conditions:
         f:observedGeneration:
         f:phase:
-    Manager:         kubedb-enterprise
+    Manager:         kubedb-ops-manager
     Operation:       Update
-    Time:            2021-03-02T17:03:37Z
-  Resource Version:  154015
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-vscale-replicaset
-  UID:               5149dd51-7538-421d-b3ca-23dfa2b77b95
+    Subresource:     status
+    Time:            2022-10-26T10:44:33Z
+  Resource Version:  611468
+  UID:               474053a7-90a8-49fd-9b27-c9bf7b4660e7
 Spec:
+  Apply:  IfReady
   Database Ref:
     Name:  mg-replicaset
-  Type:    VerticalScaling
+  Readiness Criteria:
+    Objects Count Diff Percentage:  10
+    Oplog Max Lag Seconds:          20
+  Timeout:                          5m
+  Type:                             VerticalScaling
   Vertical Scaling:
     Replica Set:
       Limits:
@@ -234,25 +247,19 @@ Spec:
         Memory:  1.2Gi
 Status:
   Conditions:
-    Last Transition Time:  2021-03-02T17:03:37Z
+    Last Transition Time:  2022-10-26T10:43:21Z
     Message:               MongoDB ops request is vertically scaling database
     Observed Generation:   1
     Reason:                VerticalScaling
     Status:                True
     Type:                  VerticalScaling
-    Last Transition Time:  2021-03-02T17:03:37Z
-    Message:               Successfully updated StatefulSets Resources
-    Observed Generation:   1
-    Reason:                UpdateStatefulSetResources
-    Status:                True
-    Type:                  UpdateStatefulSetResources
-    Last Transition Time:  2021-03-02T17:05:33Z
+    Last Transition Time:  2022-10-26T10:44:33Z
     Message:               Successfully Vertically Scaled Replicaset Resources
     Observed Generation:   1
     Reason:                UpdateReplicaSetResources
     Status:                True
     Type:                  UpdateReplicaSetResources
-    Last Transition Time:  2021-03-02T17:05:33Z
+    Last Transition Time:  2022-10-26T10:44:33Z
     Message:               Successfully Vertically Scaled Database
     Observed Generation:   1
     Reason:                Successful
@@ -261,18 +268,19 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason                      Age    From                        Message
-  ----    ------                      ----   ----                        -------
-  Normal  PauseDatabase               2m13s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-replicaset
-  Normal  PauseDatabase               2m13s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-replicaset
-  Normal  Starting                    2m13s  KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-replicaset
-  Normal  UpdateStatefulSetResources  2m13s  KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  Starting                    2m13s  KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-replicaset
-  Normal  UpdateStatefulSetResources  2m13s  KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  UpdateReplicaSetResources   17s    KubeDB Enterprise Operator  Successfully Vertically Scaled Replicaset Resources
-  Normal  ResumeDatabase              17s    KubeDB Enterprise Operator  Resuming MongoDB demo/mg-replicaset
-  Normal  ResumeDatabase              17s    KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-replicaset
-  Normal  Successful                  17s    KubeDB Enterprise Operator  Successfully Vertically Scaled Database
+  Type    Reason                     Age   From                         Message
+  ----    ------                     ----  ----                         -------
+  Normal  PauseDatabase              82s   KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-replicaset
+  Normal  PauseDatabase              82s   KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-replicaset
+  Normal  Starting                   82s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-replicaset
+  Normal  UpdateReplicaSetResources  82s   KubeDB Ops-manager Operator  Successfully updated replicaset Resources
+  Normal  Starting                   82s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-replicaset
+  Normal  UpdateReplicaSetResources  82s   KubeDB Ops-manager Operator  Successfully updated replicaset Resources
+  Normal  UpdateReplicaSetResources  10s   KubeDB Ops-manager Operator  Successfully Vertically Scaled Replicaset Resources
+  Normal  ResumeDatabase             10s   KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-replicaset
+  Normal  ResumeDatabase             10s   KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mg-replicaset
+  Normal  Successful                 10s   KubeDB Ops-manager Operator  Successfully Vertically Scaled Database
+
 ```
 
 Now, we are going to verify from one of the Pod yaml whether the resources of the replicaset database has updated to meet up the desired state, Let's check,

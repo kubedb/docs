@@ -70,7 +70,7 @@ spec:
     prometheus:
       serviceMonitor:
         labels:
-          k8s-app: prometheus
+          release: prometheus
       exporter:
         args:
         - --collect.database
@@ -92,7 +92,11 @@ spec:
           allowPrivilegeEscalation: false
 ```
 
-Here, we have specified that we are going to monitor this server using Prometheus operator through `spec.monitor.agent: prometheus.io/operator`. KubeDB will create a `ServiceMonitor` crd in `monitoring` namespace and this `ServiceMonitor` will have `k8s-app: prometheus` label.
+Here, we have specified that we are going to monitor this server using Prometheus operator through `spec.monitor.agent: prometheus.io/operator`. KubeDB will create a `ServiceMonitor` crd in databases namespace and this `ServiceMonitor` will have `release: prometheus` label.
+
+One thing to note that, we internally use `--collect-all` args, if the mongodb exporter version >= v0.31.0 . You can check the exporter version by getting the mgversion object, like this, 
+`kubectl get mgversion -o=jsonpath='{.spec.exporter.image}' 4.2.3`
+In that case, specifying args to collect something (as we used `--collect.database` above) will not have any effect. 
 
 ## Next Steps
 
