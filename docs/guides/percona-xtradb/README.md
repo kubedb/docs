@@ -33,7 +33,7 @@ aliases:
 ## Life Cycle of a PerconaXtraDB Object
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/percona-xtradb/images/perconaxtradb-lifecycle.png" >
+  <img alt="lifecycle"  src="/docs/guides/percona-xtradb/images/perconaxtradb-lifecycle.svg" >
 </p>
 
 ## User Guide

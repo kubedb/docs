@@ -1,5 +1,5 @@
 ---
-title: Run MySQL using Private Registry
+title: Run PerconaXtraDB using Private Registry
 menu:
   docs_{{ .version }}:
     identifier: guides-perconaxtradb-privateregistry

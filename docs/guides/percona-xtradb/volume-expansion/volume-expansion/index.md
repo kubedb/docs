@@ -182,7 +182,7 @@ Spec:
     Name:  sample-pxc
   Type:    VolumeExpansion
   Volume Expansion:
-    Mariadb:  2Gi
+    PerconaXtraDB:  2Gi
     Mode:     Online
 Status:
   Conditions:
