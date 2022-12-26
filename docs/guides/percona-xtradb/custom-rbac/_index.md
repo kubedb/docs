@@ -1,10 +1,10 @@
 ---
-title: Run PerconaXtraDB with Custom RBAC resources
+title: Run MySQL with Custom RBAC resources
 menu:
   docs_{{ .version }}:
-    identifier: px-custom-rbac
+    identifier: guides-perconaxtradb-customrbac
     name: Custom RBAC
-    parent: px-percona-xtradb-guides
-    weight: 31
+    parent: guides-perconaxtradb
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

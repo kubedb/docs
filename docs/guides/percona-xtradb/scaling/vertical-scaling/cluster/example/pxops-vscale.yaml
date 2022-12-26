@@ -1,0 +1,17 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PerconaXtraDBOpsRequest
+metadata:
+  name: pxops-vscale
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: sample-pxc
+  verticalScaling:
+    perconaxtradb:
+      requests:
+        memory: "1.2Gi"
+        cpu: "0.6"
+      limits:
+        memory: "1.2Gi"
+        cpu: "0.6"

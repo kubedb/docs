@@ -1,10 +1,10 @@
 ---
-title: Percona XtraDB with Custom Configuration
+title: Run PerconaXtraDB with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: px-configuration
+    identifier: guides-perconaxtradb-configuration
     name: Custom Configuration
-    parent: px-percona-xtradb-guides
-    weight: 30
+    parent: guides-perconaxtradb
+    weight: 40
 menu_name: docs_{{ .version }}
 ---

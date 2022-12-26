@@ -1,10 +1,10 @@
 ---
-title: Percona XtraDB using Private Registry
+title: Run PerconaXtraDB using Private Registry
 menu:
   docs_{{ .version }}:
-    identifier: px-private-registry
+    identifier: guides-perconaxtradb-privateregistry
     name: Private Registry
-    parent: px-percona-xtradb-guides
-    weight: 35
+    parent: guides-perconaxtradb
+    weight: 60
 menu_name: docs_{{ .version }}
 ---
