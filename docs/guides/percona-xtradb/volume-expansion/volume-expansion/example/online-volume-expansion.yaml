@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PerconaXtraDBOpsRequest
+metadata:
+  name: px-online-volume-expansion
+  namespace: demo
+spec:
+  type: VolumeExpansion  
+  databaseRef:
+    name: sample-pxc
+  volumeExpansion:   
+    mode: "Online"
+    perconaxtradb: 2Gi

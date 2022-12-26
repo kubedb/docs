@@ -1,10 +1,10 @@
 ---
-title: Monitoring Percona XtraDB
+title: Monitoring PerconaXtraDB
 menu:
   docs_{{ .version }}:
-    identifier: px-monitoring
+    identifier: guides-perconaxtradb-monitoring
     name: Monitoring
-    parent: px-percona-xtradb-guides
-    weight: 50
+    parent: guides-perconaxtradb
+    weight: 120
 menu_name: docs_{{ .version }}
 ---

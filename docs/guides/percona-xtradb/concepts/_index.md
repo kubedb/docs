@@ -1,10 +1,10 @@
 ---
-title: Percona XtraDB Concepts
+title: PerconaXtraDB Concepts
 menu:
   docs_{{ .version }}:
-    identifier: px-concepts-percona-xtradb
+    identifier: guides-perconaxtradb-concepts
     name: Concepts
-    parent: px-percona-xtradb-guides
+    parent: guides-perconaxtradb
     weight: 20
 menu_name: docs_{{ .version }}
 ---

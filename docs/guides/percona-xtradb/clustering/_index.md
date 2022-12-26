@@ -1,10 +1,10 @@
 ---
-title: Percona XtraDB Cluster
+title: PerconaXtraDB Clustering
 menu:
   docs_{{ .version }}:
-    identifier: px-cluster
-    name: Percona XtraDB Cluster
-    parent: px-percona-xtradb-guides
-    weight: 25
+    identifier: guides-perconaxtradb-clustering
+    name: PerconaXtraDB Clustering
+    parent: guides-perconaxtradb
+    weight: 30
 menu_name: docs_{{ .version }}
 ---
