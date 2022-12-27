@@ -2,9 +2,9 @@
 title: OpenSearch Quickstart
 menu:
 docs_{{ .version }}:
-identifier: os-quickstart-quickstart
+identifier: es-opensearch-overview-elasticsearch
 name: OpenSearch
-parent: es-quickstart-elasticsearch
+parent: es-overview-elasticsearch
 weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
