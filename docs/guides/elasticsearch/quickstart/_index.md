@@ -5,6 +5,6 @@ menu:
     identifier: es-quickstart-elasticsearch
     name: Quickstart
     parent: es-elasticsearch-guides
-    weight: 25
+    weight: 15
 menu_name: docs_{{ .version }}
 ---
