@@ -248,7 +248,8 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 
 ## Next Steps
 
-- [Quickstart Elasticsearch](/docs/guides/elasticsearch/quickstart/overview/index.md) with KubeDB Operator.
+- [Quickstart Elasticsearch](/docs/guides/elasticsearch/quickstart/overview/elasticsearch/index.md) with KubeDB Operator.
+- [Quickstart OpenSearch](/docs/guides/elasticsearch/quickstart/overview/opensearch/index.md) with KubeDB Operator.
 - [Backup & Restore](/docs/guides/elasticsearch/backup/overview/index.md) Elasticsearch instances using Stash.
 - Monitor your Elasticsearch instance with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Monitor your Elasticsearch instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).

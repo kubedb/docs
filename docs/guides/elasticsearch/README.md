@@ -130,7 +130,8 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 
 ## User Guide
 
-- [Quickstart Elasticsearch](/docs/guides/elasticsearch/quickstart/overview/index.md) with KubeDB Operator.
+- [Quickstart Elasticsearch](/docs/guides/elasticsearch/quickstart/overview/elasticsearch/index.md) with KubeDB Operator.
+- [Quickstart OpenSearch](/docs/guides/elasticsearch/quickstart/overview/opensearch/index.md) with KubeDB Operator.
 - [Elasticsearch Clustering](/docs/guides/elasticsearch/clustering/combined-cluster/index.md) supported by KubeDB
 - [Backup & Restore Elasticsearch](/docs/guides/elasticsearch/backup/overview/index.md) database using Stash.
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).

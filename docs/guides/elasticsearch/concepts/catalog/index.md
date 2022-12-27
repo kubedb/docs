@@ -88,4 +88,5 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 ## Next Steps
 
 - Learn about Elasticsearch CRD [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
-- Deploy your first Elasticsearch database with KubeDB by following the guide [here](/docs/guides/elasticsearch/quickstart/overview/index.md).
+- Deploy your first Elasticsearch database with KubeDB by following the guide [here](/docs/guides/elasticsearch/quickstart/overview/elasticsearch/index.md).
+- Deploy your first OpenSearch database with KubeDB by following the guide [here](/docs/guides/elasticsearch/quickstart/overview/opensearch/index.md).
