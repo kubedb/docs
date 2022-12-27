@@ -1,11 +1,11 @@
 ---
 title: OpenSearch Quickstart
 menu:
-  docs_{{ .version }}:
-    identifier: os-quickstart-quickstart
-    name: Quickstart
-    parent: os-quickstart
-    weight: 15
+docs_{{ .version }}:
+identifier: os-quickstart-quickstart
+name: OpenSearch
+parent: es-quickstart-elasticsearch
+weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
