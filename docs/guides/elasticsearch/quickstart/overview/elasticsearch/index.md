@@ -17,7 +17,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to run an Elasticsearch database.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/elasticsearch/quickstart/overview/elasticsearch/images/Lifecycle-of-an-Elasticsearch-CRD.svg">
+  <img alt="lifecycle"  src="/docs/guides/elasticsearch/quickstart/overview/elasticsearch/images/Lifecycle-of-an-Elasticsearch-CRD.png">
 </p>
 
 ## Before You Begin
@@ -39,7 +39,7 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [guides/elasticsearch/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Elasticsearch. If you just want to try out KubeDB, you can bypass some of the safety features following the tips [here](/docs/guides/elasticsearch/quickstart/overview/index.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Elasticsearch. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/elasticsearch/quickstart/overview/elasticsearch/index.md#tips-for-testing).
 
 ## Find Available StorageClass
 
@@ -176,7 +176,7 @@ Here,
 Let's create the Elasticsearch CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/yamls/elasticsearch.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 
@@ -497,7 +497,7 @@ persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-9f9c6eaf-1ba6-4167-a37
   - `{Elasticsearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
   - `{Elasticsearch-Name}-master` - the master service which is used to connect to the master nodes. It is a headless service.
   - `{Elasticsearch-Name}-pods` - the node discovery service which is used by the Elasticsearch nodes to communicate each other. It is a headless service.
-- `AppBinding` - an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) which hold the connect information for the database. It is also named after the Elastics
+- `AppBinding` - an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) which hold to connect information for the database. It is also named after the Elastics
 - `Secrets` - 3 types of secrets are generated for each Elasticsearch database.
   - `{Elasticsearch-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the Elasticsearch users. The auth secret `es-quickstart-elastic-cred` holds the `username` and `password` for `elastic` user which lets administrative access.
   - `{Elasticsearch-Name}-{alias}-cert` - the certificate secrets which hold `tls.crt`, `tls.key`, and `ca.crt` for configuring the Elasticsearch database.
@@ -607,7 +607,7 @@ Say, the Elasticsearch CR was deleted with `spec.terminationPolicy` to `Halt` an
 You can do it by simpily re-deploying the original Elasticsearch object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/yamls/elasticsearch.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 

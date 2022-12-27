@@ -49,9 +49,9 @@ NAME                 STATUS   AGE
 demo                 Active   9s
 ```
 
-> Note: YAML files used in this tutorial are stored in [guides/elasticsearch/opensearch/quickstart/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/opensearch/quickstart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [guides/elasticsearch/quickstart/overview/opensearch/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/opensearch/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed OpenSearch. If you just want to try out KubeDB, you can bypass some of the safety features following the tips [here](/docs/guides/elasticsearch/quickstart/overview/index.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed OpenSearch. If you just want to try out KubeDB, you can bypass some of the safety features following the tips [here](/docs/guides/elasticsearch/quickstart/overview/opensearch/index.md#tips-for-testing).
 
 
 ## Find Available Versions
@@ -171,7 +171,7 @@ Here,
 Let's apply the yaml that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/opensearch/quickstart/yamls/opensearch.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/opensearch/yamls/opensearch.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 
@@ -400,7 +400,7 @@ secret/sample-opensearch-transport-cert         kubernetes.io/tls          3    
   - `{OpenSearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
   - `{OpenSearch-Name}-master` - the master service which is used to connect to the master nodes. It is a headless service.
   - `{OpenSearch-Name}-pods` - the node discovery service which is used by the OpenSearch nodes to communicate each other. It is a headless service.
-- `AppBinding` - an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) which hold the connect information for the database.
+- `AppBinding` - an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) which hold to connect information for the database.
 - `Secrets` - 3 types of secrets are generated for each OpenSearch database.
   - `{OpenSearch-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the OpenSearch users.
   - `{OpenSearch-Name}-{alias}-cert` - the certificate secrets which hold `tls.crt`, `tls.key`, and `ca.crt` for configuring the OpenSearch database.
