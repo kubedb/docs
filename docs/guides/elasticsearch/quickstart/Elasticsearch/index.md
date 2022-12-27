@@ -201,17 +201,77 @@ Annotations:  <none>
 API Version:  kubedb.com/v1alpha2
 Kind:         Elasticsearch
 Metadata:
-  Creation Timestamp:  2022-06-08T09:16:26Z
+  Creation Timestamp:  2022-12-27T05:25:39Z
   Finalizers:
     kubedb.com
   Generation:  1
-  Resource Version:  46061
-  UID:               4bf2cd90-b2b8-4fcd-8fe4-21431f90522c
+  Managed Fields:
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:enableSSL:
+        f:healthChecker:
+          .:
+          f:failureThreshold:
+          f:periodSeconds:
+          f:timeoutSeconds:
+        f:heapSizePercentage:
+        f:replicas:
+        f:storage:
+          .:
+          f:accessModes:
+          f:resources:
+            .:
+            f:requests:
+              .:
+              f:storage:
+          f:storageClassName:
+        f:storageType:
+        f:terminationPolicy:
+        f:version:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2022-12-27T05:25:39Z
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .:
+          v:"kubedb.com":
+    Manager:      kubedb-provisioner
+    Operation:    Update
+    Time:         2022-12-27T05:25:39Z
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:         kubedb-provisioner
+    Operation:       Update
+    Subresource:     status
+    Time:            2022-12-27T05:25:39Z
+  Resource Version:  313887
+  UID:               cf37390a-ab9f-4886-9f7e-1a5bedc975e7
 Spec:
   Auth Secret:
-    Name:      es-quickstart-elastic-cred
+    Name:  es-quickstart-elastic-cred
+  Auto Ops:
   Enable SSL:  true
-  Heap Size Percentage:   50
+  Health Checker:
+    Failure Threshold:   1
+    Period Seconds:      10
+    Timeout Seconds:     10
+  Heap Size Percentage:  50
   Internal Users:
     apm_system:
       Backend Roles:
@@ -279,10 +339,10 @@ Spec:
         Run As User:  1000
       Resources:
         Limits:
-          Memory:  1.5Gi
+          Memory:  1536Mi
         Requests:
           Cpu:               500m
-          Memory:            1.5Gi
+          Memory:            1536Mi
       Service Account Name:  es-quickstart
   Replicas:                  3
   Storage:
@@ -293,7 +353,7 @@ Spec:
         Storage:         1Gi
     Storage Class Name:  standard
   Storage Type:          Durable
-  Termination Policy:    DoNotTerminate
+  Termination Policy:    Delete
   Tls:
     Certificates:
       Alias:  ca
@@ -327,58 +387,68 @@ Spec:
   Version:  xpack-8.2.0
 Status:
   Conditions:
-    Last Transition Time:  2022-06-08T09:16:26Z
+    Last Transition Time:  2022-12-27T05:25:39Z
     Message:               The KubeDB operator has started the provisioning of Elasticsearch: demo/es-quickstart
     Reason:                DatabaseProvisioningStartedSuccessfully
     Status:                True
     Type:                  ProvisioningStarted
-    Last Transition Time:  2022-06-08T09:16:26Z
+    Last Transition Time:  2022-12-27T05:25:41Z
     Message:               Internal Users for Elasticsearch: demo/es-quickstart is ready.
     Observed Generation:   1
     Reason:                InternalUsersCredentialsSyncedSuccessfully
     Status:                True
     Type:                  InternalUsersSynced
-    Last Transition Time:  2022-06-08T09:16:43Z
+    Last Transition Time:  2022-12-27T05:28:48Z
     Message:               All desired replicas are ready.
     Reason:                AllReplicasReady
     Status:                True
     Type:                  ReplicaReady
-    Last Transition Time:  2022-06-08T09:17:03Z
+    Last Transition Time:  2022-12-27T05:29:05Z
     Message:               The Elasticsearch: demo/es-quickstart is accepting client requests.
     Observed Generation:   1
     Reason:                DatabaseAcceptingConnectionRequest
     Status:                True
     Type:                  AcceptingConnection
-    Last Transition Time:  2022-06-08T09:17:04Z
+    Last Transition Time:  2022-12-27T05:29:05Z
     Message:               The Elasticsearch: demo/es-quickstart is ready.
     Observed Generation:   1
     Reason:                ReadinessCheckSucceeded
     Status:                True
     Type:                  Ready
-    Last Transition Time:  2022-06-08T09:17:05Z
+    Last Transition Time:  2022-12-27T05:29:06Z
+    Message:               The Elasticsearch: demo/es-quickstart is accepting write requests.
+    Observed Generation:   1
+    Reason:                DatabaseWriteAccessCheckSucceeded
+    Status:                True
+    Type:                  DatabaseWriteAccess
+    Last Transition Time:  2022-12-27T05:29:13Z
     Message:               The Elasticsearch: demo/es-quickstart is successfully provisioned.
     Observed Generation:   1
     Reason:                DatabaseSuccessfullyProvisioned
     Status:                True
     Type:                  Provisioned
+    Last Transition Time:  2022-12-27T05:29:15Z
+    Message:               The Elasticsearch: demo/es-quickstart is accepting read requests.
+    Observed Generation:   1
+    Reason:                DatabaseReadAccessCheckSucceeded
+    Status:                True
+    Type:                  DatabaseReadAccess
   Observed Generation:     1
   Phase:                   Ready
 Events:
   Type    Reason      Age    From             Message
   ----    ------      ----   ----             -------
-  Normal  Successful  2m58s  kubedb operator  Successfully  governing service
-  Normal  Successful  2m58s  kubedb operator  Successfully created Service
-  Normal  Successful  2m58s  kubedb operator  Successfully created Service
-  Normal  Successful  2m58s  kubedb operator  Successfully created Elasticsearch
-  Normal  Successful  2m58s  kubedb operator  Successfully created appbinding
-  Normal  Successful  2m58s  kubedb operator  Successfully  governing service
-  Normal  Successful  2m58s  kubedb operator  Successfully created governing service
-  Normal  Successful  2m41s  kubedb operator  Successfully  governing service
-  Normal  Successful  2m31s  kubedb operator  Successfully  governing service
-  Normal  Successful  2m21s  kubedb operator  Successfully  governing service
-  Normal  Successful  2m20s  kubedb operator  Successfully  governing service
-  Normal  Successful  2m19s  kubedb operator  Successfully  governing service
-  Normal  Successful  73s    kubedb operator  Successfully  governing service
+  Normal  Successful  4m48s  KubeDB Operator  Successfully created governing service
+  Normal  Successful  4m47s  KubeDB Operator  Successfully created Service
+  Normal  Successful  4m47s  KubeDB Operator  Successfully created Service
+  Normal  Successful  4m40s  KubeDB Operator  Successfully created Elasticsearch
+  Normal  Successful  4m40s  KubeDB Operator  Successfully created appbinding
+  Normal  Successful  4m40s  KubeDB Operator  Successfully  governing service
+  Normal  Successful  4m32s  KubeDB Operator  Successfully  governing service
+  Normal  Successful  99s    KubeDB Operator  Successfully  governing service
+  Normal  Successful  82s    KubeDB Operator  Successfully  governing service
+  Normal  Successful  74s    KubeDB Operator  Successfully  governing service
+  Normal  Successful  66s    KubeDB Operator  Successfully  governing service
 ```
 
 ### KubeDB Operator Generated Resources
@@ -386,36 +456,40 @@ Events:
 On deployment of an Elasticsearch CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret -n demo -l 'app.kubernetes.io/instance=es-quickstart'
+$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-quickstart'
 NAME                  READY   STATUS    RESTARTS   AGE
-pod/es-quickstart-0   1/1     Running   0          4m3s
-pod/es-quickstart-1   1/1     Running   0          3m56s
-pod/es-quickstart-2   1/1     Running   0          3m51s
+pod/es-quickstart-0   1/1     Running   0          8m2s
+pod/es-quickstart-1   1/1     Running   0          5m15s
+pod/es-quickstart-2   1/1     Running   0          5m8s
 
-NAME                           TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-service/es-quickstart          ClusterIP   10.96.143.48   <none>        9200/TCP   4m3s
-service/es-quickstart-master   ClusterIP   None           <none>        9300/TCP   4m3s
-service/es-quickstart-pods     ClusterIP   None           <none>        9200/TCP   4m3s
+NAME                           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/es-quickstart          ClusterIP   10.96.209.204   <none>        9200/TCP   8m9s
+service/es-quickstart-master   ClusterIP   None            <none>        9300/TCP   8m9s
+service/es-quickstart-pods     ClusterIP   None            <none>        9200/TCP   8m10s
 
 NAME                             READY   AGE
-statefulset.apps/es-quickstart   3/3     4m3s
+statefulset.apps/es-quickstart   3/3     8m2s
 
 NAME                                               TYPE                       VERSION   AGE
-appbinding.appcatalog.appscode.com/es-quickstart   kubedb.com/elasticsearch   8.2.0     4m3s
+appbinding.appcatalog.appscode.com/es-quickstart   kubedb.com/elasticsearch   8.2.0     8m2s
 
 NAME                                               TYPE                       DATA   AGE
-secret/es-quickstart-apm-system-cred               kubernetes.io/basic-auth   2      4m3s
-secret/es-quickstart-beats-system-cred             kubernetes.io/basic-auth   2      4m3s
-secret/es-quickstart-ca-cert                       kubernetes.io/tls          2      4m3s
-secret/es-quickstart-client-cert                   kubernetes.io/tls          3      4m3s
-secret/es-quickstart-config                        Opaque                     1      4m3s
-secret/es-quickstart-elastic-cred                  kubernetes.io/basic-auth   2      4m3s
-secret/es-quickstart-http-cert                     kubernetes.io/tls          3      4m3s
-secret/es-quickstart-kibana-system-cred            kubernetes.io/basic-auth   2      4m3s
-secret/es-quickstart-logstash-system-cred          kubernetes.io/basic-auth   2      4m3s
-secret/es-quickstart-remote-monitoring-user-cred   kubernetes.io/basic-auth   2      4m3s
-secret/es-quickstart-transport-cert                kubernetes.io/tls          3      4m3s
+secret/es-quickstart-apm-system-cred               kubernetes.io/basic-auth   2      8m8s
+secret/es-quickstart-beats-system-cred             kubernetes.io/basic-auth   2      8m8s
+secret/es-quickstart-ca-cert                       kubernetes.io/tls          2      8m9s
+secret/es-quickstart-client-cert                   kubernetes.io/tls          3      8m8s
+secret/es-quickstart-config                        Opaque                     1      8m8s
+secret/es-quickstart-elastic-cred                  kubernetes.io/basic-auth   2      8m8s
+secret/es-quickstart-http-cert                     kubernetes.io/tls          3      8m9s
+secret/es-quickstart-kibana-system-cred            kubernetes.io/basic-auth   2      8m8s
+secret/es-quickstart-logstash-system-cred          kubernetes.io/basic-auth   2      8m8s
+secret/es-quickstart-remote-monitoring-user-cred   kubernetes.io/basic-auth   2      8m8s
+secret/es-quickstart-transport-cert                kubernetes.io/tls          3      8m9s
 
+NAME                                         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-es-quickstart-0   Bound    pvc-e5227633-2fc0-4a50-a599-57cba8b31d14   1Gi        RWO            standard       8m2s
+persistentvolumeclaim/data-es-quickstart-1   Bound    pvc-fbacd36c-4132-4e2a-a5c5-91149054044c   1Gi        RWO            standard       5m15s
+persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-9f9c6eaf-1ba6-4167-a37d-86eaf1f7e103   1Gi        RWO            standard       5m8s
 ```
 
 - `StatefulSet` - a StatefulSet named after the Elasticsearch instance. In topology mode, the operator creates 3 statefulSets with name `{Elasticsearch-Name}-{Sufix}`.
@@ -425,9 +499,10 @@ secret/es-quickstart-transport-cert                kubernetes.io/tls          3 
   - `{Elasticsearch-Name}-pods` - the node discovery service which is used by the Elasticsearch nodes to communicate each other. It is a headless service.
 - `AppBinding` - an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) which hold the connect information for the database. It is also named after the Elastics
 - `Secrets` - 3 types of secrets are generated for each Elasticsearch database.
-  - `{Elasticsearch-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the Elasticsearch users.
+  - `{Elasticsearch-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the Elasticsearch users. The auth secret `es-quickstart-elastic-cred` holds the `username` and `password` for `elastic` user which lets administrative access.
   - `{Elasticsearch-Name}-{alias}-cert` - the certificate secrets which hold `tls.crt`, `tls.key`, and `ca.crt` for configuring the Elasticsearch database.
   - `{Elasticsearch-Name}-config` - the default configuration secret created by the operator.
+  - `data-{Elasticsearch-node-name}` - the persistent volume claims created by the StatefulSet.
 
 ## Connect with Elasticsearch Database
 
