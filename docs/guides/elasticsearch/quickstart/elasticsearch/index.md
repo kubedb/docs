@@ -3,7 +3,7 @@ title: Elasticsearch Quickstart
 menu:
   docs_{{ .version }}:
     identifier: es-quickstart-quickstart
-    name: Overview
+    name: Elasticsearch
     parent: es-quickstart-elasticsearch
     weight: 10
 menu_name: docs_{{ .version }}
