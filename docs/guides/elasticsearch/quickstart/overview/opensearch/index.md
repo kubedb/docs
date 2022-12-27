@@ -16,6 +16,10 @@ section_menu_id: guides
 
 This tutorial will show you how to use KubeDB to run an OpenSearch database.
 
+<p align="center">
+  <img alt="lifecycle"  src="/docs/guides/elasticsearch/quickstart/overview/opensearch/images/Lifecycle-of-an-Opensearch-CRD.png">
+</p>
+
 ## Before You Begin
 
 * At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).

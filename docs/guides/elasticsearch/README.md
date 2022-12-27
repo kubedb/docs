@@ -45,7 +45,7 @@ aliases:
 ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 --->
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/elasticsearch/quickstart/overview/images/Lifecycle-of-an-Elasticsearch-CRD-complete.png">
+  <img alt="lifecycle"  src="/docs/guides/elasticsearch/images/Lifecycle-of-an-Elasticsearch-CRD-complete.png">
 </p>
 
 
