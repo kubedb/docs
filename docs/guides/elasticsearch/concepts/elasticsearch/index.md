@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is Elasticsearch
 
-`Elasticsearch` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [Elasticsearch](https://www.elastic.co/products/elasticsearch) in a Kubernetes native way. You only need to describe the desired database configuration in an Elasticsearch object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`Elasticsearch` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [Elasticsearch](https://www.elastic.co/products/elasticsearch) and [OpenSearch](https://opensearch.org/) in a Kubernetes native way. You only need to describe the desired database configuration in an Elasticsearch object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## Elasticsearch Spec
 
@@ -156,12 +156,10 @@ spec:
     disableWriteCheck: false
   version: searchguard-7.9.3
 ```
-
 ### spec.autoOps
 AutoOps is an optional field to control the generation of versionUpgrade & TLS-related recommendations.
 
 ### spec.version
-
 `spec.version` is a `required` field that specifies the name of the [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md) CRD where the docker images are specified.
 
 - Name format: `{Security Plugin Name}-{Application Version}-{Modification Tag}`
@@ -335,20 +333,20 @@ For the default roles visit the [SearchGurad docs](https://docs.search-guard.com
 
 ### spec.topology
 
-`spec.topology` is an `optional` field that provides a way to configure different types of nodes for the Elasticsearch cluster. This field enables you to specify how many nodes you want to act as `master`, `data` and `ingest`. You can also specify how much storage and resources to allocate for each type of node independently.
+`spec.topology` is an `optional` field that provides a way to configure different types of nodes for the Elasticsearch cluster. This field enables you to specify how many nodes you want to act as `master`, `data`, `ingest` or other node roles for Elasticsearch. You can also specify how much storage and resources to allocate for each type of node independently.
 
 Currently supported node types are -
-- data
-- ingest
-- master
-- dataHot
-- dataWarm
-- dataCold
-- dataFrozen
-- dataContent
-- ml
-- transform
-- coordinating
+- **data**: Data nodes hold the shards that contain the documents you have indexed. Data nodes handle data related operations like CRUD, search, and aggregations
+- **ingest**: Ingest nodes can execute pre-processing pipelines, composed of one or more ingest processors
+- **master**: The master node is responsible for lightweight cluster-wide actions such as creating or deleting an index, tracking which nodes are part of the cluster, and deciding which shards to allocate to which nodes. It is important for cluster health to have a stable master node.
+- **dataHot**: Hot data nodes are part of the hot tier. The hot tier is the Elasticsearch entry point for time series data and holds your most-recent, most-frequently-searched time series data.
+- **dataWarm**: Warm data nodes are part of the warm tier. Time series data can move to the warm tier once it is being queried less frequently than the recently-indexed data in the hot tier.
+- **dataCold**: Cold data nodes are part of the cold tier. When you no longer need to search time series data regularly, it can move from the warm tier to the cold tier.
+- **dataFrozen**: Frozen data nodes are part of the frozen tier. Once data is no longer being queried, or being queried rarely, it may move from the cold tier to the frozen tier where it stays for the rest of its life.
+- **dataContent**: Content data nodes are part of the content tier. Data stored in the content tier is generally a collection of items such as a product catalog or article archive. Unlike time series data, the value of the content remains relatively constant over time, so it doesn’t make sense to move it to a tier with different performance characteristics as it ages.
+- **ml**: Machine learning nodes run jobs and handle machine learning API requests.
+- **transform**: Transform nodes run transforms and handle transform API requests.
+- **coordinating**: The coordinating node forwards the request to the data nodes which hold the data.
 
 ```yaml
   topology:
@@ -844,4 +842,5 @@ Know details about KubeDB Health checking from this [blog post](https://blog.byt
 ## Next Steps
 
 - Learn how to use KubeDB to run an Elasticsearch database [here](/docs/guides/elasticsearch/README.md).
+- Learn how to use ElasticsearchOpsRequest [here](/docs/guides/elasticsearch/concepts/elasticsearch-ops-request/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
