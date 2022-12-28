@@ -351,7 +351,7 @@ As you can see, `xpack.security.enabled` is set to true.
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl patch -n demo es/config-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
@@ -362,4 +362,4 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn how to use [ssl enabled](/docs/guides/elasticsearch/plugins/x-packs/x-pack/use-tls.md) elasticsearch cluster with xpack.
+- Learn how to use [ssl enabled](/docs/guides/elasticsearch/plugins/x-pack/use-tls.md) elasticsearch cluster with xpack.

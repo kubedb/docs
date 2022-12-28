@@ -509,6 +509,6 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn how to use TLS certificates to connect Elasticsearch from [here](/docs/guides/elasticsearch/plugins/x-packs/x-pack/use-tls.md).
-- Learn how to generate [x-pack configuration](/docs/guides/elasticsearch/plugins/x-packs/x-pack/configuration.md).
+- Learn how to use TLS certificates to connect Elasticsearch from [here](/docs/guides/elasticsearch/plugins/x-pack/use-tls.md).
+- Learn how to generate [x-pack configuration](/docs/guides/elasticsearch/plugins/x-pack/configuration.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

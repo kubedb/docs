@@ -180,6 +180,6 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn how to [create TLS certificates](/docs/guides/elasticsearch/plugins/search-guardch-guard/issue-certificate.md).
-- Learn how to generate [search-guard configuration](/docs/guides/elasticsearch/plugins/search-guardch-guard/configuration.md).
+- Learn how to [create TLS certificates](/docs/guides/elasticsearch/plugins/search-guard/issue-certificate.md).
+- Learn how to generate [search-guard configuration](/docs/guides/elasticsearch/plugins/search-guard/configuration.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
