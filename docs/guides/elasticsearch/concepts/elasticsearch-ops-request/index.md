@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is ElasticsearchOpsRequest
 
-`ElasticsearchOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for the [Elasticsearch](https://www.elastic.co/guide/index.html) administrative operations like database version upgrading, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
+`ElasticsearchOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for the [Elasticsearch](https://www.elastic.co/guide/index.html) and [OpenSearch](https://opensearch.org/) administrative operations like database version upgrading, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
 
 ## ElasticsearchOpsRequest Specifications
 
@@ -81,19 +81,19 @@ It specifies the desired version information required for the Elasticsearch vers
 > KubeDB does not support downgrade for Elasticsearch.
 
 **Samples:**
-
+Let's assume we have and Elasticsearch cluster of version `xpack-8.2.0`. The Elasticsearch custom resource is named `es-quickstart` and it's provisioned in demo namespace. Now, you want to upgrade your Elasticsearch cluster to `xpack-8.5.2`. Apply this YAML to upgrade to your desired version.
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ElasticsearchOpsRequest
 metadata:
-  name: es-topology-upgrade
+  name: es-quickstart-upgrade
   namespace: demo
 spec:
-  type: UpdateVersion
+  type: Upgrade
   databaseRef:
-    name: es
+    name: es-quickstart
   upgrade:
-    targetVersion: searchguard-7.5.2-v1
+    targetVersion: xpack-8.5.2
 ```
 
 ### spec.horizontalScaling
