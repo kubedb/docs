@@ -362,4 +362,4 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn how to use [ssl enabled](/docs/guides/elasticsearch/x-pack/use-tls.md) elasticsearch cluster with xpack.
+- Learn how to use [ssl enabled](/docs/guides/elasticsearch/plugins/x-packs/x-pack/use-tls.md) elasticsearch cluster with xpack.
