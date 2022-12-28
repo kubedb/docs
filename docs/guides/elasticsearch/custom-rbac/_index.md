@@ -5,6 +5,6 @@ menu:
     identifier: es-custom-rbac
     name: Custom RBAC
     parent: es-elasticsearch-guides
-    weight: 32
+    weight: 31
 menu_name: docs_{{ .version }}
 ---

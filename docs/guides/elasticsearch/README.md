@@ -52,6 +52,7 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 
 ## Available Elasticsearch Versions
 
+KubeDB supports `Elasticsearch` provided by Elastic with `xpack` auth plugin. `Opensearch` and `Opendistro` are supported too. KubeDB also supports some versions of Elasticsearch with `searchguard` auth plugin. Compatible `Kibana` and `Opensearch-Dashboards` are supported by Most of the Elasticsearch versions with `xpack` auth plugin and OpenSearch. `Kibana` and `Opensearch-Dashboards` can be provisioned externally or by using KubeDB with `ElasticsearchDashboard` CRD. 
 
 <table>
 <tr><th>X-Pack</th><th>OpenSearch</th></tr>
@@ -132,6 +133,8 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 
 - [Quickstart Elasticsearch](/docs/guides/elasticsearch/quickstart/overview/elasticsearch/index.md) with KubeDB Operator.
 - [Quickstart OpenSearch](/docs/guides/elasticsearch/quickstart/overview/opensearch/index.md) with KubeDB Operator.
+- [Quickstart Kibana](/docs/guides/elasticsearch/elasticsearch-dashboard/kibana/index.md) with KubeDB Operator.
+- [Quickstart OpenSearch-Dashboards](/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/index.md) with KubeDB Operator.
 - [Elasticsearch Clustering](/docs/guides/elasticsearch/clustering/combined-cluster/index.md) supported by KubeDB
 - [Backup & Restore Elasticsearch](/docs/guides/elasticsearch/backup/overview/index.md) database using Stash.
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
