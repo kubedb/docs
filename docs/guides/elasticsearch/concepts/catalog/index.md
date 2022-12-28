@@ -16,9 +16,9 @@ section_menu_id: guides
 
 ## What is ElasticsearchVersion
 
-`ElasticsearchVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Elasticsearch](https://www.elastic.co/products/elasticsearch) database deployed with KubeDB in a Kubernetes native way.
+`ElasticsearchVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Elasticsearch](https://www.elastic.co/products/elasticsearch), [Kibana](https://www.elastic.co/products/kibana) and [OpenSearch](https://opensearch.org/), [OpenSearch-Dashboards](https://opensearch.org/docs/latest/dashboards/index/) deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, an `ElasticsearchVersion` custom resource will be created automatically for every supported Elasticsearch version. You have to specify the name of `ElasticsearchVersion` CRD in `spec.version` field of [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md) CRD. Then, KubeDB will use the docker images specified in the `ElasticsearchVersion` CRD to create your expected database.
+When you install KubeDB, an `ElasticsearchVersion` custom resource will be created automatically for every supported Elasticsearch and OpenSearch version. You have to specify the name of `ElasticsearchVersion` CRD in `spec.version` field of [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md) CRD. Then, KubeDB will use the docker images specified in the `ElasticsearchVersion` CRD to create your expected database. If you want to provision `Kibana` or `Opensearch-Dashboards`, you have to specify the name of `Elasticsearch` CRD in `spec.databaseRef.name` field of [ElasticsearchDashboard](/docs/guides/elasticsearch/concepts/elasticsearch-dashboard/index.md) CRD. Then, KubeDB will use the compatible docker image specified in the `.spec.dashboard.image` field of the `ElasticsearchVersion` CRD that Elasticsearch is using to create your expected dashboard.
 
 Using a separate CRD for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of the KubeDB operator. This will also allow the users to use a custom image for the database.
 
@@ -30,25 +30,52 @@ As with all other Kubernetes objects, an ElasticsearchVersion needs `apiVersion`
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: ElasticsearchVersion
 metadata:
+  annotations:
+    meta.helm.sh/release-name: kubedb
+    meta.helm.sh/release-namespace: kubedb
+  creationTimestamp: "2022-12-26T04:28:09Z"
+  generation: 1
   labels:
-    app.kubernetes.io/instance: kubedb-catalog
+    app.kubernetes.io/instance: kubedb
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kubedb-catalog
-    app.kubernetes.io/version: v0.16.2
-    helm.sh/chart: kubedb-catalog-v0.16.2
-  name: opendistro-1.12.0
+    app.kubernetes.io/version: v2022.12.24-rc.1
+    helm.sh/chart: kubedb-catalog-v2022.12.24-rc.1
+  name: xpack-8.2.0
+  resourceVersion: "236918"
+  uid: 55abfde5-a8cb-486b-b73c-1a2b097e96a3
 spec:
-  authPlugin: OpenDistro
+  authPlugin: X-Pack
+  dashboard:
+    image: kibana:8.2.0
+  dashboardInitContainer:
+    yqImage: kubedb/elasticsearch-dashboard-init:8.2.0-xpack-v2022.05.24
   db:
-    image: kubedb/elasticsearch:1.12.0-opendistro
+    image: elasticsearch:8.2.0
+  distribution: ElasticStack
   exporter:
-    image: kubedb/elasticsearch_exporter:1.1.0
+    image: prometheuscommunity/elasticsearch-exporter:v1.3.0
   initContainer:
-    image: kubedb/toybox:0.8.4
-    yqImage: kubedb/elasticsearch-init:1.12.0-opendistro
+    image: tianon/toybox:0.8.4
+    yqImage: kubedb/elasticsearch-init:8.2.0-xpack-v2022.05.24
   podSecurityPolicies:
     databasePolicyName: elasticsearch-db
-  version: 7.10.0
+  securityContext:
+    runAsAnyNonRoot: true
+    runAsUser: 1000
+  stash:
+    addon:
+      backupTask:
+        name: elasticsearch-backup-8.2.0
+        params:
+          - name: args
+            value: --match=^(?![.])(?!apm-agent-configuration)(?!kubedb-system).+
+      restoreTask:
+        name: elasticsearch-restore-8.2.0
+        params:
+          - name: args
+            value: --match=^(?![.])(?!apm-agent-configuration)(?!kubedb-system).+
+  version: 8.2.0
 ```
 
 ### metadata.name
@@ -75,7 +102,10 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 ### spec.db.image
 
-`spec.db.image` is a `required` field that specifies the docker image which will be used to create StatefulSet by KubeDB operator to create the expected Elasticsearch database.
+`spec.db.image` is a `required` field that specifies the docker image which will be used to create StatefulSet by KubeDB provisioner operator to create the expected Elasticsearch/OpenSearch database.
+
+### spec.dashboard.image
+`spec.dashboard.image` is an `optional` field that specifies the docker image which will be used to create Deployment by KubeDB dashboard operator to create the expected Kibana/Opensearch-dashboards.
 
 ### spec.exporter.image
 
@@ -83,7 +113,13 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 ### spec.podSecurityPolicies.databasePolicyName
 
-`spec.podSecurityPolicies.databasePolicyName` is a `required` field that specifies the name of the pod security policy required to get the database server pod(s) running.
+`spec.podSecurityPolicies.databasePolicyName` is a required field that specifies the name of the pod security policy required to get the database server pod(s) running.
+
+```bash
+helm upgrade kubedb-operator appscode/kubedb --namespace kube-system \
+  --set additionalPodSecurityPolicies[0]=custom-db-policy \
+  --set additionalPodSecurityPolicies[1]=custom-snapshotter-policy
+```
 
 ## Next Steps
 
