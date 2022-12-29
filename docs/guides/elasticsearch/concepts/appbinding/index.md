@@ -60,7 +60,6 @@ spec:
     name: es-quickstart
     namespace: demo
   clientConfig:
-    caBundle: "LS0tLS1CR....................gQ0VSVElGSUNBVEUtLS0tLQo="
     service:
       name: es-quickstart
       port: 9200
