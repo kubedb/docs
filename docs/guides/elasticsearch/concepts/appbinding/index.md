@@ -60,7 +60,7 @@ spec:
     name: es-quickstart
     namespace: demo
   clientConfig:
-    caBundle: LS0tLS1CR....................gQ0VSVElGSUNBVEUtLS0tLQo=
+    caBundle: "LS0tLS1CR....................gQ0VSVElGSUNBVEUtLS0tLQo="
     service:
       name: es-quickstart
       port: 9200
@@ -150,6 +150,9 @@ You can configure following fields in `spec.clientConfig` section:
 
 #### spec.appRef
 appRef refers to the underlying application. It has 4 fields named `apiGroup`, `kind`, `name` & `namespace`.
+
+#### spec.tlsSecret
+`spec.tlsSecret` specifies the name of the secret which contains the tls configuration files that are required to access the database. This secret must be in the same namespace as the `AppBinding`.
 
 ## Next Steps
 
