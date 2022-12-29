@@ -4,15 +4,23 @@ metadata:
   name: es-combined
   namespace: demo
 spec:
-  enableSSL: true 
-  version: searchguard-7.9.3
+  enableSSL: true
+  version: xpack-8.2.0
   storageType: Durable
   replicas: 3
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
+  podTemplate:
+    spec:
+      resources:
+        requests:
+          cpu: "500m"
+        limits:
+          cpu: "500m"
+          memory: "1.2Gi"
   terminationPolicy: WipeOut

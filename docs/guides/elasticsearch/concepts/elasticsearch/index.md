@@ -550,6 +550,47 @@ The k8s secret must be of `type: kubernetes.io/basic-auth` with the following ke
 
 If not set, the KubeDB operator creates a new Secret `{Elasticsearch name}-{UserName}-cred` with randomly generated secured credentials.
 
+We can use this field in 3 mode.
+1. Using an external secret. In this case, You need to create an auth secret first with required fields, then specify the secret name when creating the Elasticsearch object using `spec.authSecret.name` & set `spec.authSecret.externallyManaged` to true.
+```yaml
+authSecret:
+  name: <your-created-auth-secret-name>
+  externallyManaged: true
+```
+
+2. Specifying the secret name only. In this case, You need to specify the secret name when creating the Elasticsearch object using `spec.authSecret.name`. `externallyManaged` is by default false.
+```yaml
+authSecret:
+  name: <intended-auth-secret-name>
+```
+
+3. Let KubeDB do everything for you. In this case, no work for you.
+
+AuthSecret contains a `user` key and a `password` key which contains the `username` and `password` respectively for `elastic` superuser.
+
+Example:
+
+```bash
+$ kubectl create secret generic elastic-auth -n demo \
+--from-literal=username=jhon-doe \
+--from-literal=password=6q8u_2jMOW-OOZXk
+secret "elastic-auth" created
+```
+
+```yaml
+apiVersion: v1
+data:
+  password: NnE4dV8yak1PVy1PT1pYaw==
+  username: amhvbi1kb2U=
+kind: Secret
+metadata:
+  name: elastic-auth
+  namespace: demo
+type: Opaque
+```
+
+Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
+
 ### spec.storageType
 
 `spec.storageType` is an `optional` field that specifies the type of storage to use for the database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Elasticsearch database using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume. In this case, you don't have to specify `spec.storage` field.
@@ -686,15 +727,18 @@ stringData:
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for the Elasticsearch database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for Elasticsearch database.
 
-KubeDB accepts the following fields to set in `spec.podTemplate:`
+KubeDB accept following fields to set in `spec.podTemplate:`
 
-- metadata
+- metadata:
   - annotations (pod's annotation)
-- controller
+  - labels (pod's labels)
+- controller:
   - annotations (statefulset's annotation)
+  - labels (statefulset's labels)
 - spec:
+  - args
   - env
   - resources
   - initContainers
@@ -710,6 +754,8 @@ KubeDB accepts the following fields to set in `spec.podTemplate:`
   - livenessProbe
   - readinessProbe
   - lifecycle
+
+You can checkout the full list [here](https://github.com/kmodules/offshoot-api/blob/ea366935d5bad69d7643906c7556923271592513/api/v1/types.go#L42-L259). Uses of some field of `spec.podTemplate` is described below,
 
 Uses of some fields of `spec.podTemplate` are described below,
 
@@ -774,12 +820,13 @@ spec:
 
 `spec.serviceTemplates` is an `optional` field that contains a list of the serviceTemplate. The templates are identified by the `alias`. For Elasticsearch, the configurable services' `alias` are `primary` and `stats`.
 
-KubeDB allows following fields to set in `spec.serviceTemplate`:
+You can also provide template for the services created by KubeDB operator for MongoDB database through `spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
 
+KubeDB allows following fields to set in `spec.serviceTemplates`:
 - metadata:
+  - labels
   - annotations
 - spec:
-  - alias (`required`)
   - type
   - ports
   - clusterIP
@@ -789,6 +836,8 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
   - externalTrafficPolicy
   - healthCheckNodePort
   - sessionAffinityConfig
+
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.21.1/api/v1/types.go#L237) to understand these fields in detail.
 
 ```yaml
 spec:

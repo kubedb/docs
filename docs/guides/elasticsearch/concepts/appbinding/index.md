@@ -32,24 +32,61 @@ An `AppBinding` object created by `KubeDB` for Elasticsearch database is shown b
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  name: es
-  namespace: demo
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Elasticsearch","metadata":{"annotations":{},"name":"es-quickstart","namespace":"demo"},"spec":{"enableSSL":true,"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Delete","version":"xpack-8.2.0"}}
+  creationTimestamp: "2022-12-29T05:03:33Z"
+  generation: 1
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: es
+    app.kubernetes.io/instance: es-quickstart
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: elasticsearches.kubedb.com
+  name: es-quickstart
+  namespace: demo
+  ownerReferences:
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: Elasticsearch
+      name: es-quickstart
+      uid: 4ae0339e-e86a-4032-9146-a7eac1a780db
+  resourceVersion: "425575"
+  uid: aef62276-dc61-4ec3-9883-9f4093bb1186
 spec:
+  appRef:
+    apiGroup: kubedb.com
+    kind: Elasticsearch
+    name: es-quickstart
+    namespace: demo
   clientConfig:
-    caBundle: TFMwdExTMUNSVWRKVGlCLi4uLi49PQ==
+    caBundle: LS0tLS1CR....................gQ0VSVElGSUNBVEUtLS0tLQo=
     service:
-      name: es
+      name: es-quickstart
       port: 9200
       scheme: https
+  parameters:
+    apiVersion: appcatalog.appscode.com/v1alpha1
+    kind: StashAddon
+    stash:
+      addon:
+        backupTask:
+          name: elasticsearch-backup-8.2.0
+          params:
+            - name: args
+              value: --match=^(?![.])(?!apm-agent-configuration)(?!kubedb-system).+
+        restoreTask:
+          name: elasticsearch-restore-8.2.0
+          params:
+            - name: args
+              value: --match=^(?![.])(?!apm-agent-configuration)(?!kubedb-system).+
   secret:
-    name: es-admin-cred
+    name: es-quickstart-elastic-cred
+  tlsSecret:
+    name: es-quickstart-client-cert
   type: kubedb.com/elasticsearch
-  version: 7.10.0
+  version: 8.2.0
+
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.
@@ -91,25 +128,28 @@ You can configure following fields in `spec.clientConfig` section:
 
 - **spec.clientConfig.url**
 
-  `spec.clientConfig.url` gives the address of the database, in standard URL form (i.e. `[scheme://]host:port/[path]`). This is particularly useful when the target database is running outside of the Kubernetes cluster. If your database is running inside the cluster, use `spec.clientConfig.service` section instead.
+  `spec.clientConfig.url` gives the location of the database, in standard URL form (i.e. `[scheme://]host:port/[path]`). This is particularly useful when the target database is running outside of the Kubernetes cluster. If your database is running inside the cluster, use `spec.clientConfig.service` section instead.
 
-  > Note that attempting to use a user or basic auth (e.g. `username:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
+> Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
 
 - **spec.clientConfig.service**
 
-  If you are running the database inside the Kubernetes cluster, you can use the Kubernetes service to connect with the database. You have to specify the following fields in `spec.clientConfig.service` section if you manually create an `AppBinding` object.
+  If you are running the database inside the Kubernetes cluster, you can use Kubernetes service to connect with the database. You have to specify the following fields in `spec.clientConfig.service` section if you manually create an `AppBinding` object.
 
-  - **name:** `name` indicates the name of the service that connects with the target database.
-  - **scheme:** `scheme` specifies the scheme (i.e. HTTP, HTTPS) to use to connect with the database.
-  - **port:** `port` specifies the port where the target database is running.
+  - **name :** `name` indicates the name of the service that connects with the target database.
+  - **scheme :** `scheme` specifies the scheme (i.e. http, https) to use to connect with the database.
+  - **port :** `port` specifies the port where the target database is running.
 
 - **spec.clientConfig.insecureSkipTLSVerify**
 
-  `spec.clientConfig.insecureSkipTLSVerify` is used to disable TLS certificate verification while connecting with the database. We strongly discourage disabling TLS verification during backup. You should provide the respective CA bundle through `spec.clientConfig.caBundle` field instead.
+  `spec.clientConfig.insecureSkipTLSVerify` is used to disable TLS certificate verification while connecting with the database. We strongly discourage to disable TLS verification during backup. You should provide the respective CA bundle through `spec.clientConfig.caBundle` field instead.
 
 - **spec.clientConfig.caBundle**
 
   `spec.clientConfig.caBundle` is a PEM encoded CA bundle which will be used to validate the serving certificate of the database.
+
+#### spec.appRef
+appRef refers to the underlying application. It has 4 fields named `apiGroup`, `kind`, `name` & `namespace`.
 
 ## Next Steps
 

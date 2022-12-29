@@ -33,31 +33,31 @@ metadata:
   annotations:
     meta.helm.sh/release-name: kubedb
     meta.helm.sh/release-namespace: kubedb
-  creationTimestamp: "2022-12-26T04:28:09Z"
+  creationTimestamp: "2022-12-29T09:23:41Z"
   generation: 1
   labels:
     app.kubernetes.io/instance: kubedb
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kubedb-catalog
-    app.kubernetes.io/version: v2022.12.24-rc.1
-    helm.sh/chart: kubedb-catalog-v2022.12.24-rc.1
-  name: xpack-8.2.0
-  resourceVersion: "236918"
-  uid: 55abfde5-a8cb-486b-b73c-1a2b097e96a3
+    app.kubernetes.io/version: v2022.12.28
+    helm.sh/chart: kubedb-catalog-v2022.12.28
+  name: xpack-7.14.0
+  resourceVersion: "1844"
+  uid: db8b5122-bce8-4e80-b608-e314954f2980
 spec:
   authPlugin: X-Pack
   dashboard:
-    image: kibana:8.2.0
+    image: kibana:7.14.0
   dashboardInitContainer:
-    yqImage: kubedb/elasticsearch-dashboard-init:8.2.0-xpack-v2022.05.24
+    yqImage: kubedb/elasticsearch-dashboard-init:7.14.0-xpack-v2022.02.22
   db:
-    image: elasticsearch:8.2.0
+    image: elasticsearch:7.14.0
   distribution: ElasticStack
   exporter:
     image: prometheuscommunity/elasticsearch-exporter:v1.3.0
   initContainer:
     image: tianon/toybox:0.8.4
-    yqImage: kubedb/elasticsearch-init:8.2.0-xpack-v2022.05.24
+    yqImage: kubedb/elasticsearch-init:7.14.0-xpack-v2021.08.23
   podSecurityPolicies:
     databasePolicyName: elasticsearch-db
   securityContext:
@@ -66,16 +66,20 @@ spec:
   stash:
     addon:
       backupTask:
-        name: elasticsearch-backup-8.2.0
+        name: elasticsearch-backup-7.3.2
         params:
           - name: args
-            value: --match=^(?![.])(?!apm-agent-configuration)(?!kubedb-system).+
+            value: --match=^(?![.])(?!kubedb-system).+
       restoreTask:
-        name: elasticsearch-restore-8.2.0
+        name: elasticsearch-restore-7.3.2
         params:
           - name: args
-            value: --match=^(?![.])(?!apm-agent-configuration)(?!kubedb-system).+
-  version: 8.2.0
+            value: --match=^(?![.])(?!kubedb-system).+
+  upgradeConstraints:
+    allowlist:
+      - < 7.18.0
+  version: 7.14.0
+
 ```
 
 ### metadata.name
@@ -111,6 +115,12 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 `spec.exporter.image` is a `required` field that specifies the image which will be used to export Prometheus metrics if monitoring is enabled.
 
+### spec.upgradeConstraints
+UpgradeConstraints specifies the constraints that need to be considered during version upgrade. Here `allowList` contains the versions those are allowed for upgrading from the current version.
+An empty list of AllowList indicates all the versions are accepted except the denyList.
+On the other hand, `DenyList` contains all the rejected versions for the upgrade request. An empty list indicates no version is rejected.
+
+
 ### spec.podSecurityPolicies.databasePolicyName
 
 `spec.podSecurityPolicies.databasePolicyName` is a required field that specifies the name of the pod security policy required to get the database server pod(s) running.
@@ -121,8 +131,10 @@ helm upgrade kubedb-operator appscode/kubedb --namespace kube-system \
   --set additionalPodSecurityPolicies[1]=custom-snapshotter-policy
 ```
 
-## Next Steps
+### spec.stash
+This holds the Backup & Restore task definitions, where a `TaskRef` has a `Name` & `Params` section. Params specifies a list of parameters to pass to the task.
 
+## Next Steps
 - Learn about Elasticsearch CRD [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 - Deploy your first Elasticsearch database with KubeDB by following the guide [here](/docs/guides/elasticsearch/quickstart/overview/elasticsearch/index.md).
 - Deploy your first OpenSearch database with KubeDB by following the guide [here](/docs/guides/elasticsearch/quickstart/overview/opensearch/index.md).

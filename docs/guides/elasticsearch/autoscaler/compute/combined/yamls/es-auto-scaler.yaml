@@ -10,10 +10,12 @@ spec:
     node:
       trigger: "On"
       podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 5
       minAllowed:
-        cpu: ".4"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2.1Gi"
       maxAllowed:
         cpu: 2
-        memory: "3Gi"
+        memory: 3Gi
       controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"

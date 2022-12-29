@@ -445,6 +445,14 @@ To enable TLS on the HTTP layer, the configuration for the `http` layer certific
               - mydb.com # say, previously it was "kubedb.com"
   ```
 
+### spec.timeout
+As we internally retry the ops request steps multiple times, This `timeout` field helps the users to specify the timeout for those steps of the ops request (in second).
+If a step doesn't finish within the specified timeout, the ops request will result in failure.
+
+### spec.apply
+This field controls the execution of obsRequest depending on the database state. It has two supported values: `Always` & `IfReady`.
+Use IfReady, if you want to process the opsRequest only when the database is Ready. And use Always, if you want to process the execution of opsReq irrespective of the Database state.
+
 ## ElasticsearchOpsRequest `Status`
 
 `.status` describes the current state and progress of a `ElasticsearchOpsRequest` operation. It has the following fields:
