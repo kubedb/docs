@@ -820,7 +820,7 @@ spec:
 
 `spec.serviceTemplates` is an `optional` field that contains a list of the serviceTemplate. The templates are identified by the `alias`. For Elasticsearch, the configurable services' `alias` are `primary` and `stats`.
 
-You can also provide template for the services created by KubeDB operator for MongoDB database through `spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
+You can also provide template for the services created by KubeDB operator for Elasticsearch database through `spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
 
 KubeDB allows following fields to set in `spec.serviceTemplates`:
 - metadata:

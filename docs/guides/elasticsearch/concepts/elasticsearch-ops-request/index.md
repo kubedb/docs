@@ -447,7 +447,7 @@ To enable TLS on the HTTP layer, the configuration for the `http` layer certific
 
 ### spec.configuration
 
-If you want to reconfigure your Running MongoDB cluster or different components of it with new custom configuration, you have to specify `spec.configuration` section. This field consists of the following sub-field:
+If you want to reconfigure your Running Elasticsearch cluster or different components of it with new custom configuration, you have to specify `spec.configuration` section. This field consists of the following sub-field:
 
 - `spec.configuration.configsecret`: ConfigSecret is an optional field to provide custom configuration file for database.
 - `spec.configuration.secureConfigSecret`: SecureConfigSecret is an optional field to provide secure settings for database.
