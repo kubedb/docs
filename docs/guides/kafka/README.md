@@ -27,28 +27,22 @@ aliases:
 | Persistent Volume                                              | &#10003;  |  &#10003;  |
 | Custom Volume                                                  | &#10003;  |  &#10003;  |
 | TLS: using ( [Cert Manager](https://cert-manager.io/docs/) )   | &#10007;  |  &#10003;  |
-| Reconfigurable Health Checker                                  | &#10007;  |  &#10003;  |
-| Externally manageable Auth Secret                              | &#10007;  |  &#10003;  |
+| Reconfigurable Health Checker                                  | &#10003;  |  &#10003;  |
+| Externally manageable Auth Secret                              | &#10003;  |  &#10003;  |
 
 ## Supported Kafka Versions
 
-KubeDB supports Kafka versions `3.3.0` in Kraft mode
+KubeDB supports The following Kafka versions. Supported version are applicable for Kraft mode or Zookeeper-less releases:
+- `3.3.0`
 
-
-
-
-
-
-> The listed ElasticsearchVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md) object with your custom Elasticsearch image.
+> The listed KafkaVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [KafkaVersion](/docs/guides/kafka/concepts/catalog/index.md) object with your custom Kafka image.
 
 ## User Guide
 
-- [Quickstart Elasticsearch](/docs/guides/elasticsearch/quickstart/overview/index.md) with KubeDB Operator.
-- [Elasticsearch Clustering](/docs/guides/elasticsearch/clustering/combined-cluster/index.md) supported by KubeDB
-- [Backup & Restore Elasticsearch](/docs/guides/elasticsearch/backup/overview/index.md) database using Stash.
-- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
-- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
-- Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
+- [Quickstart Kafka](/docs/guides/kafka/quickstart/overview/index.md) with KubeDB Operator.
+- Kafka Clustering supported by KubeDB
+  - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md) supported by KubeDB
+  - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md) supported by KubeDB
 - Use [kubedb cli](/docs/guides/elasticsearch/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+- Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
