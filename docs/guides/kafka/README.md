@@ -37,12 +37,21 @@ KubeDB supports The following Kafka versions. Supported version are applicable f
 
 > The listed KafkaVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [KafkaVersion](/docs/guides/kafka/concepts/catalog/index.md) object with your custom Kafka image.
 
-## User Guide
+## Lifecycle of Kafka Object
 
+<!---
+ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
+--->
+
+<p align="center">
+<img alt="lifecycle"  src="/docs/guides/kafka/images/Kafka-CRD-Lifecycle.png">
+</p>
+
+## User Guide 
 - [Quickstart Kafka](/docs/guides/kafka/quickstart/overview/index.md) with KubeDB Operator.
 - Kafka Clustering supported by KubeDB
-  - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md) supported by KubeDB
-  - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md) supported by KubeDB
+  - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md)
+  - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md)
 - Use [kubedb cli](/docs/guides/elasticsearch/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
