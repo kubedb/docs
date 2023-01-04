@@ -1,9 +1,9 @@
 ---
-title: Elasticsearch
+title: Kafka
 menu:
   docs_{{ .version }}:
-    identifier: es-elasticsearch-guides
-    name: Elasticsearch
+    identifier: kf-kafka-guides
+    name: Kafka
     parent: guides
     weight: 10
 menu_name: docs_{{ .version }}
