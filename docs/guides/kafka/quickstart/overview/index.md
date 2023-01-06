@@ -398,13 +398,13 @@ namespace "demo" deleted
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if the database pod fails. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purposes, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resource that was created with the Elasticsearch CR. For more details, please visit [here](/docs/guides/kafka/concepts/kafka/index.md#specterminationpolicy).
+2. Use **`terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resource that was created with the Elasticsearch CR. For more details, please visit [here](/docs/guides/kafka/concepts/kafka/index.md#specterminationpolicy).
 
 ## Next Steps
 
 - Kafka Clustering supported by KubeDB
   - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md)
   - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md)
-- Use [kubedb cli](/docs/guides/elasticsearch/cli/cli.md) to manage databases like kubectl for Kubernetes.
+- Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

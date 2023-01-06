@@ -52,6 +52,6 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 - Kafka Clustering supported by KubeDB
   - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md)
   - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md)
-- Use [kubedb cli](/docs/guides/elasticsearch/cli/cli.md) to manage databases like kubectl for Kubernetes.
+- Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
