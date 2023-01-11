@@ -16,5 +16,5 @@ spec:
         port: 42004
       serviceMonitor:
         labels:
-          k8s-app: prometheus
+          release: prometheus
         interval: 10s

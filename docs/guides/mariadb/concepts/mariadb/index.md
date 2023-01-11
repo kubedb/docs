@@ -40,7 +40,7 @@ spec:
       serviceMonitor:
         interval: 10s
         labels:
-          k8s-app: prometheus
+          release: prometheus
   podTemplate:
     controller: {}
     metadata: {}

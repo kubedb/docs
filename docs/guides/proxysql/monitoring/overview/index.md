@@ -70,7 +70,7 @@ spec:
     prometheus:
       serviceMonitor:
         labels:
-          k8s-app: prometheus
+          release: prometheus
       exporter:
         args:
         - --redis.password=$(REDIS_PASSWORD)
@@ -94,7 +94,7 @@ spec:
 
 Assume that above Redis is configured to use basic authentication. So, exporter image also need to provide password to collect metrics. We have provided it through `spec.monitor.args` field.
 
-Here, we have specified that we are going to monitor this server using Prometheus operator through `spec.monitor.agent: prometheus.io/operator`. KubeDB will create a `ServiceMonitor` crd in `monitoring` namespace and this `ServiceMonitor` will have `k8s-app: prometheus` label.
+Here, we have specified that we are going to monitor this server using Prometheus operator through `spec.monitor.agent: prometheus.io/operator`. KubeDB will create a `ServiceMonitor` crd in `monitoring` namespace and this `ServiceMonitor` will have `release: prometheus` label.
 
 > As native ProxySQL provides builtin monitoring utilities , KubeDB ProxySQL do not depend on external exporter container. Which means one don't need to configure the `spec.monitor.agent.exporter` field.
 

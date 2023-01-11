@@ -58,7 +58,7 @@ kind: Prometheus
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"default"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorNamespaceSelector":{"matchLabels":{"prometheus":"prometheus"}},"serviceMonitorSelector":{"matchLabels":{"k8s-app":"prometheus"}}}}
+      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"default"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorNamespaceSelector":{"matchLabels":{"prometheus":"prometheus"}},"serviceMonitorSelector":{"matchLabels":{"release":"prometheus"}}}}
   creationTimestamp: "2020-08-25T04:02:07Z"
   generation: 1
   labels:
@@ -83,10 +83,10 @@ spec:
       prometheus: prometheus
   serviceMonitorSelector:
     matchLabels:
-      k8s-app: prometheus
+      release: prometheus
 ```
 
-- `spec.serviceMonitorSelector` field specifies which ServiceMonitors should be included. The Above label `k8s-app: prometheus` is used to select `ServiceMonitors` by its selector. So, we are going to use this label in `spec.monitor.prometheus.labels` field of ProxySQL crd.
+- `spec.serviceMonitorSelector` field specifies which ServiceMonitors should be included. The Above label `release: prometheus` is used to select `ServiceMonitors` by its selector. So, we are going to use this label in `spec.monitor.prometheus.labels` field of ProxySQL crd.
 - `spec.serviceMonitorNamespaceSelector` field specifies that the `ServiceMonitors` can be selected outside the Prometheus namespace by Prometheus using namespace selector. The Above label `prometheus: prometheus` is used to select the namespace where the `ServiceMonitor` is created.
 
 ### Add Label to database namespace
@@ -156,7 +156,7 @@ spec:
       serviceMonitor:
         labels:
           release: prometheus
-          k8s-app: prometheus
+          release: prometheus
         interval: 10s
   terminationPolicy: WipeOut
   healthChecker:
@@ -243,7 +243,7 @@ metadata:
     app.kubernetes.io/instance: proxy-server
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: proxysqls.kubedb.com
-    k8s-app: prometheus
+    release: prometheus
   managedFields:
   - apiVersion: monitoring.coreos.com/v1
     fieldsType: FieldsV1
@@ -255,7 +255,7 @@ metadata:
           f:app.kubernetes.io/instance: {}
           f:app.kubernetes.io/managed-by: {}
           f:app.kubernetes.io/name: {}
-          f:k8s-app: {}
+          f:release: {}
         f:ownerReferences: {}
       f:spec:
         .: {}
@@ -305,7 +305,7 @@ spec:
       kubedb.com/role: stats
 ```
 
-Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in ProxySQL crd.
+Notice that the `ServiceMonitor` has label `release: prometheus` that we had specified in ProxySQL crd.
 
 Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `proxy-server-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
 

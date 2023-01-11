@@ -61,7 +61,7 @@ kind: Prometheus
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"monitoring"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorSelector":{"matchLabels":{"k8s-app":"prometheus"}}}}
+      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"monitoring"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorSelector":{"matchLabels":{"release":"prometheus"}}}}
   creationTimestamp: "2019-10-02T09:48:29Z"
   generation: 1
   labels:
@@ -79,10 +79,10 @@ spec:
   serviceAccountName: prometheus
   serviceMonitorSelector:
     matchLabels:
-      k8s-app: prometheus
+      release: prometheus
 ```
 
-Notice the `spec.serviceMonitorSelector` section. Here, `k8s-app: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of Elasticsearch crd.
+Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of Elasticsearch crd.
 
 ## Deploy Elasticsearch with Monitoring Enabled
 
@@ -109,7 +109,7 @@ spec:
     prometheus:
       serviceMonitor:
         labels:
-          k8s-app: prometheus
+          release: prometheus
         interval: 10s
 ```
 
@@ -189,7 +189,7 @@ metadata:
   creationTimestamp: "2019-10-02T09:51:04Z"
   generation: 1
   labels:
-    k8s-app: prometheus
+    release: prometheus
     monitoring.appscode.com/service: coreos-prom-es-stats.demo
   name: kubedb-demo-coreos-prom-es
   namespace: monitoring
@@ -218,7 +218,7 @@ spec:
       kubedb.com/role: stats
 ```
 
-Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in Elasticsearch crd.
+Notice that the `ServiceMonitor` has label `release: prometheus` that we had specified in Elasticsearch crd.
 
 Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `coreos-prom-es-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
 

@@ -16,7 +16,7 @@ spec:
       serviceMonitor:
         labels:
           release: prometheus
-          k8s-app: prometheus
+          release: prometheus
         interval: 10s
   terminationPolicy: WipeOut
   healthChecker:

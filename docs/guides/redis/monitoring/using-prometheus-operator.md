@@ -61,7 +61,7 @@ kind: Prometheus
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"monitoring"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorSelector":{"matchLabels":{"k8s-app":"prometheus"}}}}
+      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"monitoring"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorSelector":{"matchLabels":{"release":"prometheus"}}}}
   creationTimestamp: 2019-01-03T13:41:51Z
   generation: 1
   labels:
@@ -79,10 +79,10 @@ spec:
   serviceAccountName: prometheus
   serviceMonitorSelector:
     matchLabels:
-      k8s-app: prometheus
+      release: prometheus
 ```
 
-Notice the `spec.serviceMonitorSelector` section. Here, `k8s-app: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of Redis crd.
+Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of Redis crd.
 
 ## Deploy Redis with Monitoring Enabled
 
@@ -109,7 +109,7 @@ spec:
     prometheus:
       serviceMonitor:
         labels:
-          k8s-app: prometheus
+          release: prometheus
         interval: 10s
 ```
 
@@ -187,7 +187,7 @@ metadata:
   creationTimestamp: 2019-01-03T15:55:23Z
   generation: 1
   labels:
-    k8s-app: prometheus
+    release: prometheus
     monitoring.appscode.com/service: coreos-prom-redis-stats.demo
   name: kubedb-demo-coreos-prom-redis
   namespace: monitoring
@@ -209,7 +209,7 @@ spec:
       app.kubernetes.io/instance: coreos-prom-redis
 ```
 
-Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in Redis crd.
+Notice that the `ServiceMonitor` has label `release: prometheus` that we had specified in Redis crd.
 
 Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `coreos-prom-redis-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
 
