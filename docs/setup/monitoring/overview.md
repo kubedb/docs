@@ -107,7 +107,7 @@ $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
-  --set monitoring.serviceMonitor.labels.k8s-app=prometheus
+  --set monitoring.serviceMonitor.labels.release=prometheus
 ```
 
 **YAML (with Helm 3):**
@@ -118,7 +118,7 @@ $ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
-  --set monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
+  --set monitoring.serviceMonitor.labels.release=prometheus | kubectl apply -f -
 ```
 
 ## Next Steps

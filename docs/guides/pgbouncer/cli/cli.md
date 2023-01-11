@@ -285,7 +285,7 @@ $ kubectl edit pb pgbouncer-demo
     prometheus:
       serviceMonitor:
         labels:
-          k8s-app: prometheus
+          release: prometheus
         interval: 10s
 pgbouncer "pgbouncer-demo" edited
 ```
