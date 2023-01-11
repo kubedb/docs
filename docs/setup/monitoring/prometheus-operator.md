@@ -44,7 +44,7 @@ $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
-  --set monitoring.serviceMonitor.labels.k8s-app=prometheus
+  --set monitoring.serviceMonitor.labels.release=prometheus
 ```
 
 **YAML (with Helm 3):**
@@ -56,10 +56,10 @@ $ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
-  --set monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
+  --set monitoring.serviceMonitor.labels.release=prometheus | kubectl apply -f -
 ```
 
-This will create a `ServiceMonitor` crd with name `kubedb-servicemonitor` in `monitoring` namespace for monitoring endpoints of `kubedb` service. This `ServiceMonitor` will have label `k8s-app: prometheus` as we have provided it by `--servicemonitor-label` flag. This label will be used by Prometheus crd to select this `ServiceMonitor`.
+This will create a `ServiceMonitor` crd with name `kubedb-servicemonitor` in `monitoring` namespace for monitoring endpoints of `kubedb` service. This `ServiceMonitor` will have label `release: prometheus` as we have provided it by `--servicemonitor-label` flag. This label will be used by Prometheus crd to select this `ServiceMonitor`.
 
 Let's check the ServiceMonitor crd using following command,
 
@@ -71,7 +71,7 @@ metadata:
   creationTimestamp: 2019-01-01T04:21:53Z
   generation: 1
   labels:
-    k8s-app: prometheus
+    release: prometheus
   name: kubedb-servicemonitor
   namespace: monitoring
   resourceVersion: "4329"
@@ -123,12 +123,12 @@ Now, we have to create or configure a `Prometheus` crd that selects above `Servi
 
 If you already have a Prometheus crd and respective Prometheus server running, you have to update this Prometheus crd to select `kubedb-servicemonitor` ServiceMonitor.
 
-At first, add the ServiceMonitor's  label `k8s-app: prometheus` in `spec.serviceMonitorSelector.matchLabels` field of Prometheus crd.
+At first, add the ServiceMonitor's  label `release: prometheus` in `spec.serviceMonitorSelector.matchLabels` field of Prometheus crd.
 
 ```yaml
 serviceMonitorSelector:
   matchLabels:
-    k8s-app: prometheus
+    release: prometheus
 ```
 
 Then, add secret name `kubedb-apiserver-cert` in `spec.secrets` section.
@@ -175,7 +175,7 @@ spec:
   serviceAccountName: prometheus
   serviceMonitorSelector:
     matchLabels:
-      k8s-app: prometheus # change this according to your setup
+      release: prometheus # change this according to your setup
   secrets:
     - kubedb-apiserver-cert
   resources:

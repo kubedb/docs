@@ -43,7 +43,7 @@ $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --set kubedb-community.monitoring.enabled=true \
   --set kubedb-community.monitoring.agent=prometheus.io/builtin \
   --set kubedb-community.monitoring.prometheus.namespace=monitoring \
-  --set kubedb-community.monitoring.serviceMonitor.labels.k8s-app=prometheus
+  --set kubedb-community.monitoring.serviceMonitor.labels.release=prometheus
 ```
 
 **YAML (with Helm 3):**
@@ -54,7 +54,7 @@ $ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --set kubedb-community.monitoring.enabled=true \
   --set kubedb-community.monitoring.agent=prometheus.io/builtin \
   --set kubedb-community.monitoring.prometheus.namespace=monitoring \
-  --set kubedb-community.monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
+  --set kubedb-community.monitoring.serviceMonitor.labels.release=prometheus | kubectl apply -f -
 ```
 
 This will add necessary annotations to `kubedb` service created in `kubedb` namespace. Prometheus server will scrape metrics using those annotations. Let's check which annotations are added to the service,

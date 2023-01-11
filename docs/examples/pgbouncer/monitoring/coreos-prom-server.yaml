@@ -48,7 +48,7 @@ spec:
   serviceAccountName: prometheus
   serviceMonitorSelector:
     matchLabels:
-      k8s-app: prometheus # change this according to your setup
+      release: prometheus # change this according to your setup
   resources:
     requests:
       memory: 400Mi

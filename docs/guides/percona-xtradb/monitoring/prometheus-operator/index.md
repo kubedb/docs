@@ -58,7 +58,7 @@ kind: Prometheus
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"default"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorNamespaceSelector":{"matchLabels":{"prometheus":"prometheus"}},"serviceMonitorSelector":{"matchLabels":{"k8s-app":"prometheus"}}}}
+      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"default"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorNamespaceSelector":{"matchLabels":{"prometheus":"prometheus"}},"serviceMonitorSelector":{"matchLabels":{"release":"prometheus"}}}}
   creationTimestamp: "2020-08-25T04:02:07Z"
   generation: 1
   labels:
@@ -83,10 +83,10 @@ spec:
       prometheus: prometheus
   serviceMonitorSelector:
     matchLabels:
-      k8s-app: prometheus
+      release: prometheus
 ```
 
-- `spec.serviceMonitorSelector` field specifies which ServiceMonitors should be included. The Above label `k8s-app: prometheus` is used to select `ServiceMonitors` by its selector. So, we are going to use this label in `spec.monitor.prometheus.labels` field of PerconaXtraDB crd.
+- `spec.serviceMonitorSelector` field specifies which ServiceMonitors should be included. The Above label `release: prometheus` is used to select `ServiceMonitors` by its selector. So, we are going to use this label in `spec.monitor.prometheus.labels` field of PerconaXtraDB crd.
 - `spec.serviceMonitorNamespaceSelector` field specifies that the `ServiceMonitors` can be selected outside the Prometheus namespace by Prometheus using namespace selector. The Above label `prometheus: prometheus` is used to select the namespace where the `ServiceMonitor` is created.
 
 ### Add Label to database namespace
@@ -125,7 +125,7 @@ spec:
     prometheus:
       serviceMonitor:
         labels:
-          k8s-app: prometheus
+          release: prometheus
         interval: 10s
 ```
 
@@ -209,7 +209,7 @@ metadata:
     app.kubernetes.io/instance: coreos-prom-px
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: perconaxtradbs.kubedb.com
-    k8s-app: prometheus
+    release: prometheus
   managedFields:
     ...
   name: coreos-prom-px-stats
@@ -243,7 +243,7 @@ spec:
       kubedb.com/role: stats
 ```
 
-Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in PerconaXtraDB crd.
+Notice that the `ServiceMonitor` has label `release: prometheus` that we had specified in PerconaXtraDB crd.
 
 Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `coreos-prom-px-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
 

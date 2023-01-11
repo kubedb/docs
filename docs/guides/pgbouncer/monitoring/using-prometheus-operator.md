@@ -77,7 +77,7 @@ kind: Prometheus
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"monitoring"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorSelector":{"matchLabels":{"k8s-app":"prometheus"}}}}
+      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"monitoring"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorSelector":{"matchLabels":{"release":"prometheus"}}}}
   creationTimestamp: "2019-09-19T09:32:12Z"
   generation: 1
   labels:
@@ -95,10 +95,10 @@ spec:
   serviceAccountName: prometheus
   serviceMonitorSelector:
     matchLabels:
-      k8s-app: prometheus
+      release: prometheus
 ```
 
-Notice the `spec.serviceMonitorSelector` section. Here, `k8s-app: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of PgBouncer crd.
+Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of PgBouncer crd.
 
 ## Deploy PgBouncer with Monitoring Enabled
 
@@ -132,7 +132,7 @@ spec:
     prometheus:
       serviceMonitor:
         labels:
-          k8s-app: prometheus
+          release: prometheus
         interval: 10s
 ```
 
@@ -210,7 +210,7 @@ metadata:
   creationTimestamp: "2019-09-19T10:03:24Z"
   generation: 1
   labels:
-    k8s-app: prometheus
+    release: prometheus
     monitoring.appscode.com/service: pgbouncer-server-stats.demo
   name: kubedb-demo-pgbouncer-server
   namespace: monitoring
@@ -239,7 +239,7 @@ spec:
       kubedb.com/role: stats
 ```
 
-Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in PgBouncer crd.
+Notice that the `ServiceMonitor` has label `release: prometheus` that we had specified in PgBouncer crd.
 
 Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `pgbouncer-server-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
 
