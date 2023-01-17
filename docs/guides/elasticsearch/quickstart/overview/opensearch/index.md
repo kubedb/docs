@@ -2,10 +2,10 @@
 title: OpenSearch Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: os-quickstart-quickstart
-    name: Quickstart
-    parent: os-quickstart
-    weight: 15
+    identifier: es-opensearch-overview-elasticsearch
+    name: OpenSearch
+    parent: es-overview-elasticsearch
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -15,6 +15,10 @@ section_menu_id: guides
 # OpenSearch QuickStart
 
 This tutorial will show you how to use KubeDB to run an OpenSearch database.
+
+<p align="center">
+  <img alt="lifecycle"  src="/docs/guides/elasticsearch/quickstart/overview/opensearch/images/Lifecycle-of-an-Opensearch-CRD.png">
+</p>
 
 ## Before You Begin
 
@@ -45,9 +49,9 @@ NAME                 STATUS   AGE
 demo                 Active   9s
 ```
 
-> Note: YAML files used in this tutorial are stored in [guides/elasticsearch/opensearch/quickstart/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/opensearch/quickstart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [guides/elasticsearch/quickstart/overview/opensearch/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/opensearch/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed OpenSearch. If you just want to try out KubeDB, you can bypass some of the safety features following the tips [here](/docs/guides/elasticsearch/quickstart/overview/index.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed OpenSearch. If you just want to try out KubeDB, you can bypass some of the safety features following the tips [here](/docs/guides/elasticsearch/quickstart/overview/opensearch/index.md#tips-for-testing).
 
 
 ## Find Available Versions
@@ -167,7 +171,7 @@ Here,
 Let's apply the yaml that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/opensearch/quickstart/yamls/opensearch.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/opensearch/yamls/opensearch.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 
@@ -396,7 +400,7 @@ secret/sample-opensearch-transport-cert         kubernetes.io/tls          3    
   - `{OpenSearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
   - `{OpenSearch-Name}-master` - the master service which is used to connect to the master nodes. It is a headless service.
   - `{OpenSearch-Name}-pods` - the node discovery service which is used by the OpenSearch nodes to communicate each other. It is a headless service.
-- `AppBinding` - an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) which hold the connect information for the database.
+- `AppBinding` - an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) which hold to connect information for the database.
 - `Secrets` - 3 types of secrets are generated for each OpenSearch database.
   - `{OpenSearch-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the OpenSearch users.
   - `{OpenSearch-Name}-{alias}-cert` - the certificate secrets which hold `tls.crt`, `tls.key`, and `ca.crt` for configuring the OpenSearch database.
@@ -565,6 +569,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 ## Next Steps
 
 - Learn about [backup & restore](/docs/guides/elasticsearch/backup/overview/index.md) OpenSearch database using Stash.
+- [Quickstart OpenSearch-Dashboards](/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/index.md) with KubeDB Operator.
 - Monitor your OpenSearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your OpenSearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

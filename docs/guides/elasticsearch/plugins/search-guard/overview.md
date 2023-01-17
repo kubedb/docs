@@ -69,7 +69,7 @@ With TLS client authentication enabled, REST clients can send a TLS certificate 
 
 ## Next Steps
 
-- Learn how to [create TLS certificates](/docs/guides/elasticsearch/search-guard/issue-certificate.md).
-- Learn how to [use TLS certificates](/docs/guides/elasticsearch/search-guard/use-tls.md) to connect Elasticsearch.
-- Learn how to generate [search-guard configuration](/docs/guides/elasticsearch/search-guard/configuration.md).
+- Learn how to [create TLS certificates](/docs/guides/elasticsearch/plugins/search-guard/issue-certificate.md).
+- Learn how to [use TLS certificates](/docs/guides/elasticsearch/plugins/search-guard/use-tls.md) to connect Elasticsearch.
+- Learn how to generate [search-guard configuration](/docs/guides/elasticsearch/plugins/search-guard/configuration.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
