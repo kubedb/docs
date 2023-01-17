@@ -92,6 +92,18 @@ $ helm install kubedb appscode/kubedb \
   --set-file global.license=/path/to/the/license.txt
 ```
 
+{{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
+
+```
+# Install KubeDB Community edition
+$ helm install kubedb appscode/kubedb \
+  --version {{< param "info.version" >}} \
+  --namespace kubedb --create-namespace \
+  --set global.insecureRegistries[0]=hub.example.com \
+  --set global.insecureRegistries[1]=hub2.example.com \
+  --set-file global.license=/path/to/the/license.txt
+```
+
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
 
 </div>
@@ -125,6 +137,19 @@ appscode/kubedb-webhook-server      {{< param "info.webhook-server" >}}        {
 $ helm template kubedb appscode/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
+  --set-file global.license=/path/to/the/license.txt \
+  --set global.skipCleaner=true | kubectl apply -f -
+```
+
+{{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
+
+```
+# Install KubeDB Community edition
+$ helm template kubedb appscode/kubedb \
+  --version {{< param "info.version" >}} \
+  --namespace kubedb --create-namespace \
+  --set global.insecureRegistries[0]=hub.example.com \
+  --set global.insecureRegistries[1]=hub2.example.com \
   --set-file global.license=/path/to/the/license.txt \
   --set global.skipCleaner=true | kubectl apply -f -
 ```
