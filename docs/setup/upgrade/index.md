@@ -54,6 +54,32 @@ $ helm upgrade kubedb appscode/kubedb \
     --set-file global.license=/path/to/the/license.txt
 ```
 
+{{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
+
+```bash
+# Upgrade KubeDB Community edition
+$ helm upgrade kubedb appscode/kubedb \
+  --version {{< param "info.version" >}} \
+  --namespace kubedb --create-namespace \
+  --set kubedb-catalog.skipDeprecated=false \
+  --set global.insecureRegistries[0]=hub.example.com \
+  --set global.insecureRegistries[1]=hub2.example.com \
+  --set-file global.license=/path/to/the/license.txt
+
+# Upgrade KubeDB Enterprise edition
+$ helm upgrade kubedb appscode/kubedb \
+  --version {{< param "info.version" >}} \
+  --namespace kubedb --create-namespace \
+  --set kubedb-catalog.skipDeprecated=false \
+  --set kubedb-ops-manager.enabled=true \
+  --set kubedb-autoscaler.enabled=true \
+  --set kubedb-dashboard.enabled=true \
+  --set kubedb-schema-manager.enabled=true \
+  --set global.insecureRegistries[0]=hub.example.com \
+  --set global.insecureRegistries[1]=hub2.example.com \
+  --set-file global.license=/path/to/the/license.txt
+```
+
 #### 3. Install/Upgrade Stash Operator
 
 Now, upgrade Stash if had previously installed Stash following the instructions [here](https://stash.run/docs/v2021.06.23/setup/upgrade/). If you had not installed Stash before, please install Stash Enterprise Edition following the instructions [here](https://stash.run/docs/v2021.06.23/setup/).
