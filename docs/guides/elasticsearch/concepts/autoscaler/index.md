@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is ElasticsearchAutoscaler
 
-`ElasticsearchAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md) compute resources and storage of database components in a Kubernetes native way.
+`ElasticsearchAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling [Elasticsearch](https://www.elastic.co/products/elasticsearch) and [OpenSearch](https://opensearch.org/) compute resources and storage of database components in a Kubernetes native way.
 
 ## ElasticsearchAutoscaler CRD Specifications
 
@@ -26,7 +26,7 @@ Like any official Kubernetes resource, a `ElasticsearchAutoscaler` has `TypeMeta
 
 Here, some sample `ElasticsearchAutoscaler` CROs for autoscaling different components of database is given below:
 
-**Sample `ElasticsearchAutoscaler` YAML for the Elasticsearch combined cluster:**
+**Sample `ElasticsearchAutoscaler` YAML for an Elasticsearch combined cluster:**
 
 ```yaml
 apiVersion: autoscaling.kubedb.com/v1alpha1
@@ -37,6 +37,9 @@ metadata:
 spec:
   databaseRef:
     name: es-combined
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
   compute:
     node:
       trigger: "On"

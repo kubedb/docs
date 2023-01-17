@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is Elasticsearch
 
-`Elasticsearch` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [Elasticsearch](https://www.elastic.co/products/elasticsearch) in a Kubernetes native way. You only need to describe the desired database configuration in an Elasticsearch object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`Elasticsearch` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [Elasticsearch](https://www.elastic.co/products/elasticsearch) and [OpenSearch](https://opensearch.org/) in a Kubernetes native way. You only need to describe the desired database configuration in an Elasticsearch object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## Elasticsearch Spec
 
@@ -29,8 +29,11 @@ metadata:
   name: myes
   namespace: demo
 spec:
+  autoOps:
+    disabled: true
   authSecret:
     name: es-admin-cred
+    externallyManaged: false
   configSecret:
     name: es-custom-config
   enableSSL: true
@@ -146,16 +149,22 @@ spec:
       subject:
         organizations:
         - kubedb
+  healthChecker:
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 2
+    disableWriteCheck: false
   version: searchguard-7.9.3
 ```
+### spec.autoOps
+AutoOps is an optional field to control the generation of versionUpgrade & TLS-related recommendations.
 
 ### spec.version
-
 `spec.version` is a `required` field that specifies the name of the [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md) CRD where the docker images are specified.
 
 - Name format: `{Security Plugin Name}-{Application Version}-{Modification Tag}`
 
-- Samples: `searchguard-7.9.3`, `xpack-7.9.1-v1`, `opendistro-1.12.0`, etc.
+- Samples: `xpack-8.2.0`, `xpack-7.9.1-v1`, `opensearch-1.3.0`, etc.
 
 ```yaml
 spec:
@@ -196,11 +205,16 @@ spec:
 
 ### spec.internalUsers
 
-`spec.internalUsers` provides an alternative way to configure the existing internal users or create new users without using the `internal_users.yml` file. Only works with `SearchGurad` and `OpenDistro` security plugins. This field expects the input format to be in the `map[username]UserSpec` format. The KubeDB operator creates secure passwords for those users and stores in k8s secrets. The k8s secret names are formed by the following format: `{Elasticsearch Instance Name}-{Username}-cred`.
+`spec.internalUsers` provides an alternative way to configure the existing internal users or create new users without using the `internal_users.yml` file. This field expects the input format to be in the `map[username]ElasticsearchUserSpec` format. The KubeDB operator creates and synchronizes secure passwords for those users and stores in k8s secrets.  The k8s secret names are formed by the following format: `{Elasticsearch Instance Name}-{Username}-cred`.
 
-The `UserSpec` contains the following fields:
-
-- `reserved` ( `bool` | `false` ) - specifies the reserved status. The resources that have this set to `true` cannot be changed using the REST API or Kibana.
+The `ElasticsearchUserSpec` contains the following fields:
+-  `hash` ( `string` | `""` ) - Specifies the hash of the password.
+-  `full_name` ( `string` | `""` ) - Specifies The full name of the user. Only applicable for xpack authplugin.
+-  `metadata` ( `map[string]string` | `""` ) - Specifies Arbitrary metadata that you want to associate with the user. Only applicable for xpack authplugin.
+-  `secretName` ( `string` | `""` ) - Specifies the k8s secret name that holds the user credentials. Defaults to "<resource-name>-<username>-cred".
+-  `roles` ( `[]string` | `nil` ) - A set of roles the user has. The roles determine the user’s access permissions. To create a user without any roles, specify an empty list: []. Only applicable for xpack authplugin.
+-  `email` ( `string` | `""` ) - Specifies the email of the user. Only applicable for xpack authplugin.
+-  `reserved` ( `bool` | `false` ) - specifies the reserved status. The resources that have this set to `true` cannot be changed using the REST API or Kibana.
 -  `hidden` ( `bool` | `false` ) - specifies the hidden status. The resources that have this set to true are not returned by the REST API and not visible in Kibana.
 -  `backendRoles` (`[]string` | `nil`) - specifies a list of backend roles assigned to this user. The backend roles can come from the internal user database, LDAP groups, JSON web token claims, or SAML assertions.
 -  `searchGuardRoles` ( `[]string` | `nil` ) - specifies a list of SearchGuard security plugin roles assigned to this user.
@@ -208,6 +222,7 @@ The `UserSpec` contains the following fields:
 -  `attributes` ( `map[string]string` | `nil` )- specifies one or more custom attributes which can be used in index names and DLS queries.
 -  `description` ( `string` | `""` ) - specifies the description of the user.
 
+Here's how `.spec.internalUsers` can be configured for `searchguard` or `opendistro` auth plugins.
 
 ```yaml
 spec:
@@ -228,6 +243,47 @@ spec:
       description: "Custom readall user"
 ```
 
+Here's how `.spec.internalUsers` can be configured for `xpack` auth plugins.
+
+```yaml
+spec:
+  internalUsers:
+    apm_system:
+      backendRoles:
+      - apm_system
+      secretName: es-cluster-apm-system-cred
+    beats_system:
+      backendRoles:
+      - beats_system
+      secretName: es-cluster-beats-system-cred
+    elastic:
+      backendRoles:
+      - superuser
+      secretName: es-cluster-elastic-cred
+    kibana_system:
+      backendRoles:
+      - kibana_system
+      secretName: es-cluster-kibana-system-cred
+    logstash_system:
+      backendRoles:
+      - logstash_system
+      secretName: es-cluster-logstash-system-cred
+    remote_monitoring_user:
+      backendRoles:
+      - remote_monitoring_collector
+      - remote_monitoring_agent
+      secretName: es-cluster-remote-monitoring-user-cred
+```
+**ElasticStack:**
+
+Default Users: [Official Docs](https://www.elastic.co/guide/en/elasticsearch/reference/current/built-in-users.html)
+
+- `elastic` - Has direct read-only access to restricted indices, such as .security. This user also has the ability to manage security and create roles with unlimited privileges
+- `kibana_system` -  The user Kibana uses to connect and communicate with Elasticsearch.
+- `logstash_system` - The user Logstash uses when storing monitoring information in Elasticsearch.
+- `beats_system` - The user the Beats use when storing monitoring information in Elasticsearch.
+- `apm_system` - The user the APM server uses when storing monitoring information in Elasticsearch.
+- `remote_monitoring_user` - The user Metricbeat uses when collecting and storing monitoring information in Elasticsearch. It has the remote_monitoring_agent and remote_monitoring_collector built-in roles.
 
 **SearchGuard:**
 
@@ -277,7 +333,20 @@ For the default roles visit the [SearchGurad docs](https://docs.search-guard.com
 
 ### spec.topology
 
-`spec.topology` is an `optional` field that provides a way to configure different types of nodes for the Elasticsearch cluster. This field enables you to specify how many nodes you want to act as `master`, `data` and `ingest`. You can also specify how much storage and resources to allocate for each type of node independently.
+`spec.topology` is an `optional` field that provides a way to configure different types of nodes for the Elasticsearch cluster. This field enables you to specify how many nodes you want to act as `master`, `data`, `ingest` or other node roles for Elasticsearch. You can also specify how much storage and resources to allocate for each type of node independently.
+
+Currently supported node types are -
+- **data**: Data nodes hold the shards that contain the documents you have indexed. Data nodes handle data related operations like CRUD, search, and aggregations
+- **ingest**: Ingest nodes can execute pre-processing pipelines, composed of one or more ingest processors
+- **master**: The master node is responsible for lightweight cluster-wide actions such as creating or deleting an index, tracking which nodes are part of the cluster, and deciding which shards to allocate to which nodes. It is important for cluster health to have a stable master node.
+- **dataHot**: Hot data nodes are part of the hot tier. The hot tier is the Elasticsearch entry point for time series data and holds your most-recent, most-frequently-searched time series data.
+- **dataWarm**: Warm data nodes are part of the warm tier. Time series data can move to the warm tier once it is being queried less frequently than the recently-indexed data in the hot tier.
+- **dataCold**: Cold data nodes are part of the cold tier. When you no longer need to search time series data regularly, it can move from the warm tier to the cold tier.
+- **dataFrozen**: Frozen data nodes are part of the frozen tier. Once data is no longer being queried, or being queried rarely, it may move from the cold tier to the frozen tier where it stays for the rest of its life.
+- **dataContent**: Content data nodes are part of the content tier. Data stored in the content tier is generally a collection of items such as a product catalog or article archive. Unlike time series data, the value of the content remains relatively constant over time, so it doesn’t make sense to move it to a tier with different performance characteristics as it ages.
+- **ml**: Machine learning nodes run jobs and handle machine learning API requests.
+- **transform**: Transform nodes run transforms and handle transform API requests.
+- **coordinating**: The coordinating node forwards the request to the data nodes which hold the data.
 
 ```yaml
   topology:
@@ -481,6 +550,47 @@ The k8s secret must be of `type: kubernetes.io/basic-auth` with the following ke
 
 If not set, the KubeDB operator creates a new Secret `{Elasticsearch name}-{UserName}-cred` with randomly generated secured credentials.
 
+We can use this field in 3 mode.
+1. Using an external secret. In this case, You need to create an auth secret first with required fields, then specify the secret name when creating the Elasticsearch object using `spec.authSecret.name` & set `spec.authSecret.externallyManaged` to true.
+```yaml
+authSecret:
+  name: <your-created-auth-secret-name>
+  externallyManaged: true
+```
+
+2. Specifying the secret name only. In this case, You need to specify the secret name when creating the Elasticsearch object using `spec.authSecret.name`. `externallyManaged` is by default false.
+```yaml
+authSecret:
+  name: <intended-auth-secret-name>
+```
+
+3. Let KubeDB do everything for you. In this case, no work for you.
+
+AuthSecret contains a `user` key and a `password` key which contains the `username` and `password` respectively for `elastic` superuser.
+
+Example:
+
+```bash
+$ kubectl create secret generic elastic-auth -n demo \
+--from-literal=username=jhon-doe \
+--from-literal=password=6q8u_2jMOW-OOZXk
+secret "elastic-auth" created
+```
+
+```yaml
+apiVersion: v1
+data:
+  password: NnE4dV8yak1PVy1PT1pYaw==
+  username: amhvbi1kb2U=
+kind: Secret
+metadata:
+  name: elastic-auth
+  namespace: demo
+type: Opaque
+```
+
+Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
+
 ### spec.storageType
 
 `spec.storageType` is an `optional` field that specifies the type of storage to use for the database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Elasticsearch database using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume. In this case, you don't have to specify `spec.storage` field.
@@ -617,15 +727,18 @@ stringData:
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for the Elasticsearch database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for Elasticsearch database.
 
-KubeDB accepts the following fields to set in `spec.podTemplate:`
+KubeDB accept following fields to set in `spec.podTemplate:`
 
-- metadata
+- metadata:
   - annotations (pod's annotation)
-- controller
+  - labels (pod's labels)
+- controller:
   - annotations (statefulset's annotation)
+  - labels (statefulset's labels)
 - spec:
+  - args
   - env
   - resources
   - initContainers
@@ -641,6 +754,8 @@ KubeDB accepts the following fields to set in `spec.podTemplate:`
   - livenessProbe
   - readinessProbe
   - lifecycle
+
+You can checkout the full list [here](https://github.com/kmodules/offshoot-api/blob/ea366935d5bad69d7643906c7556923271592513/api/v1/types.go#L42-L259). Uses of some field of `spec.podTemplate` is described below,
 
 Uses of some fields of `spec.podTemplate` are described below,
 
@@ -705,12 +820,13 @@ spec:
 
 `spec.serviceTemplates` is an `optional` field that contains a list of the serviceTemplate. The templates are identified by the `alias`. For Elasticsearch, the configurable services' `alias` are `primary` and `stats`.
 
-KubeDB allows following fields to set in `spec.serviceTemplate`:
+You can also provide template for the services created by KubeDB operator for Elasticsearch database through `spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
 
+KubeDB allows following fields to set in `spec.serviceTemplates`:
 - metadata:
+  - labels
   - annotations
 - spec:
-  - alias (`required`)
   - type
   - ports
   - clusterIP
@@ -720,6 +836,8 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
   - externalTrafficPolicy
   - healthCheckNodePort
   - sessionAffinityConfig
+
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.21.1/api/v1/types.go#L237) to understand these fields in detail.
 
 ```yaml
 spec:
@@ -761,7 +879,17 @@ Following table show what KubeDB does when you delete Elasticsearch CRD for diff
 
 If the `spec.terminationPolicy` is not specified, the KubeDB operator defaults it to `Delete`.
 
+## spec.healthChecker
+It defines the attributes for the health checker.
+- `spec.healthChecker.periodSeconds` specifies how often to perform the health check.
+- `spec.healthChecker.timeoutSeconds` specifies the number of seconds after which the probe times out.
+- `spec.healthChecker.failureThreshold` specifies minimum consecutive failures for the healthChecker to be considered failed.
+- `spec.healthChecker.disableWriteCheck` specifies whether to disable the writeCheck or not.
+
+Know details about KubeDB Health checking from this [blog post](https://blog.byte.builders/post/kubedb-health-checker/).
+
 ## Next Steps
 
 - Learn how to use KubeDB to run an Elasticsearch database [here](/docs/guides/elasticsearch/README.md).
+- Learn how to use ElasticsearchOpsRequest [here](/docs/guides/elasticsearch/concepts/elasticsearch-ops-request/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -25,8 +25,6 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 - Install `KubeDB` Community, Enterprise and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
-  
-- Install `Vertical Pod Autoscaler` from [here](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation)
 
 - You should be familiar with the following `KubeDB` concepts:
   - [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md)
@@ -58,17 +56,25 @@ metadata:
   name: es-combined
   namespace: demo
 spec:
-  enableSSL: true 
-  version: searchguard-7.9.3
+  enableSSL: true
+  version: xpack-8.2.0
   storageType: Durable
   replicas: 3
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
+  podTemplate:
+    spec:
+      resources:
+        requests:
+          cpu: "500m"
+        limits:
+          cpu: "500m"
+          memory: "1.2Gi"
   terminationPolicy: WipeOut
 ```
 
@@ -83,40 +89,43 @@ Now, wait until `es-combined` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get elasticsearch -n demo -w
-NAME          VERSION             STATUS         AGE
-es-combined   searchguard-7.9.3   Provisioning   1m2s
-es-combined   searchguard-7.9.3   Provisioning   2m8s
-es-combined   searchguard-7.9.3   Ready          2m8s
+NAME          VERSION       STATUS         AGE
+es-combined   xpack-8.2.0   Provisioning   4s
+es-combined   xpack-8.2.0   Provisioning   7s
+....
+....
+es-combined   xpack-8.2.0   Ready          60s
+
 ```
 
 Let's check the Pod containers resources,
 
-```bash
+```json
 $ kubectl get pod -n demo es-combined-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
     "cpu": "500m",
-    "memory": "1Gi"
+    "memory": "1288490188800m"
   },
   "requests": {
     "cpu": "500m",
-    "memory": "1Gi"
+    "memory": "1288490188800m"
   }
 }
 ```
 
 Let's check the Elasticsearch resources,
 
-```bash
+```json
 $ kubectl get elasticsearch -n demo es-combined -o json | jq '.spec.podTemplate.spec.resources'
 {
   "limits": {
     "cpu": "500m",
-    "memory": "1Gi"
+    "memory": "1288490188800m"
   },
   "requests": {
     "cpu": "500m",
-    "memory": "1Gi"
+    "memory": "1288490188800m"
   }
 }
 ```
@@ -146,13 +155,15 @@ spec:
     node:
       trigger: "On"
       podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 5
       minAllowed:
-        cpu: ".4"
-        memory: "1Gi"
+        cpu: 1
+        memory: "2.1Gi"
       maxAllowed:
         cpu: 2
         memory: 3Gi
       controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"
 ```
 
 Here,
@@ -163,6 +174,10 @@ Here,
 - `spec.compute.node.minAllowed` specifies the minimum allowed resources for the Elasticsearch node.
 - `spec.compute.node.maxAllowed` specifies the maximum allowed resources for the Elasticsearch node.
 - `spec.compute.node.controlledResources` specifies the resources that are controlled by the autoscaler.
+- `spec.compute.node.resourceDiffPercentage` specifies the minimum resource difference in percentage. The default is 10%.
+  If the difference between current & recommended resource is less than ResourceDiffPercentage, Autoscaler Operator will ignore the updating.
+- `spec.compute.node.containerControlledValues` specifies which resource values should be controlled. The default is "RequestsAndLimits".
+- - `spec.opsRequestOptions` contains the options to pass to the created OpsRequest. It has 2 fields. Know more about them here : [timeout](/docs/guides/elasticsearch/concepts/elasticsearch-ops-request/index.md#spectimeout), [apply](/docs/guides/elasticsearch/concepts/elasticsearch-ops-request/index.md#specapply).
 
 Let's create the `ElasticsearchAutoscaler` CR we have shown above,
 
@@ -188,13 +203,57 @@ Annotations:  <none>
 API Version:  autoscaling.kubedb.com/v1alpha1
 Kind:         ElasticsearchAutoscaler
 Metadata:
-  Creation Timestamp:  2021-03-22T10:01:05Z
+  Creation Timestamp:  2022-12-29T10:54:00Z
   Generation:          1
-  Resource Version:  33465
-  UID:               a5e671a5-22df-48bc-8949-e902270c85f4
+  Managed Fields:
+    API Version:  autoscaling.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:compute:
+          .:
+          f:node:
+            .:
+            f:containerControlledValues:
+            f:controlledResources:
+            f:maxAllowed:
+              .:
+              f:cpu:
+              f:memory:
+            f:minAllowed:
+              .:
+              f:cpu:
+              f:memory:
+            f:podLifeTimeThreshold:
+            f:resourceDiffPercentage:
+            f:trigger:
+        f:databaseRef:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2022-12-29T10:54:00Z
+    API Version:  autoscaling.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:checkpoints:
+        f:conditions:
+        f:vpas:
+    Manager:         kubedb-autoscaler
+    Operation:       Update
+    Subresource:     status
+    Time:            2022-12-29T10:54:27Z
+  Resource Version:  12469
+  UID:               35640903-7aaf-46c6-9bc4-bd1771313e30
 Spec:
   Compute:
     Node:
+      Container Controlled Values:  RequestsAndLimits
       Controlled Resources:
         cpu
         memory
@@ -202,212 +261,204 @@ Spec:
         Cpu:     2
         Memory:  3Gi
       Min Allowed:
-        Cpu:                    400m
-        Memory:                 1Gi
-      Pod Life Time Threshold:  5m0s
-      Trigger:                  On
+        Cpu:                     1
+        Memory:                  2254857830400m
+      Pod Life Time Threshold:   5m0s
+      Resource Diff Percentage:  5
+      Trigger:                   On
   Database Ref:
     Name:  es-combined
-Events:    <none>
+  Ops Request Options:
+    Apply:  IfReady
+Status:
+  Checkpoints:
+    Cpu Histogram:
+      Bucket Weights:
+        Index:              0
+        Weight:             2849
+        Index:              1
+        Weight:             10000
+        Index:              2
+        Weight:             2856
+        Index:              3
+        Weight:             714
+        Index:              5
+        Weight:             714
+        Index:              6
+        Weight:             713
+        Index:              7
+        Weight:             714
+        Index:              12
+        Weight:             713
+        Index:              21
+        Weight:             713
+        Index:              25
+        Weight:             2138
+      Reference Timestamp:  2022-12-29T00:00:00Z
+      Total Weight:         4.257959878725071
+    First Sample Start:     2022-12-29T10:54:03Z
+    Last Sample Start:      2022-12-29T11:04:18Z
+    Last Update Time:       2022-12-29T11:04:26Z
+    Memory Histogram:
+      Reference Timestamp:  2022-12-30T00:00:00Z
+    Ref:
+      Container Name:     elasticsearch
+      Vpa Object Name:    es-combined
+    Total Samples Count:  31
+    Version:              v3
+  Conditions:
+    Last Transition Time:  2022-12-29T10:54:27Z
+    Message:               Successfully created elasticsearchOpsRequest demo/esops-es-combined-ujb5hy
+    Observed Generation:   1
+    Reason:                CreateOpsRequest
+    Status:                True
+    Type:                  CreateOpsRequest
+  Vpas:
+    Conditions:
+      Last Transition Time:  2022-12-29T10:54:26Z
+      Status:                True
+      Type:                  RecommendationProvided
+    Recommendation:
+      Container Recommendations:
+        Container Name:  elasticsearch
+        Lower Bound:
+          Cpu:     1
+          Memory:  2254857830400m
+        Target:
+          Cpu:     1
+          Memory:  2254857830400m
+        Uncapped Target:
+          Cpu:     442m
+          Memory:  1555165137
+        Upper Bound:
+          Cpu:     2
+          Memory:  3Gi
+    Vpa Name:      es-combined
+Events:            <none>
 ```
 
 So, the `elasticsearchautoscaler` resource is created successfully.
 
-Now, let's verify that the vertical pod autoscaler (vpa) resource is created successfully,
-
-```bash
-$ kubectl get vpa -n demo
-NAME              AGE
-vpa-es-combined   1m32s
-
-$ kubectl describe vpa -n demo vpa-es-combined 
-Name:         vpa-es-combined
-Namespace:    demo
-Labels:       <none>
-Annotations:  <none>
-API Version:  autoscaling.k8s.io/v1
-Kind:         VerticalPodAutoscaler
-Metadata:
-  Creation Timestamp:  2021-03-22T10:01:05Z
-  Generation:          2
-  Owner References:
-    API Version:           autoscaling.kubedb.com/v1alpha1
-    Block Owner Deletion:  true
-    Controller:            true
-    Kind:                  ElasticsearchAutoscaler
-    Name:                  es-combined-as
-    UID:                   a5e671a5-22df-48bc-8949-e902270c85f4
-  Resource Version:        33488
-  UID:                     5f49956c-ba9d-4896-a083-adc2a3138083
-Spec:
-  Resource Policy:
-    Container Policies:
-      Container Name:  elasticsearch
-      Controlled Resources:
-        cpu
-        memory
-      Controlled Values:  RequestsAndLimits
-      Max Allowed:
-        Cpu:     2
-        Memory:  3Gi
-      Min Allowed:
-        Cpu:     400m
-        Memory:  1Gi
-  Target Ref:
-    API Version:  apps/v1
-    Kind:         StatefulSet
-    Name:         es-combined
-  Update Policy:
-    Update Mode:  Off
-Status:
-  Conditions:
-    Last Transition Time:  2021-03-22T10:00:18Z
-    Status:                False
-    Type:                  RecommendationProvided
-Events:          <none>
-```
-
-So, we can verify from the above output that the `vpa` resource is created successfully. But you can see that the `RecommendationProvided` is false and also the `Recommendation` section of the `vpa` is empty. Let's wait some time and describe the vpa again.
-
-```shell
-$ kubectl describe vpa -n demo vpa-es-combined 
-Name:         vpa-es-combined
-Namespace:    demo
-Labels:       <none>
-Annotations:  <none>
-API Version:  autoscaling.k8s.io/v1
-Kind:         VerticalPodAutoscaler
-Metadata:
-  Creation Timestamp:  2021-03-22T10:01:05Z
-  Generation:          2
-  Owner References:
-    API Version:           autoscaling.kubedb.com/v1alpha1
-    Block Owner Deletion:  true
-    Controller:            true
-    Kind:                  ElasticsearchAutoscaler
-    Name:                  es-combined-as
-    UID:                   a5e671a5-22df-48bc-8949-e902270c85f4
-  Resource Version:        33488
-  UID:                     5f49956c-ba9d-4896-a083-adc2a3138083
-Spec:
-  Resource Policy:
-    Container Policies:
-      Container Name:  elasticsearch
-      Controlled Resources:
-        cpu
-        memory
-      Controlled Values:  RequestsAndLimits
-      Max Allowed:
-        Cpu:     2
-        Memory:  3Gi
-      Min Allowed:
-        Cpu:     400m
-        Memory:  1Gi
-  Target Ref:
-    API Version:  apps/v1
-    Kind:         StatefulSet
-    Name:         es-combined
-  Update Policy:
-    Update Mode:  Off
-Status:
-  Conditions:
-    Last Transition Time:  2021-03-22T10:01:18Z
-    Status:                True
-    Type:                  RecommendationProvided
-  Recommendation:
-    Container Recommendations:
-      Container Name:  elasticsearch
-      Lower Bound:
-        Cpu:     400m
-        Memory:  1Gi
-      Target:
-        Cpu:     400m
-        Memory:  1Gi
-      Uncapped Target:
-        Cpu:     126m
-        Memory:  920733364
-      Upper Bound:
-        Cpu:     2
-        Memory:  3Gi
-Events:          <none>
-```
-
-As you can see from the output the vpa has generated a recommendation for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `elasticsearchopsrequest` based on the recommendations, if the database pods are needed to scale up or down.
+you can see in the `Status.VPAs.Recommendation section`, that recommendation has been generated for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `elasticsearchopsrequest` based on the recommendations, if the database pods are needed to scaled up or down.
 
 Let's watch the `elasticsearchopsrequest` in the demo namespace to see if any `elasticsearchopsrequest` object is created. After some time you'll see that an `elasticsearchopsrequest` will be created based on the recommendation.
 
 ```bash
 $  kubectl get elasticsearchopsrequest -n demo
-NAME                           TYPE              STATUS       AGE
-esops-vpa-es-combined-a6be0c   VerticalScaling   Progessing   1m
+NAME                       TYPE              STATUS       AGE
+esops-es-combined-ujb5hy   VerticalScaling   Progessing   1m
 ```
 
 Let's wait for the opsRequest to become successful.
 
 ```bash
 $  kubectl get elasticsearchopsrequest -n demo
-NAME                           TYPE              STATUS       AGE
-esops-vpa-es-combined-a6be0c   VerticalScaling   Successful   7m
+NAME                       TYPE              STATUS       AGE
+esops-es-combined-ujb5hy   VerticalScaling   Successful   1m
 ```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe elasticsearchopsrequest -n demo esops-vpa-es-combined-a6be0c
-Name:         esops-vpa-es-combined-a6be0c
+$ kubectl describe elasticsearchopsrequest -n demo esops-es-combined-ujb5hy
+Name:         esops-es-combined-ujb5hy
 Namespace:    demo
-Labels:       app.kubernetes.io/component=database
-              app.kubernetes.io/instance=es-combined
-              app.kubernetes.io/managed-by=kubedb.com
-              app.kubernetes.io/name=elasticsearches.kubedb.com
+Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         ElasticsearchOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-22T10:04:21Z
+  Creation Timestamp:  2022-12-29T10:54:27Z
   Generation:          1
+  Managed Fields:
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:ownerReferences:
+          .:
+          k:{"uid":"35640903-7aaf-46c6-9bc4-bd1771313e30"}:
+      f:spec:
+        .:
+        f:apply:
+        f:databaseRef:
+        f:type:
+        f:verticalScaling:
+          .:
+          f:node:
+            .:
+            f:limits:
+              .:
+              f:cpu:
+              f:memory:
+            f:requests:
+              .:
+              f:cpu:
+              f:memory:
+    Manager:      kubedb-autoscaler
+    Operation:    Update
+    Time:         2022-12-29T10:54:27Z
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:      kubedb-ops-manager
+    Operation:    Update
+    Subresource:  status
+    Time:         2022-12-29T10:54:27Z
   Owner References:
     API Version:           autoscaling.kubedb.com/v1alpha1
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  ElasticsearchAutoscaler
     Name:                  es-combined-as
-    UID:                   a5e671a5-22df-48bc-8949-e902270c85f4
-  Resource Version:        34809
-  UID:                     d9f04043-7e42-42a5-827e-fe8b1b873425
+    UID:                   35640903-7aaf-46c6-9bc4-bd1771313e30
+  Resource Version:        11992
+  UID:                     4aa5295f-0702-45ac-9ae8-3cb496b0e740
 Spec:
+  Apply:  IfReady
   Database Ref:
     Name:  es-combined
   Type:    VerticalScaling
   Vertical Scaling:
     Node:
       Limits:
-        Cpu:     400m
-        Memory:  1Gi
+        Cpu:     1
+        Memory:  2254857830400m
       Requests:
-        Cpu:     400m
-        Memory:  1Gi
+        Cpu:     1
+        Memory:  2254857830400m
 Status:
   Conditions:
-    Last Transition Time:  2021-03-22T10:04:21Z
+    Last Transition Time:  2022-12-29T10:54:27Z
     Message:               Elasticsearch ops request is vertically scaling the nodes
     Observed Generation:   1
     Reason:                VerticalScaling
     Status:                True
     Type:                  VerticalScaling
-    Last Transition Time:  2021-03-22T10:04:21Z
-    Message:               Successfully updated statefulSet resources.
+    Last Transition Time:  2022-12-29T10:54:39Z
+    Message:               successfully reconciled the Elasticsearch resources
     Observed Generation:   1
-    Reason:                UpdateStatefulSetResources
+    Reason:                Reconciled
     Status:                True
-    Type:                  UpdateStatefulSetResources
-    Last Transition Time:  2021-03-22T10:11:21Z
-    Message:               Successfully updated all node resources
+    Type:                  Reconciled
+    Last Transition Time:  2022-12-29T10:58:39Z
+    Message:               Successfully restarted all nodes
     Observed Generation:   1
-    Reason:                UpdateNodeResources
+    Reason:                RestartNodes
     Status:                True
-    Type:                  UpdateNodeResources
-    Last Transition Time:  2021-03-22T10:11:21Z
+    Type:                  RestartNodes
+    Last Transition Time:  2022-12-29T10:58:44Z
+    Message:               successfully updated Elasticsearch CR
+    Observed Generation:   1
+    Reason:                UpdateElasticsearchCR
+    Status:                True
+    Type:                  UpdateElasticsearchCR
+    Last Transition Time:  2022-12-29T10:58:45Z
     Message:               Successfully completed the modification process.
     Observed Generation:   1
     Reason:                Successful
@@ -416,42 +467,40 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason               Age   From                        Message
-  ----    ------               ----  ----                        -------
-  Normal  PauseDatabase        7m    KubeDB Enterprise Operator  Pausing Elasticsearch demo/es-combined
-  Normal  Updating             7m    KubeDB Enterprise Operator  Updating StatefulSets
-  Normal  Updating             7m    KubeDB Enterprise Operator  Successfully Updated StatefulSets
-  Normal  UpdateNodeResources  2m    KubeDB Enterprise Operator  Successfully updated all node resources
-  Normal  Updating             2m    KubeDB Enterprise Operator  Updating Elasticsearch
-  Normal  Updating             2m    KubeDB Enterprise Operator  Successfully Updated Elasticsearch
-  Normal  ResumeDatabase       2m    KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-combined
-  Normal  Successful           2m    KubeDB Enterprise Operator  Successfully Updated Database
+  Type    Reason                 Age    From                         Message
+  ----    ------                 ----   ----                         -------
+  Normal  PauseDatabase          8m25s  KubeDB Ops-manager Operator  Pausing Elasticsearch demo/es-combined
+  Normal  Reconciled             8m13s  KubeDB Ops-manager Operator  successfully reconciled the Elasticsearch resources
+  Normal  RestartNodes           4m13s  KubeDB Ops-manager Operator  Successfully restarted all nodes
+  Normal  UpdateElasticsearchCR  4m7s   KubeDB Ops-manager Operator  successfully updated Elasticsearch CR
+  Normal  ResumeDatabase         4m7s   KubeDB Ops-manager Operator  Resuming Elasticsearch demo/es-combined
+  Normal  Successful             4m7s   KubeDB Ops-manager Operator  Successfully Updated Database
 ```
 
 Now, we are going to verify from the Pod, and the Elasticsearch YAML whether the resources of the standalone database has updated to meet up the desired state, Let's check,
 
-```bash
+```json
 $ kubectl get pod -n demo es-combined-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
-    "cpu": "400m",
-    "memory": "1Gi"
+    "cpu": "500m",
+    "memory": "1288490188800m"
   },
   "requests": {
-    "cpu": "400m",
-    "memory": "1Gi"
+    "cpu": "500m",
+    "memory": "1288490188800m"
   }
 }
 
 $ kubectl get elasticsearch -n demo es-combined -o json | jq '.spec.podTemplate.spec.resources'
 {
   "limits": {
-    "cpu": "400m",
-    "memory": "1Gi"
+    "cpu": "1",
+    "memory": "2254857830400m"
   },
   "requests": {
-    "cpu": "400m",
-    "memory": "1Gi"
+    "cpu": "1",
+    "memory": "2254857830400m"
   }
 }
 ```

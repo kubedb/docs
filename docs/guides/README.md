@@ -15,10 +15,10 @@ aliases:
 
 # Guides
 
-Guides show you how to perform tasks with KubeDB.
+Guides to show you how to perform tasks with KubeDB:
 
-- [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch using KubeDB.
-- [MariaDB](/docs/guides/mariadb). Shows how to manage Elasticsearch using KubeDB.
+- [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch & OpenSearch using KubeDB.
+- [MariaDB](/docs/guides/mariadb). Shows how to manage MariaDB using KubeDB.
 - [Memcached](/docs/guides/memcached/README.md). Shows how to manage Memcached using KubeDB.
 - [MongoDB](/docs/guides/mongodb/README.md). Shows how to manage MongoDB using KubeDB.
 - [MySQL](/docs/guides/mysql/README.md). Shows how to manage MySQL using KubeDB.

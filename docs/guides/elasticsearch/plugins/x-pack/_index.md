@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: es-x-pack
     name: X-Pack
-    parent: es-elasticsearch-guides
-    weight: 55
+    parent: es-plugin-elasticsearch
+    weight: 10
 menu_name: docs_{{ .version }}
 ---
