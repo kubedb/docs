@@ -26,6 +26,7 @@ kubedb-operator operator [flags]
       --burst int                           The maximum burst for throttle (default 1000000)
       --health-probe-bind-address string    The address the probe endpoint binds to. (default ":8081")
   -h, --help                                help for operator
+      --image-pull-secrets strings          Name of image pull secret
       --insecure-registries strings         List of registries to be used without TLS
       --kubeconfig string                   Path to kubeconfig file with authorization information (the master location is set by the master flag).
       --leader-elect                        Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.
