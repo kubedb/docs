@@ -14,18 +14,30 @@ section_menu_id: guides
 
 # Redis Cluster
 
-Redis Cluster provides a way to partition data among multiple master nodes (data sharding) and ensures data availability. Each of the master nodes may have its own replicas. The cluster member nodes (both masters and replicas) detect failures via internal interconnection among themselves. When a majority of nodes agree with the failure of a master node, one of the replicas of the failed master node is promoted to the new master.
-
-So basically it is a group of multiple Redis nodes where data is **automatically sharded across multiple Redis nodes**. And it also provides **some degree of availability during partitions**, that is in practical terms the ability to continue the operations when some nodes fail or are not able to communicate. However, the cluster stops to operate in the event of larger failures (for example when the majority of masters are unavailable).
+Redis Cluster is a native sharding solution for Redis, which provides automatic partitioning of data across multiple Redis nodes.
+It enables horizontal scalability, allowing Redis to handle larger amounts of data by splitting data across multiple Redis instances.
+Each Redis instance in a Redis Cluster can operate as a master or slave, providing failover and redundancy for increased availability and reliability. 
+Redis Cluster uses a consistent hashing algorithm to distribute keys across nodes, ensuring that the data is evenly balanced and minimizing the 
+overhead of rebalancing when nodes are added or removed. Redis Cluster also provides a distributed system for managing and maintaining the cluster,
+ensuring that data is always consistent and available even in the event of node failures.
 
 So in practical terms, what do you get with Redis Cluster?
 
-- The ability to **automatically split your dataset among multiple nodes**.
-- The ability to **continue operations when a subset of the nodes are experiencing failures** or are unable to communicate with the rest of the cluster. See the [reference](https://redis.io/topics/cluster-tutorial#redis-cluster-101).
+- **Horizontal Scalability**: Redis Cluster allows Redis to handle larger amounts of data by splitting the data across multiple nodes, enabling linear scalability as more nodes are added to the cluster.
 
+- **High Availability**: Redis Cluster provides automatic failover and redundancy, ensuring that data is always available and that the cluster can continue operating even in the event of node failures.
+
+- **Load Balancing**: Redis Cluster distributes keys evenly across nodes, ensuring that the cluster is balanced and reducing the overhead of rebalancing when nodes are added or removed.
+
+- **Consistent Data**: Redis Cluster provides a distributed system for managing and maintaining the cluster, ensuring that data is always consistent and available.
+
+- **Easy Administration**: Redis Cluster provides a centralized management interface for the cluster, making it easier to manage and monitor large-scale Redis setups.
+
+- **Fast Performance**: Redis Cluster provides fast, in-memory data access, enabling fast and responsive applications.
+
+- **Simplified operations**: Redis Cluster eliminates the need for manual sharding, enabling a simpler and more automated way to scale Redis.
 ![redis-cluster](/docs/images/redis/redis-cluster.png)
 
-> Image reference [here](https://redislabs.com/redis-features/redis-cluster).
 
 ## Redis Cluster TCP ports
 
@@ -44,7 +56,7 @@ If you don't open both TCP ports, your cluster will not work as expected.
 
 The cluster bus uses a different, binary protocol, for node to node data exchange, which is more suited to exchange information between nodes using little bandwidth and processing time.
 
-Reference: https://redis.io/topics/cluster-tutorial#redis-cluster-tcp-ports
+Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
 
 ## Redis Cluster data sharding
 
@@ -62,7 +74,7 @@ This allows to add and remove nodes in the cluster easily. For example if one wa
 
 Because moving hash slots from a node to another does not require to stop operations, adding and removing nodes, or changing the percentage of hash slots hold by nodes, does not require any downtime.
 
-Reference: https://redis.io/topics/cluster-tutorial#redis-cluster-data-sharding
+Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
 
 ## Redis Cluster master-slave model
 
@@ -70,13 +82,13 @@ In order to ensure availability when a subset of master nodes are failing or are
 
 In our example cluster with nodes A, B, C, if node B fails the cluster is not able to continue since we no longer have a way to serve hash slots in the range 5501-11000.
 
-However when the cluster is created (or at a later time) we add a slave node to every master, so that the final cluster is composed of A, B, C those are master nodes, and A1, B1, C1 are slave nodes, the system is able to continue if node B fails.
+However, when the cluster is created (or at a later time) we add a slave node to every master, so that the final cluster is composed of A, B, C those are master nodes, and A1, B1, C1 are slave nodes, the system is able to continue if node B fails.
 
 Node B1 replicates B, and B fails, the cluster will promote node B1 as the new master and will continue to operate correctly.
 
 However, note that if nodes B and B1 fail at the same time Redis Cluster is not able to continue to operate.
 
-Reference: https://redis.io/topics/cluster-tutorial#redis-cluster-master-slave-model
+Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
 
 ## Redis Cluster consistency guarantees
 
@@ -104,11 +116,11 @@ After a partition occurs, it is possible that on one side of the partition we ha
 
 Z1 is still able to write to B, that will accept its writes. If the partition heals in a very short time, the cluster will continue normally. However, if the partition lasts enough time for B1 to be promoted to master in the majority side of the partition, the writes that Z1 is sending to B will be lost.
 
-Reference: https://redis.io/topics/cluster-tutorial#redis-cluster-consistency-guarantees
+Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
 
 ## Redis Cluster configuration parameters
 
-We are about to create an example cluster deployment. Before we continue, let's introduce the configuration parameters that Redis Cluster introduces in the `redis.conf` file. Some will be obvious, others will be more clear as you continue reading.
+Let's introduce the configuration parameters that Redis Cluster introduces in the `redis.conf` file. Some will be obvious, others will be more clear as you continue reading.
 
 - **cluster-enabled <yes/no>**: If yes enables Redis Cluster support in a specific Redis instance. Otherwise the instance starts as a stand alone instance as usual.
 - **cluster-config-file <filename>**: Note that despite the name of this option, this is not an user editable configuration file, but the file where a Redis Cluster node automatically persists the cluster configuration (the state, basically) every time there is a change, in order to be able to re-read it at startup. The file lists things like the other nodes in the cluster, their state, persistent variables, and so forth. Often this file is rewritten and flushed on disk as a result of some message reception.
@@ -117,7 +129,7 @@ We are about to create an example cluster deployment. Before we continue, let's 
 - **cluster-migration-barrier <count>**: Minimum number of replicas a master will remain connected with, for another slave to migrate to a master which is no longer covered by any slave. See the appropriate section about replica migration in this tutorial for more information.
 - **cluster-require-full-coverage <yes/no>**: If this is set to yes, as it is by default, the cluster stops accepting writes if some percentage of the key space is not covered by any node. If the option is set to no, the cluster will still serve queries even if only requests about a subset of keys can be processed.
 
-Reference: https://redis.io/topics/cluster-tutorial#redis-cluster-configuration-parameters
+Reference: https://redis.io/docs/management/scaling/#redis-cluster-configuration-parameters
 
 For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf).
 
@@ -127,11 +139,11 @@ For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf
 
   Each master node in a cluster handles a subset of the 16384 hash slots. The cluster is **stable** when there is no cluster reconfiguration in progress (i.e. where hash slots are being moved from one node to another). When the cluster is stable, a single hash slot will be served by a single node (however the serving node can have one or more replicas that will replace it in the case of net splits or failures, and that can be used in order to scale read operations where reading stale data is acceptable).
 
-  Reference: https://redis.io/topics/cluster-spec#keys-distribution-model
+  Reference: https://redis.io/docs/management/scaling/
 
 - **Keys hash tags**: There is an exception for the computation of the hash slot that is used in order to implement **hash tags**. Hash tags are a way to ensure that multiple keys are allocated in the same hash slot. This is used in order to implement multi-key operations in Redis Cluster.
 
-  Reference: https://redis.io/topics/cluster-spec#keys-hash-tags
+  Reference:https://redis.io/docs/management/scaling/
 
 - **Cluster nodes' attributes**: Every node has a unique name in the cluster. The node name is the hex representation of a 160 bit random number, obtained the first time a node is started (usually using /dev/urandom). The node will save its ID in the node configuration file, and will use the same ID forever, or at least as long as the node configuration file is not deleted by the system administrator, or a *hard reset* is requested via the [CLUSTER RESET](https://redis.io/commands/cluster-reset) command.
 
@@ -146,11 +158,11 @@ For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf
   d289c575dcbc4bdd2931585fd4339089e461a27d 127.0.0.1:6381 master - 1318428931 1318428931 3 connected 2730-4095
   ```
 
-  Reference: https://redis.io/topics/cluster-spec#cluster-nodes-attributes
+  Reference: https://redis.io/docs/management/scaling/
 
 - **The Cluster bus**: Every Redis Cluster node has an additional TCP port for receiving incoming connections from other Redis Cluster nodes. This port is at a fixed offset from the normal TCP port used to receive incoming connections from clients. To obtain the Redis Cluster port, 10000 should be added to the normal commands port. For example, if a Redis node is listening for client connections on port 6379, the Cluster bus port 16379 will also be opened.
 
-  Reference: https://redis.io/topics/cluster-spec#the-cluster-bus
+  Reference: https://redis.io/docs/management/scaling/
 
 - **Cluster topology**: Redis Cluster is a full mesh where every node is connected with every other node using a TCP connection.
 
@@ -158,7 +170,7 @@ For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf
 
   These TCP connections are kept alive all the time and are not created on demand. When a node expects a pong reply in response to a ping in the cluster bus, before waiting long enough to mark the node as unreachable, it will try to refresh the connection with the node by reconnecting from scratch.
 
-  Reference: https://redis.io/topics/cluster-spec#cluster-topology
+  Reference: https://redis.io/docs/management/scaling/
 
 - **Nodes handshake**: Nodes always accept connections on the cluster bus port, and even reply to pings when received, even if the pinging node is not trusted. However, all other packets will be discarded by the receiving node if the sending node is not considered part of the cluster.
 
@@ -172,7 +184,7 @@ For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf
 
   - A node will also register another node as part of the cluster if a node that is already trusted will gossip about this other node. So if A knows B, and B knows C, eventually B will send gossip messages to A about C. When this happens, A will register C as part of the network, and will try to connect with C.
 
-  Reference: https://redis.io/topics/cluster-spec#nodes-handshake
+  Reference: https://redis.io/docs/management/scaling/
 
 ## Next Steps
 

@@ -1,0 +1,26 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisOpsRequest
+metadata:
+  name: rd-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: rd-sample
+  tls:
+    sentinel:
+      ref:
+        name: sen-demo-tls
+        namespace: demo
+      removeUnusedSentinel: true
+    issuerRef:
+      apiGroup: cert-manager.io
+      name: redis-ca-issuer
+      kind: ClusterIssuer
+    certificates:
+      - alias: client
+        subject:
+          organizations:
+            - redis
+          organizationalUnits:
+            - client
