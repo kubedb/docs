@@ -1,0 +1,13 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: RedisAutoscaler
+metadata:
+  name: rd-as
+  namespace: demo
+spec:
+  databaseRef:
+    name: rd-standalone
+  storage:
+    standalone:
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 50

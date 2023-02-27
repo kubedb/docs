@@ -5,7 +5,7 @@ menu:
     identifier: rd-catalog-concepts
     name: RedisVersion
     parent: rd-concepts-redis
-    weight: 15
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -30,17 +30,34 @@ As with all other Kubernetes objects, a RedisVersion needs `apiVersion`, `kind`,
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: RedisVersion
 metadata:
-  name: 6.0.6
+  annotations:
+    meta.helm.sh/release-name: kubedb
+    meta.helm.sh/release-namespace: kubedb
   labels:
-    app: kubedb
+    app.kubernetes.io/instance: kubedb
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kubedb-catalog
+    app.kubernetes.io/version: v2023.01.17
+    helm.sh/chart: kubedb-catalog-v2023.01.17
+  name: 6.2.5
 spec:
-  version: 6.0.6
+  coordinator:
+    image: kubedb/redis-coordinator:v0.9.1
   db:
-    image: "${KUBEDB_DOCKER_REGISTRY}/redis:6.0.6"
+    image: redis:6.2.5
   exporter:
-    image: "${KUBEDB_DOCKER_REGISTRY}/redis_exporter:1.9.0"
+    image: kubedb/redis_exporter:1.9.0
+  initContainer:
+    image: kubedb/redis-init:0.7.0
   podSecurityPolicies:
-    databasePolicyName: "redis-db"
+    databasePolicyName: redis-db
+  stash:
+    addon:
+      backupTask:
+        name: redis-backup-6.2.5
+      restoreTask:
+        name: redis-restore-6.2.5
+  version: 6.2.5
 ```
 
 ### metadata.name
@@ -67,9 +84,23 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 
 `spec.db.image` is a required field that specifies the docker image which will be used to create Statefulset by KubeDB operator to create expected Redis server.
 
+### spec.initContainer.image
+
+`spec.initContainer.image` is a required field that specifies the image for init container.
+
 ### spec.exporter.image
 
 `spec.exporter.image` is a required field that specifies the image which will be used to export Prometheus metrics.
+
+### spec.stash
+
+This holds the Backup & Restore task definitions, where a `TaskRef` has a `Name` & `Params` section. Params specifies a list of parameters to pass to the task.
+To learn more, visit [stash documentation](https://stash.run/)
+
+### spec.upgradeConstraints
+UpgradeConstraints specifies the constraints that need to be considered during version upgrade. Here `allowList` contains the versions those are allowed for upgrading from the current version.
+An empty list of AllowList indicates all the versions are accepted except the denyList.
+On the other hand, `DenyList` contains all the rejected versions for the upgrade request. An empty list indicates no version is rejected.
 
 ### spec.podSecurityPolicies.databasePolicyName
 

@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Redis
+metadata:
+  name: rd-sample
+  namespace: demo
+spec:
+  version: 6.2.5
+  replicas: 3
+  sentinelRef:
+    name: sen-sample
+    namespace: demo
+  mode: Sentinel
+  storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+  terminationPolicy: DoNotTerminate
