@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisOpsRequest
+metadata:
+  name: replace-sentinel
+  namespace: demo
+spec:
+  type: ReplaceSentinel
+  databaseRef:
+    name: rd-demo
+  sentinel:
+    ref:
+      name: new-sentinel
+      namespace: demo
+    removeUnusedSentinel: true

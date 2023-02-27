@@ -1,0 +1,20 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Redis
+metadata:
+  name: sample-redis
+  namespace: demo
+spec:
+  version: 6.2.5
+  mode: Cluster
+  cluster:
+    master: 3
+    replicas: 1
+  storageType: Durable
+  storage:
+    storageClassName: "topolvm-provisioner"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: Halt

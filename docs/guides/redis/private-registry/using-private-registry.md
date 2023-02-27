@@ -33,23 +33,21 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For redis, push `DB_IMAGE`, `TOOLS_IMAGE`, `EXPORTER_IMAGE` of following RedisVersions, where `deprecated` is not true, to your private registry.
 
-  ```bash
-  $ kubectl get redisversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,TOOLS_IMAGE:.spec.tools.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
-  NAME       VERSION   DB_IMAGE                TOOLS_IMAGE   EXPORTER_IMAGE                  DEPRECATED
-  4          4         kubedb/redis:4          <none>        kubedb/operator:0.8.0           true
-  4-v1       4         kubedb/redis:4-v1       <none>        kubedb/redis_exporter:v0.21.1   true
-  4.0        4.0       kubedb/redis:4.0        <none>        kubedb/operator:0.8.0           true
-  4.0-v1     4.0       kubedb/redis:4.0-v1     <none>        kubedb/redis_exporter:v0.21.1   true
-  4.0-v2     4.0       kubedb/redis:4.0-v2     <none>        kubedb/redis_exporter:v0.21.1   <none>
-  4.0.11     4.0.11    kubedb/redis:4.0.11     <none>        kubedb/redis_exporter:v0.21.1   <none>
-  4.0.6      4.0.6     kubedb/redis:4.0.6-v1   <none>        kubedb/operator:0.8.0           true
-  4.0.6-v1   4.0.6     kubedb/redis:4.0.6-v1   <none>        kubedb/redis_exporter:v0.21.1   true
-  4.0.6-v2   4.0.6     kubedb/redis:4.0.6-v2   <none>        kubedb/redis_exporter:v0.21.1   <none>
-  5.0        5.0       kubedb/redis:5.0        <none>        kubedb/redis_exporter:v0.21.1   <none>
-  5.0-v1     5.0       kubedb/redis:5.0-v1     <none>        kubedb/redis_exporter:v0.21.1   <none>
-  5.0.3      5.0.3     kubedb/redis:5.0.3      <none>        kubedb/redis_exporter:v0.21.1   <none>
-  5.0.3-v1   5.0.3     kubedb/redis:5.0.3-v1   <none>        kubedb/redis_exporter:v0.21.1   <none>
-  ```
+```bash
+$ kubectl get redisversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,INITCONTAINER_IMAGE:.spec.initContainer.image,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image
+NAME       VERSION   INITCONTAINER_IMAGE       DB_IMAGE                EXPORTER_IMAGE
+4.0.11     4.0.11    kubedb/redis-init:0.7.0   kubedb/redis:4.0.11     kubedb/redis_exporter:v0.21.1
+4.0.6-v2   4.0.6     kubedb/redis-init:0.7.0   kubedb/redis:4.0.6-v2   kubedb/redis_exporter:v0.21.1
+5.0.14     5.0.14    kubedb/redis-init:0.7.0   redis:5.0.14            kubedb/redis_exporter:1.9.0
+5.0.3-v1   5.0.3     kubedb/redis-init:0.7.0   kubedb/redis:5.0.3-v1   kubedb/redis_exporter:v0.21.1
+6.0.6      6.0.6     kubedb/redis-init:0.7.0   kubedb/redis:6.0.6      kubedb/redis_exporter:1.9.0
+6.2.5      6.2.5     kubedb/redis-init:0.7.0   redis:6.2.5             kubedb/redis_exporter:1.9.0
+6.2.7      6.2.7     kubedb/redis-init:0.7.0   redis:6.2.7             kubedb/redis_exporter:1.9.0
+6.2.8      6.2.8     kubedb/redis-init:0.7.0   redis:6.2.8             kubedb/redis_exporter:1.9.0
+7.0.4      7.0.4     kubedb/redis-init:0.7.0   redis:7.0.4             kubedb/redis_exporter:1.9.0
+7.0.5      7.0.5     kubedb/redis-init:0.7.0   redis:7.0.5             kubedb/redis_exporter:1.9.0
+7.0.6      7.0.6     kubedb/redis-init:0.7.0   redis:7.0.6             kubedb/redis_exporter:1.9.0
+```
 
   Docker hub repositories:
 
@@ -63,7 +61,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: RedisVersion
   metadata:
-    name: 6.0.6
+    name: 6.2.5
   spec:
     db:
       image: PRIVATE_DOCKER_REGISTRY:6.0.6
@@ -76,7 +74,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 ## Create ImagePullSecret
 
-ImagePullSecrets is a type of a Kubernete Secret whose sole purpose is to pull private images from a Docker registry. It allows you to specify the url of the docker registry, credentials for logging in and the image name of your private docker image.
+ImagePullSecrets is a type of Kubernetes Secret whose sole purpose is to pull private images from a Docker registry. It allows you to specify the url of the docker registry, credentials for logging in and the image name of your private docker image.
 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
@@ -109,7 +107,7 @@ metadata:
   name: redis-pvt-reg
   namespace: demo
 spec:
-  version: 6.0.6
+  version: 6.2.5
   storage:
     storageClassName: "standard"
     accessModes:
@@ -143,12 +141,12 @@ redis-pvt-reg-0   1/1       Running             0          2m
 
 $ kubectl get rd -n demo
 NAME            VERSION   STATUS    AGE
-redis-pvt-reg   4.0-v1    Running   40s
+redis-pvt-reg   6.2.5    Running   40s
 ```
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl patch -n demo rd/redis-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
@@ -158,6 +156,20 @@ kubectl patch -n demo drmn/redis-pvt-reg -p '{"spec":{"wipeOut":true}}' --type="
 kubectl delete -n demo drmn/redis-pvt-reg
 
 kubectl delete ns demo
+```
+
+```bash
+$ kubectl patch -n demo rd/redis-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+redis.kubedb.com/redis-pvt-reg patched
+
+$ kubectl delete -n demo rd/redis-pvt-reg
+redis.kubedb.com "redis-pvt-reg" deleted
+
+$ kubectl delete -n demo secret myregistrykey
+secret "myregistrykey" deleted
+
+$ kubectl delete ns demo
+namespace "demo" deleted
 ```
 
 ## Next Steps

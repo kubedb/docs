@@ -1,0 +1,24 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: RedisAutoscaler
+metadata:
+  name: rd-as
+  namespace: demo
+spec:
+  databaseRef:
+    name: rd-standalone
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
+  compute:
+    standalone:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 400m
+        memory: 400Mi
+      maxAllowed:
+        cpu: 1
+        memory: 1Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"

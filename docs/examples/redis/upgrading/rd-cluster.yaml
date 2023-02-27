@@ -4,7 +4,7 @@ metadata:
   name: redis-cluster
   namespace: demo
 spec:
-  version: 5.0.3-v1
+  version: 6.0.6
   mode: Cluster
   cluster:
     master: 3
@@ -13,8 +13,8 @@ spec:
   storage:
     resources:
       requests:
-        storage: 1Gi
+        storage: "100Mi"
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
-  terminationPolicy: WipeOut
+      - ReadWriteOnce
+  terminationPolicy: Halt

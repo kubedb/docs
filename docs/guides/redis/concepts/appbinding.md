@@ -5,7 +5,7 @@ menu:
     identifier: rd-appbinding-concepts
     name: AppBinding
     parent: rd-concepts-redis
-    weight: 20
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -26,37 +26,62 @@ KubeDB uses [Stash](https://appscode.com/products/stash/) to perform backup/reco
 
 Like any official Kubernetes resource, an `AppBinding` has `TypeMeta`, `ObjectMeta` and `Spec` sections. However, unlike other Kubernetes resources, it does not have a `Status` section.
 
-An `AppBinding` object created by `KubeDB` for PostgreSQL database is shown below,
+An `AppBinding` object created by `KubeDB` for Redis database is shown below,
 
 ```yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  name: quick-redis
-  namespace: demo
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Redis","metadata":{"annotations":{},"name":"redis1","namespace":"demo"},"spec":{"authSecret":{"externallyManaged":false,"name":"redis1-auth"},"autoOps":{"disabled":true},"cluster":{"master":3,"replicas":1},"configSecret":{"name":"rd-custom-config"},"disableAuth":false,"halted":false,"healthChecker":{"disableWriteCheck":false,"failureThreshold":2,"periodSeconds":15,"timeoutSeconds":10},"mode":"Cluster","monitor":{"agent":"prometheus.io/operator","prometheus":{"serviceMonitor":{"interval":"10s","labels":{"app":"kubedb"}}}},"podTemplate":{"controller":{"annotations":{"passMe":"ToStatefulSet"}},"metadata":{"annotations":{"passMe":"ToDatabasePod"}},"spec":{"args":["--loglevel verbose"],"env":[{"name":"ENV_VARIABLE","value":"value"}],"imagePullSecrets":[{"name":"regcred"}],"resources":{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"250m","memory":"64Mi"}},"serviceAccountName":"my-service-account"}},"serviceTemplates":[{"alias":"primary","metadata":{"annotations":{"passMe":"ToService"}},"spec":{"ports":[{"name":"http","port":9200}],"type":"NodePort"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"terminationPolicy":"Halt","tls":{"certificates":[{"alias":"client","emailAddresses":["abc@appscode.com"],"subject":{"organizations":["kubedb"]}},{"alias":"server","emailAddresses":["abc@appscode.com"],"subject":{"organizations":["kubedb"]}}],"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"redis-ca-issuer"}},"version":"6.2.5"}}
+  creationTimestamp: "2023-02-01T05:27:19Z"
+  generation: 1
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: quick-redis
+    app.kubernetes.io/instance: redis1
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: redises.kubedb.com
-  ...    
+  name: redis1
+  namespace: demo
+  ownerReferences:
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: Redis
+      name: redis1
+      uid: a01272d3-97b6-4e8c-912f-67eff07e3811
+  resourceVersion: "398775"
+  uid: 336988b4-5805-48ac-9d06-e3375fa4c435
 spec:
-  type: kubedb.com/redis
-  secret:
-    name: quick-redis-auth
+  appRef:
+    apiGroup: kubedb.com
+    kind: Redis
+    name: redis1
+    namespace: demo
   clientConfig:
     service:
-      service:
-      name: quick-redis
+      name: redis1
       port: 6379
-      scheme: redis
+      scheme: rediss
   parameters:
     apiVersion: config.kubedb.com/v1alpha1
+    clientCertSecret:
+      name: redis1-client-cert
     kind: RedisConfiguration
+    stash:
+      addon:
+        backupTask:
+          name: redis-backup-6.2.5
+        restoreTask:
+          name: redis-restore-6.2.5
   secret:
-    name: quick-redis-auth
+    name: redis1-auth
+  tlsSecret:
+    name: redis1-client-cert
   type: kubedb.com/redis
-  version: 6.0.6
+  version: 6.2.5
+
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.
@@ -69,21 +94,29 @@ An `AppBinding` object has the following fields in the `spec` section:
 
 `spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to. Stash uses this field to resolve the values of `TARGET_APP_TYPE`, `TARGET_APP_GROUP` and `TARGET_APP_RESOURCE` variables of [BackupBlueprint](https://appscode.com/products/stash/latest/concepts/crds/backupblueprint/) object.
 
-This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `postgres` resource under `kubedb.com` group.
+This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `redis` resource under `kubedb.com` group.
 
 Here, the variables are parsed as follows:
 
-|       Variable        |                                                               Usage                                                               |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `TARGET_APP_GROUP`    | Represents the application group where the respective app belongs (i.e: `kubedb.com`).                                            |
-| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents (i.e: `postgres`).                           |
-| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` (i.e: `kubedb.com/postgres`). |
+|       Variable        | Usage                                                                                                                          |
+| --------------------- |--------------------------------------------------------------------------------------------------------------------------------|
+| `TARGET_APP_GROUP`    | Represents the application group where the respective app belongs (i.e: `kubedb.com`).                                         |
+| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents (i.e: `redis`).                           |
+| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` (i.e: `kubedb.com/redis`). |
 
 #### spec.secret
 
 `spec.secret` specifies the name of the secret which contains the credentials that are required to access the database. This secret must be in the same namespace as the `AppBinding`.
 
 This secret must contain the following keys:
+
+
+Redis :
+
+| Key        | Usage                                          |
+| ---------- | ---------------------------------------------- |
+| `username` | Username of the target database.               |
+| `password` | Password for the user specified by `username`. |
 
 PostgreSQL :
 
@@ -113,9 +146,12 @@ Elasticsearch:
 | `ADMIN_USERNAME` | Admin username          |
 | `ADMIN_PASSWORD` | Password for admin user |
 
+#### spec.appRef
+appRef refers to the underlying application. It has 4 fields named `apiGroup`, `kind`, `name` & `namespace`.
+
 #### spec.clientConfig
 
-`spec.clientConfig` defines how to communicate with the target database. You can use either an URL or a Kubernetes service to connect with the database. You don't have to specify both of them.
+`spec.clientConfig` defines how to communicate with the target database. You can use either a URL or a Kubernetes service to connect with the database. You don't have to specify both of them.
 
 You can configure following fields in `spec.clientConfig` section:
 
@@ -123,7 +159,7 @@ You can configure following fields in `spec.clientConfig` section:
 
   `spec.clientConfig.url` gives the location of the database, in standard URL form (i.e. `[scheme://]host:port/[path]`). This is particularly useful when the target database is running outside of the Kubernetes cluster. If your database is running inside the cluster, use `spec.clientConfig.service` section instead.
 
-  > Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
+> Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
 
 - **spec.clientConfig.service**
 

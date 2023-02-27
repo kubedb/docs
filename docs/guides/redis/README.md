@@ -16,19 +16,26 @@ aliases:
 > New to KubeDB? Please start [here](/docs/README.md).
 
 ## Supported Redis Features
+| Features                                                                           | Community | Enterprise |
+|------------------------------------------------------------------------------------|:---------:|:----------:|
+| Clustering                                                                         | &#10003;  |  &#10003;  |
+| Sentinel                                                                           | &#10003;  |  &#10003;  |
+| Standalone                                                                         | &#10003;  |  &#10003;  |
+| Authentication & Autorization                                                      | &#10003;  |  &#10003;  |
+| Persistent Volume                                                                  | &#10003;  |  &#10003;  |
+| Initializing from Snapshot ( [Stash](https://stash.run/) )                         | &#10003;  |  &#10003;  |
+| Instant Backup (Sentinel and Standalone Mode)                                      | &#10003;  |  &#10003;  |
+| Scheduled Backup (Sentinel and Standalone Mode)                                    | &#10003;  |  &#10003;  |
+| Builtin Prometheus Discovery                                                       | &#10003;  |  &#10003;  |
+| Using Prometheus operator                                                          | &#10003;  |  &#10003;  |
+| Automated Version Upgrade                                                          | &#10007;  |  &#10003;  |
+| Automatic Vertical Scaling                                                         | &#10007;  |  &#10003;  |
+| Automated Horizontal Scaling                                                       | &#10007;  |  &#10003;  |
+| Automated db-configure Reconfiguration                                             | &#10007;  |  &#10003;  |
+| TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) ) | &#10007;  |  &#10003;  |
+| Automated Volume Expansion                                                         | &#10007;  |  &#10003;  |
+| Autoscaling (vertically)                                                           | &#10007;  |  &#10003;  |
 
-| Features                     | Availability |
-| ---------------------------- | :----------: |
-| Clustering                   |   &#10003;   |
-| Instant Backup               |   &#10007;   |
-| Scheduled Backup             |   &#10007;   |
-| Persistent Volume            |   &#10003;   |
-| Initialize using Snapshot    |   &#10007;   |
-| Initialize using Script      |   &#10007;   |
-| Custom Configuration         |   &#10003;   |
-| Using Custom docker image    |   &#10003;   |
-| Builtin Prometheus Discovery |   &#10003;   |
-| Using Prometheus operator    |   &#10003;   |
 
 ## Life Cycle of a Redis Object
 

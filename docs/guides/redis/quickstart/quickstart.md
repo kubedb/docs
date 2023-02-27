@@ -53,13 +53,18 @@ When you have installed KubeDB, it has created `RedisVersion` crd for all suppor
 
 ```bash
 $ kubectl get redisversions
-  NAME       VERSION   DB_IMAGE                DEPRECATED   AGE
-
-  4.0.11     4.0.11    kubedb/redis:4.0.11                  31s
-  4.0.6-v2   4.0.6     kubedb/redis:4.0.6-v2                31s
-  5.0.3-v1   5.0.3     kubedb/redis:5.0.3-v1                31s
-  6.0.6      6.0.6     kubedb/redis:6.0.6                   31s
-  6.2.5      6.2.5     redis:6.2.5                          31s
+NAME       VERSION   DB_IMAGE                DEPRECATED   AGE
+4.0.11     4.0.11    kubedb/redis:4.0.11                  7h31m
+4.0.6-v2   4.0.6     kubedb/redis:4.0.6-v2                7h31m
+5.0.14     5.0.14    redis:5.0.14                         7h31m
+5.0.3-v1   5.0.3     kubedb/redis:5.0.3-v1                7h31m
+6.0.6      6.0.6     kubedb/redis:6.0.6                   7h31m
+6.2.5      6.2.5     redis:6.2.5                          7h31m
+6.2.7      6.2.7     redis:6.2.7                          7h31m
+6.2.8      6.2.8     redis:6.2.8                          7h31m
+7.0.4      7.0.4     redis:7.0.4                          7h31m
+7.0.5      7.0.5     redis:7.0.5                          7h31m
+7.0.6      7.0.6     redis:7.0.6                          7h31m
 ```
 
 ## Create a Redis server
@@ -73,7 +78,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: 6.0.6
+  version: 6.2.5
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -92,21 +97,21 @@ redis.kubedb.com/redis-quickstart created
 
 Here,
 
-- `spec.version` is name of the RedisVersion crd where the docker images are specified. In this tutorial, a Redis 6.0.6 database is created.
+- `spec.version` is name of the RedisVersion crd where the docker images are specified. In this tutorial, a Redis 6.2.5 database is created.
 - `spec.storageType` specifies the type of storage that will be used for Redis server. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Redis server using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Redis` crd or which resources KubeDB should keep or delete when you delete `Redis` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy)
 
-> Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
+> Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in storage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
 KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present.
 
 ```bash
 $ kubectl get rd -n demo
 NAME               VERSION   STATUS    AGE
-redis-quickstart   6.0.6     Running   1m
+redis-quickstart   6.2.5     Running   1m
 
-$ kubectl dba describe rd -n demo redis-quickstart
+$ kubectl describe rd -n demo redis-quickstart
 Name:               redis-quickstart
 Namespace:          demo
 CreationTimestamp:  Tue, 31 May 2022 10:31:38 +0600
@@ -188,7 +193,7 @@ AppBinding:
     Secret:
       Name:   redis-quickstart-auth
     Type:     kubedb.com/redis
-    Version:  6.0.6
+    Version:  6.2.5
 
 Events:
   Type    Reason      Age   From            Message
@@ -218,7 +223,7 @@ redis-quickstart        ClusterIP   10.108.149.205       <none>        6379/TCP 
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Redis object:
 
-```yaml
+```bash
 $ kubectl get rd -n demo redis-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Redis
@@ -284,7 +289,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Delete
-  version: 6.0.6
+  version: 6.2.5
 status:
   conditions:
     - lastTransitionTime: "2022-05-31T04:31:38Z"
@@ -358,39 +363,92 @@ Learn details of all `TerminationPolicy` [here](/docs/guides/redis/concepts/redi
 
 ## Halt Database
 
-When [TerminationPolicy](/docs/guides/redis/concepts/redis.md#specterminationpolicy) is set to `Halt`, it will halt the Redis server instead of deleting it. Here, If you delete the Redis object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `redis-quickstart` Redis server has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
+When [TerminationPolicy](/docs/guides/redis/concepts/redis.md#specterminationpolicy) is set to halt, and you delete the redis object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `TerminationPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy).
+
+You can also keep the redis object and halt the database to resume it again later. If you halt the database, the KubeDB operator will delete the statefulsets and services but will keep the redis object, pvcs, secrets and backup (snapshots).
+
+To halt the database, first you have to set the terminationPolicy to `Halt` in existing database. You can use the below command to set the terminationPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl delete rd redis-quickstart -n demo
-redis.kubedb.com "redis-quickstart" deleted
+$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"
+redis.kubedb.com/redis-quickstart patched
 ```
-Check resources:
+
+Then, you have to set the `spec.halted` as true to set the database in a `Halted` state. You can use the below command.
+
 ```bash
-NAME                           TYPE                       DATA   AGE
-secret/redis-quickstart-auth   kubernetes.io/basic-auth   2      21m
+$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"halted":true}}' --type="merge"
+redis.kubedb.com/redis-quickstart patched
+```
+After that, kubedb will delete the statefulsets and services, and you can see the database Phase as `Halted`.
+
+Now, you can run the following command to get all redis resources in demo namespaces,
+```bash
+$ kubectl get redis,secret,pvc -n demo
+NAME                                VERSION   STATUS   AGE
+redis.kubedb.com/redis-quickstart   6.2.5     Halted   5m26s
+
+NAME                                 TYPE                                  DATA   AGE
+secret/default-token-rs764           kubernetes.io/service-account-token   3      6h54m
+secret/redis-quickstart-auth         kubernetes.io/basic-auth              2      5m26s
+secret/redis-quickstart-config       Opaque                                1      5m26s
+secret/root-secret                   kubernetes.io/tls                     3      6h19m
+secret/sh.helm.release.v1.vault.v1   helm.sh/release.v1                    1      176m
+secret/vault-client-certs            kubernetes.io/tls                     3      22s
+secret/vault-server-certs            kubernetes.io/tls                     3      22s
 
 NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-redis-quickstart-0   Bound    pvc-13dce65a-6cc8-4089-9593-139a32ca5134   1Gi        RWO            standard       21m
+persistentvolumeclaim/data-redis-quickstart-0   Bound    pvc-ee1c2fd3-4c0e-4dad-812b-8f83e20284f8   1Gi        RWO            standard       5m24s
 ```
 
-## Resume Redis
-Say, the Redis CR was deleted with spec.terminationPolicy to Halt and you want to re-create the Redis cluster using the existing auth secrets and the PVCs.
+## Resume Halted Redis
 
-You can do it by simply re-deploying the original Redis object:
+Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
+
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/v2022.05.24/docs/examples/redis/quickstart/demo-1.yaml
-redis.kubedb.com/redis-quickstart created
+$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"halted":false}}' --type="merge"
+redis.kubedb.com/redis-quickstart patched
 ```
 
+When the database is resumed successfully, you can see the database Status is set to `Ready`.
+
+```bash
+$ kubectl get rd -n demo
+NAME               VERSION   STATUS   AGE
+redis-quickstart   6.2.5     Ready    7m52s
+```
+
+Now, If you again exec into the `pod` and look for previous data, you will see that, all the data persists.
+```bash
+$ kubectl exec -it -n demo redis-quickstart-0 -- sh
+
+/data > redis-cli
+
+127.0.0.1:6379> ping
+PONG
+
+# view data
+127.0.0.1:6379> GET mykey
+"Hello"
+
+127.0.0.1:6379> exit
+
+/data > exit
+```
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo rd/redis-quickstart
 
-kubectl delete ns demo
+$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+redis.kubedb.com/redis-quickstart patched
+
+$ kubectl delete -n demo rd/redis-quickstart
+redis.kubedb.com "redis-quickstart" deleted
+
+$ kubectl delete ns demo
+namespace "demo" deleted
 ```
 
 ## Tips for Testing

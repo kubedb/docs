@@ -1,11 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: RedisOpsRequest
 metadata:
-  name: upgrade-standalone
+  name: update-rd-version
   namespace: demo
 spec:
   type: UpdateVersion
   databaseRef:
-    name: redis-quickstart
+    name: rd-sample
   upgrade:
-    targetVersion: 6.0.6
+    targetVersion: 7.0.4

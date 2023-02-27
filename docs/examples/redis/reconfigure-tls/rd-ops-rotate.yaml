@@ -1,11 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: RedisOpsRequest
 metadata:
-  name: upgrade-cluster
+  name: rd-ops-rotate
   namespace: demo
 spec:
-  type: UpdateVersion
+  type: ReconfigureTLS
   databaseRef:
-    name: redis-cluster
-  upgrade:
-    targetVersion: 6.0.6
+    name: rd-sample
+  tls:
+    rotateCertificates: true

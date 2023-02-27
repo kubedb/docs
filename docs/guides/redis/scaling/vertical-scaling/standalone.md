@@ -26,7 +26,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 
 - You should be familiar with the following `KubeDB` concepts:
   - [Redis](/docs/guides/redis/concepts/redis.md)
-  - [RedisOpsRequest](/docs/guides/redis/concepts/opsrequest.md)
+  - [RedisOpsRequest](/docs/guides/redis/concepts/redisopsrequest.md)
   - [Vertical Scaling Overview](/docs/guides/redis/scaling/vertical-scaling/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -66,12 +66,18 @@ spec:
     resources:
       requests:
         storage: 1Gi
+  podTemplate:
+    spec:
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "100Mi"
 ```
 
 Let's create the `Redis` CR we have shown above, 
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/rd-standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/rd-standalone.yaml
 redis.kubedb.com/redis-quickstart created
 ```
 
@@ -89,12 +95,11 @@ Let's check the Pod containers resources,
 $ kubectl get pod -n demo redis-quickstart-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
-    "cpu": "250m",
-    "memory": "512Mi"
+    "memory": "100Mi"
   },
   "requests": {
     "cpu": "100m",
-    "memory": "256Mi"
+    "memory": "100Mi"
   }
 }
 ```
@@ -136,12 +141,12 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `redis-quickstart` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
-- `spec.VerticalScaling.redis` specifies the desired resources after scaling.
+- `spec.verticalScaling.redis` specifies the desired resources after scaling.
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-standalone.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/vertical-standalone.yaml
 redisopsrequest.ops.kubedb.com/redisopsstandalone created
 ```
 
@@ -152,101 +157,12 @@ If everything goes well, `KubeDB` Enterprise operator will update the resources 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
 ```bash
-$ kubectl get redisopsrequest -n demo -w
+$ watch kubectl get redisopsrequest -n demo redisopsstandalone
 NAME                 TYPE              STATUS       AGE
-redisopsstandalone   VerticalScaling   Successful   5m43s
+redisopsstandalone   VerticalScaling   Successful   26s
 ```
 
-We can see from the above output that the `RedisOpsRequest` has succeeded. If we describe the `RedisOpsRequest` we will get an overview of the steps that were followed to scale the database.
-
-```bash
-$ kubectl describe redisopsrequest -n demo redisopsstandalone
-Name:         redisopsstandalone
-Namespace:    demo
-Labels:       <none>
-Annotations:  <none>
-API Version:  ops.kubedb.com/v1alpha1
-Kind:         RedisOpsRequest
-Metadata:
-  Creation Timestamp:  2020-11-26T11:14:13Z
-  Generation:          1
-  Resource Version:    72954
-  Self Link:           /apis/ops.kubedb.com/v1alpha1/namespaces/demo/redisopsrequests/redisopsstandalone
-  UID:                 92d06d0b-774e-4d57-be62-a4015865034c
-Spec:
-  Database Ref:
-    Name:  redis-quickstart
-  Type:    VerticalScaling
-  Vertical Scaling:
-    Redis:
-      Limits:
-        Cpu:     500m
-        Memory:  800Mi
-      Requests:
-        Cpu:     200m
-        Memory:  300Mi
-Status:
-  Conditions:
-    Last Transition Time:  2020-11-26T11:14:13Z
-    Message:               RedisOpsRequest: demo/redisopsstandalone is vertically scaling database
-    Observed Generation:   1
-    Reason:                VerticalScaling
-    Status:                True
-    Type:                  Progressing
-    Last Transition Time:  2020-11-26T11:14:13Z
-    Message:               Successfully paused Redis: redis-quickstart
-    Observed Generation:   1
-    Reason:                PauseDatabase
-    Status:                True
-    Type:                  PauseDatabase
-    Last Transition Time:  2020-11-26T11:14:13Z
-    Message:               Successfully updated StatefulSets Resources
-    Observed Generation:   1
-    Reason:                UpdateStatefulSetResources
-    Status:                True
-    Type:                  UpdateStatefulSetResources
-    Last Transition Time:  2020-11-26T11:14:33Z
-    Message:               Successfully Restarted Pods With Resources
-    Observed Generation:   1
-    Reason:                RestartedPodsWithResources
-    Status:                True
-    Type:                  RestartedPodsWithResources
-    Last Transition Time:  2020-11-26T11:14:33Z
-    Message:               Vertical scaling have been done successfully
-    Observed Generation:   1
-    Reason:                ScalingDone
-    Status:                True
-    Type:                  ScalingDone
-    Last Transition Time:  2020-11-26T11:14:33Z
-    Message:               Successfully resumed Redis: redis-quickstart
-    Observed Generation:   1
-    Reason:                ResumeDatabase
-    Status:                True
-    Type:                  ResumeDatabase
-    Last Transition Time:  2020-11-26T11:14:33Z
-    Message:               RedisOpsRequest: demo/redisopsstandalone Successfully Vertically Scaled Database
-    Observed Generation:   1
-    Reason:                VerticalScaling
-    Status:                True
-    Type:                  Successful
-  Observed Generation:     1
-  Phase:                   Successful
-Events:
-  Type    Reason                      Age   From                        Message
-  ----    ------                      ----  ----                        -------
-  Normal  PauseDatabase               19m   KubeDB Enterprise Operator  Pausing Redis demo/redis-quickstart
-  Normal  PauseDatabase               19m   KubeDB Enterprise Operator  Successfully paused Redis demo/redis-quickstart
-  Normal  Starting                    19m   KubeDB Enterprise Operator  Updating Resources of StatefulSet: redis-quickstart
-  Normal  UpdateStatefulSetResources  19m   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  RestartedPodsWithResources  18m   KubeDB Enterprise Operator  Successfully Restarted Pods With Resources
-  Normal  ResumeDatabase              18m   KubeDB Enterprise Operator  Pausing Redis demo/redis-quickstart
-  Normal  ResumeDatabase              18m   KubeDB Enterprise Operator  Successfully resumed Redis demo/redis-quickstart
-  Normal  Successful                  18m   KubeDB Enterprise Operator  Successfully Completed the OpsRequest
-  Normal  ResumeDatabase              18m   KubeDB Enterprise Operator  Pausing Redis demo/redis-quickstart
-  Normal  ResumeDatabase              18m   KubeDB Enterprise Operator  Successfully resumed Redis demo/redis-quickstart
-  Normal  Successful                  18m   KubeDB Enterprise Operator  Successfully Completed the OpsRequest
-```
-
+We can see from the above output that the `RedisOpsRequest` has succeeded. 
 Now, we are going to verify from the Pod yaml whether the resources of the standalone database has updated to meet up the desired state, Let's check,
 
 ```bash
@@ -261,6 +177,7 @@ $ kubectl get pod -n demo redis-quickstart-0 -o json | jq '.spec.containers[].re
     "memory": "300Mi"
   }
 }
+
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Redis standalone database.
@@ -270,6 +187,13 @@ The above output verifies that we have successfully scaled up the resources of t
 To clean up the Kubernetes resources created by this turorial, run:
 
 ```bash
-kubectl delete redis -n demo redis-quickstart
-kubectl delete redisopsrequest -n demo redisopsstandalone
+
+$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+redis.kubedb.com/redis-quickstart patched
+
+$ kubectl delete -n demo redis redis-quickstart
+redis.kubedb.com "redis-quickstart" deleted
+
+$ kubectl delete redisopsrequest -n demo redisopsstandalone
+redisopsrequest.ops.kubedb.com "redisopsstandalone" deleted
 ```

@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Redis
+metadata:
+  name: rd-tls
+  namespace: demo
+spec:
+  version: "6.2.5"
+  mode: Cluster
+  cluster:
+    master: 3
+    replicas: 1
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: redis-ca-issuer
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
