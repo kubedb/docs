@@ -38,7 +38,7 @@ jobs:
         id: kind
         uses: engineerd/setup-kind@v0.5.0
         with:
-          version: v0.16.0
+          version: v0.17.0
 
       - name: Prepare cluster for testing
         id: local-path
@@ -54,7 +54,7 @@ jobs:
           helm repo update
           # helm install kubedb-crds appscode/kubedb-crds
           # helm install kmodules-crds appscode/kmodules-crds
-          kubectl create -f https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.crds.yaml
+          kubectl create -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.crds.yaml
           kubectl create -f https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.60.1/stripped-down-crds.yaml
           kubectl create -f https://github.com/kmodules/custom-resources/raw/release-1.25/crds/appcatalog.appscode.com_appbindings.yaml
           kubectl create -f https://github.com/kmodules/custom-resources/raw/release-1.25/crds/metrics.appscode.com_metricsconfigurations.yaml
