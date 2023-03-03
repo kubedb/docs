@@ -4,11 +4,12 @@ on:
   pull_request:
     branches:
       - "*"
-
   workflow_dispatch:
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
+
 jobs:
   build:
     name: Build
@@ -36,7 +37,7 @@ jobs:
 
       - name: Install Hugo
         run: |
-          curl -fsSL -o hugo_extended.deb https://github.com/gohugoio/hugo/releases/download/v0.111.1/hugo_extended_0.111.1_Linux-64bit.deb
+          curl -fsSL -o hugo_extended.deb https://github.com/gohugoio/hugo/releases/download/v0.111.1/hugo_extended_0.111.1_linux-amd64.deb
           sudo dpkg -i hugo_extended.deb
           rm hugo_extended.deb
 
