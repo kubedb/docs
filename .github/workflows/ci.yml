@@ -32,6 +32,9 @@ jobs:
           chmod +x codespan-schema-checker
           sudo mv codespan-schema-checker /usr/local/bin/codespan-schema-checker
 
+      - name: Check Spelling
+        uses: check-spelling/check-spelling@v0.0.21
+
       - name: Check links
         run: |
           liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*)$'
@@ -51,11 +54,6 @@ jobs:
           echo
           echo "install helm 3"
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-          echo "install kubedb-crds chart"
-          helm repo add appscode https://charts.appscode.com/stable/
-          helm repo update
-          # helm install kubedb-crds appscode/kubedb-crds
-          # helm install kmodules-crds appscode/kmodules-crds
           kubectl create -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.crds.yaml
           kubectl create -f https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.60.1/stripped-down-crds.yaml
           kubectl create -f https://github.com/kmodules/custom-resources/raw/release-1.25/crds/appcatalog.appscode.com_appbindings.yaml
