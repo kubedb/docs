@@ -4,7 +4,7 @@ metadata:
   name: quick-redis
   namespace: demo
 spec:
-  version: 6.0.6
+  version: 6.2.5
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount

@@ -4,13 +4,13 @@ metadata:
   name: custom-redis
   namespace: demo
 spec:
-  version: 6.0.6
+  version: 6.2.5
   configSecret:
-    name: rd-custom-config
+    name: rd-configuration
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi

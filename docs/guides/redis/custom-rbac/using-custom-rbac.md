@@ -39,7 +39,7 @@ If a service account name is given, but there's no existing service account by t
 
 If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
 
-This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a Redis instance named `quick-postges` to provide the bare minimum access permissions.
+This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a Redis instance named `quick-redis` to provide the bare minimum access permissions.
 
 ## Custom RBAC for Redis
 
@@ -52,19 +52,20 @@ serviceaccount/my-custom-serviceaccount created
 
 It should create a service account.
 
-```yaml
+```bash
 $ kubectl get serviceaccount -n demo my-custom-serviceaccount -o yaml
+```
+```yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: "2019-05-30T04:23:39Z"
+  creationTimestamp: "2023-02-06T10:19:00Z"
   name: my-custom-serviceaccount
   namespace: demo
-  resourceVersion: "21657"
-  selfLink: /api/v1/namespaces/demo/serviceaccounts/myserviceaccount
-  uid: b2ec2b05-8292-11e9-8d10-080027a8b217
+  resourceVersion: "683509"
+  uid: 186702c3-6d84-4ba9-b349-063c4e681622
 secrets:
-- name: myserviceaccount-token-t8zxd
+  - name: my-custom-serviceaccount-token-vpr84
 ```
 
 Now, we need to create a role that has necessary access permissions for the Redis instance named `quick-redis`.
@@ -105,25 +106,26 @@ rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
 It should bind `my-custom-role` and `my-custom-serviceaccount` successfully.
 
-```yaml
+```bash
 $ kubectl get rolebinding -n demo my-custom-rolebinding -o yaml
+```
+```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  creationTimestamp: "2023-02-06T09:46:26Z"
   name: my-custom-rolebinding
   namespace: demo
-  resourceVersion: "1405"
-  selfLink: /apis/rbac.authorization.k8s.io/v1/namespaces/demo/rolebindings/my-custom-rolebinding
-  uid: 123afc02-8297-11e9-8d10-080027a8b217
+  resourceVersion: "680621"
+  uid: 6f74cce7-bb20-4584-bdc1-bdfb3598604f
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: my-custom-role
 subjects:
-- kind: ServiceAccount
-  name: my-custom-serviceaccount
-  namespace: demo
-
+  - kind: ServiceAccount
+    name: my-custom-serviceaccount
+    namespace: demo
 ```
 
 Now, create a Redis crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
@@ -142,7 +144,7 @@ metadata:
   name: quick-redis
   namespace: demo
 spec:
-  version: 6.0.6
+  version: 6.2.5
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -152,7 +154,6 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: DoNotTerminate
-
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-redis-0` has been created.
@@ -161,24 +162,17 @@ Check that the statefulset's pod is running
 
 ```bash
 $ kubectl get pod -n demo quick-redis-0
-NAME                READY     STATUS    RESTARTS   AGE
-quick-redis-0   1/1       Running   0          14m
+NAME            READY   STATUS    RESTARTS   AGE
+quick-redis-0   1/1     Running   0          61s
 ```
 
-Check the pod's log to see if the database is ready
+Check if database is in Ready state
 
 ```bash
-$ kubectl logs -f -n demo quick-redis-0
-1:C 10 Jun 04:32:25.537 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
-1:C 10 Jun 04:32:25.537 # Redis version=4.0.11, bits=64, commit=00000000, modified=0, pid=1, just started
-1:C 10 Jun 04:32:25.537 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
-1:M 10 Jun 04:32:25.537 * Running mode=standalone, port=6379.
-1:M 10 Jun 04:32:25.537 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
-1:M 10 Jun 04:32:25.537 # Server initialized
-1:M 10 Jun 04:32:25.537 * Ready to accept connections
+$ kubectl get redis -n demo
+NAME          VERSION   STATUS   AGE
+quick-redis   6.2.5     Ready    117s
 ```
-
-Once we see `Ready to accept connections` in the log, the database is ready.
 
 ## Reusing Service Account
 
@@ -200,7 +194,7 @@ metadata:
   name: minute-redis
   namespace: demo
 spec:
-  version: 6.0.6
+  version: 6.2.5
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
@@ -226,38 +220,43 @@ NAME                READY     STATUS    RESTARTS   AGE
 minute-redis-0   1/1       Running   0          14m
 ```
 
-Check the pod's log to see if the database is ready
+Check if database is in Ready state
 
 ```bash
-$ kubectl logs -f -n demo minute-redis-0
-1:C 10 Jun 04:32:25.537 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
-1:C 10 Jun 04:32:25.537 # Redis version=4.0.11, bits=64, commit=00000000, modified=0, pid=1, just started
-1:C 10 Jun 04:32:25.537 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
-1:M 10 Jun 04:32:25.537 * Running mode=standalone, port=6379.
-1:M 10 Jun 04:32:25.537 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
-1:M 10 Jun 04:32:25.537 # Server initialized
-1:M 10 Jun 04:32:25.537 * Ready to accept connections
+$ kubectl get redis -n demo
+NAME           VERSION   STATUS   AGE
+minute-redis   6.2.5     Ready    76s
+quick-redis    6.2.5     Ready    4m26s
 ```
-
-`Ready to accept connections` in the log signifies that the database is running successfully.
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo rd/quick-redis -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo rd/quick-redis
+$ kubectl patch -n demo rd/quick-redis -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+redis.kubedb.com/quick-redis patched
 
-kubectl patch -n demo rd/minute-redis -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo rd/minute-redis
+$ kubectl delete -n demo rd/quick-redis
+redis.kubedb.com "quick-redis" deleted
 
-kubectl delete -n demo role my-custom-role
-kubectl delete -n demo rolebinding my-custom-rolebinding
+$ kubectl patch -n demo rd/minute-redis -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+redis.kubedb.com/minute-redis patched
 
-kubectl delete sa -n demo my-custom-serviceaccount
+$ kubectl delete -n demo rd/minute-redis
+redis.kubedb.com "minute-redis" deleted
 
-kubectl delete ns demo
+$ kubectl delete -n demo role my-custom-role
+role.rbac.authorization.k8s.io "my-custom-role" deleted
+
+$ kubectl delete -n demo rolebinding my-custom-rolebinding
+rolebinding.rbac.authorization.k8s.io "my-custom-rolebinding" deleted
+
+$ kubectl delete sa -n demo my-custom-serviceaccount
+serviceaccount "my-custom-serviceaccount" deleted
+
+$ kubectl delete ns demo
+namespace "demo" deleted
 ```
 
 If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).

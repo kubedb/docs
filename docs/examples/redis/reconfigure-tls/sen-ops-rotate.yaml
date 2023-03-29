@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisSentinelOpsRequest
+metadata:
+  name: sen-ops-rotate
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: sen-demo-tls
+  tls:
+    rotateCertificates: true

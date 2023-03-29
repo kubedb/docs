@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisOpsRequest
+metadata:
+  name: rd-ops-horizontal
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: rd-sample
+  horizontalScaling:
+    replicas: 5

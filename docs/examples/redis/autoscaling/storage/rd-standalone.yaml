@@ -1,0 +1,14 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Redis
+metadata:
+  name: rd-standalone
+  namespace: demo
+spec:
+  version: "6.2.5"
+  storageType: Durable
+  storage:
+    storageClassName: topolvm-provisioner
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
