@@ -1,10 +1,10 @@
 ---
-title: MongoDB TLS/SSL Encryption Overview
+title: Kafka TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-tls-overview
+    identifier: kf-tls-overview
     name: Overview
-    parent: mg-tls
+    parent: kf-tls
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -14,9 +14,9 @@ section_menu_id: guides
 
 {{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
 
-# MongoDB TLS/SSL Encryption
+# Kafka TLS/SSL Encryption
 
-**Prerequisite :** To configure TLS/SSL in `MongoDB`, `KubeDB` uses `cert-manager` to issue certificates. So first you have to make sure that the cluster has `cert-manager` installed. To install `cert-manager` in your cluster following steps [here](https://cert-manager.io/docs/installation/kubernetes/).
+**Prerequisite :** To configure TLS/SSL in `Kafka`, `KubeDB` uses `cert-manager` to issue certificates. So first you have to make sure that the cluster has `cert-manager` installed. To install `cert-manager` in your cluster following steps [here](https://cert-manager.io/docs/installation/kubernetes/).
 
 To issue a certificate, the following crd of `cert-manager` is used:
 
@@ -26,7 +26,7 @@ To issue a certificate, the following crd of `cert-manager` is used:
 
 **MongoDB CRD Specification :**
 
-KubeDB uses following crd fields to enable SSL/TLS encryption in `MongoDB`.
+KubeDB uses following crd fields to enable SSL/TLS encryption in `Kafka`.
 
 - `spec:`
   - `sslMode`

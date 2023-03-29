@@ -23,7 +23,7 @@ From here you can learn all about KubeDB's architecture and how to deploy and us
 
 - [Setup](/docs/setup/). Setup contains instructions for installing the KubeDB in various cloud providers.
 
-- [Guides](/docs/guides/). Guides show you how to perform tasks with KubeDB.
+- [Guides](/docs/guides/). Guides to show you how to perform tasks with KubeDB.
 
 - [Reference](/docs/reference/). Detailed exhaustive lists of command-line options, configuration options, API definitions, and procedures.
 

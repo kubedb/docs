@@ -1,10 +1,10 @@
 ---
-title: Kafka Quickstart
+title: Kafka Concepts
 menu:
   docs_{{ .version }}:
-    identifier: kf-quickstart-kafka
-    name: Quickstart
+    identifier: kf-concepts-kafka
+    name: Concepts
     parent: kf-kafka-guides
-    weight: 15
+    weight: 20
 menu_name: docs_{{ .version }}
 ---

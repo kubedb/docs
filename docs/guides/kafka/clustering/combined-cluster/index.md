@@ -4,7 +4,7 @@ menu:
 docs_{{ .version }}:
 identifier: kf-combined-cluster
 name: Combined Cluster
-parent: kf-clustering-kafka
+parent: kf-clustering
 weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

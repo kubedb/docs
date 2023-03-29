@@ -29,13 +29,16 @@ aliases:
 | TLS: using ( [Cert Manager](https://cert-manager.io/docs/) )   | &#10007;  |  &#10003;  |
 | Reconfigurable Health Checker                                  | &#10003;  |  &#10003;  |
 | Externally manageable Auth Secret                              | &#10003;  |  &#10003;  |
+| Monitoring with Prometheus & Grafana                           | &#10003;  |  &#10003;  |
 
 ## Supported Kafka Versions
 
 KubeDB supports The following Kafka versions. Supported version are applicable for Kraft mode or Zookeeper-less releases:
 - `3.3.0`
+- `3.3.2`
+- `3.4.0`
 
-> The listed KafkaVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [KafkaVersion](/docs/guides/kafka/concepts/catalog/index.md) object with your custom Kafka image.
+> The listed KafkaVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [KafkaVersion](/docs/guides/kafka/concepts/catalog.md) object with your custom Kafka image.
 
 ## Lifecycle of Kafka Object
 
@@ -44,7 +47,7 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 --->
 
 <p align="center">
-<img alt="lifecycle"  src="/docs/guides/kafka/images/Kafka-CRD-Lifecycle.png">
+<img alt="lifecycle"  src="/docs/images/kafka/Kafka-CRD-Lifecycle.png">
 </p>
 
 ## User Guide 
@@ -53,5 +56,5 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
   - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md)
   - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md)
 - Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka/index.md).
+- Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
