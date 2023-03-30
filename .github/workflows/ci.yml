@@ -34,7 +34,7 @@ jobs:
 
       - name: Check links
         run: |
-          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*)$'
+          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*)$'
 
       - name: Create Kubernetes cluster
         id: kind
