@@ -94,6 +94,15 @@ spec:
             storage: 1Gi
         storageClassName: standard
       suffix: controller
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      exporter:
+        port: 9091
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
   version: 3.4.0
 ```
 
@@ -444,4 +453,9 @@ Know details about KubeDB Health checking from this [blog post](https://blog.byt
 ## Next Steps
 
 - Learn how to use KubeDB to run a Apache Kafka cluster [here](/docs/guides/kafka/README.md).
+- Deploy [dedicated topology cluster](/docs/guides/kafka/clustering/topology-cluster/index.md) for Apache Kafka
+- Deploy [combined cluster](/docs/guides/kafka/clustering/combined-cluster/index.md) for Apache Kafka
+- Monitor your Kafka cluster with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/kafka/monitoring/using-prometheus-operator.md).
+- Detail concepts of [KafkaVersion object](/docs/guides/kafka/concepts/catalog.md).
+- Learn to use KubeDB managed Kafka objects using [CLIs](/docs/guides/kafka/cli/cli.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

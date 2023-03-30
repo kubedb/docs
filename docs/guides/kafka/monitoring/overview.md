@@ -81,9 +81,20 @@ spec:
   terminationPolicy: WipeOut
 ```
 
+Let's deploy the above example by the following command:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/monitoring/kf-with-monitoring.yaml
+kafka.kubedb.com/kafka created
+```
+
 Here, we have specified that we are going to monitor this server using Prometheus operator through `spec.monitor.agent: prometheus.io/operator`. KubeDB will create a `ServiceMonitor` crd in databases namespace and this `ServiceMonitor` will have `release: prometheus` label.
 
 ## Next Steps
 
-- Learn how to monitor Apache Kafka with KubeDB using [builtin-Prometheus](/docs/guides/kafka/monitoring/using-builtin-prometheus.md)
-- Learn how to monitor Apache Kafka database with KubeDB using [Prometheus operator](/docs/guides/kafka/monitoring/using-prometheus-operator.md).
+- Learn how to use KubeDB to run a Apache Kafka cluster [here](/docs/guides/kafka/README.md).
+- Deploy [dedicated topology cluster](/docs/guides/kafka/clustering/topology-cluster/index.md) for Apache Kafka
+- Deploy [combined cluster](/docs/guides/kafka/clustering/combined-cluster/index.md) for Apache Kafka
+- Detail concepts of [KafkaVersion object](/docs/guides/kafka/concepts/catalog.md).
+- Learn to use KubeDB managed Kafka objects using [CLIs](/docs/guides/kafka/cli/cli.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
