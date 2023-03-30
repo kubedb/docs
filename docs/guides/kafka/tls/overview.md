@@ -24,42 +24,42 @@ To issue a certificate, the following crd of `cert-manager` is used:
 
 - `Certificate`: `cert-manager` has the concept of Certificates that define a desired x509 certificate which will be renewed and kept up to date. You can learn more details [here](https://cert-manager.io/docs/concepts/certificate/).
 
-**MongoDB CRD Specification :**
+**Kafka CRD Specification :**
 
 KubeDB uses following crd fields to enable SSL/TLS encryption in `Kafka`.
 
 - `spec:`
-  - `sslMode`
+  - `enableSSL`
   - `tls:`
     - `issuerRef`
     - `certificates`
-  - `clusterAuthMode`
-Read about the fields in details from [mongodb concept](/docs/guides/mongodb/concepts/mongodb.md),
+    - 
+Read about the fields in details from [kafka concept](/docs/guides/kafka/concepts/kafka.md),
 
-When, `sslMode` is set to `requireSSL`, the users must specify the `tls.issuerRef` field. `KubeDB` uses the `issuer` or `clusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificate` to generate certificate secrets using `Issuer/ClusterIssuers` specification. These certificates secrets including `ca.crt`, `tls.crt` and `tls.key` etc. are used to configure `MongoDB` server, exporter etc. respectively.
+When, `enableSSL` is set to `true`, the users must specify the `tls.issuerRef` field. `KubeDB` uses the `issuer` or `clusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificate` to generate certificate secrets using `Issuer/ClusterIssuers` specification. These certificates secrets including `ca.crt`, `tls.crt` and `tls.key` etc. are used to configure `kafka` server and clients.
 
-## How TLS/SSL configures in MongoDB
+## How TLS/SSL configures in Kafka
 
-The following figure shows how `KubeDB` enterprise used to configure TLS/SSL in MongoDB. Open the image in a new tab to see the enlarged version.
+The following figure shows how `KubeDB` enterprise used to configure TLS/SSL in Kafka. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-<img alt="Deploy MongoDB with TLS/SSL" src="/docs/images/day-2-operation/mongodb/mongodb-tls.svg">
+<img alt="Deploy MongoDB with TLS/SSL" src="/docs/images/kafka/kf-tls.svg">
 <figcaption align="center">Fig: Deploy MongoDB with TLS/SSL</figcaption>
 </figure>
 
-Deploying MongoDB with TLS/SSL configuration process consists of the following steps:
+Deploying Kafka with TLS/SSL configuration process consists of the following steps:
 
 1. At first, a user creates a `Issuer/ClusterIssuer` cr.
 
-2. Then the user creates a `MongoDB` cr which refers to the `Issuer/ClusterIssuer` cr that the user created in the previous step.
+2. Then the user creates a `Kafka` cr which refers to the `Issuer/ClusterIssuer` cr that the user created in the previous step.
 
-3. `KubeDB` Provisioner  operator watches for the `MongoDB` cr.
+3. `KubeDB` Provisioner  operator watches for the `Kafka` cr.
 
-4. When it finds one, it creates `Secret`, `Service`, etc. for the `MongoDB` database.
+4. When it finds one, it creates `Secret`, `Service`, etc. for the `Kafka` database.
 
-5. `KubeDB` Ops-manager operator watches for `MongoDB`(5c), `Issuer/ClusterIssuer`(5b), `Secret` and `Service`(5a).
+5. `KubeDB` Ops-manager operator watches for `Kafka`(5c), `Issuer/ClusterIssuer`(5b), `Secret` and `Service`(5a).
 
-6. When it finds all the resources(`MongoDB`, `Issuer/ClusterIssuer`, `Secret`, `Service`), it creates `Certificates` by using `tls.issuerRef` and `tls.certificates` field specification from `MongoDB` cr.
+6. When it finds all the resources(`MongoDB`, `Issuer/ClusterIssuer`, `Secret`, `Service`), it creates `Certificates` by using `tls.issuerRef` and `tls.certificates` field specification from `Kafka` cr.
 
 7. `cert-manager` watches for certificates.
 
@@ -67,6 +67,6 @@ Deploying MongoDB with TLS/SSL configuration process consists of the following s
 
 9. `KubeDB` Provisioner  operator watches for the Certificate secrets `tls-secrets`.
 
-10. When it finds all the tls-secret, it creates the related `StatefulSets` so that MongoDB database can be configured with TLS/SSL.
+10. When it finds all the tls-secret, it creates the related `StatefulSets` so that Kafka database can be configured with TLS/SSL.
 
 In the next doc, we are going to show a step by step guide on how to configure a `MongoDB` database with TLS/SSL.

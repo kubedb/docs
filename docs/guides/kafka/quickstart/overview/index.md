@@ -1,11 +1,11 @@
 ---
 title: Kafka Quickstart
 menu:
-docs_{{ .version }}:
-identifier: kf-quickstart-quickstart
-name: Overview
-parent: es-quickstart-kafka
-weight: 10
+  docs_{{ .version }}:
+    identifier: kf-quickstart-quickstart
+    name: Overview
+    parent: es-quickstart-kafka
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

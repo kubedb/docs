@@ -1,11 +1,11 @@
 apiVersion: kubedb.com/v1alpha2
 kind: Kafka
 metadata:
-  name: kafka-quickstart
+  name: kafka-standalone
   namespace: demo
 spec:
   replicas: 1
-  version: 3.3.0
+  version: 3.3.2
   storage:
     accessModes:
       - ReadWriteOnce
