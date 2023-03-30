@@ -169,7 +169,7 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 
 ### spec.topology
 
-`spec.shardTopology` represents the topology configuration for Kafka cluster in KRaft mode.
+`spec.topology` represents the topology configuration for Kafka cluster in KRaft mode.
 
 When `spec.topology` is set, the following fields needs to be empty, otherwise validating webhook will throw error.
 
@@ -333,57 +333,15 @@ NB. If `spec.topology` is set, then `spec.podTemplate` needs to be empty. Instea
 
 #### spec.podTemplate.spec.args
 
-`spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments to database installation. To learn about available args of `mongod`, visit [here](https://docs.mongodb.com/manual/reference/program/mongod/).
+`spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments to database installation.
 
 #### spec.podTemplate.spec.env
 
-`spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the MongoDB docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/r/_/mongo/).
-
-Note that, KubeDB does not allow `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` environment variables to set in `spec.podTemplate.spec.env`. If you want to use custom superuser and password, please use `spec.authSecret` instead described earlier.
-
-If you try to set `MONGO_INITDB_ROOT_USERNAME` or `MONGO_INITDB_ROOT_PASSWORD` environment variable in MongoDB crd, Kubedb operator will reject the request with following error,
-
-```ini
-Error from server (Forbidden): error when creating "./mongodb.yaml": admission webhook "mongodb.validators.kubedb.com" denied the request: environment variable MONGO_INITDB_ROOT_USERNAME is forbidden to use in MongoDB spec
-```
-
-Also, note that KubeDB does not allow updating the environment variables as updating them does not have any effect once the database is created. If you try to update environment variables, KubeDB operator will reject the request with following error,
-
-```ini
-Error from server (BadRequest): error when applying patch:
-...
-for: "./mongodb.yaml": admission webhook "mongodb.validators.kubedb.com" denied the request: precondition failed for:
-...At least one of the following was changed:
-    apiVersion
-    kind
-    name
-    namespace
-    spec.ReplicaSet
-    spec.authSecret
-    spec.init
-    spec.storageType
-    spec.storage
-    spec.podTemplate.spec.nodeSelector
-    spec.podTemplate.spec.env
-```
-
-#### spec.podTemplate.spec.imagePullSecret
-
-`KubeDB` provides the flexibility of deploying MongoDB database from a private Docker registry. `spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker image if you are using a private docker registry. To learn how to deploy MongoDB from a private registry, please visit [here](/docs/guides/mongodb/private-registry/using-private-registry.md).
+`spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the Kafka docker image.
 
 #### spec.podTemplate.spec.nodeSelector
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
-
-#### spec.podTemplate.spec.serviceAccountName
-
-`serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
-
-If this field is left empty, the KubeDB operator will create a service account name matching MongoDB crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
-
-If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
-
-If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mongodb/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
 
 #### spec.podTemplate.spec.resources
 
@@ -391,12 +349,10 @@ If a service account name is given, and there's an existing service account by t
 
 ### spec.serviceTemplates
 
-You can also provide template for the services created by KubeDB operator for MongoDB database through `spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
+You can also provide template for the services created by KubeDB operator for Kafka cluster through `spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
 
 KubeDB allows following fields to set in `spec.serviceTemplates`:
 - `alias` represents the identifier of the service. It has the following possible value:
-    - `primary` is used for the primary service identification.
-    - `standby` is used for the secondary service identification.
     - `stats` is used for the exporter service identification.
 - metadata:
     - labels
@@ -416,28 +372,12 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.21.1/api/v
 
 ### spec.terminationPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MongoDB` crd or which resources KubeDB should keep or delete when you delete `MongoDB` crd. KubeDB provides following four termination policies:
+`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Kafka` crd or which resources KubeDB should keep or delete when you delete `Kafka` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
-- Halt
-- Delete (`Default`)
 - WipeOut
 
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
-
-Following table show what KubeDB does when you delete MongoDB crd for different termination policies,
-
-| Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
-| ----------------------------------- | :------------: | :------: | :------: | :------: |
-| 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Delete StatefulSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
-| 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
-| 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
-| 7. Delete Snapshot data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
-
-If you don't specify `spec.terminationPolicy` KubeDB uses `Delete` termination policy by default.
 
 ## spec.healthChecker
 It defines the attributes for the health checker.

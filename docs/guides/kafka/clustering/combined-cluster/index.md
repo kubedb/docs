@@ -151,6 +151,7 @@ Hence, the cluster is ready to use.
 Let's check the k8s resources created by the operator on the deployment of Kafka CRO:
 
 ```bash
+$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=kafka-multinode'
 NAME                    READY   STATUS    RESTARTS   AGE
 pod/kafka-multinode-0   1/1     Running   0          6m2s
 pod/kafka-multinode-1   1/1     Running   0          5m56s
