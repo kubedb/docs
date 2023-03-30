@@ -294,10 +294,8 @@ NB. If `spec.topology` is set, then `spec.storage` needs to be empty. Instead us
 
 ### spec.monitor
 
-Kafka managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
-
+Kafka managed by KubeDB can be monitored with Prometheus operator out-of-the-box. To learn more,
 - [Monitor Apache with Prometheus operator](/docs/guides/kafka/monitoring/using-prometheus-operator.md)
-- [Monitor Apache Kafka with builtin Prometheus](/docs/guides/kafka/monitoring/using-builtin-prometheus.md)
 
 ### spec.podTemplate
 

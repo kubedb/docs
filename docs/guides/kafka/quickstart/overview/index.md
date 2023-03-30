@@ -17,7 +17,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to run an [Apache Kafka](https://kafka.apache.org/).
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/kafka/images/Kafka-CRD-Lifecycle.png">
+  <img alt="lifecycle"  src="/docs/images/kafka/Kafka-CRD-Lifecycle.png">
 </p>
 
 ## Before You Begin
@@ -55,7 +55,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 
 ## Find Available KafkaVersion
 
-When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/catalog/index.md). The installation process comes with a set of tested KafkaVersion objects. Let's check available KafkaVersions by,
+When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/catalog.md). The installation process comes with a set of tested KafkaVersion objects. Let's check available KafkaVersions by,
 
 ```bash
 NAME    VERSION   DB_IMAGE                   DEPRECATED   AGE
