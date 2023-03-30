@@ -287,7 +287,7 @@ secret/kafka-quickstart-config       Opaque                     2      8m52s
 - `Services` -  For a combined Kafka instance only one service is created with name `{Kafka-name}-{pods}`. For topology mode, two services are created.
     - `{Kafka-Name}-{broker}` - the governing service which is used for inter-broker communications. This service is also used to connect to the brokers with external clients. This is a headless service.
     - `{Kafka-Name}-{controller}` - the governing service which is used for inter-controller communications. It is a headless service too.
-- `AppBinding` - an [AppBinding](/docs/guides/kafka/concepts/appbinding/index.md) which hold to connect information for the Kafka brokers. It is also named after the Kafka instance.
+- `AppBinding` - an [AppBinding](/docs/guides/kafka/concepts/appbinding.md) which hold to connect information for the Kafka brokers. It is also named after the Kafka instance.
 - `Secrets` - 3 types of secrets are generated for each Kafka cluster.
     - `{Kafka-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the Kafka users. Operator generates credentials for `admin` user if not provided and creates a secret for authentication.
     - `{Kafka-Name}-{alias}-cert` - the certificate secrets which hold `tls.crt`, `tls.key`, and `ca.crt` for configuring the Kafka instance.
@@ -398,13 +398,14 @@ namespace "demo" deleted
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if the database pod fails. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purposes, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. Use **`terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resource that was created with the Elasticsearch CR. For more details, please visit [here](/docs/guides/kafka/concepts/kafka/index.md#specterminationpolicy).
+2. Use **`terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resource that was created with the Elasticsearch CR. For more details, please visit [here](/docs/guides/kafka/concepts/kafka.md#specterminationpolicy).
 
 ## Next Steps
 
+- [Quickstart Kafka](/docs/guides/kafka/quickstart/overview/index.md) with KubeDB Operator.
 - Kafka Clustering supported by KubeDB
   - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md)
   - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md)
 - Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka/index.md).
+- Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
