@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is MySQLOpsRequest
 
-`MySQLOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [MySQL](https://www.mysql.com/) administrative operations like database version upgrading, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
+`MySQLOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [MySQL](https://www.mysql.com/) administrative operations like database version updating, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
 
 ## MySQLOpsRequest CRD Specifications
 
@@ -26,24 +26,24 @@ Like any official Kubernetes resource, a `MySQLOpsRequest` has `TypeMeta`, `Obje
 
 Here, some sample `MySQLOpsRequest` CRs for different administrative operations is given below,
 
-Sample `MySQLOpsRequest` for upgrading database:
+Sample `MySQLOpsRequest` for updating database:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
 metadata:
-  name: my-ops-upgrade
+  name: my-ops-update
   namespace: demo
 spec:
   databaseRef:
     name: my-group
   type: UpdateVersion
-  upgrade:
+  updateVersion:
     targetVersion: 8.0.29
 status:
   conditions:
   - lastTransitionTime: "2022-06-16T13:52:58Z"
-    message: The controller has scaled/upgraded the MySQL successfully
+    message: The controller has scaled/updated the MySQL successfully
     observedGeneration: 3
     reason: OpsRequestSuccessful
     status: "True"
@@ -69,7 +69,7 @@ spec:
 status:
   conditions:
   - lastTransitionTime: "2022-06-16T13:52:58Z"
-    message: The controller has scaled/upgraded the MySQL successfully
+    message: The controller has scaled/updated the MySQL successfully
     observedGeneration: 3
     reason: OpsRequestSuccessful
     status: "True"
@@ -101,7 +101,7 @@ spec:
 status:
   conditions:
   - lastTransitionTime: "2022-06-11T09:59:05Z"
-    message: The controller has scaled/upgraded the MySQL successfully
+    message: The controller has scaled/updated the MySQL successfully
     observedGeneration: 3
     reason: OpsRequestSuccessful
     status: "True"
@@ -126,7 +126,7 @@ A `MySQLOpsRequest` object has the following fields in the `spec` section.
 
 `spec.type` specifies the kind of operation that will be applied to the database. Currently, the following types of operations are allowed in `MySQLOpsRequest`.
 
-- `Upgrade`
+- `Upgrade` / `UpdateVersion`
 - `HorizontalScaling`
 - `VerticalScaling`
 - `volumeExpansion`
@@ -134,15 +134,15 @@ A `MySQLOpsRequest` object has the following fields in the `spec` section.
 - `Reconfigure`
 - `ReconfigureTLS`
 
->You can perform only one type of operation on a single `MySQLOpsRequest` CR. For example, if you want to upgrade your database and scale up its replica then you have to create two separate `MySQLOpsRequest`. At first, you have to create a `MySQLOpsRequest` for upgrading. Once it is completed, then you can create another `MySQLOpsRequest` for scaling. You should not create two `MySQLOpsRequest` simultaneously.
+>You can perform only one type of operation on a single `MySQLOpsRequest` CR. For example, if you want to update your database and scale up its replica then you have to create two separate `MySQLOpsRequest`. At first, you have to create a `MySQLOpsRequest` for updating. Once it is completed, then you can create another `MySQLOpsRequest` for scaling. You should not create two `MySQLOpsRequest` simultaneously.
 
-#### spec.upgrade
+#### spec.updateVersion
 
-If you want to upgrade your MySQL version, you have to specify the `spec.upgrade`  section that specifies the desired version information. This field consists of the following sub-field:
+If you want to update your MySQL version, you have to specify the `spec.updateVersion`  section that specifies the desired version information. This field consists of the following sub-field:
 
-- `spec.upgrade.targetVersion` refers to a [MySQLVersion](/docs/guides/mysql/concepts/catalog/index.md) CR that contains the MySQL version information where you want to upgrade.
+- `spec.updateVersion.targetVersion` refers to a [MySQLVersion](/docs/guides/mysql/concepts/catalog/index.md) CR that contains the MySQL version information where you want to update.
 
->You can only upgrade between MySQL versions. KubeDB does not support downgrade for MySQL.
+>You can only update between MySQL versions. KubeDB does not support downgrade for MySQL.
 
 #### spec.horizontalScaling
 
@@ -195,18 +195,18 @@ Here, when you specify the resource request for `MySQL` container, the scheduler
 
 - `types` specifies the type of the condition. MySQLOpsRequest has the following types of conditions:
 
-| Type                | Meaning                                                                  |
-| ------------------- | -------------------------------------------------------------------------|
-| `Progressing`       | Specifies that the operation is now progressing |
-| `Successful`        | Specifies such a state that the operation on the database has been successful. |
+| Type               | Meaning                                                                  |
+|--------------------| -------------------------------------------------------------------------|
+| `Progressing`      | Specifies that the operation is now progressing |
+| `Successful`       | Specifies such a state that the operation on the database has been successful. |
 | `HaltDatabase`     | Specifies such a state that the database is halted by the operator   |
-| `ResumeDatabase`    | Specifies such a state that the database is resumed by the operator    |
-| `Failure`           | Specifies such a state that the operation on the database has been failed.  |
-| `Scaling`           | Specifies such a state that the scaling operation on the database has stared |
-| `VerticalScaling`   | Specifies such a state that vertical scaling has performed successfully on database  |
+| `ResumeDatabase`   | Specifies such a state that the database is resumed by the operator    |
+| `Failure`          | Specifies such a state that the operation on the database has been failed.  |
+| `Scaling`          | Specifies such a state that the scaling operation on the database has stared |
+| `VerticalScaling`  | Specifies such a state that vertical scaling has performed successfully on database  |
 | `HorizontalScaling` | Specifies such a state that horizontal scaling has performed successfully on database |
-| `Upgrading`         | Specifies such a state that database upgrading operation has stared  |
-| `UpgradeVersion`    | Specifies such a state that version upgrading on the database have performed successfully  |
+| `Updating`         | Specifies such a state that database updating operation has stared  |
+| `UpdateVersion`    | Specifies such a state that version updating on the database have performed successfully  |
 
 - The `status` field is a string, with possible values `"True"`, `"False"`, and `"Unknown"`.
   - `status` will be `"True"` if the current transition is succeeded.
@@ -216,16 +216,16 @@ Here, when you specify the resource request for `MySQL` container, the scheduler
 - The `reason` field is a unique, one-word, CamelCase reason for the condition's last transition. It has the following possible values:
 
 | Reason                                  | Meaning                                       |
-| --------------------------------------- | -----------------------------------------------|
+|-----------------------------------------| -----------------------------------------------|
 | `OpsRequestProgressingStarted`          | Operator has started the OpsRequest processing    |
 | `OpsRequestFailedToProgressing`         | Operator has failed to start the OpsRequest processing    |
 | `SuccessfullyHaltedDatabase`            | Database is successfully halted by the operator  |
-| `FailedToHaltDatabase`                 | Database is failed to halt by the operator    |
+| `FailedToHaltDatabase`                  | Database is failed to halt by the operator    |
 | `SuccessfullyResumedDatabase`           | Database is successfully resumed to perform its usual operation  |
 | `FailedToResumedDatabase`               | Database is failed to resume                   |
-| `DatabaseVersionUpgradingStarted`       | Operator has started upgrading the database version    |
-| `SuccessfullyUpgradedDatabaseVersion`   | Operator has successfully upgraded the database version |
-| `FailedToUpgradeDatabaseVersion`        | Operator has failed to upgrade the database version   |
+| `DatabaseVersionUpdatingStarted`        | Operator has started updating the database version    |
+| `SuccessfullyUpdatedDatabaseVersion`    | Operator has successfully updated the database version |
+| `FailedToUpdateDatabaseVersion`         | Operator has failed to update the database version   |
 | `HorizontalScalingStarted`              | Operator has started the horizontal scaling          |
 | `SuccessfullyPerformedHorizontalScaling` | Operator has successfully performed on horizontal scaling     |
 | `FailedToPerformHorizontalScaling`      | Operator has failed to perform on horizontal scaling     |

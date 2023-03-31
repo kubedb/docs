@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: my-update-major-group
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: my-group
+  updateVersion:
+    targetVersion: "8.0.29"

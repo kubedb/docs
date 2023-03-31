@@ -72,7 +72,7 @@ spec:
         name: mysql-backup-8.0.21
       restoreTask:
         name: mysql-restore-8.0.21
-  upgradeConstraints:
+  updateConstraints:
     denylist:
       groupReplication:
       - < 8.0.29

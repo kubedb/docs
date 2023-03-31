@@ -56,4 +56,4 @@ The Reconfiguring Redis/RedisSentinel TLS process consists of the following step
 
 10. After successfully reconfiguring `Redis`/`RedisSentinel` object, the `KubeDB` Enterprise operator resumes the `Redis`/`RedisSentinel` object so that the `KubeDB` Community operator can resume its usual operations.
 
-In the next doc, we are going to show a step-by-step guide on upgrading of a Redis database using upgrade operation.
+In the next doc, we are going to show a step-by-step guide on updating of a Redis database using update operation.

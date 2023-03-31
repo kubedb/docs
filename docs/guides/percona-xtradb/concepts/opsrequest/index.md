@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is PerconaXtraDBOpsRequest
 
-`PerconaXtraDBOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [PerconaXtraDB](https://docs.percona.com/percona-xtradb-cluster/8.0//) administrative operations like database version upgrading, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
+`PerconaXtraDBOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [PerconaXtraDB](https://docs.percona.com/percona-xtradb-cluster/8.0//) administrative operations like database version updating, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
 
 ## PerconaXtraDBOpsRequest CRD Specifications
 
@@ -26,7 +26,7 @@ Like any official Kubernetes resource, a `PerconaXtraDBOpsRequest` has `TypeMeta
 
 Here, some sample `PerconaXtraDBOpsRequest` CRs for different administrative operations is given below:
 
-**Sample `PerconaXtraDBOpsRequest` for upgrading database:**
+**Sample `PerconaXtraDBOpsRequest` for updating database:**
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -38,7 +38,7 @@ spec:
   type: UpdateVersion
   databaseRef:
     name: sample-pxc
-  upgrade:
+  updateVersion:
     targetVersion: 8.0.26
 status:
   conditions:
@@ -223,7 +223,7 @@ A `PerconaXtraDBOpsRequest` object has the following fields in the `spec` sectio
 
 `spec.type` specifies the kind of operation that will be applied to the database. Currently, the following types of operations are allowed in `PerconaXtraDBOpsRequest`.
 
-- `Upgrade`
+- `Upgrade` / `UpdateVersion`
 - `HorizontalScaling`
 - `VerticalScaling`
 - `VolumeExpansion`
@@ -231,15 +231,15 @@ A `PerconaXtraDBOpsRequest` object has the following fields in the `spec` sectio
 - `ReconfigureTLS`
 - `Restart`
 
-> You can perform only one type of operation on a single `PerconaXtraDBOpsRequest` CR. For example, if you want to upgrade your database and scale up its replica then you have to create two separate `PerconaXtraDBOpsRequest`. At first, you have to create a `PerconaXtraDBOpsRequest` for upgrading. Once it is completed, then you can create another `PerconaXtraDBOpsRequest` for scaling. You should not create two `PerconaXtraDBOpsRequest` simultaneously.
+> You can perform only one type of operation on a single `PerconaXtraDBOpsRequest` CR. For example, if you want to update your database and scale up its replica then you have to create two separate `PerconaXtraDBOpsRequest`. At first, you have to create a `PerconaXtraDBOpsRequest` for updating. Once it is completed, then you can create another `PerconaXtraDBOpsRequest` for scaling. You should not create two `PerconaXtraDBOpsRequest` simultaneously.
 
-### spec.upgrade
+### spec.updateVersion
 
-If you want to upgrade your PerconaXtraDB version, you have to specify the `spec.upgrade` section that specifies the desired version information. This field consists of the following sub-field:
+If you want to update your PerconaXtraDB version, you have to specify the `spec.updateVersion` section that specifies the desired version information. This field consists of the following sub-field:
 
-- `spec.upgrade.targetVersion` refers to a [PerconaXtraDBVersion](/docs/guides/percona-xtradb/concepts/perconaxtradb-version/index.md) CR that contains the PerconaXtraDB version information where you want to upgrade.
+- `spec.updateVersion.targetVersion` refers to a [PerconaXtraDBVersion](/docs/guides/percona-xtradb/concepts/perconaxtradb-version/index.md) CR that contains the PerconaXtraDB version information where you want to update.
 
-> You can only upgrade between PerconaXtraDB versions. KubeDB does not support downgrade for PerconaXtraDB.
+> You can only update between PerconaXtraDB versions. KubeDB does not support downgrade for PerconaXtraDB.
 
 ### spec.horizontalScaling
 

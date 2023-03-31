@@ -51,7 +51,7 @@ spec:
         name: mongodb-backup-4.2.3
       restoreTask:
         name: mongodb-restore-4.2.3
-  upgradeConstraints:
+  updateConstraints:
     allowlist:
       - '>= 4.4.0, < 5.0.0'
   version: 4.2.3
@@ -92,10 +92,10 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 ### spec.stash
 This holds the Backup & Restore task definitions, where a `TaskRef` has a `Name` & `Params` section. Params specifies a list of parameters to pass to the task.
 
-### spec.upgradeConstraints
-UpgradeConstraints specifies the constraints that need to be considered during version upgrade. Here `allowList` contains the versions those are allowed for upgrading from the current version.
+### spec.updateConstraints
+updateConstraints specifies the constraints that need to be considered during version update. Here `allowList` contains the versions those are allowed for updating from the current version.
 An empty list of AllowList indicates all the versions are accepted except the denyList.
-On the other hand, `DenyList` contains all the rejected versions for the upgrade request. An empty list indicates no version is rejected.
+On the other hand, `DenyList` contains all the rejected versions for the update request. An empty list indicates no version is rejected.
 
 ### spec.podSecurityPolicies.databasePolicyName
 
