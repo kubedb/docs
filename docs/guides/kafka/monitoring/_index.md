@@ -2,7 +2,7 @@
 title: Monitor Kafka with Prometheus & Grafana
 menu:
   docs_{{ .version }}:
-    identifier: kf-monitor
+    identifier: kf-monitoring-kafka
     name: Kafka Monitoring
     parent: kf-kafka-guides
     weight: 50

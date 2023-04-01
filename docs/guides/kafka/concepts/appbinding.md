@@ -1,11 +1,11 @@
 ---
 title: AppBinding CRD
 menu:
-docs_{{ .version }}:
-identifier: kf-appbinding-concepts
-name: AppBinding
-parent: kf-concepts-kafka
-weight: 21
+  docs_{{ .version }}:
+    identifier: kf-appbinding-concepts
+    name: AppBinding
+    parent: kf-concepts-kafka
+    weight: 21
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

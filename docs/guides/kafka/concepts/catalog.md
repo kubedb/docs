@@ -1,11 +1,11 @@
 ---
 title: KafkaVersion CRD
 menu:
-docs_{{ .version }}:
-identifier: kf-catalog-concepts
-name: KafkaVersion
-parent: kf-concepts-kafka
-weight: 15
+  docs_{{ .version }}:
+    identifier: kf-catalog-concepts
+    name: KafkaVersion
+    parent: kf-concepts-kafka
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
