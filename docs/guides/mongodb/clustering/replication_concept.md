@@ -62,7 +62,7 @@ A secondary can become a primary. If the current primary becomes unavailable, th
 
 An arbiter does not have a copy of data set and cannot become a primary. Replica sets may have arbiters to add a vote in elections for primary. Arbiters always have exactly 1 election vote, and thus allow replica sets to have an uneven number of voting members without the overhead of an additional member that replicates data.
 
-Changed in version 3.6: Starting in MongoDB 3.6, arbiters have priority 0. When you upgrade a replica set to MongoDB 3.6, if the existing configuration has an arbiter with priority 1, MongoDB 3.6 reconfigures the arbiter to have priority 0.
+Changed in version 3.6: Starting in MongoDB 3.6, arbiters have priority 0. When you update a replica set to MongoDB 3.6, if the existing configuration has an arbiter with priority 1, MongoDB 3.6 reconfigures the arbiter to have priority 0.
 
 > IMPORTANT: Do not run an arbiter on systems that also host the primary or the secondary members of the replica set. [[reference]](https://docs.mongodb.com/manual/core/replica-set-members/#arbiter).
 

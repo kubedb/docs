@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: my-update-major-standalone
+  namespace: demo
+spec:
+  databaseRef:
+    name: my-standalone
+  type: UpdateVersion
+  updateVersion:
+    targetVersion: "8.0.27"

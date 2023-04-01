@@ -24,7 +24,7 @@ aliases:
 | SemiSynchronous cluster                                                                 |   &#10003;   |
 | Read Replicas                                                                           |   &#10003;   |
 | TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) )      |   &#10003;   |
-| Automated Version Upgrade                                                               |   &#10003;   |
+| Automated Version update                                                               |   &#10003;   |
 | Automatic Vertical Scaling                                                              |   &#10003;   |
 | Automated Horizontal Scaling                                                            |   &#10003;   |
 | Automated Volume Expansion                                                              |   &#10003;   |

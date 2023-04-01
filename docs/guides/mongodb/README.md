@@ -33,7 +33,7 @@ aliases:
 | Scheduled Backup                                                                   | &#10003;  |  &#10003;  |
 | Builtin Prometheus Discovery                                                       | &#10003;  |  &#10003;  |
 | Using Prometheus operator                                                          | &#10003;  |  &#10003;  |
-| Automated Version Upgrade                                                          | &#10007;  |  &#10003;  |
+| Automated Version Update                                                           | &#10007;  |  &#10003;  |
 | Automatic Vertical Scaling                                                         | &#10007;  |  &#10003;  |
 | Automated Horizontal Scaling                                                       | &#10007;  |  &#10003;  |
 | Automated db-configure Reconfiguration                                             | &#10007;  |  &#10003;  |

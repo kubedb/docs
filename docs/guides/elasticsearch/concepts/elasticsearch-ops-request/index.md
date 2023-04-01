@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is ElasticsearchOpsRequest
 
-`ElasticsearchOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for the [Elasticsearch](https://www.elastic.co/guide/index.html) and [OpenSearch](https://opensearch.org/) administrative operations like database version upgrading, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
+`ElasticsearchOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for the [Elasticsearch](https://www.elastic.co/guide/index.html) and [OpenSearch](https://opensearch.org/) administrative operations like database version update, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
 
 ## ElasticsearchOpsRequest Specifications
 
@@ -28,13 +28,13 @@ Like any official Kubernetes resource, a `ElasticsearchOpsRequest` has `TypeMeta
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ElasticsearchOpsRequest
 metadata:
-  name: es-upgrade
+  name: es-update
   namespace: demo
 spec:
   type: UpdateVersion
   databaseRef:
     name: es
-  upgrade:
+  updateVersion:
     targetVersion: searchguard-7.5.2-v1
 status:
   conditions:
@@ -55,13 +55,13 @@ Here, we are going to describe the various sections of a `ElasticsearchOpsReques
 `spec.type` is a `required` field that specifies the kind of operation that will be applied to the Elasticsearch. The following types of operations are allowed in the `ElasticsearchOpsRequest`:
 
 - `Restart` - is used to perform a smart restart of the Elasticsearch cluster.
-- `Upgrade` - is used to upgrade the version of the Elasticsearch in a managed way. The necessary information required for upgrading the version, must be provided in `spec.upgrade` field.
+- `UpdateVersion` - is used to update the version of the Elasticsearch in a managed way. The necessary information required for updating the version, must be provided in `spec.updateVersion` field.
 - `VerticalScaling` - is used to vertically scale the Elasticsearch nodes (ie. pods). The necessary information required for vertical scaling, must be provided in `spec.verticalScaling` field.
 - `HorizontalScaling` - is used to horizontally scale the Elasticsearch nodes (ie. pods). The necessary information required for horizontal scaling, must be provided in `spec.horizontalScaling` field.
 - `VolumeExpansion` - is used to expand the storage of the Elasticsearch nodes (ie. pods). The necessary information required for volume expansion, must be provided in `spec.volumeExpansion` field.
 - `ReconfigureTLS` - is used to configure the TLS configuration of a running Elasticsearch cluster. The necessary information required for reconfiguring the TLS, must be provided in `spec.tls` field.
 
-> Note: You can only perform one type of operation by using an `ElasticsearchOpsRequest` custom resource object. For example, if you want to upgrade your database and scale up its replica then you will need to create two separate `ElasticsearchOpsRequest`. At first, you will have to create an `ElasticsearchOpsRequest` for upgrading. Once the upgrade is completed, then you can create another `ElasticsearchOpsRequest` for scaling. You should not create two `ElasticsearchOpsRequest` simultaneously.
+> Note: You can only perform one type of operation by using an `ElasticsearchOpsRequest` custom resource object. For example, if you want to update your database and scale up its replica then you will need to create two separate `ElasticsearchOpsRequest`. At first, you will have to create an `ElasticsearchOpsRequest` for updating. Once the update is completed, then you can create another `ElasticsearchOpsRequest` for scaling. You should not create two `ElasticsearchOpsRequest` simultaneously.
 
 ### spec.databaseRef
 
@@ -71,28 +71,28 @@ Here, we are going to describe the various sections of a `ElasticsearchOpsReques
 
 > Note: The `ElasticsearchOpsRequest` should be on the same namespace as the referring `Elasticsearch` object.
 
-### spec.upgrade
+### spec.updateVersion
 
-`spec.upgrade` is an `optional` field, but it acts as a `required` field when the `spec.type` is set to `Upgrade`.
-It specifies the desired version information required for the Elasticsearch version upgrade. This field consists of the following sub-fields:
+`spec.updateVersion` is an `optional` field, but it acts as a `required` field when the `spec.type` is set to `UpdateVersion`.
+It specifies the desired version information required for the Elasticsearch version update. This field consists of the following sub-fields:
 
-- `upgrade.targetVersion` refers to an [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md) CR name that contains the Elasticsearch version information required to perform the upgrade.
+- `updateVersion.targetVersion` refers to an [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md) CR name that contains the Elasticsearch version information required to perform the update.
 
 > KubeDB does not support downgrade for Elasticsearch.
 
 **Samples:**
-Let's assume we have and Elasticsearch cluster of version `xpack-8.2.0`. The Elasticsearch custom resource is named `es-quickstart` and it's provisioned in demo namespace. Now, you want to upgrade your Elasticsearch cluster to `xpack-8.5.2`. Apply this YAML to upgrade to your desired version.
+Let's assume we have and Elasticsearch cluster of version `xpack-8.2.0`. The Elasticsearch custom resource is named `es-quickstart` and it's provisioned in demo namespace. Now, you want to update your Elasticsearch cluster to `xpack-8.5.2`. Apply this YAML to update to your desired version.
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ElasticsearchOpsRequest
 metadata:
-  name: es-quickstart-upgrade
+  name: es-quickstart-update
   namespace: demo
 spec:
-  type: Upgrade
+  type: UpdateVersion
   databaseRef:
     name: es-quickstart
-  upgrade:
+  updateVersion:
     targetVersion: xpack-8.5.2
 ```
 

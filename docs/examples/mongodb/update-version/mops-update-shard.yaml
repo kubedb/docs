@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-shard-update
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: mg-sharding
+  updateVersion:
+    targetVersion: 4.0.5-v3

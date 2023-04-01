@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisOpsRequest
+metadata:
+  name: update-rd-version
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: rd-sample
+  updateVersion:
+    targetVersion: 7.0.4
