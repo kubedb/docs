@@ -35,7 +35,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/updating/versionupdating/yamls](/docs/guides/postgres/update-version/versionupdating/yamls) directory of [kubedb/docs](https://github.com/kube/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/updating/versionupdating/yamls](/docs/guides/postgres/update-version/versionupgrading/yamls) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
 ### Apply Version updating on Postgres
 
@@ -190,7 +190,7 @@ spec:
 Let's create the `Postgres` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/update-version/versionupdating/yamls/postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/update-version/versionupgrading/yamls/postgres.yaml
 postgres.kubedb.com/pg created
 ```
 
@@ -270,7 +270,7 @@ Here,
 Let's create the `PostgresOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/update-version/versionupdating/yamls/update_version.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/update-version/versionupgrading/yamls/update_version.yaml
 postgresopsrequest.ops.kubedb.com/pg-update created
 ```
 
