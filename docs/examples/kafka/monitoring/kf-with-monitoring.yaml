@@ -1,0 +1,32 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Kafka
+metadata:
+  name: kafka
+  namespace: demo
+spec:
+  enableSSL: true
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      name: kafka-ca-issuer
+      kind: Issuer
+  replicas: 3
+  version: 3.4.0
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      exporter:
+        port: 9091
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+  storageType: Durable
+  terminationPolicy: WipeOut
