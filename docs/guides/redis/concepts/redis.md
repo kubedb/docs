@@ -120,7 +120,7 @@ spec:
 ```
 
 ### spec.autoOps
-AutoOps is an optional field to control the generation of versionUpgrade & TLS-related recommendations.
+AutoOps is an optional field to control the generation of version update & TLS-related recommendations.
 
 ### spec.version
 

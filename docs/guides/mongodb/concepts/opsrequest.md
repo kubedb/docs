@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is MongoDBOpsRequest
 
-`MongoDBOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [MongoDB](https://www.mongodb.com/) administrative operations like database version upgrading, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
+`MongoDBOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [MongoDB](https://www.mongodb.com/) administrative operations like database version updating, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
 
 ## MongoDBOpsRequest CRD Specifications
 
@@ -26,19 +26,19 @@ Like any official Kubernetes resource, a `MongoDBOpsRequest` has `TypeMeta`, `Ob
 
 Here, some sample `MongoDBOpsRequest` CRs for different administrative operations is given below:
 
-**Sample `MongoDBOpsRequest` for upgrading database:**
+**Sample `MongoDBOpsRequest` for updating database:**
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MongoDBOpsRequest
 metadata:
-  name: mops-upgrade
+  name: mops-update
   namespace: demo
 spec:
   type: UpdateVersion
   databaseRef:
     name: mg-standalone
-  upgrade:
+  updateVersion:
     targetVersion: 4.0.5-v3
 status:
   conditions:
@@ -554,22 +554,22 @@ A `MongoDBOpsRequest` object has the following fields in the `spec` section.
 - `ReconfigureTLS`
 - `Restart`
 
-> You can perform only one type of operation on a single `MongoDBOpsRequest` CR. For example, if you want to upgrade your database and scale up its replica then you have to create two separate `MongoDBOpsRequest`. At first, you have to create a `MongoDBOpsRequest` for upgrading. Once it is completed, then you can create another `MongoDBOpsRequest` for scaling. 
+> You can perform only one type of operation on a single `MongoDBOpsRequest` CR. For example, if you want to update your database and scale up its replica then you have to create two separate `MongoDBOpsRequest`. At first, you have to create a `MongoDBOpsRequest` for updating. Once it is completed, then you can create another `MongoDBOpsRequest` for scaling. 
 
 > Note: There is an exception to the above statement. It is possible to specify both `spec.configuration` & `spec.verticalScaling` in a OpsRequest of type `VerticalScaling`.
 
-### spec.upgrade
+### spec.updateVersion
 
-If you want to upgrade you MongoDB version, you have to specify the `spec.upgrade` section that specifies the desired version information. This field consists of the following sub-field:
+If you want to update you MongoDB version, you have to specify the `spec.updateVersion` section that specifies the desired version information. This field consists of the following sub-field:
 
-- `spec.upgrade.targetVersion` refers to a [MongoDBVersion](/docs/guides/mongodb/concepts/catalog.md) CR that contains the MongoDB version information where you want to upgrade.
+- `spec.updateVersion.targetVersion` refers to a [MongoDBVersion](/docs/guides/mongodb/concepts/catalog.md) CR that contains the MongoDB version information where you want to update.
 
-Have a look on the [`upgradeConstraints`](/docs/guides/mongodb/concepts/catalog.md#specupgradeconstraints) of the mongodbVersion spec to know which versions are supported for upgrading from the current version.
+Have a look on the [`updateConstraints`](/docs/guides/mongodb/concepts/catalog.md#specupdateconstraints) of the mongodbVersion spec to know which versions are supported for updating from the current version.
 ```yaml
-kubectl get mgversion <current-version> -o=jsonpath='{.spec.upgradeConstraints}' | jq
+kubectl get mgversion <current-version> -o=jsonpath='{.spec.updateConstraints}' | jq
 ```
 
-> You can only upgrade between MongoDB versions. KubeDB does not support downgrade for MongoDB.
+> You can only update between MongoDB versions. KubeDB does not support downgrade for MongoDB.
 
 ### spec.horizontalScaling
 

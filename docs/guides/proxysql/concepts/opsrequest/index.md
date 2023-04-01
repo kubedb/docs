@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is ProxySQLOpsRequest
 
-`ProxySQLOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [ProxySQL](https://www.proxysql.com/) administrative operations like database version upgrading, horizontal scaling, vertical scaling,reconfiguration etc. in a Kubernetes native way.
+`ProxySQLOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [ProxySQL](https://www.proxysql.com/) administrative operations like database version updating, horizontal scaling, vertical scaling,reconfiguration etc. in a Kubernetes native way.
 
 ## ProxySQLOpsRequest CRD Specifications
 
@@ -26,19 +26,19 @@ Like any official Kubernetes resource, a `ProxySQLOpsRequest` has `TypeMeta`, `O
 
 Here, some sample `ProxySQLOpsRequest` CRs for different administrative operations is given below:
 
-**Sample ProxySQLOpsRequest for upgrading database:**
+**Sample ProxySQLOpsRequest for updating database:**
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ProxySQLOpsRequest
 metadata:
-  name: proxyops-upgrade
+  name: proxyops-update
   namespace: demo
 spec:
   type: UpdateVersion
   proxyRef:
     name: proxy-server
-  upgrade:
+  updateVersion:
     targetVersion: "2.4.4-debian"
 ```
 
@@ -175,15 +175,15 @@ A `ProxySQLOpsRequest` object has the following fields in the `spec` section.
 - `ReconfigureTLS`
 - `Restart`
 
-> You can perform only one type of operation on a single `ProxySQLOpsRequest` CR. For example, if you want to upgrade your proxysql and scale up its replica then you have to create two separate `ProxySQLOpsRequest`. At first, you have to create a `ProxySQLOpsRequest` for upgrading. Once it is completed, then you can create another `ProxySQLOpsRequest` for scaling. You should not create two `ProxySQLOpsRequest` simultaneously.
+> You can perform only one type of operation on a single `ProxySQLOpsRequest` CR. For example, if you want to update your proxysql and scale up its replica then you have to create two separate `ProxySQLOpsRequest`. At first, you have to create a `ProxySQLOpsRequest` for updating. Once it is completed, then you can create another `ProxySQLOpsRequest` for scaling. You should not create two `ProxySQLOpsRequest` simultaneously.
 
-### spec.upgrade
+### spec.updateVersion
 
-If you want to upgrade your ProxySQL version, you have to specify the `spec.upgrade` section that specifies the desired version information. This field consists of the following sub-field:
+If you want to update your ProxySQL version, you have to specify the `spec.updateVersion` section that specifies the desired version information. This field consists of the following sub-field:
 
-- `spec.upgrade.targetVersion` refers to a [ProxySQLVersion](/docs/guides/proxysql/concepts/proxysql-version/index.md) CR that contains the ProxySQL version information where you want to upgrade.
+- `spec.updateVersion.targetVersion` refers to a [ProxySQLVersion](/docs/guides/proxysql/concepts/proxysql-version/index.md) CR that contains the ProxySQL version information where you want to update.
 
-> You can only upgrade between ProxySQL versions. KubeDB does not support downgrade for ProxySQL.
+> You can only update between ProxySQL versions. KubeDB does not support downgrade for ProxySQL.
 
 ### spec.horizontalScaling
 

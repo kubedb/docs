@@ -41,18 +41,18 @@ The updating process consists of the following steps:
 
 3. When the operator finds a `Redis`/`RedisSentinel` CR, it creates required number of `StatefulSets` and related necessary stuff like appbinding, services, etc.
 
-4. Then, in order to upgrade the version of the `Redis` database the user creates a `RedisOpsRequest` CR with the desired version.
+4. Then, in order to update the version of the `Redis` database the user creates a `RedisOpsRequest` CR with the desired version.
 
-5. Then, in order to upgrade the version of the `RedisSentinel` database the user creates a `RedisSentinelOpsRequest` CR with the desired version.
+5. Then, in order to update the version of the `RedisSentinel` database the user creates a `RedisSentinelOpsRequest` CR with the desired version.
 
 6. `KubeDB` Enterprise operator watches the `RedisOpsRequest` and `RedisSentinelOpsRequest` CR.
 
-7. When it finds a `RedisOpsRequest` CR, it halts the `Redis` object which is referred from the `RedisOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `Redis` object during the upgrading process.
+7. When it finds a `RedisOpsRequest` CR, it halts the `Redis` object which is referred from the `RedisOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `Redis` object during the updating process.
 
-8. When it finds a `RedisSentinelOpsRequest` CR, it halts the `RedisSentinel` object which is referred from the `RedisSentinelOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `RedisSentinel` object during the upgrading process.
+8. When it finds a `RedisSentinelOpsRequest` CR, it halts the `RedisSentinel` object which is referred from the `RedisSentinelOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `RedisSentinel` object during the updating process.
 
 9. After the successful update of the resources of the StatefulSet's replica, the `KubeDB` Enterprise operator updates the `Redis`/`RedisSentinel` object to reflect the updated state.
 
 10. After successfully updating of `Redis`/`RedisSentinel` object, the `KubeDB` Enterprise operator resumes the `Redis`/`RedisSentinel` object so that the `KubeDB` Community operator can resume its usual operations.
 
-In the next doc, we are going to show a step-by-step guide on upgrading of a Redis database using upgrade operation.
+In the next doc, we are going to show a step-by-step guide on updating of a Redis database using update operation.
