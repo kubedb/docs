@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is MariaDBOpsRequest
 
-`MariaDBOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [MariaDB](https://www.mariadb.com/) administrative operations like database version upgrading, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
+`MariaDBOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [MariaDB](https://www.mariadb.com/) administrative operations like database version updating, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
 
 ## MariaDBOpsRequest CRD Specifications
 
@@ -26,19 +26,19 @@ Like any official Kubernetes resource, a `MariaDBOpsRequest` has `TypeMeta`, `Ob
 
 Here, some sample `MariaDBOpsRequest` CRs for different administrative operations is given below:
 
-**Sample `MariaDBOpsRequest` for upgrading database:**
+**Sample `MariaDBOpsRequest` for updating database:**
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MariaDBOpsRequest
 metadata:
-  name: mdops-upgrade
+  name: mdops-update
   namespace: demo
 spec:
   type: UpdateVersion
   databaseRef:
     name: sample-mariadb
-  upgrade:
+  updateVersion:
     targetVersion: 10.5.8
 status:
   conditions:
@@ -223,7 +223,7 @@ A `MariaDBOpsRequest` object has the following fields in the `spec` section.
 
 `spec.type` specifies the kind of operation that will be applied to the database. Currently, the following types of operations are allowed in `MariaDBOpsRequest`.
 
-- `Upgrade`
+- `Upgrade` / `UpdateVersion`
 - `HorizontalScaling`
 - `VerticalScaling`
 - `VolumeExpansion`
@@ -231,15 +231,15 @@ A `MariaDBOpsRequest` object has the following fields in the `spec` section.
 - `ReconfigureTLS`
 - `Restart`
 
-> You can perform only one type of operation on a single `MariaDBOpsRequest` CR. For example, if you want to upgrade your database and scale up its replica then you have to create two separate `MariaDBOpsRequest`. At first, you have to create a `MariaDBOpsRequest` for upgrading. Once it is completed, then you can create another `MariaDBOpsRequest` for scaling. You should not create two `MariaDBOpsRequest` simultaneously.
+> You can perform only one type of operation on a single `MariaDBOpsRequest` CR. For example, if you want to update your database and scale up its replica then you have to create two separate `MariaDBOpsRequest`. At first, you have to create a `MariaDBOpsRequest` for updating. Once it is completed, then you can create another `MariaDBOpsRequest` for scaling. You should not create two `MariaDBOpsRequest` simultaneously.
 
-### spec.upgrade
+### spec.updateVersion
 
-If you want to upgrade your MariaDB version, you have to specify the `spec.upgrade` section that specifies the desired version information. This field consists of the following sub-field:
+If you want to update your MariaDB version, you have to specify the `spec.updateVersion` section that specifies the desired version information. This field consists of the following sub-field:
 
-- `spec.upgrade.targetVersion` refers to a [MariaDBVersion](/docs/guides/mariadb/concepts/mariadb-version/index.md) CR that contains the MariaDB version information where you want to upgrade.
+- `spec.updateVersion.targetVersion` refers to a [MariaDBVersion](/docs/guides/mariadb/concepts/mariadb-version/index.md) CR that contains the MariaDB version information where you want to update.
 
-> You can only upgrade between MariaDB versions. KubeDB does not support downgrade for MariaDB.
+> You can only update between MariaDB versions. KubeDB does not support downgrade for MariaDB.
 
 ### spec.horizontalScaling
 

@@ -57,4 +57,4 @@ The updating process consists of the following steps:
 
 11. After successfully updating of `Redis`/`RedisSentinel` object, the `KubeDB` Enterprise operator resumes the `Redis`/`RedisSentinel` object so that the `KubeDB` Community operator can resume its usual operations.
 
-In the next doc, we are going to show a step-by-step guide on upgrading of a Redis database using scale operation.
+In the next doc, we are going to show a step-by-step guide on updating of a Redis database using scale operation.

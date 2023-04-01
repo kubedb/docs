@@ -64,7 +64,7 @@ spec:
         name: mysql-backup-8.0.21
       restoreTask:
         name: mysql-restore-8.0.21
-  upgradeConstraints:
+  updateConstraints:
     denylist:
       groupReplication:
       - < 8.0.29
@@ -113,16 +113,16 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 `spec.tools.image` is a optional field that specifies the image which will be used to take backup and initialize database from snapshot.
 
-### spec.upgradeConstraints
+### spec.updateConstraints
 
-`spec.upgradeConstraints` specifies a specific database version upgrade constraints in a mathematical expression that describes whether it is possible or not to upgrade from the current version to any other valid version. This field consists of the following sub-fields:
+`spec.updateConstraints` specifies a specific database version update constraints in a mathematical expression that describes whether it is possible or not to update from the current version to any other valid version. This field consists of the following sub-fields:
 
-- `denylist` specifies that it is not possible to upgrade from the current version to any other version. This field has two sub-fields:
-  - `groupReplication` : Suppose you have an expression like, `< 8.0.21` under `groupReplication`, it indicates that it's not possible to upgrade from the current version to any other lower version `8.0.21` for group replication.
-  - `standalone`: Suppose you have an expression like, `< 8.0.21` under `standalone`, it indicates that it's not possible to upgrade from the current version to any other lower version `8.0.21` for standalone.
-- `allowlist` specifies that it is possible to upgrade from the current version to any other version. This field has two sub-fields:
-  - `groupReplication` : Suppose you have an expression like, `8.0.3`, it indicates that it's possible to upgrade from the current version to `8.0.3` for group replication.
-  - `standalone`: Suppose you have an expression like, `8.0.3`, it indicates that it's possible to upgrade from the current version to `8.0.3` for standalone.
+- `denylist` specifies that it is not possible to update from the current version to any other version. This field has two sub-fields:
+  - `groupReplication` : Suppose you have an expression like, `< 8.0.21` under `groupReplication`, it indicates that it's not possible to update from the current version to any other lower version `8.0.21` for group replication.
+  - `standalone`: Suppose you have an expression like, `< 8.0.21` under `standalone`, it indicates that it's not possible to update from the current version to any other lower version `8.0.21` for standalone.
+- `allowlist` specifies that it is possible to update from the current version to any other version. This field has two sub-fields:
+  - `groupReplication` : Suppose you have an expression like, `8.0.3`, it indicates that it's possible to update from the current version to `8.0.3` for group replication.
+  - `standalone`: Suppose you have an expression like, `8.0.3`, it indicates that it's possible to update from the current version to `8.0.3` for standalone.
 
 ### spec.podSecurityPolicies.databasePolicyName
 

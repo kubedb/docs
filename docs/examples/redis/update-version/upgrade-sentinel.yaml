@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisSentinelOpsRequest
+metadata:
+  name: update-sen-version
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: sen-sample
+  updateVersion:
+    targetVersion: 7.0.5

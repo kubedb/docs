@@ -26,7 +26,7 @@ For example, in the following replica set with a 2 data bearing members (the pri
 There are some important considerations that should be taken care of by the Database administrators when deploying MongoDB. 
 
 ## Priority
-Starting in MongoDB 3.6, arbiters have priority 0. When you upgrade a replica set to MongoDB 3.6, if the existing configuration has an arbiter with priority 1, MongoDB 3.6 reconfigures the arbiter to have priority 0.
+Starting in MongoDB 3.6, arbiters have priority 0. When you update a replica set to MongoDB 3.6, if the existing configuration has an arbiter with priority 1, MongoDB 3.6 reconfigures the arbiter to have priority 0.
 
 > IMPORTANT: Do not run an arbiter on systems that also host the primary or the secondary members of the replica set. [[reference]](https://docs.mongodb.com/manual/core/replica-set-members/#arbiter).
 

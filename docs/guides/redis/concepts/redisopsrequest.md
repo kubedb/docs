@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is RedisOpsRequest
 
-`RedisOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Redis](https://www.redis.io/) administrative operations like database version upgrading, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
+`RedisOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Redis](https://www.redis.io/) administrative operations like database version updating, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
 
 ## RedisOpsRequest CRD Specifications
 
@@ -26,19 +26,19 @@ Like any official Kubernetes resource, a `RedisOpsRequest` has `TypeMeta`, `Obje
 
 Here, some sample `RedisOpsRequest` CRs for different administrative operations is given below,
 
-Sample `RedisOpsRequest` for upgrading database:
+Sample `RedisOpsRequest` for updating database:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: RedisOpsRequest
 metadata:
-  name: upgrade-version
+  name: update-version
   namespace: demo
 spec:
   type: UpdateVersion
   databaseRef:
     name: standalone-redis
-  upgrade:
+  updateVersion:
     targetVersion: 7.0.5
 ```
 
@@ -62,7 +62,7 @@ spec:
 
 ## What is RedisSentinelOpsRequest
 
-`RedisSentinelOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Redis](https://www.redis.io/) administrative operations like database version upgrading, horizontal scaling, vertical scaling, reconfiguring TLS etc. in a Kubernetes native way.
+`RedisSentinelOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Redis](https://www.redis.io/) administrative operations like database version updating, horizontal scaling, vertical scaling, reconfiguring TLS etc. in a Kubernetes native way.
 The spec in `RedisOpsRequest` and `RedisSentinelOpsRequest` similar which will be described below.
 
 Sample `RedisSentinelOpsRequest` for vertical scaling
@@ -113,15 +113,15 @@ A `RedisOpsRequest` object has the following fields in the `spec` section.
 
 `Reconfigure` and `ReplaceSentinel` ops request can not be done in `RedisSentinelOpsRequest`
 
->You can perform only one type of operation on a single `RedisOpsRequest` CR. For example, if you want to upgrade your database and scale up its replica then you have to create two separate `RedisOpsRequest`. At first, you have to create a `RedisOpsRequest` for upgrading. Once it is completed, then you can create another `RedisOpsRequest` for scaling. You should not create two `RedisOpsRequest` simultaneously.
+>You can perform only one type of operation on a single `RedisOpsRequest` CR. For example, if you want to update your database and scale up its replica then you have to create two separate `RedisOpsRequest`. At first, you have to create a `RedisOpsRequest` for updating. Once it is completed, then you can create another `RedisOpsRequest` for scaling. You should not create two `RedisOpsRequest` simultaneously.
 
-#### spec.upgrade
+#### spec.updateVersion
 
-If you want to upgrade your Redis version, you have to specify the `spec.upgrade`  section that specifies the desired version information. This field consists of the following sub-field:
+If you want to update your Redis version, you have to specify the `spec.updateVersion`  section that specifies the desired version information. This field consists of the following sub-field:
 
-- `spec.upgrade.targetVersion` refers to a [RedisVersion](/docs/guides/redis/concepts/catalog.md) CR that contains the Redis version information where you want to upgrade.
+- `spec.updateVersion.targetVersion` refers to a [RedisVersion](/docs/guides/redis/concepts/catalog.md) CR that contains the Redis version information where you want to update.
 
->You can only upgrade between Redis versions. KubeDB does not support downgrade for Redis.
+>You can only update between Redis versions. KubeDB does not support downgrade for Redis.
 
 #### spec.horizontalScaling
 
@@ -261,24 +261,24 @@ status:
 - The `message` field is a human-readable message indicating details about the condition.
 - The `reason` field is a unique, one-word, CamelCase reason for the condition's last transition. It has the following possible values:
 
-| Reason                                   | Meaning                                                                          |
-| ---------------------------------------- | -------------------------------------------------------------------------------- |
-| `OpsRequestProgressingStarted`           | Operator has started the OpsRequest processing                                   |
-| `OpsRequestFailedToProgressing`          | Operator has failed to start the OpsRequest processing                           |
-| `SuccessfullyHaltedDatabase`             | Database is successfully halted by the operator                                  |
-| `FailedToHaltDatabase`                   | Database is failed to halt by the operator                                       |
-| `SuccessfullyResumedDatabase`            | Database is successfully resumed to perform its usual operation                  |
-| `FailedToResumedDatabase`                | Database is failed to resume                                                     |
-| `DatabaseVersionUpgradingStarted`        | Operator has started upgrading the database version                              |
-| `SuccessfullyUpgradedDatabaseVersion`    | Operator has successfully upgraded the database version                          |
-| `FailedToUpgradeDatabaseVersion`         | Operator has failed to upgrade the database version                              |
-| `HorizontalScalingStarted`               | Operator has started the horizontal scaling                                      |
+| Reason                                  | Meaning                                                                          |
+|-----------------------------------------| -------------------------------------------------------------------------------- |
+| `OpsRequestProgressingStarted`          | Operator has started the OpsRequest processing                                   |
+| `OpsRequestFailedToProgressing`         | Operator has failed to start the OpsRequest processing                           |
+| `SuccessfullyHaltedDatabase`            | Database is successfully halted by the operator                                  |
+| `FailedToHaltDatabase`                  | Database is failed to halt by the operator                                       |
+| `SuccessfullyResumedDatabase`           | Database is successfully resumed to perform its usual operation                  |
+| `FailedToResumedDatabase`               | Database is failed to resume                                                     |
+| `DatabaseVersionupdatingStarted`       | Operator has started updating the database version                              |
+| `SuccessfullyUpdatedDatabaseVersion`    | Operator has successfully updated the database version                          |
+| `FailedToUpdateDatabaseVersion`         | Operator has failed to update the database version                              |
+| `HorizontalScalingStarted`              | Operator has started the horizontal scaling                                      |
 | `SuccessfullyPerformedHorizontalScaling` | Operator has successfully performed on horizontal scaling                        |
-| `FailedToPerformHorizontalScaling`       | Operator has failed to perform on horizontal scaling                             |
-| `VerticalScalingStarted`                 | Operator has started the vertical scaling                                        |
-| `SuccessfullyPerformedVerticalScaling`   | Operator has successfully performed on vertical scaling                          |
-| `FailedToPerformVerticalScaling`         | Operator has failed to perform on vertical scaling                               |
-| `OpsRequestProcessedSuccessfully`        | Operator has completed the operation successfully requested by the OpeRequest cr |
+| `FailedToPerformHorizontalScaling`      | Operator has failed to perform on horizontal scaling                             |
+| `VerticalScalingStarted`                | Operator has started the vertical scaling                                        |
+| `SuccessfullyPerformedVerticalScaling`  | Operator has successfully performed on vertical scaling                          |
+| `FailedToPerformVerticalScaling`        | Operator has failed to perform on vertical scaling                               |
+| `OpsRequestProcessedSuccessfully`       | Operator has completed the operation successfully requested by the OpeRequest cr |
 
 - The `lastTransitionTime` field provides a timestamp for when the operation last transitioned from one state to another.
 - The `observedGeneration` shows the most recent condition transition generation observed by the controller.

@@ -157,7 +157,7 @@ spec:
   version: searchguard-7.9.3
 ```
 ### spec.autoOps
-AutoOps is an optional field to control the generation of versionUpgrade & TLS-related recommendations.
+AutoOps is an optional field to control the generation of versionUpdate & TLS-related recommendations.
 
 ### spec.version
 `spec.version` is a `required` field that specifies the name of the [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md) CRD where the docker images are specified.

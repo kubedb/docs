@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PerconaXtraDBOpsRequest
+metadata:
+  name: pxops-update
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: sample-pxc
+  updateVersion:
+    targetVersion: "8.0.28"

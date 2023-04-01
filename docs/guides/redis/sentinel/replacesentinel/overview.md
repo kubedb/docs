@@ -30,7 +30,7 @@ This guide will give you an overview on how KubeDB Enterprise operator replaces 
 The following diagram shows how KubeDB Enterprise operator replaces sentinel of `Redis`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Upgrading Process of MongoDB" src="/docs/images/day-2-operation/redis/replace-sentinel.svg">
+  <img alt="updating Process of MongoDB" src="/docs/images/day-2-operation/redis/replace-sentinel.svg">
 <figcaption align="center">Fig: Replace Sentinel Process of Redis</figcaption>
 </figure>
 
@@ -48,7 +48,7 @@ The replace sentinel process consists of the following steps:
 
 6. `KubeDB` Enterprise operator watches the `RedisOpsRequest` CR.
 
-7. When it finds a `RedisOpsRequest` CR, it pauses the `Redis` object which is referred from the `RedisOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `Redis` object during the upgrading process.  
+7. When it finds a `RedisOpsRequest` CR, it pauses the `Redis` object which is referred from the `RedisOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `Redis` object during the updating process.  
 
 8. By looking at the target sentinel reference from `RedisOpsRequest` CR, `KubeDB` Enterprise operator removes current sentinel and add desired sentinel to the `Redis` object. Then it may delete the old `RedisSentinel` object if it is orphaned and user requested to remove it.
 

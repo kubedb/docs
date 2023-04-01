@@ -75,7 +75,7 @@ spec:
         params:
           - name: args
             value: --match=^(?![.])(?!kubedb-system).+
-  upgradeConstraints:
+  updateConstraints:
     allowlist:
       - < 7.18.0
   version: 7.14.0
@@ -115,10 +115,10 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 `spec.exporter.image` is a `required` field that specifies the image which will be used to export Prometheus metrics if monitoring is enabled.
 
-### spec.upgradeConstraints
-UpgradeConstraints specifies the constraints that need to be considered during version upgrade. Here `allowList` contains the versions those are allowed for upgrading from the current version.
+### spec.updateConstraints
+updateConstraints specifies the constraints that need to be considered during version update. Here `allowList` contains the versions those are allowed for updating from the current version.
 An empty list of AllowList indicates all the versions are accepted except the denyList.
-On the other hand, `DenyList` contains all the rejected versions for the upgrade request. An empty list indicates no version is rejected.
+On the other hand, `DenyList` contains all the rejected versions for the update request. An empty list indicates no version is rejected.
 
 
 ### spec.podSecurityPolicies.databasePolicyName

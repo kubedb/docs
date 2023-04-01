@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pg-update
+  namespace: demo
+spec:
+  type: UpdateVersion
+  updateVersion:
+    targetVersion: "13.2"
+  databaseRef:
+    name: pg

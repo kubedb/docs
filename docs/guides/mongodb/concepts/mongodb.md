@@ -177,7 +177,7 @@ spec:
 ```
 
 ### spec.autoOps
-AutoOps is an optional field to control the generation of versionUpgrade & TLS-related recommendations.
+AutoOps is an optional field to control the generation of versionUpdate & TLS-related recommendations.
 
 ### spec.version
 
@@ -373,8 +373,8 @@ The authentication mode used for cluster authentication. This option can have on
 |     Value     | Description                                                                                                                      |
 | :-----------: | :------------------------------------------------------------------------------------------------------------------------------- |
 |   `keyFile`   | Use a keyfile for authentication. Accept only keyfiles.                                                                          |
-| `sendKeyFile` | For rolling upgrade purposes. Send a keyfile for authentication but can accept both keyfiles and x.509 certificates.             |
-|  `sendX509`   | For rolling upgrade purposes. Send the x.509 certificate for authentication but can accept both keyfiles and x.509 certificates. |
+| `sendKeyFile` | For rolling update purposes. Send a keyfile for authentication but can accept both keyfiles and x.509 certificates.             |
+|  `sendX509`   | For rolling update purposes. Send the x.509 certificate for authentication but can accept both keyfiles and x.509 certificates. |
 |    `x509`     | Recommended. Send the x.509 certificate for authentication and accept only x.509 certificates.                                   |
 
 ### spec.storageType
