@@ -27,3 +27,4 @@ Guides to show you how to perform tasks with KubeDB:
 - [PostgreSQL](/docs/guides/postgres/README.md). Shows how to manage PostgreSQL using KubeDB.
 - [ProxySQL](/docs/guides/proxysql/README.md). Shows how to manage ProxySQL using KubeDB.
 - [Redis](/docs/guides/redis/README.md). Shows how to manage Redis using KubeDB.
+- [Kafka](/docs/guides/kafka/README.md). Shows how to manage Redis using KubeDB.

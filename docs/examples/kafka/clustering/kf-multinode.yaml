@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Kafka
+metadata:
+  name: kafka-multinode
+  namespace: demo
+spec:
+  replicas: 3
+  version: 3.3.2
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
+  storageType: Durable
+  terminationPolicy: DoNotTerminate
