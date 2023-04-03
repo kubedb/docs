@@ -5,8 +5,6 @@ metadata:
 spec:
   exporter:
     image: kubedb/pgbouncer_exporter:v0.1.1
-  initContainer:
-    image: kubedb/pgbouncer-init:0.1.0
   pgBouncer:
     image: kubedb/pgbouncer:1.17.0
   version: 1.17.0
