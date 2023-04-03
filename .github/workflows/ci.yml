@@ -28,7 +28,7 @@ jobs:
 
       - name: Install codespan schema checker
         run: |
-          curl -fsSL -o codespan-schema-checker https://github.com/kmodules/codespan-schema-checker/releases/download/v0.0.1/codespan-schema-checker-linux-amd64
+          curl -fsSL -o codespan-schema-checker https://github.com/kmodules/codespan-schema-checker/releases/latest/download/codespan-schema-checker-linux-amd64
           chmod +x codespan-schema-checker
           sudo mv codespan-schema-checker /usr/local/bin/codespan-schema-checker
 
@@ -66,4 +66,7 @@ jobs:
 
       - name: Check codespan schema
         run: |
+          git clone https://github.com/kmodules/resource-metadata.git
+          mv resource-metadata/hub /tmp
+          rm -rf resource-metadata
           codespan-schema-checker --content=./docs

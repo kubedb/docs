@@ -60,7 +60,7 @@ spec:
     name: kafka
     namespace: demo
   clientConfig:
-    caBundle: LS0tLS1CRUdJTi...........................................Ct1UTViUEtRQm56TgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    caBundle: dGhpcyBpcyBub3QgYSBjZXJ0
     service:
       name: kafka-pods
       port: 9092
