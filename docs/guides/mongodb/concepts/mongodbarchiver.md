@@ -84,16 +84,24 @@ A `MongoDBArchiver` object has the following fields in the `spec` section.
 - `spec.retentionPolicy.namespace` : specifies the namespace of the retention policy CR.
 
 ### spec.pause
-`spec.pause` is a boolean field that specifies if the archiver is currently paused or not. If the archiver is paused, the backup supporting resources such as backupCofiguration is paused and walg oplog backup is also paused by deleting the Sidekick.
+`spec.pause` is a boolean field that specifies if the archiver is currently paused or not. If the archiver is paused, the backup supporting resources such as backupConfiguration is paused and walg oplog backup is also paused by deleting the Sidekick.
 
 ### spec.backupStorage
-`spec.backupStorage` is a field that specifies the backupStorage that will be used to store the backup. It is a reference to the BackupStorage object of kubestash.
+`spec.backupStorage` is a field that specifies the backupStorage that will be used to store the backup. It is a reference to the BackupStorage object of kubeStash.
+`spec.backupStorage` has `.ref` field which holds the full reference(group, kind, name, namespace) of the backup Storage object. It also has a `.prefix` field specifying the backup folder-name prefix.
 
 ### spec.fullBackup
 `spec.fullBackup` is used for different options in fullBackup. It has the following sub-fields:
+
 - `driver` specifies the driver we are using for full backup. Currently only one driver, `CSISnapshotter` driver is supported.
 - `csiSnapshotter` specifies the csiSnapshotter driver options such as the volume snapshot class name.
 - `scheduler` specifies the scheduler options for the full database backup such as the schedule, job template etc.
+- `containerRuntimeSettings` specifies the container runtime settings for the full backup. For more information check [here](https://github.com/kmodules/offshoot-api/blob/master/api/v1/runtime_settings_types.go#L122-L173).
+- `jobTemplate` specifies the job template that is used in the backup session created for the full backup. For more information check [here](https://github.com/kmodules/offshoot-api/blob/master/api/v1/types.go#L42-L57).
+- `retryConfig` specifies the behavior of the retry.
+- `timeout` specifies the timeout for the backup.
+- `sessionHistoryLimit` specifies how many backup Jobs and associate resources Stash should keep for debugging purpose.
+
 
 ### spec.manifestBackup
 `spec.manifestBackup` is used for different options in manifest (auth secret, config secret etc.) backup. It has the following sub-fields:
@@ -113,7 +121,10 @@ A `MongoDBArchiver` object has the following fields in the `spec` section.
 - `configSecret` specifies the name and namespace of the secret which contains different wal-g options. You can find the list of options that you can provide for walg [here](https://wal-g.readthedocs.io/MongoDB/#configuration).
 
 ### spec.deletionPolicy
-`spec.deletionPolicy` is a field that specifies that what will happen to the data if the archiver is deleted. It has two options `WipeOut` and `Delete`.
+`spec.deletionPolicy` is a field that specifies that what will happen to the data if the archiver is deleted. It has three options `WipeOut`, `Delete` & `DoNotDelete`.
+
+### status
+The status section of MongoDBArchiver only has one field `databaseRefs`. It holds the name & namespace of all the databases which are managed by this archiver.
 
 ## Next Steps
 

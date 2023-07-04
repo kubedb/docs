@@ -175,6 +175,12 @@ Here,
 - `driver` specifies the driver we are using for full backup. We are using the CSISnapshotter driver.
 - `csiSnapshotter` specifies the csiSnapshotter driver options such as the volume snapshot class name.
 - `scheduler` specifies the scheduler options for the full database backup such as the schedule, job template etc.
+- `containerRuntimeSettings` specifies the container runtime settings for the full backup. For more information check [here](https://github.com/kmodules/offshoot-api/blob/master/api/v1/runtime_settings_types.go#L122-L173).
+- `jobTemplate` specifies the job template that is used in the backup session created for the full backup. For more information check [here](https://github.com/kmodules/offshoot-api/blob/master/api/v1/types.go#L42-L57).
+- `retryConfig` specifies the behavior of the retry.
+- `timeout` specifies the timeout for the backup.
+- `sessionHistoryLimit` specifies how many backup Jobs and associate resources Stash should keep for debugging purpose.
+
 
 `spec.manifestBackup` has the following options:
 - `encryptionSecret` specifies the secret name and namespace which is used to encrypt the data backed up.
@@ -285,7 +291,7 @@ mg-rs-2   2/2     Running   0          43s
 Now, let's wait for a few minutes so that the first backup sessions for both manifest & full backup is executed. We can check that by watching the backupsession CRD.
 
 ```bash
-$ watch kubectl get backupsessions
+$ watch kubectl get backupsessions -n demo
 NAME                        INVOKER-TYPE          INVOKER-NAME   PHASE       DURATION   AGE
 mg-rs-full-1687796400       BackupConfiguration   mg-rs          Succeeded              39s
 mg-rs-manifest-1687796400   BackupConfiguration   mg-rs          Succeeded              40s
@@ -355,7 +361,7 @@ So, we've inserted `100` documents in a db called `newdb`. Now, we are ready to 
 
 ## Point in time recovery using MongoDBArchiver
 
-Now, we already marked the time after we've inserted our documents. So, we'll use that time to create a new database to point in time recover the data. 
+Now, we already marked the time after we've inserted our documents. So, we'll use that time to create a new database to point-in-time-recover the data. 
 
 Let's deploy a new mongodb which will have the data till the time we specify, which is the time after inserting the data in the `newdb` database in our previous mongodb.
 
@@ -400,9 +406,9 @@ spec:
   terminationPolicy: "WipeOut"
 ```
 
-Here, we can see that, the mongodb yaml is almost similar with our previous mongodb yaml, except it has an `init` section. In this section, we have specified that we want to point in time recover the database.
+Here, we can see that, the mongodb yaml is almost similar with our previous mongodb yaml, except it has an `init` section. In this section, we have specified that we want to point-in-time-recover the database.
 In the `init` section,
-- `archiver.recoveryTimestamp` specifies the timestamp in which we want to Point in time recover our database.
+- `archiver.recoveryTimestamp` specifies the timestamp in which we want to point-in-time-recover our database.
 - `archiver.fullDBRestore` specifies the repository in which the full backup exists.
 - `archiver.manifestRestore` specifies the repository in which the manifest backup exists and the encryption secret that was used to encrypt the data.
 
@@ -473,7 +479,7 @@ bye
 root@mg-rs-restored-0:/# exit
 exit
 ```
-We can see from the above output that we have successfully done the point in time recovery of the database `mg-rs`.
+We can see from the above output that we have successfully done the point-in-time-recovery of the database `mg-rs`.
 
 ## Next Steps
 

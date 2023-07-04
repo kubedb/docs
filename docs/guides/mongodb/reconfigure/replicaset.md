@@ -22,7 +22,6 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-
 - Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
