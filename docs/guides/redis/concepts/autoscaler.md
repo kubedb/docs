@@ -24,7 +24,7 @@ section_menu_id: guides
 
 Like any official Kubernetes resource, a `RedisAutoscaler` has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.
 
-Here is a sample `RedisAutoscaler` CROs for autoscaling different components of database is given below:
+Here is a sample `RedisAutoscaler` CRDs for autoscaling different components of database is given below:
 
 **Sample `RedisAutoscaler` for standalone database:**
 
@@ -60,7 +60,7 @@ spec:
       scalingThreshold: 20
 ```
 
-Here is a sample `RedisSentinelAutoscaler` CROs for autoscaling different components of database is given below:
+Here is a sample `RedisSentinelAutoscaler` CRDs for autoscaling different components of database is given below:
 
 **Sample `RedisSentinelAutoscaler` for standalone database:**
 ```yaml
@@ -101,7 +101,7 @@ A `RedisAutoscaler` object has the following fields in the `spec` section.
 - **spec.databaseRef.name :** specifies the name of the [Redis](/docs/guides/redis/concepts/redis.md) object.
 
 ### spec.opsRequestOptions
-These are the options to pass in the internally created opsRequest CRO. `opsRequestOptions` has three fields. They have been described in details [here](/docs/guides/redis/concepts/redisopsrequest.md#specreadinesscriteria).
+These are the options to pass in the internally created opsRequest CRD. `opsRequestOptions` has three fields. They have been described in details [here](/docs/guides/redis/concepts/redisopsrequest.md#specreadinesscriteria).
 
 ### spec.compute
 

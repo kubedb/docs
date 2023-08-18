@@ -116,7 +116,7 @@ redis-cluster        ClusterIP   10.96.115.92   <none>        6379/TCP   3m4s
 redis-cluster-pods   ClusterIP   None           <none>        6379/TCP   3m4s
 ```
 
-KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `Redis` object:
+KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified `Redis` object:
 
 ```bash
 $ kubectl get rd -n demo redis-cluster -o yaml

@@ -69,7 +69,7 @@ Here,
 - `spec.replicas` denotes the number of replica nodes
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `RedisSentinel` objects using Kubernetes API. When a `RedisSentinel` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for StatefulSets named `kubedb`, if one is not already present.
+KubeDB operator watches for `RedisSentinel` objects using Kubernetes API. When a `RedisSentinel` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching RedisSentinel object name. KubeDB operator will also create a governing service for StatefulSets named `kubedb`, if one is not already present.
 
 
 Now we will deploy a Redis instance with giving the sentinelRef to the previously created RedisSentinel instance.
@@ -108,7 +108,7 @@ redis.kubedb.com/rd-demo created
 
 Here,
 
-- `spec.mode` specifies the mode for Redis. Here we have used `Redis` to tell the operator that we want to deploy Redis in cluster mode.
+- `spec.mode` specifies the mode for Redis. Here we have used `Redis` to tell the operator that we want to deploy Redis in sentinel mode.
 - `spec.replicas` denotes the number of replica nodes
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
@@ -158,7 +158,7 @@ sen-demo          ClusterIP   10.96.249.99    <none>        26379/TCP   14m
 sen-demo-pods     ClusterIP   None            <none>        26379/TCP   14m
 ```
 
-KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. `status.phase` section is similar for 
+KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. `status.phase` section is similar for 
 `Redis` object and `RedisSentinel` object. Run the following command to see the modified `RedisSentinel` object:
 
 ```bash
@@ -412,7 +412,7 @@ $ kubectl exec -it rd-demo-0 -n demo -c redis -- bash
 /data #
 
 # now ensure that you are connected to the 1st pod
-/data # redis-cli -c -h 
+/data # redis-cli -c -h 10.244.0.140
 10.244.0.140:6379>
 
 # set 'world' as value for the key 'hello'

@@ -175,7 +175,7 @@ NAME                  TYPE            STATUS       AGE
 update-sen-version    UpdateVersion   Successful   3m30s
 ```
 
-We can see from the above output that the `RedisOpsRequest` has succeeded.
+We can see from the above output that the `RedisSentinelOpsRequest` has succeeded.
 
 Now, we are going to verify whether the `RedisSentinel` and the related `StatefulSets` their `Pods` have the new version image. Let's check,
 
