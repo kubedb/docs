@@ -63,7 +63,7 @@ redis-restore-6.2.5   62m
 
 To backup a Redis database using Stash, you have to create a `Secret` containing the backend credentials, a `Repository` containing the backend information, and a `BackupConfiguration` containing the schedule and target information. A `BackupBlueprint` allows you to specify a template for the `Repository` and the `BackupConfiguration`.
 
-The `BackupBlueprint` is a non-namespaced CRD. So, once you have created a `BackupBlueprint`, you can use it to backup any Redis database of any namespace just by creating the storage `Secret` in that namespace and adding few annotations to your Redis CRO. Then, Stash will automatically create a `Repository` and a `BackupConfiguration` according to the template to backup the database.
+The `BackupBlueprint` is a non-namespaced CRD. So, once you have created a `BackupBlueprint`, you can use it to backup any Redis database of any namespace just by creating the storage `Secret` in that namespace and adding few annotations to your Redis CRD. Then, Stash will automatically create a `Repository` and a `BackupConfiguration` according to the template to backup the database.
 
 Below is the `BackupBlueprint` object that we are going to use in this tutorial,
 
@@ -120,7 +120,7 @@ secret/gcs-secret created
 
 ### Create Database
 
-Now, we are going to create a Redis CRO in `demo-1` namespace. Below is the YAML of the Redis object that we are going to create,
+Now, we are going to create a Redis CRD in `demo-1` namespace. Below is the YAML of the Redis object that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -145,7 +145,7 @@ spec:
 
 Notice the `annotations` section. We are pointing to the `BackupBlueprint` that we have created earlier through `stash.appscode.com/backup-blueprint` annotation. Stash will watch this annotation and create a `Repository` and a `BackupConfiguration` according to the `BackupBlueprint`.
 
-Let's create the above Redis CRO,
+Let's create the above Redis CRD,
 
 ```bash
 ❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/auto-backup/examples/sample-redis-1.yaml
