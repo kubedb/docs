@@ -131,7 +131,7 @@ All of them has the following sub-fields:
 - `spec.storage.cluster` indicates the desired storage autoscaling configuration for cluster mode in Redis database.
 - `spec.storage.sentinel` indicates the desired storage autoscaling configuration for sentinel mode in Redis database.
 
-`RedisSentinelAutoscaler` does not have `spec.stoage` section. 
+`RedisSentinelAutoscaler` does not have `spec.storage` section. 
 
 All of them has the following sub-fields:
 
