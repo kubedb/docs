@@ -30,7 +30,7 @@ kubectl dba insert postgres -n demo sample-postgres --rows 500
 
 ```
   -h, --help       help for postgres
-  -r, --rows int   rows in  (default 10)
+  -r, --rows int   number of rows to insert (default 100)
 ```
 
 ### Options inherited from parent commands
