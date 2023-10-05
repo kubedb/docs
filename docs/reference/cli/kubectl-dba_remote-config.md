@@ -1,36 +1,35 @@
 ---
-title: Kubectl-Dba Data Verify Elasticsearch
+title: Kubectl-Dba Remote-Config
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-data-verify-elasticsearch
-    name: Kubectl-Dba Data Verify Elasticsearch
+    identifier: kubectl-dba-remote-config
+    name: Kubectl-Dba Remote-Config
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba data verify elasticsearch
+## kubectl-dba remote-config
 
-Verify rows in a elasticsearch database
+generate appbinding , secrets for remote replica
 
 ### Synopsis
 
-Use this cmd to verify data in a elasticsearch object
+generate appbinding , secrets for remote replica
 
 ```
-kubectl-dba data verify elasticsearch [flags]
+kubectl-dba remote-config [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba verify -n demo es es-quickstart  --rows 1000
+kubectl dba remote-config mysql -n <ns> -u <user_name> -p$<password> -d<dns_name>  <db_name>
 ```
 
 ### Options
 
 ```
-  -h, --help       help for elasticsearch
-  -r, --rows int   number of rows to verify (default 100)
+  -h, --help   help for remote-config
 ```
 
 ### Options inherited from parent commands
@@ -60,5 +59,7 @@ kubectl dba verify -n demo es es-quickstart  --rows 1000
 
 ### SEE ALSO
 
-* [kubectl-dba data verify](/docs/reference/cli/kubectl-dba_data_verify.md)	 - Verify data in a database
+* [kubectl-dba](/docs/reference/cli/kubectl-dba.md)	 - kubectl plugin for KubeDB
+* [kubectl-dba remote-config mysql](/docs/reference/cli/kubectl-dba_remote-config_mysql.md)	 - generate appbinding , secrets for remote replica
+* [kubectl-dba remote-config postgres](/docs/reference/cli/kubectl-dba_remote-config_postgres.md)	 - generate appbinding , secrets for remote replica
 
