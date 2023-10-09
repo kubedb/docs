@@ -30,7 +30,7 @@ kubectl dba insert -n demo es es-quickstart --rows 1000
 
 ```
   -h, --help       help for elasticsearch
-  -r, --rows int   rows in  (default 10)
+  -r, --rows int   number of rows to insert (default 100)
 ```
 
 ### Options inherited from parent commands
