@@ -1,36 +1,36 @@
 ---
-title: Kubectl-Dba Data Verify Elasticsearch
+title: Kubectl-Dba Data Insert Mongodb
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-data-verify-elasticsearch
-    name: Kubectl-Dba Data Verify Elasticsearch
+    identifier: kubectl-dba-data-insert-mongodb
+    name: Kubectl-Dba Data Insert Mongodb
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba data verify elasticsearch
+## kubectl-dba data insert mongodb
 
-Verify rows in a elasticsearch database
+Insert data to mongodb
 
 ### Synopsis
 
-Use this cmd to verify data in a elasticsearch object
+Use this cmd to insert data into a mongodb database.
 
 ```
-kubectl-dba data verify elasticsearch [flags]
+kubectl-dba data insert mongodb [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba verify -n demo es es-quickstart  --rows 1000
+kubectl dba data insert mg -n demo mg-rs --rows 500
 ```
 
 ### Options
 
 ```
-  -h, --help       help for elasticsearch
-  -r, --rows int   number of rows to verify (default 100)
+  -h, --help       help for mongodb
+  -r, --rows int   number of rows to insert (default 100)
 ```
 
 ### Options inherited from parent commands
@@ -60,5 +60,5 @@ kubectl dba verify -n demo es es-quickstart  --rows 1000
 
 ### SEE ALSO
 
-* [kubectl-dba data verify](/docs/reference/cli/kubectl-dba_data_verify.md)	 - Verify data in a database
+* [kubectl-dba data insert](/docs/reference/cli/kubectl-dba_data_insert.md)	 - Insert random data in a database
 

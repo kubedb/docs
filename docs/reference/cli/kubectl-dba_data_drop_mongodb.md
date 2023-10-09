@@ -1,36 +1,35 @@
 ---
-title: Kubectl-Dba Data Verify Elasticsearch
+title: Kubectl-Dba Data Drop Mongodb
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-data-verify-elasticsearch
-    name: Kubectl-Dba Data Verify Elasticsearch
+    identifier: kubectl-dba-data-drop-mongodb
+    name: Kubectl-Dba Data Drop Mongodb
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba data verify elasticsearch
+## kubectl-dba data drop mongodb
 
-Verify rows in a elasticsearch database
+Drop data from mongodb
 
 ### Synopsis
 
-Use this cmd to verify data in a elasticsearch object
+Use this cmd to drop data from a mongodb database.
 
 ```
-kubectl-dba data verify elasticsearch [flags]
+kubectl-dba data drop mongodb [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba verify -n demo es es-quickstart  --rows 1000
+kubectl dba data drop mg -n demo mg-rs
 ```
 
 ### Options
 
 ```
-  -h, --help       help for elasticsearch
-  -r, --rows int   number of rows to verify (default 100)
+  -h, --help   help for mongodb
 ```
 
 ### Options inherited from parent commands
@@ -60,5 +59,5 @@ kubectl dba verify -n demo es es-quickstart  --rows 1000
 
 ### SEE ALSO
 
-* [kubectl-dba data verify](/docs/reference/cli/kubectl-dba_data_verify.md)	 - Verify data in a database
+* [kubectl-dba data drop](/docs/reference/cli/kubectl-dba_data_drop.md)	 - Drop data from a database
 

@@ -1,35 +1,35 @@
 ---
-title: Kubectl-Dba Data Verify Elasticsearch
+title: Kubectl-Dba Data Verify Mongodb
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-data-verify-elasticsearch
-    name: Kubectl-Dba Data Verify Elasticsearch
+    identifier: kubectl-dba-data-verify-mongodb
+    name: Kubectl-Dba Data Verify Mongodb
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba data verify elasticsearch
+## kubectl-dba data verify mongodb
 
-Verify rows in a elasticsearch database
+Verify data to a mongodb resource
 
 ### Synopsis
 
-Use this cmd to verify data in a elasticsearch object
+Use this cmd to verify data existence in a mongodb object
 
 ```
-kubectl-dba data verify elasticsearch [flags]
+kubectl-dba data verify mongodb [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba verify -n demo es es-quickstart  --rows 1000
+kubectl dba data verify mg -n demo mg-rs --rows 500
 ```
 
 ### Options
 
 ```
-  -h, --help       help for elasticsearch
+  -h, --help       help for mongodb
   -r, --rows int   number of rows to verify (default 100)
 ```
 

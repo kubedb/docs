@@ -30,7 +30,7 @@ kubectl dba verify mysql -n demo sample-mysql --rows 1000
 
 ```
   -h, --help       help for mysql
-  -r, --rows int   rows in  (default 10)
+  -r, --rows int   number of rows to verify (default 100)
 ```
 
 ### Options inherited from parent commands

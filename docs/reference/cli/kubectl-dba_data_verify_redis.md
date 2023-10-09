@@ -30,7 +30,7 @@ kubectl dba data verify redis -n demo sample-redis --rows 500
 
 ```
   -h, --help       help for redis
-  -r, --rows int   rows in  (default 10)
+  -r, --rows int   number of rows to verify (default 100)
 ```
 
 ### Options inherited from parent commands
