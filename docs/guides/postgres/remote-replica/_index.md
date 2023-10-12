@@ -1,10 +1,11 @@
 ---
-title: PostgreSQL Quickstart
+title: PostgreSQL Remote Replica
 menu:
   docs_{{ .version }}:
     identifier: pg-remote-replica
-    name: Quickstart
+    name: Remote Replica
     parent: pg-postgres-guides
-    weight: 16
+    weight: 27
 menu_name: docs_{{ .version }}
 ---
+
