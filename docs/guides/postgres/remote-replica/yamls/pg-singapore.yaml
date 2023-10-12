@@ -1,0 +1,41 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Postgres
+metadata:
+  name: pg-singapore
+  namespace: demo
+spec:
+  authSecret:
+    name: pg-singapore-auth
+  allowedSchemas:
+    namespaces:
+      from: Same
+  autoOps: {}
+  clientAuthMode: md5
+  replicas: 3
+  sslMode: verify-ca
+  standbyMode: Hot
+  streamingMode: Synchronous
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      name: pg-issuer
+      kind: Issuer
+    certificates:
+      - alias: server
+        subject:
+          organizations:
+            - kubedb:server
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: linode-block-storage
+  storageType: Durable
+  terminationPolicy: WipeOut
+  version: "15.3"

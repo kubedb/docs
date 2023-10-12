@@ -1,0 +1,30 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: mysql-london
+  namespace: demo
+spec:
+  authSecret:
+    name: mysql-london-auth
+  healthChecker:
+    failureThreshold: 1
+    periodSeconds: 10
+    timeoutSeconds: 10
+    disableWriteCheck: true
+  version: "8.0.31"
+  replicas: 1
+  topology:
+    mode: RemoteReplica
+    remoteReplica:
+      sourceRef:
+        name: mysql-singapore
+        namespace: demo
+  storageType: Durable
+  storage:
+    storageClassName: "linode-block-storage"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  terminationPolicy: WipeOut
