@@ -37,7 +37,7 @@ Before proceeding:
 > Note: The yaml files used in this tutorial are stored in [docs/guides/mysql/clustering/remote-replica/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/clustering/group-replication/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 ## Remote Replica
 
-The remote replica allows you to replicate data from an KubeDB managed MySQL server to a read-only mysql server.The whole process  uses MySQL asynchronous replication to keep up-to-date the replica with  source server.
+The remote replica allows you to replicate data from an KubeDB managed MySQL server to a read-only mysql server. The whole process  uses MySQL asynchronous replication to keep up-to-date the replica with  source server.
 It's useful to use remote replica to scale of read-intensive workloads, can be a workaround for your  BI and analytical workloads and can be geo-replicated.
 
 ## Deploy Mysql server
@@ -241,7 +241,7 @@ mysql-singapore   nginx   mysql-singapore.something.org   172.104.37.147   80   
 ```
 Now will be able to communicate from another cluster to our source database
 # Prepare for Remote Replica
-We wil use the [kubedb_plugin](somelink) for generating configuration for remote replica. It will create the appbinding and and necessary secrets to connect with source server
+We wil use the [kubedb_plugin](/docs/setup/README.md) for generating configuration for remote replica. It will create the appbinding and and necessary secrets to connect with source server
 ```bash
 $ kubectl dba remote-config mysql -n demo mysql-singapore -uremote -ppass -d 172.104.37.147 -y
 home/mehedi/go/src/kubedb.dev/yamls/mysql/mysql-singapore-remote-config.yaml
@@ -249,7 +249,7 @@ home/mehedi/go/src/kubedb.dev/yamls/mysql/mysql-singapore-remote-config.yaml
 #  Create  Remote Replica
 We have prepared another cluster in london region for replicating across cluster. follow the installation instruction [above](/docs/README.md).
 
-### create sourceRef 
+### Create sourceRef 
 
 We will apply the generated config from kubeDB plugin to create the source refs and secrets for it
 
@@ -265,8 +265,8 @@ NAME              TYPE               VERSION   AGE
 mysql-singapore   kubedb.com/mysql   8.0.31    4m17s
 ```
 
-### create remote replica auth 
-we will need to use the same auth secrets for remote replicas as well since operations like clone also replicated the auth-secrets from source server
+### Create remote replica auth 
+We will need to use the same auth secrets for remote replicas as well since operations like clone also replicated the auth-secrets from source server
 ```yaml
 apiVersion: v1
 data:
@@ -322,7 +322,7 @@ Here,
 - `spec.topology.remoteReplica.sourceref` we are referring to source to read. The  mysql instance we previously created.
 - `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete the operation of MySQL CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mysql/concepts/database/#specterminationpolicy).
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clustering/remote-replica/mysql-london.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clustering/remote-replica/yamls/mysql-london.yaml
 mysql.kubedb.com/mysql-london created
 ```
 
