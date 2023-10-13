@@ -33,16 +33,11 @@ metadata:
   name: pgbouncer-server
   namespace: demo
 spec:
-  version: "1.17.0"
+  version: "1.18.0"
   replicas: 2
   databases:
   - alias: "postgres"
     databaseName: "postgres"
-    databaseRef:
-      name: "quick-postgres"
-      namespace: demo
-  - alias: "tmpdb"
-    databaseName: "mydb"
     databaseRef:
       name: "quick-postgres"
       namespace: demo
@@ -62,7 +57,7 @@ spec:
 
 `spec.version` is a required field that specifies the name of the [PgBouncerVersion](/docs/guides/pgbouncer/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PgBouncerVersion` resources,
 
-- `1.17.0`
+- `1.18.0`
 
 ### spec.replicas
 
@@ -75,15 +70,10 @@ spec:
 - `spec.databases.alias`:  specifies an alias for the target database located in a postgres server specified by an appbinding.
 - `spec.databases.databaseName`:  specifies the name of the target database.
 - `spec.databases.databaseRef`:  specifies the name and namespace of the AppBinding that contains the path to a PostgreSQL server where the target database can be found.
-- `spec.databases.databaseSecretRef` (optional): points to a secret that contains the credentials (username and password) of an existing user of this database. It is used to bind a single user to this specific database connection..
 
 ConnectionPool is used to configure pgbouncer connection-pool. All the fields here are accompanied by default values and can be left unspecified if no customisation is required by the user.
 
-- `spec.connectionPool.listenPort`: specifies the port on which pgbouncer should listen to connect with clients. The default is 5432.
-
-- `spec.connectionPool.listenAddress`: specifies the adress from which pgbouncer should allow client connection from. The default is `*` (all addresses).
-
-- `spec.connectionPool.adminUsers`: specifies the values of admin_users. Comma seperated names of admin users are listed here.
+- `spec.connectionPool.port`: specifies the port on which pgbouncer should listen to connect with clients. The default is 5432.
 
 - `spec.connectionPool.poolMode`: specifies the value of pool_mode. Specifies when a server connection can be reused by other clients.
 
@@ -144,9 +134,6 @@ ConnectionPool is used to configure pgbouncer connection-pool. All the fields he
   Default: 60
 
 - `spec.connectionPool.authType`: specifies how to authenticate users. PgBouncer supports several authentication methods including pam, md5, scram-sha-256, trust , or any. However hba, and cert are not supported.
-
-- `spec.connectionPool.authUser`: looks up any user not specified in auth_file from pg_shadow.
-  Default: not set.
 
 - `spec.connectionPool.IgnoreStartupParameters`: specifies comma-separated startup parameters that pgbouncer knows are handled by admin and it can ignore them.
 
