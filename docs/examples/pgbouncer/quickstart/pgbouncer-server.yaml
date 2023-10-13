@@ -4,15 +4,16 @@ metadata:
   name: pgbouncer-server
   namespace: demo
 spec:
-  version: "1.17.0"
+  version: "1.18.0"
   replicas: 1
   databases:
-    - alias: "postgres"
-      databaseName: "postgres"
-      databaseRef:
-        name: "quick-postgres"
-        namespace: demo
+  - alias: "postgres"
+    databaseName: "postgres"
+    databaseRef:
+      name: "quick-postgres"
+      namespace: demo
   connectionPool:
+    port: 5432
     maxClientConnections: 20
     reservePoolSize: 5
-  terminationPolicy: WipeOut
+  terminationPolicy: Delete
