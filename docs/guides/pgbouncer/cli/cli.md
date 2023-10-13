@@ -76,9 +76,6 @@ metadata:
   uid: 158b7c58-ecb2-4a77-bceb-081489b4921a
 spec:
   connectionPool:
-    adminUsers:
-    - admin
-    - admin1
     poolMode: session
     port: 5432
     reservePoolSize: 5
@@ -105,8 +102,6 @@ spec:
     spec:
       resources: {}
   replicas: 1
-  userListSecretRef:
-    name: db-user-pass
   version: 1.17.0
 status:
   observedGeneration: 1$6208915667192219204

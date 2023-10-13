@@ -62,11 +62,6 @@ spec:
   connectionPool:
     maxClientConnections: 20
     reservePoolSize: 5
-    adminUsers:
-    - admin
-    - admin1
-  userListSecretRef:
-    name: db-user-pass
   monitor:
     agent: prometheus.io/builtin
 ```

@@ -41,8 +41,6 @@ spec:
     databaseRef:
       name: "quick-postgres"
       namespace: demo
-    authSecretRef:
-      name: "one-specific-user"
   - alias: "tmpdb"
     databaseName: "mydb"
     databaseRef:
@@ -51,10 +49,6 @@ spec:
   connectionPool:
     maxClientConnections: 20
     reservePoolSize: 5
-    adminUsers:
-    - admin
-  userListSecretRef:
-    name: db-user-pass
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -155,12 +149,6 @@ ConnectionPool is used to configure pgbouncer connection-pool. All the fields he
   Default: not set.
 
 - `spec.connectionPool.IgnoreStartupParameters`: specifies comma-separated startup parameters that pgbouncer knows are handled by admin and it can ignore them.
-
-### spec.userListSecretRef:
-
-UserList field is used to specify a secret that contains the list of authorised users along with their passwords. Basically this secret is created from the standard pgbouncer userlist file.
-
-- `spec.userList.userListSecretRef.name`: specifies the name of the secret containing userlist. Has to be created in the same namespace as the PgBouncer crd.
 
 ### spec.monitor
 
