@@ -84,7 +84,6 @@ metadata:
 spec:
   version: "2.4.4-debian"
   replicas: 3
-  mode: GroupReplication
   backend:
     name: mysql-grp
   syncUsers: true

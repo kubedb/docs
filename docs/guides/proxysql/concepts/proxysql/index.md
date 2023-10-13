@@ -31,7 +31,6 @@ metadata:
 spec:
   version: "2.3.2-debian"
   replicas: 1
-  mode: GroupReplication
   backend:
     name: my-group
   authSecret:

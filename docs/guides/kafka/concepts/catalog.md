@@ -50,6 +50,8 @@ spec:
   podSecurityPolicies:
     databasePolicyName: kafka-db
   version: 3.4.0
+  cruiseControl:
+    image: ghcr.io/kubedb/cruise-control:3.4.0
 ```
 
 ### metadata.name

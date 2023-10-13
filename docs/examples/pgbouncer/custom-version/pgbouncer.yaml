@@ -15,5 +15,3 @@ spec:
   connectionPool:
     port: 2580
     reservePoolSize: 5
-  userListSecretRef:
-    name: db-user-pass

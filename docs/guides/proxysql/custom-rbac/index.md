@@ -144,7 +144,6 @@ metadata:
 spec:
   version: "2.4.4-debian"
   replicas: 1
-  mode: Galera
   backend:
     name: xtradb-galera-appbinding
   syncUsers: true
