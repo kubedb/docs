@@ -131,7 +131,6 @@ metadata:
 spec:
   version: "2.3.2-debian"  
   replicas: 3
-  mode: GroupReplication
   backend:
     name: mysql-server
   terminationPolicy: WipeOut

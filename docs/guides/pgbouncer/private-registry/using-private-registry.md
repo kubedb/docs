@@ -122,10 +122,6 @@ spec:
   connectionPool:
     maxClientConnections: 20
     reservePoolSize: 5
-    adminUsers:
-    - admin
-  userListSecretRef:
-    name: db-user-pass
   podTemplate:
     spec:
       imagePullSecrets:

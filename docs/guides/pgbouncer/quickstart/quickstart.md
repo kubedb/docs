@@ -174,11 +174,6 @@ spec:
   connectionPool:
     maxClientConnections: 20
     reservePoolSize: 5
-    adminUsers:
-    - admin
-    - admin1
-  userListSecretRef:
-    name: db-user-pass
   terminationPolicy: Delete
 ```
 
@@ -188,7 +183,6 @@ Here,
 - `spec.replicas` specifies the number of replica pgbouncer server pods to be created for the PgBouncer object.
 - `spec.databases` specifies the databases that are going to be served via PgBouncer.
 - `spec.connectionPool` specifies the configurations for connection pool.
-- `spec.userListSecretRef` specifies the secret that contains the standard pgbouncer `userlist` file.
 - `spec.terminationPolicy` specifies what policy to apply while deletion.
 
 ### spec.databases
@@ -217,29 +211,6 @@ ConnectionPool is used to configure pgbouncer connection pool. All the fields he
 - `spec.connectionPool.maxDbConnections`: specifies the value of max_db_connections.
 - `spec.connectionPool.maxUserConnections`: specifies the value of max_user_connections.
 
-### spec.userListSecretRef
-
-UserList field is used to specify a secret that contains the list of authorized users along with their passwords. Basically this secret is created from the standard pgbouncer userlist file.
-
-- `spec.userListSecretRef.name`: specifies the name of the secret containing userlist in the same namespace as the PgBouncer crd.
-
-In this tutorial we will use a standard userlist text file to create a secret for spec.userListSecretRef. In the userlist text file we have added `pgbouncer` as user and  `ZFopeLnwkSf_f5Ys` as corresponding password. The file looks like this:
-
-```
-"postgres" "ZFopeLnwkSf_f5Ys"
-"myuser" "mypass"
-```
-
-We will need user `myuser` with password  `mypass` later in this tutorial.
-
-```bash
-$ wget https://raw.githubusercontent.com/kubedb/docs/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/userlist
-
-2022-06-01 12:29:02 (1.02 MB/s) - ‘userlist’ saved [47/47]
-$ kubectl create secret generic -n demo db-user-pass --from-file=./userlist.txt
-
-secret/db-user-pass created
-```
 ### spec.terminationPolicy
 
 `terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PgBouncer` crd or which resources KubeDB should keep or delete when you delete `PgBouncer` crd. KubeDB provides following four termination policies:
@@ -354,11 +325,6 @@ spec:
   connectionPool:
     maxClientConnections: 20
     reservePoolSize: 5
-    adminUsers:
-    - admin
-    - admin1
-  userListSecretRef:
-    name: db-user-pass
   terminationPolicy: Delete
 ```
 
