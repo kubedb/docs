@@ -85,9 +85,9 @@ All of them has the following sub-fields:
 
 ### spec.storage
 
-`spec.compute` specifies the autoscaling configuration for the storage resources of the database components. This field consists of the following sub-field:
+`spec.storage` specifies the autoscaling configuration for the storage resources of the database components. This field consists of the following sub-field:
 
-- `spec.compute.mairadb` indicates the desired storage autoscaling configuration for a MySQL standalone or cluster.
+- `spec.storage.mysql` indicates the desired storage autoscaling configuration for a MySQL standalone or cluster.
 
 All of them has the following sub-fields:
 
