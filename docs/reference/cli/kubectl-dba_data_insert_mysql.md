@@ -10,11 +10,11 @@ section_menu_id: reference
 ---
 ## kubectl-dba data insert mysql
 
-Connect to a mysql object
+Insert data to mysql
 
 ### Synopsis
 
-Use this cmd to exec into a mysql object's primary pod.
+Use this cmd to insert data into a mysql database.
 
 ```
 kubectl-dba data insert mysql [flags]
@@ -23,7 +23,7 @@ kubectl-dba data insert mysql [flags]
 ### Examples
 
 ```
-kubectl dba insert mysql -n demo sample-mysql --rows 1000
+kubectl dba data insert mysql -n demo sample-mysql --rows 1000
 ```
 
 ### Options

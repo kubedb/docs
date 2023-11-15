@@ -73,9 +73,9 @@ kubectl-dba data drop
 
 * [kubectl-dba data](/docs/reference/cli/kubectl-dba_data.md)	 - Insert, Drop or Verify data in a database
 * [kubectl-dba data drop elasticsearch](/docs/reference/cli/kubectl-dba_data_drop_elasticsearch.md)	 - Delete data from elasticsearch database
-* [kubectl-dba data drop mariadb](/docs/reference/cli/kubectl-dba_data_drop_mariadb.md)	 - Verify rows in a MariaDB database
+* [kubectl-dba data drop mariadb](/docs/reference/cli/kubectl-dba_data_drop_mariadb.md)	 - Drop data from MariaDB
 * [kubectl-dba data drop mongodb](/docs/reference/cli/kubectl-dba_data_drop_mongodb.md)	 - Drop data from mongodb
-* [kubectl-dba data drop mysql](/docs/reference/cli/kubectl-dba_data_drop_mysql.md)	 - Verify rows in a MySQL database
+* [kubectl-dba data drop mysql](/docs/reference/cli/kubectl-dba_data_drop_mysql.md)	 -  Drop data from mysql
 * [kubectl-dba data drop postgres](/docs/reference/cli/kubectl-dba_data_drop_postgres.md)	 - Delete data from postgres database
 * [kubectl-dba data drop redis](/docs/reference/cli/kubectl-dba_data_drop_redis.md)	 - Delete data from redis database
 

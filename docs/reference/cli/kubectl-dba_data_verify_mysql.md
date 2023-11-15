@@ -10,7 +10,7 @@ section_menu_id: reference
 ---
 ## kubectl-dba data verify mysql
 
-Verify rows in a MySQL database
+Verify rows to a mysql resource
 
 ### Synopsis
 
@@ -23,7 +23,7 @@ kubectl-dba data verify mysql [flags]
 ### Examples
 
 ```
-kubectl dba verify mysql -n demo sample-mysql --rows 1000
+kubectl dba data verify mysql -n demo sample-mysql --rows 1000
 ```
 
 ### Options
