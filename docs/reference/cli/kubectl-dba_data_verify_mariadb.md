@@ -10,7 +10,7 @@ section_menu_id: reference
 ---
 ## kubectl-dba data verify mariadb
 
-Verify rows in a MariaDB database
+Verify rows to a mariadb resource
 
 ### Synopsis
 
@@ -23,7 +23,7 @@ kubectl-dba data verify mariadb [flags]
 ### Examples
 
 ```
-kubectl dba verify mariadb -n demo sample-mariadb --rows 1000
+kubectl dba data verify mariadb -n demo sample-mariadb --rows 1000
 ```
 
 ### Options

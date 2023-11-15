@@ -73,9 +73,9 @@ kubectl-dba data verify
 
 * [kubectl-dba data](/docs/reference/cli/kubectl-dba_data.md)	 - Insert, Drop or Verify data in a database
 * [kubectl-dba data verify elasticsearch](/docs/reference/cli/kubectl-dba_data_verify_elasticsearch.md)	 - Verify rows in a elasticsearch database
-* [kubectl-dba data verify mariadb](/docs/reference/cli/kubectl-dba_data_verify_mariadb.md)	 - Verify rows in a MariaDB database
+* [kubectl-dba data verify mariadb](/docs/reference/cli/kubectl-dba_data_verify_mariadb.md)	 - Verify rows to a mariadb resource
 * [kubectl-dba data verify mongodb](/docs/reference/cli/kubectl-dba_data_verify_mongodb.md)	 - Verify data to a mongodb resource
-* [kubectl-dba data verify mysql](/docs/reference/cli/kubectl-dba_data_verify_mysql.md)	 - Verify rows in a MySQL database
+* [kubectl-dba data verify mysql](/docs/reference/cli/kubectl-dba_data_verify_mysql.md)	 - Verify rows to a mysql resource
 * [kubectl-dba data verify postgres](/docs/reference/cli/kubectl-dba_data_verify_postgres.md)	 - Verify rows in a postgres database
 * [kubectl-dba data verify redis](/docs/reference/cli/kubectl-dba_data_verify_redis.md)	 - Verify rows in a redis database
 

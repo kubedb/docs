@@ -10,11 +10,11 @@ section_menu_id: reference
 ---
 ## kubectl-dba data insert mariadb
 
-Connect to a mariadb object
+ Insert data to mariadb
 
 ### Synopsis
 
-Use this cmd to exec into a mariadb object's primary pod.
+Use this cmd to insert data into a mariadb database.
 
 ```
 kubectl-dba data insert mariadb [flags]
@@ -23,7 +23,7 @@ kubectl-dba data insert mariadb [flags]
 ### Examples
 
 ```
-kubectl dba insert mariadb -n demo sample-mariadb --rows 1000
+kubectl dba data insert mariadb -n demo sample-mariadb --rows 1000
 ```
 
 ### Options
