@@ -10,11 +10,11 @@ section_menu_id: reference
 ---
 ## kubectl-dba data drop mysql
 
-Verify rows in a MySQL database
+ Drop data from mysql
 
 ### Synopsis
 
-Use this cmd to verify data in a mysql object
+Use this cmd to drop data from a mysql database
 
 ```
 kubectl-dba data drop mysql [flags]
@@ -23,7 +23,7 @@ kubectl-dba data drop mysql [flags]
 ### Examples
 
 ```
-kubectl dba drop mysql -n demo sample-mysql
+kubectl dba data drop mysql -n demo sample-mysql
 ```
 
 ### Options

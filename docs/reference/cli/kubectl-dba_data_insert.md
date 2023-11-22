@@ -73,9 +73,9 @@ kubectl-dba data insert
 
 * [kubectl-dba data](/docs/reference/cli/kubectl-dba_data.md)	 - Insert, Drop or Verify data in a database
 * [kubectl-dba data insert elasticsearch](/docs/reference/cli/kubectl-dba_data_insert_elasticsearch.md)	 - Insert data to a elasticsearch database
-* [kubectl-dba data insert mariadb](/docs/reference/cli/kubectl-dba_data_insert_mariadb.md)	 - Connect to a mariadb object
+* [kubectl-dba data insert mariadb](/docs/reference/cli/kubectl-dba_data_insert_mariadb.md)	 -  Insert data to mariadb
 * [kubectl-dba data insert mongodb](/docs/reference/cli/kubectl-dba_data_insert_mongodb.md)	 - Insert data to mongodb
-* [kubectl-dba data insert mysql](/docs/reference/cli/kubectl-dba_data_insert_mysql.md)	 - Connect to a mysql object
+* [kubectl-dba data insert mysql](/docs/reference/cli/kubectl-dba_data_insert_mysql.md)	 - Insert data to mysql
 * [kubectl-dba data insert postgres](/docs/reference/cli/kubectl-dba_data_insert_postgres.md)	 - Insert data to a postgres object's pod
 * [kubectl-dba data insert redis](/docs/reference/cli/kubectl-dba_data_insert_redis.md)	 - Insert data to a redis database
 

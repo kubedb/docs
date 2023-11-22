@@ -10,11 +10,11 @@ section_menu_id: reference
 ---
 ## kubectl-dba data drop mariadb
 
-Verify rows in a MariaDB database
+Drop data from MariaDB
 
 ### Synopsis
 
-Use this cmd to verify data in a mariadb object
+Use this cmd to drop data from a mongodb
 
 ```
 kubectl-dba data drop mariadb [flags]
@@ -23,7 +23,7 @@ kubectl-dba data drop mariadb [flags]
 ### Examples
 
 ```
-kubectl dba drop mariadb -n demo sample-mariadb
+kubectl dba data drop mariadb -n demo sample-mariadb
 ```
 
 ### Options
