@@ -50,7 +50,7 @@ metadata:
   name: mysql-server
   namespace: demo
 spec:
-  version: "5.7.36"
+  version: "5.7.41"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -251,7 +251,7 @@ root@mysql-server-0:/# mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 26692
-Server version: 5.7.36-log MySQL Community Server (GPL)
+Server version: 5.7.41-log MySQL Community Server (GPL)
 
 Copyright (c) 2000, 2021, Oracle and/or its affiliates.
 
@@ -307,7 +307,7 @@ ERROR 1045 (28000): ProxySQL Error: Access denied for user 'test' (using passwor
 root@proxy-server-0:/ mysql -utest -ppass -h127.0.0.1 -P6033 --ssl-ca=/var/lib/frontend/server/ca.crt --ssl-cert=/var/lib/frontend/server/tls.crt --ssl-key=/var/lib/frontend/server/tls.key
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 1573
-Server version: 8.0.27 (ProxySQL)
+Server version: 8.0.32 (ProxySQL)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -325,7 +325,7 @@ Current pager:		stdout
 Using outfile:		''
 Using delimiter:	;
 Server:			MySQL
-Server version:		8.0.27 (ProxySQL)
+Server version:		8.0.32 (ProxySQL)
 Protocol version:	10
 Connection:		127.0.0.1 via TCP/IP
 Server characterset:	latin1

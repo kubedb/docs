@@ -7,7 +7,7 @@ metadata:
     stash.appscode.com/backup-blueprint: mysql-backup-template
     stash.appscode.com/schedule: "*/3 * * * *"
 spec:
-  version: "8.0.29"
+  version: "8.0.32"
   replicas: 1
   storageType: Durable
   storage:

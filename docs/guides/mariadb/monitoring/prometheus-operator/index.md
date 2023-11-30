@@ -111,7 +111,7 @@ metadata:
   name: coreos-prom-md
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -149,7 +149,7 @@ Now, wait for the database to go into `Ready` state.
 ```bash
 $ kubectl get mariadb -n demo coreos-prom-md
 NAME             VERSION   STATUS   AGE
-coreos-prom-md   10.5.8    Ready    59s
+coreos-prom-md   10.5.23    Ready    59s
 ```
 
 KubeDB will create a separate stats service with name `{MariaDB crd name}-stats` for monitoring purpose.

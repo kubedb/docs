@@ -333,7 +333,7 @@ $ kubectl exec -it -n demo proxy-mysql-0 -- bash                                
 root@proxy-mysql-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="ProxySQLAdmin > " 
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 1204
-Server version: 8.0.27 (ProxySQL Admin Module)
+Server version: 8.0.32 (ProxySQL Admin Module)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -430,7 +430,7 @@ root@ubuntu-867d4588d8-tl7hh:/# mysql -utest -ppass -hproxy-server.demo.svc -P60
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 1881
-Server version: 8.0.27 (ProxySQL)
+Server version: 8.0.32 (ProxySQL)
 
 Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 

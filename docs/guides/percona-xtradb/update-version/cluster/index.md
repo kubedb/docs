@@ -39,7 +39,7 @@ namespace/demo created
 
 ## Prepare PerconaXtraDB Cluster
 
-Now, we are going to deploy a `PerconaXtraDB` cluster database with version `10.4.17`.
+Now, we are going to deploy a `PerconaXtraDB` cluster database with version `10.4.32`.
 
 ### Deploy PerconaXtraDB cluster
 

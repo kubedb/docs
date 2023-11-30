@@ -17,4 +17,4 @@ spec:
   tlsSecret:
     name: mysql-server-client-cert 
   type: mysql
-  version: 8.0.27
+  version: 8.0.32

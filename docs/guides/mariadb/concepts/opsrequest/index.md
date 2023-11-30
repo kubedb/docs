@@ -39,7 +39,7 @@ spec:
   databaseRef:
     name: sample-mariadb
   updateVersion:
-    targetVersion: 10.5.8
+    targetVersion: 10.5.23
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"

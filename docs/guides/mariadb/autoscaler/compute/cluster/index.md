@@ -88,7 +88,7 @@ Now, wait until `sample-mariadb` has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo
 NAME             VERSION   STATUS   AGE
-sample-mariadb   10.5.8    Ready    14m
+sample-mariadb   10.5.23    Ready    14m
 ```
 
 Let's check the Pod containers resources,

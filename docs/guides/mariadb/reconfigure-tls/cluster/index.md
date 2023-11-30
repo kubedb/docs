@@ -49,7 +49,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   replicas: 3
   storageType: Durable
   storage:
@@ -74,7 +74,7 @@ Now, wait until `sample-mariadb` has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo
 NAME             VERSION   STATUS   AGE
-sample-mariadb   10.5.8    Ready    9m17s
+sample-mariadb   10.5.23    Ready    9m17s
 ```
 
 ```bash
@@ -88,7 +88,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -c mariadb  -- bash
 root@sample-mariadb-0:/  mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 108
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -230,7 +230,7 @@ ca.crt  tls.crt  tls.key
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 58
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -535,7 +535,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -c mariadb  -- bash
 root@sample-mariadb-0:/  mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 108
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 

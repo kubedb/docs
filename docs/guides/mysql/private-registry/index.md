@@ -30,11 +30,11 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 $ kubectl get mysqlversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,REPLICATION_MODE_DETECTOR_IMAGE:.spec.replicationModeDetector.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
 NAME            VERSION   DB_IMAGE                    EXPORTER_IMAGE                   REPLICATION_MODE_DETECTOR_IMAGE            INITCONTAINER_IMAGE                    DEPRECATED
 5.7.35-v1       5.7.35    mysql:5.7.35                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:5.7-v2               <none>
-5.7.36          5.7.36    mysql:5.7.36                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:5.7-v2               <none>
+5.7.41          5.7.41    mysql:5.7.41                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:5.7-v2               <none>
 8.0.17          8.0.17    mysql:8.0.17                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.3-v1             <none>
-8.0.27          8.0.27    mysql:8.0.27                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.26-v1            <none>
-8.0.27-innodb   8.0.27    mysql/mysql-server:8.0.27   kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.26-v1            <none>
-8.0.29          8.0.29    mysql:8.0.29                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.29_linux_amd64   <none>
+8.0.32          8.0.32    mysql:8.0.32                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.26-v1            <none>
+8.0.32-innodb   8.0.32    mysql/mysql-server:8.0.32   kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.26-v1            <none>
+8.0.32          8.0.32    mysql:8.0.32                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.32_linux_amd64   <none>
 8.0.3-v4        8.0.3     mysql:8.0.3                 kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.3-v1             <none>
 
 ```
@@ -51,17 +51,17 @@ NAME            VERSION   DB_IMAGE                    EXPORTER_IMAGE            
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
-  name: 8.0.29
+  name: 8.0.32
 spec:
   coordinator:
     image: PRIVATE_REGISTRY/mysql-coordinator:v0.4.0-2-g49a2d26-dirty_linux_amd64
   db:
-    image: PRIVATE_REGISTRY/mysql:8.0.29
+    image: PRIVATE_REGISTRY/mysql:8.0.32
   distribution: Official
   exporter:
     image: PRIVATE_REGISTRY/mysqld-exporter:v0.13.1
   initContainer:
-    image: PRIVATE_REGISTRY/mysql-init:8.0.29_linux_amd64
+    image: PRIVATE_REGISTRY/mysql-init:8.0.32_linux_amd64
   podSecurityPolicies:
     databasePolicyName: mysql-db
   replicationModeDetector:
@@ -75,10 +75,10 @@ spec:
   updateConstraints:
     denylist:
       groupReplication:
-      - < 8.0.29
+      - < 8.0.32
       standalone:
-      - < 8.0.29
-  version: 8.0.29
+      - < 8.0.32
+  version: 8.0.32
 ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -123,7 +123,7 @@ metadata:
   name: mysql-pvt-reg
   namespace: demo
 spec:
-  version: "8.0.29"
+  version: "8.0.32"
   storage:
     storageClassName: "standard"
     accessModes:

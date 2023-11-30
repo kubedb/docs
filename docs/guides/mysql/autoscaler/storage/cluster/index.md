@@ -60,7 +60,7 @@ Now, we are going to deploy a `MySQL` replicaset using a supported version by `K
 
 #### Deploy MySQL Cluster
 
-In this section, we are going to deploy a MySQL replicaset database with version `10.5.8`.  Then, in the next section we will set up autoscaling for this database using `MySQLAutoscaler` CRD. Below is the YAML of the `MySQL` CR that we are going to create,
+In this section, we are going to deploy a MySQL replicaset database with version `10.5.23`.  Then, in the next section we will set up autoscaling for this database using `MySQLAutoscaler` CRD. Below is the YAML of the `MySQL` CR that we are going to create,
 
 > If you want to autoscale MySQL `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
@@ -98,7 +98,7 @@ Now, wait until `sample-mysql` has status `Ready`. i.e,
 ```bash
 $ kubectl get mysql -n demo
 NAME             VERSION   STATUS   AGE
-sample-mysql   10.5.8    Ready    3m46s
+sample-mysql   10.5.23    Ready    3m46s
 ```
 
 Let's check volume size from statefulset, and from the persistent volume,

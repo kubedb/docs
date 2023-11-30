@@ -102,7 +102,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   configSecret:
     name: md-configuration
   storageType: Durable
@@ -128,7 +128,7 @@ sample-mariadb-0   1/1     Running   0          21s
 
 $ kubectl get mariadb -n demo 
 NAME             VERSION   STATUS   AGE
-sample-mariadb   10.5.8    Ready    71s
+sample-mariadb   10.5.23    Ready    71s
 ```
 
 We can see the database is in ready phase so it can accept conncetion.
@@ -143,7 +143,7 @@ Now, we will check if the database has started with the custom configuration we 
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
