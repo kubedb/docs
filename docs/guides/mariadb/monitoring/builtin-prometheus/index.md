@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-md
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -78,7 +78,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get mariadb -n demo builtin-prom-md
 NAME              VERSION   STATUS   AGE
-builtin-prom-md   10.5.8    Ready    76s
+builtin-prom-md   10.5.23    Ready    76s
 ```
 
 KubeDB will create a separate stats service with name `{MariaDB crd name}-stats` for monitoring purpose.

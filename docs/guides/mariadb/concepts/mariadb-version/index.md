@@ -42,10 +42,10 @@ metadata:
     app.kubernetes.io/version: v0.16.2
     helm.sh/chart: kubedb-catalog-v0.16.2
   ...
-  name: 10.5.8
+  name: 10.5.23
 spec:
   db:
-    image: kubedb/mariadb:10.5.8
+    image: kubedb/mariadb:10.5.23
   exporter:
     image: kubedb/mysqld-exporter:v0.11.0
   initContainer:
@@ -55,10 +55,10 @@ spec:
   stash:
     addon:
       backupTask:
-        name: mariadb-backup-10.5.8
+        name: mariadb-backup-10.5.23
       restoreTask:
-        name: mariadb-restore-10.5.8
-  version: 10.5.8
+        name: mariadb-restore-10.5.23
+  version: 10.5.23
 ```
 
 ### metadata.name

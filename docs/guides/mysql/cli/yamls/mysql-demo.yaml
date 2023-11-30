@@ -4,7 +4,7 @@ metadata:
   name: mysql-demo
   namespace: demo
 spec:
-  version: "8.0.27"
+  version: "8.0.32"
   storage:
     storageClassName: "standard"
     accessModes:

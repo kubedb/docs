@@ -6,7 +6,7 @@ metadata:
   annotations:
     stash.appscode.com/backup-blueprint: mariadb-backup-template
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   replicas: 1
   storageType: Durable
   storage:

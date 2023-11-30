@@ -41,19 +41,19 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2022.03.28
     helm.sh/chart: kubedb-catalog-v2022.03.28
-  name: 8.0.29
+  name: 8.0.32
   resourceVersion: "1575483"
   uid: 4e605d5f-a6f0-42cb-a125-b4b4fd02e41e
 spec:
   coordinator:
     image: kubedb/mysql-coordinator:v0.4.0-2-g49a2d26-dirty_linux_amd64
   db:
-    image: mysql:8.0.29
+    image: mysql:8.0.32
   distribution: Official
   exporter:
     image: kubedb/mysqld-exporter:v0.13.1
   initContainer:
-    image: kubedb/mysql-init:8.0.29_linux_amd64
+    image: kubedb/mysql-init:8.0.32_linux_amd64
   podSecurityPolicies:
     databasePolicyName: mysql-db
   replicationModeDetector:
@@ -67,10 +67,10 @@ spec:
   updateConstraints:
     denylist:
       groupReplication:
-      - < 8.0.29
+      - < 8.0.32
       standalone:
-      - < 8.0.29
-  version: 8.0.29
+      - < 8.0.32
+  version: 8.0.32
 ```
 
 ### metadata.name

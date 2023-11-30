@@ -94,7 +94,7 @@ metadata:
   name: md-standalone-tls
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -146,7 +146,7 @@ Now, wait for `MariaDB` going on `Running` state and also wait for `StatefulSet`
 ```bash
 $ kubectl get mariadb -n demo md-standalone-tls
 NAME             VERSION   STATUS   AGE
-md-standalone-tls   10.5.8    Ready    5m48s
+md-standalone-tls   10.5.23    Ready    5m48s
 
 $ kubectl get sts -n demo md-standalone-tls
 NAME             READY   AGE
@@ -188,7 +188,7 @@ ca.crt  tls.crt  tls.key
 root@md-standalone-tls-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 64
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -236,7 +236,7 @@ $ kubectl exec -it -n demo md-standalone-tls-0 -- bash
 root@md-standalone-tls-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 92
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -259,7 +259,7 @@ ERROR 1045 (28000): Access denied for user 'new_user'@'localhost' (using passwor
 root@md-standalone-tls-0:/ mysql -unew_user -p1234 --ssl-ca=/etc/mysql/certs/server/ca.crt  --ssl-cert=/etc/mysql/certs/server/tls.crt --ssl-key=/etc/mysql/certs/server/tls.key
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 116
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -282,7 +282,7 @@ metadata:
   name: md-cluster-tls
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   replicas: 3
   storageType: Durable
   storage:
@@ -324,7 +324,7 @@ Now, wait for `MariaDB` going on `Running` state and also wait for `StatefulSet`
 ```bash
 $ kubectl get mariadb -n demo md-cluster-tls
 NAME             VERSION   STATUS   AGE
-md-cluster-tls   10.5.8    Ready    2m49s
+md-cluster-tls   10.5.23    Ready    2m49s
 
 $ kubectl get pod -n demo | grep md-cluster-tls
 md-cluster-tls-0   1/1     Running   0          3m29s
@@ -367,7 +367,7 @@ ca.crt  tls.crt  tls.key
 root@md-cluster-tls-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 64
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -413,7 +413,7 @@ ca.crt  tls.crt  tls.key
 root@md-cluster-tls-1:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 34
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -461,7 +461,7 @@ $ kubectl exec -it -n demo md-cluster-tls-0 -- bash
 root@md-cluster-tls-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 92
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -484,7 +484,7 @@ ERROR 1045 (28000): Access denied for user 'new_user'@'localhost' (using passwor
 root@md-cluster-tls-0:/ mysql -unew_user -p1234 --ssl-ca=/etc/mysql/certs/server/ca.crt  --ssl-cert=/etc/mysql/certs/server/tls.crt --ssl-key=/etc/mysql/certs/server/tls.key
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 116
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 

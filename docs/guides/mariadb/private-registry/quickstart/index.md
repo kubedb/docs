@@ -29,8 +29,8 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 ```bash
 $ kubectl get mariadbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
 NAME      VERSION   DB_IMAGE                 EXPORTER_IMAGE                   INITCONTAINER_IMAGE   DEPRECATED
-10.4.17   10.4.17   kubedb/mariadb:10.4.17   kubedb/mysqld-exporter:v0.11.0   kubedb/busybox        <none>
-10.5.8    10.5.8    kubedb/mariadb:10.5.8    kubedb/mysqld-exporter:v0.11.0   kubedb/busybox        <none>
+10.4.32   10.4.32   kubedb/mariadb:10.4.32   kubedb/mysqld-exporter:v0.11.0   kubedb/busybox        <none>
+10.5.23    10.5.23    kubedb/mariadb:10.5.23    kubedb/mysqld-exporter:v0.11.0   kubedb/busybox        <none>
 ```
 
 Docker hub repositories:
@@ -45,17 +45,17 @@ Docker hub repositories:
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: MariaDBVersion
   metadata:
-    name: 10.5.8
+    name: 10.5.23
   spec:
     db:
-      image: PRIVATE_REGISTRY/mysql:10.5.8
+      image: PRIVATE_REGISTRY/mysql:10.5.23
     exporter:
       image: PRIVATE_REGISTRY/mysqld-exporter:v0.11.0
     initContainer:
       image: PRIVATE_REGISTRY/busybox
     podSecurityPolicies:
       databasePolicyName: maria-db
-    version: 10.5.8
+    version: 10.5.23
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -100,7 +100,7 @@ metadata:
   name: md-pvt-reg
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   storage:
     storageClassName: "standard"
     accessModes:
