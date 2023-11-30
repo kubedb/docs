@@ -20,8 +20,9 @@ aliases:
 ### Options
 
 ```
-  -h, --help                             help for kubedb-operator
-      --use-kubeapiserver-fqdn-for-aks   if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 (default true)
+      --default-seccomp-profile-type string   Default seccomp profile
+  -h, --help                                  help for kubedb-operator
+      --use-kubeapiserver-fqdn-for-aks        if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 (default true)
 ```
 
 ### SEE ALSO
