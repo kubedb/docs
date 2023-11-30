@@ -52,8 +52,8 @@ When you install the Stash Enterprise edition, it automatically installs all the
 
 ```bash
 ❯ kubectl get tasks.stash.appscode.com | grep mariadb
-mariadb-backup-10.5.8    62m
-mariadb-restore-10.5.8   62m
+mariadb-backup-10.5.23    62m
+mariadb-restore-10.5.23   62m
 ```
 
 ## Prepare Backup Blueprint
@@ -129,7 +129,7 @@ metadata:
   annotations:
     stash.appscode.com/backup-blueprint: mariadb-backup-template
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   replicas: 1
   storageType: Durable
   storage:
@@ -192,7 +192,7 @@ If everything goes well, Stash should create a `BackupConfiguration` for our Mar
 ```bash
 ❯ kubectl get backupconfiguration -n demo
 NAME                 TASK                    SCHEDULE      PAUSED   PHASE   AGE
-app-sample-mariadb   mariadb-backup-10.5.8   */5 * * * *            Ready   7m28s
+app-sample-mariadb   mariadb-backup-10.5.23   */5 * * * *            Ready   7m28s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -298,7 +298,7 @@ metadata:
     stash.appscode.com/backup-blueprint: mariadb-backup-template
     stash.appscode.com/schedule: "*/3 * * * *"
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   replicas: 1
   storageType: Durable
   storage:
@@ -361,7 +361,7 @@ If everything goes well, Stash should create a `BackupConfiguration` for our Mar
 ```bash
 ❯ kubectl get backupconfiguration -n demo-2
 NAME                   TASK                    SCHEDULE      PAUSED   PHASE   AGE
-app-sample-mariadb-2   mariadb-backup-10.5.8   */3 * * * *            Ready   3m24s
+app-sample-mariadb-2   mariadb-backup-10.5.23   */3 * * * *            Ready   3m24s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -479,7 +479,7 @@ metadata:
     stash.appscode.com/backup-blueprint: mariadb-backup-template
     params.stash.appscode.com/args: --databases mysql
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   replicas: 1
   storageType: Durable
   storage:
@@ -543,7 +543,7 @@ If everything goes well, Stash should create a `BackupConfiguration` for our Mar
 ```bash
 ❯ kubectl get backupconfiguration -n demo-3
 NAME                   TASK                    SCHEDULE      PAUSED   PHASE   AGE
-app-sample-mariadb-3   mariadb-backup-10.5.8   */5 * * * *            Ready   106s
+app-sample-mariadb-3   mariadb-backup-10.5.23   */5 * * * *            Ready   106s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.

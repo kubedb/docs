@@ -135,7 +135,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   storageType: Durable
   podTemplate:
     spec:
@@ -164,15 +164,15 @@ Check the pod's log to see if the database is ready
 
 ```bash
 $ kubectl logs -f -n demo sample-mariadb-0
-2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.8+maria~focal started.
+2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.23+maria~focal started.
 2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
-2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.8+maria~focal started.
+2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.23+maria~focal started.
 2021-03-18 05:35:14+00:00 [Note] [Entrypoint]: Initializing database files
 ...
 2021-03-18  5:35:22 0 [Note] Reading of all Master_info entries succeeded
 2021-03-18  5:35:22 0 [Note] Added new Master_info '' to hash table
 2021-03-18  5:35:22 0 [Note] mysqld: ready for connections.
-Version: '10.5.8-MariaDB-1:10.5.8+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
+Version: '10.5.23-MariaDB-1:10.5.23+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
 ```
 
 Once we see `mysqld: ready for connections.` in the log, the database is ready.
@@ -197,7 +197,7 @@ metadata:
   name: another-mariadb
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   storageType: Durable
   podTemplate:
     spec:
@@ -227,13 +227,13 @@ Check the pod's log to see if the database is ready
 ```bash
 ...
 $ kubectl logs -f -n demo another-mariadb-0
-2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.8+maria~focal started.
+2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.23+maria~focal started.
 2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
-2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.8+maria~focal started.
+2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.23+maria~focal started.
 2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Initializing database files
 ...
 2021-03-18  5:39:59 0 [Note] mysqld: ready for connections.
-Version: '10.5.8-MariaDB-1:10.5.8+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
+Version: '10.5.23-MariaDB-1:10.5.23+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
 ```
 
 `mysqld: ready for connections.` in the log signifies that the database is running successfully.

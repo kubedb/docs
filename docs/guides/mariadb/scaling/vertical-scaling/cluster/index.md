@@ -43,7 +43,7 @@ Here, we are going to deploy a  `MariaDB` cluster using a supported version by `
 
 ### Prepare MariaDB Cluster
 
-Now, we are going to deploy a `MariaDB` cluster database with version `10.5.8`.
+Now, we are going to deploy a `MariaDB` cluster database with version `10.5.23`.
 > Vertical Scaling for `MariaDB Standalone` can be performed in the same way as `MariaDB Cluster`. Only remove the `spec.replicas` field from the below yaml to deploy a MariaDB Standalone.
 
 ### Deploy MariaDB Cluster 
@@ -57,7 +57,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   replicas: 3
   storageType: Durable
   storage:
@@ -82,7 +82,7 @@ Now, wait until `sample-mariadb` has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo
 NAME             VERSION    STATUS     AGE
-sample-mariadb    10.5.8     Ready     3m46s
+sample-mariadb    10.5.23     Ready     3m46s
 ```
 
 Let's check the Pod containers resources,

@@ -56,7 +56,7 @@ topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsum
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install topolvm from [here](https://github.com/topolvm/topolvm).
 
-Now, we are going to deploy a `MariaDB` database of 3 replicas with version `10.5.8`.
+Now, we are going to deploy a `MariaDB` database of 3 replicas with version `10.5.23`.
 
 ### Deploy MariaDB
 
@@ -69,7 +69,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   replicas: 3
   storageType: Durable
   storage:
@@ -95,7 +95,7 @@ Now, wait until `sample-mariadb` has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo
 NAME             VERSION   STATUS   AGE
-sample-mariadb   10.5.8    Ready    5m4s
+sample-mariadb   10.5.23    Ready    5m4s
 ```
 
 Let's check volume size from statefulset, and from the persistent volume,

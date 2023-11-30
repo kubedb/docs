@@ -4,7 +4,7 @@ metadata:
   name: md-cluster-tls
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   replicas: 3
   storageType: Durable
   storage:

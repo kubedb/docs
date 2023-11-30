@@ -54,7 +54,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.8"
+  version: "10.5.23"
   replicas: 3
   storageType: Durable
   storage:
@@ -110,7 +110,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 26
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -141,7 +141,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 341
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -210,8 +210,8 @@ When you install the Stash Enterprise edition, it automatically installs all the
 
 ```bash
 $ kubectl get tasks.stash.appscode.com | grep mariadb
-mariadb-backup-10.5.8    35s
-mariadb-restore-10.5.8   35s
+mariadb-backup-10.5.23    35s
+mariadb-restore-10.5.23   35s
 ```
 
 ### Ensure AppBinding
@@ -225,7 +225,7 @@ You don't need to worry about appbindings if you are using KubeDB. It creates an
 ```bash
 $ kubectl get appbinding -n demo 
 NAME             TYPE                 VERSION   AGE
-sample-mariadb   kubedb.com/mariadb   10.5.8      62m
+sample-mariadb   kubedb.com/mariadb   10.5.23      62m
 ```
 
 We have a appbinding named same as database name `sample-mariadb`. We will use this later for connecting into this database.
@@ -324,7 +324,7 @@ If everything goes well, the phase of the `BackupConfiguration` should be `Ready
 ```bash
 $ kubectl get backupconfiguration -n demo
 NAME                    TASK                    SCHEDULE      PAUSED   PHASE      AGE
-sample-mariadb-backup   mariadb-backup-10.5.8   */5 * * * *            Ready      11s
+sample-mariadb-backup   mariadb-backup-10.5.23   */5 * * * *            Ready      11s
 ```
 
 #### Verify CronJob
@@ -401,7 +401,7 @@ Verify that the `BackupConfiguration` has been paused,
 ```bash
 $ kubectl get backupconfiguration -n demo sample-mariadb-backup
 NAME                   TASK                    SCHEDULE      PAUSED   PHASE   AGE
-sample-mariadb-backup  mariadb-backup-10.5.8   */5 * * * *   true     Ready   26m
+sample-mariadb-backup  mariadb-backup-10.5.23   */5 * * * *   true     Ready   26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the `BackupConfiguration` has been paused.
@@ -423,7 +423,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 341
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -517,7 +517,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 341
-Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -578,7 +578,7 @@ Verify that the `BackupConfiguration` has been resumed,
 ```bash
 $ kubectl get backupconfiguration -n demo sample-mariadb-backup
 NAME                    TASK                    SCHEDULE      PAUSED   PHASE   AGE
-sample-mariadb-backup   mariadb-backup-10.5.8   */5 * * * *   false    Ready   29m
+sample-mariadb-backup   mariadb-backup-10.5.23   */5 * * * *   false    Ready   29m
 ```
 
 Here,  `false` in the `PAUSED` column means the backup has been resume successfully. The CronJob also should be resumed now.

@@ -396,7 +396,7 @@ If everything goes well, Stash should create a `BackupConfiguration` for our Mon
 ```bash
 ❯ kubectl get backupconfiguration -n demo-2
 NAME                   TASK                    SCHEDULE      PAUSED   PHASE   AGE
-app-sample-mongodb-2   mongodb-backup-10.5.8   */3 * * * *            Ready   3m24s
+app-sample-mongodb-2   mongodb-backup-10.5.23   */3 * * * *            Ready   3m24s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -582,7 +582,7 @@ If everything goes well, Stash should create a `BackupConfiguration` for our Mon
 ```bash
 ❯ kubectl get backupconfiguration -n demo-3
 NAME                   TASK                    SCHEDULE      PAUSED   PHASE   AGE
-app-sample-mongodb-3   mongodb-backup-10.5.8   */5 * * * *            Ready   106s
+app-sample-mongodb-3   mongodb-backup-10.5.23   */5 * * * *            Ready   106s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.

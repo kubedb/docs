@@ -54,11 +54,11 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 $ kubectl get mysqlversion
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED   AGE
 5.7.35-v1       5.7.35    Official       mysql:5.7.35                             13d
-5.7.36          5.7.36    Official       mysql:5.7.36                             13d
+5.7.41          5.7.41    Official       mysql:5.7.41                             13d
 8.0.17          8.0.17    Official       mysql:8.0.17                             13d
-8.0.27          8.0.27    Official       mysql:8.0.27                             13d
-8.0.27-innodb   8.0.27    MySQL          mysql/mysql-server:8.0.27                13d
-8.0.29          8.0.29    Official       mysql:8.0.29                             13d
+8.0.32          8.0.32    Official       mysql:8.0.32                             13d
+8.0.32-innodb   8.0.32    MySQL          mysql/mysql-server:8.0.32                13d
+8.0.32          8.0.32    Official       mysql:8.0.32                             13d
 8.0.3-v4        8.0.3     Official       mysql:8.0.3                              13d
 ```
 
@@ -66,10 +66,10 @@ The version above that does not show `DEPRECATED` `true` is supported by `KubeDB
 
 **Check update Constraints:**
 
-Database version update constraints is a constraint that shows whether it is possible or not possible to update from one version to another. Let's check the version update constraints of `MySQL` `5.7.36`,
+Database version update constraints is a constraint that shows whether it is possible or not possible to update from one version to another. Let's check the version update constraints of `MySQL` `5.7.41`,
 
 ```bash
-$ kubectl get mysqlversion 5.7.36 -o yaml | kubectl neat
+$ kubectl get mysqlversion 5.7.41 -o yaml | kubectl neat
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
@@ -84,14 +84,14 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2022.03.28
     helm.sh/chart: kubedb-catalog-v2022.03.28
-  name: 5.7.36
+  name: 5.7.41
   resourceVersion: "1092465"
   uid: 4cc87fc8-efd7-4e69-bb12-4454a2b1bf06
 spec:
   coordinator:
     image: kubedb/mysql-coordinator:v0.5.0
   db:
-    image: mysql:5.7.36
+    image: mysql:5.7.41
   distribution: Official
   exporter:
     image: kubedb/mysqld-exporter:v0.13.1
@@ -110,14 +110,14 @@ spec:
   updateConstraints:
     denylist:
       groupReplication:
-      - < 5.7.36
+      - < 5.7.41
       standalone:
-      - < 5.7.36
-  version: 5.7.36
+      - < 5.7.41
+  version: 5.7.41
 
 ```
 
-The above `spec.updateConstraints.denylist` is showing that updating below version of `5.7.36` is not possible for both standalone and group replication. That means, it is possible to update any version above `5.7.36`. Here, we are going to create a `MySQL` standalone using MySQL  `5.7.36`. Then we are going to update this version to `8.0.29`.
+The above `spec.updateConstraints.denylist` is showing that updating below version of `5.7.41` is not possible for both standalone and group replication. That means, it is possible to update any version above `5.7.41`. Here, we are going to create a `MySQL` standalone using MySQL  `5.7.41`. Then we are going to update this version to `8.0.32`.
 
 **Deploy MySQL standalone:**
 
@@ -130,7 +130,7 @@ metadata:
   name: my-standalone
   namespace: demo
 spec:
-  version: "5.7.36"
+  version: "5.7.41"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -158,7 +158,7 @@ Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and
 $ watch -n 3 kubectl get my -n demo my-standalone
 
 NAME            VERSION      STATUS    AGE
-my-standalone   5.7.36    Running   3m
+my-standalone   5.7.41    Running   3m
 
 $ watch -n 3 kubectl get sts -n demo my-standalone
 
@@ -175,20 +175,20 @@ Let's verify the `MySQL`, the `StatefulSet` and its `Pod` image version,
 
 ```bash
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
-5.7.36
+5.7.41
 
 $ kubectl get sts -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-kubedb/my:5.7.36
+kubedb/my:5.7.41
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-kubedb/my:5.7.36
+kubedb/my:5.7.41
 ```
 
 We are ready to apply updating on this `MySQL` standalone.
 
 #### UpdateVersion
 
-Here, we are going to update `MySQL` standalone from `5.7.36` to `8.0.29`.
+Here, we are going to update `MySQL` standalone from `5.7.41` to `8.0.32`.
 
 **Create MySQLOpsRequest:**
 
@@ -205,14 +205,14 @@ spec:
     name: my-standalone
   type: UpdateVersion
   updateVersion:
-    targetVersion: "8.0.29"
+    targetVersion: "8.0.32"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `8.0.29` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `8.0.32` after updating.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
@@ -256,7 +256,7 @@ Spec:
     Name:  my-standalone
   Type:    UpdateVersion
   UpdateVersion:
-    TargetVersion:  8.0.29
+    TargetVersion:  8.0.32
 Status:
   Conditions:
     Last Transition Time:  2022-06-30T07:55:16Z
@@ -302,13 +302,13 @@ Now, we are going to verify whether the `MySQL`, `StatefulSet` and it's `Pod` ha
 
 ```bash
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
-8.0.29
+8.0.32
 
 $ kubectl get sts -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-mysql:8.0.29
+mysql:8.0.32
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mysql:8.0.29
+mysql:8.0.32
 ```
 
 You can see above that our `MySQL`standalone has been updated with the new version. It verifies that we have successfully updated our standalone.
