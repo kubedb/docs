@@ -5,6 +5,6 @@ menu:
     identifier: guides-mongodb-backup-kubestash
     name: KubeStash Backup & Restore
     parent: guides-mongodb-backup
-    weight: 20
+    weight: 50
 menu_name: docs_{{ .version }}
 ---
