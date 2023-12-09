@@ -38,7 +38,8 @@ Let's install KubeDB operator with monitoring enabled.
 **Helm 3:**
 
 ```bash
-$ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
+$ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
+  --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --no-hooks \
   --set monitoring.enabled=true \
@@ -50,7 +51,8 @@ $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
 **YAML (with Helm 3):**
 
 ```bash
-$ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
+$ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
+  --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --no-hooks \
   --set monitoring.enabled=true \
