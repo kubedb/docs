@@ -109,7 +109,9 @@ On the other hand, `DenyList` contains all the rejected versions for the update 
 ```bash
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --namespace kubedb --create-namespace \
-  --set additionalPodSecurityPolicies[0]=custom-db-policy
+  --set additionalPodSecurityPolicies[0]=custom-db-policy \
+  --set-file global.license=/path/to/the/license.txt \
+  --wait --burst-limit=10000 --debug
 ```
 
 ## Next Steps
