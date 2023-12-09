@@ -75,40 +75,23 @@ If you are willing to purchase KubeDB but need more time to test in your dev clu
 KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install, follow the steps below:
 
 ```bash
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-
-$ helm search repo appscode/kubedb
-NAME                        CHART VERSION APP VERSION DESCRIPTION
-appscode/kubedb                     {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB by AppsCode - Production ready databases...
-appscode/kubedb-autoscaler          {{< param "info.autoscaler" >}}       {{< param "info.autoscaler" >}}     KubeDB Autoscaler by AppsCode - Autoscale KubeD...
-appscode/kubedb-catalog             {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Catalog by AppsCode - Catalog for databa...
-appscode/kubedb-crds                {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Custom Resource Definitions
-appscode/kubedb-dashboard           {{< param "info.dashboard" >}}        {{< param "info.dashboard" >}}      KubeDB Dashboard by AppsCode
-appscode/kubedb-grafana-dashboards  {{< param "info.version" >}}   {{< param "info.version" >}} A Helm chart for kubedb-grafana-dashboards by A...
-appscode/kubedb-metrics             {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB State Metrics
-appscode/kubedb-ops-manager         {{< param "info.ops-manager" >}}       {{< param "info.ops-manager" >}}     KubeDB Ops Manager by AppsCode - Enterprise fea...
-appscode/kubedb-opscenter           {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Opscenter by AppsCode
-appscode/kubedb-provisioner         {{< param "info.provisioner" >}}       {{< param "info.provisioner" >}}     KubeDB Provisioner by AppsCode - Community feat...
-appscode/kubedb-schema-manager      {{< param "info.schema-manager" >}}        {{< param "info.schema-manager" >}}      KubeDB Schema Manager by AppsCode
-appscode/kubedb-ui-server           {{< param "info.ui-server" >}}   {{< param "info.ui-server" >}} A Helm chart for kubedb-ui-server by AppsCode
-appscode/kubedb-webhook-server      {{< param "info.webhook-server" >}}        {{< param "info.webhook-server" >}}      KubeDB Webhook Server by AppsCode
-
-$ helm install kubedb appscode/kubedb \
+$ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
-  --set-file global.license=/path/to/the/license.txt
+  --set-file global.license=/path/to/the/license.txt \
+  --wait --burst-limit=10000 --debug
 ```
 
 {{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
 
 ```
-$ helm install kubedb appscode/kubedb \
+$ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set global.insecureRegistries[0]=hub.example.com \
   --set global.insecureRegistries[1]=hub2.example.com \
-  --set-file global.license=/path/to/the/license.txt
+  --set-file global.license=/path/to/the/license.txt \
+  --wait --burst-limit=10000 --debug
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
@@ -121,26 +104,7 @@ To see the detailed configuration options, visit [here](https://github.com/kubed
 If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and deploy using `kubectl`. Here we are going to show the procedure using Helm 3.
 
 ```bash
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-
-$ helm search repo appscode/kubedb
-NAME                        CHART VERSION APP VERSION DESCRIPTION
-appscode/kubedb                     {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB by AppsCode - Production ready databases...
-appscode/kubedb-autoscaler          {{< param "info.autoscaler" >}}       {{< param "info.autoscaler" >}}     KubeDB Autoscaler by AppsCode - Autoscale KubeD...
-appscode/kubedb-catalog             {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Catalog by AppsCode - Catalog for databa...
-appscode/kubedb-crds                {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Custom Resource Definitions
-appscode/kubedb-dashboard           {{< param "info.dashboard" >}}        {{< param "info.dashboard" >}}      KubeDB Dashboard by AppsCode
-appscode/kubedb-grafana-dashboards  {{< param "info.version" >}}   {{< param "info.version" >}} A Helm chart for kubedb-grafana-dashboards by A...
-appscode/kubedb-metrics             {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB State Metrics
-appscode/kubedb-ops-manager         {{< param "info.ops-manager" >}}       {{< param "info.ops-manager" >}}     KubeDB Ops Manager by AppsCode - Enterprise fea...
-appscode/kubedb-opscenter           {{< param "info.version" >}}   {{< param "info.version" >}} KubeDB Opscenter by AppsCode
-appscode/kubedb-provisioner         {{< param "info.provisioner" >}}       {{< param "info.provisioner" >}}     KubeDB Provisioner by AppsCode - Community feat...
-appscode/kubedb-schema-manager      {{< param "info.schema-manager" >}}        {{< param "info.schema-manager" >}}      KubeDB Schema Manager by AppsCode
-appscode/kubedb-ui-server           {{< param "info.ui-server" >}}   {{< param "info.ui-server" >}} A Helm chart for kubedb-ui-server by AppsCode
-appscode/kubedb-webhook-server      {{< param "info.webhook-server" >}}        {{< param "info.webhook-server" >}}      KubeDB Webhook Server by AppsCode
-
-$ helm template kubedb appscode/kubedb \
+$ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt  \
@@ -150,7 +114,7 @@ $ helm template kubedb appscode/kubedb \
 {{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
 
 ```
-$ helm template kubedb appscode/kubedb \
+$ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt  \
