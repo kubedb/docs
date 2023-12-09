@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # PerconaXtraDB Horizontal Scaling
 
 This guide will give an overview on how KubeDB Enterprise operator scales up or down `PerconaXtraDB Cluster`.

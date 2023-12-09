@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Reprovision MongoDB
 
 KubeDB supports reprovisioning the MongoDB database via a MongoDBOpsRequest. Reprovisioning is useful if you want, for some reason, to deploy a new MongoDB with the same specifications. This tutorial will show you how to use that.

@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Create Database with MySQL Schema Manager
 
 This guide will show you how to create database with MySQL Schema Manager using `KubeDB Enterprise Operator`.

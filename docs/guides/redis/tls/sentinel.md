@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Run Redis with TLS/SSL (Transport Encryption)
 
 KubeDB supports providing TLS/SSL encryption for Redis. This tutorial will show you how to use KubeDB to run a Redis database with TLS/SSL encryption.

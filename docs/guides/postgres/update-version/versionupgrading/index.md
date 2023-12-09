@@ -11,8 +11,6 @@ section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # update version of Postgres
 
 This guide will show you how to use `KubeDB` ops-manager operator to update the version of `Postgres` cr.

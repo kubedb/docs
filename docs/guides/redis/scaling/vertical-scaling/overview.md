@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Redis Vertical Scaling Overview
 
 This guide will give you an overview on how KubeDB Enterprise operator updates the resources(for example CPU and Memory etc.) of the `Redis` database.
