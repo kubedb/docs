@@ -60,7 +60,7 @@ metadata:
   name: mgo-init-script
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -162,7 +162,7 @@ Init:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.2.3"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
 
     Creation Timestamp:  2021-02-11T04:58:42Z
     Labels:
@@ -181,7 +181,7 @@ AppBinding:
     Secret:
       Name:   mgo-init-script-auth
     Type:     kubedb.com/mongodb
-    Version:  4.2.3
+    Version:  4.4.26
 
 Events:
   Type    Reason      Age   From              Message
@@ -221,7 +221,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.2.3"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
   creationTimestamp: "2021-02-10T04:38:52Z"
   finalizers:
     - kubedb.com
@@ -360,7 +360,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   terminationPolicy: Delete
-  version: 4.2.3
+  version: 4.4.26
 status:
   conditions:
     - lastTransitionTime: "2021-02-10T04:38:53Z"

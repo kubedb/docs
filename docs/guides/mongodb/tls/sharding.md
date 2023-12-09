@@ -104,7 +104,7 @@ metadata:
   name: mongo-sh-tls
   namespace: demo
 spec:
-  version: "4.1.13-v1"
+  version: "4.4.26"
   sslMode: requireSSL
   tls:
     issuerRef:
@@ -147,7 +147,7 @@ Now, wait until `mongo-sh-tls created` has status `Ready`. ie,
 $ watch kubectl get mg -n demo
 Every 2.0s: kubectl get mongodb -n demo
 NAME           VERSION     STATUS     AGE
-mongo-sh-tls   4.1.13-v1   Ready      4m24s
+mongo-sh-tls   4.4.26   Ready      4m24s
 ```
 
 ### Verify TLS/SSL in MongoDB Sharding

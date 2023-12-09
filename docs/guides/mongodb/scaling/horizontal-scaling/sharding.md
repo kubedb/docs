@@ -45,7 +45,7 @@ Here, we are going to deploy a  `MongoDB` sharded database using a supported ver
 
 ### Prepare MongoDB Sharded Database
 
-Now, we are going to deploy a `MongoDB` sharded database with version `4.2.3`.
+Now, we are going to deploy a `MongoDB` sharded database with version `4.4.26`.
 
 ### Deploy MongoDB Sharded Database 
 
@@ -58,7 +58,7 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 4.2.3
+  version: 4.4.26
   shardTopology:
     configServer:
       replicas: 3
@@ -91,7 +91,7 @@ Now, wait until `mg-sharding` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo                                                            
 NAME          VERSION    STATUS    AGE
-mg-sharding   4.2.3      Ready     10m
+mg-sharding   4.4.26      Ready     10m
 ```
 
 ##### Verify Number of Shard and Shard Replicas
@@ -150,7 +150,7 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMF
         {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.2.3" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:
@@ -381,7 +381,7 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMF
         {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.2.3" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:
@@ -619,7 +619,7 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMF
         {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-3.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard2",  "host" : "shard2/mg-sharding-shard2-0.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-1.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-2.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-3.mg-sharding-shard2-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.2.3" : 3
+        "4.4.26" : 3
   autosplit:
         Currently enabled: yes
   balancer:
@@ -914,7 +914,7 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMF
         {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-3.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard2",  "host" : "shard2/mg-sharding-shard2-0.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-1.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-2.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-3.mg-sharding-shard2-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.2.3" : 3
+        "4.4.26" : 3
   autosplit:
         Currently enabled: yes
   balancer:
@@ -1160,7 +1160,7 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMF
         {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.2.3" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:
@@ -1402,7 +1402,7 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMF
         {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.2.3" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:

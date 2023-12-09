@@ -44,7 +44,7 @@ Here, we are going to deploy a  `MongoDB` standalone using a supported version b
 
 ### Prepare MongoDB Standalone Database
 
-Now, we are going to deploy a `MongoDB` standalone database with version `4.2.3`.
+Now, we are going to deploy a `MongoDB` standalone database with version `4.4.26`.
 
 ### Deploy MongoDB standalone 
 
@@ -57,7 +57,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -80,7 +80,7 @@ Now, wait until `mg-standalone` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo
 NAME            VERSION    STATUS    AGE
-mg-standalone   4.2.3      Ready     5m56s
+mg-standalone   4.4.26      Ready     5m56s
 ```
 
 Let's check the Pod containers resources,

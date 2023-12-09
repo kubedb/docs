@@ -4,7 +4,7 @@ metadata:
   name: sample-es
   namespace: demo
 spec:
-  version: xpack-7.9.1-v1
+  version: xpack-8.11.1
   storageType: Durable
   topology:
     master:

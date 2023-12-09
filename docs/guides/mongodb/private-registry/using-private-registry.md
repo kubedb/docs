@@ -32,15 +32,15 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   3.4.17-v1        3.4.17    kubedb/mongodb-init:4.1-v7     mongo:3.4.17                             kubedb/mongodb_exporter:v0.20.4
   3.4.22-v1        3.4.22    kubedb/mongodb-init:4.1-v7     mongo:3.4.22                             kubedb/mongodb_exporter:v0.32.0
   3.6.13-v1        3.6.13    kubedb/mongodb-init:4.1-v7     mongo:3.6.13                             kubedb/mongodb_exporter:v0.32.0
-  3.6.8-v1         3.6.8     kubedb/mongodb-init:4.1-v7     mongo:3.6.8                              kubedb/mongodb_exporter:v0.32.0
+  4.4.26         3.6.8     kubedb/mongodb-init:4.1-v7     mongo:3.6.8                              kubedb/mongodb_exporter:v0.32.0
   4.0.11-v1        4.0.11    kubedb/mongodb-init:4.1-v7     mongo:4.0.11                             kubedb/mongodb_exporter:v0.32.0
   4.0.3-v1         4.0.3     kubedb/mongodb-init:4.1-v7     mongo:4.0.3                              kubedb/mongodb_exporter:v0.32.0
-  4.0.5-v3         4.0.5     kubedb/mongodb-init:4.1-v7     mongo:4.0.5                              kubedb/mongodb_exporter:v0.32.0
-  4.1.13-v1        4.1.13    kubedb/mongodb-init:4.2-v7     mongo:4.1.13                             kubedb/mongodb_exporter:v0.32.0
+  4.4.26         4.0.5     kubedb/mongodb-init:4.1-v7     mongo:4.0.5                              kubedb/mongodb_exporter:v0.32.0
+  4.4.26        4.1.13    kubedb/mongodb-init:4.2-v7     mongo:4.1.13                             kubedb/mongodb_exporter:v0.32.0
   4.1.4-v1         4.1.4     kubedb/mongodb-init:4.1.4-v7   mongo:4.1.4                              kubedb/mongodb_exporter:v0.32.0
   4.1.7-v3         4.1.7     kubedb/mongodb-init:4.2-v7     mongo:4.1.7                              kubedb/mongodb_exporter:v0.32.0
-  4.2.3            4.2.3     kubedb/mongodb-init:4.2-v7     mongo:4.2.3                              kubedb/mongodb_exporter:v0.32.0
-  4.4.6            4.4.6     kubedb/mongodb-init:4.2-v7     mongo:4.4.6                              kubedb/mongodb_exporter:v0.32.0
+  4.4.26            4.4.26     kubedb/mongodb-init:4.2-v7     mongo:4.4.26                              kubedb/mongodb_exporter:v0.32.0
+  4.4.26            4.4.26     kubedb/mongodb-init:4.2-v7     mongo:4.4.26                              kubedb/mongodb_exporter:v0.32.0
   5.0.2            5.0.2     kubedb/mongodb-init:4.2-v7     mongo:5.0.2                              kubedb/mongodb_exporter:v0.32.0
   5.0.3            5.0.3     kubedb/mongodb-init:4.2-v7     mongo:5.0.3                              kubedb/mongodb_exporter:v0.32.0
   percona-3.6.18   3.6.18    kubedb/mongodb-init:4.1-v7     percona/percona-server-mongodb:3.6.18    kubedb/mongodb_exporter:v0.32.0
@@ -71,13 +71,13 @@ Follow the steps [install KubeDB operator](/docs/setup/README.md) properly. The 
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MongoDBVersion
 metadata:
-  name: "4.2.3"
+  name: "4.4.26"
   labels:
     app: kubedb
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   db:
-    image: "PRIVATE_DOCKER_REGISTRY/mongo:4.2.3"
+    image: "PRIVATE_DOCKER_REGISTRY/mongo:4.4.26"
   exporter:
     image: "PRIVATE_DOCKER_REGISTRY/percona-mongodb-exporter:v0.8.0"
   initContainer:
@@ -130,7 +130,7 @@ metadata:
   name: mgo-pvt-reg
   namespace: demo
 spec:
-  version: 4.2.3
+  version: 4.4.26
   storage:
     storageClassName: "standard"
     accessModes:
@@ -161,7 +161,7 @@ mgo-pvt-reg-0   1/1       Running             0          5m
 
 $ kubectl get mg -n demo
 NAME          VERSION   STATUS    AGE
-mgo-pvt-reg   4.2.3     Ready     38s
+mgo-pvt-reg   4.4.26     Ready     38s
 ```
 
 ## Cleaning up

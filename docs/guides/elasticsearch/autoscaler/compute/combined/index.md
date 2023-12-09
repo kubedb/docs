@@ -47,7 +47,7 @@ Here, we are going to deploy an `Elasticsearch` in combined cluster mode using a
 
 ### Deploy Elasticsearch standalone
 
-In this section, we are going to deploy an Elasticsearch combined cluster with ElasticsearchVersion `searchguard-7.9.3`.  Then, in the next section, we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy an Elasticsearch combined cluster with ElasticsearchVersion `xpack-8.11.1`.  Then, in the next section, we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -57,7 +57,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true
-  version: xpack-8.2.0
+  version: xpack-8.2.3
   storageType: Durable
   replicas: 3
   storage:
@@ -90,11 +90,11 @@ Now, wait until `es-combined` has status `Ready`. i.e,
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION       STATUS         AGE
-es-combined   xpack-8.2.0   Provisioning   4s
-es-combined   xpack-8.2.0   Provisioning   7s
+es-combined   xpack-8.2.3   Provisioning   4s
+es-combined   xpack-8.2.3   Provisioning   7s
 ....
 ....
-es-combined   xpack-8.2.0   Ready          60s
+es-combined   xpack-8.2.3   Ready          60s
 
 ```
 

@@ -56,7 +56,7 @@ standard (default)   kubernetes.io/gce-pd   Delete          Immediate           
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `MongoDB` standalone database with version `4.2.3`.
+Now, we are going to deploy a `MongoDB` standalone database with version `4.4.26`.
 
 #### Deploy MongoDB standalone
 
@@ -69,7 +69,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -92,7 +92,7 @@ Now, wait until `mg-standalone` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo
 NAME            VERSION    STATUS    AGE
-mg-standalone   4.2.3      Ready     2m53s
+mg-standalone   4.4.26      Ready     2m53s
 ```
 
 Let's check volume size from statefulset, and from the persistent volume,

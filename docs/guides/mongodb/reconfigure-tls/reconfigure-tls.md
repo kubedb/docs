@@ -50,7 +50,7 @@ metadata:
   name: mg-rs
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   replicas: 3
   replicaSet:
     name: rs0
@@ -75,7 +75,7 @@ Now, wait until `mg-replicaset` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo
 NAME    VERSION    STATUS    AGE
-mg-rs   4.2.3      Ready     10m
+mg-rs   4.4.26      Ready     10m
 
 $ kubectl dba describe mongodb mg-rs -n demo
 Name:               mg-rs
@@ -146,7 +146,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.2.3"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
 
     Creation Timestamp:  2021-03-11T07:26:44Z
     Labels:
@@ -170,13 +170,13 @@ AppBinding:
       Stash:
         Addon:
           Backup Task:
-            Name:  mongodb-backup-4.2.3-v6
+            Name:  mongodb-backup-4.4.6-v6
           Restore Task:
-            Name:  mongodb-restore-4.2.3-v6
+            Name:  mongodb-restore-4.4.6-v6
     Secret:
       Name:   mg-rs-auth
     Type:     kubedb.com/mongodb
-    Version:  4.2.3
+    Version:  4.4.26
 
 Events:
   Type    Reason      Age   From              Message

@@ -60,7 +60,7 @@ Now, we are going to deploy a `Elasticsearch` topology cluster using a supported
 
 #### Deploy Elasticsearch Topology
 
-In this section, we are going to deploy a Elasticsearch topology cluster with version `searchguard-7.9.3`.  Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy a Elasticsearch topology cluster with version `xpack-8.11.1`.  Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -70,7 +70,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: searchguard-7.9.3
+  version: xpack-8.11.1
   storageType: Durable
   topology:
     master:
@@ -118,8 +118,8 @@ Now, wait until `es-topology` has status `Ready`. i.e,
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION             STATUS         AGE
-es-topology   searchguard-7.9.3   Provisioning   12s
-es-topology   searchguard-7.9.3   Ready          1m50s
+es-topology   xpack-8.11.1   Provisioning   12s
+es-topology   xpack-8.11.1   Ready          1m50s
 ```
 
 Let's check volume size from the data statefulset, and from the persistent volume,

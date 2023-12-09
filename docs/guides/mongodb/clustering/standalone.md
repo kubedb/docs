@@ -46,7 +46,7 @@ metadata:
   name: mg-alone
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   podTemplate:
     spec:
       resources:
@@ -143,7 +143,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.2.3"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.4.26"}}
 
     Creation Timestamp:  2022-11-04T04:30:14Z
     Labels:
@@ -165,13 +165,13 @@ AppBinding:
       Stash:
         Addon:
           Backup Task:
-            Name:  mongodb-backup-4.2.3
+            Name:  mongodb-backup-4.4.6
           Restore Task:
-            Name:  mongodb-restore-4.2.3
+            Name:  mongodb-restore-4.4.6
     Secret:
       Name:   mg-alone-auth
     Type:     kubedb.com/mongodb
-    Version:  4.2.3
+    Version:  4.4.26
 
 Events:
   Type    Reason        Age   From              Message
@@ -217,7 +217,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.2.3"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-11-04T04:30:07Z"
   finalizers:
     - kubedb.com
@@ -309,7 +309,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   terminationPolicy: WipeOut
-  version: 4.2.3
+  version: 4.4.26
 status:
   conditions:
     - lastTransitionTime: "2022-11-04T04:30:07Z"
@@ -365,9 +365,9 @@ $ kubectl get secrets -n demo mg-alone-auth -o jsonpath='{.data.\password}' | ba
 $ kubectl exec -it mg-alone-0 -n demo bash
 
 mongodb@mg-alone-0:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
-MongoDB shell version v4.2.3
+MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
-MongoDB server version: 4.2.3
+MongoDB server version: 4.4.26
 Welcome to the MongoDB shell.
 
 > rs.isMaster()
@@ -455,7 +455,7 @@ Now, you can run the following command to get all mongodb resources in demo name
 ```bash
 $ kubectl get mg,sts,svc,secret,pvc -n demo
 NAME                          VERSION   STATUS   AGE
-mongodb.kubedb.com/mg-alone   4.2.3     Halted   2m4s
+mongodb.kubedb.com/mg-alone   4.4.26     Halted   2m4s
 
 NAME                   TYPE                       DATA   AGE
 secret/mg-alone-auth   kubernetes.io/basic-auth   2      2m4s
@@ -481,7 +481,7 @@ When the database is resumed successfully, you can see the database Status is se
 ```bash
 $ kubectl get mg -n demo
 NAME             VERSION   STATUS    AGE
-mg-alone   4.2.3     Ready     6m27s
+mg-alone   4.4.26     Ready     6m27s
 ```
 
 Now, If you again exec into the primary `pod` and look for previous data, you will see that, all the data persists.

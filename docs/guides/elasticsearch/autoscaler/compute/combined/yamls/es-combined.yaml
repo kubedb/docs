@@ -5,7 +5,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true
-  version: xpack-8.2.0
+  version: xpack-8.2.3
   storageType: Durable
   replicas: 3
   storage:

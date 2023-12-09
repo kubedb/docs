@@ -104,7 +104,7 @@ metadata:
   name: mgo-tls
   namespace: demo
 spec:
-  version: "4.1.13-v1"
+  version: "4.4.26"
   sslMode: requireSSL
   tls:
     issuerRef:
@@ -133,7 +133,7 @@ Now, wait until `mgo-tls created` has status `Ready`. i.e,
 $ watch kubectl get mg -n demo
 Every 2.0s: kubectl get mongodb -n demo
 NAME      VERSION     STATUS     AGE
-mgo-tls   4.1.13-v1   Ready      14s
+mgo-tls   4.4.26   Ready      14s
 ```
 
 ### Verify TLS/SSL in MongoDB Standalone

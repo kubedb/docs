@@ -4,7 +4,7 @@ metadata:
   name: sample-opensearch
   namespace: demo
 spec:
-  version: opensearch-1.2.2
+  version: opensearch-2.8.0
   enableSSL: true
   replicas: 3
   storageType: Durable

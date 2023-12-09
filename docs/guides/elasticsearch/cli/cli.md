@@ -84,7 +84,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Halt
-  version: searchguard-7.9.3
+  version: xpack-8.11.1
 status:
   observedGeneration: 3$4212299729528774793
   phase: Running

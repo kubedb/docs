@@ -45,7 +45,7 @@ Here, we are going to deploy a  `MongoDB` replicaset using a supported version b
 
 ### Prepare MongoDB Replicaset Database
 
-Now, we are going to deploy a `MongoDB` replicaset database with version `4.2.3`.
+Now, we are going to deploy a `MongoDB` replicaset database with version `4.4.26`.
 
 ### Deploy MongoDB replicaset 
 
@@ -58,7 +58,7 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   replicaSet: 
     name: "replicaset"
   replicas: 3
@@ -84,7 +84,7 @@ Now, wait until `mg-replicaset` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo
 NAME            VERSION    STATUS    AGE
-mg-replicaset   4.2.3      Ready     3m46s
+mg-replicaset   4.4.26      Ready     3m46s
 ```
 
 Let's check the Pod containers resources,

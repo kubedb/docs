@@ -54,7 +54,7 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "3.6.8-v1"
+  version: "4.4.26"
   replicaSet: 
     name: "replicaset"
   replicas: 3
@@ -80,7 +80,7 @@ Now, wait until `mg-replicaset` created has status `Ready`. i.e,
 ```bash
 $ k get mongodb -n demo                                                                                                                                             
 NAME            VERSION    STATUS    AGE
-mg-replicaset   3.6.8-v1   Ready     109s
+mg-replicaset   4.4.26   Ready     109s
 ```
 
 We are now ready to apply the `MongoDBOpsRequest` CR to update this database.
@@ -104,7 +104,7 @@ spec:
   databaseRef:
     name: mg-replicaset
   updateVersion:
-    targetVersion: 4.0.5-v3
+    targetVersion: 4.4.26
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10
@@ -200,7 +200,7 @@ Spec:
   Timeout:                          5m
   Type:                             UpdateVersion
   UpdateVersion:
-    Target Version:  4.0.5-v3
+    Target Version:  4.4.26
 Status:
   Conditions:
     Last Transition Time:  2022-10-26T10:21:20Z
@@ -246,7 +246,7 @@ Now, we are going to verify whether the `MongoDB` and the related `StatefulSets`
 
 ```bash
 $ kubectl get mg -n demo mg-replicaset -o=jsonpath='{.spec.version}{"\n"}'
-4.0.5-v3
+4.4.26
 
 $ kubectl get sts -n demo mg-replicaset -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 mongo:4.0.5

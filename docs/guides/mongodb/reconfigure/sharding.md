@@ -43,7 +43,7 @@ Now, we are going to deploy a  `MongoDB` sharded database using a supported vers
 
 ### Prepare MongoDB Shard
 
-Now, we are going to deploy a `MongoDB` sharded database with version `4.2.3`.
+Now, we are going to deploy a `MongoDB` sharded database with version `4.4.26`.
 
 ### Deploy MongoDB database 
 
@@ -72,7 +72,7 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 4.2.3
+  version: 4.4.26
   shardTopology:
     configServer:
       replicas: 3
@@ -111,7 +111,7 @@ Now, wait until `mg-sharding` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo
 NAME          VERSION    STATUS    AGE
-mg-sharding   4.2.3      Ready     3m23s
+mg-sharding   4.4.26      Ready     3m23s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.

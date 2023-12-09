@@ -54,7 +54,7 @@ metadata:
   name: sample-es
   namespace: demo
 spec:
-  version: xpack-7.9.1-v1
+  version: xpack-8.11.1
   storageType: Durable
   topology:
     master:
@@ -101,8 +101,8 @@ KubeDB will create the necessary resources to deploy the Elasticsearch database 
 ```console
 ❯ kubectl get elasticsearch -n demo -w
 NAME        VERSION          STATUS         AGE
-sample-es   xpack-7.9.1-v1   Provisioning   89s
-sample-es   xpack-7.9.1-v1   Ready          5m26s
+sample-es   xpack-8.11.1   Provisioning   89s
+sample-es   xpack-8.11.1   Ready          5m26s
 ```
 
 The database is in `Ready` state. It means the database is ready to accept connections.
@@ -834,7 +834,7 @@ metadata:
   name: init-sample
   namespace: restored
 spec:
-  version: opendistro-1.11.0
+  version: opensearch-2.8.0
   storageType: Durable
   init:
     waitForInitialRestore: true

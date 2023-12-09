@@ -4,7 +4,7 @@ metadata:
   name: builtin-prom-mgo
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"

@@ -62,7 +62,7 @@ Now, we are going to deploy a `MongoDB` sharded database using a supported versi
 
 #### Deploy MongoDB Sharded Database
 
-In this section, we are going to deploy a MongoDB sharded database with version `4.2.3`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to deploy a MongoDB sharded database with version `4.4.26`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -71,7 +71,7 @@ metadata:
   name: mg-sh
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   storageType: Durable
   shardTopology:
     configServer:
@@ -106,7 +106,7 @@ Now, wait until `mg-sh` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo
 NAME      VERSION    STATUS    AGE
-mg-sh     4.2.3      Ready     3m51s
+mg-sh     4.4.26      Ready     3m51s
 ```
 
 Let's check volume size from one of the shard statefulset, and from the persistent volume,

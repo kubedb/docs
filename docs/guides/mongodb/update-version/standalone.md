@@ -53,7 +53,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "3.6.8-v1"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -76,7 +76,7 @@ Now, wait until `mg-standalone` created has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo
   NAME            VERSION    STATUS    AGE
-  mg-standalone   3.6.8-v1   Ready     8m58s
+  mg-standalone   4.4.26   Ready     8m58s
 ```
 
 We are now ready to apply the `MongoDBOpsRequest` CR to update this database.
@@ -100,7 +100,7 @@ spec:
   databaseRef:
     name: mg-standalone
   updateVersion:
-    targetVersion: 4.0.5-v3
+    targetVersion: 4.4.26
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10
@@ -197,7 +197,7 @@ Spec:
   Timeout:                          5m
   Type:                             UpdateVersion
   UpdateVersion:
-    Target Version:  4.0.5-v3
+    Target Version:  4.4.26
 Status:
   Conditions:
     Last Transition Time:  2022-10-26T10:07:10Z
@@ -244,7 +244,7 @@ Now, we are going to verify whether the `MongoDB` and the related `StatefulSets`
 
 ```bash
 $ kubectl get mg -n demo mg-standalone -o=jsonpath='{.spec.version}{"\n"}'                                                                                          
-4.0.5-v3
+4.4.26
 
 $ kubectl get sts -n demo mg-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
 mongo:4.0.5

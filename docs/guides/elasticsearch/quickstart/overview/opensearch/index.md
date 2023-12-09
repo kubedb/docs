@@ -63,16 +63,16 @@ $ kubectl get elasticsearchversions
 NAME                   VERSION   DISTRIBUTION   DB_IMAGE                                          DEPRECATED   AGE
 kubedb-xpack-7.12.0    7.12.0    KubeDB         kubedb/elasticsearch:7.12.0-xpack-v2021.08.23                  17h
 kubedb-xpack-7.13.2    7.13.2    KubeDB         kubedb/elasticsearch:7.13.2-xpack-v2021.08.23                  17h
-kubedb-xpack-7.14.0    7.14.0    KubeDB         kubedb/elasticsearch:7.14.0-xpack-v2021.08.23                  17h
-kubedb-xpack-7.16.2    7.16.2    KubeDB         kubedb/elasticsearch:7.16.2-xpack-v2021.12.24                  17h
+xpack-8.11.1    7.14.0    KubeDB         kubedb/elasticsearch:7.14.0-xpack-v2021.08.23                  17h
+kubedb-xpack-8.11.1    7.16.2    KubeDB         kubedb/elasticsearch:7.16.2-xpack-v2021.12.24                  17h
 kubedb-xpack-7.9.1     7.9.1     KubeDB         kubedb/elasticsearch:7.9.1-xpack-v2021.08.23                   17h
 opendistro-1.0.2       7.0.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.0.2                      17h
 opendistro-1.0.2-v1    7.0.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.0.2                      17h
 opendistro-1.1.0       7.1.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.1.0                      17h
 opendistro-1.1.0-v1    7.1.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.1.0                      17h
 opendistro-1.10.1      7.9.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.10.1                     17h
-opendistro-1.11.0      7.9.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.10.1                     17h
-opendistro-1.12.0      7.10.0    OpenDistro     amazon/opendistro-for-elasticsearch:1.12.0                     17h
+opensearch-2.8.0      7.9.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.10.1                     17h
+opensearch-2.8.0      7.10.0    OpenDistro     amazon/opendistro-for-elasticsearch:1.12.0                     17h
 opendistro-1.13.2      7.10.2    OpenDistro     amazon/opendistro-for-elasticsearch:1.13.2                     17h
 opendistro-1.2.1       7.2.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.2.1                      17h
 opendistro-1.2.1-v1    7.2.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.2.1                      17h
@@ -89,7 +89,7 @@ opendistro-1.8.0-v1    7.7.0     OpenDistro     amazon/opendistro-for-elasticsea
 opendistro-1.9.0       7.8.0     OpenDistro     amazon/opendistro-for-elasticsearch:1.9.0                      17h
 opendistro-1.9.0-v1    7.8.0     OpenDistro     amazon/opendistro-for-elasticsearch:1.9.0                      17h
 opensearch-1.1.0       1.1.0     OpenSearch     opensearchproject/opensearch:1.1.0                             17h
-opensearch-1.2.2       1.2.2     OpenSearch     opensearchproject/opensearch:1.2.2                             17h
+opensearch-2.8.0       1.2.2     OpenSearch     opensearchproject/opensearch:1.2.2                             17h
 searchguard-6.8.1      6.8.1     SearchGuard    floragunncom/sg-elasticsearch:6.8.1-oss-25.1                   17h
 searchguard-6.8.1-v1   6.8.1     SearchGuard    floragunncom/sg-elasticsearch:6.8.1-oss-25.1                   17h
 searchguard-7.0.1      7.0.1     SearchGuard    floragunncom/sg-elasticsearch:7.0.1-oss-35.0.0                 17h
@@ -97,12 +97,12 @@ searchguard-7.0.1-v1   7.0.1     SearchGuard    floragunncom/sg-elasticsearch:7.
 searchguard-7.1.1      7.1.1     SearchGuard    floragunncom/sg-elasticsearch:7.1.1-oss-35.0.0                 17h
 searchguard-7.1.1-v1   7.1.1     SearchGuard    floragunncom/sg-elasticsearch:7.1.1-oss-35.0.0                 17h
 searchguard-7.10.2     7.10.2    SearchGuard    floragunncom/sg-elasticsearch:7.10.2-oss-49.0.0                17h
-searchguard-7.14.2     7.14.2    SearchGuard    floragunncom/sg-elasticsearch:7.14.2-52.3.0                    17h
+xpack-8.11.1     7.14.2    SearchGuard    floragunncom/sg-elasticsearch:7.14.2-52.3.0                    17h
 searchguard-7.3.2      7.3.2     SearchGuard    floragunncom/sg-elasticsearch:7.3.2-oss-37.0.0                 17h
 searchguard-7.5.2      7.5.2     SearchGuard    floragunncom/sg-elasticsearch:7.5.2-oss-40.0.0                 17h
-searchguard-7.5.2-v1   7.5.2     SearchGuard    floragunncom/sg-elasticsearch:7.5.2-oss-40.0.0                 17h
+xpack-8.11.1   7.5.2     SearchGuard    floragunncom/sg-elasticsearch:7.5.2-oss-40.0.0                 17h
 searchguard-7.8.1      7.8.1     SearchGuard    floragunncom/sg-elasticsearch:7.8.1-oss-43.0.0                 17h
-searchguard-7.9.3      7.9.3     SearchGuard    floragunncom/sg-elasticsearch:7.9.3-oss-47.1.0                 17h
+xpack-8.11.1      7.9.3     SearchGuard    floragunncom/sg-elasticsearch:7.9.3-oss-47.1.0                 17h
 xpack-6.8.10-v1        6.8.10    ElasticStack   elasticsearch:6.8.10                                           17h
 xpack-6.8.16           6.8.16    ElasticStack   elasticsearch:6.8.16                                           17h
 xpack-6.8.22           6.8.22    ElasticStack   elasticsearch:6.8.22                                           17h
@@ -111,8 +111,8 @@ xpack-7.1.1-v1         7.1.1     ElasticStack   elasticsearch:7.1.1             
 xpack-7.12.0           7.12.0    ElasticStack   elasticsearch:7.12.0                                           17h
 xpack-7.12.0-v1        7.12.0    ElasticStack   elasticsearch:7.12.0                                           17h
 xpack-7.13.2           7.13.2    ElasticStack   elasticsearch:7.13.2                                           17h
-xpack-7.14.0           7.14.0    ElasticStack   elasticsearch:7.14.0                                           17h
-xpack-7.16.2           7.16.2    ElasticStack   elasticsearch:7.16.2                                           17h
+xpack-8.11.1           7.14.0    ElasticStack   elasticsearch:7.14.0                                           17h
+xpack-8.11.1           7.16.2    ElasticStack   elasticsearch:7.16.2                                           17h
 xpack-7.2.1-v1         7.2.1     ElasticStack   elasticsearch:7.2.1                                            17h
 xpack-7.3.2-v1         7.3.2     ElasticStack   elasticsearch:7.3.2                                            17h
 xpack-7.4.2-v1         7.4.2     ElasticStack   elasticsearch:7.4.2                                            17h
@@ -120,15 +120,15 @@ xpack-7.5.2-v1         7.5.2     ElasticStack   elasticsearch:7.5.2             
 xpack-7.6.2-v1         7.6.2     ElasticStack   elasticsearch:7.6.2                                            17h
 xpack-7.7.1-v1         7.7.1     ElasticStack   elasticsearch:7.7.1                                            17h
 xpack-7.8.0-v1         7.8.0     ElasticStack   elasticsearch:7.8.0                                            17h
-xpack-7.9.1-v1         7.9.1     ElasticStack   elasticsearch:7.9.1                                            17h
+xpack-8.11.1         7.9.1     ElasticStack   elasticsearch:7.9.1                                            17h
 xpack-7.9.1-v2         7.9.1     ElasticStack   elasticsearch:7.9.1                                            17h
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
-In this tutorial, we will use `opensearch-1.2.2` ElasticsearchVersion CR to create an OpenSearch cluster.
+In this tutorial, we will use `opensearch-2.8.0` ElasticsearchVersion CR to create an OpenSearch cluster.
 
-> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, we are using `opensearch-1.2.2` over `opensearch-1.1.0`.
+> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, we are using `opensearch-2.8.0` over `opensearch-1.1.0`.
 
 ## Create an OpenSearch Cluster
 
@@ -143,7 +143,7 @@ metadata:
   name: sample-opensearch
   namespace: demo
 spec:
-  version: opensearch-1.2.2
+  version: opensearch-2.8.0
   enableSSL: true
   replicas: 3
   storageType: Durable
@@ -159,7 +159,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using `opensearch-1.2.2` version.
+- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using `opensearch-2.8.0` version.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.replicas` - specifies the number of OpenSearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for OpenSearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the OpenSearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
@@ -180,11 +180,11 @@ Wait for few minutes until the `STATUS` will go from `Provisioning` to `Ready`. 
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME                VERSION            STATUS         AGE
-sample-opensearch   opensearch-1.2.2   Provisioning   49s
+sample-opensearch   opensearch-2.8.0   Provisioning   49s
 ... ...
 $ kubectl get elasticsearch -n demo -w
 NAME                VERSION            STATUS   AGE
-sample-opensearch   opensearch-1.2.2   Ready    5m4s
+sample-opensearch   opensearch-2.8.0   Ready    5m4s
 ```
 
 Describe the object to observe the progress if something goes wrong or the status is not changing for a long period of time:
@@ -317,7 +317,7 @@ Spec:
       Subject:
         Organizations:
           kubedb
-  Version:  opensearch-1.2.2
+  Version:  opensearch-2.8.0
 Status:
   Conditions:
     Last Transition Time:  2022-02-15T07:00:21Z

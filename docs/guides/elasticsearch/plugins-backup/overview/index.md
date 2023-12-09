@@ -35,7 +35,7 @@ $ kubectl get elasticsearchversions
 NAME                   VERSION   DISTRIBUTION   DB_IMAGE                                          DEPRECATED   AGE
 kubedb-xpack-7.12.0    7.12.0    KubeDB         kubedb/elasticsearch:7.12.0-xpack-v2021.08.23                  4h44m
 kubedb-xpack-7.13.2    7.13.2    KubeDB         kubedb/elasticsearch:7.13.2-xpack-v2021.08.23                  4h44m
-kubedb-xpack-7.14.0    7.14.0    KubeDB         kubedb/elasticsearch:7.14.0-xpack-v2021.08.23                  4h44m
+xpack-8.11.1    7.14.0    KubeDB         kubedb/elasticsearch:7.14.0-xpack-v2021.08.23                  4h44m
 kubedb-xpack-7.9.1     7.9.1     KubeDB         kubedb/elasticsearch:7.9.1-xpack-v2021.08.23                   4h44m
 ```
 

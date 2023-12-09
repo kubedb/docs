@@ -44,7 +44,7 @@ metadata:
   name: mongo
   namespace: demo
 spec:
-  version: "4.4.6"
+  version: "4.4.26"
   replicaSet:
     name: "replicaset"
   podTemplate:
