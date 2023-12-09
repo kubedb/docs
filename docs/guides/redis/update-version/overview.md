@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Updating Redis version Overview
 
-This guide will give you an overview on how KubeDB Enterprise operator update the version of `Redis` database.
+This guide will give you an overview on how KubeDB Ops Manager update the version of `Redis` database.
 
 ## Before You Begin
 
@@ -25,7 +25,7 @@ This guide will give you an overview on how KubeDB Enterprise operator update th
 
 ## How Update Version Process Works
 
-The following diagram shows how KubeDB Enterprise operator used to update the version of `Redis`. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager used to update the version of `Redis`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Update Version Process of Redis" src="/docs/images/day-2-operation/redis/rd-updating.svg">

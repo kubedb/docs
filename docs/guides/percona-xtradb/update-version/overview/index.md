@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # updating PerconaXtraDB version Overview
 
-This guide will give you an overview on how KubeDB Enterprise operator update the version of `PerconaXtraDB` database.
+This guide will give you an overview on how KubeDB Ops Manager update the version of `PerconaXtraDB` database.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ This guide will give you an overview on how KubeDB Enterprise operator update th
 
 ## How update Process Works
 
-The following diagram shows how KubeDB Enterprise operator used to update the version of `PerconaXtraDB`. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager used to update the version of `PerconaXtraDB`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="updating Process of PerconaXtraDB" src="/docs/guides/percona-xtradb/update-version/overview/images/pxops-update.jpeg">

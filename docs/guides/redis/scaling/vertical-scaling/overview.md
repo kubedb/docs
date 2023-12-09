@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Redis Vertical Scaling Overview
 
-This guide will give you an overview on how KubeDB Enterprise operator updates the resources(for example CPU and Memory etc.) of the `Redis` database.
+This guide will give you an overview on how KubeDB Ops Manager updates the resources(for example CPU and Memory etc.) of the `Redis` database.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ This guide will give you an overview on how KubeDB Enterprise operator updates t
 
 ## How Vertical Scaling Process Works
 
-The following diagram shows how KubeDB Enterprise operator updates the resources of the `Redis` database. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager updates the resources of the `Redis` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Vertical scaling process of Redis" src="/docs/images/day-2-operation/redis/rd-vertical_scaling.svg">

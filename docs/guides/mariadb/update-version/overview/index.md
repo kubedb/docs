@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # updating MariaDB version Overview
 
-This guide will give you an overview on how KubeDB Enterprise operator update the version of `MariaDB` database.
+This guide will give you an overview on how KubeDB Ops Manager update the version of `MariaDB` database.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ This guide will give you an overview on how KubeDB Enterprise operator update th
 
 ## How update version Process Works
 
-The following diagram shows how KubeDB Enterprise operator used to update the version of `MariaDB`. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager used to update the version of `MariaDB`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="updating Process of MariaDB" src="/docs/guides/mariadb/update-version/overview/images/mdops-update.jpeg">

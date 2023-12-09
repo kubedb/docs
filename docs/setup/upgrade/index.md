@@ -14,7 +14,7 @@ section_menu_id: setup
 
 # Upgrading KubeDB
 
-This guide will show you how to upgrade various KubeDB components. Here, we are going to show how to upgrade from an old KubeDB version to the new version, how to migrate between the enterprise edition and community edition, and how to update the license, etc.
+This guide will show you how to upgrade various KubeDB components. Here, we are going to show how to upgrade from an old KubeDB version to the new version, and how to update the license, etc.
 
 ## Upgrading KubeDB from `v2021.xx.xx` to `{{< param "info.version" >}}`
 
@@ -35,46 +35,18 @@ kubectl apply -f https://github.com/kubedb/installer/raw/{{< param "info.version
 Now, upgrade the KubeDB helm chart using the following command. You can find the latest installation guide [here](/docs/setup/README.md). We recommend that you do **not** follow the legacy installation guide, as the new process is much more simpler.
 
 ```bash
-# Upgrade KubeDB Community edition
-$ helm upgrade kubedb appscode/kubedb \
-  --version {{< param "info.version" >}} \
-  --namespace kubedb --create-namespace \
-  --set kubedb-catalog.skipDeprecated=false \
-  --set-file global.license=/path/to/the/license.txt
-
-# Upgrade KubeDB Enterprise edition
 $ helm upgrade kubedb appscode/kubedb \
     --version {{< param "info.version" >}} \
     --namespace kubedb --create-namespace \
-    --set kubedb-catalog.skipDeprecated=false \
-    --set kubedb-ops-manager.enabled=true \
-    --set kubedb-autoscaler.enabled=true \
-    --set kubedb-dashboard.enabled=true \
-    --set kubedb-schema-manager.enabled=true \
     --set-file global.license=/path/to/the/license.txt
 ```
 
 {{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
 
 ```bash
-# Upgrade KubeDB Community edition
 $ helm upgrade kubedb appscode/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
-  --set kubedb-catalog.skipDeprecated=false \
-  --set global.insecureRegistries[0]=hub.example.com \
-  --set global.insecureRegistries[1]=hub2.example.com \
-  --set-file global.license=/path/to/the/license.txt
-
-# Upgrade KubeDB Enterprise edition
-$ helm upgrade kubedb appscode/kubedb \
-  --version {{< param "info.version" >}} \
-  --namespace kubedb --create-namespace \
-  --set kubedb-catalog.skipDeprecated=false \
-  --set kubedb-ops-manager.enabled=true \
-  --set kubedb-autoscaler.enabled=true \
-  --set kubedb-dashboard.enabled=true \
-  --set kubedb-schema-manager.enabled=true \
   --set global.insecureRegistries[0]=hub.example.com \
   --set global.insecureRegistries[1]=hub2.example.com \
   --set-file global.license=/path/to/the/license.txt
@@ -87,7 +59,7 @@ Now, upgrade Stash if had previously installed Stash following the instructions 
 
 ## Upgrading KubeDB from `v2021.01.26`(`v0.16.x`) and older to `{{< param "info.version" >}}`
 
-In KubeDB `v2021.01.26`(`v0.16.x`) and prior versions, KubeDB used separate charts for KubeDB community edition, KubeDB enterprise edition, and KubeDB catalogs. In KubeDB `{{< param "info.version" >}}`, we have moved to a single combined chart for all the components for a better user experience. This enables seamless migration between the KubeDB community edition and KubeDB enterprise edition. It also removes the burden of installing individual helm charts manually. KubeDB still depends on [Stash](https://stash.run) as the backup/recovery operator and Stash must be [installed](https://stash.run/docs/latest/setup/) separately. 
+In KubeDB `v2021.01.26`(`v0.16.x`) and prior versions, KubeDB used separate charts for KubeDB community edition, KubeDB enterprise edition, and KubeDB catalogs. In KubeDB `{{< param "info.version" >}}`, we have moved to a single combined chart for all the components for a better user experience. KubeDB still depends on [Stash](https://stash.run) as the backup/recovery operator and Stash must be [installed](https://stash.run/docs/latest/setup/) separately. 
 
 In order to upgrade from KubeDB `v2021.01.26`(`v0.16.x`) to `{{< param "info.version" >}}`, please follow the following steps.
 
@@ -113,93 +85,6 @@ Now, follow the latest installation guide to install the new version of the Kube
 
 Now, upgrade Stash if had previously installed Stash following the instructions [here](https://stash.run/docs/latest/setup/upgrade/). If you had not installed Stash before, please install Stash Enterprise Edition following the instructions [here](https://stash.run/docs/latest/setup/).
 
-
-## Migration Between Community Edition and Enterprise Edition
-
-KubeDB supports seamless migration between community edition and enterprise edition. You can run the following commands to migrate between them.
-
-<ul class="nav nav-tabs" id="migrationTab" role="tablist">
-  <li class="nav-item">
-    <a class="nav-link active" id="mgr-helm3-tab" data-toggle="tab" href="#mgr-helm3" role="tab" aria-controls="mgr-helm3" aria-selected="true">Helm 3</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" id="mgr-yaml-tab" data-toggle="tab" href="#mgr-yaml" role="tab" aria-controls="mgr-yaml" aria-selected="false">YAML</a>
-  </li>
-</ul>
-<div class="tab-content" id="migrationTabContent">
-  <div class="tab-pane fade show active" id="mgr-helm3" role="tabpanel" aria-labelledby="mgr-helm3">
-
-#### Using Helm 3
-
-**From Community Edition to Enterprise Edition:**
-
-In order to migrate from KubeDB community edition to KubeDB enterprise edition, please run the following command,
-
-```bash
-helm upgrade kubedb -n kubedb appscode/kubedb \
-  --reuse-values \
-  --set kubedb-ops-manager.enabled=true \
-  --set kubedb-autoscaler.enabled=true \
-  --set kubedb-dashboard.enabled=true \
-  --set kubedb-schema-manager.enabled=true \
-  --set kubedb-catalog.skipDeprecated=false \
-  --set-file global.license=/path/to/kubedb-enterprise-license.txt
-```
-
-**From Enterprise Edition to Community Edition:**
-
-In order to migrate from KubeDB enterprise edition to KubeDB community edition, please run the following command,
-
-```bash
-helm upgrade kubedb -n kubedb appscode/kubedb \
-  --reuse-values \
-  --set kubedb-ops-manager.enabled=false \
-  --set kubedb-autoscaler.enabled=false \
-  --set kubedb-dashboard.enabled=false \
-  --set kubedb-schema-manager.enabled=false \
-  --set kubedb-catalog.skipDeprecated=false \
-  --set-file global.license=/path/to/kubedb-community-license.txt
-```
-
-</div>
-<div class="tab-pane fade" id="mgr-yaml" role="tabpanel" aria-labelledby="mgr-yaml">
-
-**Using YAML (with helm 3)**
-
-**From Community Edition to Enterprise Edition:**
-
-In order to migrate from KubeDB community edition to KubeDB enterprise edition, please run the following command,
-
-```bash
-# Install KubeDB enterprise edition
-helm template kubedb appscode/kubedb \
-  --namespace kubedb --create-namespace \
-  --version {{< param "info.version" >}} \
-  --set kubedb-ops-manager.enabled=true \
-  --set kubedb-autoscaler.enabled=true \
-  --set kubedb-dashboard.enabled=true \
-  --set kubedb-schema-manager.enabled=true \
-  --set kubedb-catalog.skipDeprecated=false \
-  --set global.skipCleaner=true \
-  --set-file global.license=/path/to/kubedb-enterprise-license.txt | kubectl apply -f -
-```
-
-**From Enterprise Edition to Community Edition:**
-
-In order to migrate from KubeDB enterprise edition to KubeDB community edition, please run the following command,
-
-```bash
-# Install KubeDB community edition
-helm template kubedb appscode/kubedb \
-  --namespace kubedb --create-namespace \
-  --version {{< param "info.version" >}} \
-  --set kubedb-catalog.skipDeprecated=false \
-  --set global.skipCleaner=true \
-  --set-file global.license=/path/to/kubedb-community-license.txt | kubectl apply -f -
-```
-
-</div>
-</div>
 
 ## Updating License
 
@@ -238,8 +123,6 @@ helm upgrade kubedb -n kubedb appscode/kubedb --version=<cur_version> \
 
 #### Using YAML (with helm 3)
 
-**Update License of Community Edition:**
-
 ```bash
 # detect current version
 helm ls -A | grep kubedb
@@ -248,25 +131,7 @@ helm ls -A | grep kubedb
 helm template kubedb appscode/kubedb --version=<cur_version> \
   --namespace kubedb --create-namespace \
   --set global.skipCleaner=true \
-  --show-only appscode/kubedb-community/templates/license.yaml \
-  --set-file global.license=/path/to/new/license.txt | kubectl apply -f -
-```
-
-**Update License of Enterprise Edition:**
-
-```bash
-# detect current version
-helm ls -A | grep kubedb
-
-# update license key keeping the current version
-helm template kubedb appscode/kubedb --version=<cur_version> \
-  --namespace kubedb --create-namespace \
-  --set kubedb-ops-manager.enabled=true \
-  --set kubedb-autoscaler.enabled=true \
-  --set kubedb-dashboard.enabled=true \
-  --set kubedb-schema-manager.enabled=true \
-  --set global.skipCleaner=true \
-  --show-only appscode/kubedb-enterprise/templates/license.yaml \
+  --show-only appscode/kubedb/templates/license.yaml \
   --set-file global.license=/path/to/new/license.txt | kubectl apply -f -
 ```
 

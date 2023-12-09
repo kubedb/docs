@@ -14,7 +14,7 @@ section_menu_id: guides
 
 ### Reconfiguring MySQL
 
-This guide will give an overview on how KubeDB Enterprise operator reconfigures `MySQL`.
+This guide will give an overview on how KubeDB Ops Manager reconfigures `MySQL`.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ This guide will give an overview on how KubeDB Enterprise operator reconfigures 
 
 ## How Reconfiguring MySQL Process Works
 
-The following diagram shows how KubeDB Enterprise operator reconfigures `MySQL` database components. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager reconfigures `MySQL` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Reconfiguring process of MySQL" src="/docs/guides/mysql/reconfigure/overview/reconfigure.jpg">

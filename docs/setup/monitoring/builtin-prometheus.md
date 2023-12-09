@@ -40,10 +40,10 @@ Let's install KubeDB with operator monitoring enabled.
 ```bash
 $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
-  --set kubedb-community.monitoring.enabled=true \
-  --set kubedb-community.monitoring.agent=prometheus.io/builtin \
-  --set kubedb-community.monitoring.prometheus.namespace=monitoring \
-  --set kubedb-community.monitoring.serviceMonitor.labels.release=prometheus
+  --set kubedb-provisioner.monitoring.enabled=true \
+  --set kubedb-provisioner.monitoring.agent=prometheus.io/builtin \
+  --set kubedb-provisioner.monitoring.prometheus.namespace=monitoring \
+  --set kubedb-provisioner.monitoring.serviceMonitor.labels.release=prometheus
 ```
 
 **YAML (with Helm 3):**
@@ -51,10 +51,10 @@ $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
 ```bash
 $ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
-  --set kubedb-community.monitoring.enabled=true \
-  --set kubedb-community.monitoring.agent=prometheus.io/builtin \
-  --set kubedb-community.monitoring.prometheus.namespace=monitoring \
-  --set kubedb-community.monitoring.serviceMonitor.labels.release=prometheus | kubectl apply -f -
+  --set kubedb-provisioner.monitoring.enabled=true \
+  --set kubedb-provisioner.monitoring.agent=prometheus.io/builtin \
+  --set kubedb-provisioner.monitoring.prometheus.namespace=monitoring \
+  --set kubedb-provisioner.monitoring.serviceMonitor.labels.release=prometheus | kubectl apply -f -
 ```
 
 This will add necessary annotations to `kubedb` service created in `kubedb` namespace. Prometheus server will scrape metrics using those annotations. Let's check which annotations are added to the service,

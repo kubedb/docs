@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # MariaDB Horizontal Scaling
 
-This guide will give an overview on how KubeDB Enterprise operator scales up or down `MariaDB Cluster`.
+This guide will give an overview on how KubeDB Ops Manager scales up or down `MariaDB Cluster`.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ This guide will give an overview on how KubeDB Enterprise operator scales up or 
 
 ## How Horizontal Scaling Process Works
 
-The following diagram shows how KubeDB Enterprise operator scales up or down `MariaDB` database components. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager scales up or down `MariaDB` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Horizontal scaling process of MariaDB" src="/docs/guides/mariadb/scaling/horizontal-scaling/overview/images/horizontal-scaling.jpg">

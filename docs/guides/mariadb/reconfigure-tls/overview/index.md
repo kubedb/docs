@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Reconfiguring TLS of MariaDB Database
 
-This guide will give an overview on how KubeDB Enterprise operator reconfigures TLS configuration i.e. add TLS, remove TLS, update issuer/cluster issuer or Certificates and rotate the certificates of a `MariaDB` database.
+This guide will give an overview on how KubeDB Ops Manager reconfigures TLS configuration i.e. add TLS, remove TLS, update issuer/cluster issuer or Certificates and rotate the certificates of a `MariaDB` database.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ This guide will give an overview on how KubeDB Enterprise operator reconfigures 
 
 ## How Reconfiguring MariaDB TLS Configuration Process Works
 
-The following diagram shows how KubeDB Enterprise operator reconfigures TLS of a `MariaDB` database. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager reconfigures TLS of a `MariaDB` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Reconfiguring TLS process of MariaDB" src="/docs/guides/mariadb/reconfigure-tls/overview/images/reconfigure-tls.jpeg">

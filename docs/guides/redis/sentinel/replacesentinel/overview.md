@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Replace Sentinel Overview
 
-This guide will give you an overview on how KubeDB Enterprise operator replaces sentinel of a Redis instance.
+This guide will give you an overview on how KubeDB Ops Manager replaces sentinel of a Redis instance.
 
 ## Before You Begin
 
@@ -25,7 +25,7 @@ This guide will give you an overview on how KubeDB Enterprise operator replaces 
 
 ## How Replace Sentinel Process Works
 
-The following diagram shows how KubeDB Enterprise operator replaces sentinel of `Redis`. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager replaces sentinel of `Redis`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="updating Process of MongoDB" src="/docs/images/day-2-operation/redis/replace-sentinel.svg">

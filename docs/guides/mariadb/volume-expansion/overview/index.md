@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # MariaDB Volume Expansion
 
-This guide will give an overview on how KubeDB Enterprise operator expand the volume of `MariaDB`.
+This guide will give an overview on how KubeDB Ops Manager expand the volume of `MariaDB`.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ This guide will give an overview on how KubeDB Enterprise operator expand the vo
 
 ## How Volume Expansion Process Works
 
-The following diagram shows how KubeDB Enterprise operator expand the volumes of `MariaDB` database components. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager expand the volumes of `MariaDB` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Volume Expansion process of MariaDB" src="/docs/guides/mariadb/volume-expansion/overview/images/volume-expansion.jpeg">

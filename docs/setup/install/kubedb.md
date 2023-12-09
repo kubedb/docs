@@ -1,10 +1,10 @@
 ---
-title: Install KubeDB Enterprise Edition
-description: Installation guide for KubeDB Enterprise edition
+title: Install KubeDB
+description: Installation guide for KubeDB
 menu:
   docs_{{ .version }}:
     identifier: install-kubedb-enterprise
-    name: Enterprise Edition
+    name: KubeDB
     parent: installation-guide
     weight: 20
 product_name: kubedb
@@ -12,28 +12,24 @@ menu_name: docs_{{ .version }}
 section_menu_id: setup
 ---
 
-# Install KubeDB Enterprise Edition
+# Install KubeDB
 
-KubeDB Enterprise edition is the open core version of [KubeDB](https://github.com/kubedb/operator). It includes all the features (clustering, etc.) of KubeDB Community Edition and extends it by automating Day 2 operations, improving security and productivity. `Enterprise Edition` can be used to manage KubeDB custom resources in any Kubernetes namespace.
+KubeDB is a Kubernetes Native Database Management Solution that simplifies and automates routine database tasks such as Provisioning, Monitoring, Upgrading, Patching, Scaling, Volume Expansion, Backup, Recovery, Failure detection, and repair for various popular databases on any private and public clouds.
 
 - Back and recovery - KubeDB will provide backup & recovery of databases using Stash.
 - Upgrade and Scaling - KubeDB will provide operator managed human-in-the-loop patch and minor upgrade, downgrade and scaling operations
-- SSL Support - KubeDB Enterprise operator supports SSL certificate management for supported database types via Jetstack’s [cert-manager](https://cert-manager.io/) project.
+- SSL Support - KubeDB operator supports SSL certificate management for supported database types via Jetstack’s [cert-manager](https://cert-manager.io/) project.
 - User Management with HashiCorp Vault - KubeDB supports user management using HashiCorp Vault via [KubeVault](https://kubevault.com/) project.
-- Web Dashboard - KubeDB Enterprise offers a web based management console with Prometheus and Grafana integration for monitoring.
-- Connection Pooling - KubeDB Enterprise edition offers PgBouncer support for PostgreSQL and ProxySQL support for MySQL and Percona XtraDB.
+- Web Dashboard - KubeDB offers a web based management console with Prometheus and Grafana integration for monitoring.
+- Connection Pooling - KubeDB edition offers PgBouncer support for PostgreSQL and ProxySQL support for MySQL and Percona XtraDB.
 
-A full features comparison between KubeDB Enterprise Edition and community version can be found [here](/docs/overview/README.md).
+## Get a Free Trial License
 
-If you are willing to try KubeDB Enterprise Edition, you can grab a **30 days trial** license from [here](https://license-issuer.appscode.com/?p=kubedb-enterprise).
+In this section, we are going to show you how you can get a **30 days trial** license for KubeDB. You can get a license for your Kubernetes cluster by going through the following steps:
 
-## Get a Trial License
-
-In this section, we are going to show you how you can get a **30 days trial** license for KubeDB Enterprise edition. You can get a license for your Kubernetes cluster by going through the following steps:
-
-- At first, go to [AppsCode License Server](https://license-issuer.appscode.com/?p=kubedb-enterprise) and fill up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `kube-system` namespace).
+- At first, go to [AppsCode License Server](https://appscode.com/issue-license?p=kubedb) and fill up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `kube-system` namespace).
 - Provide your name and email address. **You must provide your work email address**.
-- Then, select `KubeDB Enterprise Edition` in the product field.
+- Then, select `KubeDB` in the product field.
 - Now, provide your cluster ID. You can get your cluster ID easily by running the following command:
 
 ```bash
@@ -55,15 +51,13 @@ You can create licenses for as many clusters as you want. You can upgrade your l
 
 > KubeDB licensing process has been designed to work with CI/CD workflow. You can automatically obtain a license from your CI/CD pipeline by following the guide from [here](https://github.com/appscode/offline-license-server#offline-license-server).
 
-## Get an Enterprise License
+## Purchase KubeDB License
 
-If you are interested in purchasing Enterprise license, please contact us via sales@appscode.com for further discussion. You can also set up a meeting via our [calendly link](https://calendly.com/appscode/30min).
+If you are interested in purchasing KubeDB license, please contact us via sales@appscode.com for further discussion. You can also set up a meeting via our [calendly link](https://calendly.com/appscode/30min).
 
-If you are willing to purchasing Enterprise license but need more time to test in your dev cluster, feel free to contact sales@appscode.com. We will be happy to extend your trial period.
+If you are willing to purchase KubeDB but need more time to test in your dev cluster, feel free to contact sales@appscode.com. We will be happy to extend your trial period.
 
 ## Install
-
-To activate the Enterprise features, you need to install both KubeDB Community operator and Enterprise operator chart. These operators can be installed as a Helm chart or simply as Kubernetes manifests. If you have already installed the Community operator, only install the Enterprise operator (step 4 in the following secttion).
 
 <ul class="nav nav-tabs" id="installerTab" role="tablist">
   <li class="nav-item">
@@ -100,30 +94,18 @@ appscode/kubedb-schema-manager      {{< param "info.schema-manager" >}}        {
 appscode/kubedb-ui-server           {{< param "info.ui-server" >}}   {{< param "info.ui-server" >}} A Helm chart for kubedb-ui-server by AppsCode
 appscode/kubedb-webhook-server      {{< param "info.webhook-server" >}}        {{< param "info.webhook-server" >}}      KubeDB Webhook Server by AppsCode
 
-# Install KubeDB Enterprise edition
 $ helm install kubedb appscode/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
-  --set kubedb-provisioner.enabled=true \
-  --set kubedb-ops-manager.enabled=true \
-  --set kubedb-autoscaler.enabled=true \
-  --set kubedb-dashboard.enabled=true \
-  --set kubedb-schema-manager.enabled=true \
   --set-file global.license=/path/to/the/license.txt
 ```
 
 {{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
 
 ```
-# Install KubeDB Enterprise edition
 $ helm install kubedb appscode/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
-  --set kubedb-provisioner.enabled=true \
-  --set kubedb-ops-manager.enabled=true \
-  --set kubedb-autoscaler.enabled=true \
-  --set kubedb-dashboard.enabled=true \
-  --set kubedb-schema-manager.enabled=true \
   --set global.insecureRegistries[0]=hub.example.com \
   --set global.insecureRegistries[1]=hub2.example.com \
   --set-file global.license=/path/to/the/license.txt
@@ -158,32 +140,20 @@ appscode/kubedb-schema-manager      {{< param "info.schema-manager" >}}        {
 appscode/kubedb-ui-server           {{< param "info.ui-server" >}}   {{< param "info.ui-server" >}} A Helm chart for kubedb-ui-server by AppsCode
 appscode/kubedb-webhook-server      {{< param "info.webhook-server" >}}        {{< param "info.webhook-server" >}}      KubeDB Webhook Server by AppsCode
 
-# Install KubeDB Enterprise operator chart
 $ helm template kubedb appscode/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt  \
-  --set kubedb-provisioner.enabled=true \
-  --set kubedb-ops-manager.enabled=true \
-  --set kubedb-autoscaler.enabled=true \
-  --set kubedb-dashboard.enabled=true \
-  --set kubedb-schema-manager.enabled=true \
   --set global.skipCleaner=true | kubectl apply -f -
 ```
 
 {{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
 
 ```
-# Install KubeDB Enterprise operator chart
 $ helm template kubedb appscode/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt  \
-  --set kubedb-provisioner.enabled=true \
-  --set kubedb-ops-manager.enabled=true \
-  --set kubedb-autoscaler.enabled=true \
-  --set kubedb-dashboard.enabled=true \
-  --set kubedb-schema-manager.enabled=true \
   --set global.insecureRegistries[0]=hub.example.com \
   --set global.insecureRegistries[1]=hub2.example.com \
   --set global.skipCleaner=true | kubectl apply -f -
@@ -206,7 +176,6 @@ kubedb-kubedb-autoscaler-b5dd47dc5-bxnrq        1/1     Running   0          48s
 kubedb-kubedb-dashboard-99db95dc4-j78w2         1/1     Running   0          48s
 kubedb-kubedb-ops-manager-6f766b86c6-h9m66      1/1     Running   0          48s
 kubedb-kubedb-provisioner-6fd44d5784-d8v9c      1/1     Running   0          48s
-kubedb-kubedb-schema-manager-f65c79878-tnftp    1/1     Running   0          48s
 kubedb-kubedb-webhook-server-6cf469bdf4-72wvz   1/1     Running   0          48s
 ```
 

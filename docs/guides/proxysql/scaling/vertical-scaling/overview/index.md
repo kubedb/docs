@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # ProxySQL Vertical Scaling
 
-This guide will give an overview on how KubeDB Enterprise operator vertically scales up `ProxySQL`.
+This guide will give an overview on how KubeDB Ops Manager vertically scales up `ProxySQL`.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ This guide will give an overview on how KubeDB Enterprise operator vertically sc
 
 ## How Vertical Scaling Process Works
 
-The following diagram shows how KubeDB Enterprise operator scales up or down `ProxySQL` instance resources. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager scales up or down `ProxySQL` instance resources. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Vertical scaling process of ProxySQL" src="/docs/guides/proxysql/scaling/vertical-scaling/overview/images/vertical-scaling.png">

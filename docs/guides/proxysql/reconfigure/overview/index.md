@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Reconfiguring ProxySQL
 
-This guide will give an overview on how KubeDB Enterprise operator reconfigures `ProxySQL`.
+This guide will give an overview on how KubeDB Ops Manager reconfigures `ProxySQL`.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ This guide will give an overview on how KubeDB Enterprise operator reconfigures 
 
 ## How Reconfiguring ProxySQL Process Works
 
-The following diagram shows how KubeDB Enterprise operator reconfigures `ProxySQL` database components. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager reconfigures `ProxySQL` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Reconfiguring process of ProxySQL" src="/docs/guides/proxysql/reconfigure/overview/images/reconfigure.png">

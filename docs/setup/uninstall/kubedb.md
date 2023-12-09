@@ -1,20 +1,20 @@
 ---
-title: Uninstall KubeDB Community Edition
-description: Uninstallation guide for KubeDB Community edition
+title: Uninstall KubeDB
+description: Uninstallation guide for KubeDB
 menu:
   docs_{{ .version }}:
-    identifier: legacy-uninstall-kubedb-community
-    name: Community Edition
-    parent: legacy-uninstallation-guide
-    weight: 10
+    identifier: uninstall-kubedb-enterprise
+    name: KubeDB
+    parent: uninstallation-guide
+    weight: 20
 product_name: kubedb
 menu_name: docs_{{ .version }}
 section_menu_id: setup
 ---
 
-# Uninstall KubeDB Community Edition
+# Uninstall KubeDB
 
-To uninstall KubeDB Community edition, run the following command:
+To uninstall KubeDB, run the following command:
 
 <ul class="nav nav-tabs" id="installerTab" role="tablist">
   <li class="nav-item">
@@ -32,7 +32,13 @@ To uninstall KubeDB Community edition, run the following command:
 In Helm 3, release names are [scoped to a namespace](https://v3.helm.sh/docs/faq/#release-names-are-now-scoped-to-the-namespace). So, provide the namespace you used to install the operator when installing.
 
 ```bash
-$ helm uninstall kubedb-community --namespace kubedb
+$ helm uninstall kubedb --namespace kubedb
+```
+
+Helm does not delete CRD objects. You can delete the ones KubeDB created with the following commands:
+
+```bash
+$ kubectl get crd -o name | grep kubedb.com | xargs kubectl delete
 ```
 
 </div>
@@ -43,7 +49,7 @@ $ helm uninstall kubedb-community --namespace kubedb
 If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and uninstall using `kubectl`.
 
 ```bash
-$ helm template kubedb-community appscode/kubedb-community --namespace kubedb | kubectl delete -f -
+$ helm template kubedb appscode/kubedb --namespace kubedb | kubectl delete -f -
 ```
 
 </div>

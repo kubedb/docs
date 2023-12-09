@@ -12,9 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an KubeDB-ops-manager only feature. Please install [KubeDB ops manager](/docs/setup/install/enterprise.md) to try this feature." >}}
-
-# updating Postgres version Overview
+# Updating Postgres version
 
 This guide will give you an overview of how KubeDB ops manager updates the version of `Postgres` database.
 
