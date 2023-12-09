@@ -63,17 +63,17 @@ NAME                        VERSION   DISTRIBUTION   DB_IMAGE                   
 kubedb-searchguard-5.6.16   5.6.16    KubeDB         kubedb/elasticsearch:5.6.16-searchguard-v2022.02.22                4h24m
 kubedb-xpack-7.12.0         7.12.0    KubeDB         kubedb/elasticsearch:7.12.0-xpack-v2021.08.23                      4h24m
 kubedb-xpack-7.13.2         7.13.2    KubeDB         kubedb/elasticsearch:7.13.2-xpack-v2021.08.23                      4h24m
-kubedb-xpack-7.14.0         7.14.0    KubeDB         kubedb/elasticsearch:7.14.0-xpack-v2021.08.23                      4h24m
-kubedb-xpack-7.16.2         7.16.2    KubeDB         kubedb/elasticsearch:7.16.2-xpack-v2021.12.24                      4h24m
+xpack-8.11.1         7.14.0    KubeDB         kubedb/elasticsearch:7.14.0-xpack-v2021.08.23                      4h24m
+kubedb-xpack-8.11.1         7.16.2    KubeDB         kubedb/elasticsearch:7.16.2-xpack-v2021.12.24                      4h24m
 kubedb-xpack-7.9.1          7.9.1     KubeDB         kubedb/elasticsearch:7.9.1-xpack-v2021.08.23                       4h24m
-kubedb-xpack-8.2.0          8.2.0     KubeDB         kubedb/elasticsearch:8.2.0-xpack-v2022.05.24                       4h24m
+kubedb-xpack-8.2.3          8.2.0     KubeDB         kubedb/elasticsearch:8.2.0-xpack-v2022.05.24                       4h24m
 opendistro-1.0.2            7.0.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.0.2                          4h24m
 opendistro-1.0.2-v1         7.0.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.0.2                          4h24m
 opendistro-1.1.0            7.1.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.1.0                          4h24m
 opendistro-1.1.0-v1         7.1.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.1.0                          4h24m
 opendistro-1.10.1           7.9.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.10.1                         4h24m
-opendistro-1.11.0           7.9.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.10.1                         4h24m
-opendistro-1.12.0           7.10.0    OpenDistro     amazon/opendistro-for-elasticsearch:1.12.0                         4h24m
+opensearch-2.8.0           7.9.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.10.1                         4h24m
+opensearch-2.8.0           7.10.0    OpenDistro     amazon/opendistro-for-elasticsearch:1.12.0                         4h24m
 opendistro-1.13.2           7.10.2    OpenDistro     amazon/opendistro-for-elasticsearch:1.13.2                         4h24m
 opendistro-1.2.1            7.2.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.2.1                          4h24m
 opendistro-1.2.1-v1         7.2.1     OpenDistro     amazon/opendistro-for-elasticsearch:1.2.1                          4h24m
@@ -90,8 +90,8 @@ opendistro-1.8.0-v1         7.7.0     OpenDistro     amazon/opendistro-for-elast
 opendistro-1.9.0            7.8.0     OpenDistro     amazon/opendistro-for-elasticsearch:1.9.0                          4h24m
 opendistro-1.9.0-v1         7.8.0     OpenDistro     amazon/opendistro-for-elasticsearch:1.9.0                          4h24m
 opensearch-1.1.0            1.1.0     OpenSearch     opensearchproject/opensearch:1.1.0                                 4h24m
-opensearch-1.2.2            1.2.2     OpenSearch     opensearchproject/opensearch:1.2.2                                 4h24m
-opensearch-1.3.2            1.3.2     OpenSearch     opensearchproject/opensearch:1.3.2                                 4h24m
+opensearch-2.8.0            1.2.2     OpenSearch     opensearchproject/opensearch:1.2.2                                 4h24m
+opensearch-2.8.0            1.3.2     OpenSearch     opensearchproject/opensearch:1.3.2                                 4h24m
 searchguard-6.8.1           6.8.1     SearchGuard    floragunncom/sg-elasticsearch:6.8.1-oss-25.1                       4h24m
 searchguard-6.8.1-v1        6.8.1     SearchGuard    floragunncom/sg-elasticsearch:6.8.1-oss-25.1                       4h24m
 searchguard-7.0.1           7.0.1     SearchGuard    floragunncom/sg-elasticsearch:7.0.1-oss-35.0.0                     4h24m
@@ -99,12 +99,12 @@ searchguard-7.0.1-v1        7.0.1     SearchGuard    floragunncom/sg-elasticsear
 searchguard-7.1.1           7.1.1     SearchGuard    floragunncom/sg-elasticsearch:7.1.1-oss-35.0.0                     4h24m
 searchguard-7.1.1-v1        7.1.1     SearchGuard    floragunncom/sg-elasticsearch:7.1.1-oss-35.0.0                     4h24m
 searchguard-7.10.2          7.10.2    SearchGuard    floragunncom/sg-elasticsearch:7.10.2-oss-49.0.0                    4h24m
-searchguard-7.14.2          7.14.2    SearchGuard    floragunncom/sg-elasticsearch:7.14.2-52.3.0                        4h24m
+xpack-8.11.1          7.14.2    SearchGuard    floragunncom/sg-elasticsearch:7.14.2-52.3.0                        4h24m
 searchguard-7.3.2           7.3.2     SearchGuard    floragunncom/sg-elasticsearch:7.3.2-oss-37.0.0                     4h24m
 searchguard-7.5.2           7.5.2     SearchGuard    floragunncom/sg-elasticsearch:7.5.2-oss-40.0.0                     4h24m
-searchguard-7.5.2-v1        7.5.2     SearchGuard    floragunncom/sg-elasticsearch:7.5.2-oss-40.0.0                     4h24m
+xpack-8.11.1        7.5.2     SearchGuard    floragunncom/sg-elasticsearch:7.5.2-oss-40.0.0                     4h24m
 searchguard-7.8.1           7.8.1     SearchGuard    floragunncom/sg-elasticsearch:7.8.1-oss-43.0.0                     4h24m
-searchguard-7.9.3           7.9.3     SearchGuard    floragunncom/sg-elasticsearch:7.9.3-oss-47.1.0                     4h24m
+xpack-8.11.1           7.9.3     SearchGuard    floragunncom/sg-elasticsearch:7.9.3-oss-47.1.0                     4h24m
 xpack-6.8.10-v1             6.8.10    ElasticStack   elasticsearch:6.8.10                                               4h24m
 xpack-6.8.16                6.8.16    ElasticStack   elasticsearch:6.8.16                                               4h24m
 xpack-6.8.22                6.8.22    ElasticStack   elasticsearch:6.8.22                                               4h24m
@@ -113,8 +113,8 @@ xpack-7.1.1-v1              7.1.1     ElasticStack   elasticsearch:7.1.1        
 xpack-7.12.0                7.12.0    ElasticStack   elasticsearch:7.12.0                                               4h24m
 xpack-7.12.0-v1             7.12.0    ElasticStack   elasticsearch:7.12.0                                               4h24m
 xpack-7.13.2                7.13.2    ElasticStack   elasticsearch:7.13.2                                               4h24m
-xpack-7.14.0                7.14.0    ElasticStack   elasticsearch:7.14.0                                               4h24m
-xpack-7.16.2                7.16.2    ElasticStack   elasticsearch:7.16.2                                               4h24m
+xpack-8.11.1                7.14.0    ElasticStack   elasticsearch:7.14.0                                               4h24m
+xpack-8.11.1                7.16.2    ElasticStack   elasticsearch:7.16.2                                               4h24m
 xpack-7.17.3                7.17.3    ElasticStack   elasticsearch:7.17.3                                               4h24m
 xpack-7.2.1-v1              7.2.1     ElasticStack   elasticsearch:7.2.1                                                4h24m
 xpack-7.3.2-v1              7.3.2     ElasticStack   elasticsearch:7.3.2                                                4h24m
@@ -123,17 +123,17 @@ xpack-7.5.2-v1              7.5.2     ElasticStack   elasticsearch:7.5.2        
 xpack-7.6.2-v1              7.6.2     ElasticStack   elasticsearch:7.6.2                                                4h24m
 xpack-7.7.1-v1              7.7.1     ElasticStack   elasticsearch:7.7.1                                                4h24m
 xpack-7.8.0-v1              7.8.0     ElasticStack   elasticsearch:7.8.0                                                4h24m
-xpack-7.9.1-v1              7.9.1     ElasticStack   elasticsearch:7.9.1                                                4h24m
+xpack-8.11.1              7.9.1     ElasticStack   elasticsearch:7.9.1                                                4h24m
 xpack-7.9.1-v2              7.9.1     ElasticStack   elasticsearch:7.9.1                                                4h24m
-xpack-8.2.0                 8.2.0     ElasticStack   elasticsearch:8.2.0                                                4h24m
+xpack-8.2.3                 8.2.0     ElasticStack   elasticsearch:8.2.0                                                4h24m
 xpack-8.5.2                 8.5.2     ElasticStack   elasticsearch:8.5.2                                                4h24m
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
-In this tutorial, we will use `xpack-8.2.0` ElasticsearchVersion CR to create an Elasticsearch cluster.
+In this tutorial, we will use `xpack-8.2.3` ElasticsearchVersion CR to create an Elasticsearch cluster.
 
-> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `xpack-7.9.1-v1` over `7.9.1-xpack`.
+> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `xpack-8.11.1` over `7.9.1-xpack`.
 
 ## Create an Elasticsearch Cluster
 
@@ -148,7 +148,7 @@ metadata:
   name: es-quickstart
   namespace: demo
 spec:
-  version: xpack-8.2.0
+  version: xpack-8.2.3
   enableSSL: true
   replicas: 3
   storageType: Durable
@@ -185,9 +185,9 @@ The Elasticsearch's `STATUS` will go from `Provisioning` to `Ready` state within
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME            VERSION       STATUS         AGE
-es-quickstart   xpack-8.2.0   Provisioning   7s
+es-quickstart   xpack-8.2.3   Provisioning   7s
 ... ...
-es-quickstart   xpack-8.2.0   Ready          39s
+es-quickstart   xpack-8.2.3   Ready          39s
 ```
 
 Describe the Elasticsearch object to observe the progress if something goes wrong or the status is not changing for a long period of time:
@@ -384,7 +384,7 @@ Spec:
       Subject:
         Organizations:
           kubedb
-  Version:  xpack-8.2.0
+  Version:  xpack-8.2.3
 Status:
   Conditions:
     Last Transition Time:  2022-12-27T05:25:39Z

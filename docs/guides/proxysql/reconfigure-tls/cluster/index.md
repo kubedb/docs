@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Reconfigure ProxySQL TLS/SSL (Transport Encryption)
 
 KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL certificates for existing ProxySQL via a ProxySQLOpsRequest. This tutorial will show you how to use KubeDB to reconfigure TLS/SSL encryption.

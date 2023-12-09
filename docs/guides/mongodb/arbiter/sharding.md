@@ -48,7 +48,7 @@ metadata:
   name: mongo-sh-arb
   namespace: demo
 spec:
-  version: "4.4.6"
+  version: "4.4.26"
   shardTopology:
     configServer:
       replicas: 3
@@ -119,7 +119,7 @@ MongoDB `mongo-sh-arb` state,
 ```bash
 $ kubectl get mg -n demo
 NAME                              VERSION   STATUS   AGE
-mongodb.kubedb.com/mongo-sh-arb   4.4.6     Ready    97s
+mongodb.kubedb.com/mongo-sh-arb   4.4.26     Ready    97s
 ```
 
 All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as statefulset.
@@ -184,7 +184,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":{"spec":{"requests":{"cpu":"200m","memory":"200Mi"},"resources":null}}},"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"300Mi"}}}},"replicas":2,"shards":2,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}}},"terminationPolicy":"WipeOut","version":"4.4.6"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":{"spec":{"requests":{"cpu":"200m","memory":"200Mi"},"resources":null}}},"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"300Mi"}}}},"replicas":2,"shards":2,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}}},"terminationPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-04-21T09:29:07Z"
   finalizers:
   - kubedb.com
@@ -478,7 +478,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   terminationPolicy: WipeOut
-  version: 4.4.6
+  version: 4.4.26
 status:
   conditions:
   - lastTransitionTime: "2022-04-21T09:29:07Z"
@@ -553,10 +553,10 @@ mongo-sh-arb-mongos-1   1/1     Running   0          6m20s
 $ kubectl exec -it mongo-sh-arb-mongos-0 -n demo bash
 
 mongodb@mongo-sh-mongos-0:/$ mongo admin -u root -p '6&UiN5;qq)Tnai=7'
-MongoDB shell version v4.4.6
+MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("bf87addd-4245-45b1-a470-fabb3dcc19ab") }
-MongoDB server version: 4.4.6
+MongoDB server version: 4.4.26
 Welcome to the MongoDB shell.
 For interactive help, type "help".
 For more comprehensive documentation, see
@@ -616,7 +616,7 @@ mongos> sh.status()
         {  "_id" : "shard0",  "host" : "shard0/mongo-sh-arb-shard0-0.mongo-sh-arb-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-arb-shard0-1.mongo-sh-arb-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mongo-sh-arb-shard1-0.mongo-sh-arb-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-arb-shard1-1.mongo-sh-arb-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.4.6" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:
@@ -659,9 +659,9 @@ As `sh.status()` command only shows the data bearing members, if we want to assu
 kubectl exec -it pod/mongo-sh-arb-shard0-1 -n demo bash
 
 root@mongo-sh-arb-shard0-1:/ mongo admin -u root -p '6&UiN5;qq)Tnai=7'
-MongoDB shell version v4.4.6
+MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
-MongoDB server version: 4.4.6
+MongoDB server version: 4.4.26
 Welcome to the MongoDB shell.
 
 shard0:PRIMARY> rs.status().members
@@ -797,7 +797,7 @@ mongos> sh.status();
         {  "_id" : "shard0",  "host" : "shard0/mongo-sh-arb-shard0-0.mongo-sh-arb-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-arb-shard0-1.mongo-sh-arb-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mongo-sh-arb-shard1-0.mongo-sh-arb-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-arb-shard1-1.mongo-sh-arb-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.4.6" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:
@@ -867,7 +867,7 @@ mongos> sh.status()
         {  "_id" : "shard0",  "host" : "shard0/mongo-sh-arb-shard0-0.mongo-sh-arb-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-arb-shard0-1.mongo-sh-arb-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mongo-sh-arb-shard1-0.mongo-sh-arb-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-arb-shard1-1.mongo-sh-arb-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.4.6" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:
@@ -934,7 +934,7 @@ Now, you can run the following command to get all mongodb resources in demo name
 ```bash
 $ kubectl get mg,sts,svc,secret,pvc -n demo
 NAME                              VERSION   STATUS   AGE
-mongodb.kubedb.com/mongo-sh-arb   4.4.6     Halted   26m
+mongodb.kubedb.com/mongo-sh-arb   4.4.26     Halted   26m
 
 NAME                         TYPE                                  DATA   AGE
 secret/default-token-bg2wb   kubernetes.io/service-account-token   3      26m
@@ -969,7 +969,7 @@ When the database is resumed successfully, you can see the database Status is se
 ```bash
 $ kubectl get mg -n demo
 NAME                              VERSION   STATUS   AGE
-mongodb.kubedb.com/mongo-sh-arb   4.4.6     Ready    28m
+mongodb.kubedb.com/mongo-sh-arb   4.4.26     Ready    28m
 ```
 
 Now, If you again exec into `pod` and look for previous data, you will see that, all the data persists.
@@ -1004,7 +1004,7 @@ mongos> sh.status()
         {  "_id" : "shard0",  "host" : "shard0/mongo-sh-arb-shard0-0.mongo-sh-arb-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-arb-shard0-1.mongo-sh-arb-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mongo-sh-arb-shard1-0.mongo-sh-arb-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-arb-shard1-1.mongo-sh-arb-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.4.6" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:

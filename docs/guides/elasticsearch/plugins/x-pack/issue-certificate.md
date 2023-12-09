@@ -306,7 +306,7 @@ metadata:
   name: custom-certificate-es-ssl
   namespace: demo
 spec:
-  version: searchguard-7.9.3
+  version: xpack-8.11.1
   enableSSL: true
   storage:
     storageClassName: "standard"

@@ -48,7 +48,7 @@ metadata:
   name: mongo-sh
   namespace: demo
 spec:
-  version: 4.2.3
+  version: 4.4.26
   shardTopology:
     configServer:
       replicas: 3
@@ -104,7 +104,7 @@ MongoDB `mongo-sh` state,
 ```bash
 $ kubectl get mg -n demo
 NAME       VERSION   STATUS    AGE
-mongo-sh   4.2.3     Ready     9m41s
+mongo-sh   4.4.26     Ready     9m41s
 ```
 
 All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as statefulset.
@@ -168,7 +168,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh","namespace":"demo"},"spec":{"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"replicas":3,"shards":2,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}}},"version":"4.2.3"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh","namespace":"demo"},"spec":{"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"replicas":3,"shards":2,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}}},"version":"4.4.26"}}
   creationTimestamp: "2021-02-10T12:57:03Z"
   finalizers:
     - kubedb.com
@@ -464,7 +464,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   terminationPolicy: Delete
-  version: 4.2.3
+  version: 4.4.26
 status:
   conditions:
     - lastTransitionTime: "2021-02-10T12:57:03Z"
@@ -538,10 +538,10 @@ mongo-sh-mongos-1   1/1     Running   0          49m
 $ kubectl exec -it mongo-sh-mongos-0 -n demo bash
 
 mongodb@mongo-sh-mongos-0:/$ mongo admin -u root -p 7QiqLcuSCmZ8PU5a
-MongoDB shell version v4.2.3
+MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("8b7abf57-09e4-4e30-b4a0-a37ebf065e8f") }
-MongoDB server version: 4.2.3
+MongoDB server version: 4.4.26
 Welcome to the MongoDB shell.
 For interactive help, type "help".
 For more comprehensive documentation, see
@@ -593,7 +593,7 @@ mongos> sh.status()
         {  "_id" : "shard0",  "host" : "shard0/mongo-sh-shard0-0.mongo-sh-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-shard0-1.mongo-sh-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-shard0-2.mongo-sh-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mongo-sh-shard1-0.mongo-sh-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-shard1-1.mongo-sh-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-shard1-2.mongo-sh-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.2.3" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:
@@ -676,7 +676,7 @@ mongos> sh.status();
         {  "_id" : "shard0",  "host" : "shard0/mongo-sh-shard0-0.mongo-sh-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-shard0-1.mongo-sh-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-shard0-2.mongo-sh-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mongo-sh-shard1-0.mongo-sh-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-shard1-1.mongo-sh-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-shard1-2.mongo-sh-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.2.3" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:
@@ -737,7 +737,7 @@ mongos> sh.status()
         {  "_id" : "shard0",  "host" : "shard0/mongo-sh-shard0-0.mongo-sh-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-shard0-1.mongo-sh-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-shard0-2.mongo-sh-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mongo-sh-shard1-0.mongo-sh-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-shard1-1.mongo-sh-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-shard1-2.mongo-sh-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.2.3" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:
@@ -795,7 +795,7 @@ Now, you can run the following command to get all mongodb resources in demo name
 ```bash
 $ kubectl get mg,sts,svc,secret,pvc -n demo
 NAME                          VERSION   STATUS   AGE
-mongodb.kubedb.com/mongo-sh   4.2.3     Halted   74m
+mongodb.kubedb.com/mongo-sh   4.4.26     Halted   74m
 
 NAME                            TYPE                                  DATA   AGE
 secret/default-token-x2zcl      kubernetes.io/service-account-token   3      32h
@@ -830,7 +830,7 @@ When the database is resumed successfully, you can see the database Status is se
 ```bash
 $ kubectl get mg -n demo
 NAME       VERSION   STATUS    AGE
-mongo-sh   4.2.3     Ready     6m27s
+mongo-sh   4.4.26     Ready     6m27s
 ```
 
 Now, If you again exec into `pod` and look for previous data, you will see that, all the data persists.
@@ -865,7 +865,7 @@ mongos> sh.status()
         {  "_id" : "shard0",  "host" : "shard0/mongo-sh-shard0-0.mongo-sh-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-shard0-1.mongo-sh-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-shard0-2.mongo-sh-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
         {  "_id" : "shard1",  "host" : "shard1/mongo-sh-shard1-0.mongo-sh-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-shard1-1.mongo-sh-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-shard1-2.mongo-sh-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "4.2.3" : 2
+        "4.4.26" : 2
   autosplit:
         Currently enabled: yes
   balancer:

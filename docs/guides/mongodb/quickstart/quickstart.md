@@ -54,15 +54,15 @@ NAME             VERSION   DISTRIBUTION   DB_IMAGE                              
 3.4.17-v1        3.4.17    Official       mongo:3.4.17                                          68s
 3.4.22-v1        3.4.22    Official       mongo:3.4.22                                          68s
 3.6.13-v1        3.6.13    Official       mongo:3.6.13                                          68s
-3.6.8-v1         3.6.8     Official       mongo:3.6.8                                           68s
+4.4.26         3.6.8     Official       mongo:3.6.8                                           68s
 4.0.11-v1        4.0.11    Official       mongo:4.0.11                                          68s
 4.0.3-v1         4.0.3     Official       mongo:4.0.3                                           68s
-4.0.5-v3         4.0.5     Official       mongo:4.0.5                                           68s
-4.1.13-v1        4.1.13    Official       mongo:4.1.13                                          68s
+4.4.26         4.0.5     Official       mongo:4.0.5                                           68s
+4.4.26        4.1.13    Official       mongo:4.1.13                                          68s
 4.1.4-v1         4.1.4     Official       mongo:4.1.4                                           68s
 4.1.7-v3         4.1.7     Official       mongo:4.1.7                                           68s
-4.2.3            4.2.3     Official       mongo:4.2.3                                           68s
-4.4.6            4.4.6     Official       mongo:4.4.6                                           68s
+4.4.26            4.4.26     Official       mongo:4.4.26                                           68s
+4.4.26            4.4.26     Official       mongo:4.4.26                                           68s
 5.0.2            5.0.2     Official       mongo:5.0.2                                           68s
 5.0.3            5.0.3     Official       mongo:5.0.3                                           68s
 percona-3.6.18   3.6.18    Percona        percona/percona-server-mongodb:3.6.18                 68s
@@ -83,7 +83,7 @@ metadata:
   name: mgo-quickstart
   namespace: demo
 spec:
-  version: "4.4.6"
+  version: "4.4.26"
   replicaSet:
     name: "rs1"
   replicas: 3
@@ -105,7 +105,7 @@ mongodb.kubedb.com/mgo-quickstart created
 
 Here,
 
-- `spec.version` is name of the MongoDBVersion crd where the docker images are specified. In this tutorial, a MongoDB 4.4.6 database is created.
+- `spec.version` is name of the MongoDBVersion crd where the docker images are specified. In this tutorial, a MongoDB 4.4.26 database is created.
 - `spec.storageType` specifies the type of storage that will be used for MongoDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MongoDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MongoDB` crd or which resources KubeDB should keep or delete when you delete `MongoDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy)
@@ -186,7 +186,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"4.4.6"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"4.4.26"}}
 
     Creation Timestamp:  2022-06-13T12:01:55Z
     Labels:
@@ -216,7 +216,7 @@ AppBinding:
     Secret:
       Name:   mgo-quickstart-auth
     Type:     kubedb.com/mongodb
-    Version:  4.4.6
+    Version:  4.4.26
 
 Events:
   Type    Reason      Age   From             Message
@@ -259,7 +259,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"4.4.6"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"4.4.26"}}
   creationTimestamp: "2022-06-13T12:01:55Z"
   finalizers:
     - kubedb.com
@@ -354,7 +354,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   terminationPolicy: Delete
-  version: 4.4.6
+  version: 4.4.26
 status:
   conditions:
     - lastTransitionTime: "2022-06-13T12:01:55Z"
@@ -490,7 +490,7 @@ Now, you can run the following command to get all mongodb resources in demo name
 ```bash
 $ kubectl get mg,sts,svc,secret,pvc -n demo
 NAME                                VERSION   STATUS   AGE
-mongodb.kubedb.com/mgo-quickstart   4.4.6     Halted   12m
+mongodb.kubedb.com/mgo-quickstart   4.4.26     Halted   12m
 
 NAME                         TYPE                                  DATA   AGE
 secret/default-token-swg6h   kubernetes.io/service-account-token   3      12m
@@ -518,7 +518,7 @@ When the database is resumed successfully, you can see the database Status is se
 ```bash
 $ kubectl get mg -n demo
 NAME             VERSION   STATUS   AGE
-mgo-quickstart   4.4.6     Ready    13m
+mgo-quickstart   4.4.26     Ready    13m
 ```
 
 Now, If you again exec into the `pod` and look for previous data, you will see that, all the data persists.

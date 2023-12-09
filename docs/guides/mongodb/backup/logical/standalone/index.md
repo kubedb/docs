@@ -57,7 +57,7 @@ metadata:
   name: sample-mongodb
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -83,7 +83,7 @@ Let's check if the database is ready to use,
 ```console
 $ kubectl get mg -n demo sample-mongodb
 NAME             VERSION       STATUS    AGE
-sample-mongodb   4.2.3         Ready   2m9s
+sample-mongodb   4.4.26         Ready   2m9s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -123,7 +123,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mongodb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"4.2.3"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mongodb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-10-26T05:13:07Z"
   generation: 1
   labels:
@@ -159,13 +159,13 @@ spec:
     stash:
       addon:
         backupTask:
-          name: mongodb-backup-4.2.3
+          name: mongodb-backup-4.4.6
         restoreTask:
-          name: mongodb-restore-4.2.3
+          name: mongodb-restore-4.4.6
   secret:
     name: sample-mongodb-auth
   type: kubedb.com/mongodb
-  version: 4.2.3
+  version: 4.4.26
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
@@ -323,7 +323,7 @@ If everything goes well, the phase of the `BackupConfiguration` should be `Ready
 ```console
 $ kubectl get backupconfiguration -n demo
 NAME                    TASK                    SCHEDULE      PAUSED   PHASE      AGE
-sample-mongodb-backup   mongodb-backup-4.2.3    */5 * * * *            Ready      11s
+sample-mongodb-backup   mongodb-backup-4.4.6    */5 * * * *            Ready      11s
 ```
 
 **Verify CronJob:**
@@ -391,7 +391,7 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 ```console
 $ kubectl get backupconfiguration -n demo sample-mongodb-backup
 NAME                   TASK                        SCHEDULE      PAUSED   PHASE   AGE
-sample-mongodb-backup  mongodb-backup-4.2.3        */5 * * * *   true     Ready   26m
+sample-mongodb-backup  mongodb-backup-4.4.6        */5 * * * *   true     Ready   26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.

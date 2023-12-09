@@ -34,7 +34,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mgo-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.2.3"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mgo-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-10-26T04:42:05Z"
   generation: 1
   labels:
@@ -72,13 +72,13 @@ spec:
     stash:
       addon:
         backupTask:
-          name: mongodb-backup-4.2.3
+          name: mongodb-backup-4.4.6
         restoreTask:
-          name: mongodb-restore-4.2.3
+          name: mongodb-restore-4.4.6
   secret:
     name: sample-mgo-rs-auth
   type: kubedb.com/mongodb
-  version: 4.2.3
+  version: 4.4.26
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

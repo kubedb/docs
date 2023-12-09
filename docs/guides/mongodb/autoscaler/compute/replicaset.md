@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Autoscaling the Compute Resource of a MongoDB Replicaset Database
 
 This guide will show you how to use `KubeDB` to autoscale compute resources i.e. cpu and memory of a MongoDB replicaset database.
@@ -47,7 +45,7 @@ Here, we are going to deploy a `MongoDB` Replicaset using a supported version by
 
 #### Deploy MongoDB Replicaset
 
-In this section, we are going to deploy a MongoDB Replicaset database with version `4.4.6`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to deploy a MongoDB Replicaset database with version `4.4.26`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -56,7 +54,7 @@ metadata:
   name: mg-rs
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   replicaSet:
     name: "replicaset"
   replicas: 3
@@ -90,7 +88,7 @@ Now, wait until `mg-rs` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo
 NAME    VERSION    STATUS    AGE
-mg-rs   4.2.3      Ready     2m53s
+mg-rs   4.4.26      Ready     2m53s
 ```
 
 Let's check the Pod containers resources,

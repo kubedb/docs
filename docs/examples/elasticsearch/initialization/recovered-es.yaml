@@ -4,7 +4,7 @@ metadata:
   name: recovered-es
   namespace: demo
 spec:
-  version: searchguard-7.9.3
+  version: xpack-8.11.1
   authSecret:
     name: instant-elasticsearch-auth
   storageType: Durable

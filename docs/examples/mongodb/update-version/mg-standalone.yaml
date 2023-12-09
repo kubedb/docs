@@ -4,7 +4,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "3.6.8-v1"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"

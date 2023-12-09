@@ -61,7 +61,7 @@ metadata:
   name: es-custom-config
   namespace: demo
 spec:
-  version: searchguard-7.9.3
+  version: xpack-8.11.1
   configSecret:
     name: es-custom-config
 ```

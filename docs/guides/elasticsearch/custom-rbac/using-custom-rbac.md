@@ -142,7 +142,7 @@ metadata:
   name: quick-elasticsearch
   namespace: demo
 spec:
-  version: searchguard-7.9.3
+  version: xpack-8.11.1
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
@@ -193,7 +193,7 @@ metadata:
   name: minute-elasticsearch
   namespace: demo
 spec:
-  version: searchguard-7.9.3
+  version: xpack-8.11.1
   storageType: Durable
   podTemplate:
     spec:

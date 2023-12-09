@@ -31,7 +31,7 @@ metadata:
 spec:
   autoOps:
     disabled: true
-  version: "4.2.3"
+  version: "4.4.26"
   replicas: 3
   authSecret:
     name: mgo1-auth
@@ -184,10 +184,10 @@ AutoOps is an optional field to control the generation of versionUpdate & TLS-re
 `spec.version` is a required field specifying the name of the [MongoDBVersion](/docs/guides/mongodb/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MongoDBVersion` resources,
 
 - `3.4.17-v1`, `3.4.22-v1`
-- `3.6.13-v1`, `3.6.8-v1`, 
-- `4.0.3-v1`, `4.0.5-v3`, `4.0.11-v1`,
-- `4.1.4-v1`, `4.1.7-v3`, `4.1.13-v1`
-- `4.2.3`, `4.4.6`
+- `3.6.13-v1`, `4.4.26`, 
+- `4.0.3-v1`, `4.4.26`, `4.0.11-v1`,
+- `4.1.4-v1`, `4.1.7-v3`, `4.4.26`
+- `4.4.26`, `4.4.26`
 - `5.0.2`, `5.0.3`
 - `percona-3.6.18`
 - `percona-4.0.10`, `percona-4.2.7`, `percona-4.4.10`
@@ -428,7 +428,7 @@ metadata:
   name: mgo1
   namespace: demo
 spec:
-  version: 4.2.3
+  version: 4.4.26
   init:
     script:
       configMap:

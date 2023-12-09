@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Storage Autoscaling of Elasticsearch Combined Cluster
 
 This guide will show you how to use `KubeDB` to autoscale the storage of an Elasticsearch combined cluster.
@@ -60,7 +58,7 @@ Now, we are going to deploy a `Elasticsearch` combined cluster using a supported
 
 #### Deploy Elasticsearch Combined Cluster
 
-In this section, we are going to deploy an Elasticsearch combined cluster with version `searchguard-7.9.3`.  Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy an Elasticsearch combined cluster with version `xpack-8.11.1`.  Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -70,7 +68,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: searchguard-7.9.3
+  version: xpack-8.11.1
   storageType: Durable
   replicas: 1
   storage:
@@ -95,8 +93,8 @@ Now, wait until `es-combined` has status `Ready`. i.e,
 ```bash
 $ kubectl get es -n demo -w
 NAME          VERSION             STATUS         AGE
-es-combined   searchguard-7.9.3   Provisioning   5s
-es-combined   searchguard-7.9.3   Ready          50s
+es-combined   xpack-8.11.1   Provisioning   5s
+es-combined   xpack-8.11.1   Ready          50s
 ```
 
 Let's check volume size from statefulset, and from the persistent volume,

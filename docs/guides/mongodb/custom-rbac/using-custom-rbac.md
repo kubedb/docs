@@ -142,7 +142,7 @@ metadata:
   name: quick-mongodb
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   storageType: Durable
   podTemplate:
       spec:
@@ -206,7 +206,7 @@ metadata:
   name: minute-mongodb
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   podTemplate:
       spec:
         serviceAccountName: my-custom-serviceaccount

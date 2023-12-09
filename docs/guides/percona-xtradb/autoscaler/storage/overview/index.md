@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # PerconaXtraDB Vertical Autoscaling
 
 This guide will give an overview on how KubeDB Autoscaler operator autoscales the database storage using `perconaxtradbautoscaler` crd.

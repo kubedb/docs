@@ -7,7 +7,7 @@ spec:
   configSecret:
     name: es-custom-config
   enableSSL: false 
-  version: opendistro-1.12.0
+  version: opensearch-2.8.0
   storageType: Durable
   terminationPolicy: WipeOut
   topology:

@@ -5,7 +5,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: searchguard-7.9.3
+  version: xpack-8.11.1
   storageType: Durable
   replicas: 1
   storage:

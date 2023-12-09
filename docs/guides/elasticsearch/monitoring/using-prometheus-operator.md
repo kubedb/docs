@@ -95,7 +95,7 @@ metadata:
   name: coreos-prom-es
   namespace: demo
 spec:
-  version: searchguard-7.9.3
+  version: xpack-8.11.1
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"

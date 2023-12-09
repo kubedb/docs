@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Reconfigure MongoDB Replicaset Database
 
 This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure a MongoDB Replicaset.
@@ -43,7 +41,7 @@ Now, we are going to deploy a  `MongoDB` Replicaset using a supported version by
 
 ### Prepare MongoDB Replicaset
 
-Now, we are going to deploy a `MongoDB` Replicaset database with version `4.2.3`.
+Now, we are going to deploy a `MongoDB` Replicaset database with version `4.4.26`.
 
 ### Deploy MongoDB 
 
@@ -72,7 +70,7 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   replicas: 3
   replicaSet:
     name: rs0
@@ -100,7 +98,7 @@ Now, wait until `mg-replicaset` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo                                                                                                                                            
 NAME            VERSION   STATUS   AGE
-mg-replicaset   4.2.3     Ready    19m
+mg-replicaset   4.4.26     Ready    19m
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.

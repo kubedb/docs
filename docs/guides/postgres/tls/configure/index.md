@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Configure TLS/SSL in Postgres
 
 `KubeDB` provides support for TLS/SSL encryption with SSLMode (`allow`, `prefer`, `require`, `verify-ca`, `verify-full`) for `Postgres`. This tutorial will show you how to use `KubeDB` to deploy a `Postgres` database with TLS/SSL configuration.

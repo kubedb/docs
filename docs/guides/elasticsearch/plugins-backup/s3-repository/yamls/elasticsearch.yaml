@@ -12,7 +12,7 @@ spec:
     name: es-secure-settings
   enableSSL: true
   # we are using ElasticsearchVersion with pre-installed s3 repository plugin
-  version: kubedb-xpack-7.14.0
+  version: xpack-8.11.1
   storageType: Durable
   replicas: 3
   storage:

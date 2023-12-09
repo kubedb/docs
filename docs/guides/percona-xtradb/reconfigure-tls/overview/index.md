@@ -12,11 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Reconfiguring TLS of PerconaXtraDB Database
 
-This guide will give an overview on how KubeDB Enterprise operator reconfigures TLS configuration i.e. add TLS, remove TLS, update issuer/cluster issuer or Certificates and rotate the certificates of a `PerconaXtraDB` database.
+This guide will give an overview on how KubeDB Ops Manager reconfigures TLS configuration i.e. add TLS, remove TLS, update issuer/cluster issuer or Certificates and rotate the certificates of a `PerconaXtraDB` database.
 
 ## Before You Begin
 
@@ -26,7 +24,7 @@ This guide will give an overview on how KubeDB Enterprise operator reconfigures 
 
 ## How Reconfiguring PerconaXtraDB TLS Configuration Process Works
 
-The following diagram shows how KubeDB Enterprise operator reconfigures TLS of a `PerconaXtraDB` database. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager reconfigures TLS of a `PerconaXtraDB` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Reconfiguring TLS process of PerconaXtraDB" src="/docs/guides/percona-xtradb/reconfigure-tls/overview/images/reconfigure-tls.jpeg">

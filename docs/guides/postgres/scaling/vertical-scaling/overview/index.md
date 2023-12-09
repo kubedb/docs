@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Ops Manager](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Vertical Scaling Postgres
 
 This guide will give you an overview of how KubeDB Ops Manager updates the resources(for example Memory, CPU etc.) of the `Postgres` database server.

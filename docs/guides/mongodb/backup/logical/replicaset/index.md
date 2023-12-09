@@ -57,7 +57,7 @@ metadata:
   name: sample-mgo-rs
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   replicas: 3
   replicaSet:
     name: rs0
@@ -85,7 +85,7 @@ Let's check if the database is ready to use,
 ```console
 $ kubectl get mg -n demo sample-mgo-rs
 NAME            VERSION     STATUS  AGE
-sample-mgo-rs   4.2.3       Ready   1m
+sample-mgo-rs   4.4.26       Ready   1m
 ```
 
 The database is `Running`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -126,7 +126,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mgo-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.2.3"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mgo-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-10-26T04:42:05Z"
   generation: 1
   labels:
@@ -164,13 +164,13 @@ spec:
     stash:
       addon:
         backupTask:
-          name: mongodb-backup-4.2.3
+          name: mongodb-backup-4.4.6
         restoreTask:
-          name: mongodb-restore-4.2.3
+          name: mongodb-restore-4.4.6
   secret:
     name: sample-mgo-rs-auth
   type: kubedb.com/mongodb
-  version: 4.2.3
+  version: 4.4.26
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
@@ -335,7 +335,7 @@ If everything goes well, the phase of the `BackupConfiguration` should be `Ready
 ```console
 $ kubectl get backupconfiguration -n demo
 NAME                    TASK                    SCHEDULE      PAUSED   PHASE      AGE
-sample-mgo-rs-backup    mongodb-backup-4.2.3    */5 * * * *            Ready      11s
+sample-mgo-rs-backup    mongodb-backup-4.4.6    */5 * * * *            Ready      11s
 ```
 
 **Verify CronJob:**
@@ -402,7 +402,7 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 ```console
 $ kubectl get backupconfiguration -n demo sample-mgo-rs-backup
 NAME                  TASK                      SCHEDULE      PAUSED   PHASE   AGE
-sample-mgo-rs-backup  mongodb-backup-4.2.3      */5 * * * *   true     Ready   26m
+sample-mgo-rs-backup  mongodb-backup-4.4.6      */5 * * * *   true     Ready   26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
@@ -570,7 +570,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-backup-4.2.3
+    name: mongodb-backup-4.4.6
   repository:
     name: gcs-repo-custom
   target:
@@ -616,7 +616,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -640,7 +640,7 @@ metadata:
   namespace: demo
 spec:
   task:
-    name: mongodb-restore-4.2.3
+    name: mongodb-restore-4.4.6
   repository:
     name: gcs-repo-custom
   target:
@@ -658,14 +658,14 @@ mongodb.kubedb.com/restored-mongodb created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION        STATUS         AGE
-restored-mongodb   4.2.3         Provisioning   56s
+restored-mongodb   4.4.26         Provisioning   56s
 
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/rexamples/estoresession-standalone.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION       STATUS    AGE
-restored-mongodb   4.2.3         Ready   2m
+restored-mongodb   4.4.26         Ready   2m
 ```
 
 Now, exec into the database pod and list available tables,

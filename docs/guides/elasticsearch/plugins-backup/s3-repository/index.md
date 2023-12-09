@@ -116,7 +116,7 @@ spec:
     name: es-secure-settings
   enableSSL: true
   # we are using ElasticsearchVersion with pre-installed s3 repository plugin
-  version: kubedb-xpack-7.14.0
+  version: xpack-8.11.1
   storageType: Durable
   replicas: 3
   storage:
@@ -138,9 +138,9 @@ elasticsearch.kubedb.com/sample-es created
 ```bash
 $ kubectl get es -n demo -w
 NAME        VERSION               STATUS   AGE
-sample-es   kubedb-xpack-7.14.0            0s
-sample-es   kubedb-xpack-7.14.0   Provisioning   19s
-sample-es   kubedb-xpack-7.14.0   Ready          41s
+sample-es   xpack-8.11.1            0s
+sample-es   xpack-8.11.1   Provisioning   19s
+sample-es   xpack-8.11.1   Ready          41s
 ```
 
 ### Populate Data

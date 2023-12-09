@@ -51,7 +51,7 @@ Here, we use `linode-block-storage` as StorageClass in this demo.
 
 ## Create Elasticsearch Hot-Warm-Cold Cluster
 
-We are going to create a Elasticsearch Hot-Warm-Cold cluster in topology mode. Our cluster will be consist of 2 master nodes, 2 ingest nodes, 1 data content node, 3 data hot nodes, 2 data warm node, and 2 data cold nodes. Here, we are using Elasticsearch version (`xpack-7.16.2`) of ElasticStack distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+We are going to create a Elasticsearch Hot-Warm-Cold cluster in topology mode. Our cluster will be consist of 2 master nodes, 2 ingest nodes, 1 data content node, 3 data hot nodes, 2 data warm node, and 2 data cold nodes. Here, we are using Elasticsearch version (`xpack-8.11.1`) of ElasticStack distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -61,7 +61,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true
-  version: xpack-7.16.2
+  version: xpack-8.11.1
   topology:
       master:
         replicas: 2
@@ -110,7 +110,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using Elasticsearch version `xpack-7.16.2` of ElasticStack distribution.
+- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using Elasticsearch version `xpack-8.11.1` of ElasticStack distribution.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.storageType` - specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.topology` - specifies the node-specific properties for the Elasticsearch cluster.
@@ -146,7 +146,7 @@ KubeDB will create the necessary resources to deploy the Elasticsearch cluster a
 ```bash
 $ watch kubectl get elasticsearch -n demo
 NAME         VERSION        STATUS   AGE
-es-cluster   xpack-7.16.2   Ready    2m48s
+es-cluster   xpack-8.11.1   Ready    2m48s
 ```
 Here, Elasticsearch is in `Ready` state. It means the database is ready to accept connections.
 
@@ -336,7 +336,7 @@ Spec:
             Storage:         1Gi
         Storage Class Name:  linode-block-storage
       Suffix:                master
-  Version:                   xpack-7.16.2
+  Version:                   xpack-8.11.1
 Status:
   Conditions:
     Last Transition Time:  2022-03-14T06:33:20Z

@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # MongoDB Sharded Database Volume Expansion
 
 This guide will show you how to use `KubeDB` Ops-manager operator to expand the volume of a MongoDB Sharded Database.
@@ -57,7 +55,7 @@ standard (default)   kubernetes.io/gce-pd   Delete          Immediate           
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `MongoDB` standalone database with version `4.2.3`.
+Now, we are going to deploy a `MongoDB` standalone database with version `4.4.26`.
 
 ### Deploy MongoDB
 
@@ -70,7 +68,7 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 4.2.3
+  version: 4.4.26
   shardTopology:
     configServer:
       replicas: 2
@@ -103,7 +101,7 @@ Now, wait until `mg-sharding` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo
 NAME          VERSION    STATUS    AGE
-mg-sharding   4.2.3      Ready     2m45s
+mg-sharding   4.4.26      Ready     2m45s
 ```
 
 Let's check volume size from statefulset, and from the persistent volume of shards and config servers,

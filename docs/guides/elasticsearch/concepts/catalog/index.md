@@ -41,7 +41,7 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2022.12.28
     helm.sh/chart: kubedb-catalog-v2022.12.28
-  name: xpack-7.14.0
+  name: xpack-8.11.1
   resourceVersion: "1844"
   uid: db8b5122-bce8-4e80-b608-e314954f2980
 spec:
@@ -90,7 +90,7 @@ We follow this convention for naming ElasticsearchVersion CRD:
 
 - Name format: `{Security Plugin Name}-{Application Version}-{Modification Tag}`
 
-- Samples: `searchguard-7.9.3`, `xpack-7.9.1-v1`, `opendistro-1.12.0`, etc.
+- Samples: `xpack-8.11.1`, `xpack-8.11.1`, `opensearch-2.8.0`, etc.
 
 We use the original Elasticsearch docker image provided by the distributors. Then we bundle the image with the necessary sidecar and init container images which facilitate features like sysctl kernel settings, custom configuration, monitoring matrices, etc.  An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features.
 

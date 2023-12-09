@@ -156,7 +156,7 @@ metadata:
   annotations:
     stash.appscode.com/backup-blueprint: elasticsearch-backup-template
 spec:
-  version: xpack-7.9.1-v1
+  version: xpack-8.11.1
   replicas: 1
   storageType: Durable
   storage:
@@ -334,7 +334,7 @@ metadata:
     stash.appscode.com/backup-blueprint: elasticsearch-backup-template
     stash.appscode.com/schedule: "*/3 * * * *"
 spec:
-  version: xpack-7.9.1-v1
+  version: xpack-8.11.1
   replicas: 1
   storageType: Durable
   storage:
@@ -513,7 +513,7 @@ metadata:
     stash.appscode.com/backup-blueprint: elasticsearch-backup-template
     params.stash.appscode.com/args: --ignoreType=settings,template
 spec:
-  version: xpack-7.9.1-v1
+  version: xpack-8.11.1
   replicas: 1
   storageType: Durable
   storage:

@@ -7,7 +7,7 @@ metadata:
     stash.appscode.com/backup-blueprint: mongodb-backup-template
     stash.appscode.com/schedule: "*/3 * * * *"
 spec:
-  version: "4.4.6"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"

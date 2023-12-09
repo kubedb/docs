@@ -53,7 +53,7 @@ $ kubectl get elasticsearchversions 7.3.2 -o yaml
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: ElasticsearchVersion
 metadata:
-  name: searchguard-7.9.3
+  name: xpack-8.11.1
 spec:
   authPlugin: SearchGuard
   db:
@@ -91,7 +91,7 @@ metadata:
   name: es-xpack-disabled
   namespace: demo
 spec:
-  version: searchguard-7.9.3
+  version: xpack-8.11.1
   disableSecurity: true
   storage:
     storageClassName: "standard"

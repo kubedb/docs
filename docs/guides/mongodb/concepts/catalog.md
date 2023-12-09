@@ -30,12 +30,12 @@ As with all other Kubernetes objects, a MongoDBVersion needs `apiVersion`, `kind
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MongoDBVersion
 metadata:
-  name: "4.2.3"
+  name: "4.4.26"
   labels:
     app: kubedb
 spec:
   db:
-    image: mongo:4.2.3
+    image: mongo:4.4.26
   distribution: Official
   exporter:
     image: kubedb/mongodb_exporter:v0.32.0
@@ -48,13 +48,13 @@ spec:
   stash:
     addon:
       backupTask:
-        name: mongodb-backup-4.2.3
+        name: mongodb-backup-4.4.6
       restoreTask:
-        name: mongodb-restore-4.2.3
+        name: mongodb-restore-4.4.6
   updateConstraints:
     allowlist:
       - '>= 4.4.0, < 5.0.0'
-  version: 4.2.3
+  version: 4.4.26
 ```
 
 ### metadata.name

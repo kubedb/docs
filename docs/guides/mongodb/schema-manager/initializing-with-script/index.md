@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Initializing with Script
 
 This guide will show you how to to create database and initialize script with MongoDB `Schema Manager` using `Schema Manager Operator`.
@@ -65,7 +63,7 @@ spec:
     selector:
       matchLabels:
         "schema.kubedb.com": "mongo"
-  version: "4.4.6"
+  version: "4.4.26"
   replicaSet:
     name: "replicaset"
   podTemplate:
@@ -88,7 +86,7 @@ spec:
 
 Here,
 
-- `spec.version` is the name of the MongoDBVersion CR. Here, we are using MongoDB version `4.4.6`.
+- `spec.version` is the name of the MongoDBVersion CR. Here, we are using MongoDB version `4.4.26`.
 - `spec.storageType` specifies the type of storage that will be used for MongoDB. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the MongoDB using `EmptyDir` volume.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.allowedSchemas` specifies the namespace and selectors of allowed `Schema Manager`.
@@ -297,7 +295,7 @@ Here, we are going to connect to the database with the login credentials and ver
 ```bash
 $ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
 root@mongodb-0:/# mongo --authenticationDatabase=initdb --username='v-kubernetes-demo-k8s-f7695915-1e-6sXNTvVpPDtueRQWvoyH-1662641233' --password='-e4v396GFjjjMgPPuU7q' initdb
-MongoDB shell version v4.4.6
+MongoDB shell version v4.4.26
 ...
 
 replicaset:PRIMARY> show dbs
@@ -326,7 +324,7 @@ Here, we can see that the `STATUS` of the `schema-manager` is `Expired` because 
 ```bash
 $ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
 root@mongodb-0:/# mongo --authenticationDatabase=initdb --username='v-kubernetes-demo-k8s-f7695915-1e-6sXNTvVpPDtueRQWvoyH-1662641233' --password='-e4v396GFjjjMgPPuU7q' initdb
-MongoDB shell version v4.4.6
+MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/initdb?authSource=initdb&compressors=disabled&gssapiServiceName=mongodb
 Error: Authentication failed. :
 connect@src/mongo/shell/mongo.js:374:17

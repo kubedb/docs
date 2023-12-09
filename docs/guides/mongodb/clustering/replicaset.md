@@ -48,7 +48,7 @@ metadata:
   name: mgo-replicaset
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   replicas: 3
   replicaSet:
     name: rs0
@@ -146,7 +146,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-replicaset","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.2.3"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-replicaset","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
 
     Creation Timestamp:  2021-02-10T05:07:10Z
     Labels:
@@ -170,7 +170,7 @@ AppBinding:
     Secret:
       Name:   mgo-replicaset-auth
     Type:     kubedb.com/mongodb
-    Version:  4.2.3
+    Version:  4.4.26
 
 Events:
   Type    Reason      Age   From              Message
@@ -227,7 +227,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-replicaset","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.2.3"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-replicaset","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
   creationTimestamp: "2021-02-11T04:29:29Z"
   finalizers:
     - kubedb.com
@@ -364,7 +364,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   terminationPolicy: Delete
-  version: 4.2.3
+  version: 4.4.26
 status:
   conditions:
     - lastTransitionTime: "2021-02-11T04:29:29Z"
@@ -419,9 +419,9 @@ $ kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.\password}
 $ kubectl exec -it mgo-replicaset-0 -n demo bash
 
 mongodb@mgo-replicaset-0:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
-MongoDB shell version v4.2.3
+MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
-MongoDB server version: 4.2.3
+MongoDB server version: 4.4.26
 Welcome to the MongoDB shell.
 
 rs0:PRIMARY> > rs.isMaster().primary
@@ -470,9 +470,9 @@ We will exec in `mgo-replicaset-1`(which is secondary member right now) to check
 ```bash
 $ kubectl exec -it mgo-replicaset-1 -n demo bash
 mongodb@mgo-replicaset-1:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
-MongoDB shell version v4.2.3
+MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
-MongoDB server version: 4.2.3
+MongoDB server version: 4.4.26
 Welcome to the MongoDB shell.
 
 rs0:SECONDARY> rs.slaveOk()
@@ -538,9 +538,9 @@ Now verify the automatic failover, Let's exec in `mgo-replicaset-1` pod,
 ```bash
 $ kubectl exec -it mgo-replicaset-1 -n demo bash
 mongodb@mgo-replicaset-1:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
-MongoDB shell version v4.2.3
+MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
-MongoDB server version: 4.2.3
+MongoDB server version: 4.4.26
 Welcome to the MongoDB shell.
 
 rs0:SECONDARY> rs.isMaster().primary
@@ -606,7 +606,7 @@ Now, you can run the following command to get all mongodb resources in demo name
 ```bash
 $ kubectl get mg,sts,svc,secret,pvc -n demo
 NAME                                VERSION   STATUS   AGE
-mongodb.kubedb.com/mgo-replicaset   4.2.3     Halted   9m43s
+mongodb.kubedb.com/mgo-replicaset   4.4.26     Halted   9m43s
 
 NAME                            TYPE                                  DATA   AGE
 secret/default-token-x2zcl      kubernetes.io/service-account-token   3      47h
@@ -634,7 +634,7 @@ When the database is resumed successfully, you can see the database Status is se
 ```bash
 $ kubectl get mg -n demo
 NAME             VERSION   STATUS    AGE
-mgo-replicaset   4.2.3     Ready     6m27s
+mgo-replicaset   4.4.26     Ready     6m27s
 ```
 
 Now, If you again exec into the primary `pod` and look for previous data, you will see that, all the data persists.
