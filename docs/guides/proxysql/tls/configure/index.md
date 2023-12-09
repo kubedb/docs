@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Configure TLS/SSL in ProxySQL Frontend Connections
 
 `KubeDB` supports providing TLS/SSL encryption for `ProxySQL`. This tutorial will show you how to use `KubeDB` to deploy a `ProxySQL` with TLS/SSL configuration.

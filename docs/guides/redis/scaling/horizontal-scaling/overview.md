@@ -12,11 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Redis Horizontal Scaling
 
-This guide will give an overview on how KubeDB Enterprise operator scales up or down of `Redis` cluster database for both the number of replicas and masters.
+This guide will give an overview on how KubeDB Ops Manager scales up or down of `Redis` cluster database for both the number of replicas and masters.
 
 ## Before You Begin
 
@@ -26,7 +24,7 @@ This guide will give an overview on how KubeDB Enterprise operator scales up or 
 
 ## How Horizontal Scaling Process Works
 
-The following diagram shows how KubeDB Enterprise operator scales up or down `Redis` database components. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager scales up or down `Redis` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Horizontal scaling process of Redis" src="/docs/images/day-2-operation/redis/rd-horizontal_scaling.svg">

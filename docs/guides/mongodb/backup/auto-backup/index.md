@@ -62,7 +62,7 @@ mongodb-backup-4.0.5           23h
 mongodb-backup-4.1.13          23h
 mongodb-backup-4.1.4           23h
 mongodb-backup-4.1.7           23h
-mongodb-backup-4.2.3           23h
+mongodb-backup-4.4.6           23h
 mongodb-backup-4.4.6           23h
 mongodb-backup-5.0.3           23h
 mongodb-restore-3.4.17         23h
@@ -75,7 +75,7 @@ mongodb-restore-4.0.5          23h
 mongodb-restore-4.1.13         23h
 mongodb-restore-4.1.4          23h
 mongodb-restore-4.1.7          23h
-mongodb-restore-4.2.3          23h
+mongodb-restore-4.4.6          23h
 mongodb-restore-4.4.6          23h
 mongodb-restore-5.0.3          23h
 
@@ -154,7 +154,7 @@ metadata:
   annotations:
     stash.appscode.com/backup-blueprint: mongodb-backup-template
 spec:
-  version: "4.4.6"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -329,7 +329,7 @@ metadata:
     stash.appscode.com/backup-blueprint: mongodb-backup-template
     stash.appscode.com/schedule: "*/3 * * * *"
 spec:
-  version: "4.4.6"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -515,7 +515,7 @@ metadata:
     stash.appscode.com/backup-blueprint: mongodb-backup-template
     params.stash.appscode.com/args: "--db=testdb"
 spec:
-  version: "4.4.6"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"

@@ -9,7 +9,10 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [Stash Enterprise Edition](https://stash.run/docs/latest/setup/install/enterprise/) to try this feature. You can use KubeDB Enterprise license to install Stash Enterprise edition. Database backup with Stash is already included in the KubeDB Enterprise license. So, you don't need a separate license for Stash." >}}
+
+> New to KubeDB? Please start [here](/docs/README.md).
+
+{{< notice type="warning" message="Please install [Stash](https://stash.run/docs/latest/setup/install/enterprise/) to try this feature. Database backup with Stash is already included in the KubeDB license. So, you don't need a separate license for Stash." >}}
 
 # Redis Backup & Restore Overview
 

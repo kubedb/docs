@@ -138,7 +138,7 @@ metadata:
   name: coreos-prom-mgo
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -174,7 +174,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get mg -n demo coreos-prom-mgo
 NAME              VERSION   STATUS    AGE
-coreos-prom-mgo   4.2.3     Ready     34s
+coreos-prom-mgo   4.4.26     Ready     34s
 ```
 
 KubeDB will create a separate stats service with name `{MongoDB crd name}-stats` for monitoring purpose.

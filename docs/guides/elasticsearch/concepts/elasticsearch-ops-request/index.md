@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # ElasticsearchOpsRequest
 
 ## What is ElasticsearchOpsRequest
@@ -35,7 +33,7 @@ spec:
   databaseRef:
     name: es
   updateVersion:
-    targetVersion: searchguard-7.5.2-v1
+    targetVersion: xpack-8.11.1
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -81,7 +79,7 @@ It specifies the desired version information required for the Elasticsearch vers
 > KubeDB does not support downgrade for Elasticsearch.
 
 **Samples:**
-Let's assume we have and Elasticsearch cluster of version `xpack-8.2.0`. The Elasticsearch custom resource is named `es-quickstart` and it's provisioned in demo namespace. Now, you want to update your Elasticsearch cluster to `xpack-8.5.2`. Apply this YAML to update to your desired version.
+Let's assume we have and Elasticsearch cluster of version `xpack-8.2.3`. The Elasticsearch custom resource is named `es-quickstart` and it's provisioned in demo namespace. Now, you want to update your Elasticsearch cluster to `xpack-8.5.2`. Apply this YAML to update to your desired version.
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ElasticsearchOpsRequest

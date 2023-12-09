@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Vertical Scale MongoDB Replicaset
 
 This guide will show you how to use `KubeDB` Ops-manager operator to update the resources of a MongoDB replicaset database.
@@ -45,7 +43,7 @@ Here, we are going to deploy a  `MongoDB` sharded database using a supported ver
 
 ### Prepare MongoDB Sharded Database
 
-Now, we are going to deploy a `MongoDB` sharded database with version `4.2.3`.
+Now, we are going to deploy a `MongoDB` sharded database with version `4.4.26`.
 
 ### Deploy MongoDB Sharded Database 
 
@@ -58,7 +56,7 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 4.2.3
+  version: 4.4.26
   shardTopology:
     configServer:
       replicas: 3
@@ -91,7 +89,7 @@ Now, wait until `mg-sharding` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo                                                            
 NAME          VERSION    STATUS    AGE
-mg-sharding   4.2.3      Ready     8m51s
+mg-sharding   4.4.26      Ready     8m51s
 ```
 
 Let's check the Pod containers resources of various components (mongos, shard, configserver etc.) of the database,

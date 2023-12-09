@@ -18,21 +18,18 @@ aliases:
 # Setup
 
 <div style="text-align: center;">
-  <a class="button is-link is-medium is-active has-text-weight-normal" href="/docs/setup/install/community.md" style="background:#00A651; width: 18rem;">Install Community Edition</a>
-  <a class="button is-info is-medium is-active has-text-weight-normal" href="/docs/setup/install/enterprise.md"  style="background:#FC6011; width: 18rem;">Try Enterprise Edition</a>
-  <a style="margin-top: 10px; display: block;" href="https://kubedb.com/pricing/">Compare Editions</a>
+  <a class="button is-info is-medium is-active has-text-weight-normal" href="/docs/setup/install/kubedb.md"  style="background:#FC6011; width: 18rem;">Try KubeDB</a>
 </div>
 <br>
 
 The setup section contains instructions for installing the KubeDB and its various components in Kubernetes. This section has been divided into the following sub-sections:
 
 - **Install KubeDB:** Installation instructions for KubeDB and its various components.
-  - [Community Edition](/docs/setup/install/community.md): Installation instructions for KubeDB Community Edition.
-  - [Enterprise Edition](/docs/setup/install/enterprise.md): Installation instructions for KubeDB Enterprise Edition.
+  - [KubeDB](/docs/setup/install/kubedb.md): Installation instructions for KubeDB.
   - [KubeDB kubectl Plugin](/docs/setup/install/kubectl_plugin.md): Installation instructions for KubeDB `kubectl` plugin.
   - [Troubleshooting](/docs/setup/install/troubleshoting.md): Troubleshooting guide for various installation problems.
+
 - **Uninstall KubeDB:** Uninstallation instructions for KubeDB and its various components.
-  - [Community Edition](/docs/setup/uninstall/community.md): Uninstallation instructions for KubeDB Community Edition.
-  - [Enterprise Edition](/docs/setup/uninstall/enterprise.md): Uninstallation instructions for KubeDB Enterprise Edition.
+  - [KubeDB](/docs/setup/uninstall/kubedb.md): Uninstallation instructions for KubeDB.
   - [KubeDB kubectl Plugin](/docs/setup/uninstall/kubectl_plugin.md): Uninstallation instructions for KubeDB `kubectl` plugin.
 - [Upgrading KubeDB](/docs/setup/upgrade/index.md): Instruction for updating KubeDB license and upgrading between various KubeDB versions.

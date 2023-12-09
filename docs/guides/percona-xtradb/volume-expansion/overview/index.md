@@ -12,11 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # PerconaXtraDB Volume Expansion
 
-This guide will give an overview on how KubeDB Enterprise operator expand the volume of `PerconaXtraDB`.
+This guide will give an overview on how KubeDB Ops Manager expand the volume of `PerconaXtraDB`.
 
 ## Before You Begin
 
@@ -26,7 +24,7 @@ This guide will give an overview on how KubeDB Enterprise operator expand the vo
 
 ## How Volume Expansion Process Works
 
-The following diagram shows how KubeDB Enterprise operator expand the volumes of `PerconaXtraDB` database components. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager expand the volumes of `PerconaXtraDB` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Volume Expansion process of PerconaXtraDB" src="/docs/guides/percona-xtradb/volume-expansion/overview/images/volume-expansion.jpeg">

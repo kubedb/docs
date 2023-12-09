@@ -4,7 +4,7 @@ metadata:
   name: init-sample
   namespace: restored
 spec:
-  version: opendistro-1.11.0
+  version: opensearch-2.8.0
   storageType: Durable
   init:
     waitForInitialRestore: true

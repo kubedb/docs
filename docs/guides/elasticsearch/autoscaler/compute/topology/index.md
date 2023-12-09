@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Autoscaling the Compute Resource of an Elasticsearch Topology Cluster
 
 This guide will show you how to use `KubeDB` to autoscale compute resources i.e. `cpu` and `memory` of an Elasticsearch topology cluster.
@@ -47,7 +45,7 @@ Here, we are going to deploy an `Elasticsearch` topology cluster using a support
 
 #### Deploy Elasticsearch Topology Cluster
 
-In this section, we are going to deploy an Elasticsearch topology with ElasticsearchVersion `opendistro-1.12.0`. Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy an Elasticsearch topology with ElasticsearchVersion `opensearch-2.8.0`. Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -57,7 +55,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: opendistro-1.12.0
+  version: opensearch-2.8.0
   storageType: Durable
   topology:
     master:
@@ -105,8 +103,8 @@ Now, wait until `es-topology` has status `Ready`. i.e,
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION             STATUS         AGE
-es-topology   opendistro-1.12.0   Provisioning   113s
-es-topology   opendistro-1.12.0   Ready          115s
+es-topology   opensearch-2.8.0   Provisioning   113s
+es-topology   opensearch-2.8.0   Ready          115s
 ```
 
 Let's check an ingest node containers resources,

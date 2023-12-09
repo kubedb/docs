@@ -4,7 +4,7 @@ metadata:
   name: es-multinode
   namespace: demo
 spec:
-  version: xpack-7.9.1-v1
+  version: xpack-8.11.1
   enableSSL: true
   replicas: 3
   configSecret:

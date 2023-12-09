@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Storage Autoscaling of a MongoDB Standalone Database
 
 This guide will show you how to use `KubeDB` to autoscale the storage of a MongoDB standalone database.
@@ -62,7 +60,7 @@ Now, we are going to deploy a `MongoDB` standalone using a supported version by 
 
 #### Deploy MongoDB standalone
 
-In this section, we are going to deploy a MongoDB standalone database with version `4.2.3`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to deploy a MongoDB standalone database with version `4.4.26`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -71,7 +69,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: topolvm-provisioner
@@ -93,7 +91,7 @@ Now, wait until `mg-standalone` has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo
 NAME            VERSION    STATUS    AGE
-mg-standalone   4.2.3      Ready     2m53s
+mg-standalone   4.4.26      Ready     2m53s
 ```
 
 Let's check volume size from statefulset, and from the persistent volume,

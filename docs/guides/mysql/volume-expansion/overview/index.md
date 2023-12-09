@@ -12,11 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # MySQL Volume Expansion
 
-This guide will give an overview on how KubeDB Enterprise operator expand the volume of `MySQL`.
+This guide will give an overview on how KubeDB Ops Manager expand the volume of `MySQL`.
 
 ## Before You Begin
 
@@ -26,7 +24,7 @@ This guide will give an overview on how KubeDB Enterprise operator expand the vo
 
 ## How Volume Expansion Process Works
 
-The following diagram shows how KubeDB Enterprise operator expand the volumes of `MySQL` database components. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager expand the volumes of `MySQL` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Volume Expansion process of MySQL" src="/docs/guides/mysql/volume-expansion/overview/images/volume-expansion.jpg">

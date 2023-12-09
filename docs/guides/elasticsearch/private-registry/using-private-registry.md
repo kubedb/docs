@@ -86,7 +86,7 @@ Here, is an example of ElasticsearchVersion crd. Replace `<YOUR_PRIVATE_REGISTRY
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: ElasticsearchVersion
 metadata:
-  name: searchguard-7.9.3
+  name: xpack-8.11.1
 spec:
   authPlugin: SearchGuard
   db:
@@ -135,7 +135,7 @@ metadata:
   name: pvt-reg-elasticsearch
   namespace: demo
 spec:
-  version: "searchguard-7.9.3"
+  version: "xpack-8.11.1"
   storage:
     storageClassName: "standard"
     accessModes:

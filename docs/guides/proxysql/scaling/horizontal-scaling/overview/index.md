@@ -12,11 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # ProxySQL Horizontal Scaling
 
-This guide will give an overview on how KubeDB Enterprise operator scales up or down `ProxySQL Cluster`.
+This guide will give an overview on how KubeDB Ops Manager scales up or down `ProxySQL Cluster`.
 
 ## Before You Begin
 
@@ -26,7 +24,7 @@ This guide will give an overview on how KubeDB Enterprise operator scales up or 
 
 ## How Horizontal Scaling Process Works
 
-The following diagram shows how KubeDB Enterprise operator scales up or down `ProxySQL` components. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager scales up or down `ProxySQL` components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Horizontal scaling process of ProxySQL" src="/docs/guides/proxysql/scaling/horizontal-scaling/overview/images/horizontal-scaling.png">

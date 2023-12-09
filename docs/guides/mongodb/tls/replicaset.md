@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Run MongoDB with TLS/SSL (Transport Encryption)
 
 KubeDB supports providing TLS/SSL encryption (via, `sslMode` and `clusterAuthMode`) for MongoDB. This tutorial will show you how to use KubeDB to run a MongoDB database with TLS/SSL encryption.
@@ -104,7 +102,7 @@ metadata:
   name: mgo-rs-tls
   namespace: demo
 spec:
-  version: "4.1.13-v1"
+  version: "4.4.26"
   sslMode: requireSSL
   tls:
     issuerRef:
@@ -137,7 +135,7 @@ Now, wait until `mgo-rs-tls created` has status `Ready`. i.e,
 $ watch kubectl get mg -n demo
 Every 2.0s: kubectl get mongodb -n demo
 NAME         VERSION     STATUS    AGE
-mgo-rs-tls   4.1.13-v1   Ready     4m10s
+mgo-rs-tls   4.4.26   Ready     4m10s
 ```
 
 ### Verify TLS/SSL in MongoDB Replicaset

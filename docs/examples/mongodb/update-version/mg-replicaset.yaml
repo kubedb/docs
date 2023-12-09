@@ -4,7 +4,7 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "3.6.8-v1"
+  version: "4.4.26"
   replicaSet: 
     name: "replicaset"
   replicas: 3

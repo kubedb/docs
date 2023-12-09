@@ -12,8 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Update version of MongoDB Sharded Database
 
 This guide will show you how to use `KubeDB` Ops-manager operator to update the version of `MongoDB` Sharded Database.
@@ -54,7 +52,7 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 3.6.8-v1
+  version: 4.4.26
   shardTopology:
     configServer:
       replicas: 2
@@ -87,7 +85,7 @@ Now, wait until `mg-sharding` created has status `Ready`. i.e,
 ```bash
 $ k get mongodb -n demo                                                                                                                                             
 NAME          VERSION    STATUS    AGE
-mg-sharding   3.6.8-v1   Ready     2m9s
+mg-sharding   4.4.26   Ready     2m9s
 ```
 
 We are now ready to apply the `MongoDBOpsRequest` CR to update this database.
@@ -111,7 +109,7 @@ spec:
   databaseRef:
     name: mg-sharding
   updateVersion:
-    targetVersion: 4.0.5-v3
+    targetVersion: 4.4.26
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10
@@ -208,7 +206,7 @@ Spec:
   Timeout:                          5m
   Type:                             UpdateVersion
   UpdateVersion:
-    Target Version:  4.0.5-v3
+    Target Version:  4.4.26
 Status:
   Conditions:
     Last Transition Time:  2022-10-26T10:36:12Z
@@ -286,7 +284,7 @@ Now, we are going to verify whether the `MongoDB` and the related `StatefulSets`
 
 ```bash
 $ kubectl get mg -n demo mg-sharding -o=jsonpath='{.spec.version}{"\n"}'
-4.0.5-v3
+4.4.26
 
 $ kubectl get sts -n demo mg-sharding-configsvr -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 mongo:4.0.5

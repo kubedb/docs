@@ -48,7 +48,7 @@ metadata:
   name: mongo-arb
   namespace: demo
 spec:
-  version: "4.4.6"
+  version: "4.4.26"
   replicaSet:
     name: "rs0"
   replicas: 2
@@ -165,7 +165,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":null},"replicaSet":{"name":"rs0"},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"4.4.6"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":null},"replicaSet":{"name":"rs0"},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"4.4.26"}}
 
     Creation Timestamp:  2022-04-21T08:40:21Z
     Labels:
@@ -195,7 +195,7 @@ AppBinding:
     Secret:
       Name:   mongo-arb-auth
     Type:     kubedb.com/mongodb
-    Version:  4.4.6
+    Version:  4.4.26
 
 Events:
   Type    Reason      Age   From               Message
@@ -241,7 +241,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":null},"replicaSet":{"name":"rs0"},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"4.4.6"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":null},"replicaSet":{"name":"rs0"},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-04-21T08:39:32Z"
   finalizers:
   - kubedb.com
@@ -391,7 +391,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   terminationPolicy: WipeOut
-  version: 4.4.6
+  version: 4.4.26
 status:
   conditions:
   - lastTransitionTime: "2022-04-21T08:39:32Z"
@@ -447,9 +447,9 @@ OX4yb!IFm;~yAHkD
 $ kubectl exec -it mongo-arb-0 -n demo bash
 
 mongodb@mongo-arb-0:/$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
-MongoDB shell version v4.4.6
+MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
-MongoDB server version: 4.4.6
+MongoDB server version: 4.4.26
 Welcome to the MongoDB shell.
 
 rs0:PRIMARY> rs.status()
@@ -637,9 +637,9 @@ We will exec in `mongo-arb-1`(which is secondary member right now) to check the 
 ```bash
 $ kubectl exec -it mongo-arb-1 -n demo bash
 mongodb@mongo-arb-1:/$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
-MongoDB shell version v4.4.6
+MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
-MongoDB server version: 4.4.6
+MongoDB server version: 4.4.26
 Welcome to the MongoDB shell.
 
 rs0:SECONDARY> rs.slaveOk()
@@ -708,9 +708,9 @@ Now verify the automatic failover, Let's exec in `mongo-arb-0` pod,
 ```bash
 $ kubectl exec -it mongo-arb-0  -n demo bash
 mongodb@mongo-arb-1:/$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
-MongoDB shell version v4.4.6
+MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
-MongoDB server version: 4.4.6
+MongoDB server version: 4.4.26
 Welcome to the MongoDB shell.
 
 rs0:SECONDARY> rs.isMaster().primary
@@ -763,7 +763,7 @@ Now, you can run the following command to get all mongodb resources in demo name
 ```bash
 $ kubectl get mg,sts,svc,secret,pvc -n demo
 NAME                           VERSION   STATUS   AGE
-mongodb.kubedb.com/mongo-arb   4.4.6     Halted   21m
+mongodb.kubedb.com/mongo-arb   4.4.26     Halted   21m
 
 NAME                         TYPE                                  DATA   AGE
 secret/default-token-nzk64   kubernetes.io/service-account-token   3      146m
@@ -791,7 +791,7 @@ When the database is resumed successfully, you can see the database Status is se
 ```bash
 $ kubectl get mg -n demo
 NAME                           VERSION   STATUS   AGE
-mongodb.kubedb.com/mongo-arb   4.4.6     Ready    23m
+mongodb.kubedb.com/mongo-arb   4.4.26     Ready    23m
 ```
 
 Now, If you again exec into the primary `pod` and look for previous data, you will see that, all the data persists.

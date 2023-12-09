@@ -47,7 +47,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 
 ## Create an Elasticsearch Cluster
 
-We are going to create a Elasticsearch Simple Dedicated Cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, 2 ingest nodes. Here, we are using Elasticsearch version (`xpack-8.2.0`) of Elasticsearch distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+We are going to create a Elasticsearch Simple Dedicated Cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, 2 ingest nodes. Here, we are using Elasticsearch version (`xpack-8.2.3`) of Elasticsearch distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -57,7 +57,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: xpack-8.2.0
+  version: xpack-8.2.3
   storageType: Durable
   topology:
     master:
@@ -91,7 +91,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using Elasticsearch version `xpack-8.2.0` of Elasticsearch distribution.
+- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using Elasticsearch version `xpack-8.2.3` of Elasticsearch distribution.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.storageType` - specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.topology` - specifies the node-specific properties for the Elasticsearch cluster.
@@ -116,7 +116,7 @@ KubeDB will create the necessary resources to deploy the Elasticsearch cluster a
 ```bash
 $ watch kubectl get elasticsearch -n demo
 NAME         VERSION              STATUS   AGE
-es-cluster   xpack-8.2.0          Ready    4m32s
+es-cluster   xpack-8.2.3          Ready    4m32s
 ```
 Here, Elasticsearch is in `Ready` state. It means the database is ready to accept connections.
 
@@ -296,7 +296,7 @@ Spec:
             Storage:         1Gi
         Storage Class Name:  standard
       Suffix:                master
-  Version:                   xpack-8.2.0
+  Version:                   xpack-8.2.3
 Status:
   Conditions:
     Last Transition Time:  2022-06-08T11:03:43Z
