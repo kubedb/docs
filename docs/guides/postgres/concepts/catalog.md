@@ -91,7 +91,9 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --namespace kubedb --create-namespace \
   --set additionalPodSecurityPolicies[0]=custom-db-policy \
-  --set additionalPodSecurityPolicies[1]=custom-snapshotter-policy
+  --set additionalPodSecurityPolicies[1]=custom-snapshotter-policy \
+  --set-file global.license=/path/to/the/license.txt \
+  --wait --burst-limit=10000 --debug
 ```
 
 ## Next Steps
