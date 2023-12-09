@@ -49,7 +49,8 @@ $ kubectl get crd -o name | grep kubedb.com | xargs kubectl delete
 If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and uninstall using `kubectl`.
 
 ```bash
-$ helm template kubedb appscode/kubedb --namespace kubedb | kubectl delete -f -
+$ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
+  --namespace kubedb | kubectl delete -f -
 ```
 
 </div>
