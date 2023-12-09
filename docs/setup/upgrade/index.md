@@ -36,9 +36,10 @@ Now, upgrade the KubeDB helm chart using the following command. You can find the
 
 ```bash
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
-    --version {{< param "info.version" >}} \
-    --namespace kubedb --create-namespace \
-    --set-file global.license=/path/to/the/license.txt
+  --version {{< param "info.version" >}} \
+  --namespace kubedb --create-namespace \
+  --set-file global.license=/path/to/the/license.txt \
+  --wait --burst-limit=10000 --debug
 ```
 
 {{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
@@ -49,7 +50,8 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --namespace kubedb --create-namespace \
   --set global.insecureRegistries[0]=hub.example.com \
   --set global.insecureRegistries[1]=hub2.example.com \
-  --set-file global.license=/path/to/the/license.txt
+  --set-file global.license=/path/to/the/license.txt \
+  --wait --burst-limit=10000 --debug
 ```
 
 #### 3. Install/Upgrade Stash Operator
@@ -116,7 +118,8 @@ helm ls -A | grep kubedb
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version=<cur_version> \
   --reuse-values \
-  --set-file global.license=/path/to/new/license.txt
+  --set-file global.license=/path/to/new/license.txt \
+  --wait --burst-limit=10000 --debug
 ```
 
 </div>

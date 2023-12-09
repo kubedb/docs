@@ -84,7 +84,7 @@ $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
 
 {{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
 
-```
+```bash
 $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
@@ -113,7 +113,7 @@ $ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
 
 {{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
 
-```
+```bash
 $ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
