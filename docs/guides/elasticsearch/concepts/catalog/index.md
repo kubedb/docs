@@ -126,7 +126,8 @@ On the other hand, `DenyList` contains all the rejected versions for the update 
 `spec.podSecurityPolicies.databasePolicyName` is a required field that specifies the name of the pod security policy required to get the database server pod(s) running.
 
 ```bash
-helm upgrade kubedb-operator appscode/kubedb --namespace kube-system \
+helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
+  --namespace kubedb --create-namespace \
   --set additionalPodSecurityPolicies[0]=custom-db-policy \
   --set additionalPodSecurityPolicies[1]=custom-snapshotter-policy
 ```

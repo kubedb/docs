@@ -35,7 +35,7 @@ kubectl apply -f https://github.com/kubedb/installer/raw/{{< param "info.version
 Now, upgrade the KubeDB helm chart using the following command. You can find the latest installation guide [here](/docs/setup/README.md). We recommend that you do **not** follow the legacy installation guide, as the new process is much more simpler.
 
 ```bash
-$ helm upgrade kubedb appscode/kubedb \
+helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
     --version {{< param "info.version" >}} \
     --namespace kubedb --create-namespace \
     --set-file global.license=/path/to/the/license.txt
@@ -44,7 +44,7 @@ $ helm upgrade kubedb appscode/kubedb \
 {{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
 
 ```bash
-$ helm upgrade kubedb appscode/kubedb \
+helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set global.insecureRegistries[0]=hub.example.com \
@@ -113,7 +113,8 @@ Follow the below instructions to update the license:
 helm ls -A | grep kubedb
 
 # update license key keeping the current version
-helm upgrade kubedb -n kubedb appscode/kubedb --version=<cur_version> \
+helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
+  --version=<cur_version> \
   --reuse-values \
   --set-file global.license=/path/to/new/license.txt
 ```
@@ -128,7 +129,8 @@ helm upgrade kubedb -n kubedb appscode/kubedb --version=<cur_version> \
 helm ls -A | grep kubedb
 
 # update license key keeping the current version
-helm template kubedb appscode/kubedb --version=<cur_version> \
+helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
+  --version=<cur_version> \
   --namespace kubedb --create-namespace \
   --set global.skipCleaner=true \
   --show-only appscode/kubedb/templates/license.yaml \
