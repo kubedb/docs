@@ -19,7 +19,7 @@ This guide will show you how to use `KubeDB` ops-manager operator to update the 
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` provisioner and enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [Postgres](/docs/guides/postgres/concepts/postgres.md)

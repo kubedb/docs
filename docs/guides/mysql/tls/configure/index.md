@@ -22,7 +22,7 @@ section_menu_id: guides
 
 - Install [`cert-manger`](https://cert-manager.io/docs/installation/) v1.0.0 or later to your cluster to manage your SSL/TLS certificates.
 
-- Install `KubeDB` community and enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -337,7 +337,7 @@ some-mysql-2   2/2     Running   0          2m3s
 
 If everything goes well, you can see that our tls-secrets will be created which contains server, client, exporter certificate. Server tls-secret will be used for server configuration and client tls-secret will be used for a secure connection.
 
-All tls-secret are created by `KubeDB` enterprise operator. Default tls-secret name formed as _{mysql-object-name}-{cert-alias}-cert_.
+All tls-secret are created by `KubeDB` Ops Manager. Default tls-secret name formed as _{mysql-object-name}-{cert-alias}-cert_.
 
 Let's check the tls-secrets have created,
 

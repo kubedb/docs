@@ -20,8 +20,8 @@ This guide will show you how to create database and initialize snapshot with Mon
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB Ops-manager operator` in your cluster following the steps [here](https://kubedb.com/docs/latest/setup/install/enterprise/).
-- Install `KubeVault Ops-manager operator` in your cluster following the steps [here](https://kubevault.com/docs/latest/setup/install/enterprise/).
+- Install `KubeDB Ops-manager operator` in your cluster following the steps [here](https://kubedb.com/docs/latest/setup/install/stash/).
+- Install `KubeVault Ops-manager operator` in your cluster following the steps [here](https://kubevault.com/docs/latest/setup/install/stash/).
 
 - You should be familiar with the following concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)

@@ -20,7 +20,7 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
-- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
+- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - If you are not familiar with how Stash backup and restore MySQL databases, please check the following guide [here](/docs/guides/mysql/backup/overview/index.md).
 - If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/overview/).
