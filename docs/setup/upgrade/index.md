@@ -56,7 +56,7 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 
 #### 3. Install/Upgrade Stash Operator
 
-Now, upgrade Stash if had previously installed Stash following the instructions [here](https://stash.run/docs/v2021.06.23/setup/upgrade/). If you had not installed Stash before, please install Stash Enterprise Edition following the instructions [here](https://stash.run/docs/v2021.06.23/setup/).
+Now, upgrade Stash if had previously installed Stash following the instructions [here](https://stash.run/docs/v2021.06.23/setup/upgrade/). If you had not installed Stash before, please install Stash following the instructions [here](https://stash.run/docs/v2021.06.23/setup/).
 
 
 ## Upgrading KubeDB from `v2021.01.26`(`v0.16.x`) and older to `{{< param "info.version" >}}`
@@ -85,7 +85,7 @@ Now, follow the latest installation guide to install the new version of the Kube
 
 #### 4. Install/Upgrade Stash Operator
 
-Now, upgrade Stash if had previously installed Stash following the instructions [here](https://stash.run/docs/latest/setup/upgrade/). If you had not installed Stash before, please install Stash Enterprise Edition following the instructions [here](https://stash.run/docs/latest/setup/).
+Now, upgrade Stash if had previously installed Stash following the instructions [here](https://stash.run/docs/latest/setup/upgrade/). If you had not installed Stash before, please install Stash following the instructions [here](https://stash.run/docs/latest/setup/).
 
 
 ## Updating License
