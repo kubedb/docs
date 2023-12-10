@@ -24,7 +24,7 @@ This guide will give you an overview of how KubeDB Ops Manager updates the resou
 
 ## How Vertical Scaling Process Works
 
-The following diagram shows how the KubeDB enterprise operator used to update the resources of the `Postgres` database server. Open the image in a new tab to see the enlarged version.
+The following diagram shows how the `KubeDB` Ops Manager used to update the resources of the `Postgres` database server. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Vertical scaling Flow" src="/docs/guides/postgres/scaling/vertical-scaling/overview/images/pg-vertical-scaling.png">
@@ -41,13 +41,13 @@ The vertical scaling process consists of the following steps:
 
 4. Then, in order to update the resources(for example `CPU`, `Memory` etc.) of the `Postgres` database the user creates a `PostgresOpsRequest` cr.
 
-5. `KubeDB` enterprise operator watches for `PostgresOpsRequest`.
+5. `KubeDB` Ops Manager watches for `PostgresOpsRequest`.
 
 6. When it finds one, it halts the `Postgres` object so that the `KubeDB` Provisioner operator doesn't perform any operation on the `Postgres` during the scaling process.
 
 7. Then the `KubeDB` Ops Manager operator will update resources of the StatefulSet replicas to reach the desired state.
 
-8. After successful updating of the resources of the StatefulSet's replica, the `KubeDB` enterprise operator updates the `Postgres` object resources to reflect the updated state.
+8. After successful updating of the resources of the StatefulSet's replica, the `KubeDB` Ops Manager updates the `Postgres` object resources to reflect the updated state.
 
 9. After successful updating of the `Postgres` resources, the `KubeDB` Ops Manager resumes the `Postgres` object so that the `KubeDB` Provisioner operator resumes its usual operations.
 

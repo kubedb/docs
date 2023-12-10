@@ -24,7 +24,7 @@ This guide will give an overview on how KubeDB Ops Manager reconfigures TLS conf
 
 ## How Reconfiguring MySQL TLS Configuration Process Works
 
-The following diagram shows how the KubeDB enterprise operator reconfigure TLS of  the `MySQL` database server. Open the image in a new tab to see the enlarged version.
+The following diagram shows how the `KubeDB` Ops Manager reconfigure TLS of  the `MySQL` database server. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="reconfigure tls " src="/docs/guides/mysql/reconfigure-tls/overview/images/reconfigure-tls.jpg">

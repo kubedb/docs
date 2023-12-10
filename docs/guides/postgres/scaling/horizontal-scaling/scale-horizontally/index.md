@@ -14,13 +14,13 @@ section_menu_id: guides
 
 # Horizontal Scale Postgres Cluster
 
-This guide will show you how to use `KubeDB` enterprise operator to increase/decrease the number of members of a `Postgres` Cluster.
+This guide will show you how to use `KubeDB` Ops Manager to increase/decrease the number of members of a `Postgres` Cluster.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` community and enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [Postgres](/docs/guides/postgres/concepts/postgres.md)
@@ -198,7 +198,7 @@ postgresopsrequest.ops.kubedb.com/pg-scale-up created
 
 **Verify Scale-Up Succeeded:**
 
-If everything goes well, `KubeDB` enterprise operator will scale up the StatefulSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` enterprise operator updates the replicas of the `Postgres` object.
+If everything goes well, `KubeDB` Ops Manager will scale up the StatefulSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` Ops Manager updates the replicas of the `Postgres` object.
 
 First, we will wait for `PostgresOpsRequest` to be successful. Run the following command to watch `PostgresOpsRequest` cr,
 
@@ -354,7 +354,7 @@ postgresopsrequest.ops.kubedb.com/pg-scale-down created
 
 **Verify Scale-down Succeeded:**
 
-If everything goes well, `KubeDB` enterprise operator will scale down the StatefulSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` enterprise operator updates the replicas of the `Postgres` object.
+If everything goes well, `KubeDB` Ops Manager will scale down the StatefulSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` Ops Manager updates the replicas of the `Postgres` object.
 
 Now, we will wait for `PostgresOpsRequest` to be successful. Run the following command to watch `PostgresOpsRequest` cr,
 

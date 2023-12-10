@@ -14,13 +14,13 @@ section_menu_id: guides
 
 # update major version of MySQL Group Replication
 
-This guide will show you how to use `KubeDB` enterprise operator to update the major version of `MySQL` Group Replication.
+This guide will show you how to use `KubeDB` Ops Manager to update the major version of `MySQL` Group Replication.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` community and enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MySQL](/docs/guides/mysql/concepts/database/index.md)
@@ -248,7 +248,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysqlopsrequest.ops.kubedb.com/my-update-major-group created
 ```
 
-> Note: During the upgradation of the major version of MySQL group replication, a new StatefulSet is created by the KubeDB enterprise operator and the old one is deleted. The name of the newly created StatefulSet is formed as follows: `<mysql-name>-<suffix>`.
+> Note: During the upgradation of the major version of MySQL group replication, a new StatefulSet is created by the `KubeDB` Ops Manager and the old one is deleted. The name of the newly created StatefulSet is formed as follows: `<mysql-name>-<suffix>`.
 Here, `<suffix>` is a positive integer number and starts with 1. It's determined as follows:
 For one-time major version updating of group replication, the suffix will be 1.
 For the 2nd time major version updating of group replication, the suffix will be 2.
@@ -256,7 +256,7 @@ It will be continued...
 
 **Verify MySQL version updated successfully:**
 
-If everything goes well, `KubeDB` enterprise operator will create a new `StatefulSet` named `my-group-1` with the desire updated version and delete the old one.
+If everything goes well, `KubeDB` Ops Manager will create a new `StatefulSet` named `my-group-1` with the desire updated version and delete the old one.
 
 At first, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 

@@ -14,13 +14,13 @@ section_menu_id: guides
 
 # update minor version of MySQL Standalone
 
-This guide will show you how to use `KubeDB` enterprise operator to update the minor version of `MySQL` standalone.
+This guide will show you how to use `KubeDB` Ops Manager to update the minor version of `MySQL` standalone.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` community and enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MySQL](/docs/guides/mysql/concepts/database/index.md)
@@ -222,7 +222,7 @@ mysqlopsrequest.ops.kubedb.com/my-update-minor-standalone created
 
 **Verify MySQL version updated successfully:**
 
-If everything goes well, `KubeDB` enterprise operator will update the image of `MySQL`, `StatefulSet`, and its `Pod`.
+If everything goes well, `KubeDB` Ops Manager will update the image of `MySQL`, `StatefulSet`, and its `Pod`.
 
 At first, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 

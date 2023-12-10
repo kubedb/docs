@@ -55,7 +55,7 @@ Deploying MySQL with TLS/SSL configuration process consists of the following ste
 
 4. When it finds one, it creates `Secret`, `Service`, etc. for the `MySQL` database.
 
-5. `KubeDB` enterprise operator watches for `MySQL`(5c), `Issuer/ClusterIssuer`(5b), `Secret` and `Service`(5a).
+5. `KubeDB` Ops Manager watches for `MySQL`(5c), `Issuer/ClusterIssuer`(5b), `Secret` and `Service`(5a).
 
 6. When it finds all the resources(`MySQL`, `Issuer/ClusterIssuer`, `Secret`, `Service`), it creates `Certificates` by using `tls.issuerRef` and `tls.certificates` field specification from `MySQL` cr.
 
