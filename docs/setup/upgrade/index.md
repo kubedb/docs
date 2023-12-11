@@ -38,6 +38,7 @@ Now, upgrade the KubeDB helm chart using the following command. You can find the
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
+  --set kubedb-catalog.skipDeprecated=false \
   --set-file global.license=/path/to/the/license.txt \
   --wait --burst-limit=10000 --debug
 ```
@@ -48,6 +49,7 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
+  --set kubedb-catalog.skipDeprecated=false \
   --set global.insecureRegistries[0]=hub.example.com \
   --set global.insecureRegistries[1]=hub2.example.com \
   --set-file global.license=/path/to/the/license.txt \
