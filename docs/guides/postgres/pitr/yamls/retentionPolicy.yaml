@@ -1,0 +1,11 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: RetentionPolicy
+metadata:
+  name: postgres-retention-policy
+  namespace: demo
+spec:
+  maxRetentionPeriod: "30d"
+  successfulSnapshots:
+    last: 100
+  failedSnapshots:
+    last: 2
