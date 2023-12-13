@@ -31,11 +31,12 @@ namespace/demo created
 ```
 > Note: The yaml files used in this tutorial are stored in [mg-archiver-demo](https://github.com/kubedb/mg-archiver-demo)
 ## Continuous archiving
-Continuous archiving involves making regular copies (or "archives") of the MongoDB transaction log files.To ensure continuous archiving to a remote location we need prepare `BackupStorage`,`RetentionPolicy`,`MongoDBArchiver` for the KubeDB Managed MongoDB Databases.
+Continuous archiving involves making regular copies (or "archives") of the MongoDB transaction log files. To ensure continuous archiving to a remote location we need to prepare `BackupStorage`,`RetentionPolicy`,`MongoDBArchiver` for the KubeDB Managed MongoDB Databases.
 
 
 ### BackupStorage
-Backup storage is a CR provided by KubeStash that can manage storage with any storage provider
+BackupStorage is a CR provided by KubeStash that can manage storage from various providers like GCS, S3, and more.
+
 ```yaml
 apiVersion: storage.kubestash.com/v1alpha1
 kind: BackupStorage
@@ -83,26 +84,19 @@ kubectl create secret generic -n demo gcs-secret \
 ```
 
 For S3 :
-```yaml 
-apiVersion: v1
-kind: Secret
-type: Opaque
-metadata:
-  name: linode-secret
-  namespace: demo
-stringData:
-  AWS_ACCESS_KEY_ID: <>
-  AWS_SECRET_ACCESS_KEY: <>
-  AWS_ENDPOINT: <endpoint> # example : https://us-east-1.linodeobjects.com
+```bash 
+kubectl create secret generic -n demo s3-secret \
+    --from-file=./AWS_ACCESS_KEY_ID \
+    --from-file=./AWS_SECRET_ACCESS_KEY
 ```
 
 ```bash
   $ kubectl apply -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/gke/storage-secret.yaml
-  secret/storage created
+  secret/gcs-secret created
 ```
 
 ### Retention policy
-Is also a CR provided by KubeStash to control how long you want to keep that data
+RetentionPolicy is a CR provided by KubeStash that allows you to set how long you'd like to retain the backup data.
 ```yaml
 apiVersion: storage.kubestash.com/v1alpha1
 kind: RetentionPolicy
@@ -130,7 +124,7 @@ NAME                    DRIVER               DELETIONPOLICY   AGE
 longhorn-snapshot-vsc   driver.longhorn.io   Delete           7d22h
 
 ```
-If not any, try using `longhorn` or any other[volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
+If not any, try using `longhorn` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
 
 ```bash
 $ helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
@@ -170,7 +164,7 @@ $ kubectl apply -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/mas
 
 
 ### MongoDBArchiver
-Is a CR Provided by KubeDB to manage archive MongoDB oplog files and volume level backups.
+MongoDBArchiver is a CR provided by KubeDB for managing the archiving of MongoDB oplog files and performing volume-level backups
 
 ```yaml
 apiVersion: archiver.kubedb.com/v1alpha1
@@ -284,7 +278,7 @@ trigger-mg-rs-backup-manifest-backup-28374285-rdcfq   0/1     Completed   0     
 `mg-rs-full-backup-*****` are the volumes levels backups for MongoDB.
 `mg-rs-manifest-backup-*****` are the backups of the manifest relate to MongoDB object
 
-### validate backup configuration and volume snapshots
+### Validate BackupConfiguration and VolumeSnapshot
 
 ```bash
 $ kubectl get backupstorage,backupconfigurations,backupsession,volumesnapshots -A
