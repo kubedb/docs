@@ -14,20 +14,9 @@ section_menu_id: setup
 
 # Install KubeDB
 
-KubeDB is a Kubernetes Native Database Management Solution that simplifies and automates routine database tasks such as Provisioning, Monitoring, Upgrading, Patching, Scaling, Volume Expansion, Backup, Recovery, Failure detection, and repair for various popular databases on any private and public clouds.
-
-- Back and recovery - KubeDB will provide backup & recovery of databases using Stash.
-- Upgrade and Scaling - KubeDB will provide operator managed human-in-the-loop patch and minor upgrade, downgrade and scaling operations
-- SSL Support - KubeDB operator supports SSL certificate management for supported database types via Jetstack’s [cert-manager](https://cert-manager.io/) project.
-- User Management with HashiCorp Vault - KubeDB supports user management using HashiCorp Vault via [KubeVault](https://kubevault.com/) project.
-- Web Dashboard - KubeDB offers a web based management console with Prometheus and Grafana integration for monitoring.
-- Connection Pooling - KubeDB edition offers PgBouncer support for PostgreSQL and ProxySQL support for MySQL and Percona XtraDB.
-
 ## Get a Free License
 
 Download a FREE license from [AppsCode License Server](https://appscode.com/issue-license?p=kubedb).
-
-You can create licenses for as many clusters as you want. You can upgrade your license any time without re-installing KubeDB by following the upgrading guide from [here](/docs/setup/upgrade/index.md#updating-license).
 
 > KubeDB licensing process has been designed to work with CI/CD workflow. You can automatically obtain a license from your CI/CD pipeline by following the guide from [here](https://github.com/appscode/offline-license-server#offline-license-server).
 
