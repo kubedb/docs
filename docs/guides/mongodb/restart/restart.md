@@ -1,11 +1,11 @@
 ---
 title: Restart MongoDB
 menu:
-docs_{{ .version }}:
-identifier: mg-restart-details
-name: Restart MongoDB
-parent: mg-restart
-weight: 10
+  docs_{{ .version }}:
+    identifier: mg-restart-details
+    name: Restart MongoDB
+    parent: mg-restart
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
