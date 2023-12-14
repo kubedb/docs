@@ -7,8 +7,11 @@ menu:
     parent: mg-archiver-pitr
     weight: 42
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/README.md).
+
 # KubeDB MongoDB - Continuous Archiving and Point-in-time Recovery
 
 Here, this doc will show you how to use KubeDB to provision a MongoDB to Archive continuously and Restore point-in-time.
