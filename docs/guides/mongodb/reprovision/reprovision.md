@@ -1,11 +1,11 @@
 ---
 title: Reprovision MongoDB
 menu:
-docs_{{ .version }}:
-identifier: mg-reprovision-details
-name: Reprovision MongoDB
-parent: mg-reprovision
-weight: 10
+  docs_{{ .version }}:
+    identifier: mg-reprovision-details
+    name: Reprovision MongoDB
+    parent: mg-reprovision
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
