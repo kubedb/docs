@@ -90,12 +90,13 @@ spec:
     name: sample-pxc
   verticalScaling:
     perconaxtradb:
-      requests:
-        memory: "600Mi"
-        cpu: "0.1"
-      limits:
-        memory: "600Mi"
-        cpu: "0.1"
+      resources:
+        requests:
+          memory: "600Mi"
+          cpu: "0.1"
+        limits:
+          memory: "600Mi"
+          cpu: "0.1"
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"

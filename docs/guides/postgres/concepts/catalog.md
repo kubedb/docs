@@ -30,7 +30,7 @@ As with all other Kubernetes objects, a PostgresVersion needs `apiVersion`, `kin
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PostgresVersion
 metadata:
-  name: "13.2"
+  name: "13.13"
 spec:
   coordinator:
     image: kubedb/pg-coordinator:v0.1.0
@@ -49,7 +49,7 @@ spec:
         name: postgres-backup-13.1
       restoreTask:
         name: postgres-restore-13.1
-  version: "13.2"
+  version: "13.13"
 ```
 
 ### metadata.name

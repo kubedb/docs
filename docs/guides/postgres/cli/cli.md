@@ -65,7 +65,7 @@ metadata:
 spec:
   authSecret:
     name: postgres-demo-auth
-  version: "13.2"
+  version: "13.13"
 status:
   creationTime: 2017-12-12T05:46:16Z
   phase: Running

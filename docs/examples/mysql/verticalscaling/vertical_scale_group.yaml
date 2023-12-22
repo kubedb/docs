@@ -4,14 +4,15 @@ metadata:
   name: my-scale-group
   namespace: demo
 spec:
-  type: VerticalScaling  
+  type: VerticalScaling
   databaseRef:
     name: my-group
   verticalScaling:
     mysql:
-      requests:
-        memory: "200Mi"
-        cpu: "0.1"
-      limits:
-        memory: "300Mi"
-        cpu: "0.2"
+      resources:
+        requests:
+          memory: "200Mi"
+          cpu: "0.1"
+        limits:
+          memory: "300Mi"
+          cpu: "0.2"

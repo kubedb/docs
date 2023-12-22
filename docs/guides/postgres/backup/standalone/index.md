@@ -58,7 +58,7 @@ metadata:
   name: sample-postgres
   namespace: demo
 spec:
-  version: "11.11"
+  version: "11.22"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -151,7 +151,7 @@ spec:
         restoreTask:
           name: postgres-restore-11.9
   type: kubedb.com/postgres
-  version: "11.11"
+  version: "11.22"
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
@@ -423,7 +423,7 @@ metadata:
   name: restored-postgres
   namespace: demo
 spec:
-  version: "11.11"
+  version: "11.22"
   storageType: Durable
   storage:
     storageClassName: "standard"

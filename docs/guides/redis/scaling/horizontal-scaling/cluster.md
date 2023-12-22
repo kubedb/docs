@@ -43,7 +43,7 @@ Here, we are going to deploy a `Redis` cluster using a supported version by `Kub
 
 ### Prepare Redis Cluster Database
 
-Now, we are going to deploy a `Redis` cluster database with version `6.2.7`.
+Now, we are going to deploy a `Redis` cluster database with version `6.2.14`.
 
 ### Deploy Redis Cluster 
 
@@ -56,7 +56,7 @@ metadata:
   name: redis-cluster
   namespace: demo
 spec:
-  version: 6.2.7
+  version: 6.2.14
   mode: Cluster
   cluster:
     master: 3
@@ -84,7 +84,7 @@ Now, wait until `rd-cluster` has status `Ready`. i.e. ,
 ```bash
 $ kubectl get redis -n demo
 NAME            VERSION   STATUS   AGE
-redis-cluster   6.2.7     Ready    7m
+redis-cluster   6.2.14     Ready    7m
 ```
 
 Let's check the number of master and replicas this database has from the Redis object

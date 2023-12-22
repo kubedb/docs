@@ -4,7 +4,7 @@ metadata:
   name: sample-postgres
   namespace: demo
 spec:
-  version: "14.1"
+  version: "14.10"
   storageType: Durable
   storage:
     storageClassName: "standard"

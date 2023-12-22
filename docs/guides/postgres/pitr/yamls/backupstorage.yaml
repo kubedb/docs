@@ -16,4 +16,4 @@ spec:
     allowedNamespaces:
       from: All
   default: true
-  deletionPolicy: WipeOu
+  deletionPolicy: WipeOut

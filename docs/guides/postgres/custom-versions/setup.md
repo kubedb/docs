@@ -83,7 +83,7 @@ spec:
         name: postgres-backup-13.1
       restoreTask:
         name: postgres-restore-13.1
-  version: "13.2"
+  version: "13.13"
 ```
 
 Once we add this PostgresVersion we can use it in a new Postgres like:

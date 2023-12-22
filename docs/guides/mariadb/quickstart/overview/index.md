@@ -52,7 +52,7 @@ $ kubectl get mariadbversions
 NAME      VERSION   DB_IMAGE          DEPRECATED   AGE
 10.4.32   10.4.32   mariadb:10.4.32                9s
 10.5.23    10.5.23    mariadb:10.5.23                 9s
-10.6.4    10.6.4    mariadb:10.6.4                 9s
+10.6.16    10.6.16    mariadb:10.6.16                 9s
 ```
 
 ## Create a MariaDB database

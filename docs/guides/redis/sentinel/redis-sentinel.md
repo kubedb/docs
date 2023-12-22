@@ -48,7 +48,7 @@ metadata:
   name: sen-demo
   namespace: demo
 spec:
-  version: 6.2.8
+  version: 6.2.14
   replicas: 3
   storageType: Durable
   storage:
@@ -84,7 +84,7 @@ metadata:
   name: rd-demo
   namespace: demo
 spec:
-  version: 6.2.8
+  version: 6.2.14
   replicas: 3
   sentinelRef:
     name: sen-demo
@@ -117,11 +117,11 @@ KubeDB operator watches for `Redis` objects using Kubernetes API. When a `Redis`
 ```bash
 $ kubectl get redissentinel -n demo
 NAME       VERSION   STATUS   AGE
-sen-demo   6.2.8     Ready    2m39
+sen-demo   6.2.14     Ready    2m39
 
 $ kubectl get redis -n demo
 NAME      VERSION   STATUS         AGE
-rd-demo   6.2.8     Ready   2m41s
+rd-demo   6.2.14     Ready   2m41s
 
 $ kubectl get statefulset -n demo
 NAME       READY   AGE
@@ -170,7 +170,7 @@ kind: RedisSentinel
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"RedisSentinel","metadata":{"annotations":{},"name":"sen-demo","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Halt","version":"6.2.8"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"RedisSentinel","metadata":{"annotations":{},"name":"sen-demo","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Halt","version":"6.2.14"}}
   creationTimestamp: "2023-02-03T06:36:16Z"
   finalizers:
   - kubedb.com
@@ -231,7 +231,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Halt
-  version: 6.2.8
+  version: 6.2.14
 status:
   conditions:
   - lastTransitionTime: "2023-02-03T06:36:16Z"

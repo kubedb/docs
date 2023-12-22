@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: sen-sample
   updateVersion:
-    targetVersion: 7.0.5
+    targetVersion: 7.0.14

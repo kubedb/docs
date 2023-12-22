@@ -63,7 +63,7 @@ Now, we are going to deploy a `Redis` standalone using a supported version by `K
 > If you want to autoscale Redis in `Cluster` or `Sentinel` mode, just deploy a Redis database in respective Mode and rest of the steps are same.
 
 
-In this section, we are going to deploy a Redis standalone database with version `6.2.5`.  Then, in the next section we will set up autoscaling for this database using `RedisAutoscaler` CRD. Below is the YAML of the `Redis` CR that we are going to create,
+In this section, we are going to deploy a Redis standalone database with version `6.2.14`.  Then, in the next section we will set up autoscaling for this database using `RedisAutoscaler` CRD. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -72,7 +72,7 @@ metadata:
   name: rd-standalone
   namespace: demo
 spec:
-  version: "6.2.5"
+  version: "6.2.14"
   storageType: Durable
   storage:
     storageClassName: topolvm-provisioner
@@ -94,7 +94,7 @@ Now, wait until `rd-standalone` has status `Ready`. i.e,
 ```bash
 $ kubectl get rd -n demo
 NAME            VERSION    STATUS    AGE
-rd-standalone   6.2.5      Ready     2m53s
+rd-standalone   6.2.14      Ready     2m53s
 ```
 
 Let's check volume size from statefulset, and from the persistent volume,

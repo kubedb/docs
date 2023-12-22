@@ -144,7 +144,7 @@ metadata:
   name: quick-redis
   namespace: demo
 spec:
-  version: 6.2.5
+  version: 6.2.14
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -171,7 +171,7 @@ Check if database is in Ready state
 ```bash
 $ kubectl get redis -n demo
 NAME          VERSION   STATUS   AGE
-quick-redis   6.2.5     Ready    117s
+quick-redis   6.2.14     Ready    117s
 ```
 
 ## Reusing Service Account
@@ -194,7 +194,7 @@ metadata:
   name: minute-redis
   namespace: demo
 spec:
-  version: 6.2.5
+  version: 6.2.14
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
@@ -225,8 +225,8 @@ Check if database is in Ready state
 ```bash
 $ kubectl get redis -n demo
 NAME           VERSION   STATUS   AGE
-minute-redis   6.2.5     Ready    76s
-quick-redis    6.2.5     Ready    4m26s
+minute-redis   6.2.14     Ready    76s
+quick-redis    6.2.14     Ready    4m26s
 ```
 
 ## Cleaning up

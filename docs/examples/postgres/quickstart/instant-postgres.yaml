@@ -4,5 +4,5 @@ metadata:
   name: instant-postgres
   namespace: demo
 spec:
-  version: "13.2"
+  version: "13.13"
   storageType: Ephemeral

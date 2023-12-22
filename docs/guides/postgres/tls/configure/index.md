@@ -85,7 +85,7 @@ metadata:
   name: demo-pg
   namespace: demo
 spec:
-  version: "13.2"
+  version: "13.13"
   replicas: 3
   standbyMode: Hot
   sslMode: verify-full

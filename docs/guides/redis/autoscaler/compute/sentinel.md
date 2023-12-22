@@ -45,7 +45,7 @@ Here, we are going to deploy a `RedisSentinel` instance using a supported versio
 
 #### Deploy Redis standalone
 
-In this section, we are going to deploy a RedisSentinel instance with version `6.2.5`.  Then, in the next section we will set up autoscaling for this database using `RedisSentinelAutoscaler` CRD. Below is the YAML of the `RedisSentinel` CR that we are going to create,
+In this section, we are going to deploy a RedisSentinel instance with version `6.2.14`.  Then, in the next section we will set up autoscaling for this database using `RedisSentinelAutoscaler` CRD. Below is the YAML of the `RedisSentinel` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -54,7 +54,7 @@ metadata:
   name: sen-demo
   namespace: demo
 spec:
-  version: "6.2.5"
+  version: "6.2.14"
   storageType: Durable
   replicas: 3
   storage:
@@ -85,7 +85,7 @@ Now, wait until `sen-demo` has status `Ready`. i.e,
 ```bash
 $ kubectl get redissentinel -n demo
 NAME       VERSION   STATUS   AGE
-sen-demo   6.2.5     Ready    86s
+sen-demo   6.2.14     Ready    86s
 ```
 
 Let's check the Pod containers resources,

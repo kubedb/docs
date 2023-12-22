@@ -53,7 +53,7 @@ metadata:
   name: mysql-server
   namespace: demo
 spec:
-  version: "8.0.32"
+  version: "8.0.35"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -73,7 +73,7 @@ spec:
 
 Here,
 
-- `spec.version` is the name of the MySQLVersion CR. Here, we are using MySQL version `8.0.32`.
+- `spec.version` is the name of the MySQLVersion CR. Here, we are using MySQL version `8.0.35`.
 - `spec.storageType` specifies the type of storage that will be used for MySQL. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the MySQL using `EmptyDir` volume.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.allowedSchemas` specifies the namespace of allowed `Schema Manager`.
@@ -266,7 +266,7 @@ bash-4.4# mysql --user='v-kubernetes-k8s.dc833e-yb9r7uhs' --password='DueiiR-JyG
 
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 287
-Server version: 8.0.32 MySQL Community Server - GPL
+Server version: 8.0.35 MySQL Community Server - GPL
 
 mysql> SHOW DATABASES;
 +--------------------+

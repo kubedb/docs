@@ -31,7 +31,7 @@ metadata:
 spec:
   autoOps:
     disabled: true
-  version: 6.2.5
+  version: 6.2.14
   replicas: 3
   disableAuth: false
   authSecret:
@@ -118,8 +118,8 @@ AutoOps is an optional field to control the generation of version update & TLS-r
 
 `spec.version` is a required field specifying the name of the [RedisVersion](/docs/guides/redis/concepts/catalog.md) crd where the docker images are specified. RedisSentinel is supported in following Redis Versions.
 
-- `6.2.5`, `6.2.7` `6.2.8`
-- `7.0.4`, `7.0.5`, `7.0.6`
+- `6.2.14`, `6.2.14` `6.2.14`
+- `7.0.4`, `7.0.14`, `7.0.6`
 
 ### spec.disableAuth
 
@@ -376,7 +376,7 @@ metadata:
   name: redis1
   namespace: demo
 spec:
-  version: 6.2.5
+  version: 6.2.14
   replicas: 3
   sentinelRef:
     name: sentinel1

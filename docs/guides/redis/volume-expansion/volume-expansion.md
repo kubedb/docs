@@ -54,7 +54,7 @@ topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsum
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install topolvm from [here](https://github.com/topolvm/topolvm).
 
-Now, we are going to deploy a `Redis` database with in `Cluster` Mode version `6.2.5`.
+Now, we are going to deploy a `Redis` database with in `Cluster` Mode version `6.2.14`.
 
 ### Deploy Redis
 
@@ -67,7 +67,7 @@ metadata:
   name: sample-redis
   namespace: demo
 spec:
-  version: 6.2.5
+  version: 6.2.14
   mode: Cluster
   cluster:
     master: 3
@@ -95,7 +95,7 @@ Now, wait until `sample-redis` has status `Ready`. i.e,
 ```bash
 $ kubectl get redis -n demo
 NAME             VERSION   STATUS   AGE
-sample-redis     6.2.5    Ready    5m4s
+sample-redis     6.2.14    Ready    5m4s
 ```
 
 Let's check volume size from statefulset, and from the persistent volume,

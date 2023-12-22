@@ -120,26 +120,29 @@ spec:
     name: mg-sharding
   verticalScaling:
     configServer:
-      requests:
-        memory: "150Mi"
-        cpu: "0.1"
-      limits:
-        memory: "250Mi"
-        cpu: "0.2"
+      resources:
+        requests:
+          memory: "150Mi"
+          cpu: "0.1"
+        limits:
+          memory: "250Mi"
+          cpu: "0.2"
     mongos:
-      requests:
-        memory: "150Mi"
-        cpu: "0.1"
-      limits:
-        memory: "250Mi"
-        cpu: "0.2"
+      resources:
+        requests:
+          memory: "150Mi"
+          cpu: "0.1"
+        limits:
+          memory: "250Mi"
+          cpu: "0.2"
     shard:
-      requests:
-        memory: "150Mi"
-        cpu: "0.1"
-      limits:
-        memory: "250Mi"
-        cpu: "0.2"
+      resources:
+        requests:
+          memory: "150Mi"
+          cpu: "0.1"
+        limits:
+          memory: "250Mi"
+          cpu: "0.2"
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -164,12 +167,13 @@ spec:
     name: mg-standalone
   verticalScaling:
     standalone:
-      requests:
-        memory: "150Mi"
-        cpu: "0.1"
-      limits:
-        memory: "250Mi"
-        cpu: "0.2"
+      resources:
+        requests:
+          memory: "150Mi"
+          cpu: "0.1"
+        limits:
+          memory: "250Mi"
+          cpu: "0.2"
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -194,12 +198,13 @@ spec:
     name: mg-replicaset
   verticalScaling:
     replicaSet:
-      requests:
-        memory: "150Mi"
-        cpu: "0.1"
-      limits:
-        memory: "250Mi"
-        cpu: "0.2"
+      resources:
+        requests:
+          memory: "150Mi"
+          cpu: "0.1"
+        limits:
+          memory: "250Mi"
+          cpu: "0.2"
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"

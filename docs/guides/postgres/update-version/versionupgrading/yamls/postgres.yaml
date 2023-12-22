@@ -4,7 +4,7 @@ metadata:
   name: pg
   namespace: demo
 spec:
-  version: "11.11"
+  version: "11.22"
   replicas: 3
   standbyMode: Hot
   storageType: Durable

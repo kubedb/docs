@@ -42,7 +42,7 @@ Here, we are going to deploy a `MySQL` Cluster using a supported version by `Kub
 
 #### Deploy MySQL Cluster
 
-In this section, we are going to deploy a MySQL Cluster with version `10.6.4`. Then, in the next section we will set up autoscaling for this database using `MySQLAutoscaler` CRD. Below is the YAML of the `MySQL` CR that we are going to create,
+In this section, we are going to deploy a MySQL Cluster with version `10.6.16`. Then, in the next section we will set up autoscaling for this database using `MySQLAutoscaler` CRD. Below is the YAML of the `MySQL` CR that we are going to create,
 > If you want to autoscale MySQL `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
@@ -52,7 +52,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -88,7 +88,7 @@ Now, wait until `sample-mysql` has status `Ready`. i.e,
 ```bash
 $ kubectl get mysql -n demo
 NAME             VERSION   STATUS   AGE
-sample-mysql     8.0.31    Ready    14m
+sample-mysql     8.0.35    Ready    14m
 ```
 
 Let's check the Pod containers resources,

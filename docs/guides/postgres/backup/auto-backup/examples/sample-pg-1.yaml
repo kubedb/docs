@@ -6,7 +6,7 @@ metadata:
   annotations:
     stash.appscode.com/backup-blueprint: postgres-backup-template
 spec:
-  version: "11.11"
+  version: "11.22"
   storageType: Durable
   storage:
     storageClassName: "standard"

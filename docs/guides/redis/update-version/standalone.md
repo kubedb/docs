@@ -38,7 +38,7 @@ namespace/demo created
 
 ### Prepare Redis Standalone Database
 
-Now, we are going to deploy a `Redis` standalone database with version `5.0.3-v1`.
+Now, we are going to deploy a `Redis` standalone database with version `6.2.14`.
 
 ### Deploy Redis standalone :
 
@@ -51,7 +51,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: 5.0.3-v1
+  version: 6.2.14
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -74,14 +74,14 @@ Now, wait until `redis-quickstart` created has status `Ready`. i.e,
 ```bash
 $ kubectl get rd -n demo
 NAME               VERSION    STATUS   AGE
-redis-quickstart   5.0.3-v1   Ready    5m14s
+redis-quickstart   6.2.14   Ready    5m14s
 ```
 
 We are now ready to apply the `RedisOpsRequest` CR to update this database.
 
 ### Update Redis Version
 
-Here, we are going to update `Redis` standalone from `5.0.3-v1` to `7.0.5`.
+Here, we are going to update `Redis` standalone from `6.2.14` to `7.0.14`.
 
 #### Create RedisOpsRequest:
 
@@ -98,14 +98,14 @@ spec:
   databaseRef:
     name: redis-quickstart
   updateVersion:
-    targetVersion: 7.0.5
+    targetVersion: 7.0.14
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `redis-quickstart` Redis database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.5`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.14`.
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 
@@ -133,13 +133,13 @@ Now, we are going to verify whether the `Redis` and the related `StatefulSets` t
 
 ```bash
 $ kubectl get redis -n demo redis-quickstart -o=jsonpath='{.spec.version}{"\n"}'
-7.0.5
+7.0.14
 
 $ kubectl get statefulset -n demo redis-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-redis:7.0.5@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
+redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 
 $ kubectl get pods -n demo redis-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-redis:7.0.5@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
+redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 ```
 
 You can see from above, our `Redis` standalone database has been updated with the new version. So, the UpdateVersion process is successfully completed.

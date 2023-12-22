@@ -161,17 +161,16 @@ spec:
   databaseRef:
     name: es-topology
   compute:
-    topology:
-      ingest:
-        trigger: "On"
-        podLifeTimeThreshold: 5m
-        minAllowed:
-          cpu: ".4"
-          memory: 500Mi
-        maxAllowed:
-          cpu: 2
-          memory: 3Gi
-        controlledResources: ["cpu", "memory"]
+    ingest:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      minAllowed:
+        cpu: ".4"
+        memory: 500Mi
+      maxAllowed:
+        cpu: 2
+        memory: 3Gi
+      controlledResources: ["cpu", "memory"]
 ```
 
 Here,

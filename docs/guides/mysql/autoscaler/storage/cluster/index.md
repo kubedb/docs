@@ -69,7 +69,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   replicas: 3
   topology:
     mode: GroupReplication

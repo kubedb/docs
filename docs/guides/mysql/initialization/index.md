@@ -112,7 +112,7 @@ metadata:
   name: mysql-init-script
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   topology:
     mode: GroupReplication
   replicas: 3
@@ -182,7 +182,7 @@ metadata:
   name: mysql-init-script
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   replicas: 3
   topology:
     mode: SemiSync
@@ -220,7 +220,7 @@ metadata:
   name: mysql-init-script
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -326,7 +326,7 @@ Init:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.31"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.35"}}
 
     Creation Timestamp:  2022-06-30T06:21:15Z
     Labels:
@@ -359,7 +359,7 @@ AppBinding:
     Secret:
       Name:   mysql-init-script-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.31
+    Version:  8.0.35
 
 Events:
   Type     Reason      Age   From               Message
@@ -400,7 +400,7 @@ kind: MySQL
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.31"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.35"}}
   creationTimestamp: "2022-06-30T06:21:15Z"
   finalizers:
   - kubedb.com
@@ -449,7 +449,7 @@ spec:
   storageType: Durable
   terminationPolicy: Delete
   useAddressType: DNS
-  version: 8.0.31
+  version: 8.0.35
 status:
   conditions:
     ...
