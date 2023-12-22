@@ -49,7 +49,7 @@ metadata:
   name: sen-sample
   namespace: demo
 spec:
-  version: 6.2.7
+  version: 6.2.14
   replicas: 3
   storageType: Durable
   storage:
@@ -74,7 +74,7 @@ Now, wait until `sen-sample` created has status `Ready`. i.e,
 ```bash
 $ kubectl get redissentinel -n demo
 NAME         VERSION   STATUS   AGE
-sen-sample   6.2.7     Ready    5m20s
+sen-sample   6.2.14     Ready    5m20s
 ```
 
 ### Deploy Redis without TLS
@@ -88,7 +88,7 @@ metadata:
   name: rd-sample
   namespace: demo
 spec:
-  version: 6.2.5
+  version: 6.2.14
   replicas: 3
   sentinelRef:
     name: sen-sample
@@ -118,7 +118,7 @@ Now, wait until `redis-standalone` has status `Ready`. i.e,
 $ watch kubectl get rd -n demo
 Every 2.0s: kubectl get rd -n demo
 NAME        VERSION   STATUS   AGE
-rd-sample   6.2.5     Ready    88s
+rd-sample   6.2.14     Ready    88s
 ```
 
 Now, we can connect to this database through redis-cli verify that the TLS is disabled.
@@ -250,7 +250,7 @@ Let's check if new sentinel named `sen-demo-tls` is created
 ```bash
 $ kubectl get redissentinel -n demo
 NAME           VERSION   STATUS   AGE
-sen-demo-tls   6.2.7     Ready    17m
+sen-demo-tls   6.2.14     Ready    17m
 ```
 
 Now, connect to this database by exec into a pod and verify if `tls` has been set up as intended.
@@ -522,7 +522,7 @@ Let's check if new sentinel named `sen-sample` is created
 ```bash
 $ kubectl get redissentinel -n demo
 NAME         VERSION   STATUS   AGE
-sen-sample   6.2.7     Ready    7m56s
+sen-sample   6.2.14     Ready    7m56s
 ```
 
 Now, Lets exec into the database primary node and find out that TLS is disabled or not.

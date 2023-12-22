@@ -110,7 +110,7 @@ Type:              ClusterIP
 IP:                10.110.89.251
 Port:              prom-http  56790/TCP
 TargetPort:        prom-http/TCP
-Endpoints:         172.17.0.5:56790,172.17.0.7:56790,172.17.0.8:56790
+Endpoints:         172.17.0.14:56790,172.17.0.7:56790,172.17.0.8:56790
 Session Affinity:  None
 Events:            <none>
 ```

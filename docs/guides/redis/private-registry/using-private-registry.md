@@ -39,13 +39,13 @@ NAME       VERSION   INITCONTAINER_IMAGE       DB_IMAGE                EXPORTER_
 4.0.11     4.0.11    kubedb/redis-init:0.7.0   kubedb/redis:4.0.11     kubedb/redis_exporter:v0.21.1
 4.0.6-v2   4.0.6     kubedb/redis-init:0.7.0   kubedb/redis:4.0.6-v2   kubedb/redis_exporter:v0.21.1
 5.0.14     5.0.14    kubedb/redis-init:0.7.0   redis:5.0.14            kubedb/redis_exporter:1.9.0
-5.0.3-v1   5.0.3     kubedb/redis-init:0.7.0   kubedb/redis:5.0.3-v1   kubedb/redis_exporter:v0.21.1
-6.0.6      6.0.6     kubedb/redis-init:0.7.0   kubedb/redis:6.0.6      kubedb/redis_exporter:1.9.0
-6.2.5      6.2.5     kubedb/redis-init:0.7.0   redis:6.2.5             kubedb/redis_exporter:1.9.0
-6.2.7      6.2.7     kubedb/redis-init:0.7.0   redis:6.2.7             kubedb/redis_exporter:1.9.0
-6.2.8      6.2.8     kubedb/redis-init:0.7.0   redis:6.2.8             kubedb/redis_exporter:1.9.0
+6.2.14   5.0.3     kubedb/redis-init:0.7.0   kubedb/redis:6.2.14   kubedb/redis_exporter:v0.21.1
+6.0.20      6.0.20     kubedb/redis-init:0.7.0   kubedb/redis:6.0.20      kubedb/redis_exporter:1.9.0
+6.2.14      6.2.14     kubedb/redis-init:0.7.0   redis:6.2.14             kubedb/redis_exporter:1.9.0
+6.2.14      6.2.14     kubedb/redis-init:0.7.0   redis:6.2.14             kubedb/redis_exporter:1.9.0
+6.2.14      6.2.14     kubedb/redis-init:0.7.0   redis:6.2.14             kubedb/redis_exporter:1.9.0
 7.0.4      7.0.4     kubedb/redis-init:0.7.0   redis:7.0.4             kubedb/redis_exporter:1.9.0
-7.0.5      7.0.5     kubedb/redis-init:0.7.0   redis:7.0.5             kubedb/redis_exporter:1.9.0
+7.0.14      7.0.14     kubedb/redis-init:0.7.0   redis:7.0.14             kubedb/redis_exporter:1.9.0
 7.0.6      7.0.6     kubedb/redis-init:0.7.0   redis:7.0.6             kubedb/redis_exporter:1.9.0
 ```
 
@@ -61,15 +61,15 @@ NAME       VERSION   INITCONTAINER_IMAGE       DB_IMAGE                EXPORTER_
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: RedisVersion
   metadata:
-    name: 6.2.5
+    name: 6.2.14
   spec:
     db:
-      image: PRIVATE_DOCKER_REGISTRY:6.0.6
+      image: PRIVATE_DOCKER_REGISTRY:6.0.20
     exporter:
       image: PRIVATE_DOCKER_REGISTRY:1.9.0
     podSecurityPolicies:
       databasePolicyName: redis-db
-    version: 6.0.6
+    version: 6.0.20
   ```
 
 ## Create ImagePullSecret
@@ -107,7 +107,7 @@ metadata:
   name: redis-pvt-reg
   namespace: demo
 spec:
-  version: 6.2.5
+  version: 6.2.14
   storage:
     storageClassName: "standard"
     accessModes:
@@ -141,7 +141,7 @@ redis-pvt-reg-0   1/1       Running             0          2m
 
 $ kubectl get rd -n demo
 NAME            VERSION   STATUS    AGE
-redis-pvt-reg   6.2.5    Running   40s
+redis-pvt-reg   6.2.14    Running   40s
 ```
 
 ## Cleaning up

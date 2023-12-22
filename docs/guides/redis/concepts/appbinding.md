@@ -34,7 +34,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Redis","metadata":{"annotations":{},"name":"redis1","namespace":"demo"},"spec":{"authSecret":{"externallyManaged":false,"name":"redis1-auth"},"autoOps":{"disabled":true},"cluster":{"master":3,"replicas":1},"configSecret":{"name":"rd-custom-config"},"disableAuth":false,"halted":false,"healthChecker":{"disableWriteCheck":false,"failureThreshold":2,"periodSeconds":15,"timeoutSeconds":10},"mode":"Cluster","monitor":{"agent":"prometheus.io/operator","prometheus":{"serviceMonitor":{"interval":"10s","labels":{"app":"kubedb"}}}},"podTemplate":{"controller":{"annotations":{"passMe":"ToStatefulSet"}},"metadata":{"annotations":{"passMe":"ToDatabasePod"}},"spec":{"args":["--loglevel verbose"],"env":[{"name":"ENV_VARIABLE","value":"value"}],"imagePullSecrets":[{"name":"regcred"}],"resources":{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"250m","memory":"64Mi"}},"serviceAccountName":"my-service-account"}},"serviceTemplates":[{"alias":"primary","metadata":{"annotations":{"passMe":"ToService"}},"spec":{"ports":[{"name":"http","port":9200}],"type":"NodePort"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"terminationPolicy":"Halt","tls":{"certificates":[{"alias":"client","emailAddresses":["abc@appscode.com"],"subject":{"organizations":["kubedb"]}},{"alias":"server","emailAddresses":["abc@appscode.com"],"subject":{"organizations":["kubedb"]}}],"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"redis-ca-issuer"}},"version":"6.2.5"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Redis","metadata":{"annotations":{},"name":"redis1","namespace":"demo"},"spec":{"authSecret":{"externallyManaged":false,"name":"redis1-auth"},"autoOps":{"disabled":true},"cluster":{"master":3,"replicas":1},"configSecret":{"name":"rd-custom-config"},"disableAuth":false,"halted":false,"healthChecker":{"disableWriteCheck":false,"failureThreshold":2,"periodSeconds":15,"timeoutSeconds":10},"mode":"Cluster","monitor":{"agent":"prometheus.io/operator","prometheus":{"serviceMonitor":{"interval":"10s","labels":{"app":"kubedb"}}}},"podTemplate":{"controller":{"annotations":{"passMe":"ToStatefulSet"}},"metadata":{"annotations":{"passMe":"ToDatabasePod"}},"spec":{"args":["--loglevel verbose"],"env":[{"name":"ENV_VARIABLE","value":"value"}],"imagePullSecrets":[{"name":"regcred"}],"resources":{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"250m","memory":"64Mi"}},"serviceAccountName":"my-service-account"}},"serviceTemplates":[{"alias":"primary","metadata":{"annotations":{"passMe":"ToService"}},"spec":{"ports":[{"name":"http","port":9200}],"type":"NodePort"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"terminationPolicy":"Halt","tls":{"certificates":[{"alias":"client","emailAddresses":["abc@appscode.com"],"subject":{"organizations":["kubedb"]}},{"alias":"server","emailAddresses":["abc@appscode.com"],"subject":{"organizations":["kubedb"]}}],"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"redis-ca-issuer"}},"version":"6.2.14"}}
   creationTimestamp: "2023-02-01T05:27:19Z"
   generation: 1
   labels:
@@ -80,7 +80,7 @@ spec:
   tlsSecret:
     name: redis1-client-cert
   type: kubedb.com/redis
-  version: 6.2.5
+  version: 6.2.14
 
 ```
 

@@ -57,13 +57,13 @@ NAME       VERSION   DB_IMAGE                DEPRECATED   AGE
 4.0.11     4.0.11    kubedb/redis:4.0.11                  7h31m
 4.0.6-v2   4.0.6     kubedb/redis:4.0.6-v2                7h31m
 5.0.14     5.0.14    redis:5.0.14                         7h31m
-5.0.3-v1   5.0.3     kubedb/redis:5.0.3-v1                7h31m
-6.0.6      6.0.6     kubedb/redis:6.0.6                   7h31m
-6.2.5      6.2.5     redis:6.2.5                          7h31m
-6.2.7      6.2.7     redis:6.2.7                          7h31m
-6.2.8      6.2.8     redis:6.2.8                          7h31m
+6.2.14   5.0.3     kubedb/redis:6.2.14                7h31m
+6.0.20      6.0.20     kubedb/redis:6.0.20                   7h31m
+6.2.14      6.2.14     redis:6.2.14                          7h31m
+6.2.14      6.2.14     redis:6.2.14                          7h31m
+6.2.14      6.2.14     redis:6.2.14                          7h31m
 7.0.4      7.0.4     redis:7.0.4                          7h31m
-7.0.5      7.0.5     redis:7.0.5                          7h31m
+7.0.14      7.0.14     redis:7.0.14                          7h31m
 7.0.6      7.0.6     redis:7.0.6                          7h31m
 ```
 
@@ -78,7 +78,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: 6.2.5
+  version: 6.2.14
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -97,7 +97,7 @@ redis.kubedb.com/redis-quickstart created
 
 Here,
 
-- `spec.version` is name of the RedisVersion crd where the docker images are specified. In this tutorial, a Redis 6.2.5 database is created.
+- `spec.version` is name of the RedisVersion crd where the docker images are specified. In this tutorial, a Redis 6.2.14 database is created.
 - `spec.storageType` specifies the type of storage that will be used for Redis server. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Redis server using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Redis` crd or which resources KubeDB should keep or delete when you delete `Redis` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy)
@@ -109,7 +109,7 @@ KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis`
 ```bash
 $ kubectl get rd -n demo
 NAME               VERSION   STATUS    AGE
-redis-quickstart   6.2.5     Running   1m
+redis-quickstart   6.2.14     Running   1m
 
 $ kubectl describe rd -n demo redis-quickstart
 Name:               redis-quickstart
@@ -193,7 +193,7 @@ AppBinding:
     Secret:
       Name:   redis-quickstart-auth
     Type:     kubedb.com/redis
-    Version:  6.2.5
+    Version:  6.2.14
 
 Events:
   Type    Reason      Age   From            Message
@@ -289,7 +289,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Delete
-  version: 6.2.5
+  version: 6.2.14
 status:
   conditions:
     - lastTransitionTime: "2022-05-31T04:31:38Z"
@@ -386,7 +386,7 @@ Now, you can run the following command to get all redis resources in demo namesp
 ```bash
 $ kubectl get redis,secret,pvc -n demo
 NAME                                VERSION   STATUS   AGE
-redis.kubedb.com/redis-quickstart   6.2.5     Halted   5m26s
+redis.kubedb.com/redis-quickstart   6.2.14     Halted   5m26s
 
 NAME                                 TYPE                                  DATA   AGE
 secret/default-token-rs764           kubernetes.io/service-account-token   3      6h54m
@@ -415,7 +415,7 @@ When the database is resumed successfully, you can see the database Status is se
 ```bash
 $ kubectl get rd -n demo
 NAME               VERSION   STATUS   AGE
-redis-quickstart   6.2.5     Ready    7m52s
+redis-quickstart   6.2.14     Ready    7m52s
 ```
 
 Now, If you again exec into the `pod` and look for previous data, you will see that, all the data persists.

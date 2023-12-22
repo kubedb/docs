@@ -48,7 +48,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.0.32"
+  version: "8.0.35"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -161,7 +161,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.32"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.35"}}
 
     Creation Timestamp:  2022-06-28T11:54:10Z
     Labels:
@@ -194,7 +194,7 @@ AppBinding:
     Secret:
       Name:   my-group-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.32
+    Version:  8.0.35
 
 Events:
   Type     Reason      Age   From               Message
@@ -292,7 +292,7 @@ spec:
     group:
       name: dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b
     mode: GroupReplication
-  version: 8.0.32
+  version: 8.0.35
 status:
   observedGeneration: 2$4213139756412538772
   phase: Running
@@ -394,9 +394,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                       | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
-| group_replication_applier | 13aad5a5-f6d9-11ec-87bb-96e838330519 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.32         | XCom                       |
-| group_replication_applier | 1739589f-f6d9-11ec-956c-c2c213efafa8 | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.32         | XCom                       |
-| group_replication_applier | 1ace16b5-f6d9-11ec-9a26-9ae7d6def698 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.32         | XCom                       |
+| group_replication_applier | 13aad5a5-f6d9-11ec-87bb-96e838330519 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.35         | XCom                       |
+| group_replication_applier | 1739589f-f6d9-11ec-956c-c2c213efafa8 | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.35         | XCom                       |
+| group_replication_applier | 1ace16b5-f6d9-11ec-9a26-9ae7d6def698 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.35         | XCom                       |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 
 ```
@@ -496,9 +496,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                       | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
-| group_replication_applier | 13aad5a5-f6d9-11ec-87bb-96e838330519 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY     | 8.0.32         | XCom                       |
-| group_replication_applier | 1739589f-f6d9-11ec-956c-c2c213efafa8 | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY   | 8.0.32         | XCom                       |
-| group_replication_applier | 1ace16b5-f6d9-11ec-9a26-9ae7d6def698 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.32         | XCom                       |
+| group_replication_applier | 13aad5a5-f6d9-11ec-87bb-96e838330519 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY     | 8.0.35         | XCom                       |
+| group_replication_applier | 1739589f-f6d9-11ec-956c-c2c213efafa8 | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY   | 8.0.35         | XCom                       |
+| group_replication_applier | 1ace16b5-f6d9-11ec-9a26-9ae7d6def698 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.35         | XCom                       |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 
 

@@ -58,7 +58,7 @@ metadata:
   name: sample-redis
   namespace: demo
 spec:
-  version: 6.0.6
+  version: 6.0.20
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -83,7 +83,7 @@ Let's check if the database is ready to use,
 ```bash
 ❯ kubectl get rd -n demo
 NAME           VERSION   STATUS   AGE
-sample-redis   6.0.6     Ready    58s
+sample-redis   6.0.20     Ready    58s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -181,7 +181,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
 ❯ kubectl get appbindings -n demo
 NAME              TYPE                  VERSION   AGE
-sample-redis   kubedb.com/redis         6.0.6     2m54s
+sample-redis   kubedb.com/redis         6.0.20     2m54s
 ```
 
 Let's check the YAML of the above `AppBinding`,
@@ -219,7 +219,7 @@ clientConfig:
   secret:
     name: sample-redis-auth
   type: kubedb.com/redis
-  version: 6.0.6
+  version: 6.0.20
 ```
 Stash requires the following fields to set in AppBinding's `Spec` section.
 

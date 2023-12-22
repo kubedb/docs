@@ -99,7 +99,7 @@ spec:
             default_schema: "information_schema"
             commands_stats: "true"
             sessions_sort: "true"
-            server_version: "8.0.32"
+            server_version: "8.0.35"
             monitor_history: 60000
             ping_timeout_server: 200
             default_query_timeout: 36000000
@@ -178,7 +178,7 @@ spec:
       default_schema: "information_schema"
       commands_stats: "true"
       sessions_sort: "true"
-      server_version: "8.0.32"
+      server_version: "8.0.35"
       monitor_history: 60000
       ping_timeout_server: 200
       default_query_timeout: 36000000

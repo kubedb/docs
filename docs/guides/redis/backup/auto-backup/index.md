@@ -131,7 +131,7 @@ metadata:
   annotations:
     stash.appscode.com/backup-blueprint: redis-backup-template
 spec:
-  version: 6.0.6
+  version: 6.0.20
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -314,7 +314,7 @@ metadata:
     stash.appscode.com/backup-blueprint: redis-backup-template
     stash.appscode.com/schedule: "*/3 * * * *"
 spec:
-  version: 6.0.6
+  version: 6.0.20
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -491,7 +491,7 @@ metadata:
     stash.appscode.com/backup-blueprint: redis-backup-template
     params.stash.appscode.com/args: "-db 0"
 spec:
-  version: 6.0.6
+  version: 6.0.20
   storageType: Durable
   storage:
     storageClassName: "standard"

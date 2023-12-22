@@ -156,26 +156,29 @@ spec:
     name: mg-sharding
   verticalScaling:
     shard:
-      requests:
-        memory: "1100Mi"
-        cpu: "0.55"
-      limits:
-        memory: "1100Mi"
-        cpu: "0.55"
+      resources:
+        requests:
+          memory: "1100Mi"
+          cpu: "0.55"
+        limits:
+          memory: "1100Mi"
+          cpu: "0.55"
     configServer:
-      requests:
-        memory: "1100Mi"
-        cpu: "0.55"
-      limits:
-        memory: "1100Mi"
-        cpu: "0.55"
+      resources:
+        requests:
+          memory: "1100Mi"
+          cpu: "0.55"
+        limits:
+          memory: "1100Mi"
+          cpu: "0.55"
     mongos:
-      requests:
-        memory: "1100Mi"
-        cpu: "0.55"
-      limits:
-        memory: "1100Mi"
-        cpu: "0.55"
+      resources:
+        requests:
+          memory: "1100Mi"
+          cpu: "0.55"
+        limits:
+          memory: "1100Mi"
+          cpu: "0.55"
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10

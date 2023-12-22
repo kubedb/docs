@@ -20,4 +20,4 @@ spec:
         name: postgres-backup-13.1
       restoreTask:
         name: postgres-restore-13.1
-  version: "13.2"
+  version: "13.13"

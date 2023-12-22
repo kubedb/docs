@@ -4,7 +4,7 @@ metadata:
   name: sen-sample
   namespace: demo
 spec:
-  version: 6.2.7
+  version: 6.2.14
   replicas: 5
   storageType: Durable
   storage:

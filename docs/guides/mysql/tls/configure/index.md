@@ -110,7 +110,7 @@ metadata:
   name: some-mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -213,7 +213,7 @@ metadata:
   name: some-mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   replicas: 3
   topology:
     mode: SemiSync
@@ -268,7 +268,7 @@ metadata:
   name: some-mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -316,7 +316,7 @@ $ watch -n 3 kubectl get my -n demo some-mysql
 Every 3.0s: kubectl get my -n demo some-mysql                 suaas-appscode: Thu Aug 13 19:02:15 2020
 
 NAME           VERSION   STATUS    AGE
-some-mysql   8.0.32    Running   9m41s
+some-mysql   8.0.35    Running   9m41s
 
 $ watch -n 3 kubectl get sts -n demo some-mysql
 Every 3.0s: kubectl get sts -n demo some-mysql                suaas-appscode: Thu Aug 13 19:02:42 2020
