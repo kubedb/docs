@@ -72,9 +72,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: redis-backup-6.2.14
+          name: redis-backup-6.2.5
         restoreTask:
-          name: redis-restore-6.2.14
+          name: redis-restore-6.2.5
   secret:
     name: redis1-auth
   tlsSecret:

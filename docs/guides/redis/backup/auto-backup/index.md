@@ -54,9 +54,9 @@ When you install Stash, it installs the necessary addons to backup Redis. Verify
 ```bash
 ❯ kubectl get tasks.stash.appscode.com | grep redis
 redis-backup-5.0.13   62m
-redis-backup-6.2.14    62m
+redis-backup-6.2.5    62m
 redis-restore-5.0.13  62m
-redis-restore-6.2.14   62m
+redis-restore-6.2.5   62m
 ```
 
 ## Prepare Backup Blueprint
@@ -206,7 +206,7 @@ If everything goes well, Stash should create a `BackupConfiguration` for our Red
 ```bash
 ❯ kubectl get backupconfiguration -n demo-1
 NAME                 TASK                 SCHEDULE      PAUSED   PHASE   AGE
-app-sample-redis-1   redis-backup-6.2.14   */5 * * * *            Ready   76s
+app-sample-redis-1   redis-backup-6.2.5   */5 * * * *            Ready   76s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -389,7 +389,7 @@ If everything goes well, Stash should create a `BackupConfiguration` for our Red
 ```bash
 ❯ kubectl get backupconfiguration -n demo-2
 NAME                 TASK                 SCHEDULE      PAUSED   PHASE   AGE
-app-sample-redis-2   redis-backup-6.2.14   */3 * * * *            Ready   64s
+app-sample-redis-2   redis-backup-6.2.5   */3 * * * *            Ready   64s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -566,7 +566,7 @@ If everything goes well, Stash should create a `BackupConfiguration` for our Red
 ```bash
 ❯ kubectl get backupconfiguration -n demo-3
 NAME                 TASK                 SCHEDULE      PAUSED   PHASE   AGE
-app-sample-redis-3   redis-backup-6.2.14   */5 * * * *            Ready   62s
+app-sample-redis-3   redis-backup-6.2.5   */5 * * * *            Ready   62s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.

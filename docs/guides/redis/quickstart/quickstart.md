@@ -187,9 +187,9 @@ AppBinding:
       Stash:
         Addon:
           Backup Task:
-            Name:  redis-backup-6.2.14
+            Name:  redis-backup-6.2.5
           Restore Task:
-            Name:  redis-restore-6.2.14
+            Name:  redis-restore-6.2.5
     Secret:
       Name:   redis-quickstart-auth
     Type:     kubedb.com/redis

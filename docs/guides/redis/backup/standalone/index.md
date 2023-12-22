@@ -168,9 +168,9 @@ When you install the Stash, it automatically installs all the official database 
 ```bash
 $ kubectl get tasks.stash.appscode.com | grep redis
 redis-backup-5.0.13            1h
-redis-backup-6.2.14             1h
+redis-backup-6.2.5             1h
 redis-restore-5.0.13           1h
-redis-restore-6.2.14            1h
+redis-restore-6.2.5            1h
 ```
 
 ### Ensure AppBinding
@@ -213,9 +213,9 @@ clientConfig:
     stash:
       addon:
         backupTask:
-          name: redis-backup-6.2.14
+          name: redis-backup-6.2.5
         restoreTask:
-          name: redis-restore-6.2.14
+          name: redis-restore-6.2.5
   secret:
     name: sample-redis-auth
   type: kubedb.com/redis
@@ -326,7 +326,7 @@ If everything goes well, the phase of the `BackupConfiguration` should be `Ready
 ```bash
 $ kubectl get backupconfiguration -n demo
 NAME                  TASK                 SCHEDULE      PAUSED   PHASE      AGE
-sample-redis-backup   redis-backup-6.2.14   */5 * * * *            Ready      11s
+sample-redis-backup   redis-backup-6.2.5   */5 * * * *            Ready      11s
 ```
 
 #### Verify CronJob
@@ -404,7 +404,7 @@ Verify that the `BackupConfiguration` has been paused,
 ```bash
 ❯ kubectl get backupconfiguration -n demo sample-redis-backup
 NAME                  TASK                 SCHEDULE      PAUSED   PHASE   AGE
-sample-redis-backup   redis-backup-6.2.14   */5 * * * *   true     Ready   4h47m
+sample-redis-backup   redis-backup-6.2.5   */5 * * * *   true     Ready   4h47m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the `BackupConfiguration` has been paused.
@@ -519,7 +519,7 @@ Verify that the `BackupConfiguration` has been resumed,
 ```bash
 ❯ kubectl get backupconfiguration -n demo sample-redis-backup
 NAME                  TASK                 SCHEDULE      PAUSED   PHASE   AGE
-sample-redis-backup   redis-backup-6.2.14   */5 * * * *   false    Ready   4h54m
+sample-redis-backup   redis-backup-6.2.5   */5 * * * *   false    Ready   4h54m
 ```
 
 Here,  `false` in the `PAUSED` column means the backup has been resume successfully. The CronJob also should be resumed now.
