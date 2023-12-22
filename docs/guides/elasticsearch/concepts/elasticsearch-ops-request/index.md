@@ -188,12 +188,13 @@ It specifies the necessary information required to horizontally scale the Elasti
       name: es
     verticalScaling:
       node:
-        limits:
-          cpu: 1000m
-          memory: 2Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
   ```
 
 - Vertically scale topology cluster:
@@ -209,22 +210,24 @@ It specifies the necessary information required to horizontally scale the Elasti
     databaseRef:
       name: es
     verticalScaling:
-      topology:
-        master:
+      master:
+        resources:
           limits:
             cpu: 750m
             memory: 800Mi
-        data:
+      data:
+        resources:
           requests:
             cpu: 760m
             memory: 900Mi
-        ingest:
+      ingest:
+        resources:
           limits:
             cpu: 900m
             memory: 1.2Gi
           requests:
             cpu: 800m
-            memory: 1Gi  
+            memory: 1Gi
   ```
 
 - Vertically scale only data nodes:
@@ -240,14 +243,14 @@ It specifies the necessary information required to horizontally scale the Elasti
     databaseRef:
       name: es
     verticalScaling:
-      topology:
-        data:
+      data:
+        resources:
           limits:
             cpu: 900m
             memory: 1.2Gi
           requests:
             cpu: 800m
-            memory: 1Gi  
+            memory: 1Gi
   ```
 
 ### spec.volumeExpansion
@@ -297,10 +300,9 @@ All of them refer to [Quantity](https://v1-22.docs.kubernetes.io/docs/reference/
     databaseRef:
       name: es
     volumeExpansion:
-      topology:
-        master: 2Gi
-        data: 3Gi
-        ingest: 4Gi
+      master: 2Gi
+      data: 3Gi
+      ingest: 4Gi
   ```
 
 - Expand volume for only data nodes:
@@ -316,8 +318,7 @@ All of them refer to [Quantity](https://v1-22.docs.kubernetes.io/docs/reference/
     databaseRef:
       name: es
     volumeExpansion:
-      topology:
-        data: 5Gi
+      data: 5Gi
   ```
 
 ### spec.tls

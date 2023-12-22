@@ -255,12 +255,13 @@ spec:
     name: my-group
   verticalScaling:
     mysql:
-      requests:
-        memory: "1200Mi"
-        cpu: "0.7"
-      limits:
-        memory: "1200Mi"
-        cpu: "0.7"
+      resources:
+        requests:
+          memory: "1200Mi"
+          cpu: "0.7"
+        limits:
+          memory: "1200Mi"
+          cpu: "0.7"
 ```
 
 Here,

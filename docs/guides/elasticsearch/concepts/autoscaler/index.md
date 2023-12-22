@@ -70,49 +70,47 @@ spec:
   databaseRef:
     name: es-topology
   compute:
-    topology:
-      master:
-        trigger: "On"
-        podLifeTimeThreshold: 24h
-        minAllowed:
-          cpu: 250m
-          memory: 350Mi
-        maxAllowed:
-          cpu: 1
-          memory: 1Gi
-        controlledResources: ["cpu", "memory"]
-        containerControlledValues: "RequestsAndLimits"
-        resourceDiffPercentage: 10
-      data:
-        trigger: "On"
-        podLifeTimeThreshold: 24h
-        minAllowed:
-          cpu: 250m
-          memory: 350Mi
-        maxAllowed:
-          cpu: 1
-          memory: 1Gi
-        controlledResources: ["cpu", "memory"]
-        containerControlledValues: "RequestsAndLimits"
-        resourceDiffPercentage: 10
-      ingest:
-        trigger: "On"
-        podLifeTimeThreshold: 24h
-        minAllowed:
-          cpu: 250m
-          memory: 350Mi
-        maxAllowed:
-          cpu: 1
-          memory: 1Gi
-        controlledResources: ["cpu", "memory"]
-        containerControlledValues: "RequestsAndLimits"
-        resourceDiffPercentage: 10
+    master:
+      trigger: "On"
+      podLifeTimeThreshold: 24h
+      minAllowed:
+        cpu: 250m
+        memory: 350Mi
+      maxAllowed:
+        cpu: 1
+        memory: 1Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"
+      resourceDiffPercentage: 10
+    data:
+      trigger: "On"
+      podLifeTimeThreshold: 24h
+      minAllowed:
+        cpu: 250m
+        memory: 350Mi
+      maxAllowed:
+        cpu: 1
+        memory: 1Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"
+      resourceDiffPercentage: 10
+    ingest:
+      trigger: "On"
+      podLifeTimeThreshold: 24h
+      minAllowed:
+        cpu: 250m
+        memory: 350Mi
+      maxAllowed:
+        cpu: 1
+        memory: 1Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"
+      resourceDiffPercentage: 10
   storage:
-    topology:
-      data:
-        trigger: "On"
-        usageThreshold: 60
-        scalingThreshold: 50
+    data:
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 50
 ```
 
 Here, we are going to describe the various sections of a `ElasticsearchAutoscaler` crd.

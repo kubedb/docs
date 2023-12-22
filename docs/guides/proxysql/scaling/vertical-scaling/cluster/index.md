@@ -155,12 +155,13 @@ spec:
     name: proxy-server
   verticalScaling:
     proxysql:
-      requests:
-        memory: "1.2Gi"
-        cpu: "0.6"
-      limits:
-        memory: "1.2Gi"
-        cpu: "0.6"
+      resources:
+        requests:
+          memory: "1.2Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.2Gi"
+          cpu: "0.6"
 ```
 
 Here,

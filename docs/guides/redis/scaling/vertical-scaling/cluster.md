@@ -142,12 +142,13 @@ spec:
     name: redis-cluster
   verticalScaling:
     redis:
-      requests:
-        memory: "300Mi"
-        cpu: "200m"
-      limits:
-        memory: "800Mi"
-        cpu: "500m"
+      resources:
+        requests:
+          memory: "300Mi"
+          cpu: "200m"
+        limits:
+          memory: "800Mi"
+          cpu: "500m"
 ```
 
 

@@ -76,12 +76,13 @@ spec:
     name: sentinel-tls
   verticalScaling:
     redissentinel:
-      requests:
-        memory: "300Mi"
-        cpu: "200m"
-      limits:
-        memory: "800Mi"
-        cpu: "500m"
+      resources:
+        requests:
+          memory: "300Mi"
+          cpu: "200m"
+        limits:
+          memory: "800Mi"
+          cpu: "500m"
 ```
 
 Here, we are going to describe the various sections of `RedisOpsRequest` and `RedisSentinelOpsRequest` CR .
@@ -181,12 +182,13 @@ spec:
   type: VerticalScaling
   verticalScaling:
     redis:
-      limits:
-        cpu: 500m
-        memory: 800Mi
-      requests:
-        cpu: 200m
-        memory: 300Mi
+      resources:
+        limits:
+          cpu: 500m
+          memory: 800Mi
+        requests:
+          cpu: 200m
+          memory: 300Mi
 status:
   conditions:
   - lastTransitionTime: "2023-02-02T09:14:01Z"

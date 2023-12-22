@@ -90,12 +90,13 @@ spec:
   type: VerticalScaling  
   verticalScaling:
     postgres:
-      requests:
-        memory: "1200Mi"
-        cpu: "0.7"
-      limits:
-        memory: "1200Mi"
-        cpu: "0.7"
+      resources:
+        requests:
+          memory: "1200Mi"
+          cpu: "0.7"
+        limits:
+          memory: "1200Mi"
+          cpu: "0.7"
 status:
   conditions:
   - lastTransitionTime: "2020-06-11T09:59:05Z"
