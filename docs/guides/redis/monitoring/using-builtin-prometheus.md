@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-redis
   namespace: demo
 spec:
-  version: 6.0.6
+  version: 6.0.20
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -107,7 +107,7 @@ Type:              ClusterIP
 IP:                10.106.243.251
 Port:              prom-http  56790/TCP
 TargetPort:        prom-http/TCP
-Endpoints:         172.17.0.5:56790
+Endpoints:         172.17.0.14:56790
 Session Affinity:  None
 Events:            <none>
 ```

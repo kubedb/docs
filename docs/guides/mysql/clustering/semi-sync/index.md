@@ -48,7 +48,7 @@ metadata:
   name: semi-sync-mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   replicas: 3
   topology:
     mode: SemiSync
@@ -174,7 +174,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"mode":"SemiSync","semiSync":{"errantTransactionRecoveryPolicy":"PseudoTransaction","sourceTimeout":"23h","sourceWaitForReplicaCount":1}},"version":"8.0.31"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"mode":"SemiSync","semiSync":{"errantTransactionRecoveryPolicy":"PseudoTransaction","sourceTimeout":"23h","sourceWaitForReplicaCount":1}},"version":"8.0.35"}}
 
     Creation Timestamp:  2022-11-16T05:45:53Z
     Labels:
@@ -207,7 +207,7 @@ AppBinding:
     Secret:
       Name:   semi-sync-mysql-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.31
+    Version:  8.0.35
 
 Events:
   Type    Reason         Age   From            Message
@@ -265,7 +265,7 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 ```bash
 $ kubectl get mysql -n demo 
 NAME              VERSION   STATUS   AGE
-semi-sync-mysql   8.0.31    Ready    16m
+semi-sync-mysql   8.0.35    Ready    16m
 ```
 
 ```yaml
@@ -311,7 +311,7 @@ spec:
       sourceTimeout: 23h0m0s
       sourceWaitForReplicaCount: 1
   useAddressType: DNS
-  version: 8.0.31
+  version: 8.0.35
 status:
   conditions:
     ...

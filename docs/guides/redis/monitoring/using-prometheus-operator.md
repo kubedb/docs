@@ -95,7 +95,7 @@ metadata:
   name: coreos-prom-redis
   namespace: demo
 spec:
-  version: 6.0.6
+  version: 6.0.20
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"

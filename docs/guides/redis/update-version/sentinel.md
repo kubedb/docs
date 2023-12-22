@@ -39,7 +39,7 @@ namespace/demo created
 
 ### Prepare Redis Sentinel Database
 
-Now, we are going to deploy a `RedisSentinel` instance with version `6.2.7` and a `Redis` database with version `6.2.5`. Then, in the next section we will update the version of the sentinel and the database using `RedisOpsRequest` CRD
+Now, we are going to deploy a `RedisSentinel` instance with version `6.2.14` and a `Redis` database with version `6.2.14`. Then, in the next section we will update the version of the sentinel and the database using `RedisOpsRequest` CRD
 
 ### Deploy RedisSentinel :
 
@@ -52,7 +52,7 @@ metadata:
   name: sen-sample
   namespace: demo
 spec:
-  version: 6.2.7
+  version: 6.2.14
   replicas: 3
   storageType: Durable
   storage:
@@ -77,7 +77,7 @@ Now, wait until `sen-sample` created has status `Ready`. i.e,
 ```bash
 $ kubectl get redissentinel -n demo
 NAME         VERSION   STATUS   AGE
-sen-sample   6.2.7     Ready    5m20s
+sen-sample   6.2.14     Ready    5m20s
 ```
 
 ### Deploy Redis :
@@ -91,7 +91,7 @@ metadata:
   name: rd-sample
   namespace: demo
 spec:
-  version: 6.2.5
+  version: 6.2.14
   replicas: 3
   sentinelRef:
     name: sen-sample
@@ -120,14 +120,14 @@ Now, wait until `rd-sample` created has status `Ready`. i.e,
 ```bash
 $ kubectl get redis -n demo
 NAME        VERSION   STATUS   AGE
-rd-sample   6.2.5     Ready    2m11s
+rd-sample   6.2.14     Ready    2m11s
 ```
 
 We are now ready to apply the `RedisSentinelOpsRequest` CR to update the sentinel version and `RedisOpsRequest` CR to update the database version.
 
 ### Update RedisSentinel Version
 
-Here, we are going to update `RedisSentinel` standalone from `6.2.7` to `7.0.5`.
+Here, we are going to update `RedisSentinel` standalone from `6.2.14` to `7.0.14`.
 
 #### Create RedisSentinelOpsRequest:
 
@@ -144,14 +144,14 @@ spec:
   databaseRef:
     name: sen-sample
   updateVersion:
-    targetVersion: 7.0.5
+    targetVersion: 7.0.14
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `sen-sample` RedisSentinel instance.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.5`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.14`.
 
 Let's create the `RedisSentinelOpsRequest` CR we have shown above,
 
@@ -179,19 +179,19 @@ Now, we are going to verify whether the `RedisSentinel` and the related `Statefu
 
 ```bash
 $ kubectl get redissentinel -n demo sen-sample -o=jsonpath='{.spec.version}{"\n"}'
-7.0.5
+7.0.14
 
 $ kubectl get statefulset -n demo sen-sample -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-redis:7.0.5@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
+redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 
 $ kubectl get pods -n demo sen-sample-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-redis:7.0.5@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
+redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 ```
 
 You can see from above, our `RedisSentinel` sen-demo has been updated with the new version. So, the UpdateVersion process is successfully completed.
 ### Update Redis Version
 
-Here, we are going to update `Redis` standalone from `6.2.5` to `7.0.4`.
+Here, we are going to update `Redis` standalone from `6.2.14` to `7.0.4`.
 
 #### Create RedispsRequest:
 
@@ -215,7 +215,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `rd-sample` Redis database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.5`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.14`.
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 

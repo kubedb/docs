@@ -52,11 +52,11 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 $ kubectl get mysqlversion
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED   AGE
 5.7.35-v1       5.7.35    Official       mysql:5.7.35                             13d
-5.7.41          5.7.41    Official       mysql:5.7.41                             13d
+5.7.44          5.7.44    Official       mysql:5.7.44                             13d
 8.0.17          8.0.17    Official       mysql:8.0.17                             13d
-8.0.32          8.0.32    Official       mysql:8.0.32                             13d
-8.0.32-innodb   8.0.32    MySQL          mysql/mysql-server:8.0.32                13d
-8.0.32          8.0.32    Official       mysql:8.0.32                             13d
+8.0.35          8.0.35    Official       mysql:8.0.35                             13d
+8.0.31-innodb   8.0.35    MySQL          mysql/mysql-server:8.0.35                13d
+8.0.35          8.0.35    Official       mysql:8.0.35                             13d
 8.0.3-v4        8.0.3     Official       mysql:8.0.3                              13d
 
 ```
@@ -65,10 +65,10 @@ The version above that does not show `DEPRECATED` true is supported by `KubeDB` 
 
 **Check update Constraints:**
 
-Database version update constraints is a constraint that shows whether it is possible or not possible to update from one version to another. Let's check the version update constraints of `MySQL` `8.0.32`,
+Database version update constraints is a constraint that shows whether it is possible or not possible to update from one version to another. Let's check the version update constraints of `MySQL` `8.0.35`,
 
 ```bash
-$ kubectl get mysqlversion 8.0.32 -o yaml
+$ kubectl get mysqlversion 8.0.35 -o yaml
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
@@ -83,14 +83,14 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2022.03.28
     helm.sh/chart: kubedb-catalog-v2022.03.28
-  name: 8.0.32
+  name: 8.0.35
   resourceVersion: "1092466"
   uid: fa68b792-a8b3-47a3-a32e-66a47f79c177
 spec:
   coordinator:
     image: kubedb/mysql-coordinator:v0.5.0
   db:
-    image: mysql:8.0.32
+    image: mysql:8.0.35
   distribution: Official
   exporter:
     image: kubedb/mysqld-exporter:v0.13.1
@@ -109,14 +109,14 @@ spec:
   updateConstraints:
     denylist:
       groupReplication:
-      - < 8.0.32
+      - < 8.0.35
       standalone:
-      - < 8.0.32
-  version: 8.0.32
+      - < 8.0.35
+  version: 8.0.35
 
 ```
 
-The above `spec.updateConstraints.denylist` of `8.0.32` is showing that updating below version of `8.0.32` is not possible for both group replication and standalone. That means, it is possible to update any version above `8.0.32`. Here, we are going to create a `MySQL` Group Replication using MySQL  `8.0.32`. Then we are going to update this version to `8.0.32`.
+The above `spec.updateConstraints.denylist` of `8.0.35` is showing that updating below version of `8.0.35` is not possible for both group replication and standalone. That means, it is possible to update any version above `8.0.35`. Here, we are going to create a `MySQL` Group Replication using MySQL  `8.0.35`. Then we are going to update this version to `8.0.35`.
 
 **Deploy MySQL Group Replication:**
 
@@ -129,7 +129,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.0.32"
+  version: "8.0.35"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -163,7 +163,7 @@ $ watch -n 3 kubectl get my -n demo my-group
 
 
 NAME       VERSION   STATUS         AGE
-my-group   8.0.32    Ready          5m
+my-group   8.0.35    Ready          5m
 
 $ watch -n 3 kubectl get sts -n demo my-group
 
@@ -182,15 +182,15 @@ Let's verify the `MySQL`, the `StatefulSet` and its `Pod` image version,
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-8.0.32
+8.0.35
 
 $ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
-"mysql:8.0.32"
+"mysql:8.0.35"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
-"mysql:8.0.32"
-"mysql:8.0.32"
-"mysql:8.0.32"
+"mysql:8.0.35"
+"mysql:8.0.35"
+"mysql:8.0.35"
 ```
 
 Let's also verify that the StatefulSet’s pods have joined into the group replication,
@@ -207,9 +207,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                       | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
-| group_replication_applier | 6e7f3cc4-f84d-11ec-adcd-d23a2a3ef58a | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.32         | XCom                       |
-| group_replication_applier | 70c60c5b-f84d-11ec-821b-4af781e22a9f | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.32         | XCom                       |
-| group_replication_applier | 71fdc498-f84d-11ec-a6f3-b2ee89425e4f | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.32         | XCom                       |
+| group_replication_applier | 6e7f3cc4-f84d-11ec-adcd-d23a2a3ef58a | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.35         | XCom                       |
+| group_replication_applier | 70c60c5b-f84d-11ec-821b-4af781e22a9f | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.35         | XCom                       |
+| group_replication_applier | 71fdc498-f84d-11ec-a6f3-b2ee89425e4f | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.35         | XCom                       |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 
 ```
@@ -218,7 +218,7 @@ We are ready to apply updating on this `MySQL` group replication.
 
 #### UpdateVersion
 
-Here, we are going to update the `MySQL` group replication from `8.0.32` to `8.0.32`.
+Here, we are going to update the `MySQL` group replication from `8.0.35` to `8.0.35`.
 
 **Create MySQLOpsRequest:**
 
@@ -235,14 +235,14 @@ spec:
   databaseRef:
     name: my-group
   updateVersion:
-    targetVersion: "8.0.32"
+    targetVersion: "8.0.35"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `8.0.32` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `8.0.35` after updating.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
@@ -286,7 +286,7 @@ Spec:
     Name:  my-group
   Type:    UpdateVersion
   UpdateVersion:
-    TargetVersion:  8.0.32
+    TargetVersion:  8.0.35
 Status:
   Conditions:
     Last Transition Time:  2022-06-30T08:26:36Z
@@ -337,15 +337,15 @@ Now, we are going to verify whether the `MySQL` and `StatefulSet` and it's `Pod`
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-5.7.41
+5.7.44
 
 $ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
-"mysql:8.0.32"
+"mysql:8.0.35"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
-"mysql:8.0.32"
-"mysql:8.0.32"
-"mysql:8.0.32"
+"mysql:8.0.35"
+"mysql:8.0.35"
+"mysql:8.0.35"
 ```
 
 Let's also check the StatefulSet pods have joined the `MySQL` group replication,
@@ -362,9 +362,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                       | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
-| group_replication_applier | 6e7f3cc4-f84d-11ec-adcd-d23a2a3ef58a | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.32         | XCom                       |
-| group_replication_applier | 70c60c5b-f84d-11ec-821b-4af781e22a9f | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.32         | XCom                       |
-| group_replication_applier | 71fdc498-f84d-11ec-a6f3-b2ee89425e4f | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.32         | XCom                       |
+| group_replication_applier | 6e7f3cc4-f84d-11ec-adcd-d23a2a3ef58a | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.35         | XCom                       |
+| group_replication_applier | 70c60c5b-f84d-11ec-821b-4af781e22a9f | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.35         | XCom                       |
+| group_replication_applier | 71fdc498-f84d-11ec-a6f3-b2ee89425e4f | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.35         | XCom                       |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 
 ```

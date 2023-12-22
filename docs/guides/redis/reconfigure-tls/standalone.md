@@ -51,7 +51,7 @@ metadata:
   name: rd-sample
   namespace: demo
 spec:
-  version: "6.2.5"
+  version: "6.2.14"
   mode: Standalone
   storage:
     storageClassName: "standard"
@@ -75,7 +75,7 @@ Now, wait until `redis-standalone` has status `Ready`. i.e,
 $ watch kubectl get rd -n demo
 Every 2.0s: kubectl get rd -n demo
 NAME        VERSION   STATUS   AGE
-rd-sample   6.2.5     Ready    88s
+rd-sample   6.2.14     Ready    88s
 ```
 
 Now, we can connect to this database through redis-cli verify that the TLS is disabled.

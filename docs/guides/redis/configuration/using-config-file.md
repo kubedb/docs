@@ -103,7 +103,7 @@ metadata:
   name: custom-redis
   namespace: demo
 spec:
-  version: 6.2.5
+  version: 6.2.14
   configSecret:
     name: rd-configuration
   storage:
@@ -123,7 +123,7 @@ Check if the database is ready
 ```bash
 $ kubectl get redis -n demo
 NAME           VERSION   STATUS   AGE
-custom-redis   6.2.5     Ready    10m
+custom-redis   6.2.14     Ready    10m
 ```
 
 

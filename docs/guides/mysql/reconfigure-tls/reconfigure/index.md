@@ -71,7 +71,7 @@ metadata:
   name: mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   topology:
     mode: GroupReplication
   storageType: Durable
@@ -138,7 +138,7 @@ metadata:
   name: semi-sync-mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   replicas: 3
   topology:
     mode: SemiSync
@@ -176,7 +176,7 @@ metadata:
   name: mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -206,7 +206,7 @@ Now, wait until `mysql` has status `Ready`. i.e,
 ```bash
 $ kubectl get my -n demo
 NAME    VERSION   STATUS   AGE
-mysql   8.0.31    Ready    75s
+mysql   8.0.35    Ready    75s
 
 $ kubectl dba describe mysql mysql -n demo
 Name:               mysql
@@ -277,7 +277,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"8.0.31"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"8.0.35"}}
 
     Creation Timestamp:  2022-11-21T10:18:49Z
     Labels:
@@ -310,7 +310,7 @@ AppBinding:
     Secret:
       Name:   mysql-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.31
+    Version:  8.0.35
 
 Events:
   Type    Reason         Age   From             Message
@@ -348,7 +348,7 @@ kubectl exec -it mysql-0 -n demo -- mysql -u root --password='f8EyKG)mNMIMdS~a' 
 Defaulted container "mysql" out of: mysql, mysql-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 --------------
-mysql  Ver 8.0.31 for Linux on x86_64 (MySQL Community Server - GPL)
+mysql  Ver 8.0.35 for Linux on x86_64 (MySQL Community Server - GPL)
 
 Connection id:		91
 Current database:	
@@ -357,7 +357,7 @@ SSL:			Cipher in use is TLS_AES_256_GCM_SHA384
 Current pager:		stdout
 Using outfile:		''
 Using delimiter:	;
-Server version:		8.0.31 MySQL Community Server - GPL
+Server version:		8.0.35 MySQL Community Server - GPL
 Protocol version:	10
 Connection:		mysql-0.mysql-pods.demo via TCP/IP
 Server characterset:	utf8mb4
@@ -614,7 +614,7 @@ bash-4.4# mysql -uroot -p$MYSQL_ROOT_PASSWORD -h mysql.demo.svc --ssl-ca=/etc/my
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 94
-Server version: 8.0.31 MySQL Community Server - GPL
+Server version: 8.0.35 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 
@@ -626,7 +626,7 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 mysql> \s
 --------------
-mysql  Ver 8.0.31 for Linux on x86_64 (MySQL Community Server - GPL)
+mysql  Ver 8.0.35 for Linux on x86_64 (MySQL Community Server - GPL)
 
 Connection id:		94
 Current database:	
@@ -635,7 +635,7 @@ SSL:			Cipher in use is TLS_AES_256_GCM_SHA384
 Current pager:		stdout
 Using outfile:		''
 Using delimiter:	;
-Server version:		8.0.31 MySQL Community Server - GPL
+Server version:		8.0.35 MySQL Community Server - GPL
 Protocol version:	10
 Connection:		mysql.demo.svc via TCP/IP
 Server characterset:	utf8mb4

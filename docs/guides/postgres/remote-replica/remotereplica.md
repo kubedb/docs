@@ -143,7 +143,7 @@ spec:
     storageClassName: linode-block-storage
   storageType: Durable
   terminationPolicy: WipeOut
-  version: "15.3"
+  version: "15.5"
 ```
 
 ```bash
@@ -266,7 +266,7 @@ spec:
     storageClassName: linode-block-storage
   storageType: Durable
   terminationPolicy: WipeOut
-  version: "15.3"
+  version: "15.5"
 ```
 
 ```bash

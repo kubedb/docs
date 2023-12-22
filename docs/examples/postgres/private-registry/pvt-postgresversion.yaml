@@ -1,7 +1,7 @@
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PostgresVersion
 metadata:
-  name: "13.2"
+  name: "13.13"
 spec:
   coordinator:
     image: PRIVATE_REGISTRY/pg-coordinator:v0.1.0
@@ -20,4 +20,4 @@ spec:
         name: postgres-backup-13.1
       restoreTask:
         name: postgres-restore-13.1
-  version: "13.2"
+  version: "13.13"

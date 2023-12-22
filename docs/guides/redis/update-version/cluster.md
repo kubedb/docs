@@ -39,7 +39,7 @@ namespace/demo created
 
 ### Prepare Redis Cluster Database
 
-Now, we are going to deploy a `Redis` cluster database with version `5.0.3-v1`.
+Now, we are going to deploy a `Redis` cluster database with version `6.2.14`.
 
 ### Deploy Redis cluster :
 
@@ -52,7 +52,7 @@ metadata:
   name: redis-cluster
   namespace: demo
 spec:
-  version: 6.0.6
+  version: 6.0.20
   mode: Cluster
   cluster:
     master: 3
@@ -80,14 +80,14 @@ Now, wait until `redis-cluster` created has status `Ready`. i.e,
 ```bash
 $ kubectl get rd -n demo
 NAME            VERSION   STATUS   AGE
-redis-cluster   6.0.6     Ready    88s
+redis-cluster   6.0.20     Ready    88s
 ```
 
 We are now ready to apply the `RedisOpsRequest` CR to update this database.
 
 ### Update Redis Version
 
-Here, we are going to update `Redis` cluster from `6.0.6` to `7.0.5`.
+Here, we are going to update `Redis` cluster from `6.0.20` to `7.0.14`.
 
 #### Create RedisOpsRequest:
 
@@ -104,14 +104,14 @@ spec:
   databaseRef:
     name: redis-cluster
   updateVersion:
-    targetVersion: 7.0.5
+    targetVersion: 7.0.14
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `redis-cluster` Redis database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.5`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.14`.
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 
@@ -139,13 +139,13 @@ Now, we are going to verify whether the `Redis` and the related `StatefulSets` t
 
 ```bash
 $ kubectl get redis -n demo redis-cluster -o=jsonpath='{.spec.version}{"\n"}'
-7.0.5
+7.0.14
 
 $ kubectl get statefulset -n demo redis-cluster-shard0 -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-redis:7.0.5@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
+redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 
 $ kubectl get pods -n demo redis-cluster-shard1-1 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-redis:7.0.5@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
+redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 ```
 
 You can see from above, our `Redis` cluster database has been updated with the new version. So, the update process is successfully completed.

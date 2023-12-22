@@ -5,7 +5,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "13.2"
+  version: "13.13"
   storageType: Durable
   storage:
     storageClassName: "standard"

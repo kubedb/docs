@@ -4,7 +4,7 @@ metadata:
   name: rd-tls
   namespace: demo
 spec:
-  version: "6.2.5"
+  version: "6.2.14"
   mode: Cluster
   cluster:
     master: 3

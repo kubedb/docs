@@ -5,7 +5,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "6.2.5"
+  version: "6.2.14"
   tls:
     issuerRef:
       apiGroup: "cert-manager.io"

@@ -94,7 +94,7 @@ metadata:
   name: rd-tls
   namespace: demo
 spec:
-  version: "6.2.5"
+  version: "6.2.14"
   tls:
     issuerRef:
       apiGroup: "cert-manager.io"
@@ -122,7 +122,7 @@ Now, wait until `rd-tls` has status `Ready`. i.e,
 $ watch kubectl get rd -n demo
 Every 2.0s: kubectl get redis -n demo
 NAME      VERSION     STATUS     AGE
-rd-tls    6.2.5       Ready      14s
+rd-tls    6.2.14       Ready      14s
 ```
 
 ### Verify TLS/SSL in Redis Standalone

@@ -38,7 +38,7 @@ Now, we are going to deploy a  `MySQL` Cluster using a supported version by `Kub
 
 ### Prepare MySQL Cluster
 
-Now, we are going to deploy a `MySQL` Cluster database with version `8.0.31`.
+Now, we are going to deploy a `MySQL` Cluster database with version `8.0.35`.
 
 ### Deploy MySQL
 
@@ -91,7 +91,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   topology:
     mode: GroupReplication
   replicas: 3
@@ -164,7 +164,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   topology:
     mode: SemiSync
     semiSync:
@@ -204,7 +204,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.0.31"
+  version: "8.0.35"
   configSecret:
     name: my-configuration
   storageType: Durable
@@ -234,7 +234,7 @@ Now, wait until `sample-mysql` has status `Ready`. i.e,
 ```bash
 $ kubectl get mysql -n demo
 NAME           VERSION   STATUS   AGE
-sample-mysql   8.0.31    Ready    5m49s
+sample-mysql   8.0.35    Ready    5m49s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
@@ -257,7 +257,7 @@ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 112
-Server version: 8.0.31 MySQL Community Server - GPL
+Server version: 8.0.35 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 
@@ -457,7 +457,7 @@ bash-4.4# mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 279
-Server version: 8.0.31 MySQL Community Server - GPL
+Server version: 8.0.35 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 
@@ -546,7 +546,7 @@ bash-4.4# mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 279
-Server version: 8.0.31 MySQL Community Server - GPL
+Server version: 8.0.35 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 

@@ -4,7 +4,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.6.4"
+  version: "10.6.16"
   replicas: 3
   configSecret:
     name: md-configuration
@@ -17,4 +17,3 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: WipeOut
-  

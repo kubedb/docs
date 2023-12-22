@@ -45,7 +45,7 @@ metadata:
   name: mysql-server
   namespace: demo
 spec:
-  version: "5.7.41"
+  version: "5.7.44"
   replicas: 3
   topology:
     mode: GroupReplication

@@ -48,7 +48,7 @@ metadata:
   name: redis-cluster
   namespace: demo
 spec:
-  version: 6.2.5
+  version: 6.2.14
   mode: Cluster
   cluster:
     master: 3
@@ -82,7 +82,7 @@ KubeDB operator watches for `Redis` objects using Kubernetes API. When a `Redis`
 ```bash
 $ kubectl get rd -n demo
 NAME            VERSION   STATUS   AGE
-redis-cluster   6.2.5     Ready    82s
+redis-cluster   6.2.14     Ready    82s
 
 
 $ kubectl get statefulset -n demo
@@ -127,7 +127,7 @@ kind: Redis
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Redis","metadata":{"annotations":{},"name":"redis-cluster","namespace":"demo"},"spec":{"cluster":{"master":3,"replicas":1},"mode":"Cluster","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Halt","version":"6.2.5"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Redis","metadata":{"annotations":{},"name":"redis-cluster","namespace":"demo"},"spec":{"cluster":{"master":3,"replicas":1},"mode":"Cluster","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Halt","version":"6.2.14"}}
   creationTimestamp: "2023-02-02T11:16:57Z"
   finalizers:
   - kubedb.com
@@ -199,7 +199,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Halt
-  version: 6.2.5
+  version: 6.2.14
 status:
   conditions:
   - lastTransitionTime: "2023-02-02T11:16:57Z"

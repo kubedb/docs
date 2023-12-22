@@ -39,12 +39,12 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2023.01.17
     helm.sh/chart: kubedb-catalog-v2023.01.17
-  name: 6.2.5
+  name: 6.2.14
 spec:
   coordinator:
     image: kubedb/redis-coordinator:v0.9.1
   db:
-    image: redis:6.2.5
+    image: redis:6.2.14
   exporter:
     image: kubedb/redis_exporter:1.9.0
   initContainer:
@@ -54,10 +54,10 @@ spec:
   stash:
     addon:
       backupTask:
-        name: redis-backup-6.2.5
+        name: redis-backup-6.2.14
       restoreTask:
-        name: redis-restore-6.2.5
-  version: 6.2.5
+        name: redis-restore-6.2.14
+  version: 6.2.14
 ```
 
 ### metadata.name

@@ -39,7 +39,7 @@ namespace/demo created
 
 ### Prepare Redis Sentinel Database
 
-Now, we are going to deploy a `RedisSentinel` instance with version `6.2.7` and a `Redis` database with version `6.2.5`. Then, in the next section we are going to apply vertical scaling on the sentinel and the database using `RedisOpsRequest` CRD
+Now, we are going to deploy a `RedisSentinel` instance with version `6.2.14` and a `Redis` database with version `6.2.14`. Then, in the next section we are going to apply vertical scaling on the sentinel and the database using `RedisOpsRequest` CRD
 
 ### Deploy RedisSentinel :
 
@@ -52,7 +52,7 @@ metadata:
   name: sen-sample
   namespace: demo
 spec:
-  version: 6.2.7
+  version: 6.2.14
   replicas: 3
   storageType: Durable
   storage:
@@ -83,7 +83,7 @@ Now, wait until `sen-sample` created has status `Ready`. i.e,
 ```bash
 $ kubectl get redissentinel -n demo
 NAME         VERSION   STATUS   AGE
-sen-sample   6.2.7     Ready    5m20s
+sen-sample   6.2.14     Ready    5m20s
 ```
 
 Let's check the Pod containers resources,
@@ -111,7 +111,7 @@ metadata:
   name: rd-sample
   namespace: demo
 spec:
-  version: 6.2.5
+  version: 6.2.14
   replicas: 3
   sentinelRef:
     name: sen-sample
@@ -146,7 +146,7 @@ Now, wait until `rd-sample` created has status `Ready`. i.e,
 ```bash
 $ kubectl get redis -n demo
 NAME        VERSION   STATUS   AGE
-rd-sample   6.2.5     Ready    2m11s
+rd-sample   6.2.14     Ready    2m11s
 ```
 Let's check the Pod containers resources,
 ```bash

@@ -37,7 +37,7 @@ spec:
   databaseRef:
     name: standalone-redis
   updateVersion:
-    targetVersion: 7.0.5
+    targetVersion: 7.0.14
 ```
 
 Sample `RedisOpsRequest` for horizontal scaling:

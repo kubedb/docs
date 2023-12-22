@@ -103,7 +103,7 @@ metadata:
   name: custom-mysql
   namespace: demo
 spec:
-  version: "8.0.32"
+  version: "8.0.35"
   configSecret:
     name: my-configuration
   storage:
@@ -129,19 +129,19 @@ Check the pod's log to see if the database is ready
 
 ```bash
 $ kubectl logs -f -n demo custom-mysql-0
-2022-06-28 13:22:10+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.32-1debian10 started.
+2022-06-28 13:22:10+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.35-1debian10 started.
 2022-06-28 13:22:10+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
 ....
 
 2022-06-28 13:22:20+00:00 [Note] [Entrypoint]: Database files initialized
 2022-06-28 13:22:20+00:00 [Note] [Entrypoint]: Starting temporary server
-2022-06-28T13:22:20.233556Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.32) starting as process 92
+2022-06-28T13:22:20.233556Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.35) starting as process 92
 2022-06-28T13:22:20.252075Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
 2022-06-28T13:22:20.543772Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
 ...
 2022-06-28 13:22:22+00:00 [Note] [Entrypoint]: Stopping temporary server
-2022-06-28T13:22:22.354537Z 10 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.0.32).
-2022-06-28T13:22:24.495121Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.32)  MySQL Community Server - GPL.
+2022-06-28T13:22:22.354537Z 10 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.0.35).
+2022-06-28T13:22:24.495121Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.35)  MySQL Community Server - GPL.
 2022-06-28 13:22:25+00:00 [Note] [Entrypoint]: Temporary server stopped
 
 2022-06-28 13:22:25+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
@@ -149,7 +149,7 @@ $ kubectl logs -f -n demo custom-mysql-0
 ....
 2022-06-28T13:22:26.064259Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
 2022-06-28T13:22:26.076352Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock
-2022-06-28T13:22:26.076407Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.32'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+2022-06-28T13:22:26.076407Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.35'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
 
 ....
 ```
