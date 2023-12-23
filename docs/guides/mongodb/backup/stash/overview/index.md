@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-mongodb-backup-overview
     name: Overview
-    parent: guides-mongodb-backup
+    parent: guides-mongodb-backup-stashv1
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

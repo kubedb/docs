@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-mongodb-backup-kubestash-auto-backup
     name: Auto-Backup
-    parent: guides-mongodb-backup-kubestash
+    parent: guides-mongodb-backup-stashv2
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides

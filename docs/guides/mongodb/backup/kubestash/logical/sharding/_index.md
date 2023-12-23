@@ -6,7 +6,7 @@ menu:
     identifier: guides-mongodb-backup-kubestash-logical-sharded
     name: MongoDB Sharded Cluster
     parent: guides-mongodb-backup-kubestash-logical
-    weight: 20
+    weight: 22
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

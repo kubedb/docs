@@ -6,7 +6,7 @@ menu:
     identifier: guides-mongodb-backup-kubestash-logical-replicaset
     name: MongoDB Replicaset Cluster
     parent: guides-mongodb-backup-kubestash-logical
-    weight: 20
+    weight: 21
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

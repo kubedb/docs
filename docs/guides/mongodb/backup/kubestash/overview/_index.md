@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-mongodb-backup-kubestash-overview
     name: Overview
-    parent: guides-mongodb-backup-kubestash
+    parent: guides-mongodb-backup-stashv2
     weight: 10
 menu_name: docs_{{ .version }}
 ---
