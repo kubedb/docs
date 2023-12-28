@@ -3,7 +3,7 @@ title: Continuous Archiving and Point-in-time Recovery
 menu:
   docs_{{ .version }}:
     identifier: pitr-mongo
-    name: Archiver
+    name: Overview
     parent: mg-archiver-pitr
     weight: 42
 menu_name: docs_{{ .version }}
