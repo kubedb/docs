@@ -172,7 +172,7 @@ stringData:
 ```
 
 ```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pirt/yamls/postgresarchiver.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pirt/yamls/mysqlarchiver.yaml
  postgresarchiver.archiver.kubedb.com/postgresarchiver-sample created
  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pirt/yamls/encryptionSecret.yaml
 ```
