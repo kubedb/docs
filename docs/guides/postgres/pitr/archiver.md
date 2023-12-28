@@ -3,7 +3,7 @@ title: Continuous Archiving and Point-in-time Recovery
 menu:
   docs_{{ .version }}:
     identifier: pitr-postgres-archiver
-    name: Overview
+    name: Archiver
     parent: pitr-postgres
     weight: 10
 menu_name: docs_{{ .version }}
@@ -172,7 +172,7 @@ stringData:
 ```
 
 ```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pirt/yamls/mysqlarchiver.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pirt/yamls/postgresarchiver.yaml
  postgresarchiver.archiver.kubedb.com/postgresarchiver-sample created
  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pirt/yamls/encryptionSecret.yaml
 ```
