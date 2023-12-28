@@ -3,7 +3,7 @@ title: Continuous Archiving and Point-in-time Recovery
 menu:
   docs_{{ .version }}:
     identifier: pitr-postgres-archiver
-    name: Archiver
+    name: Overview
     parent: pitr-postgres
     weight: 10
 menu_name: docs_{{ .version }}
