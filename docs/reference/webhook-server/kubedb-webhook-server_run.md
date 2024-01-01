@@ -59,13 +59,15 @@ kubedb-webhook-server run [flags]
       --authorization-kubeconfig string                         kubeconfig file pointing at the 'core' kubernetes server with enough rights to create subjectaccessreviews.authorization.k8s.io.
       --authorization-webhook-cache-authorized-ttl duration     The duration to cache 'authorized' responses from the webhook authorizer. (default 10s)
       --authorization-webhook-cache-unauthorized-ttl duration   The duration to cache 'unauthorized' responses from the webhook authorizer. (default 10s)
-      --bind-address ip                                         The IP address on which to listen for the --secure-port port. The associated interface(s) must be reachable by the rest of the cluster, and by CLI/web clients. If blank or an unspecified address (0.0.0.0 or ::), all interfaces will be used. (default 0.0.0.0)
+      --bind-address ip                                         The IP address on which to listen for the --secure-port port. The associated interface(s) must be reachable by the rest of the cluster, and by CLI/web clients. If blank or an unspecified address (0.0.0.0 or ::), all interfaces and IP address families will be used. (default 0.0.0.0)
       --burst int                                               The maximum burst for throttle (default 1000000)
       --cert-dir string                                         The directory where the TLS certs are located. If --tls-cert-file and --tls-private-key-file are provided, this flag will be ignored. (default "apiserver.local.config/certificates")
       --client-ca-file string                                   If set, any request presenting a client certificate signed by one of the authorities in the client-ca-file is authenticated with an identity corresponding to the CommonName of the client certificate.
-      --contention-profiling                                    Enable lock contention profiling, if profiling is enabled
+      --contention-profiling                                    Enable block profiling, if profiling is enabled
+      --debug-socket-path string                                Use an unprotected (no authn/authz) unix-domain socket for profiling with the given path
       --egress-selector-config-file string                      File with apiserver egress selector configuration.
       --enable-mutating-webhook                                 If true, enables mutating webhooks for KubeDB CRDs. (default true)
+      --enable-priority-and-fairness                            If true, replace the max-in-flight handler with an enhanced one that queues and dispatches with priority and fairness (default true)
       --enable-validating-webhook                               If true, enables validating webhooks for KubeDB CRDs. (default true)
   -h, --help                                                    help for run
       --http2-max-streams-per-connection int                    The limit that the server gives to clients for the maximum number of streams in an HTTP/2 connection. Zero means to use golang's default. (default 1000)
