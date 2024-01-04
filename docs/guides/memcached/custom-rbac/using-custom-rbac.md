@@ -144,7 +144,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "1.5.4-v1"
+  version: "1.6.22"
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
@@ -196,7 +196,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "1.5.4-v1"
+  version: "1.6.22"
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount

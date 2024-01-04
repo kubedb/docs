@@ -32,7 +32,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   1.5        1.5       kubedb/memcached:1.5        kubedb/operator:0.8.0              true
   1.5-v1     1.5       kubedb/memcached:1.5-v1     kubedb/memcached-exporter:v0.4.1   <none>
   1.5.4      1.5.4     kubedb/memcached:1.5.4      kubedb/operator:0.8.0              true
-  1.5.4-v1   1.5.4     kubedb/memcached:1.5.4-v1   kubedb/memcached-exporter:v0.4.1   <none>
+  1.6.22   1.5.4     kubedb/memcached:1.6.22   kubedb/memcached-exporter:v0.4.1   <none>
   ```
 
   Docker hub repositories:
@@ -101,7 +101,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "1.5.4-v1"
+  version: "1.6.22"
   podTemplate:
     spec:
       resources:
@@ -136,7 +136,7 @@ memcd-pvt-reg-694d4d44df-tkqc4   1/1       Running   0         27s
 
 $ kubectl get mc -n demo
 NAME            VERSION    STATUS    AGE
-memcd-pvt-reg   1.5.4-v1   Running   59s
+memcd-pvt-reg   1.6.22   Running   59s
 ```
 
 ## Cleaning up
