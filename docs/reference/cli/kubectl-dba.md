@@ -40,6 +40,7 @@ kubectl-dba [flags]
       --cluster string                        The name of the kubeconfig cluster to use
       --context string                        The name of the kubeconfig context to use
       --default-seccomp-profile-type string   Default seccomp profile
+      --disable-compression                   If true, opt-out of response compression for all requests to the server
   -h, --help                                  help for kubectl-dba
       --insecure-skip-tls-verify              If true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
       --kubeconfig string                     Path to the kubeconfig file to use for CLI requests.
