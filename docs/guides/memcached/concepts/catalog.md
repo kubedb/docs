@@ -30,13 +30,13 @@ As with all other Kubernetes objects, a MemcachedVersion needs `apiVersion`, `ki
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MemcachedVersion
 metadata:
-  name: "1.5.4-v1"
+  name: "1.6.22"
   labels:
     app: kubedb
 spec:
   version: "1.5.4"
   db:
-    image: "${KUBEDB_DOCKER_REGISTRY}/memcached:1.5.4-v1"
+    image: "${KUBEDB_DOCKER_REGISTRY}/memcached:1.6.22"
   exporter:
     image: "${KUBEDB_DOCKER_REGISTRY}/memcached-exporter:v0.4.1"
   podSecurityPolicies:
@@ -59,7 +59,7 @@ We modify original Memcached docker image to support additional features. An ima
 
 ### spec.deprecated
 
-`spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator. For example, we have modified `kubedb/memcached:1.5.4` docker image to support custom configuration and re-tagged as `kubedb/memcached:1.5.4-v1`. Now, KubeDB `0.9.0-rc.0` supports providing custom configuration which required `kubedb/memcached:1.5.4-v1` docker image. So, we have marked `kubedb/memcached:1.5.4` as deprecated for KubeDB `0.9.0-rc.0`.
+`spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator. For example, we have modified `kubedb/memcached:1.5.4` docker image to support custom configuration and re-tagged as `kubedb/memcached:1.6.22`. Now, KubeDB `0.9.0-rc.0` supports providing custom configuration which required `kubedb/memcached:1.6.22` docker image. So, we have marked `kubedb/memcached:1.5.4` as deprecated for KubeDB `0.9.0-rc.0`.
 
 The default value of this field is `false`. If `spec.deprecated` is set `true`, KubeDB operator will not create the database and other respective resources for this version.
 

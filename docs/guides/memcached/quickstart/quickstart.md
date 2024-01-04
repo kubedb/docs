@@ -49,7 +49,7 @@ NAME       VERSION   DB_IMAGE                    DEPRECATED   AGE
 1.5        1.5       kubedb/memcached:1.5        true         2h
 1.5-v1     1.5       kubedb/memcached:1.5-v1                  2h
 1.5.4      1.5.4     kubedb/memcached:1.5.4      true         2h
-1.5.4-v1   1.5.4     kubedb/memcached:1.5.4-v1                2h
+1.6.22   1.5.4     kubedb/memcached:1.6.22                2h
 ```
 
 ## Create a Memcached server
@@ -64,7 +64,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "1.5.4-v1"
+  version: "1.6.22"
   podTemplate:
     spec:
       resources:
@@ -94,7 +94,7 @@ KubeDB operator watches for `Memcached` objects using Kubernetes api. When a `Me
 ```bash
 $ kubectl get mc -n demo
 NAME               VERSION    STATUS    AGE
-memcd-quickstart   1.5.4-v1   Running   2m
+memcd-quickstart   1.6.22   Running   2m
 
 $ kubectl dba describe mc -n demo memcd-quickstart
 Name:               memcd-quickstart
@@ -167,7 +167,7 @@ spec:
           memory: 64Mi
   replicas: 3
   terminationPolicy: Delete
-  version: 1.5.4-v1
+  version: 1.6.22
 status:
   observedGeneration: 1$4210395375389091791
   phase: Running
@@ -282,7 +282,7 @@ spec:
                 memory: 64Mi
         replicas: 3
         terminationPolicy: Halt
-        version: 1.5.4-v1
+        version: 1.6.22
 status:
   observedGeneration: 1$7678503742307285743
   pausingTime: 2018-10-03T09:50:10Z
