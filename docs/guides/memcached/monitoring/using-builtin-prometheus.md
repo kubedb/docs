@@ -50,7 +50,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.5.4-v1"
+  version: "1.6.22"
   terminationPolicy: WipeOut
   podTemplate:
     spec:
@@ -81,7 +81,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get mc -n demo builtin-prom-memcd
 NAME                 VERSION    STATUS    AGE
-builtin-prom-memcd   1.5.4-v1   Running   1m
+builtin-prom-memcd   1.6.22   Running   1m
 ```
 
 KubeDB will create a separate stats service with name `{Memcached crd name}-stats` for monitoring purpose.
