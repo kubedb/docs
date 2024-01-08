@@ -256,11 +256,11 @@ OK
 
 ## Rotate Certificate
 
-Now we are going to rotate the certificate of this database. First let's check the current expiration date of the certificate.
+Now we are going to rotate the certificate of this database.
 
 ### Create RedisOpsRequest
 
-Now we are going to increase it using a RedisOpsRequest. Below is the yaml of the ops request that we are going to create,
+Now we are going to rotate certificates using a RedisOpsRequest. Below is the yaml of the ops request that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
