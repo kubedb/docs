@@ -159,22 +159,8 @@ tls.crt:  1127 bytes
 tls.key:  1679 bytes
 ```
 
-Now, Lets exec into a redis container and find out the username to connect in a redis shell,
 
-```bash
-$ kubectl exec -it -n demo rd-tls-shard0-0 -c redis -- bash
-
-root@rd-tls-shard0-0:/data# ls /certs
-ca.crt	client.crt  client.key	server.crt  server.key
-
-root@rd-tls-shard0-0:/data# apt-get update; apt-get install openssl;
-...
-
-root@rd-tls-shard0-0:/data# openssl x509 -in /certs/ca.crt -inform PEM -subject -nameopt RFC2253 -noout
-subject=O=kubedb,CN=redis
-```
-
-Now, we can connect using `CN=redis,O=kubedb` as root to connect to the redis and write some data
+Now, we can connect using tls-certs as root to connect to the redis and write some data
 
 ```bash
 $ kubectl exec -it -n demo rd-tls-shard0-0 -c redis -- bash
