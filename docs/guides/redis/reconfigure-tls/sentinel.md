@@ -293,14 +293,9 @@ root@rd-sample-0:/data# redis-cli --tls --cert "/certs/client.crt" --key "/certs
 1) "tls-cert-file"
 2) "/certs/server.crt
 
-root@rd-sample-0:/data# apt-get update; apt-get install openssl;
-...
-
-root@rd-sample-0:/data# openssl x509 -in /certs/ca.crt -inform PEM -subject -nameopt RFC2253 -noout
-subject=O=kubedb,CN=redis
 ```
 
-Now, we can connect using `CN=redis,O=kubedb` as root to connect to the redis and write some data
+Now, we can connect using tls-certs to the redis and write some data
 
 ```bash
 $ kubectl exec -it -n demo rd-sample-0 -c redis -- bash
@@ -322,28 +317,6 @@ OK
 ## Rotate Certificate
 
 Now we are going to rotate the certificate of sentinel and database. First let's check the current expiration date of the certificate.
-
-```bash
-# Check Redis Certificate
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- bash
-
-root@rd-sample-0:/data# apt-get update; apt-get install openssl;
-...
-
-root@rd-sample-0:/data# openssl x509 -in /certs/server.crt -inform PEM -enddate -nameopt RFC2253 -noout
-notAfter=May 10 05:42:14 2023 GMT
-
-# Check Sentinel Certificate
-$ kubectl exec -it -n demo sen-demo-tls-0 -c redissentinel -- bash
-
-root@sen-demo-tls-0:/data# apt-get update; apt-get install openssl;
-...
-
-root@sen-demo-tls-0:/data# openssl x509 -in /certs/server.crt -inform PEM -enddate -nameopt RFC2253 -noout
-notAfter=May 10 05:41:19 2023 GMT
-```
-
-So, the redis certificate will expire on `May 10 05:42:14 2023 GMT` and sentinel certificate will expire on `notAfter=May 10 05:41:19 2023 GMT`. 
 
 ### Create RedisOpsRequest
 
@@ -389,20 +362,6 @@ rd-ops-rotate    ReconfigureTLS   Successful    5m5s
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
-Now, let's check the expiration date of the certificate.
-
-```bash
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- bash
-
-root@rd-sample-0:/data# apt-get update; apt-get install openssl;
-...
-
-root@rd-sample-0:/data# openssl x509 -in /certs/server.crt -inform PEM -enddate -nameopt RFC2253 -noout
-notAfter=May 10 06:04:12 2023 GMT
-```
-
-As we can see from the above output, the certificate has been rotated successfully.
-
 ### Create RedisSentinelOpsRequest
 
 Now we are going to increase it using a RedisOpsRequest. Below is the yaml of the ops request that we are going to create,
@@ -446,20 +405,6 @@ sen-ops-rotate   ReconfigureTLS   Successful   78s
 ```
 
 We can see from the above output that the `RedisSentinelOpsRequest` has succeeded.
-
-Now, let's check the expiration date of the certificate.
-
-```bash
-$ kubectl exec -it -n demo sen-demo-tls-0 -c redissentinel -- bash
-
-root@rd-sample-0:/data# apt-get update; apt-get install openssl;
-...
-
-root@rd-sample-0:/data# openssl x509 -in /certs/server.crt -inform PEM -enddate -nameopt RFC2253 -noout
-notAfter=May 10 06:10:43 2023 GMT
-```
-
-As we can see from the above output, the certificate has been rotated successfully.
 
 
 ## Remove TLS from the Database
