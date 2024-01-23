@@ -54,6 +54,8 @@ spec:
   version: 3.4.0
   cruiseControl:
     image: ghcr.io/kubedb/cruise-control:3.4.0
+  connectCluster:
+    image: ghcr.io/appscode-images/kafka-connect-cluster:3.6.0
 ```
 
 ### metadata.name
