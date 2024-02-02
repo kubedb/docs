@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisOpsRequest
+metadata:
+  name: rdops-inline-reconfig
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: sample-redis
+  configuration:
+    inlineConfig: maxclients 3000
