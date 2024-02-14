@@ -1,45 +1,47 @@
 ---
-title: Kubectl-Dba Dashboard
+title: Kubectl-Dba Monitor
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-dashboard
-    name: Kubectl-Dba Dashboard
+    identifier: kubectl-dba-monitor
+    name: Kubectl-Dba Monitor
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba dashboard
+## kubectl-dba monitor
 
-Check availability of a grafana dashboard
+Monitoring related commands for a database
 
 ### Synopsis
 
-Check availability of metrics in prometheus server used in a grafana dashboard.
+All monitoring related commands from AppsCode.
 
 ```
-kubectl-dba dashboard
+kubectl-dba monitor
 ```
 
 ### Examples
 
 ```
-  # Check availability of mongodb-summary-dashboard grafana dashboard of mongodb
-  kubectl dba dashboard mongodb mongodb-summary-dashboard
+  # Check triggered alerts for a specific database
+  kubectl dba monitor get-alerts [DATABASE] [DATABASE_NAME] -n [NAMESPACE]
   
-  Valid dashboards include:
-  * elasticsearch
-  * mongodb
-  * mariadb
-  * mysql
-  * postgres
-  * redis
+  # Check availability of grafana dashboard of a database
+  kubectl dba monitor dashboard [DATABASE] [DASHBOARD_NAME]
+  
+  # Check connection status of target with prometheus server for a specific database
+  kubectl dba monitor check-connection [DATABASE] [DATABASE_NAME] -n [NAMESPACE]
+  
+  # Common Flags
+  --prom-svc-name : name of the prometheus service
+  --prom-svc-namespace : namespace of the prometheus service
+  --prom-svc-port : port of the prometheus service
 ```
 
 ### Options
 
 ```
-  -b, --branch string               branch name of the github repo (default "master")
-  -h, --help                        help for dashboard
+  -h, --help                        help for monitor
       --prom-svc-name string        name of the prometheus service
       --prom-svc-namespace string   namespace of the prometheus service
       --prom-svc-port int           port of the prometheus service (default 9090)
@@ -75,4 +77,7 @@ kubectl-dba dashboard
 ### SEE ALSO
 
 * [kubectl-dba](/docs/reference/cli/kubectl-dba.md)	 - kubectl plugin for KubeDB
+* [kubectl-dba monitor check-connection](/docs/reference/cli/kubectl-dba_monitor_check-connection.md)	 - Check connection status of prometheus targets with server
+* [kubectl-dba monitor dashboard](/docs/reference/cli/kubectl-dba_monitor_dashboard.md)	 - Check availability of a grafana dashboard
+* [kubectl-dba monitor get-alerts](/docs/reference/cli/kubectl-dba_monitor_get-alerts.md)	 - Alerts associated with a database
 
