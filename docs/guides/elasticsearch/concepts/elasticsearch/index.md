@@ -184,11 +184,12 @@ spec:
       value: "262144"
 ```
 
-To disable the kernetSetting `initContainer`, set the `kernelSettings` to empty (`{}`) .
+To disable the kernetSetting `initContainer`, set the `kernelSettings.disableDefaults` to `true` .
 
 ```yaml
 spec:
-  kernelSettings: {}
+  kernelSettings:
+    disableDefaults: true
 ```
 
 > Note: Make sure that `vm.max_map_count` is greater or equal to `262144`, otherwise the Elasticsearch may fail to bootstrap.
