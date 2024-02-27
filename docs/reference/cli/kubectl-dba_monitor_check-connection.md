@@ -24,7 +24,7 @@ kubectl-dba monitor check-connection
 
 ```
   kubectl dba monitor check-connection [DATABASE] [DATABASE_NAME] -n [NAMESPACE] \
-  --prom-svc=[PROM_SVC_NAME] --prom-svc-namespace=[PROM_SVC_NS] --prom-svc-port=[PROM_SVC_PORT]
+  --prom-svc-name=[PROM_SVC_NAME] --prom-svc-namespace=[PROM_SVC_NS] --prom-svc-port=[PROM_SVC_PORT]
   
   # Check connection status for different targets with prometheus server for a specific postgres database
   kubectl dba monitor check-connection mongodb sample_mg -n demo \
