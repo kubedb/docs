@@ -24,7 +24,7 @@ kubectl-dba monitor get-alerts
 
 ```
   kubectl dba monitor get-alerts [DATABASE] [DATABASE_NAME] -n [NAMESPACE] \
-  --prom-svc=[PROM_SVC_NAME] --prom-svc-namespace=[PROM_SVC_NS] --prom-svc-port=[PROM_SVC_PORT]
+  --prom-svc-name=[PROM_SVC_NAME] --prom-svc-namespace=[PROM_SVC_NS] --prom-svc-port=[PROM_SVC_PORT]
   
   # Get triggered alert for a specific mongodb
   kubectl dba monitor get-alerts mongodb sample-mongodb -n demo \

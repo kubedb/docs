@@ -23,11 +23,13 @@ kubectl-dba monitor dashboard
 ### Examples
 
 ```
-  kubectl dba monitor dashboard [DATABASE] [DASHBOARD_NAME] \
-  --prom-svc=[PROM_SVC_NAME] --prom-svc-namespace=[PROM_SVC_NS] --prom-svc-port=[PROM_SVC_PORT]
+  kubectl dba monitor dashboard [DATABASE] [DATABASE_NAME] -n [NAMESPACE] \
+  [DASHBOARD_NAME] --file=[FILE_CONTAINING_DASHBOARD_JSON] \
+  --prom-svc-name=[PROM_SVC_NAME] --prom-svc-namespace=[PROM_SVC_NS] --prom-svc-port=[PROM_SVC_PORT]
   
   # Check availability of a postgres grafana dashboard
-  kubectl-dba monitor dashboard postgres postgres_databases_dashboard \
+  kubectl-dba monitor dashboard postgres pg15 -n demo \
+  --file=/home/arnob/yamls/summary.json \
   --prom-svc-name=prometheus-kube-prometheus-prometheus --prom-svc-namespace=monitoring --prom-svc-port=9090
   
   Valid dashboards include:
@@ -46,6 +48,7 @@ kubectl-dba monitor dashboard
 
 ```
   -b, --branch string   branch name of the github repo (default "master")
+  -f, --file string     absolute or relative path of the file containing dashboard
   -h, --help            help for dashboard
 ```
 
