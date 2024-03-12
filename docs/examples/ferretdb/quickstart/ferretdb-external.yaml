@@ -1,0 +1,27 @@
+apiVersion: kubedb.com/v1alpha2
+kind: FerretDB
+metadata:
+  name: ferretdb-external
+  namespace: demo
+spec:
+  version: "1.18.0"
+  authSecret:
+    externallyManaged: true
+    name: ha-postgres-auth
+  sslMode: disabled
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 100Mi
+  backend:
+    externallyManaged: true
+    postgres:
+      service:
+        name: ha-postgres
+        namespace: demo
+        pgPort: 5432
+  terminationPolicy: WipeOut
