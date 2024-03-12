@@ -59,6 +59,7 @@ spec:
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
+      expansionMode: Online
 ```
 
 **Sample `MongoDBAutoscaler` for replicaset database:**
@@ -96,6 +97,7 @@ spec:
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
+      expansionMode: Online
 ```
 
 **Sample `MongoDBAutoscaler` for sharded database:**
@@ -157,10 +159,12 @@ spec:
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
+      expansionMode: Online
     configServer:
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
+      expansionMode: Online
 ```
 
 Here, we are going to describe the various sections of a `MongoDBAutoscaler` crd.

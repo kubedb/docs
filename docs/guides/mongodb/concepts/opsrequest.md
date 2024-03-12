@@ -406,6 +406,7 @@ spec:
     name: mg-replicaset
   volumeExpansion:
     replicaSet: 2Gi
+    mode: Online
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -431,6 +432,7 @@ spec:
   volumeExpansion:
     shard: 2Gi
     configServer: 2Gi
+    mode: Online
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -455,6 +457,7 @@ spec:
     name: mg-standalone
   volumeExpansion:
     standalone: 2Gi
+    mode: Online 
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"

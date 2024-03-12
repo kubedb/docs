@@ -150,6 +150,7 @@ spec:
   volumeExpansion:
     shard: 2Gi
     configServer: 2Gi
+    mode: Online
 ```
 
 Here,

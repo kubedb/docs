@@ -128,6 +128,7 @@ spec:
     name: mg-standalone
   volumeExpansion:
     standalone: 2Gi
+    mode: Online
 ```
 
 Here,

@@ -134,6 +134,7 @@ spec:
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
+      expansionMode: Online
 ```
 
 > If you want to autoscale Redis in Cluster mode, the field in `spec.storage` should be `cluster` and for sentinel it should be `sentinel`. The subfields are same inside `spec.storage.standalone`, `spec.storage.cluster` and `spec.storage.sentinel`

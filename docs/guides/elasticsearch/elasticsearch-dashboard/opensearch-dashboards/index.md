@@ -408,7 +408,7 @@ persistentvolumeclaim/data-os-cluster-master-1   Bound    pvc-37783550-3c3a-4280
 ## Deploy ElasticsearchDashboard
 
 ```yaml
-apiVersion: dashboard.kubedb.com/v1alpha1
+apiVersion: elasticsearch.kubedb.com/v1alpha1
 kind: ElasticsearchDashboard
 metadata:
   name: os-cluster-dashboard
