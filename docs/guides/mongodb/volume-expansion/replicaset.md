@@ -134,6 +134,7 @@ spec:
     name: mg-replicaset
   volumeExpansion:
     replicaSet: 2Gi
+    mode: Online
 ```
 
 Here,
