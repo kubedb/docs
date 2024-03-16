@@ -24,7 +24,7 @@ kubectl-dba monitor dashboard
 
 ```
   kubectl dba monitor dashboard [DATABASE] [DATABASE_NAME] -n [NAMESPACE] \
-  [DASHBOARD_NAME] --file=[FILE_CONTAINING_DASHBOARD_JSON] \
+  [DASHBOARD_NAME] --file=[FILE_CONTAINING_DASHBOARD_JSON] --file=[FILE_CONTAINING_REMOTE_URL] \  <- these are ORed
   --prom-svc-name=[PROM_SVC_NAME] --prom-svc-namespace=[PROM_SVC_NS] --prom-svc-port=[PROM_SVC_PORT]
   
   # Check availability of a postgres grafana dashboard
@@ -42,6 +42,11 @@ kubectl-dba monitor dashboard
   * postgres
   * proxysql
   * redis
+  
+  If --file is given, that is the local file. absolute or relative path both accepted.
+  If --url is given, that is the remote file. You have to specify the full raw url.
+  If just the dashboard name is given, then that will be searched in our dashboard repo. To be exact if mongodb-summary-dashboard specified only, The cli will look for the json in
+  https://raw.githubusercontent.com/appscode/grafana-dashboards/master/mongodb/mongodb-summary-dashboard.json
 ```
 
 ### Options
@@ -50,6 +55,7 @@ kubectl-dba monitor dashboard
   -b, --branch string   branch name of the github repo (default "master")
   -f, --file string     absolute or relative path of the file containing dashboard
   -h, --help            help for dashboard
+  -u, --url string      url of the raw file containing dashboard. For example: https://raw.githubusercontent.com/appscode/grafana-dashboards/master/mongodb/mongodb-summary-dashboard.json
 ```
 
 ### Options inherited from parent commands
