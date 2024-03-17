@@ -56,6 +56,7 @@ spec:
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
+      expansionMode: Online
 ```
 
 **Sample `ElasticsearchAutoscaler` YAML for the Elasticsearch topology cluster:**
@@ -111,6 +112,7 @@ spec:
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
+      expansionMode: Online
 ```
 
 Here, we are going to describe the various sections of a `ElasticsearchAutoscaler` crd.

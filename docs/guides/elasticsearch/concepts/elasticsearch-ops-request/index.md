@@ -285,6 +285,7 @@ All of them refer to [Quantity](https://v1-22.docs.kubernetes.io/docs/reference/
       name: es
     volumeExpansion:
       node: 4Gi
+      mode: Online
   ```
 
 - Expand volume for cluster topology:
@@ -303,6 +304,7 @@ All of them refer to [Quantity](https://v1-22.docs.kubernetes.io/docs/reference/
       master: 2Gi
       data: 3Gi
       ingest: 4Gi
+      mode: Online
   ```
 
 - Expand volume for only data nodes:
@@ -319,6 +321,7 @@ All of them refer to [Quantity](https://v1-22.docs.kubernetes.io/docs/reference/
       name: es
     volumeExpansion:
       data: 5Gi
+      mode: Online
   ```
 
 ### spec.tls

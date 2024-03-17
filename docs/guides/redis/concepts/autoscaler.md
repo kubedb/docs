@@ -56,6 +56,7 @@ spec:
       trigger: "On"
       usageThreshold: 25
       scalingThreshold: 20
+      expansionMode: Online
 ```
 
 Here is a sample `RedisSentinelAutoscaler` CRDs for autoscaling different components of database is given below:

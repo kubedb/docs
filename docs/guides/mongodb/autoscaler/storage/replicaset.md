@@ -136,6 +136,7 @@ spec:
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
+      expansionMode: Online
 ```
 
 Here,
