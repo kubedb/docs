@@ -18,6 +18,7 @@ aliases:
 Guides to show you how to perform tasks with KubeDB:
 
 - [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch & OpenSearch using KubeDB.
+- [FerretDB](/docs/guides/ferretdb/README.md). Shows how to manage FerretDB using KubeDB.
 - [MariaDB](/docs/guides/mariadb). Shows how to manage MariaDB using KubeDB.
 - [Memcached](/docs/guides/memcached/README.md). Shows how to manage Memcached using KubeDB.
 - [MongoDB](/docs/guides/mongodb/README.md). Shows how to manage MongoDB using KubeDB.
