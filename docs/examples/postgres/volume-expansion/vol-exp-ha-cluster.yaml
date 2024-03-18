@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pgops-vol-exp-ha-cluster
+  namespace: demo
+spec:
+  apply: IfReady
+  databaseRef:
+    name: pg-ha-cluster
+  type: VolumeExpansion
+  volumeExpansion:
+    mode: Online
+    postgres: 12Gi

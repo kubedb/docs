@@ -37,7 +37,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/mongodb](/docs/examples/mongodb) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Expand Volume of Sharded Database
 
@@ -176,7 +176,6 @@ Let's wait for `MongoDBOpsRequest` to be `Successful`. Run the following command
 
 ```bash
 $ kubectl get mongodbopsrequest -n demo
-Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                    TYPE              STATUS       AGE
 mops-volume-exp-shard   VolumeExpansion   Successful   3m49s
 ```

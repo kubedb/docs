@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Postgres
+metadata:
+  name: pg-ha-cluster
+  namespace: demo
+spec:
+  version: "13.13"
+  replicas: 3
+  standbyMode: Hot
+  storageType: Durable
+  storage:
+    storageClassName: "linode-block-storage"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  terminationPolicy: WipeOut
