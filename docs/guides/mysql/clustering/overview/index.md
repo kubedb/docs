@@ -2,7 +2,7 @@
 title: MySQL Group Replication Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-clustering-overview
+    identifier: guides-mysql-clustering-Overview
     name: MySQL Group Replication Overview
     parent: guides-mysql-clustering
     weight: 15

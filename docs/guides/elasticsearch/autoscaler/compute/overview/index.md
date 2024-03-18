@@ -2,7 +2,7 @@
 title: Elasticsearch Compute Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: es-auto-scaling-overview
+    identifier: es-auto-scaling-Overview
     name: Overview
     parent: es-compute-auto-scaling
     weight: 5

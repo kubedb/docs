@@ -2,15 +2,15 @@
 title: KubeDB Overview
 menu:
   docs_{{ .version }}:
-    identifier: overview-readme
+    identifier: Overview-readme
     name: Readme
-    parent: overview
+    parent: Overview
     weight: -1
 menu_name: docs_{{ .version }}
-section_menu_id: overview
-url: /docs/{{ .version }}/overview/
+section_menu_id: Overview
+url: /docs/{{ .version }}/Overview/
 aliases:
-  - /docs/{{ .version }}/overview/README/
+  - /docs/{{ .version }}/Overview/README/
 ---
 
 # KubeDB by AppsCode

@@ -3,7 +3,7 @@ title: Elasticsearch Monitoring Overview
 description: Elasticsearch Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: es-monitoring-overview
+    identifier: es-monitoring-Overview
     name: Overview
     parent: es-monitoring-elasticsearch
     weight: 10

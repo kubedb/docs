@@ -2,7 +2,7 @@
 title: Backup & Restore Elasticsearch Using Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-es-backup-overview
+    identifier: guides-es-backup-Overview
     name: Overview
     parent: guides-es-backup
     weight: 10

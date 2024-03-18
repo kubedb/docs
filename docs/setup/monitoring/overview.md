@@ -2,7 +2,7 @@
 title: Monitoring KubeDB Operator
 menu:
   docs_{{ .version }}:
-    identifier: operator-monitoring-overview
+    identifier: operator-monitoring-Overview
     name: Overview
     parent: operator-monitoring
     weight: 10

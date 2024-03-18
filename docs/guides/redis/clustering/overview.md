@@ -2,7 +2,7 @@
 title: Redis Cluster Overview
 menu:
   docs_{{ .version }}:
-    identifier: rd-clustering-overview
+    identifier: rd-clustering-Overview
     name: Overview
     parent: rd-clustering-redis
     weight: 10

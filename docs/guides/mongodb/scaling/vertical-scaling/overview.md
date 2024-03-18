@@ -2,7 +2,7 @@
 title: MongoDB Vertical Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-vertical-scaling-overview
+    identifier: mg-vertical-scaling-Overview
     name: Overview
     parent: mg-vertical-scaling
     weight: 10

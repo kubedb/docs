@@ -2,7 +2,7 @@
 title: PerconaXtraDB Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-quickstart-overview
+    identifier: guides-perconaxtradb-quickstart-Overview
     name: Overview
     parent: guides-perconaxtradb-quickstart
     weight: 10
@@ -78,7 +78,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/quickstart/overview/examples/sample-pxc.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/quickstart/Overview/examples/sample-pxc.yaml
 perconaxtradb.kubedb.com/sample-pxc created
 ```
 

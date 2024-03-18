@@ -2,7 +2,7 @@
 title: PerconaXtraDB
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-overview
+    identifier: guides-perconaxtradb-Overview
     name: PerconaXtraDB
     parent: guides-perconaxtradb
     weight: 10

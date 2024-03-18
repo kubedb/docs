@@ -2,7 +2,7 @@
 title: PerconaXtraDB Compute Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-autoscaling-compute-overview
+    identifier: guides-perconaxtradb-autoscaling-compute-Overview
     name: Overview
     parent: guides-perconaxtradb-autoscaling-compute
     weight: 10

@@ -2,7 +2,7 @@
 title: Load Balance To MySQL Group Replication With KubeDB Provisioned ProxySQL
 menu:
   docs_{{ .version }}:
-    identifier: guides-proxysql-quickstart-overview
+    identifier: guides-proxysql-quickstart-Overview
     name: KubeDB MySQL Group Replication Backend
     parent: guides-proxysql-quickstart
     weight: 20

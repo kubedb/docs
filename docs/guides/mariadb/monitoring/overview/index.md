@@ -3,7 +3,7 @@ title: MariaDB Monitoring Overview
 description: MariaDB Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-monitoring-overview
+    identifier: guides-mariadb-monitoring-Overview
     name: Overview
     parent: guides-mariadb-monitoring
     weight: 10

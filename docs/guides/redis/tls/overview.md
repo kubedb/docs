@@ -2,7 +2,7 @@
 title: Redis TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
-    identifier: rd-tls-overview
+    identifier: rd-tls-Overview
     name: Overview
     parent: rd-tls
     weight: 10

@@ -2,7 +2,7 @@
 title: MariaDB Storage Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: mguides-mariadb-autoscaling-storage-overview
+    identifier: mguides-mariadb-autoscaling-storage-Overview
     name: Overview
     parent: guides-mariadb-autoscaling-storage
     weight: 10

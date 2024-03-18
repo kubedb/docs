@@ -2,9 +2,9 @@
 title: Elasticsearch Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: es-elasticsearch-overview-elasticsearch
+    identifier: es-elasticsearch-Overview-elasticsearch
     name: Elasticsearch
-    parent: es-overview-elasticsearch
+    parent: es-Overview-elasticsearch
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -176,7 +176,7 @@ Here,
 Let's create the Elasticsearch CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/Overview/elasticsearch/yamls/elasticsearch.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 
@@ -607,7 +607,7 @@ Say, the Elasticsearch CR was deleted with `spec.terminationPolicy` to `Halt` an
 You can do it by simpily re-deploying the original Elasticsearch object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/Overview/elasticsearch/yamls/elasticsearch.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 

@@ -2,7 +2,7 @@
 title: MariaDB TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-tls-overview
+    identifier: guides-mariadb-tls-Overview
     name: Overview
     parent: guides-mariadb-tls
     weight: 10

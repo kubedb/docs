@@ -3,7 +3,7 @@ title: Overview
 description: Overview
 menu:
   docs_{{ .version }}:
-    identifier: overview
+    identifier: Overview
     name: Overview
     weight: 20
 menu_name: docs_{{ .version }}

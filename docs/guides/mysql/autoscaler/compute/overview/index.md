@@ -2,7 +2,7 @@
 title: MySQL Compute Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-autoscaling-compute-overview
+    identifier: guides-mysql-autoscaling-compute-Overview
     name: Overview
     parent: guides-mysql-autoscaling-compute
     weight: 10

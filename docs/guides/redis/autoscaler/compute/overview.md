@@ -2,7 +2,7 @@
 title: Redis Compute Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: rd-auto-scaling-overview
+    identifier: rd-auto-scaling-Overview
     name: Overview
     parent: rd-compute-auto-scaling
     weight: 10

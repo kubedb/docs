@@ -2,7 +2,7 @@
 title: MongoDB Compute Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-auto-scaling-overview
+    identifier: mg-auto-scaling-Overview
     name: Overview
     parent: mg-compute-auto-scaling
     weight: 10

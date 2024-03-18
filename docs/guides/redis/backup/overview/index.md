@@ -2,7 +2,7 @@
 title: Backup & Restore Redis Using Stash
 menu:
   docs_{{ .version }}:
-    identifier: rd-backup-overview
+    identifier: rd-backup-Overview
     name: Overview
     parent: rd-guides-redis-backup
     weight: 10

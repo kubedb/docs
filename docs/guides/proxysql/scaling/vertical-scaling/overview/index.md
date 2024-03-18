@@ -2,7 +2,7 @@
 title: ProxySQL Vertical Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-proxysql-scaling-vertical-overview
+    identifier: guides-proxysql-scaling-vertical-Overview
     name: Overview
     parent: guides-proxysql-scaling-vertical
     weight: 10

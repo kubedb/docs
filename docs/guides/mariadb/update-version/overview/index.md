@@ -2,7 +2,7 @@
 title: Updating MariaDB Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-updating-overview
+    identifier: guides-mariadb-updating-Overview
     name: Overview
     parent: guides-mariadb-updating
     weight: 10

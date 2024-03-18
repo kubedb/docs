@@ -2,7 +2,7 @@
 title: MariaDB Compute Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-autoscaling-compute-overview
+    identifier: guides-mariadb-autoscaling-compute-Overview
     name: Overview
     parent: guides-mariadb-autoscaling-compute
     weight: 10

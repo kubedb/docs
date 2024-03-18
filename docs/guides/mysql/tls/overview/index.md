@@ -2,7 +2,7 @@
 title: MySQL TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-tls-overview
+    identifier: guides-mysql-tls-Overview
     name: Overview
     parent: guides-mysql-tls
     weight: 10

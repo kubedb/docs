@@ -2,7 +2,7 @@
 title: PerconaXtraDB Galera Cluster Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-clustering-overview
+    identifier: guides-perconaxtradb-clustering-Overview
     name: PerconaXtraDB Galera Cluster Overview
     parent: guides-perconaxtradb-clustering
     weight: 10

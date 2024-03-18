@@ -2,7 +2,7 @@
 title: Redis Horizontal Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: rd-horizontal-scaling-overview
+    identifier: rd-horizontal-scaling-Overview
     name: Overview
     parent: rd-horizontal-scaling
     weight: 10

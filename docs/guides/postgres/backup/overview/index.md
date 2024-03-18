@@ -2,7 +2,7 @@
 title: Backup & Restore PostgreSQL Using Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-pg-backup-overview
+    identifier: guides-pg-backup-Overview
     name: Overview
     parent: guides-pg-backup
     weight: 10

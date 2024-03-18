@@ -3,7 +3,7 @@ title: MySQL Monitoring Overview
 description: MySQL Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-monitoring-overview
+    identifier: guides-mysql-monitoring-Overview
     name: Overview
     parent: guides-mysql-monitoring
     weight: 10

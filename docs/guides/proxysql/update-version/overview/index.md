@@ -2,7 +2,7 @@
 title: Updating ProxySQL Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-proxysql-updating-overview
+    identifier: guides-proxysql-updating-Overview
     name: Overview
     parent: guides-proxysql-updating
     weight: 10

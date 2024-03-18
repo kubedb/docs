@@ -2,7 +2,7 @@
 title: Redis Sentinel Overview
 menu:
   docs_{{ .version }}:
-    identifier: rd-sentinel-overview
+    identifier: rd-sentinel-Overview
     name: Overview
     parent: rd-sentinel-redis
     weight: 10

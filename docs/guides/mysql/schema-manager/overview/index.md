@@ -2,7 +2,7 @@
 title: MySQL Schema Manager Overview
 menu:
   docs_{{ .version }}:
-    identifier: mysql-schema-manager-overview
+    identifier: mysql-schema-manager-Overview
     name: Overview
     parent: guides-mysql-schema-manager
     weight: 10

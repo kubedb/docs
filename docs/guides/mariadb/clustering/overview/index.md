@@ -2,7 +2,7 @@
 title: MariaDB Galera Cluster Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-clustering-overview
+    identifier: guides-mariadb-clustering-Overview
     name: MariaDB Galera Cluster Overview
     parent: guides-mariadb-clustering
     weight: 10

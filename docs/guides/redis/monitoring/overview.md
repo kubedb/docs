@@ -3,7 +3,7 @@ title: Redis Monitoring Overview
 description: Redis Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: rd-monitoring-overview
+    identifier: rd-monitoring-Overview
     name: Overview
     parent: rd-monitoring-redis
     weight: 10

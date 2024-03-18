@@ -2,7 +2,7 @@
 title: Postgres Vertical Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-postgres-scaling-vertical-overview
+    identifier: guides-postgres-scaling-vertical-Overview
     name: Overview
     parent: guides-postgres-scaling-vertical
     weight: 10
