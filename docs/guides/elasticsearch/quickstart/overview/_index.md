@@ -2,7 +2,7 @@
 title: Elasticsearch Overview
 menu:
   docs_{{ .version }}:
-    identifier: es-overview-elasticsearch
+    identifier: es-Overview-elasticsearch
     name: Overview
     parent: es-quickstart-elasticsearch
     weight: 10

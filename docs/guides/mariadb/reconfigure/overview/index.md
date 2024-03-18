@@ -2,7 +2,7 @@
 title: Reconfiguring MariaDB
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-reconfigure-overview
+    identifier: guides-mariadb-reconfigure-Overview
     name: Overview
     parent: guides-mariadb-reconfigure
     weight: 10

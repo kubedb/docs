@@ -2,7 +2,7 @@
 title: Updating PerconaXtraDB Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-updating-overview
+    identifier: guides-perconaxtradb-updating-Overview
     name: Overview
     parent: guides-perconaxtradb-updating
     weight: 10

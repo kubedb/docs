@@ -2,7 +2,7 @@
 title: MySQL Vertical Reconfigure TLS Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-reconfigure-tls-overview
+    identifier: guides-mysql-reconfigure-tls-Overview
     name: Overview
     parent: guides-mysql-reconfigure-tls
     weight: 11

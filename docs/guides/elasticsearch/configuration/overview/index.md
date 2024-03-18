@@ -2,7 +2,7 @@
 title: Run Elasticsearch with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: es-overview-configuration
+    identifier: es-Overview-configuration
     name: Overview
     parent: es-configuration
     weight: 10

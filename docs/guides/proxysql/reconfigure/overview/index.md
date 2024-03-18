@@ -2,7 +2,7 @@
 title: Reconfiguring ProxySQL
 menu:
   docs_{{ .version }}:
-    identifier: guides-proxysql-reconfigure-overview
+    identifier: guides-proxysql-reconfigure-Overview
     name: Overview
     parent: guides-proxysql-reconfigure
     weight: 10

@@ -2,7 +2,7 @@
 title: MongoDB Storage Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-storage-auto-scaling-overview
+    identifier: mg-storage-auto-scaling-Overview
     name: Overview
     parent: mg-storage-auto-scaling
     weight: 10

@@ -2,7 +2,7 @@
 title: Backup & Restore Elasticsearch Using Snapshot Plugins
 menu:
   docs_{{ .version }}:
-    identifier: guides-es-plugins-backup-overview
+    identifier: guides-es-plugins-backup-Overview
     name: Overview
     parent: guides-es-plugins-backup
     weight: 10

@@ -2,7 +2,7 @@
 title: MariaDB Vertical Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-scaling-vertical-overview
+    identifier: guides-mariadb-scaling-vertical-Overview
     name: Overview
     parent: guides-mariadb-scaling-vertical
     weight: 10

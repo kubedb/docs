@@ -2,7 +2,7 @@
 title: MariaDB
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-overview
+    identifier: guides-mariadb-Overview
     name: MariaDB
     parent: guides-mariadb
     weight: 10

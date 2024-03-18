@@ -3,7 +3,7 @@ title: MongoDB Monitoring Overview
 description: MongoDB Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-monitoring-overview
+    identifier: mg-monitoring-Overview
     name: Overview
     parent: mg-monitoring-mongodb
     weight: 10

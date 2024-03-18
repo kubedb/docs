@@ -2,7 +2,7 @@
 title: MongoDB Horizontal Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-horizontal-scaling-overview
+    identifier: mg-horizontal-scaling-Overview
     name: Overview
     parent: mg-horizontal-scaling
     weight: 10

@@ -2,7 +2,7 @@
 title: Postgres Horizontal Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-postgres-scaling-horizontal-overview
+    identifier: guides-postgres-scaling-horizontal-Overview
     name: Overview
     parent: guides-postgres-scaling-horizontal
     weight: 10

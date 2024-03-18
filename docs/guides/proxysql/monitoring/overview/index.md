@@ -3,7 +3,7 @@ title: ProxySQL Monitoring Overview
 description: ProxySQL Monitoring Overview
 menu:
     docs_{{ .version }}:
-        identifier: guides-proxysql-monitoring-overview
+        identifier: guides-proxysql-monitoring-Overview
         name: Overview
         parent: guides-proxysql-monitoring
         weight: 10

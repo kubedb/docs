@@ -2,7 +2,7 @@
 title: Updating MongoDB Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-updating-overview
+    identifier: mg-updating-Overview
     name: Overview
     parent: mg-updating
     weight: 10

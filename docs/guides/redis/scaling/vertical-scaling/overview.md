@@ -2,7 +2,7 @@
 title: Redis Vertical Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: rd-vertical-scaling-overview
+    identifier: rd-vertical-scaling-Overview
     name: Overview
     parent: rd-vertical-scaling
     weight: 10

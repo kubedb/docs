@@ -3,7 +3,7 @@ title: PgBouncer Monitoring Overview
 description: PgBouncer Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: pb-monitoring-overview
+    identifier: pb-monitoring-Overview
     name: Overview
     parent: pb-monitoring-pgbouncer
     weight: 10

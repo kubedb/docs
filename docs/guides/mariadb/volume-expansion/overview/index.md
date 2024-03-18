@@ -2,7 +2,7 @@
 title: MariaDB Volume Expansion Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-volume-expansion-overview
+    identifier: guides-mariadb-volume-expansion-Overview
     name: Overview
     parent: guides-mariadb-volume-expansion
     weight: 10

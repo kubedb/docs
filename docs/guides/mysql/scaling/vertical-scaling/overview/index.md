@@ -2,7 +2,7 @@
 title: MySQL Vertical Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-scaling-vertical-overview
+    identifier: guides-mysql-scaling-vertical-Overview
     name: Overview
     parent: guides-mysql-scaling-vertical
     weight: 10

@@ -2,7 +2,7 @@
 title: Redis Storage Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: rd-storage-auto-scaling-overview
+    identifier: rd-storage-auto-scaling-Overview
     name: Overview
     parent: rd-storage-auto-scaling
     weight: 10

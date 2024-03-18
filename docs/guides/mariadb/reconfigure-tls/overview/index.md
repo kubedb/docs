@@ -2,7 +2,7 @@
 title: Reconfiguring TLS of MariaDB Database
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-reconfigure-tls-overview
+    identifier: guides-mariadb-reconfigure-tls-Overview
     name: Overview
     parent: guides-mariadb-reconfigure-tls
     weight: 10

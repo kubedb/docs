@@ -2,7 +2,7 @@
 title: PerconaXtraDB Storage Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-autoscaling-storage-overview
+    identifier: guides-perconaxtradb-autoscaling-storage-Overview
     name: Overview
     parent: guides-perconaxtradb-autoscaling-storage
     weight: 10

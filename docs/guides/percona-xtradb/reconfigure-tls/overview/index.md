@@ -2,7 +2,7 @@
 title: Reconfiguring TLS of PerconaXtraDB Database
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-reconfigure-tls-overview
+    identifier: guides-perconaxtradb-reconfigure-tls-Overview
     name: Overview
     parent: guides-perconaxtradb-reconfigure-tls
     weight: 10

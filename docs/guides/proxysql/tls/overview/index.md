@@ -2,7 +2,7 @@
 title: ProxySQL TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-proxysql-tls-overview
+    identifier: guides-proxysql-tls-Overview
     name: Overview
     parent: guides-proxysql-tls
     weight: 10

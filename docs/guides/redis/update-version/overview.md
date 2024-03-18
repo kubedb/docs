@@ -2,7 +2,7 @@
 title: Updating Redis Version Overview
 menu:
   docs_{{ .version }}:
-    identifier: rd-update-version-overview
+    identifier: rd-update-version-Overview
     name: Overview
     parent: rd-update-version
     weight: 10

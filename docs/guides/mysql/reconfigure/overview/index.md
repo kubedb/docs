@@ -2,7 +2,7 @@
 title: Reconfiguring MySQL
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-reconfigure-overview
+    identifier: guides-mysql-reconfigure-Overview
     name: Overview
     parent: guides-mysql-reconfigure
     weight: 10

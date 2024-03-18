@@ -2,7 +2,7 @@
 title: Updating Postgres Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-postgres-updating-overview
+    identifier: guides-postgres-updating-Overview
     name: Overview
     parent: guides-postgres-updating
     weight: 10

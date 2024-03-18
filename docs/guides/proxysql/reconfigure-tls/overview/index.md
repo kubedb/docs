@@ -2,7 +2,7 @@
 title: Reconfiguring TLS of ProxySQL
 menu:
   docs_{{ .version }}:
-    identifier: guides-proxysql-reconfigure-tls-overview
+    identifier: guides-proxysql-reconfigure-tls-Overview
     name: Overview
     parent: guides-proxysql-reconfigure-tls
     weight: 10

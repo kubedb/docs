@@ -3,7 +3,7 @@ title: PostgreSQL Monitoring Overview
 description: PostgreSQL Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: pg-monitoring-overview
+    identifier: pg-monitoring-Overview
     name: Overview
     parent: pg-monitoring-postgres
     weight: 10

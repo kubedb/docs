@@ -2,7 +2,7 @@
 title: MySQL Volume Expansion Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-volume-expansion-overview
+    identifier: guides-mysql-volume-expansion-Overview
     name: Overview
     parent: guides-mysql-volume-expansion
     weight: 11

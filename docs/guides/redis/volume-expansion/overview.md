@@ -2,7 +2,7 @@
 title: Redis Volume Expansion Overview
 menu:
   docs_{{ .version }}:
-    identifier: rd-volume-expansion-overview
+    identifier: rd-volume-expansion-Overview
     name: Overview
     parent: rd-volume-expansion
     weight: 10

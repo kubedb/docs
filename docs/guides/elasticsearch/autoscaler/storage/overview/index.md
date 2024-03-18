@@ -2,7 +2,7 @@
 title: Elasticsearch Storage Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: es-storage-auto-scaling-overview
+    identifier: es-storage-auto-scaling-Overview
     name: Overview
     parent: es-storage-auto-scaling
     weight: 5

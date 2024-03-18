@@ -2,7 +2,7 @@
 title: Updating MySQL Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-updating-overview
+    identifier: guides-mysql-updating-Overview
     name: Overview
     parent: guides-mysql-updating
     weight: 10

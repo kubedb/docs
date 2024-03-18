@@ -2,9 +2,9 @@
 title: OpenSearch Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: es-opensearch-overview-elasticsearch
+    identifier: es-opensearch-Overview-elasticsearch
     name: OpenSearch
-    parent: es-overview-elasticsearch
+    parent: es-Overview-elasticsearch
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -171,7 +171,7 @@ Here,
 Let's apply the yaml that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/opensearch/yamls/opensearch.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/Overview/opensearch/yamls/opensearch.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 

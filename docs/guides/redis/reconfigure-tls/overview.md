@@ -2,7 +2,7 @@
 title: Reconfiguring TLS of Redis
 menu:
   docs_{{ .version }}:
-    identifier: rd-reconfigure-tls-overview
+    identifier: rd-reconfigure-tls-Overview
     name: Overview
     parent: rd-reconfigure-tls
     weight: 10

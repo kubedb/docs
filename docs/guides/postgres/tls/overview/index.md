@@ -2,7 +2,7 @@
 title: Postgres TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-postgres-tls-overview
+    identifier: guides-postgres-tls-Overview
     name: Overview
     parent: guides-postgres-tls
     weight: 10

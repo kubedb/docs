@@ -2,7 +2,7 @@
 title: Reconfiguring MongoDB
 menu:
   docs_{{ .version }}:
-    identifier: mg-reconfigure-overview
+    identifier: mg-reconfigure-Overview
     name: Overview
     parent: mg-reconfigure
     weight: 10

@@ -2,7 +2,7 @@
 title: PerconaXtraDB Volume Expansion Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-volume-expansion-overview
+    identifier: guides-perconaxtradb-volume-expansion-Overview
     name: Overview
     parent: guides-perconaxtradb-volume-expansion
     weight: 10

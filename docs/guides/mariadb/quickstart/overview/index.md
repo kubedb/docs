@@ -2,7 +2,7 @@
 title: MariaDB Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-quickstart-overview
+    identifier: guides-mariadb-quickstart-Overview
     name: Overview
     parent: guides-mariadb-quickstart
     weight: 10
@@ -79,7 +79,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/Overview/examples/sample-mariadb.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 

@@ -2,7 +2,7 @@
 title: Reconfiguring TLS of MongoDB Database
 menu:
   docs_{{ .version }}:
-    identifier: mg-reconfigure-tls-overview
+    identifier: mg-reconfigure-tls-Overview
     name: Overview
     parent: mg-reconfigure-tls
     weight: 10

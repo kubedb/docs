@@ -2,7 +2,7 @@
 title: ProxySQL Compute Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-proxysql-autoscaling-compute-overview
+    identifier: guides-proxysql-autoscaling-compute-Overview
     name: Overview
     parent: guides-proxysql-autoscaling-compute
     weight: 10

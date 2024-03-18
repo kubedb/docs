@@ -3,7 +3,7 @@ title: PerconaXtraDB Monitoring Overview
 description: PerconaXtraDB Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-monitoring-overview
+    identifier: guides-perconaxtradb-monitoring-Overview
     name: Overview
     parent: guides-perconaxtradb-monitoring
     weight: 10

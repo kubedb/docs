@@ -2,7 +2,7 @@
 title: Replace Sentinel Overview
 menu:
   docs_{{ .version }}:
-    identifier: replace-sentinel-overview
+    identifier: replace-sentinel-Overview
     name: Overview
     parent: rd-replace-sentinel
     weight: 10

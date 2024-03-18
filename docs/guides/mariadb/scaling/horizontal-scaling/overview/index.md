@@ -2,7 +2,7 @@
 title: MariaDB Horizontal Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-scaling-horizontal-overview
+    identifier: guides-mariadb-scaling-horizontal-Overview
     name: Overview
     parent: guides-mariadb-scaling-horizontal
     weight: 10

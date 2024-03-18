@@ -3,7 +3,7 @@ title: Kafka Monitoring Overview
 description: Kafka Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: kf-monitoring-overview
+    identifier: kf-monitoring-Overview
     name: Overview
     parent: kf-monitoring-kafka
     weight: 10

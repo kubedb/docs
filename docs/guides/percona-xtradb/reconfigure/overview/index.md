@@ -2,7 +2,7 @@
 title: Reconfiguring PerconaXtraDB
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-reconfigure-overview
+    identifier: guides-perconaxtradb-reconfigure-Overview
     name: Overview
     parent: guides-perconaxtradb-reconfigure
     weight: 10

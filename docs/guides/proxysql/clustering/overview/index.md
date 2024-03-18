@@ -2,7 +2,7 @@
 title: ProxySQL Cluster Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-proxysql-clustering-overview
+    identifier: guides-proxysql-clustering-Overview
     name: ProxySQL Cluster Overview
     parent: guides-proxysql-clustering
     weight: 10

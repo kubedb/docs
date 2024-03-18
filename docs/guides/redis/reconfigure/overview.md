@@ -2,7 +2,7 @@
 title: Reconfiguring Redis
 menu:
   docs_{{ .version }}:
-    identifier: rd-reconfigure-overview
+    identifier: rd-reconfigure-Overview
     name: Overview
     parent: rd-reconfigure
     weight: 10

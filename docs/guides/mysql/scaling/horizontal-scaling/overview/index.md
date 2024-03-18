@@ -2,7 +2,7 @@
 title: MySQL Horizontal Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-scaling-horizontal-overview
+    identifier: guides-mysql-scaling-horizontal-Overview
     name: Overview
     parent: guides-mysql-scaling-horizontal
     weight: 10

@@ -2,7 +2,7 @@
 title: MongoDB TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-tls-overview
+    identifier: mg-tls-Overview
     name: Overview
     parent: mg-tls
     weight: 10

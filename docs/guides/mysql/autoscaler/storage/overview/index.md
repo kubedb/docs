@@ -2,7 +2,7 @@
 title: MySQL Storage Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: mguides-mysql-autoscaling-storage-overview
+    identifier: mguides-mysql-autoscaling-storage-Overview
     name: Overview
     parent: guides-mysql-autoscaling-storage
     weight: 10

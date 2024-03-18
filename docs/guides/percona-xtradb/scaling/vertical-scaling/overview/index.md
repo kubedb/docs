@@ -2,7 +2,7 @@
 title: PerconaXtraDB Vertical Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-scaling-vertical-overview
+    identifier: guides-perconaxtradb-scaling-vertical-Overview
     name: Overview
     parent: guides-perconaxtradb-scaling-vertical
     weight: 10
