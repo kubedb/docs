@@ -1,0 +1,18 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: s3-storage-sharding
+  namespace: demo
+spec:
+  storage:
+    provider: s3
+    s3:
+      endpoint: us-east-1.linodeobjects.com
+      bucket: kubestash-testing
+      region: us-east-1
+      prefix: demo-sharding
+      secret: s3-secret
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  deletionPolicy: WipeOut

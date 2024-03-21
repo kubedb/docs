@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-mongodb-backup-customization
     name: Customizing Backup & Restore Process
-    parent: guides-mongodb-backup
+    parent: guides-mongodb-backup-stashv1
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
