@@ -131,6 +131,7 @@ spec:
     name: rd-standalone
   storage:
     standalone:
+      expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50

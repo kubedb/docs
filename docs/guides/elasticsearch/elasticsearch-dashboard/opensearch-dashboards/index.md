@@ -408,7 +408,7 @@ persistentvolumeclaim/data-os-cluster-master-1   Bound    pvc-37783550-3c3a-4280
 ## Deploy ElasticsearchDashboard
 
 ```yaml
-apiVersion: dashboard.kubedb.com/v1alpha1
+apiVersion: elasticsearch.kubedb.com/v1alpha1
 kind: ElasticsearchDashboard
 metadata:
   name: os-cluster-dashboard
@@ -429,7 +429,7 @@ Let's deploy the above yaml by the following command:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch/yamls/os-cluster-dashboard.yaml
-elasticsearchdashboard.dashboard.kubedb.com/os-cluster-dashboard created
+elasticsearchdashboard.elasticsearch.kubedb.com/os-cluster-dashboard created
 ```
 
 KubeDB will create the necessary resources to deploy the OpenSearch dashboard according to the above specification. Let’s wait until the dashboard to be ready to use,
@@ -437,7 +437,7 @@ KubeDB will create the necessary resources to deploy the OpenSearch dashboard ac
 ```bash
 $ watch kubectl get elasticsearchdashboard -n demo
 NAME                   TYPE                            DATABASE     STATUS   AGE
-os-cluster-dashboard   dashboard.kubedb.com/v1alpha1   os-cluster   Ready    9m
+os-cluster-dashboard   elasticsearch.kubedb.com/v1alpha1   os-cluster   Ready    9m
 ```
 Here, OpenSearch Dashboard is in `Ready` state. 
 

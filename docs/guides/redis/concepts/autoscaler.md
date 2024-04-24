@@ -53,6 +53,7 @@ spec:
       resourceDiffPercentage: 10
   storage:
     standalone:
+      expansionMode: "Online"
       trigger: "On"
       usageThreshold: 25
       scalingThreshold: 20

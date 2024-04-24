@@ -135,6 +135,7 @@ spec:
     name: es-combined
   storage:
     node:
+      expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50

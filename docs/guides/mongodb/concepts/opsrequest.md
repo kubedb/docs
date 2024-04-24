@@ -231,7 +231,8 @@ spec:
     name: mg-replicaset
   configuration:
     replicaSet:
-      inlineConfig: |
+      applyConfig:
+        mongod.conf: |- 
           net:
             maxIncomingConnections: 30000
 status:
@@ -258,17 +259,20 @@ spec:
     name: mg-sharding
   configuration:
     shard:
-      inlineConfig: |
+      applyConfig:
+        mongod.conf: |-
           net:
             maxIncomingConnections: 30000
     configServer:
-      inlineConfig: |
-        net:
-          maxIncomingConnections: 30000
+      applyConfig:
+        mongod.conf: |-
+          net:
+            maxIncomingConnections: 30000
     mongos:
-      inlineConfig: |
-        net:
-          maxIncomingConnections: 30000
+      applyConfig:
+        mongod.conf: |-
+          net:
+            maxIncomingConnections: 30000
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -293,9 +297,10 @@ spec:
     name: mg-standalone
   configuration:
     standalone:
-      inlineConfig: |
-        net:
-          maxIncomingConnections: 30000
+      applyConfig:
+        mongod.conf: |-
+          net:
+            maxIncomingConnections: 30000
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -405,6 +410,7 @@ spec:
   databaseRef:
     name: mg-replicaset
   volumeExpansion:
+    mode: "Online"
     replicaSet: 2Gi
 status:
   conditions:
@@ -429,6 +435,7 @@ spec:
   databaseRef:
     name: mg-sharding
   volumeExpansion:
+    mode: "Online"
     shard: 2Gi
     configServer: 2Gi
 status:
@@ -454,6 +461,7 @@ spec:
   databaseRef:
     name: mg-standalone
   volumeExpansion:
+    mode: "Online"
     standalone: 2Gi
 status:
   conditions:
@@ -649,10 +657,9 @@ If you want to reconfigure your Running MongoDB cluster or different components 
 All of them has the following sub-fields:
 
 - `configSecret` points to a secret in the same namespace of a MongoDB resource, which contains the new custom configurations. If there are any configSecret set before in the database, this secret will replace it.
-- `inlineConfig` contains the new custom config as a string which will be merged with the previous configuration. 
-> Note: You can use `inlineConfig` only for `mongod.conf` configurations. This field is deprecated & will be removed in some future KubeDB release.
+- `applyConfig` contains the new custom config as a string which will be merged with the previous configuration. 
 
-- `applyConfig` is the replacement of `inlineConfig`. It is a map where key supports 3 values, namely `mongod.conf`, `replicaset.json`, `configuration.js`. And value represents the corresponding configurations.
+- `applyConfig` is a map where key supports 3 values, namely `mongod.conf`, `replicaset.json`, `configuration.js`. And value represents the corresponding configurations.
 For your information, replicaset.json is used to modify replica set configurations, which we see in the output of `rs.config()`. And `configurarion.js` is used to apply a js script to configure mongodb at runtime.
 KubeDB provisioner operator applies these two directly while reconciling.
 

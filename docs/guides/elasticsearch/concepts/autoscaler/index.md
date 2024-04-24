@@ -53,6 +53,7 @@ spec:
       resourceDiffPercentage: 10
   storage:
     node:
+      expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
@@ -108,6 +109,7 @@ spec:
       resourceDiffPercentage: 10
   storage:
     data:
+      expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50

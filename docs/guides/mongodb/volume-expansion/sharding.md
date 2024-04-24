@@ -148,6 +148,7 @@ spec:
   databaseRef:
     name: mg-sharding
   volumeExpansion:
+    mode: "Online"
     shard: 2Gi
     configServer: 2Gi
 ```

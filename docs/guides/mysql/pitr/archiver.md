@@ -56,7 +56,7 @@ spec:
       endpoint: https://ap-south-1.linodeobjects.com
       region: ap-south-1
       prefix: backup
-      secret: storage
+      secretName: storage
   usagePolicy:
     allowedNamespaces:
       from: All

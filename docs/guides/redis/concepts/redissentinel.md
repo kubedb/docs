@@ -365,7 +365,7 @@ It defines the attributes for the health checker.
 - `spec.healthChecker.failureThreshold` specifies minimum consecutive failures for the healthChecker to be considered failed.
 - `spec.healthChecker.disableWriteCheck` specifies whether to disable the writeCheck or not.
 
-Know details about KubeDB Health checking from this [blog post](https://blog.byte.builders/post/kubedb-health-checker/).
+Know details about KubeDB Health checking from this [blog post](https://appscode.com/blog/post/kubedb-health-checker/).
 
 ## Sample Redis instace
 A yaml for a sample Redis instance that can be monitored by this RedisSentinel instance is given below

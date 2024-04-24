@@ -259,9 +259,9 @@ maxclients
 As we can see from the configuration of running redis, the value of `maxclients` has been changed from `500` to `20000`. So the reconfiguration of the database is successful.
 
 
-### Reconfigure using inline config
+### Reconfigure using apply config
 
-Now we will reconfigure this database again to set `maxclients` to `3000`. This time we won't use a new secret. We will use the `inlineConfig` field of the `RedisOpsRequest`. This will merge the new config in the existing secret.
+Now we will reconfigure this database again to set `maxclients` to `3000`. This time we won't use a new secret. We will use the `applyConfig` field of the `RedisOpsRequest`. This will merge the new config in the existing secret.
 
 #### Create RedisOpsRequest
 
@@ -271,27 +271,29 @@ Now, we will use the new configuration in the `data` field in the `RedisOpsReque
 apiVersion: ops.kubedb.com/v1alpha1
 kind: RedisOpsRequest
 metadata:
-  name: rdops-inline-reconfig
+  name: rdops-apply-reconfig
   namespace: demo
 spec:
   type: Reconfigure
   databaseRef:
     name: sample-redis
   configuration:
-    inlineConfig: maxclients 3000
+    applyConfig:
+      redis.conf: |-
+        maxclients 3000
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `sample-redis` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.inlineConfig` specifies the new configuration that will be merged in the existing secret.
+- `spec.configuration.applyConfig` specifies the new configuration that will be merged in the existing secret.
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure/rdops-inline-reconfig.yaml
-redisopsrequest.ops.kubedb.com/rdops-inline-reconfig created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure/rdops-apply-reconfig.yaml
+redisopsrequest.ops.kubedb.com/rdops-apply-reconfig created
 ```
 
 #### Verify the new configuration is working 
@@ -304,14 +306,14 @@ Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command 
 $ watch kubectl get redisopsrequest -n demo
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME                               TYPE          STATUS       AGE
-rdops-inline-reconfig              Reconfigure   Successful   38s
+rdops-apply-reconfig              Reconfigure   Successful   38s
 ```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. If we describe the `RedisOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe redisopsrequest -n demo rdops-inline-reconfig
-Name:         rdops-inline-reconfig
+$ kubectl describe redisopsrequest -n demo rdops-apply-reconfig
+Name:         rdops-apply-reconfig
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -325,7 +327,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Configuration:
-    Inline Config:  maxclients 3000
+    Apply Config:  maxclients 3000
   Database Ref:
     Name:  sample-redis
   Type:    Reconfigure
@@ -381,7 +383,7 @@ maxclients
 3000
 ```
 
-As we can see from the configuration of running redis, the value of `maxclients` has been changed from `2000` to `3000`. So the reconfiguration of the database using the `inlineConfig` field is successful.
+As we can see from the configuration of running redis, the value of `maxclients` has been changed from `2000` to `3000`. So the reconfiguration of the database using the `applyConfig` field is successful.
 
 
 ## Cleaning Up
@@ -390,5 +392,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete rd -n demo sample-redis
-kubectl delete redisopsrequest -n demo rdops-reconfigure rdops-inline-reconfig
+kubectl delete redisopsrequest -n demo rdops-reconfigure rdops-apply-reconfig
 ```

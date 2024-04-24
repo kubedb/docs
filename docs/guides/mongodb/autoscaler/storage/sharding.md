@@ -149,6 +149,7 @@ spec:
     name: mg-sh
   storage:
     shard:
+      expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50

@@ -56,6 +56,7 @@ spec:
       resourceDiffPercentage: 10
   storage:
     standalone:
+      expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
@@ -93,6 +94,7 @@ spec:
       resourceDiffPercentage: 10
   storage:
     replicaSet:
+      expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
@@ -154,10 +156,12 @@ spec:
       resourceDiffPercentage: 10
   storage:
     shard:
+      expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
     configServer:
+      expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50

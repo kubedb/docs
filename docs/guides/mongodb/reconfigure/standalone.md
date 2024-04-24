@@ -371,9 +371,9 @@ $ kubectl exec -n demo  mg-standalone-0  -- mongo admin -u root -p m6lXjZugrC4VE
 As we can see from the configuration of running mongodb, the value of `maxIncomingConnections` has been changed from `10000` to `20000`. So the reconfiguration of the database is successful.
 
 
-### Reconfigure using inline config
+### Reconfigure using apply config
 
-Now we will reconfigure this database again to set `maxIncomingConnections` to `30000`. This time we won't use a new secret. We will use the `inlineConfig` field of the `MongoDBOpsRequest`. This will merge the new config in the existing secret.
+Now we will reconfigure this database again to set `maxIncomingConnections` to `30000`. This time we won't use a new secret. We will use the `applyConfig` field of the `MongoDBOpsRequest`. This will merge the new config in the existing secret.
 
 #### Create MongoDBOpsRequest
 
@@ -383,7 +383,7 @@ Now, we will use the new configuration in the `data` field in the `MongoDBOpsReq
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MongoDBOpsRequest
 metadata:
-  name: mops-reconfigure-inline-standalone
+  name: mops-reconfigure-apply-standalone
   namespace: demo
 spec:
   type: Reconfigure
@@ -391,9 +391,10 @@ spec:
     name: mg-standalone
   configuration:
     standalone:
-      inlineConfig: |
-        net:
-          maxIncomingConnections: 30000
+      applyConfig:
+        mongod.conf: |-
+          net:
+            maxIncomingConnections: 30000
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10
@@ -403,15 +404,15 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-inline-standalone` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-apply-standalone` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.standalone.inlineConfig` specifies the new configuration that will be merged in the existing secret.
+- `spec.configuration.standalone.applyConfig` specifies the new configuration that will be merged in the existing secret.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-inline-standalone.yaml
-mongodbopsrequest.ops.kubedb.com/mops-reconfigure-inline-standalone created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-apply-standalone.yaml
+mongodbopsrequest.ops.kubedb.com/mops-reconfigure-apply-standalone created
 ```
 
 #### Verify the new configuration is working 
@@ -424,14 +425,14 @@ Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following comman
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                               TYPE          STATUS       AGE
-mops-reconfigure-inline-standalone   Reconfigure   Successful   38s
+mops-reconfigure-apply-standalone   Reconfigure   Successful   38s
 ```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-inline-standalone
-Name:         mops-reconfigure-inline-standalone
+$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-apply-standalone
+Name:         mops-reconfigure-apply-standalone
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -455,7 +456,7 @@ Metadata:
           .:
           f:standalone:
             .:
-            f:inlineConfig:
+            f:applyConfig:
         f:databaseRef:
           .:
           f:name:
@@ -490,13 +491,13 @@ Metadata:
     Operation:       Update
     Time:            2021-03-02T15:09:13Z
   Resource Version:  126782
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-inline-standalone
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-apply-standalone
   UID:               33eea32f-e2af-4e36-b612-c528549e3d65
 Spec:
   Apply: IfReady
   Configuration:
     Standalone:
-      Inline Config:  net:
+      Apply Config:  net:
   maxIncomingConnections: 30000
 
   Database Ref:
@@ -576,7 +577,7 @@ $ kubectl exec -n demo  mg-standalone-0  -- mongo admin -u root -p m6lXjZugrC4VE
 }
 ```
 
-As we can see from the configuration of running mongodb, the value of `maxIncomingConnections` has been changed from `20000` to `30000`. So the reconfiguration of the database using the `inlineConfig` field is successful.
+As we can see from the configuration of running mongodb, the value of `maxIncomingConnections` has been changed from `20000` to `30000`. So the reconfiguration of the database using the `applyConfig` field is successful.
 
 
 ## Cleaning Up
@@ -585,5 +586,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete mg -n demo mg-standalone
-kubectl delete mongodbopsrequest -n demo mops-reconfigure-standalone mops-reconfigure-inline-standalone
+kubectl delete mongodbopsrequest -n demo mops-reconfigure-standalone mops-reconfigure-apply-standalone
 ```

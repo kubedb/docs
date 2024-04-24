@@ -1,0 +1,25 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-reconfigure-inline-shard
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: mg-sharding
+  configuration:
+    shard:
+      applyConfig:
+        mongod.conf: |-
+          net:
+            maxIncomingConnections: 30000
+    configServer:
+      applyConfig:
+        mongod.conf: |-
+          net:
+            maxIncomingConnections: 30000
+    mongos:
+      applyConfig:
+        mongod.conf: |-
+          net:
+            maxIncomingConnections: 30000

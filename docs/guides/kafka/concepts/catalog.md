@@ -45,6 +45,8 @@ metadata:
   resourceVersion: "472767"
   uid: 36a167a3-5218-4e32-b96d-d6b5b0c86125
 spec:
+  connectCluster:
+    image: ghcr.io/appscode-images/kafka-connect-cluster:3.6.1
   db:
     image: kubedb/kafka-kraft:3.4.0
   podSecurityPolicies:
