@@ -8,4 +8,6 @@ spec:
   databaseRef:
     name: sample-redis
   configuration:
-    inlineConfig: maxclients 3000
+    applyConfig:
+      redis.conf: |-
+        maxclients 3000

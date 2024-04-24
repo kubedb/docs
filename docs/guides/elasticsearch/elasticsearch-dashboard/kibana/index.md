@@ -420,7 +420,7 @@ persistentvolumeclaim/data-es-cluster-master-1   Bound    pvc-53fd7683-96a6-4737
 ## Deploy ElasticsearchDashboard
 
 ```yaml
-apiVersion: dashboard.kubedb.com/v1alpha1
+apiVersion: elasticsearch.kubedb.com/v1alpha1
 kind: ElasticsearchDashboard
 metadata:
   name: es-cluster-dashboard
@@ -441,7 +441,7 @@ Let's deploy the above yaml by the following command:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/kibana/yamls/es-cluster-dashboard.yaml
-elasticsearchdashboard.dashboard.kubedb.com/es-cluster-dashboard created
+elasticsearchdashboard.elasticsearch.kubedb.com/es-cluster-dashboard created
 ```
 
 KubeDB will create the necessary resources to deploy the dashboard
@@ -450,7 +450,7 @@ KubeDB will create the necessary resources to deploy the dashboard
 ```bash
 $ watch kubectl get elasticsearchdashboard -n demo
 NAME                   TYPE                            DATABASE     STATUS   AGE
-es-cluster-dashboard   dashboard.kubedb.com/v1alpha1   es-cluster   Ready    9m
+es-cluster-dashboard   elasticsearch.kubedb.com/v1alpha1   es-cluster   Ready    9m
 ```
 Here, Elasticsearch Dashboard is in `Ready` state. 
 

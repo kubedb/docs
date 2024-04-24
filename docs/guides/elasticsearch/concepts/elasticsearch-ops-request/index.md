@@ -284,6 +284,7 @@ All of them refer to [Quantity](https://v1-22.docs.kubernetes.io/docs/reference/
     databaseRef:
       name: es
     volumeExpansion:
+      mode: "Online"
       node: 4Gi
   ```
 
@@ -300,6 +301,7 @@ All of them refer to [Quantity](https://v1-22.docs.kubernetes.io/docs/reference/
     databaseRef:
       name: es
     volumeExpansion:
+      mode: "Online"
       master: 2Gi
       data: 3Gi
       ingest: 4Gi
@@ -318,6 +320,7 @@ All of them refer to [Quantity](https://v1-22.docs.kubernetes.io/docs/reference/
     databaseRef:
       name: es
     volumeExpansion:
+      mode: "Online"
       data: 5Gi
   ```
 
