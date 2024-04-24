@@ -287,9 +287,9 @@ $ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p Dv8F55zV
 
 As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been changed from `10000` to `20000` in all type of nodes. So the reconfiguration of the database is successful.
 
-### Reconfigure using inline config
+### Reconfigure using apply config
 
-Now we will reconfigure this database again to set `maxIncomingConnections` to `30000`. This time we won't use a new secret. We will use the `inlineConfig` field of the `MongoDBOpsRequest`. This will merge the new config in the existing secret.
+Now we will reconfigure this database again to set `maxIncomingConnections` to `30000`. This time we won't use a new secret. We will use the `applyConfig` field of the `MongoDBOpsRequest`. This will merge the new config in the existing secret.
 
 #### Create MongoDBOpsRequest
 
@@ -299,7 +299,7 @@ Now, we will use the new configuration in the `data` field in the `MongoDBOpsReq
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MongoDBOpsRequest
 metadata:
-  name: mops-reconfigure-inline-shard
+  name: mops-reconfigure-apply-shard
   namespace: demo
 spec:
   type: Reconfigure
@@ -307,15 +307,18 @@ spec:
     name: mg-sharding
   configuration:
     shard:
-      inlineConfig: |
+      applyConfig:
+        mongod.conf: |-
           net:
             maxIncomingConnections: 30000
     configServer:
-      inlineConfig: |
+      applyConfig:
+        mongod.conf: |-
           net:
             maxIncomingConnections: 30000
     mongos:
-      inlineConfig: |
+      applyConfig:
+        mongod.conf: |-
           net:
             maxIncomingConnections: 30000
   readinessCriteria:
@@ -327,11 +330,11 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-inline-shard` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-apply-shard` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.shard.inlineConfig` specifies the new configuration that will be merged in the existing secret for shard nodes.
-- `spec.configuration.configServer.inlineConfig` specifies the new configuration that will be merged in the existing secret for configServer nodes.
-- `spec.configuration.mongos.inlineConfig` specifies the new configuration that will be merged in the existing secret for mongos nodes.
+- `spec.configuration.shard.applyConfig` specifies the new configuration that will be merged in the existing secret for shard nodes.
+- `spec.configuration.configServer.applyConfig` specifies the new configuration that will be merged in the existing secret for configServer nodes.
+- `spec.configuration.mongos.applyConfig` specifies the new configuration that will be merged in the existing secret for mongos nodes.
 - `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
@@ -340,8 +343,8 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-inline-shard.yaml
-mongodbopsrequest.ops.kubedb.com/mops-reconfigure-inline-shard created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-apply-shard.yaml
+mongodbopsrequest.ops.kubedb.com/mops-reconfigure-apply-shard created
 ```
 
 #### Verify the new configuration is working 
@@ -354,14 +357,14 @@ Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following comman
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                          TYPE          STATUS       AGE
-mops-reconfigure-inline-shard Reconfigure   Successful   3m24s
+mops-reconfigure-apply-shard Reconfigure   Successful   3m24s
 ```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-inline-shard
-Name:         mops-reconfigure-inline-shard
+$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-apply-shard
+Name:         mops-reconfigure-apply-shard
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -448,21 +451,21 @@ Metadata:
     Operation:       Update
     Time:            2021-03-02T13:08:25Z
   Resource Version:  103635
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-inline-shard
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-apply-shard
   UID:               ab454bcb-164c-4fa2-9eaa-dd47c60fe874
 Spec:
   Apply: IfReady
   Configuration:
     Config Server:
-      Inline Config:  net:
+      Apply Config:  net:
   maxIncomingConnections: 30000
     
     Mongos:
-      Inline Config:  net:
+      Apply Config:  net:
   maxIncomingConnections: 30000
     
     Shard:
-      Inline Config:  net:
+      Apply Config:  net:
   maxIncomingConnections: 30000
   
   Database Ref:
@@ -564,5 +567,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete mg -n demo mg-sharding
-kubectl delete mongodbopsrequest -n demo mops-reconfigure-shard mops-reconfigure-inline-shard
+kubectl delete mongodbopsrequest -n demo mops-reconfigure-shard mops-reconfigure-apply-shard
 ```

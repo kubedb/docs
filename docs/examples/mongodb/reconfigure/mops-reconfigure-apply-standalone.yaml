@@ -9,6 +9,7 @@ spec:
     name: mg-standalone
   configuration:
     standalone:
-      inlineConfig: |
-        net:
-          maxIncomingConnections: 30000
+      applyConfig:
+        mongod.conf: |-
+          net:
+            maxIncomingConnections: 30000

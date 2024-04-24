@@ -408,19 +408,19 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMr
 As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been changed from `10000` to `20000`. So the reconfiguration of the database is successful.
 
 
-### Reconfigure using inline config
+### Reconfigure using apply config
 
-Now we will reconfigure this database again to set `maxIncomingConnections` to `30000`. This time we won't use a new secret. We will use the `inlineConfig` field of the `MongoDBOpsRequest`. This will merge the new config in the existing secret.
+Now we will reconfigure this database again to set `maxIncomingConnections` to `30000`. This time we won't use a new secret. We will use the `applyConfig` field of the `MongoDBOpsRequest`. This will merge the new config in the existing secret.
 
 #### Create MongoDBOpsRequest
 
-Now, we will use the new configuration in the `inlineConfig` field in the `MongoDBOpsRequest` CR. The `MongoDBOpsRequest` yaml is given below,
+Now, we will use the new configuration in the `applyConfig` field in the `MongoDBOpsRequest` CR. The `MongoDBOpsRequest` yaml is given below,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MongoDBOpsRequest
 metadata:
-  name: mops-reconfigure-inline-replicaset
+  name: mops-reconfigure-apply-replicaset
   namespace: demo
 spec:
   type: Reconfigure
@@ -428,7 +428,8 @@ spec:
     name: mg-replicaset
   configuration:
     replicaSet:
-      inlineConfig: |
+      applyConfig:
+        mongod.conf: |-
           net:
             maxIncomingConnections: 30000
   readinessCriteria:
@@ -440,17 +441,17 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-inline-replicaset` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-apply-replicaset` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.replicaSet.inlineConfig` specifies the new configuration that will be merged in the existing secret.
+- `spec.configuration.replicaSet.applyConfig` specifies the new configuration that will be merged in the existing secret.
 - `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-inline-replicaset.yaml
-mongodbopsrequest.ops.kubedb.com/mops-reconfigure-inline-replicaset created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-apply-replicaset.yaml
+mongodbopsrequest.ops.kubedb.com/mops-reconfigure-apply-replicaset created
 ```
 
 #### Verify the new configuration is working 
@@ -463,14 +464,14 @@ Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following comman
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                               TYPE          STATUS       AGE
-mops-reconfigure-inline-replicaset   Reconfigure   Successful   109s
+mops-reconfigure-apply-replicaset   Reconfigure   Successful   109s
 ```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-inline-replicaset
-Name:         mops-reconfigure-inline-replicaset
+$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-apply-replicaset
+Name:         mops-reconfigure-apply-replicaset
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -494,7 +495,7 @@ Metadata:
           .:
           f:replicaSet:
             .:
-            f:inlineConfig:
+            f:applyConfig:
         f:databaseRef:
           .:
           f:name:
@@ -529,13 +530,13 @@ Metadata:
     Operation:       Update
     Time:            2021-03-02T07:09:39Z
   Resource Version:  31005
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-inline-replicaset
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-apply-replicaset
   UID:               0137442b-1b04-43ed-8de7-ecd913b44065
 Spec:
   Apply: IfReady
   Configuration:
     Replica Set:
-      Inline Config:  net:
+      Apply Config:  net:
   maxIncomingConnections: 30000
 
   Database Ref:
@@ -631,7 +632,7 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMr
 }
 ```
 
-As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been changed from `20000` to `30000`. So the reconfiguration of the database using the `inlineConfig` field is successful.
+As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been changed from `20000` to `30000`. So the reconfiguration of the database using the `applyConfig` field is successful.
 
 
 ## Cleaning Up
@@ -640,5 +641,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete mg -n demo mg-replicaset
-kubectl delete mongodbopsrequest -n demo mops-reconfigure-replicaset mops-reconfigure-inline-replicaset
+kubectl delete mongodbopsrequest -n demo mops-reconfigure-replicaset mops-reconfigure-apply-replicaset
 ```

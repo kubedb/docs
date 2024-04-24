@@ -127,6 +127,7 @@ spec:
   databaseRef:
     name: mg-standalone
   volumeExpansion:
+    mode: "Online"
     standalone: 2Gi
 ```
 

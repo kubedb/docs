@@ -133,6 +133,7 @@ spec:
   databaseRef:
     name: mg-replicaset
   volumeExpansion:
+    mode: "Online"
     replicaSet: 2Gi
 ```
 

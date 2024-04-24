@@ -52,7 +52,7 @@ spec:
     gcs:
       bucket: kubestash-qa
       prefix: mg
-      secret: gcs-secret
+      secretName: gcs-secret
   usagePolicy:
     allowedNamespaces:
       from: All

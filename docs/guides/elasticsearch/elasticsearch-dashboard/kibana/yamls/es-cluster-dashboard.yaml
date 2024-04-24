@@ -1,4 +1,4 @@
-apiVersion: dashboard.kubedb.com/v1alpha1
+apiVersion: elasticsearch.kubedb.com/v1alpha1
 kind: ElasticsearchDashboard
 metadata:
   name: es-cluster-dashboard
