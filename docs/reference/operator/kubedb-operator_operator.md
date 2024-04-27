@@ -32,6 +32,7 @@ kubedb-operator operator [flags]
       --leader-elect                        Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.
       --license-file string                 Path to license file
       --master string                       The address of the Kubernetes API server (overrides any value in kubeconfig)
+      --max-concurrent-reconciles int       The maximum number of concurrent reconciles which can be run (default 2)
       --metrics-bind-address string         The address the metric endpoint binds to. (default ":8080")
       --qps float                           The maximum QPS to the master from this client (default 1e+06)
       --readiness-probe-interval duration   The time between two consecutive health checks that the operator performs to the database. (default 10s)
