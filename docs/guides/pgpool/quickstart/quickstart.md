@@ -242,7 +242,7 @@ $ psql --host=localhost --port=9999 --username=postgres postgres --command='SELE
 (2 rows)
 ```
 
-KubeDB operator watches for Pgpool objects using Kubernetes api. When a Pgpool object is created, KubeDB operator will create a new PetSet and a Service with the matching name. KubeDB operator will also create a governing service for PetSet, if one is not already present.
+KubeDB operator watches for Pgpool objects using Kubernetes api. When a Pgpool object is created, KubeDB operator will create a new PetSet and a Service with the matching name. KubeDB operator will also create a governing service for PetSet, if one is not already present. There are also two secrets created by KubeDB operator, one is auth secret for Pgpool `PCP` user and another one is the configuration secret, which will be created based on default and user given declarative configuration.
 
 KubeDB operator sets the `status.phase` to `Ready` once Pgpool is ready after all checks.
 
@@ -401,7 +401,7 @@ Events:                    <none>
 
 ```
 
-KubeDB has created a services for the Pgpool object.
+KubeDB has created services for the Pgpool object.
 
 ```bash
 $ `kubectl get service -n pool --selector=app.kubernetes.io/name=pgpools.kubedb.com,app.kubernetes.io/instance=quick-pgpool`
@@ -411,6 +411,100 @@ quick-pgpool-pods   ClusterIP   None           <none>        9999/TCP   67m
 ```
 
 Here, Service *`quick-pgpool`* targets random pods to carry out any operation that are made through this service.
+
+KubeDB has created secrets for the Pgpool object. Let's see the secrets KubeDB operator created for us.
+```bash
+$ kubectl get secrets -n pool
+NAME                  TYPE                       DATA   AGE
+quick-pgpool-auth     kubernetes.io/basic-auth   2      67m
+quick-pgpool-config   Opaque                     2      67m
+
+```
+
+Now lets get the auth secret first with yaml format.
+```bash
+$ kubectl get secrets -n pool quick-pgpool-auth -oyaml
+```
+```yaml
+apiVersion: v1
+data:
+  password: TXFRNnNSZ2hkaHRTNnBVbw==
+  username: cGNw
+kind: Secret
+metadata:
+  creationTimestamp: "2024-05-03T04:36:56Z"
+  labels:
+    app.kubernetes.io/instance: quick-pgpool
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: pgpools.kubedb.com
+  name: quick-pgpool-auth
+  namespace: pool
+  ownerReferences:
+  - apiVersion: kubedb.com/v1alpha2
+    blockOwnerDeletion: true
+    controller: true
+    kind: Pgpool
+    name: quick-pgpool
+    uid: 2591c0bb-b20a-4a81-944d-926ed0c6090f
+  resourceVersion: "136167"
+  uid: 9725053a-9582-4a25-8495-2de678ffadcb
+type: kubernetes.io/basic-auth
+```
+Here, this username and password specified in the secret can be used for `PCP` user of Pgpool. Now let's see the configuration secret KubeDB operator has created. We will use view-secret plugin for this case, you can also install and use it from [here](https://github.com/elsesiy/kubectl-view-secret).
+
+Now let's apply this command,
+```bash
+$ kubectl view-secret -n pool quick-pgpool-config --all
+pgpool.conf='backend_hostname0 = 'quick-postgres.demo.svc'
+backend_port0 = 5432
+backend_weight0 = 1
+backend_flag0 = 'ALWAYS_PRIMARY|DISALLOW_TO_FAILOVER'
+backend_hostname1 = 'quick-postgres-standby.demo.svc'
+backend_port1 = 5432
+backend_weight1 = 1
+backend_flag1 = 'DISALLOW_TO_FAILOVER'
+enable_pool_hba = on
+listen_addresses = *
+port = 9999
+socket_dir = '/var/run/pgpool'
+pcp_listen_addresses = *
+pcp_port = 9595
+pcp_socket_dir = '/var/run/pgpool'
+log_per_node_statement = on
+sr_check_period = 0
+health_check_period = 0
+backend_clustering_mode = 'streaming_replication'
+num_init_children = 5
+max_pool = 15
+child_life_time = 300
+child_max_connections = 0
+connection_life_time = 0
+client_idle_limit = 0
+connection_cache = on
+load_balance_mode = on
+ssl = 'off'
+failover_on_backend_error = 'off'
+log_min_messages = 'warning'
+statement_level_load_balance = 'off'
+memory_cache_enabled = 'off'
+memqcache_oiddir = '/tmp/oiddir/'
+allow_clear_text_frontend_auth = 'false''
+pool_hba.conf='#TYPE      DATABASE        USER            ADDRESS                 METHOD
+# "local" is for Unix domain socket connections only
+local      all             all                                     trust
+# IPv4 local connections:
+host         all             all             127.0.0.1/32            trust
+# IPv6 local connections:
+host         all             all             ::1/128                 trust
+local        postgres        all                                     trust
+host         postgres        all             127.0.0.1/32            md5
+host         postgres        all             ::1/128                 md5
+host         all             all             0.0.0.0/0               md5
+host         postgres        postgres        0.0.0.0/0               md5
+host         all             all             ::/0                    md5
+host         postgres        postgres        ::/0                    md5'
+```
+Here, we can see the default configuration KubeDB operator has set for us. You can also use declarative configuration to configure the server as you want.
 
 ## Cleaning up
 
@@ -438,6 +532,11 @@ namespace "pool" deleted
 
 $ kubectl delete -n demo pg/quick-postgres
 pgpool.kubedb.com "quick-postgres" deleted
+
+$ kubectl get pp,petset,svc,secret -n pool
+NAME                         TYPE                       DATA   AGE
+secret/quick-pgpool-auth     kubernetes.io/basic-auth   2      3h22m
+secret/quick-pgpool-config   Opaque                     2      3h22m
 ```
 
 ### WipeOut
@@ -457,6 +556,9 @@ namespace "pool" deleted
 
 $ kubectl delete -n demo pg/quick-postgres
 pgpool.kubedb.com "quick-postgres" deleted
+
+$ kubectl get pp,petset,svc,secret -n pool
+No resources found in pool namespace.
 ```
 
 ## Next Steps

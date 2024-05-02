@@ -4,7 +4,7 @@ metadata:
   name: quick-postgres
   namespace: demo
 spec:
-  replicas: 1
+  replicas: 3
   version: "13.13"
   configSecret:
     name: pg-configuration
