@@ -1,0 +1,16 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ZooKeeper
+metadata:
+  name: zk-quickstart
+  namespace: demo
+spec:
+  version: "3.9.1"
+  replicas: 3
+  storage:
+    resources:
+      requests:
+        storage: "1Gi"
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+  terminationPolicy: "WipeOut"
