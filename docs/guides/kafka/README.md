@@ -18,25 +18,29 @@ aliases:
 ## Supported Kafka Features
 
 
-| Features                                                       | Community | Enterprise |
-|----------------------------------------------------------------|:---------:|:----------:|
-| Clustering - Combined (shared controller and broker nodes)     | &#10003;  |  &#10003;  |
-| Clustering - Topology (dedicated controllers and broker nodes) | &#10003;  |  &#10003;  |
-| Custom Docker Image                                            | &#10003;  |  &#10003;  |
-| Authentication & Authorization                                 | &#10003;  |  &#10003;  |
-| Persistent Volume                                              | &#10003;  |  &#10003;  |
-| Custom Volume                                                  | &#10003;  |  &#10003;  |
-| TLS: using ( [Cert Manager](https://cert-manager.io/docs/) )   | &#10007;  |  &#10003;  |
-| Reconfigurable Health Checker                                  | &#10003;  |  &#10003;  |
-| Externally manageable Auth Secret                              | &#10003;  |  &#10003;  |
-| Monitoring with Prometheus & Grafana                           | &#10003;  |  &#10003;  |
+| Features                                                       | 
+|----------------------------------------------------------------|
+| Clustering - Combined (shared controller and broker nodes)     | 
+| Clustering - Topology (dedicated controllers and broker nodes) |
+ | Kafka Connect Cluster          |
+| Connectors |
+| Custom Docker Image                                            | 
+| Authentication & Authorization                                 | 
+| Persistent Volume                                              | 
+| Custom Volume                                                  | 
+| TLS: using ( [Cert Manager](https://cert-manager.io/docs/) )   | 
+| Reconfigurable Health Checker                                  | 
+| Externally manageable Auth Secret                              | 
+| Monitoring with Prometheus & Grafana                           |
 
 ## Supported Kafka Versions
 
 KubeDB supports The following Kafka versions. Supported version are applicable for Kraft mode or Zookeeper-less releases:
-- `3.3.0`
 - `3.3.2`
-- `3.4.0`
+- `3.4.1`
+- `3.5.1`
+- `3.6.0`
+- `3.6.1`
 
 > The listed KafkaVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [KafkaVersion](/docs/guides/kafka/concepts/catalog.md) object with your custom Kafka image.
 

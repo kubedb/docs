@@ -2,9 +2,9 @@
 title: Kafka Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: kf-quickstart-quickstart
-    name: Overview
-    parent: kf-quickstart-kafka
+    identifier: kf-kafka-overview-kafka
+    name: Kafka
+    parent: kf-overview-kafka
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
