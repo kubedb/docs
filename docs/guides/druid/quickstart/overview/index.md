@@ -1,0 +1,769 @@
+---
+title: Druid Quickstart
+menu:
+  docs_{{ .version }}:
+    identifier: dr-quickstart-quickstart
+    name: Overview
+    parent: dr-quickstart-druid
+    weight: 10
+menu_name: docs_{{ .version }}
+section_menu_id: guides
+---
+
+> New to KubeDB? Please start [here](/docs/README.md).
+
+# Druid QuickStart
+
+This tutorial will show you how to use KubeDB to run an [Apache Druid](https://druid.apache.org//).
+
+<p align="center">
+  <img alt="lifecycle"  src="/docs/images/druid/Druid-CRD-Lifecycle.png">
+</p>
+
+## Before You Begin
+
+At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+
+Now, install the KubeDB operator in your cluster following the steps [here](/docs/setup/install/_index.md).
+
+To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
+
+```bash
+$ kubectl create namespace demo
+namespace/demo created
+
+$ kubectl get namespace
+NAME                 STATUS   AGE
+demo                 Active   9s
+```
+
+> Note: YAML files used in this tutorial are stored in [guides/druid/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/druid/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Druid. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/druid/quickstart/overview/index.md#tips-for-testing).
+
+## Find Available StorageClass
+
+We will have to provide `StorageClass` in Druid CRD specification. Check available `StorageClass` in your cluster using the following command,
+
+```bash
+$ kubectl get storageclass
+NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  14h
+```
+
+Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
+
+## Find Available DruidVersion
+
+When you install the KubeDB operator, it registers a CRD named [DruidVersion](/docs/guides/druid/concepts/catalog.md). The installation process comes with a set of tested DruidVersion objects. Let's check available DruidVersions by,
+
+```bash
+$ kubectl get druidversion
+NAME     VERSION   DB_IMAGE                               DEPRECATED   AGE
+25.0.0   25.0.0    apache/druid:25.0.0                                 4h47m
+28.0.1   28.0.1    ghcr.io/appscode-images/druid:28.0.1                4h47m
+```
+
+Notice the `DEPRECATED` column. Here, `true` means that this DruidVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated DruidVersion. You can also use the short from `drversion` to check available DruidVersions.
+
+In this tutorial, we will use `28.0.1` DruidVersion CR to create a Druid cluster.
+
+## Get External Dependencies Ready
+
+### Metadata Storage
+
+Druid uses the metadata store to house various metadata about the system, but not to store the actual data. The metadata store retains all metadata essential for a Druid cluster to work. Derby is the default metadata store for Druid, however, it is not suitable for production. MySQL and PostgreSQL are more production suitable metadata stores.
+
+Luckily PostgreSQL and MySQL both are readily available in KubeDB as crd and can easily be deployed using the [MySQL-Guide](/docs/guides/mysql/quickstart/index.md) and [PostgreSQL-Guide](/docs/guides/postgres/quickstart/quickstart.md).
+
+In this tutorial, we will use a MySQL named `mysql-demo` in the `demo` namespace and create a database named `druid` inside it using [initialization script](/docs/guides/mysql/initialization/#prepare-initialization-scripts).
+
+Let’s create a ConfigMap with initialization script first and then create the `mysql-demo` database,
+
+```bash
+$ kubectl create configmap -n demo my-init-script \
+--from-literal=init.sql="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/mysql-init-script.sql)"
+configmap/my-init-script created
+
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/mysql-demo.yaml
+mysql.kubedb.com/mysql-demo created
+```
+
+### ZooKeeper
+
+Apache Druid uses [Apache ZooKeeper](https://zookeeper.apache.org/) (ZK) for management of current cluster state i.e. internal service discovery, coordination, and leader election.
+
+Fortunately, KubeDB also has support for ZooKeeper and can easily be deployed using the guide [here](/docs/guides/zookeeper/quickstart/quickstart.md)
+
+In this tutorial, we will create a ZooKeeper named `zk-demo` in the `demo` namespace.
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/zk-demo.yaml
+zookeeper.kubedb.com/zk-demo created
+```
+
+### Deep Storage
+
+The last external dependency of Druid is deep storage where the segments are stored. It is a storage mechanism that Apache Druid does not provide. Amazon S3, Google Cloud Storage, or Azure Blob Storage, S3-compatible storage (like Minio), or HDFS are generally convenient options for deep storage.
+
+In this tutorial, we will run a minio-server as deep storage using minio operator and create a bucket named `druid` in it which the deployed druid database will use.
+
+```bash
+$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+
+$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+--set tenant.pools[0].servers=1 \
+--set tenant.pools[0].volumesPerServer=1 \
+--set tenant.pools[0].size=1Gi \
+--set tenant.certificate.requestAutoCert=false \
+--set tenant.buckets[0].name="druid"
+
+```
+
+Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: deep-storage-config
+  namespace: demo
+stringData:
+  druid.storage.type: "s3"
+  druid.storage.bucket: "druid"
+  druid.storage.baseKey: "druid/segments"
+  druid.s3.accessKey: "minio"
+  druid.s3.secretKey: "minio123"
+  druid.s3.protocol: "http"
+  druid.s3.endpoint.signingRegion: "us-east-1"
+  druid.s3.enablePathStyleAccess: "true"
+  druid.s3.endpoint.url: "http://myminio-hl.demo.svc.cluster.local:9000/"
+  druid.indexer.logs.type: "s3"
+  druid.indexer.logs.s3Bucket: "druid"
+  druid.indexer.logs.s3Prefix: "druid/indexing-logs"
+```
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/deep-storage-config.yaml
+secret/deep-storage-config created
+```
+
+## Create a Druid Cluster
+
+The KubeDB operator implements a Druid CRD to define the specification of Druid.
+
+The Druid instance used for this tutorial:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Druid
+metadata:
+  name: druid-quickstart
+  namespace: demo
+spec:
+  version: 28.0.1
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
+  metadataStorage:
+    name: mysql-demo
+    namespace: demo
+    createTables: true
+  zookeeperRef:
+    name: zk-demo
+    namespace: demo
+  topology:
+    coordinators:
+      replicas: 1
+    brokers:
+      replicas: 1
+    historicals:
+      replicas: 1
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+    middleManagers:
+      replicas: 1
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+    routers:
+      replicas: 1
+  storageType: Durable
+  terminationPolicy: Delete
+```
+
+Here,
+
+- `spec.version` - is the name of the DruidVersion CR. Here, a Druid of version `28.0.1` will be created.
+- `spec.storageType` - specifies the type of storage that will be used for Kafka. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Druid using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this Druid instance. This storage spec will be passed to the PetSet created by the KubeDB operator to run Druid pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
+- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete Druid CR. Termination policy `Delete` will delete the database pods and PVC when the Druid CR is deleted.
+
+> Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
+
+Let's create the Druid CR that is shown above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-quickstart.yaml
+druid.kubedb.com/druid-quickstart created
+```
+
+The Druid's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the newly provisioned Druid cluster.
+
+```bash
+$ kubectl get druid -n demo -w
+NAME               TYPE                  VERSION   STATUS         AGE
+druid-quickstart   kubedb.com/v1alpha2   28.0.1    Provisioning   17s
+druid-quickstart   kubedb.com/v1alpha2   28.0.1    Provisioning   28s
+.
+.
+druid-quickstart   kubedb.com/v1alpha2   28.0.1    Ready          82s
+```
+
+Describe the Druid object to observe the progress if something goes wrong or the status is not changing for a long period of time:
+
+```bash
+$ kubectl describe druid -n demo druid-quickstart
+Name:         druid-quickstart
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  kubedb.com/v1alpha2
+Kind:         Druid
+Metadata:
+  Creation Timestamp:  2024-05-02T10:00:12Z
+  Finalizers:
+    kubedb.com/druid
+  Generation:  1
+  Managed Fields:
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:deepStorage:
+          .:
+          f:configSecret:
+          f:type:
+        f:healthChecker:
+          .:
+          f:failureThreshold:
+          f:periodSeconds:
+          f:timeoutSeconds:
+        f:metadataStorage:
+          .:
+          f:createTables:
+          f:name:
+          f:namespace:
+        f:storageType:
+        f:topology:
+          .:
+          f:brokers:
+            .:
+            f:podPlacementPolicy:
+            f:replicas:
+          f:coordinators:
+            .:
+            f:podPlacementPolicy:
+            f:replicas:
+          f:historicals:
+            .:
+            f:podPlacementPolicy:
+            f:replicas:
+            f:storage:
+              .:
+              f:accessModes:
+              f:resources:
+                .:
+                f:requests:
+                  .:
+                  f:storage:
+              f:storageClassName:
+          f:middleManagers:
+            .:
+            f:podPlacementPolicy:
+            f:replicas:
+            f:storage:
+              .:
+              f:accessModes:
+              f:resources:
+                .:
+                f:requests:
+                  .:
+                  f:storage:
+              f:storageClassName:
+          f:routers:
+            .:
+            f:podPlacementPolicy:
+            f:replicas:
+        f:version:
+        f:zookeeperRef:
+          .:
+          f:name:
+          f:namespace:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2024-05-02T10:00:12Z
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .:
+          v:"kubedb.com/druid":
+    Manager:      kubedb-provisioner
+    Operation:    Update
+    Time:         2024-05-02T10:00:12Z
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:phase:
+    Manager:         kubedb-provisioner
+    Operation:       Update
+    Subresource:     status
+    Time:            2024-05-02T10:01:34Z
+  Resource Version:  68607
+  UID:               7759adad-4e49-4f44-80ae-fc04cc474813
+Spec:
+  Auth Secret:
+    Name:  druid-quickstart-admin-cred
+  Deep Storage:
+    Config Secret:
+      Name:          deep-storage-config
+    Type:            s3
+  Disable Security:  false
+  Health Checker:
+    Failure Threshold:  3
+    Period Seconds:     30
+    Timeout Seconds:    10
+  Metadata Storage:
+    Create Tables:  true
+    Name:           mysql-demo
+    Namespace:      druid
+  Pod Template:
+    Controller:
+    Metadata:
+    Spec:
+  Storage Type:        Ephemeral
+  Termination Policy:  Delete
+  Topology:
+    Brokers:
+      Pod Placement Policy:
+        Name:  default
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+    Coordinators:
+      Pod Placement Policy:
+        Name:  default
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Security Context:
+            Fs Group:  1000
+      Replicas:        2
+    Historicals:
+      Pod Placement Policy:
+        Name:  default
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+      Storage:
+        Access Modes:
+          ReadWriteOnce
+        Resources:
+          Requests:
+            Storage:         1Gi
+        Storage Class Name:  standard
+    Middle Managers:
+      Pod Placement Policy:
+        Name:  default
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  2560Mi
+              Requests:
+                Cpu:     500m
+                Memory:  2560Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+      Storage:
+        Access Modes:
+          ReadWriteOnce
+        Resources:
+          Requests:
+            Storage:         1Gi
+        Storage Class Name:  standard
+    Routers:
+      Pod Placement Policy:
+        Name:  default
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+  Version:             28.0.1
+  Zookeeper Ref:
+    Name:       zk-demo
+    Namespace:  druid
+Status:
+  Conditions:
+    Last Transition Time:  2024-05-02T10:00:12Z
+    Message:               The KubeDB operator has started the provisioning of Druid: demo/druid-quickstart
+    Observed Generation:   1
+    Reason:                DatabaseProvisioningStartedSuccessfully
+    Status:                True
+    Type:                  ProvisioningStarted
+    Last Transition Time:  2024-05-02T10:00:40Z
+    Message:               All desired replicas are ready.
+    Observed Generation:   1
+    Reason:                AllReplicasReady
+    Status:                True
+    Type:                  ReplicaReady
+    Last Transition Time:  2024-05-02T10:01:11Z
+    Message:               The Druid: demo/druid-quickstart is accepting client requests and nodes formed a cluster
+    Observed Generation:   1
+    Reason:                DatabaseAcceptingConnectionRequest
+    Status:                True
+    Type:                  AcceptingConnection
+    Last Transition Time:  2024-05-02T10:01:34Z
+    Message:               The Druid: demo/druid-quickstart is ready.
+    Observed Generation:   1
+    Reason:                ReadinessCheckSucceeded
+    Status:                True
+    Type:                  Ready
+    Last Transition Time:  2024-05-02T10:01:34Z
+    Message:               The Druid: demo/druid-quickstart is successfully provisioned.
+    Observed Generation:   1
+    Reason:                DatabaseSuccessfullyProvisioned
+    Status:                True
+    Type:                  Provisioned
+  Phase:                   Ready
+Events:                    <none>
+
+```
+
+### KubeDB Operator Generated Resources
+
+On deployment of a Druid CR, the operator creates the following resources:
+
+```bash
+$ kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=druid-quickstart'
+NAME                                    READY   STATUS    RESTARTS   AGE
+pod/druid-quickstart-brokers-0          1/1     Running   0          6m44s
+pod/druid-quickstart-coordinators-0     1/1     Running   0          6m53s
+pod/druid-quickstart-coordinators-1     1/1     Running   0          6m50s
+pod/druid-quickstart-historicals-0      1/1     Running   0          6m50s
+pod/druid-quickstart-middlemanagers-0   1/1     Running   0          6m47s
+pod/druid-quickstart-routers-0          1/1     Running   0          6m41s
+
+NAME                                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                 AGE
+service/druid-quickstart-brokers        ClusterIP   10.96.191.21    <none>        8082/TCP                                                6m56s
+service/druid-quickstart-coordinators   ClusterIP   10.96.255.123   <none>        8081/TCP                                                6m56s
+service/druid-quickstart-pods           ClusterIP   None            <none>        8081/TCP,8090/TCP,8083/TCP,8091/TCP,8082/TCP,8888/TCP   6m56s
+service/druid-quickstart-routers        ClusterIP   10.96.52.97     <none>        8888/TCP                                                6m56s
+
+NAME                                                  TYPE               VERSION   AGE
+appbinding.appcatalog.appscode.com/druid-quickstart   kubedb.com/druid   28.0.1    6m41s
+
+NAME                                 TYPE                       DATA   AGE
+secret/druid-quickstart-admin-cred   kubernetes.io/basic-auth   2      9m1s
+
+NAME                                                           AGE
+petset.apps.k8s.appscode.com/druid-quickstart-brokers          6m44s
+petset.apps.k8s.appscode.com/druid-quickstart-coordinators     6m53s
+petset.apps.k8s.appscode.com/druid-quickstart-historicals      6m50s
+petset.apps.k8s.appscode.com/druid-quickstart-middlemanagers   6m47s
+petset.apps.k8s.appscode.com/druid-quickstart-routers          6m41s
+
+```
+
+- `PetSet` - In topology mode, the operator may create 4 to 6 petSets (depending on the topology you provide as overlords and routers are optional) with name `{Druid-Name}-{Sufix}`.
+- `Services` -  For topology mode, a headless service with name `{Druid-Name}-{pods}`. Other than that, 2 to 4 more services (depending on the specified topology) with name `{Druid-Name}-{Sufix}` can be created.  
+    - `{Druid-Name}-{brokers}` - The primary service which is used to connect the brokers with external clients.
+    - `{Druid-Name}-{coordinators}` - The primary service which is used to connect the coordinators with external clients.
+    - `{Druid-Name}-{overlords}` - The primary service is only created if `spec.topology.overlords` is provided. In the same way, it is used to connect the overlords with external clients.
+    - `{Druid-Name}-{routers}` - Like the previous one, this primary service is only created if `spec.topology.routers` is provided. It is used to connect the routers with external clients.
+- `AppBinding` - an [AppBinding](/docs/guides/kafka/concepts/appbinding.md) which hold to connect information for the Druid. Like other resources, it is named after the Druid instance.
+- `Secrets` - A secret is generated for each Druid cluster.
+    - `{Druid-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the Druid users. Operator generates credentials for `admin` user and creates a secret for authentication.
+
+## Connect with Druid Database
+We will use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to connect with our routers of the Druid database. Then we will use `curl` to send `HTTP` requests to check cluster health to verify that our Druid database is working well.
+
+### Check the Service Health 
+
+Let's port-forward the port `8888` to local machine:
+
+```bash
+$ kubectl port-forward -n demo svc/druid-quickstart-routers 8888
+Forwarding from 127.0.0.1:8888 -> 8888
+Forwarding from [::1]:8888 -> 8888
+```
+
+Now, the Druid cluster is accessible at `localhost:8888`. Let's check the [Service Health](https://druid.apache.org/docs/latest/api-reference/service-status-api/#get-service-health) of Routers of the Druid database.
+
+```bash
+$ curl "http://localhost:8888/status/health"
+true
+```
+From the retrieved health information above, we can see that our Druid cluster’s status is `true`,  indicating that the service can receive API calls and is healthy. In the same way it possible to check the health of other druid nodes by port-forwarding the appropriate services.
+
+### Access the web console
+
+We can also access the [web console](https://druid.apache.org/docs/latest/operations/web-console) of Druid database from any browser by port-forwarding the routers in the same way shown in the aforementioned step.
+
+Now hit the `http://localhost:8888` from any browser, and you will be prompted to provide the credential of the druid database. By following the steps discussed below, you can get the credential generated by the KubeDB operator for your Druid database.
+
+**Connection information:**
+
+- Username:
+
+  ```bash
+  $ kubectl get secret -n demo druid-quickstart-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  admin
+  ```
+
+- Password:
+
+  ```bash
+  $ kubectl get secret -n demo druid-quickstart-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  LzJtVRX5E8MorFaf
+  ```
+
+After providing the credentials correctly, you should be able to access the web console like shown below.
+
+<p align="center">
+  <img alt="lifecycle"  src="/docs/images/druid/Druid-Web-Console.png">
+</p>
+
+You can use this web console for loading data, managing datasources and tasks, and viewing server status and segment information. You can also run SQL and native Druid queries in the console.
+
+## Cleaning up
+
+To clean up the Kubernetes resources created by this tutorial, run:
+
+```bash
+$ kubectl patch -n demo druid druid-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kafka.kubedb.com/druid-quickstart patched
+
+$ kubectl delete dr druid-quickstart  -n demo
+druid.kubedb.com "druid-quickstart" deleted
+
+$  kubectl delete namespace demo
+namespace "demo" deleted
+```
+
+## Tips for Testing
+
+If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
+
+1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if the database pod fails. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purposes, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resource that was created with the Druid CR. For more details, please visit [here](/docs/guides/kafka/concepts/kafka.md#specterminationpolicy).
+
+## Next Steps
+
+[//]: # (- Druid Clustering supported by KubeDB)
+
+[//]: # (  - [Combined Clustering]&#40;/docs/guides/kafka/clustering/combined-cluster/index.md&#41;)
+
+[//]: # (  - [Topology Clustering]&#40;/docs/guides/kafka/clustering/topology-cluster/index.md&#41;)
+- Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
+
+[//]: # (- Detail concepts of [Kafka object]&#40;/docs/guides/kafka/concepts/kafka.md&#41;.)
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
