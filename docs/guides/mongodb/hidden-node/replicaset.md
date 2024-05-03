@@ -48,7 +48,7 @@ metadata:
   name: mongo-rs-hid
   namespace: demo
 spec:
-  version: "percona-4.4.10"
+  version: "percona-7.0.4"
   replicaSet:
     name: "replicaset"
   podTemplate:
@@ -184,7 +184,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","terminationPolicy":"WipeOut","version":"percona-4.4.10"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","terminationPolicy":"WipeOut","version":"percona-7.0.4"}}
 
     Creation Timestamp:  2022-10-31T05:05:38Z
     Labels:
@@ -214,7 +214,7 @@ AppBinding:
     Secret:
       Name:   mongo-rs-hid-auth
     Type:     kubedb.com/mongodb
-    Version:  4.4.10
+    Version:  7.0.4
 
 Events:
   Type    Reason        Age   From              Message
@@ -283,7 +283,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","terminationPolicy":"WipeOut","version":"percona-4.4.10"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","terminationPolicy":"WipeOut","version":"percona-7.0.4"}}
   creationTimestamp: "2022-10-31T05:03:50Z"
   finalizers:
     - kubedb.com
@@ -445,7 +445,7 @@ spec:
   storageEngine: inMemory
   storageType: Ephemeral
   terminationPolicy: WipeOut
-  version: percona-4.4.10
+  version: percona-7.0.4
 status:
   conditions:
     - lastTransitionTime: "2022-10-31T05:03:50Z"
@@ -500,10 +500,10 @@ OX4yb!IFm;~yAHkD
 $ kubectl exec -it mongo-rs-hid-0 -n demo bash
 
 bash-4.4$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
-Percona Server for MongoDB shell version v4.4.10-11
+Percona Server for MongoDB shell version v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("11890d64-37da-43dd-acb6-0f36a3678875") }
-Percona Server for MongoDB server version: v4.4.10-11
+Percona Server for MongoDB server version: v7.0.4-11
 Welcome to the Percona Server for MongoDB shell.
 For interactive help, type "help".
 For more comprehensive documentation, see
@@ -856,9 +856,9 @@ We will exec in `mongo-rs-hid-hidden-0`(which is a hidden node right now) to che
 ```bash
 $ kubectl exec -it mongo-rs-hid-hidden-0 -n demo bash
 bash-4.4$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
-Percona Server for MongoDB server version: v4.4.10-11
+Percona Server for MongoDB server version: v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/admin
-MongoDB server version: 4.4.10
+MongoDB server version: 7.0.4
 Welcome to the MongoDB shell.
 
 replicaset:SECONDARY> rs.slaveOk()
@@ -935,9 +935,9 @@ Now verify the automatic failover, Let's exec in `mongo-rs-hid-0` pod,
 ```bash
 $ kubectl exec -it mongo-rs-hid-0  -n demo bash
 bash-4.4:/$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
-Percona Server for MongoDB server version: v4.4.10-11
+Percona Server for MongoDB server version: v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/admin
-MongoDB server version: 4.4.10
+MongoDB server version: 7.0.4
 Welcome to the MongoDB shell.
 
 replicaset:SECONDARY> rs.isMaster().primary

@@ -80,7 +80,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: 3.3.0
+  version: 3.6.1
   storage:
     accessModes:
       - ReadWriteOnce

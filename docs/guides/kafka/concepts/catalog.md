@@ -30,32 +30,19 @@ As with all other Kubernetes objects, a KafkaVersion needs `apiVersion`, `kind`,
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: KafkaVersion
 metadata:
-  annotations:
-    meta.helm.sh/release-name: kubedb-catalog
-    meta.helm.sh/release-namespace: kubedb
-  creationTimestamp: "2023-03-23T10:15:24Z"
-  generation: 2
-  labels:
-    app.kubernetes.io/instance: kubedb-catalog
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: kubedb-catalog
-    app.kubernetes.io/version: v2023.02.28
-    helm.sh/chart: kubedb-catalog-v2023.02.28
-  name: 3.4.0
-  resourceVersion: "472767"
-  uid: 36a167a3-5218-4e32-b96d-d6b5b0c86125
+  name: 3.6.1
 spec:
   connectCluster:
     image: ghcr.io/appscode-images/kafka-connect-cluster:3.6.1
+  cruiseControl:
+    image: ghcr.io/appscode-images/kafka-cruise-control:3.6.1
   db:
-    image: kubedb/kafka-kraft:3.4.0
+    image: ghcr.io/appscode-images/kafka-kraft:3.6.1
   podSecurityPolicies:
     databasePolicyName: kafka-db
-  version: 3.4.0
-  cruiseControl:
-    image: ghcr.io/kubedb/cruise-control:3.4.0
-  connectCluster:
-    image: ghcr.io/appscode-images/kafka-connect-cluster:3.6.0
+  securityContext:
+    runAsUser: 1001
+  version: 3.6.1
 ```
 
 ### metadata.name
