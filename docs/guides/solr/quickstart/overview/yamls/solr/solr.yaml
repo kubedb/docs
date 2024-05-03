@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Solr
+metadata:
+  name: solr-combined
+  namespace: demo
+spec:
+  version: 9.4.1
+  terminationPolicy: Halt
+  replicas: 2
+  zookeeperRef:
+    name: zk-com
+    namespace: demo
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+    storageClassName: standard
