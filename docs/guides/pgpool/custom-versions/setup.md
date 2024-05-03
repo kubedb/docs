@@ -6,7 +6,7 @@ menu:
     name: Overview
     parent: pp-custom-versions-pgpool
     weight: 10
-menu_name: docs_{{ .version }}s
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 

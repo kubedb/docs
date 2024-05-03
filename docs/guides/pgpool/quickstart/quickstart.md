@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Running Pgpool
 
-This tutorial will show you how to use KubeDB to run a Pgpool.
+This tutorial will show you how to use KubeDB to run Pgpool.
 
 <p align="center">
   <img alt="lifecycle"  src="/docs/images/pgpool/quickstart/lifecycle.png">
@@ -22,11 +22,11 @@ This tutorial will show you how to use KubeDB to run a Pgpool.
 
 ## Before You Begin
 
-At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+- At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md) make sure install with helm command including `--set global.featureGates.Pgpool=true` to ensure Pgpool CRD.
 
-To keep things isolated, this tutorial uses two separate namespaces called `demo` for deploying PostgreSQL and `pool` for Pgpool,  throughout this tutorial.
+- To keep things isolated, this tutorial uses two separate namespaces called `demo` for deploying PostgreSQL and `pool` for Pgpool,  throughout this tutorial.
 
 ```bash
 $ kubectl create ns demo
@@ -44,7 +44,7 @@ namespace/pool created
 
 ## Find Available PgpoolVersion
 
-When you have installed KubeDB, it has created `PgpoolVersion` crd for all supported Pgpool versions. Let's check available PgpoolVersion by,
+When you have installed KubeDB, it has created `PgpoolVersion` CRD for all supported Pgpool versions. Let's check available PgpoolVersion by,
 
 ```bash
 $ kubectl get pgpoolversions
@@ -56,36 +56,17 @@ $ kubectl get pgpoolversions
 
 Notice the `DEPRECATED` column. Here, `true` means that this PgpoolVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PgpoolVersion.
 
-In this tutorial, we will use `4.5.0` PgpoolVersion crd to create Pgpool. To know more about what `PgpoolVersion` crd is, please visit [here](/docs/guides/pgpool/concepts/catalog.md). You can also see supported PgpoolVersion [here](/docs/guides/pgpool/README.md#supported-pgpoolversion-crd).
+In this tutorial, we will use `4.5.0` PgpoolVersion CRD to create Pgpool. To know more about what `PgpoolVersion` CRD is, please visit [here](/docs/guides/pgpool/concepts/catalog.md). You can also see supported PgpoolVersion [here](/docs/guides/pgpool/README.md#supported-pgpoolversion-CRD).
 
 ## Get PostgreSQL Server ready
 
 Pgpool is a middleware for PostgreSQL. Therefore you will need to have a PostgreSQL server up and running for Pgpool to connect to.
 
-Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/quickstart/quickstart.md). But by default this will create a PostgreSQL server with `max_connections=100`, but we need more than 100 connections for our Pgpool to work as expected. 
+Luckily PostgreSQL is readily available in KubeDB as CRD and can easily be deployed using this guide [here](/docs/guides/postgres/quickstart/quickstart.md). But by default this will create a PostgreSQL server with `max_connections=100`, but we need more than 100 connections for our Pgpool to work as expected. 
 
 Pgpool requires at least `2*num_init_children*max_pool*spec.replicas` connections in PostgreSQL server. So use [this](https://kubedb.com/docs/v2024.4.27/guides/postgres/configuration/using-config-file/) to create a PostgreSQL server with custom `max_connections`.
 
 In this tutorial, we will use a PostgreSQL named `quick-postgres` in the `demo` namespace.
-Let's first create a secret for PostgreSQL custom configuration. At first, let’s create `user.conf` file setting `max_connections` parameter.
-```bash
-$ cat user.conf
-max_connections=400
-```
-> Note that config file name must be `user.conf`
-
-Now, create a Secret with this configuration file.
-
-```bash
-$ kubectl create secret generic -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/quickstart/user.conf)"
-secret/pg-configuration created
-```
-
-Now, create PostgreSQL crd specifying spec.configSecret field.
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/quickstart/quick-postgres.yaml
-postgres.kubedb.com/quick-postgres created
-```
 
 KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database secret `quick-postgres-auth` holds this user's username and password. Following is the yaml file for it.
 
@@ -172,7 +153,7 @@ If you choose not to use KubeDB to deploy Postgres, create AppBinding to point P
 
 ## Create a Pgpool Server
 
-KubeDB implements a Pgpool crd to define the specifications of a Pgpool.
+KubeDB implements a Pgpool CRD to define the specifications of a Pgpool.
 
 Below is the Pgpool object created in this tutorial.
 
@@ -196,7 +177,7 @@ spec:
 
 Here,
 
-- `spec.version` is name of the PgpoolVersion crd where the docker images are specified. In this tutorial, a Pgpool with base image version `4.5.0` is created.
+- `spec.version` is name of the PgpoolVersion CRD where the docker images are specified. In this tutorial, a Pgpool with base image version `4.5.0` is created.
 - `spec.replicas` specifies the number of replica pgpool server pods to be created for the Pgpool object.
 - `spec.postgresRef` specifies the name and the namespace of the appbinding that points to the PostgreSQL server.
 - `spec.sslMode` specifies ssl mode for clients.
@@ -204,7 +185,7 @@ Here,
 - `spec.syncUsers` specifies whether user want to sync additional users to Pgpool.
 - `spec.terminationPolicy` specifies what policy to apply while deletion.
 
-Now that we've been introduced to the pgpool crd, let's create it,
+Now that we've been introduced to the pgpool CRD, let's create it,
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/quickstart/pgpool-server.yaml
