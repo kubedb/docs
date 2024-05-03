@@ -14,6 +14,10 @@ aliases:
 ---
 > New to KubeDB? Please start [here](/docs/README.md).
 
+# Overview 
+
+SingleStore, a distributed SQL database for real-time analytics, transactional workloads, and operational applications. With its in-memory processing and scalable architecture, SingleStore enables organizations to achieve high-performance and low-latency data processing across diverse data sets, making it ideal for modern data-intensive applications and analytical workflows. 
+
 ## Supported SingleStore Features
 
 | Features                                                | Availability |
@@ -50,4 +54,5 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 
 ## User Guide
 
-- [Quickstart SingleStore](/docs/guides/singlestore/quickstart/index.md) with KubeDB Operator.
+- [Quickstart SingleStore](/docs/guides/singlestore/quickstart/quickstart.md) with KubeDB Operator.
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

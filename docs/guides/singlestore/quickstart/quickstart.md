@@ -2,9 +2,9 @@
 title: SingleStore Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: guides-singlestore-quickstart
-    name: Quickstart
-    parent: guides-singletore
+    identifier: sdb-quickstart-quickstart
+    name: Overview
+    parent: sdb-quickstart-singlestore
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -132,7 +132,7 @@ Here,
 
 - `spec.version` is the name of the SinglestoreVersion CRD where the docker images are specified. In this tutorial, a SingleStore `8.5.37` database is going to be created.
 - `spec.topology` specifies that it will be used as cluster mode. If this field is nil it will be work as standalone mode.
-- `spec.topology.aggregator.replicas` or `spec.topology.leaf.replicas` specifies that the number replicas that will be used for aggregator or leaf. 
+- `spec.topology.aggregator.replicas` or `spec.topology.leaf.replicas` specifies that the number replicas that will be used for aggregator or leaf.
 - `spec.storageType` specifies the type of storage that will be used for SingleStore database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create SingleStore database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.topology.aggregator.storage` or `spec.topology.leaf.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Singlestore` crd or which resources KubeDB should keep or delete when you delete `Singlestore` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
