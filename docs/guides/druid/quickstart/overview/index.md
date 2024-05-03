@@ -105,7 +105,7 @@ zookeeper.kubedb.com/zk-demo created
 
 The last external dependency of Druid is deep storage where the segments are stored. It is a storage mechanism that Apache Druid does not provide. Amazon S3, Google Cloud Storage, or Azure Blob Storage, S3-compatible storage (like Minio), or HDFS are generally convenient options for deep storage.
 
-In this tutorial, we will run a minio-server as deep storage using minio operator and create a bucket named `druid` in it which the deployed druid database will use.
+In this tutorial, we will run a minio-server as deep storage using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
 $ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
@@ -142,10 +142,14 @@ stringData:
   druid.indexer.logs.s3Prefix: "druid/indexing-logs"
 ```
 
+Let’s create the `deep-storage-config` Secret shown above:
+
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/deep-storage-config.yaml
 secret/deep-storage-config created
 ```
+
+You can also use options like Amazon S3, Google Cloud Storage, or Azure Blob Storage and create a connection information `Secret` like this, and you are good to go.
 
 ## Create a Druid Cluster
 

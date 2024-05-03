@@ -16,4 +16,3 @@ stringData:
   druid.indexer.logs.type: "s3"
   druid.indexer.logs.s3Bucket: "druid"
   druid.indexer.logs.s3Prefix: "druid/indexing-logs"
-
