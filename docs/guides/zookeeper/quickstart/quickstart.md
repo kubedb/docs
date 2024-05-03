@@ -30,8 +30,8 @@ This tutorial will show you how to use KubeDB to run a ZooKeeper server.
 
   ```bash
   $ kubectl get storageclasses
-  NAME                 PROVISIONER             RECLAIMPOLICY       VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION              AGE
-  standard (default)   rancher.io/local-path      Delete          WaitForFirstConsumer           false                      4h
+  NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+  standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  20h
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -47,9 +47,9 @@ This tutorial will show you how to use KubeDB to run a ZooKeeper server.
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## Find Available RedisVersion
+## Find Available ZooKeeperVersions
 
-When you have installed KubeDB, it has created `RedisVersion` crd for all supported ZooKeeper versions. Check:
+When you have installed KubeDB, it has created `ZooKeeperVersions` crd for all supported ZooKeeper versions. Check:
 
 ```bash
 $ kubectl get zookeeperversions
@@ -89,7 +89,7 @@ zookeeper.kubedb.com/zk-quickstart created
 
 Here,
 
-- `spec.version` is name of the ZooKeeperVersion crd where the docker images are specified. In this tutorial, a ZooKeeper 6.2.14 database is created.
+- `spec.version` is name of the ZooKeeperVersion crd where the docker images are specified. In this tutorial, a ZooKeeper 3.9.1 database is created.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `ZooKeeper` crd or which resources KubeDB should keep or delete when you delete `ZooKeeper` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
