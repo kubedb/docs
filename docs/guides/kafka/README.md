@@ -22,13 +22,13 @@ aliases:
 |----------------------------------------------------------------|
 | Clustering - Combined (shared controller and broker nodes)     | 
 | Clustering - Topology (dedicated controllers and broker nodes) |
- | Kafka Connect Cluster          |
-| Connectors |
+| Kafka Connect Cluster                                          |
+| Connectors                                                     |
 | Custom Docker Image                                            | 
 | Authentication & Authorization                                 | 
 | Persistent Volume                                              | 
 | Custom Volume                                                  | 
-| TLS: using ( [Cert Manager](https://cert-manager.io/docs/) )   | 
+| TLS: using ( [Cert Manager](https://cert-manager.io/docs/) )   |
 | Reconfigurable Health Checker                                  | 
 | Externally manageable Auth Secret                              | 
 | Monitoring with Prometheus & Grafana                           |
@@ -39,10 +39,11 @@ KubeDB supports The following Kafka versions. Supported version are applicable f
 - `3.3.2`
 - `3.4.1`
 - `3.5.1`
+- `3.5.2`
 - `3.6.0`
 - `3.6.1`
 
-> The listed KafkaVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [KafkaVersion](/docs/guides/kafka/concepts/catalog.md) object with your custom Kafka image.
+> The listed KafkaVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md) object with your custom Kafka image.
 
 ## Lifecycle of Kafka Object
 

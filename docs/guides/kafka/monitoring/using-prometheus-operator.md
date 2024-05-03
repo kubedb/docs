@@ -346,6 +346,6 @@ kubectl delete ns demo
 - Learn how to use KubeDB to run a Apache Kafka cluster [here](/docs/guides/kafka/README.md).
 - Deploy [dedicated topology cluster](/docs/guides/kafka/clustering/topology-cluster/index.md) for Apache Kafka
 - Deploy [combined cluster](/docs/guides/kafka/clustering/combined-cluster/index.md) for Apache Kafka
-- Detail concepts of [KafkaVersion object](/docs/guides/kafka/concepts/catalog.md).
+- Detail concepts of [KafkaVersion object](/docs/guides/kafka/concepts/kafkaversion.md).
 - Learn to use KubeDB managed Kafka objects using [CLIs](/docs/guides/kafka/cli/cli.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

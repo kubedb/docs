@@ -55,16 +55,21 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 
 ## Find Available KafkaVersion
 
-When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/catalog.md). The installation process comes with a set of tested KafkaVersion objects. Let's check available KafkaVersions by,
+When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md). The installation process comes with a set of tested KafkaVersion objects. Let's check available KafkaVersions by,
 
 ```bash
-NAME    VERSION   DB_IMAGE                   DEPRECATED   AGE
-3.3.0   3.3.0     kubedb/kafka-kraft:3.3.0                6d
+NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
+3.3.2   3.3.2     ghcr.io/appscode-images/kafka-kraft:3.3.2                26h
+3.4.1   3.4.1     ghcr.io/appscode-images/kafka-kraft:3.4.1                26h
+3.5.1   3.5.1     ghcr.io/appscode-images/kafka-kraft:3.5.1                26h
+3.5.2   3.5.2     ghcr.io/appscode-images/kafka-kraft:3.5.2                26h
+3.6.0   3.6.0     ghcr.io/appscode-images/kafka-kraft:3.6.0                26h
+3.6.1   3.6.1     ghcr.io/appscode-images/kafka-kraft:3.6.1                26h
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this KafkaVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated KafkaVersion. You can also use the short from `kfversion` to check available KafkaVersions.
 
-In this tutorial, we will use `3.3.0` KafkaVersion CR to create a Kafka cluster.
+In this tutorial, we will use `3.6.1` KafkaVersion CR to create a Kafka cluster.
 
 ## Create a Kafka Cluster
 
@@ -94,7 +99,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the KafkaVersion CR. Here, a Kafka of version `3.3.0` will be created.
+- `spec.version` - is the name of the KafkaVersion CR. Here, a Kafka of version `3.6.1` will be created.
 - `spec.replicas` - specifies the number of Kafka brokers.
 - `spec.storageType` - specifies the type of storage that will be used for Kafka. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Kafka using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this Kafka instance. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run Kafka pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
@@ -114,11 +119,11 @@ The Kafka's `STATUS` will go from `Provisioning` to `Ready` state within few min
 ```bash
 $ kubectl get kafka -n demo -w
 NAME               TYPE                  VERSION   STATUS   AGE
-kafka-quickstart   kubedb.com/v1alpha2   3.3.0     Provisioning   2s
-kafka-quickstart   kubedb.com/v1alpha2   3.3.0     Provisioning   4s
+kafka-quickstart   kubedb.com/v1alpha2   3.6.1     Provisioning   2s
+kafka-quickstart   kubedb.com/v1alpha2   3.6.1     Provisioning   4s
 .
 .
-kafka-quickstart   kubedb.com/v1alpha2   3.3.0     Ready          112s
+kafka-quickstart   kubedb.com/v1alpha2   3.6.1     Ready          112s
 
 ```
 
@@ -220,7 +225,7 @@ Spec:
     Storage Class Name:  standard
   Storage Type:          Durable
   Termination Policy:    DoNotTerminate
-  Version:               3.3.0
+  Version:               3.6.1
 Status:
   Conditions:
     Last Transition Time:  2023-01-04T10:13:14Z
@@ -276,7 +281,7 @@ NAME                                READY   AGE
 statefulset.apps/kafka-quickstart   3/3     8m50s
 
 NAME                                                  TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/kafka-quickstart   kubedb.com/kafka   3.3.0     8m50s
+appbinding.appcatalog.appscode.com/kafka-quickstart   kubedb.com/kafka   3.6.1     8m50s
 
 NAME                                 TYPE                       DATA   AGE
 secret/kafka-quickstart-admin-cred   kubernetes.io/basic-auth   2      8m52s

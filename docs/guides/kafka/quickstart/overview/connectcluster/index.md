@@ -3,7 +3,7 @@ title: ConnectCluster Quickstart
 menu:
   docs_{{ .version }}:
     identifier: kf-kafka-overview-connectcluster
-    name: connectcluster
+    name: ConnectCluster
     parent: kf-overview-kafka
     weight: 10
 menu_name: docs_{{ .version }}
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Kafka QuickStart
+# ConnectCluster QuickStart
 
-This tutorial will show you how to use KubeDB to run an [Apache Kafka](https://kafka.apache.org/).
+This tutorial will show you how to use KubeDB to run an [Apache Kafka Connect Cluster](https://kafka.apache.org/documentation/#connect).
 
 <p align="center">
   <img alt="lifecycle"  src="/docs/images/kafka/connectcluster/connectcluster-crd-lifecycle.png">
@@ -37,13 +37,13 @@ NAME                 STATUS   AGE
 demo                 Active   9s
 ```
 
-> Note: YAML files used in this tutorial are stored in [guides/kafka/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/kafka/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [guides/kafka/quickstart/overview/connectcluster/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/kafka/quickstart/overview/connectcluster/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 > We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/quickstart/overview/index.md#tips-for-testing).
 
 ## Find Available ConnectCluster Versions
 
-When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/catalog.md). ConnectCluster Version is using the KafkaVersion CR to define the specification of ConnectCluster. The installation process comes with a set of tested KafkaVersion objects. Let's check available KafkaVersions by,
+When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md). ConnectCluster Version is using the KafkaVersion CR to define the specification of ConnectCluster. The installation process comes with a set of tested KafkaVersion objects. Let's check available KafkaVersions by,
 
 ```bash
 NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
@@ -62,7 +62,7 @@ In this tutorial, we will use `3.6.1` KafkaVersion CR to create a Kafka Connect 
 
 ## Find Available KafkaConnector Versions
 
-When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/catalog.md). KafkaConnector Version use to load connector-plugins to run ConnectCluster worker node(ex. mongodb-source/sink). The installation process comes with a set of tested KafkaConnectorVersion objects. Let's check available KafkaConnectorVersions by,
+When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md). KafkaConnector Version use to load connector-plugins to run ConnectCluster worker node(ex. mongodb-source/sink). The installation process comes with a set of tested KafkaConnectorVersion objects. Let's check available KafkaConnectorVersions by,
 
 ```bash
 NAME                   VERSION   CONNECTOR_IMAGE                                                DEPRECATED   AGE
@@ -114,7 +114,7 @@ Here,
 Let's create the Kafka CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/overview/connectcluster/yamls/connectcluster.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/kafka/quickstart/overview/connectcluster/yamls/connectcluster.yaml
 connectcluster.kafka.kubedb.com/connectcluster-quickstart created
 ```
 
@@ -359,9 +359,6 @@ If you are just testing some basic functionalities, you might want to avoid addi
 ## Next Steps
 
 - [Quickstart ConnectCluster](/docs/guides/kafka/quickstart/overview/connectcluster/index.md) with KubeDB Operator.
-- Kafka Clustering supported by KubeDB
-  - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md)
-  - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md)
 - Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka.md).
+- Detail concepts of [ConnectCluster object](/docs/guides/kafka/concepts/connectcluster.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
