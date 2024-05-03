@@ -351,7 +351,7 @@ persistentvolumeclaim/solr-combined-data-solr-combined-2   Bound    pvc-dcb8c9e2
     - `{Solr-Name}` - the client service which is used to connect to the database. It points to the `overseer` nodes.
     - `{Solr-Name}-pods` - the node discovery service which is used by the Solr nodes to communicate each other. It is a headless service.
 - `AppBinding` - an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) which hold to connect information for the database. It is also named after the solr instance.
-- `Secrets` - 3 types of secrets are generated for each Elasticsearch database.
+- `Secrets` - 3 types of secrets are generated for each Solr database.
     - `{Solr-Name}-admin-cred` - the auth secrets which hold the `username` and `password` for the solr users. The auth secret `solr-combined-admin-cred` holds the `username` and `password` for `admin` user which lets administrative access.
     - `{Solr-Name}-config` - the default configuration secret created by the operator.
     - `{Solr-Name}-auth-config` - the configuration secret of admin user information created by the operator.
@@ -483,7 +483,7 @@ Say, the Solr CR was deleted with `spec.terminationPolicy` to `Halt` and you wan
 You can do it by simpily re-deploying the original Solr object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/solr/solr.yaml
 solr.kubedb.com/solr-combined created
 ```
 
@@ -507,4 +507,4 @@ namespace "demo" deleted
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if the database pod fails. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purposes, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resouce that was created with the Elasticsearch CR. For more details, please visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md#specterminationpolicy).
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resouce that was created with the Solr CR.
