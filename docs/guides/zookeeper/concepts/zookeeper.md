@@ -32,6 +32,7 @@ spec:
   version: 3.9.1
   replicas: 3
   disableAuth: false
+  adminServerPort: 8080
   authSecret:
     name: zk-auth
     externallyManaged: false
@@ -198,9 +199,10 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 ### spec.monitor
 
-ZooKeeper managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
+ZooKeeper managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. 
 
 - [Monitor ZooKeeper with builtin Prometheus](/docs/guides/zookeeper/monitoring/using-builtin-prometheus.md)
+
 - [Monitor ZooKeeper with Prometheus operator](/docs/guides/zookeeper/monitoring/using-prometheus-operator.md)
 
 ### spec.configSecret
@@ -248,8 +250,7 @@ Uses of some field of `spec.podTemplate` is described below,
 
 #### spec.podTemplate.spec.imagePullSecret
 
-`KubeDB` provides the flexibility of deploying ZooKeeper server from a private Docker registry. To learn how to deploy ZooKeeper from a private registry, please visit [here](/docs/guides/zookeeper/private-registry/using-private-registry.md).
-
+`KubeDB` provides the flexibility of deploying ZooKeeper server from a private Docker registry.
 #### spec.podTemplate.spec.nodeSelector
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
@@ -262,7 +263,7 @@ Uses of some field of `spec.podTemplate` is described below,
 
   If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
-  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/zookeeper/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
+  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. 
 
 #### spec.podTemplate.spec.resources
 
