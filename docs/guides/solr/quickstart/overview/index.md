@@ -89,6 +89,7 @@ metadata:
 spec:
   version: 3.8.3
   replicas: 3
+  adminServerPort: 2181
   storage:
     resources:
       requests:

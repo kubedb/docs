@@ -5,6 +5,7 @@ metadata:
   namespace: demo
 spec:
   version: 3.8.3
+  adminServerPort: 2181
   replicas: 3
   storage:
     resources:
