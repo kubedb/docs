@@ -387,9 +387,7 @@ $ kubectl delete zk zk-quickstart -n demo
 Error from server (BadRequest): admission webhook "zookeeper.validators.kubedb.com" denied the request: zookeeper "zookeeper-quickstart" can't be deleted. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubectl edit zk zookeeper-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` . Then you will be able to delete/halt the database. 
-
-Learn details of all `TerminationPolicy` [here](/docs/guides/zookeeper/concepts/zookeeper.md#specterminationpolicy)
+Now, run `kubectl edit zk zookeeper-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` . Then you will be able to delete/halt the database.
 
 
 ## Cleaning up
@@ -412,7 +410,7 @@ namespace "demo" deleted
 
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
-**Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one.So, we preserve all your `PVCs`, auth `Secrets`. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will delete everything created by KubeDB for a particular ZooKeeper crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/zookeeper/concepts/zookeeper.md#specterminationpolicy).
+**Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one.So, we preserve all your `PVCs`, auth `Secrets`. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will delete everything created by KubeDB for a particular ZooKeeper crd when you delete the crd. 
 
 ## Next Steps
 
