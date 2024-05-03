@@ -5,7 +5,7 @@ menu:
     identifier: kf-kafkaconnectorversion-concepts
     name: KafkaConnectorVersion
     parent: kf-concepts-kafka
-    weight: 25
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

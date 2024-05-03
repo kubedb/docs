@@ -17,7 +17,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to run an [Apache Kafka](https://kafka.apache.org/).
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/images/kafka/Kafka-CRD-Lifecycle.png">
+  <img alt="lifecycle"  src="/docs/images/kafka/kafka-crd-lifecycle.png">
 </p>
 
 ## Before You Begin
@@ -39,7 +39,7 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [guides/kafka/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/kafka/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/quickstart/overview/index.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/quickstart/overview/kafka/index.md#tips-for-testing).
 
 ## Find Available StorageClass
 
@@ -58,6 +58,8 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md). The installation process comes with a set of tested KafkaVersion objects. Let's check available KafkaVersions by,
 
 ```bash
+$ kubectl get kfversion
+
 NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
 3.3.2   3.3.2     ghcr.io/appscode-images/kafka-kraft:3.3.2                26h
 3.4.1   3.4.1     ghcr.io/appscode-images/kafka-kraft:3.4.1                26h
@@ -407,7 +409,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 ## Next Steps
 
-- [Quickstart Kafka](/docs/guides/kafka/quickstart/overview/index.md) with KubeDB Operator.
+- [Quickstart Kafka](/docs/guides/kafka/quickstart/overview/kafka/index.md) with KubeDB Operator.
 - Kafka Clustering supported by KubeDB
   - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md)
   - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md)

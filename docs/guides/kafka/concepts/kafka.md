@@ -31,6 +31,8 @@ metadata:
 spec:
   authSecret:
     name: kafka-admin-cred
+  configSecret:
+    name: kafka-custom-config
   enableSSL: true
   healthChecker:
     failureThreshold: 3
@@ -169,6 +171,10 @@ type: Opaque
 ```
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
+
+### spec.configSecret
+
+`spec.configSecret` is an optional field that points to a Secret used to hold custom Kafka configuration. If not set, KubeDB operator will use default configuration for Kafka.
 
 ### spec.topology
 

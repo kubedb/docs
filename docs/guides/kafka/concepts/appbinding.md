@@ -5,7 +5,7 @@ menu:
     identifier: kf-appbinding-concepts
     name: AppBinding
     parent: kf-concepts-kafka
-    weight: 30
+    weight: 35
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
