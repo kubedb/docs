@@ -356,7 +356,7 @@ root
 $ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.\password}' | base64 -d
 H(Y.s)pg&cX1Ds3J
 ```
-we will exec into the pod `mysql-quickstart-0` and connect to the database uisng username and password
+we will exec into the pod `mysql-quickstart-0` and connect to the database using username and password
 
 ```bash
 $ kubectl exec -it -n demo mysql-quickstart-0 -- bash

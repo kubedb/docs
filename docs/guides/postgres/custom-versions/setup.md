@@ -61,29 +61,42 @@ From there, we would define a PostgresVersion that contains this new image. Let'
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PostgresVersion
 metadata:
-  name: timescaledb-2.1.0-pg13
+  name: timescaledb-2.14.2-pg14
 spec:
+  archiver:
+    addon:
+      name: postgres-addon
+      tasks:
+        manifestBackup:
+          name: manifest-backup
+        manifestRestore:
+          name: manifest-restore
+        volumeSnapshot:
+          name: volume-snapshot
+    walg:
+      image: ghcr.io/kubedb/postgres-archiver:(v0.6.0)_14.10-alpine
   coordinator:
-    image: kubedb/pg-coordinator:v0.8.0
+    image: ghcr.io/kubedb/pg-coordinator:v0.29.0
   db:
-    image: timescale/timescaledb:2.1.0-pg13-oss
+    baseOS: alpine
+    image: timescale/timescaledb:2.14.2-pg14-oss
   distribution: TimescaleDB
   exporter:
-    image: prometheuscommunity/postgres-exporter:v0.9.0
+    image: prometheuscommunity/postgres-exporter:v0.15.0
   initContainer:
-    image: kubedb/postgres-init:0.4.0
+    image: ghcr.io/kubedb/postgres-init:0.12.0
   podSecurityPolicies:
     databasePolicyName: postgres-db
   securityContext:
-    runAsAnyNonRoot: true
+    runAsAnyNonRoot: false
     runAsUser: 70
   stash:
     addon:
       backupTask:
-        name: postgres-backup-13.1
+        name: postgres-backup-14.0
       restoreTask:
-        name: postgres-restore-13.1
-  version: "13.13"
+        name: postgres-restore-14.0
+  version: "14.11"
 ```
 
 Once we add this PostgresVersion we can use it in a new Postgres like:
@@ -95,7 +108,7 @@ metadata:
   name: timescale-postgres
   namespace: demo
 spec:
-  version: "timescaledb-2.1.0-pg13" # points to the name of our custom PostgresVersion
+  version: "timescaledb-2.14.2-pg14" # points to the name of our custom PostgresVersion
   storage:
     storageClassName: "standard"
     accessModes:

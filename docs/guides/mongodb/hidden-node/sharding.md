@@ -48,7 +48,7 @@ metadata:
   name: mongo-sh-hid
   namespace: demo
 spec:
-  version: "percona-4.4.10"
+  version: "percona-7.0.4"
   shardTopology:
     configServer:
       replicas: 3
@@ -122,7 +122,7 @@ All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as statef
 ```bash
 $ kubectl get mg,sts,svc,pvc,pv -n demo
 NAME                              VERSION          STATUS   AGE
-mongodb.kubedb.com/mongo-sh-hid   percona-4.4.10   Ready    4m46s
+mongodb.kubedb.com/mongo-sh-hid   percona-7.0.4   Ready    4m46s
 
 NAME                                          READY   AGE
 statefulset.apps/mongo-sh-hid-configsvr       3/3     4m46s
@@ -163,7 +163,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-hid","namespace":"demo"},"spec":{"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"shardTopology":{"configServer":{"ephemeralStorage":{},"replicas":3},"mongos":{"replicas":2},"shard":{"ephemeralStorage":{},"replicas":3,"shards":2}},"storageEngine":"inMemory","storageType":"Ephemeral","terminationPolicy":"WipeOut","version":"percona-4.4.10"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-hid","namespace":"demo"},"spec":{"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"shardTopology":{"configServer":{"ephemeralStorage":{},"replicas":3},"mongos":{"replicas":2},"shard":{"ephemeralStorage":{},"replicas":3,"shards":2}},"storageEngine":"inMemory","storageType":"Ephemeral","terminationPolicy":"WipeOut","version":"percona-7.0.4"}}
   creationTimestamp: "2022-10-31T05:59:43Z"
   finalizers:
     - kubedb.com
@@ -466,7 +466,7 @@ spec:
   storageEngine: inMemory
   storageType: Ephemeral
   terminationPolicy: WipeOut
-  version: percona-4.4.10
+  version: percona-7.0.4
 status:
   conditions:
     - lastTransitionTime: "2022-10-31T05:59:43Z"
@@ -541,10 +541,10 @@ mongo-sh-hid-mongos-1   1/1     Running   0          6m20s
 $ kubectl exec -it mongo-sh-hid-mongos-0 -n demo bash
 
 mongodb@mongo-sh-mongos-0:/$ mongo admin -u root -p '6&UiN5;qq)Tnai=7'
-Percona Server for MongoDB shell version v4.4.10-11
+Percona Server for MongoDB shell version v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("e6979884-81b0-41c9-9745-50654f6fb39b") }
-Percona Server for MongoDB server version: v4.4.10-11
+Percona Server for MongoDB server version: v7.0.4-11
 Welcome to the Percona Server for MongoDB shell.
 For interactive help, type "help".
 For more comprehensive documentation, see
@@ -600,7 +600,7 @@ mongos> sh.status()
         {  "_id" : "shard0",  "host" : "shard0/mongo-sh-hid-shard0-0.mongo-sh-hid-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard0-1.mongo-sh-hid-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard0-2.mongo-sh-hid-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1,  "tags" : [ "shard0" ] }
         {  "_id" : "shard1",  "host" : "shard1/mongo-sh-hid-shard1-0.mongo-sh-hid-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard1-1.mongo-sh-hid-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard1-2.mongo-sh-hid-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1,  "tags" : [ "shard1" ] }
   active mongoses:
-        "4.4.10-11" : 2
+        "7.0.4-11" : 2
   autosplit:
         Currently enabled: yes
   balancer:
@@ -648,10 +648,10 @@ kubectl exec -it -n demo pod/mongo-sh-hid-shard1-0 -- bash
 
 root@mongo-sh-hid-shard0-1:/ mongo admin -u root -p '6&UiN5;qq)Tnai=7'
 Defaulted container "mongodb" out of: mongodb, copy-config (init)
-Percona Server for MongoDB shell version v4.4.10-11
+Percona Server for MongoDB shell version v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("86dadf16-fff2-4483-b3ee-1ca7fc94229f") }
-Percona Server for MongoDB server version: v4.4.10-11
+Percona Server for MongoDB server version: v7.0.4-11
 Welcome to the Percona Server for MongoDB shell.
 For interactive help, type "help".
 For more comprehensive documentation, see
@@ -816,7 +816,7 @@ mongos> sh.status()
         {  "_id" : "shard0",  "host" : "shard0/mongo-sh-hid-shard0-0.mongo-sh-hid-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard0-1.mongo-sh-hid-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard0-2.mongo-sh-hid-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1,  "tags" : [ "shard0" ] }
         {  "_id" : "shard1",  "host" : "shard1/mongo-sh-hid-shard1-0.mongo-sh-hid-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard1-1.mongo-sh-hid-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard1-2.mongo-sh-hid-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1,  "tags" : [ "shard1" ] }
   active mongoses:
-        "4.4.10-11" : 2
+        "7.0.4-11" : 2
   autosplit:
         Currently enabled: yes
   balancer:
@@ -893,7 +893,7 @@ mongos> sh.status()
         {  "_id" : "shard0",  "host" : "shard0/mongo-sh-hid-shard0-0.mongo-sh-hid-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard0-1.mongo-sh-hid-shard0-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard0-2.mongo-sh-hid-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1,  "tags" : [ "shard0" ] }
         {  "_id" : "shard1",  "host" : "shard1/mongo-sh-hid-shard1-0.mongo-sh-hid-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard1-1.mongo-sh-hid-shard1-pods.demo.svc.cluster.local:27017,mongo-sh-hid-shard1-2.mongo-sh-hid-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1,  "tags" : [ "shard1" ] }
   active mongoses:
-        "4.4.10-11" : 2
+        "7.0.4-11" : 2
   autosplit:
         Currently enabled: yes
   balancer:
