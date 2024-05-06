@@ -26,8 +26,7 @@ This tutorial will show you how to use KubeDB to run a SingleStore database.
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
-
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md) and make sure install with helm command including `--set global.featureGates.Singlestore=true` to ensure SingleStore crd.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
@@ -45,7 +44,7 @@ This tutorial will show you how to use KubeDB to run a SingleStore database.
 
 ## Find Available SingleStoreVersion
 
-When you have installed KubeDB, it has created `SinglestoreVersion` crd for all supported SingleStore versions. Check it by using the following command,
+When you have installed KubeDB, it has created `SinglestoreVersion` crd for all supported SingleStore versions. Check it by using the `kubectl get singlestoreversions` command. You can also use `sdbv` shorthand instead of `singlestoreversions`.
 
 ```bash
 $ kubectl get singlestoreversions
@@ -56,7 +55,7 @@ NAME     VERSION   DB_IMAGE                                                     
 ```
 ## Create SingleStore License Secret
 
-We need SingleStore License to create SingleStore Database. So, we will pass the license by a secret.
+We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
 $ kubectl create secret generic -n demo license-secret \
@@ -122,6 +121,13 @@ spec:
     name: license-secret
   storageType: Durable
   terminationPolicy: WipeOut
+  serviceTemplates:
+  - alias: primary
+    spec:
+      type: LoadBalancer
+      ports:
+        - name: http
+          port: 9999
 ```
 
 ```bash
@@ -137,12 +143,12 @@ Here,
 - `spec.topology.aggregator.storage` or `spec.topology.leaf.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Singlestore` crd or which resources KubeDB should keep or delete when you delete `Singlestore` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
 
-> Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
+> Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in `storage.resources.requests` field. Don't specify limits here. PVC does not get resized automatically.
 
 KubeDB operator watches for `Singlestore` objects using Kubernetes api. When a `Singlestore` object is created, KubeDB operator will create new StatefulSet and Service with the matching SingleStore object name. KubeDB operator will also create a governing service for StatefulSets, if one is not already present.
 
 ```bash
-$ kubectl get petsetset -n demo
+$ kubectl get petset -n demo
 NAME                               READY   AGE
 sdb-quickstart-leaf                2/2     33s
 sdb-quickstart-aggregator          1/1     37s
@@ -157,26 +163,31 @@ pvc-4f45c51b-47d4-4254-8275-782bf3588667   10Gi       RWO            Delete     
 pvc-75057e3d-e1d7-4770-905b-6049f2edbcde   1Gi        RWO            Delete           Bound    demo/data-sdb-quickstart-master-aggregator-0   standard       <unset>                          91s
 pvc-769e68f4-80a9-4e3e-b2bc-e974534b9dee   10Gi       RWO            Delete           Bound    demo/data-sdb-quickstart-leaf-1                standard       <unset>                          80s
 $ kubectl get service -n demo
-NAME                  TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
-sdb-quickstart        ClusterIP   10.96.6.30   <none>        3306/TCP   112s
-sdb-quickstart-pods   ClusterIP   None         <none>        3306/TCP   112s
+NAME                  TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                         AGE
+sdb-quickstart        LoadBalancer   10.96.27.144   192.10.25.36  3306:32076/TCP,8081:30910/TCP   2m1s
+sdb-quickstart-pods   ClusterIP      None           <none>        3306/TCP                        2m1s
+
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Singlestore object:
 
 ```yaml
 ➤ kubectl get sdb -n demo sdb-quickstart -oyaml
-apiVersion: kubedb.com/v1alpha2
+
+ apiVersion: kubedb.com/v1alpha2
 kind: Singlestore
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Singlestore","metadata":{"annotations":{},"name":"sdb-quickstart","namespace":"demo"},"spec":{"licenseSecret":{"name":"license-secret"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"aggregator":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"leaf":{"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}},"storageClassName":"standard"}}},"version":"8.1.32"}}
-  creationTimestamp: "2024-01-24T05:11:46Z"
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Singlestore","metadata":{"annotations":{},"name":"sdb-quickstart","namespace":"demo"},"spec":{"licenseSecret":{"name":"license-secret"},"serviceTemplates":[{"alias":"primary","spec":{"ports":[{"name":"http","port":9999}],"type":"LoadBalancer"}}],"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"aggregator":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.5","memory":"2Gi"},"requests":{"cpu":"0.5","memory":"2Gi"}}}]}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"leaf":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.5","memory":"2Gi"},"requests":{"cpu":"0.5","memory":"2Gi"}}}]}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}},"storageClassName":"standard"}}},"version":"8.5.7"}}
+  creationTimestamp: "2024-05-06T06:52:58Z"
   finalizers:
   - kubedb.com
+  generation: 2
   name: sdb-quickstart
   namespace: demo
+  resourceVersion: "448498"
+  uid: 29d6a814-e801-45b5-8217-b59fc77d84e5
 spec:
   authSecret:
     name: sdb-quickstart-root-cred
@@ -186,17 +197,35 @@ spec:
     timeoutSeconds: 10
   licenseSecret:
     name: license-secret
+  podPlacementPolicy:
+    name: default
+  serviceTemplates:
+  - alias: primary
+    metadata: {}
+    spec:
+      ports:
+      - name: http
+        port: 9999
+      type: LoadBalancer
   storageType: Durable
   terminationPolicy: WipeOut
   topology:
     aggregator:
+      podPlacementPolicy:
+        name: default
       podTemplate:
         controller: {}
         metadata: {}
         spec:
           containers:
           - name: singlestore
-            resources: {}
+            resources:
+              limits:
+                cpu: 500m
+                memory: 2Gi
+              requests:
+                cpu: 500m
+                memory: 2Gi
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -208,7 +237,12 @@ spec:
               seccompProfile:
                 type: RuntimeDefault
           - name: singlestore-coordinator
-            resources: {}
+            resources:
+              limits:
+                memory: 256Mi
+              requests:
+                cpu: 200m
+                memory: 256Mi
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -221,7 +255,12 @@ spec:
                 type: RuntimeDefault
           initContainers:
           - name: singlestore-init
-            resources: {}
+            resources:
+              limits:
+                memory: 512Mi
+              requests:
+                cpu: 200m
+                memory: 512Mi
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -243,13 +282,21 @@ spec:
             storage: 1Gi
         storageClassName: standard
     leaf:
+      podPlacementPolicy:
+        name: default
       podTemplate:
         controller: {}
         metadata: {}
         spec:
           containers:
           - name: singlestore
-            resources: {}
+            resources:
+              limits:
+                cpu: 500m
+                memory: 2Gi
+              requests:
+                cpu: 500m
+                memory: 2Gi
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -261,7 +308,12 @@ spec:
               seccompProfile:
                 type: RuntimeDefault
           - name: singlestore-coordinator
-            resources: {}
+            resources:
+              limits:
+                memory: 256Mi
+              requests:
+                cpu: 200m
+                memory: 256Mi
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -274,7 +326,12 @@ spec:
                 type: RuntimeDefault
           initContainers:
           - name: singlestore-init
-            resources: {}
+            resources:
+              limits:
+                memory: 512Mi
+              requests:
+                cpu: 200m
+                memory: 512Mi
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -298,37 +355,38 @@ spec:
   version: 8.5.7
 status:
   conditions:
-  - lastTransitionTime: "2024-01-24T05:11:46Z"
+  - lastTransitionTime: "2024-05-06T06:53:06Z"
     message: 'The KubeDB operator has started the provisioning of Singlestore: demo/sdb-quickstart'
     observedGeneration: 2
     reason: DatabaseProvisioningStartedSuccessfully
     status: "True"
     type: ProvisioningStarted
-  - lastTransitionTime: "2024-01-24T05:19:34Z"
+  - lastTransitionTime: "2024-05-06T06:56:05Z"
     message: All Aggregator replicas are ready for Singlestore demo/sdb-quickstart
-    observedGeneration: 3
+    observedGeneration: 2
     reason: AllReplicasReady
     status: "True"
     type: ReplicaReady
-  - lastTransitionTime: "2024-01-24T05:13:02Z"
+  - lastTransitionTime: "2024-05-06T06:54:17Z"
     message: database demo/sdb-quickstart is accepting connection
-    observedGeneration: 3
+    observedGeneration: 2
     reason: AcceptingConnection
     status: "True"
     type: AcceptingConnection
-  - lastTransitionTime: "2024-01-24T05:13:02Z"
+  - lastTransitionTime: "2024-05-06T06:54:17Z"
     message: database demo/sdb-quickstart is ready
-    observedGeneration: 3
+    observedGeneration: 2
     reason: AllReplicasReady
     status: "True"
     type: Ready
-  - lastTransitionTime: "2024-01-24T05:13:08Z"
+  - lastTransitionTime: "2024-05-06T06:54:18Z"
     message: 'The Singlestore: demo/sdb-quickstart is successfully provisioned.'
-    observedGeneration: 3
+    observedGeneration: 2
     reason: DatabaseSuccessfullyProvisioned
     status: "True"
     type: Provisioned
   phase: Ready
+ 
 
 ```
 
@@ -383,7 +441,7 @@ $ kubectl exec -it -n demo sdb-quickstart-aggregator-0 -- bash
 ```
 You can also connect with database management tools like [singlestore-studio](https://docs.singlestore.com/db/v8.5/reference/singlestore-tools-reference/singlestore-studio/)
 
-Just you need to port-forward on 8081 port
+You can simply access to SingleStore studio by forwarding the Primary service port to any of your localhost port. Or, Accessing through ExternalP's 8081 port is also an option.
 
 ```bash
 $ kubectl port-forward -n demo service/sdb-quickstart 8081
@@ -467,7 +525,7 @@ singlestore.kubedb.com "sdb-quickstart" deleted
 Now, run the following command to get all singlestore resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 NAME                              TYPE                       DATA   AGE
 secret/sdb-quickstart-root-cred   kubernetes.io/basic-auth   2      17m
 
@@ -491,7 +549,7 @@ singlestore.kubedb.com "singlestore-quickstart" deleted
 Now, run the following command to get all singlestore resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 No resources found in demo namespace.
 ```
 
