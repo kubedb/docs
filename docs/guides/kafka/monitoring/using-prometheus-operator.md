@@ -20,7 +20,7 @@ section_menu_id: guides
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one locally by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/kafka/monitoring/kafka/overview.mdiew.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/kafka/monitoring/overview.md).
 
 - We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, you can deploy one using this helm chart [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack).
   

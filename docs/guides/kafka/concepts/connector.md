@@ -58,7 +58,7 @@ spec:
 
 ### spec.terminationPolicy
 
-`spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Connector` CR or which resources KubeDB should keep or delete when you delete `ConnectCluster` CR. KubeDB provides following four termination policies:
+`spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Connector` CR or which resources KubeDB should keep or delete when you delete `Connector` CR. KubeDB provides following four termination policies:
 
 - Delete
 - DoNotTerminate
@@ -66,8 +66,11 @@ spec:
 
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the resource as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
+Termination policy `WipeOut` will delete the connector from the ConnectCluster when the Connector CR is deleted and `Delete` keep the connector after deleting the Connector CR.
+
 ## Next Steps
 
+- Learn how to use KubeDB to run a Apache Kafka cluster [here](/docs/guides/kafka/quickstart/overview/kafka/index.md).
 - Learn how to use KubeDB to run a Apache Kafka Connect cluster [here](/docs/guides/kafka/quickstart/overview/connectcluster/index.md).
 - Detail concepts of [KafkaConnectorVersion object](/docs/guides/kafka/concepts/kafkaconnectorversion.md).
 - Learn to use KubeDB managed Kafka objects using [CLIs](/docs/guides/kafka/cli/cli.md).

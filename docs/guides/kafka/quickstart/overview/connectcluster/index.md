@@ -125,7 +125,7 @@ Here,
 - `spec.replicas` - specifies the number of ConnectCluster workers.
 - `spec.connectorPlugins` - is the name of the KafkaConnectorVersion CR. Here, mongodb, mysql, postgres, and jdbc connector-plugins will be loaded to the ConnectCluster worker nodes.
 - `spec.kafkaRef` specifies the Kafka instance that the ConnectCluster will connect to. Here, the ConnectCluster will connect to the Kafka instance named `kafka-quickstart` in the `demo` namespace.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete Kafka CR. Termination policy `WipeOut` will delete the database pods, secret when the Kafka CR is deleted.
+- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete ConnectCluster CR. Termination policy `WipeOut` will delete the worker pods, secret when the ConnectCluster CR is deleted.
 
 ## N.B:
 1. If replicas are set to 1, the ConnectCluster will run in standalone mode, you can't scale replica after provision the cluster. 
@@ -514,6 +514,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 ## Next Steps
 
+- [Quickstart Kafka](/docs/guides/kafka/quickstart/overview/kafka/index.md) with KubeDB Operator.
 - [Quickstart ConnectCluster](/docs/guides/kafka/quickstart/overview/connectcluster/index.md) with KubeDB Operator.
 - Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [ConnectCluster object](/docs/guides/kafka/concepts/connectcluster.md).
