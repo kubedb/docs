@@ -5,7 +5,7 @@ menu:
     identifier: sl-readme-solr
     name: Solr
     parent: sl-solr-guides
-    weight: 8
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 url: /docs/{{ .version }}/guides/solr/
