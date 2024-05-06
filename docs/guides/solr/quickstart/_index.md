@@ -5,6 +5,6 @@ menu:
     identifier: sl-quickstart-solr
     name: Quickstart
     parent: guides
-    weight: 10
+    weight: 12
 menu_name: docs_{{ .version }}
 ---
