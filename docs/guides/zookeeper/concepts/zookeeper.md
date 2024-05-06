@@ -161,9 +161,6 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 ZooKeeper managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. 
 
-- [Monitor ZooKeeper with builtin Prometheus](/docs/guides/zookeeper/monitoring/using-builtin-prometheus.md)
-
-- [Monitor ZooKeeper with Prometheus operator](/docs/guides/zookeeper/monitoring/using-prometheus-operator.md)
 
 ### spec.configSecret
 
