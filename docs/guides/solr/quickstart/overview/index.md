@@ -3,7 +3,7 @@ title: Solr Quickstart
 menu:
   docs_{{ .version }}:
     identifier: sl-overview-solr
-    name: Solr
+    name: Overview
     parent: sl-quickstart-solr
     weight: 10
 menu_name: docs_{{ .version }}
