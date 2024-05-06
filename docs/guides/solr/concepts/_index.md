@@ -5,6 +5,6 @@ menu:
     identifier: sl-concepts-solr
     name: Concepts
     parent: sl-solr-guides
-    weight: 10
+    weight: 14
 menu_name: docs_{{ .version }}
 ---
