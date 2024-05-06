@@ -100,7 +100,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [SolrVersion](/docs/guides/solr/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `SolrVersion` crds,
+`spec.version` is a required field specifying the name of the [SolrVersion](/docs/guides/solr/concepts/solrversion) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `SolrVersion` crds,
 
 -  `8.11.2`
 -  `9.4.1`
@@ -199,10 +199,9 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 - controller:
   - annotations (statefulset's annotation)
 - spec:
-  - args
-  - env
   - resources
   - initContainers
+  - containers
   - imagePullSecrets
   - nodeSelector
   - affinity
@@ -216,7 +215,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - readinessProbe
   - lifecycle
 
-You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/ea366935d5bad69d7643906c7556923271592513/api/v1/types.go#L42-L259).
+You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/39bf8b2/api/v2/types.go#L44-L279).
 Uses of some field of `spec.podTemplate` is described below,
 
 #### spec.podTemplate.spec.args
