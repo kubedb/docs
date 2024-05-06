@@ -89,15 +89,15 @@ metadata:
 spec:
   version: 3.8.3
   replicas: 3
-  adminServerPort: 2181
+  terminationPolicy: Halt
+  adminServerPort: 8080
   storage:
     resources:
       requests:
         storage: "100Mi"
-        storageClassName: standard
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: Halt
 ```
 
 We have to apply zookeeper first and wait till atleast pods are running to make sure that a cluster has been formed.
