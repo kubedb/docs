@@ -23,21 +23,21 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 `kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a Kafka object as specified in `kafka.yaml`.
 
 ```bash
-$ kubectl create -f kafka.yaml
+$ kubectl create -f druid-quickstart.yaml
 kafka.kubedb.com/kafka created
 ```
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```bash
-$ kubectl create -f kafka.yaml --namespace=kube-system
+$ kubectl create -f druid-quickstart.yaml --namespace=kube-system
 kafka.kubedb.com/kafka created
 ```
 
 `kubectl create` command also considers `stdin` as input.
 
 ```bash
-cat kafka.yaml | kubectl create -f -
+cat druid-quickstart.yaml | kubectl create -f -
 ```
 
 ### How to List Objects
@@ -692,14 +692,14 @@ kafka.kubedb.com "kafka" deleted
 You can also use YAML files to delete objects. The following command will delete an Kafka using the type and name specified in `kafka.yaml`.
 
 ```bash
-$ kubectl delete -f kafka.yaml
+$ kubectl delete -f druid-quickstart.yaml
 kafka.kubedb.com "kafka" deleted
 ```
 
 `kubectl delete` command also takes input from `stdin`.
 
 ```bash
-cat kafka.yaml | kubectl delete -f -
+cat druid-quickstart.yaml | kubectl delete -f -
 ```
 
 To delete database with matching labels, use `--selector` flag. The following command will delete kafka with label `app.kubernetes.io/instance=kafka`.
