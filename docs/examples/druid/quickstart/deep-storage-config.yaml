@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: deep-storage-config
+  namespace: demo
+stringData:
+  druid.storage.type: "s3"
+  druid.storage.bucket: "druid"
+  druid.storage.baseKey: "druid/segments"
+  druid.s3.accessKey: "minio"
+  druid.s3.secretKey: "minio123"
+  druid.s3.protocol: "http"
+  druid.s3.endpoint.signingRegion: "us-east-1"
+  druid.s3.endpoint.url: "http://myminio-hl.demo.svc.cluster.local:9000/"
+
