@@ -100,7 +100,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [SolrVersion](/docs/guides/solr/concepts/solrversion) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `SolrVersion` crds,
+`spec.version` is a required field specifying the name of the [SolrVersion](/docs/guides/solr/concepts/solrversion.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `SolrVersion` crds,
 
 -  `8.11.2`
 -  `9.4.1`
