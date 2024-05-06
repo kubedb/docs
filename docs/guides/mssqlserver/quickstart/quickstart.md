@@ -1,10 +1,10 @@
 ---
-title: MS SQL Server Quickstart
+title: Microsoft SQL Server Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: guides-mssqlserver-quickstart
-    name: Quickstart
-    parent: guides-mssqlserver
+    identifier: ms-quickstart-quickstart
+    name: Overview
+    parent: ms-quickstart-mssqlserver
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,21 +12,21 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# MS SQL Server QuickStart
+# Microsoft SQL Server QuickStart
 
-This tutorial will show you how to use KubeDB to run an MS SQL Server database.
+This tutorial will show you how to use KubeDB to run a Microsoft SQL Server database.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/mysql/quickstart/images/mysql-lifecycle.png">
+  <img alt="lifecycle"  src="/docs/guides/mssqlserver/quickstart/images/mssqlserver-lifecycle.png">
 </p>
 
-> Note: The yaml files used in this tutorial are stored in [docs/guides/mssqlserver/quickstart/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mssqlserver/quickstart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/guides/mssqlserver/quickstart/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mssqlserver/quickstart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md)  and make sure install with helm command including `--set global.featureGates.MSSQLServer=true` to ensure MSSQLServer crd installation.
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
@@ -43,9 +43,9 @@ This tutorial will show you how to use KubeDB to run an MS SQL Server database.
   namespace/demo created
   ```
 
-## Find Available MSSQLServerVersion
+## Find Available Microsoft SQL Server Versions
 
-When you have installed KubeDB, it has created `MSSQLServerVersion` crd for all supported MSSQLServer versions. Check it by using the following command,
+When you have installed KubeDB, it has created `MSSQLServerVersion` crd for all supported Microsoft SQL Server versions. Check it by using the `kubectl get mssqlserverversions`. You can also use `msversion` shorthand instead of `mssqlserverversions`.
 
 ```bash
 $ kubectl get mssqlserverversions
@@ -54,9 +54,9 @@ NAME        VERSION   DB_IMAGE                                                DE
 
 ```
 
-## Create a MSSQLServer database
+## Create Microsoft SQL Server database
 
-KubeDB implements a `MSSQLServer` CRD to define the specification of a MSSQLServer database. Below is the `MSSQLServer` object created in this tutorial.
+KubeDB implements a `MSSQLServer` CRD to define the specification of a Microsoft SQL Server database. Below is the `MSSQLServer` object created in this tutorial.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -80,7 +80,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/quickstart/mssqlserver-quickstart.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/quickstart/yamls/quickstart.yaml
 mssqlserver.kubedb.com/mssqlserver-quickstart created
 ```
 
@@ -91,126 +91,11 @@ Here,
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MSSQLServer` crd or which resources KubeDB should keep or delete when you delete `MSSQLServer` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
 
-> Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified in storage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
+> Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in storage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
 KubeDB operator watches for `MSSQLServer` objects using Kubernetes api. When a `MSSQLServer` object is created, KubeDB operator will create a new PetSet and a Service with the matching MSSQLServer object name. KubeDB operator will also create a governing service for PetSets with the name `<MSSQLServerName>-pods`, if one is not already present.
 
 ```bash
-$ kubectl dba describe ms -n demo mssqlserver-quickstart 
-Name:         mssqlserver-quickstart
-Namespace:    demo
-Labels:       <none>
-Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
-Kind:         MSSQLServer
-Metadata:
-  Creation Timestamp:  2024-05-02T13:42:30Z
-  Finalizers:
-    kubedb.com
-  Generation:        2
-  Resource Version:  191795
-  UID:               af908d5e-31ba-4ac5-9d9b-b49f697fceab
-Spec:
-  Auth Secret:
-    Name:  mssqlserver-quickstart-auth
-  Coordinator:
-    Resources:
-  Health Checker:
-    Failure Threshold:  1
-    Period Seconds:     10
-    Timeout Seconds:    10
-  Pod Placement Policy:
-    Name:  default
-  Pod Template:
-    Controller:
-    Metadata:
-    Spec:
-      Containers:
-        Name:  mssql
-        Resources:
-          Limits:
-            Memory:  1536Mi
-          Requests:
-            Cpu:     500m
-            Memory:  1536Mi
-        Security Context:
-          Allow Privilege Escalation:  false
-          Capabilities:
-            Add:
-              NET_BIND_SERVICE
-            Drop:
-              ALL
-          Run As Group:     10001
-          Run As Non Root:  true
-          Run As User:      10001
-          Seccomp Profile:
-            Type:  RuntimeDefault
-      Init Containers:
-        Name:  mssql-init
-        Resources:
-          Limits:
-            Memory:  512Mi
-          Requests:
-            Cpu:     200m
-            Memory:  512Mi
-        Security Context:
-          Allow Privilege Escalation:  false
-          Capabilities:
-            Drop:
-              ALL
-          Run As Group:     10001
-          Run As Non Root:  true
-          Run As User:      10001
-          Seccomp Profile:
-            Type:  RuntimeDefault
-      Security Context:
-        Fs Group:  10001
-  Replicas:        1
-  Storage:
-    Access Modes:
-      ReadWriteOnce
-    Resources:
-      Requests:
-        Storage:         1Gi
-    Storage Class Name:  standard
-  Storage Type:          Durable
-  Termination Policy:    Delete
-  Version:               2022-cu12
-Status:
-  Conditions:
-    Last Transition Time:  2024-05-02T13:42:30Z
-    Message:               The KubeDB operator has started the provisioning of MSSQL: demo/mssqlserver-quickstart
-    Observed Generation:   1
-    Reason:                DatabaseProvisioningStartedSuccessfully
-    Status:                True
-    Type:                  ProvisioningStarted
-    Last Transition Time:  2024-05-02T13:42:50Z
-    Message:               All replicas are ready for MSSQL demo/mssqlserver-quickstart
-    Observed Generation:   2
-    Reason:                AllReplicasReady
-    Status:                True
-    Type:                  ReplicaReady
-    Last Transition Time:  2024-05-02T13:43:10Z
-    Message:               database demo/mssqlserver-quickstart is accepting connection
-    Observed Generation:   2
-    Reason:                AcceptingConnection
-    Status:                True
-    Type:                  AcceptingConnection
-    Last Transition Time:  2024-05-02T13:43:10Z
-    Message:               database demo/mssqlserver-quickstart is ready
-    Observed Generation:   2
-    Reason:                AllReplicasReady
-    Status:                True
-    Type:                  Ready
-    Last Transition Time:  2024-05-02T13:43:10Z
-    Message:               The MSSQL: demo/mssqlserver-quickstart is successfully provisioned.
-    Observed Generation:   2
-    Reason:                DatabaseSuccessfullyProvisioned
-    Status:                True
-    Type:                  Provisioned
-  Phase:                   Ready
-
-
 $ kubectl get petset -n demo mssqlserver-quickstart
 NAME                     AGE
 mssqlserver-quickstart   13m
@@ -408,10 +293,10 @@ When `terminationPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `
 
 ```bash
 $ kubectl delete ms -n demo mssqlserver-quickstart
-Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be halted. To delete, change spec.terminationPolicy
+The MSSQLServer "mssqlserver-quickstart" is invalid: spec.terminationPolicy: Invalid value: "mssqlserver-quickstart": Can not delete as terminationPolicy is set to "DoNotTerminate"
 ```
 
-Now, run `kubectl edit ms -n demo mssqlserver-quickstart` to set `spec.terminationPolicy` to `Halt` (which deletes the mssqlserver object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
+Now, run `kubectl patch -n demo ms mssqlserver-quickstart -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"` to set `spec.terminationPolicy` to `Halt` (which deletes the mssqlserver object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
 Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy).
 
@@ -419,9 +304,9 @@ Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/data
 
 Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MSSQLServer` object `terminationPolicy` to `Halt`.
 
-When the [TerminationPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `halt` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `halt` in existing database using `edit` command for testing.
+When the [TerminationPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `halt` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `halt` in existing database using `patch` command for testing.
 
-At first, run `kubectl edit ms -n demo mssqlserver-quickstart` to set `spec.terminationPolicy` to `Halt`. Then delete the mysql object,
+At first, run `kubectl patch -n demo ms mssqlserver-quickstart -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"`. Then delete the mssqlserver object,
 
 ```bash
 $ kubectl delete ms -n demo mssqlserver-quickstart
@@ -494,32 +379,6 @@ From the above output, you can see that all mssqlserver resources are deleted. t
 
 >Be careful when you set the `terminationPolicy` to `WipeOut`. Because there is no option to trace the database resources if once deleted the database.
 
-## Database Halted
-
-If you want to delete MSSQLServer resources(`PetSet`,`Service`, etc.) without deleting the `MSSQLServer` object, `PVCs` and `Secret` you have to set the `spec.halted` to `true`. KubeDB operator will be able to delete the MSSQLServer related resources except the `MSSQLServer` object, `PVCs` and `Secret`.
-
-Suppose we have a database running `mssqlserver-quickstart` in our cluster. Now, we are going to set `spec.halted` to `true` in `MSSQLServer`  object by running `kubectl edit -n demo mssqlserver-quickstart` command.
-
-Run the following command to get MSSQLServer resources,
-
-```bash
-$ kubectl get ms,petset,svc,secret,pvc -n demo
-NAME                                            VERSION     STATUS   AGE
-mssqlserver.kubedb.com/mssqlserver-quickstart   2022-cu12   Ready    12m
-
-NAME                                 TYPE                       DATA   AGE
-secret/dbm-login-secret              kubernetes.io/basic-auth   1      64m
-secret/master-key-secret             kubernetes.io/basic-auth   1      64m
-secret/mssqlserver-quickstart-auth   kubernetes.io/basic-auth   2      64m
-
-NAME                                                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-mssqlserver-quickstart-0   Bound    pvc-0e6a361e-9195-4d6b-8042-e90ec98d8288   1Gi        RWO            standard       12m
-```
-
-From the above output , you can see that `MSSQLServer` object, `PVCs`, `Secret` are still alive. Then you can recreate your `MSSQLServer` with same configuration.
-
->When you set `spec.halted` to `true` in `MSSQLServer` object then the `terminationPolicy` is also set to `Halt` by KubeDB operator.
-
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
@@ -541,8 +400,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 ## Next Steps
 
-- Initialize [MSSQLServer with Script](/docs/guides/mysql/initialization/index.md).
-- Monitor your MSSQLServer database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
-- Detail concepts of [MSSQLServer object](/docs/guides/mysql/concepts/database/index.md).
-- Detail concepts of [MSSQLServerVersion object](/docs/guides/mysql/concepts/catalog/index.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
+
+
+
