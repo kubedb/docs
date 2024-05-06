@@ -21,7 +21,7 @@ aliases:
 | Features                             | Availability |
 |--------------------------------------|:------------:|
 | Clustering                           |   &#10003;   |
-| Authentication                       |   &#10003;   |
+| Authentication & Authorization       |   &#10003;   |
 | Custom Configuration                 |   &#10003;   |
 | Monitoring with Prometheus & Grafana |   &#10003;   |
 | Builtin Prometheus Discovery         |   &#10003;   |
@@ -29,12 +29,11 @@ aliases:
 | Externally manageable Auth Secret    |   &#10003;   |
 | Reconfigurable Health Checker        |   &#10003;   |
 | Persistent volume                    |   &#10003;   | 
-| Druid Web Console                    |   &#10003;   |
+| Dashboard ( Druid Web Console )      |   &#10003;   |
 
 ## Supported Druid Versions
 
 KubeDB supports The following Druid versions.
-- `25.0.0`
 - `28.0.1`
 
 > The listed DruidVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [DruidVersion](/docs/guides/druid/concepts/catalog.md) object with your custom Druid image.
@@ -58,6 +57,6 @@ ref : https://cacoo.com/diagrams/bbB63L6KRIbPLl95/9A5B0
 
 [//]: # (- Use [kubedb cli]&#40;/docs/guides/druid/cli/cli.md&#41; to manage databases like kubectl for Kubernetes.)
 
-[//]: # (- Detail concepts of [Druid object]&#40;/docs/guides/druid/concepts/druid.md&#41;.)
+- Detail concepts of [Druid object](/docs/guides/druid/concepts/druid.md).
 
 [//]: # (- Want to hack on KubeDB? Check our [contribution guidelines]&#40;/docs/CONTRIBUTING.md&#41;.)

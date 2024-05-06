@@ -43,3 +43,10 @@ spec:
       replicas: 1
   storageType: Durable
   terminationPolicy: Delete
+  serviceTemplates:
+    - alias: primary
+      spec:
+        type: LoadBalancer
+        ports:
+          - name: routers
+            port: 8888

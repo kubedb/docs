@@ -24,7 +24,7 @@ This tutorial will show you how to use KubeDB to run an [Apache Druid](https://d
 
 At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install the KubeDB operator in your cluster following the steps [here](/docs/setup/install/_index.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md) and make sure install with helm command including the flags `--set global.featureGates.Druid=true` to ensure **Druid CRD** and `--set global.featureGates.Druid=true` to ensure **ZooKeeper CRD** as Druid depends on ZooKeeper for external dependency.
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -60,7 +60,6 @@ When you install the KubeDB operator, it registers a CRD named [DruidVersion](/d
 ```bash
 $ kubectl get druidversion
 NAME     VERSION   DB_IMAGE                               DEPRECATED   AGE
-25.0.0   25.0.0    apache/druid:25.0.0                                 4h47m
 28.0.1   28.0.1    ghcr.io/appscode-images/druid:28.0.1                4h47m
 ```
 
@@ -72,11 +71,11 @@ In this tutorial, we will use `28.0.1` DruidVersion CR to create a Druid cluster
 
 ### Metadata Storage
 
-Druid uses the metadata store to house various metadata about the system, but not to store the actual data. The metadata store retains all metadata essential for a Druid cluster to work. Derby is the default metadata store for Druid, however, it is not suitable for production. MySQL and PostgreSQL are more production suitable metadata stores.
+Druid uses the metadata store to house various metadata about the system, but not to store the actual data. The metadata store retains all metadata essential for a Druid cluster to work. **Apache Derby** is the default metadata store for Druid, however, it is not suitable for production. **MySQL** and **PostgreSQL** are more production suitable metadata stores.
 
-Luckily PostgreSQL and MySQL both are readily available in KubeDB as crd and can easily be deployed using the [MySQL-Guide](/docs/guides/mysql/quickstart/index.md) and [PostgreSQL-Guide](/docs/guides/postgres/quickstart/quickstart.md).
+Luckily, **PostgreSQL** and **MySQL** both are readily available in KubeDB as CRD and can easily be deployed using the [MySQL-Guide](/docs/guides/mysql/quickstart/index.md) and [PostgreSQL-Guide](/docs/guides/postgres/quickstart/quickstart.md).
 
-In this tutorial, we will use a MySQL named `mysql-demo` in the `demo` namespace and create a database named `druid` inside it using [initialization script](/docs/guides/mysql/initialization/#prepare-initialization-scripts).
+In this tutorial, we will use a **MySQL** named `mysql-demo` in the `demo` namespace and create a database named `druid` inside it using [initialization script](/docs/guides/mysql/initialization/#prepare-initialization-scripts).
 
 Let’s create a ConfigMap with initialization script first and then create the `mysql-demo` database,
 
@@ -93,7 +92,7 @@ mysql.kubedb.com/mysql-demo created
 
 Apache Druid uses [Apache ZooKeeper](https://zookeeper.apache.org/) (ZK) for management of current cluster state i.e. internal service discovery, coordination, and leader election.
 
-Fortunately, KubeDB also has support for ZooKeeper and can easily be deployed using the guide [here](/docs/guides/zookeeper/quickstart/quickstart.md)
+Fortunately, KubeDB also has support for **ZooKeeper** and can easily be deployed using the guide [here](/docs/guides/zookeeper/quickstart/quickstart.md)
 
 In this tutorial, we will create a ZooKeeper named `zk-demo` in the `demo` namespace.
 ```bash
@@ -103,9 +102,9 @@ zookeeper.kubedb.com/zk-demo created
 
 ### Deep Storage
 
-The last external dependency of Druid is deep storage where the segments are stored. It is a storage mechanism that Apache Druid does not provide. Amazon S3, Google Cloud Storage, or Azure Blob Storage, S3-compatible storage (like Minio), or HDFS are generally convenient options for deep storage.
+Another external dependency of Druid is deep storage where the segments are stored. It is a storage mechanism that Apache Druid does not provide. **Amazon S3**, **Google Cloud Storage**, or **Azure Blob Storage**, **S3-compatible storage** (like **Minio**), or **HDFS** are generally convenient options for deep storage.
 
-In this tutorial, we will run a minio-server as deep storage using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
+In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
 $ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
@@ -135,11 +134,7 @@ stringData:
   druid.s3.secretKey: "minio123"
   druid.s3.protocol: "http"
   druid.s3.endpoint.signingRegion: "us-east-1"
-  druid.s3.enablePathStyleAccess: "true"
   druid.s3.endpoint.url: "http://myminio-hl.demo.svc.cluster.local:9000/"
-  druid.indexer.logs.type: "s3"
-  druid.indexer.logs.s3Bucket: "druid"
-  druid.indexer.logs.s3Prefix: "druid/indexing-logs"
 ```
 
 Let’s create the `deep-storage-config` Secret shown above:
@@ -149,7 +144,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 secret/deep-storage-config created
 ```
 
-You can also use options like Amazon S3, Google Cloud Storage, or Azure Blob Storage and create a connection information `Secret` like this, and you are good to go.
+You can also use options like **Amazon S3**, **Google Cloud Storage**, **Azure Blob Storage** or **HDFS** and create a connection information `Secret` like this, and you are good to go.
 
 ## Create a Druid Cluster
 
@@ -203,6 +198,13 @@ spec:
       replicas: 1
   storageType: Durable
   terminationPolicy: Delete
+  serviceTemplates:
+    - alias: primary
+      spec:
+        type: LoadBalancer
+        ports:
+          - name: routers
+            port: 8888
 ```
 
 Here,
@@ -649,31 +651,30 @@ On deployment of a Druid CR, the operator creates the following resources:
 ```bash
 $ kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=druid-quickstart'
 NAME                                    READY   STATUS    RESTARTS   AGE
-pod/druid-quickstart-brokers-0          1/1     Running   0          6m44s
-pod/druid-quickstart-coordinators-0     1/1     Running   0          6m53s
-pod/druid-quickstart-coordinators-1     1/1     Running   0          6m50s
-pod/druid-quickstart-historicals-0      1/1     Running   0          6m50s
-pod/druid-quickstart-middlemanagers-0   1/1     Running   0          6m47s
-pod/druid-quickstart-routers-0          1/1     Running   0          6m41s
+pod/druid-quickstart-brokers-0          1/1     Running   0          2m4s
+pod/druid-quickstart-coordinators-0     1/1     Running   0          2m10s
+pod/druid-quickstart-historicals-0      1/1     Running   0          2m8s
+pod/druid-quickstart-middlemanagers-0   1/1     Running   0          2m6s
+pod/druid-quickstart-routers-0          1/1     Running   0          2m1s
 
-NAME                                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                 AGE
-service/druid-quickstart-brokers        ClusterIP   10.96.191.21    <none>        8082/TCP                                                6m56s
-service/druid-quickstart-coordinators   ClusterIP   10.96.255.123   <none>        8081/TCP                                                6m56s
-service/druid-quickstart-pods           ClusterIP   None            <none>        8081/TCP,8090/TCP,8083/TCP,8091/TCP,8082/TCP,8888/TCP   6m56s
-service/druid-quickstart-routers        ClusterIP   10.96.52.97     <none>        8888/TCP                                                6m56s
+NAME                                    TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                 AGE
+service/druid-quickstart-brokers        ClusterIP      10.96.28.252    <none>        8082/TCP                                                2m13s
+service/druid-quickstart-coordinators   ClusterIP      10.96.52.186    <none>        8081/TCP                                                2m13s
+service/druid-quickstart-pods           ClusterIP      None            <none>        8081/TCP,8090/TCP,8083/TCP,8091/TCP,8082/TCP,8888/TCP   2m13s
+service/druid-quickstart-routers        LoadBalancer   10.96.134.202   10.86.51.181  8888:32751/TCP                                          2m13s
 
 NAME                                                  TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/druid-quickstart   kubedb.com/druid   28.0.1    6m41s
+appbinding.appcatalog.appscode.com/druid-quickstart   kubedb.com/druid   28.0.1    2m1s
 
 NAME                                 TYPE                       DATA   AGE
-secret/druid-quickstart-admin-cred   kubernetes.io/basic-auth   2      9m1s
+secret/druid-quickstart-admin-cred   kubernetes.io/basic-auth   2      2m13s
 
 NAME                                                           AGE
-petset.apps.k8s.appscode.com/druid-quickstart-brokers          6m44s
-petset.apps.k8s.appscode.com/druid-quickstart-coordinators     6m53s
-petset.apps.k8s.appscode.com/druid-quickstart-historicals      6m50s
-petset.apps.k8s.appscode.com/druid-quickstart-middlemanagers   6m47s
-petset.apps.k8s.appscode.com/druid-quickstart-routers          6m41s
+petset.apps.k8s.appscode.com/druid-quickstart-brokers          2m4s
+petset.apps.k8s.appscode.com/druid-quickstart-coordinators     2m10s
+petset.apps.k8s.appscode.com/druid-quickstart-historicals      2m8s
+petset.apps.k8s.appscode.com/druid-quickstart-middlemanagers   2m6s
+petset.apps.k8s.appscode.com/druid-quickstart-routers          2m1s
 
 ```
 
@@ -688,7 +689,7 @@ petset.apps.k8s.appscode.com/druid-quickstart-routers          6m41s
     - `{Druid-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the Druid users. Operator generates credentials for `admin` user and creates a secret for authentication.
 
 ## Connect with Druid Database
-We will use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to connect with our routers of the Druid database. Then we will use `curl` to send `HTTP` requests to check cluster health to verify that our Druid database is working well.
+We will use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to connect with our routers of the Druid database. Then we will use `curl` to send `HTTP` requests to check cluster health to verify that our Druid database is working well. It is also possible to use `External-IP` to access druid nodes if you make `service` type of that node as `LoadBalancer`.
 
 ### Check the Service Health 
 
@@ -710,7 +711,7 @@ From the retrieved health information above, we can see that our Druid cluster�
 
 ### Access the web console
 
-We can also access the [web console](https://druid.apache.org/docs/latest/operations/web-console) of Druid database from any browser by port-forwarding the routers in the same way shown in the aforementioned step.
+We can also access the [web console](https://druid.apache.org/docs/latest/operations/web-console) of Druid database from any browser by port-forwarding the routers in the same way shown in the aforementioned step or directly using the `External-IP` if the router service type is `LoadBalancer`.
 
 Now hit the `http://localhost:8888` from any browser, and you will be prompted to provide the credential of the druid database. By following the steps discussed below, you can get the credential generated by the KubeDB operator for your Druid database.
 
