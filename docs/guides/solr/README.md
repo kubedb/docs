@@ -37,6 +37,8 @@ aliases:
 ## User Guide
 
 - [Quickstart Solr](/docs/guides/solr/quickstart/overview/index.md) with KubeDB Operator.
+- Detail Concept of [Solr Object](/docs/guides/solr/concepts/solr.md).
+
 
 ## Next Steps
 
