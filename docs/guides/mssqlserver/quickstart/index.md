@@ -209,7 +209,6 @@ Status:
     Status:                True
     Type:                  Provisioned
   Phase:                   Ready
-Events:                    <none>
 
 
 $ kubectl get petset -n demo mssqlserver-quickstart
@@ -523,7 +522,7 @@ From the above output , you can see that `MSSQLServer` object, `PVCs`, `Secret` 
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl patch -n demo mssqlserver/mssqlserver-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
