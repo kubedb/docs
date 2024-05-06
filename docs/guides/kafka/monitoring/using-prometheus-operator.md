@@ -167,7 +167,7 @@ spec:
       name: kafka-ca-issuer
       kind: Issuer
   replicas: 3
-  version: 3.4.0
+  version: 3.6.1
   storage:
     accessModes:
       - ReadWriteOnce
@@ -206,7 +206,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get kf -n demo kafka
 NAME    TYPE                  VERSION   STATUS   AGE
-kafka   kubedb.com/v1alpha2   3.4.0     Ready    2m24s
+kafka   kubedb.com/v1alpha2   3.6.1     Ready    2m24s
 ```
 
 KubeDB will create a separate stats service with name `{Kafka crd name}-stats` for monitoring purpose.

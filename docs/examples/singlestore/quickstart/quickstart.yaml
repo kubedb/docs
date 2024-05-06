@@ -1,0 +1,52 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Singlestore
+metadata:
+  name: sdb-quickstart
+  namespace: demo
+spec:
+  version: 8.5.7
+  topology:
+    aggregator:
+      replicas: 3
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "0.5"
+                requests:
+                  memory: "2Gi"
+                  cpu: "0.5"
+      storage:
+        storageClassName: "standard"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    leaf:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "0.5"
+                requests:
+                  memory: "2Gi"
+                  cpu: "0.5"
+      storage:
+        storageClassName: "standard"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  licenseSecret:
+    name: license-secret
+  storageType: Durable
+  terminationPolicy: WipeOut
