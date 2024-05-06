@@ -105,7 +105,7 @@ Here,
 Let's create the Kafka CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/overview/yamls/kafka.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/overview/yamls/druid-quickstart.yaml
 kafka.kubedb.com/kafka-quickstart created
 ```
 
