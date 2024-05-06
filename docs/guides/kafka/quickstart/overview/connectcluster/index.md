@@ -482,8 +482,8 @@ rs1:PRIMARY> db.source.insertOne({"mongodb":"source"})
 Exec into one of the kafka brokers in interactive mode. Run consumer command to check the data in the topic.
 
 ```bash
-$ kubectl exec -it kafka-quickstart-broker-1 -n demo -- bash
-kafka@kafka-quickstart-broker-1:~$ kafka-console-consumer.sh --bootstrap-server localhost:9092 --consumer.config config/clientauth.properties --topic mongo.mongodb.source --from-beginning
+$ kubectl exec -it kafka-quickstart-1 -n demo -- bash
+kafka@kafka-quickstart-1:~$ kafka-console-consumer.sh --bootstrap-server localhost:9092 --consumer.config config/clientauth.properties --topic mongo.mongodb.source --from-beginning
 "{\"_id\": {\"$oid\": \"66389ca8c43abff3a434b916\"}, \"hi\": \"kubedb\"}"
 "{\"_id\": {\"$oid\": \"66389cb4c43abff3a434b917\"}, \"kafka\": \"connectcluster\"}"
 "{\"_id\": {\"$oid\": \"66389cc0c43abff3a434b918\"}, \"mongodb\": \"source\"}"
