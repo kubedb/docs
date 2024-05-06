@@ -71,6 +71,7 @@ metadata:
   namespace: demo
 spec:
   version: "3.9.1"
+  adminServerPort: 8080
   replicas: 3
   storage:
     resources:
