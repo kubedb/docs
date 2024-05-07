@@ -31,4 +31,5 @@ Guides to show you how to perform tasks with KubeDB:
 - [Kafka](/docs/guides/kafka/README.md). Shows how to manage Kafka using KubeDB.
 - [ZooKeeper](/docs/guides/zookeeper/README.md). Shows how to manage ZooKeeper using KubeDB.
 - [SingleStore](/docs/guides/singlestore/README.md). Shows how to manage SingleStore using KubeDB.
+- [Microsoft SQL Server](/docs/guides/mssqlserver/README.md). Shows how to manage Microsoft SQL Server using KubeDB.
 - [Solr](/docs/guides/solr/README.md). Shows how to manage Solr using KubeDB.
