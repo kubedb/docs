@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Postgres
+metadata:
+  name: quick-postgres
+  namespace: demo
+spec:
+  replicas: 3
+  version: "13.13"
+  configSecret:
+    name: pg-configuration
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Mi
+  terminationPolicy: WipeOut

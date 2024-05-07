@@ -24,6 +24,7 @@ Guides to show you how to perform tasks with KubeDB:
 - [MySQL](/docs/guides/mysql/README.md). Shows how to manage MySQL using KubeDB.
 - [Percona XtraDB](/docs/guides/percona-xtradb/README.md). Shows how to manage Percona XtraDB using KubeDB.
 - [PgBouncer](/docs/guides/pgbouncer/README.md). Shows how to manage PgBouncer using KubeDB.
+- [Pgpool](/docs/guides/pgpool/README.md). Shows how to manage Pgpool using KubeDB.
 - [PostgreSQL](/docs/guides/postgres/README.md). Shows how to manage PostgreSQL using KubeDB.
 - [ProxySQL](/docs/guides/proxysql/README.md). Shows how to manage ProxySQL using KubeDB.
 - [Redis](/docs/guides/redis/README.md). Shows how to manage Redis using KubeDB.
