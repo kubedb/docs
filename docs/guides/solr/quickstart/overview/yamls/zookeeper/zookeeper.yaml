@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ZooKeeper
+metadata:
+  name: zoo-com
+  namespace: demo
+spec:
+  version: 3.8.3
+  adminServerPort: 8080
+  replicas: 3
+  terminationPolicy: Halt
+  storage:
+    resources:
+      requests:
+        storage: "100Mi"
+    storageClassName: standard
+    accessModes:
+      - ReadWriteOnce
