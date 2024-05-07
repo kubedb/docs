@@ -93,7 +93,7 @@ spec:
   zookeeperDigestSecret:
     name: solr-cluster-zk-digest
   zookeeperRef:
-    name: zoo
+    name: zk-com
     namespace: demo
 ```
 
@@ -161,7 +161,7 @@ Referenece of zookeeper cluster which will coordinate solr and save necessary cr
 
 ### spec.zookeeperDigestSecret
 
-We can some zookeeper digest secret which will keep data in out zookeeper cluster safe.
+We have some zookeeper digest secret which will keep data in out zookeeper cluster safe. These secret do not guarantee security of zookeeper cluster. It just encodes solr data in the zookeeper cluster.
 
 ### spec.storage
 
@@ -217,14 +217,6 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 
 You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/39bf8b2/api/v2/types.go#L44-L279).
 Uses of some field of `spec.podTemplate` is described below,
-
-#### spec.podTemplate.spec.args
- `spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments to database installation.
-
-### spec.podTemplate.spec.env
-
-`spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the Solr docker image.
-
 
 #### spec.podTemplate.spec.imagePullSecret
 

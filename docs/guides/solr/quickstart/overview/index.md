@@ -55,7 +55,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 
 ## Find Available SolrVersion
 
-When you install the KubeDB operator, it registers a CRD named Solrversions. The installation process comes with a set of tested SolrVersion objects. Let's check available SolrVersions by,
+When you install the KubeDB operator, it registers a CRD named `SolrVersions`. The installation process comes with a set of tested SolrVersion objects. Let's check available SolrVersions by,
 
 ```bash
 $ kubectl get solrversion
@@ -89,7 +89,7 @@ metadata:
 spec:
   version: 3.8.3
   replicas: 3
-  terminationPolicy: Halt
+  terminationPolicy: Delete
   adminServerPort: 8080
   storage:
     resources:
@@ -108,7 +108,7 @@ Here,
 - `spec.replicas` - specifies the number of ZooKeeper nodes.
 - `spec.storageType` - specifies the type of storage that will be used for ZooKeeper database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the ZooKeeper database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the Petsets created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete ZooKeeper CR. Termination policy `Delete` will delete the database pods, secret and PVC when the ZooKeeper CR is deleted.
+- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete ZooKeeper CR. Termination policy `Delete` will delete the database pods, secret and PVC when the ZooKeeper CR is deleted. Checkout the [link](/docs/guides/zookeeper/concepts/zookeeper.md/#specterminationpolicy) for details.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
 
@@ -123,7 +123,7 @@ The ZooKeeper's `STATUS` will go from `Provisioning` to `Ready` state within few
 
 ```bash
 $ kubectl get ZooKeeper -n demo -w
-NAME   TYPE                  VERSION   STATUS   AGE
+NAME       TYPE                  VERSION   STATUS   AGE
 zoo-com    kubedb.com/v1alpha2   3.7.2     Ready    13m
 ```
 
@@ -139,7 +139,7 @@ metadata:
   namespace: demo
 spec:
   version: 9.4.1
-  terminationPolicy: Halt
+  terminationPolicy: Delete
   replicas: 2
   zookeeperRef:
     name: zk-com
@@ -159,7 +159,7 @@ Here,
 - `spec.replicas` - specifies the number of Solr nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Solr database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Solr database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the Petset created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete Solr CR. Termination policy `Delete` will delete the database pods, secret and PVC when the Solr CR is deleted.
+- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete Solr CR. Termination policy `Delete` will delete the database pods, secret and PVC when the Solr CR is deleted. Checkout the [link](/docs/guides/solr/concepts/solr.md/#specterminationpolicy) for details.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
 
@@ -447,10 +447,8 @@ KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or lat
 To halt the database, we have to set `spec.terminationPolicy:` to `Halt` by updating it,
 
 ```bash
-$ kubectl edit solr -n demo solr-combined
-
->> spec:
->>   terminationPolicy: Halt
+$ kubectl patch -n demo solr solr-combined -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"
+solr.kubedb.com/solr-combined patched
 ```
 
 Now, if you delete the Solr object, the KubeDB operator will delete every resource created for this Solr CR, but leaves the auth secrets, and PVCs.
@@ -508,4 +506,4 @@ namespace "demo" deleted
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if the database pod fails. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purposes, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resouce that was created with the Solr CR.
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resouce that was created with the Solr CR. Checkout the [link](/docs/guides/solr/concepts/solr.md/#specterminationpolicy) for details.
