@@ -1,0 +1,23 @@
+apiVersion: kafka.kubedb.com/v1alpha1
+kind: ConnectCluster
+metadata:
+  name: connectcluster-distributed
+  namespace: demo
+spec:
+  version: 3.6.1
+  enableSSL: true
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: connectcluster-ca-issuer
+  configSecret:
+    name: connectcluster-custom-config
+  replicas: 3
+  connectorPlugins:
+    - postgres-2.4.2.final
+    - jdbc-2.6.1.final
+  kafkaRef:
+    name: kafka-prod
+    namespace: demo
+  terminationPolicy: WipeOut

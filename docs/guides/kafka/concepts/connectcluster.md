@@ -1,45 +1,68 @@
 ---
-title: Kafka CRD
+title: ConnectCluster CRD
 menu:
   docs_{{ .version }}:
-    identifier: kf-kafka-concepts
-    name: Kafka
+    identifier: kf-connectcluster-concepts
+    name: ConnectCluster
     parent: kf-concepts-kafka
-    weight: 10
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Kafka
+# ConnectCluster
 
-## What is Kafka
+## What is ConnectCluster
 
-`Kafka` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Kafka](https://kafka.apache.org/) in a Kubernetes native way. You only need to describe the desired database configuration in a `Kafka`object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`ConnectCluster` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [ConnectCluster](https://kafka.apache.org/) in a Kubernetes native way. You only need to describe the desired configuration in a `ConnectCluster` object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
-## Kafka Spec
+## ConnectCluster Spec
 
-As with all other Kubernetes objects, a Kafka needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example Kafka object.
+As with all other Kubernetes objects, a ConnectCluster needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example ConnectCluster object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: Kafka
+apiVersion: kafka.kubedb.com/v1alpha1
+kind: ConnectCluster
 metadata:
-  name: kafka
+  name: connectcluster
   namespace: demo
 spec:
-  authSecret:
-    name: kafka-admin-cred
-  configSecret:
-    name: kafka-custom-config
-  enableSSL: true
+  version: 3.6.1
   healthChecker:
     failureThreshold: 3
     periodSeconds: 20
     timeoutSeconds: 10
+  disableSecurity: false
+  authSecret:
+    name: connectcluster-auth
+  enableSSL: true
   keystoreCredSecret:
-    name: kafka-keystore-cred
+    name: connectcluster-keystore-cred
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: connectcluster-ca-issuer
+    certificates:
+      - alias: server
+        secretName: connectcluster-server-cert
+      - alias: client
+        secretName: connectcluster-client-cert
+  configSecret:
+    name: custom-connectcluster-config
+  replicas: 3
+  connectorPlugins:
+    - gcs-0.13.0
+    - mongodb-1.11.0
+    - mysql-2.4.2.final
+    - postgres-2.4.2.final
+    - s3-2.15.0
+    - jdbc-2.6.1.final
+  kafkaRef:
+    name: kafka
+    namespace: demo
   podTemplate:
     metadata:
       annotations:
@@ -51,51 +74,6 @@ spec:
         passMe: ToStatefulSet
       labels:
         thisLabel: willGoToSts
-  storageType: Durable
-  terminationPolicy: DoNotTerminate
-  tls:
-    certificates:
-      - alias: server
-        secretName: kafka-server-cert
-      - alias: client
-        secretName: kafka-client-cert
-    issuerRef:
-      apiGroup: cert-manager.io
-      kind: Issuer
-      name: kafka-ca-issuer
-  topology:
-    broker:
-      replicas: 3
-      resources:
-        limits:
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
-      suffix: broker
-    controller:
-      replicas: 3
-      resources:
-        limits:
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
-      suffix: controller
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -105,12 +83,12 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  version: 3.6.1
+  terminationPolicy: WipeOut
 ```
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `Kafka` resources,
+`spec.version` is a required field specifying the name of the [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md) CR where the docker images are specified. Currently, when you install KubeDB, it creates the following `KafkaVersion` resources,
 
 - `3.3.2`
 - `3.4.1`
@@ -121,18 +99,47 @@ spec:
 
 ### spec.replicas
 
-`spec.replicas` the number of members in Kafka replicaset.
-
-If `spec.topology` is set, then `spec.replicas` needs to be empty. Instead use `spec.topology.controller.replicas` and `spec.topology.broker.replicas`. You need to set both of them for topology clustering.
+`spec.replicas` the number of worker nodes in ConnectCluster.
 
 KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
 
+### spec.disableSecurity
+
+`spec.disableSecurity` is an optional field that specifies whether to disable all kind of security features like basic  authentication and tls. The default value of this field is `false`.
+
+### spec.connectorPlugins
+
+`spec.connectorPlugins` is an optional field that specifies the list of connector plugins to be installed in the ConnectCluster worker node. The field takes a list of strings where each string represents the name of the KafkaConnectorVersion CR. To learn more about KafkaConnectorVersion CR, visit [here](/docs/guides/kafka/concepts/kafkaconnectorversion.md).
+```yaml
+connectorPlugins:
+  - <connector-plugin-name-1>
+  - <connector-plugin-name-2>
+```
+
+### spec.kafkaRef
+
+`spec.kafkaRef` is a required field that specifies the name and namespace of the appbinding for `Kafka` object that the `ConnectCluster` object is associated with.
+```yaml
+kafkaRef:
+  name: <kafka-object-appbinding-name>
+  namespace: <kafka-object-appbinding-namespace>
+```
+
+### spec.configSecret
+
+`spec.configSecret` is an optional field that specifies the name of the secret containing the custom configuration for the ConnectCluster. The secret should contain a key `config.properties` which contains the custom configuration for the ConnectCluster. The default value of this field is `nil`.
+```yaml
+configSecret:
+  name: <custom-config-secret-name>
+```
+
 ### spec.authSecret
 
-`spec.authSecret` is an optional field that points to a Secret used to hold credentials for `kafka` admin user. If not set, KubeDB operator creates a new Secret `{kafka-object-name}-auth` for storing the password for `admin` user for each Kafka object.
+`spec.authSecret` is an optional field that points to a Secret used to hold credentials for `ConnectCluster` username and password. If not set, KubeDB operator creates a new Secret `{connectcluster-object-name}-connect-cred` for storing the username and password for each ConnectCluster object.
 
 We can use this field in 3 mode.
-1. Using an external secret. In this case, You need to create an auth secret first with required fields, then specify the secret name when creating the Kafka object using `spec.authSecret.name` & set `spec.authSecret.externallyManaged` to true.
+
+1. Using an external secret. In this case, You need to create an auth secret first with required fields, then specify the secret name when creating the ConnectCluster object using `spec.authSecret.name` & set `spec.authSecret.externallyManaged` to true.
 ```yaml
 authSecret:
   name: <your-created-auth-secret-name>
@@ -147,15 +154,15 @@ authSecret:
 
 3. Let KubeDB do everything for you. In this case, no work for you.
 
-AuthSecret contains a `user` key and a `password` key which contains the `username` and `password` respectively for Kafka `admin` user.
+AuthSecret contains a `user` key and a `password` key which contains the `username` and `password` respectively for ConnectCluster user.
 
 Example:
 
 ```bash
-$ kubectl create secret generic kf-auth -n demo \
+$ kubectl create secret generic kcc-auth -n demo \
 --from-literal=username=jhon-doe \
 --from-literal=password=6q8u_2jMOW-OOZXk
-secret "kf-auth" created
+secret "kcc-auth" created
 ```
 
 ```yaml
@@ -165,50 +172,12 @@ data:
   username: amhvbi1kb2U=
 kind: Secret
 metadata:
-  name: kf-auth
+  name: kcc-auth
   namespace: demo
 type: Opaque
 ```
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
-
-### spec.configSecret
-
-`spec.configSecret` is an optional field that points to a Secret used to hold custom Kafka configuration. If not set, KubeDB operator will use default configuration for Kafka.
-
-### spec.topology
-
-`spec.topology` represents the topology configuration for Kafka cluster in KRaft mode.
-
-When `spec.topology` is set, the following fields needs to be empty, otherwise validating webhook will throw error.
-
-- `spec.replicas`
-- `spec.podTemplate`
-- `spec.storage`
-
-#### spec.topology.broker
-
-`broker` represents configuration for brokers of Kafka. In KRaft Topology mode clustering each pod can act as a single dedicated Kafka broker.
-
-Available configurable fields:
-
-- `topology.broker`:
-    - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Kafka `broker` pods. Defaults to `1`.
-    - `suffix` (`: "broker"`) - is an `optional` field that is added as the suffix of the broker StatefulSet name. Defaults to `broker`.
-    - `storage` is a `required` field that specifies how much storage to claim for each of the `broker` pods.
-    - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `broker` pods.
-
-#### spec.topology.controller
-
-`controller` represents configuration for controllers of Kafka. In KRaft Topology mode clustering each pod can act as a single dedicated Kafka controller that preserves metadata for the whole cluster and participated in leader election.
-
-Available configurable fields:
-
-- `topology.controller`:
-    - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Kafka `controller` pods. Defaults to `1`.
-    - `suffix` (`: "controller"`) - is an `optional` field that is added as the suffix of the controller StatefulSet name. Defaults to `controller`.
-    - `storage` is a `required` field that specifies how much storage to claim for each of the `controller` pods.
-    - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `controller` pods.
 
 ### spec.enableSSL
 
@@ -217,6 +186,16 @@ Available configurable fields:
 ```yaml
 spec:
   enableSSL: true 
+```
+
+### spec.keystoreCredSecret
+
+`spec.keystoreCredSecret` is an `optional` field that specifies the name of the secret containing the keystore credentials for the ConnectCluster. The secret should contain three keys `ssl.keystore.password`, `ssl.key.password` and `ssl.keystore.password`. The default value of this field is `nil`.
+
+```yaml
+spec:
+  keystoreCredSecret:
+    name: <keystore-cred-secret-name>
 ```
 
 ### spec.tls
@@ -229,19 +208,19 @@ spec:
     issuerRef:
       apiGroup: "cert-manager.io"
       kind: Issuer
-      name: kf-issuer
+      name: kcc-issuer
     certificates:
     - alias: server
       privateKey:
         encoding: PKCS8
-      secretName: kf-client-cert
+      secretName: kcc-client-cert
       subject:
         organizations:
         - kubedb
     - alias: http
       privateKey:
         encoding: PKCS8
-      secretName: kf-server-cert
+      secretName: kcc-server-cert
       subject:
         organizations:
         - kubedb
@@ -249,7 +228,7 @@ spec:
 
 The `spec.tls` contains the following fields:
 
-- `tls.issuerRef` - is an `optional` field that references to the `Issuer` or `ClusterIssuer` custom resource object of [cert-manager](https://cert-manager.io/docs/concepts/issuer/). It is used to generate the necessary certificate secrets for Kafka. If the `issuerRef` is not specified, the operator creates a self-signed CA and also creates necessary certificate (valid: 365 days) secrets using that CA.
+- `tls.issuerRef` - is an `optional` field that references to the `Issuer` or `ClusterIssuer` custom resource object of [cert-manager](https://cert-manager.io/docs/concepts/issuer/). It is used to generate the necessary certificate secrets for ConnectCluster. If the `issuerRef` is not specified, the operator creates a self-signed CA and also creates necessary certificate (valid: 365 days) secrets using that CA.
     - `apiGroup` - is the group name of the resource that is being referenced. Currently, the only supported value is `cert-manager.io`.
     - `kind` - is the type of resource that is being referenced. The supported values are `Issuer` and `ClusterIssuer`.
     - `name` - is the name of the resource ( `Issuer` or `ClusterIssuer` ) that is being referenced.
@@ -280,33 +259,16 @@ The `spec.tls` contains the following fields:
     - `uris` ( `[]string` | `nil` ) - is a list of URI Subject Alternative Names.
     - `emailAddresses` ( `[]string` | `nil` ) - is a list of email Subject Alternative Names.
 
-
-### spec.storageType
-
-`spec.storageType` is an optional field that specifies the type of storage to use for database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Kafka cluster using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume.
-
-### spec.storage
-
-If you set `spec.storageType:` to `Durable`, then `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-
-- `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
-- `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
-- `spec.storage.resources` can be used to request specific quantities of storage. This follows the same resource model used by PVCs.
-
-To learn how to configure `spec.storage`, please visit the links below:
-
-- https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
-
-NB. If `spec.topology` is set, then `spec.storage` needs to be empty. Instead use `spec.topology.<controller/broker>.storage`
+    
 
 ### spec.monitor
 
-Kafka managed by KubeDB can be monitored with Prometheus operator out-of-the-box. To learn more,
+ConnectCluster managed by KubeDB can be monitored with Prometheus operator out-of-the-box. To learn more,
 - [Monitor Apache with Prometheus operator](/docs/guides/kafka/monitoring/using-prometheus-operator.md)
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for Kafka cluster.
+KubeDB allows providing a template for pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for ConnectCluster.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -317,7 +279,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
     - annotations (statefulset's annotation)
     - labels (statefulset's labels)
 - spec:
-    - resources
+    - volumes
     - initContainers
     - containers
     - imagePullSecrets
@@ -334,8 +296,6 @@ KubeDB accept following fields to set in `spec.podTemplate:`
     - lifecycle
 
 You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/39bf8b2/api/v2/types.go#L44-L279). Uses of some field of `spec.podTemplate` is described below,
-
-NB. If `spec.topology` is set, then `spec.podTemplate` needs to be empty. Instead use `spec.topology.<controller/broker>.podTemplate`
 
 #### spec.podTemplate.spec.nodeSelector
 
@@ -370,8 +330,9 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.21.1/api/v
 
 ### spec.terminationPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Kafka` crd or which resources KubeDB should keep or delete when you delete `Kafka` crd. KubeDB provides following four termination policies:
+`spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `ConnectCluster` crd or which resources KubeDB should keep or delete when you delete `ConnectCluster` crd. KubeDB provides following four termination policies:
 
+- Delete
 - DoNotTerminate
 - WipeOut
 
@@ -388,10 +349,8 @@ Know details about KubeDB Health checking from this [blog post](https://appscode
 
 ## Next Steps
 
-- Learn how to use KubeDB to run Apache Kafka cluster [here](/docs/guides/kafka/README.md).
-- Deploy [dedicated topology cluster](/docs/guides/kafka/clustering/topology-cluster/index.md) for Apache Kafka
-- Deploy [combined cluster](/docs/guides/kafka/clustering/combined-cluster/index.md) for Apache Kafka
-- Monitor your Kafka cluster with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/kafka/monitoring/using-prometheus-operator.md).
-- Detail concepts of [KafkaVersion object](/docs/guides/kafka/concepts/kafkaversion.md).
+- Learn how to use KubeDB to run a Apache Kafka Connect cluster [here](/docs/guides/kafka/README.md).
+- Monitor your ConnectCluster with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/kafka/monitoring/using-prometheus-operator.md).
+- Detail concepts of [KafkaConnectorVersion object](/docs/guides/kafka/concepts/kafkaconnectorversion.md).
 - Learn to use KubeDB managed Kafka objects using [CLIs](/docs/guides/kafka/cli/cli.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

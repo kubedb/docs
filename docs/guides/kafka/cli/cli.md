@@ -47,7 +47,7 @@ cat druid-quickstart.yaml | kubectl create -f -
 ```bash
 $ kubectl get kafka
 NAME    TYPE                  VERSION   STATUS   AGE
-kafka   kubedb.com/v1alpha2   3.4.0     Ready    36m
+kafka   kubedb.com/v1alpha2   3.6.1     Ready    36m
 ```
 
 You can also use short-form (`kf`) for kafka CR.
@@ -55,7 +55,7 @@ You can also use short-form (`kf`) for kafka CR.
 ```bash
 $ kubectl get kf
 NAME    TYPE                  VERSION   STATUS   AGE
-kafka   kubedb.com/v1alpha2   3.4.0     Ready    36m
+kafka   kubedb.com/v1alpha2   3.6.1     Ready    36m
 ```
 
 To get YAML of an object, use `--output=yaml` or `-oyaml` flag. Use `-n` flag for referring namespace.
@@ -67,7 +67,7 @@ kind: Kafka
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Kafka","metadata":{"annotations":{},"name":"kafka","namespace":"demo"},"spec":{"authSecret":{"name":"kafka-admin-cred"},"enableSSL":true,"healthChecker":{"failureThreshold":3,"periodSeconds":20,"timeoutSeconds":10},"keystoreCredSecret":{"name":"kafka-keystore-cred"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","tls":{"certificates":[{"alias":"server","secretName":"kafka-server-cert"},{"alias":"client","secretName":"kafka-client-cert"}],"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"kafka-ca-issuer"}},"topology":{"broker":{"replicas":3,"resources":{"limits":{"memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"suffix":"broker"},"controller":{"replicas":3,"resources":{"limits":{"memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"suffix":"controller"}},"version":"3.4.0"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Kafka","metadata":{"annotations":{},"name":"kafka","namespace":"demo"},"spec":{"authSecret":{"name":"kafka-admin-cred"},"enableSSL":true,"healthChecker":{"failureThreshold":3,"periodSeconds":20,"timeoutSeconds":10},"keystoreCredSecret":{"name":"kafka-keystore-cred"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","tls":{"certificates":[{"alias":"server","secretName":"kafka-server-cert"},{"alias":"client","secretName":"kafka-client-cert"}],"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"kafka-ca-issuer"}},"topology":{"broker":{"replicas":3,"resources":{"limits":{"memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"suffix":"broker"},"controller":{"replicas":3,"resources":{"limits":{"memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"suffix":"controller"}},"version":"3.6.1"}}
   creationTimestamp: "2023-03-29T07:01:29Z"
   finalizers:
     - kubedb.com
@@ -136,7 +136,7 @@ spec:
             storage: 1Gi
         storageClassName: standard
       suffix: controller
-  version: 3.4.0
+  version: 3.6.1
 status:
   conditions:
     - lastTransitionTime: "2023-03-29T07:01:29Z"
@@ -181,7 +181,7 @@ $ kubectl get kf kafka -n demo -ojson
     "kind": "Kafka",
     "metadata": {
         "annotations": {
-            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"kubedb.com/v1alpha2\",\"kind\":\"Kafka\",\"metadata\":{\"annotations\":{},\"name\":\"kafka\",\"namespace\":\"demo\"},\"spec\":{\"authSecret\":{\"name\":\"kafka-admin-cred\"},\"enableSSL\":true,\"healthChecker\":{\"failureThreshold\":3,\"periodSeconds\":20,\"timeoutSeconds\":10},\"keystoreCredSecret\":{\"name\":\"kafka-keystore-cred\"},\"storageType\":\"Durable\",\"terminationPolicy\":\"DoNotTerminate\",\"tls\":{\"certificates\":[{\"alias\":\"server\",\"secretName\":\"kafka-server-cert\"},{\"alias\":\"client\",\"secretName\":\"kafka-client-cert\"}],\"issuerRef\":{\"apiGroup\":\"cert-manager.io\",\"kind\":\"Issuer\",\"name\":\"kafka-ca-issuer\"}},\"topology\":{\"broker\":{\"replicas\":3,\"resources\":{\"limits\":{\"memory\":\"1Gi\"},\"requests\":{\"cpu\":\"500m\",\"memory\":\"1Gi\"}},\"storage\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"1Gi\"}},\"storageClassName\":\"standard\"},\"suffix\":\"broker\"},\"controller\":{\"replicas\":3,\"resources\":{\"limits\":{\"memory\":\"1Gi\"},\"requests\":{\"cpu\":\"500m\",\"memory\":\"1Gi\"}},\"storage\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"1Gi\"}},\"storageClassName\":\"standard\"},\"suffix\":\"controller\"}},\"version\":\"3.4.0\"}}\n"
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"kubedb.com/v1alpha2\",\"kind\":\"Kafka\",\"metadata\":{\"annotations\":{},\"name\":\"kafka\",\"namespace\":\"demo\"},\"spec\":{\"authSecret\":{\"name\":\"kafka-admin-cred\"},\"enableSSL\":true,\"healthChecker\":{\"failureThreshold\":3,\"periodSeconds\":20,\"timeoutSeconds\":10},\"keystoreCredSecret\":{\"name\":\"kafka-keystore-cred\"},\"storageType\":\"Durable\",\"terminationPolicy\":\"DoNotTerminate\",\"tls\":{\"certificates\":[{\"alias\":\"server\",\"secretName\":\"kafka-server-cert\"},{\"alias\":\"client\",\"secretName\":\"kafka-client-cert\"}],\"issuerRef\":{\"apiGroup\":\"cert-manager.io\",\"kind\":\"Issuer\",\"name\":\"kafka-ca-issuer\"}},\"topology\":{\"broker\":{\"replicas\":3,\"resources\":{\"limits\":{\"memory\":\"1Gi\"},\"requests\":{\"cpu\":\"500m\",\"memory\":\"1Gi\"}},\"storage\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"1Gi\"}},\"storageClassName\":\"standard\"},\"suffix\":\"broker\"},\"controller\":{\"replicas\":3,\"resources\":{\"limits\":{\"memory\":\"1Gi\"},\"requests\":{\"cpu\":\"500m\",\"memory\":\"1Gi\"}},\"storage\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"1Gi\"}},\"storageClassName\":\"standard\"},\"suffix\":\"controller\"}},\"version\":\"3.6.1\"}}\n"
         },
         "creationTimestamp": "2023-03-29T07:01:29Z",
         "finalizers": [
@@ -282,7 +282,7 @@ $ kubectl get kf kafka -n demo -ojson
                 "suffix": "controller"
             }
         },
-        "version": "3.4.0"
+        "version": "3.6.1"
     },
     "status": {
         "conditions": [
@@ -342,15 +342,15 @@ demo        pod/kafka-broker-1       1/1     Running   0             45m   10.24
 demo        pod/kafka-broker-2       1/1     Running   0             45m   10.244.0.57   kind-control-plane   <none>           <none>
 demo        pod/kafka-controller-0   1/1     Running   0             45m   10.244.0.51   kind-control-plane   <none>           <none>
 demo        pod/kafka-controller-1   1/1     Running   0             45m   10.244.0.55   kind-control-plane   <none>           <none>
-demo        pod/kafka-controller-2   1/1     Running   3 (45m ago)   45m   10.244.0.58   kind-control-plane   <none>           <none>
+demo        pod/kafka-controller-2   1/1     Running   0             45m   10.244.0.58   kind-control-plane   <none>           <none>
 
 NAMESPACE   NAME                       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)              AGE   SELECTOR
 demo        service/kafka-broker       ClusterIP   None         <none>        9092/TCP,29092/TCP   46m   app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,kubedb.com/role=broker
 demo        service/kafka-controller   ClusterIP   None         <none>        9093/TCP             46m   app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,kubedb.com/role=controller
 
 NAMESPACE   NAME                                READY   AGE   CONTAINERS   IMAGES
-demo        statefulset.apps/kafka-broker       3/3     45m   kafka        docker.io/kubedb/kafka-kraft:3.4.0@sha256:f059db2929e3cfe388f50e82e168a9ce94b012e413e056eda2838df48632048a
-demo        statefulset.apps/kafka-controller   3/3     45m   kafka        docker.io/kubedb/kafka-kraft:3.4.0@sha256:f059db2929e3cfe388f50e82e168a9ce94b012e413e056eda2838df48632048a
+demo        statefulset.apps/kafka-broker       3/3     45m   kafka        ghcr.io/appscode-images/kafka-kraft:3.6.1@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
+demo        statefulset.apps/kafka-controller   3/3     45m   kafka        ghcr.io/appscode-images/kafka-kraft:3.6.1@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
 
 NAMESPACE   NAME                                       TYPE               VERSION   AGE
 demo        appbinding.appcatalog.appscode.com/kafka   kubedb.com/kafka   3.4.0     45m

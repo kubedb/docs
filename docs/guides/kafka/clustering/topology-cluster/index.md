@@ -1,11 +1,11 @@
 ---
 title: Kafka Topology Cluster
 menu:
-docs_{{ .version }}:
-identifier: kf-topology-cluster
-name: Topology Cluster
-parent: kf-clustering
-weight: 20
+  docs_{{ .version }}:
+    identifier: kf-topology-cluster
+    name: Topology Cluster
+    parent: kf-clustering
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -80,7 +80,7 @@ issuer.cert-manager.io/kafka-ca-issuer created
 
 ### Provision TLS secure Kafka
 
-For this demo, we are going to provision kafka version `3.3.2` with 3 controllers and 3 brokers. To learn more about Kafka CR, visit [here](/docs/guides/kafka/concepts/kafka.md). visit [here](/docs/guides/kafka/concepts/catalog.md) to learn more about KafkaVersion CR.
+For this demo, we are going to provision kafka version `3.6.1` with 3 controllers and 3 brokers. To learn more about Kafka CR, visit [here](/docs/guides/kafka/concepts/kafka.md). visit [here](/docs/guides/kafka/concepts/kafkaversion.md) to learn more about KafkaVersion CR.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -89,7 +89,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 3.3.2
+  version: 3.6.1
   enableSSL: true
   tls:
     issuerRef:
@@ -131,10 +131,10 @@ Watch the bootstrap progress:
 ```bash
 $ kubectl get kf -n demo -w
 NAME         TYPE                  VERSION   STATUS         AGE
-kafka-prod   kubedb.com/v1alpha2   3.3.2     Provisioning   6s
-kafka-prod   kubedb.com/v1alpha2   3.3.2     Provisioning   14s
-kafka-prod   kubedb.com/v1alpha2   3.3.2     Provisioning   50s
-kafka-prod   kubedb.com/v1alpha2   3.3.2     Ready          68s
+kafka-prod   kubedb.com/v1alpha2   3.6.1     Provisioning   6s
+kafka-prod   kubedb.com/v1alpha2   3.6.1     Provisioning   14s
+kafka-prod   kubedb.com/v1alpha2   3.6.1     Provisioning   50s
+kafka-prod   kubedb.com/v1alpha2   3.6.1     Ready          68s
 ```
 
 Hence, the cluster is ready to use.
@@ -159,7 +159,7 @@ statefulset.apps/kafka-prod-broker       3/3     4m10s
 statefulset.apps/kafka-prod-controller   3/3     4m8s
 
 NAME                                            TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/kafka-prod   kubedb.com/kafka   3.3.2     4m8s
+appbinding.appcatalog.appscode.com/kafka-prod   kubedb.com/kafka   3.6.1     4m8s
 
 NAME                                  TYPE                       DATA   AGE
 secret/kafka-prod-admin-cred          kubernetes.io/basic-auth   2      4m14s
@@ -313,6 +313,6 @@ $ kubectl delete namespace demo
 - Deploy [dedicated topology cluster](/docs/guides/kafka/clustering/topology-cluster/index.md) for Apache Kafka
 - Monitor your Kafka cluster with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/kafka/monitoring/using-prometheus-operator.md).
 - Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka.md).
-- Detail concepts of [KafkaVersion object](/docs/guides/kafka/concepts/catalog.md).
+- Detail concepts of [KafkaVersion object](/docs/guides/kafka/concepts/kafkaversion.md).
 - Learn to use KubeDB managed Kafka objects using [CLIs](/docs/guides/kafka/cli/cli.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
