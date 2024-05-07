@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Solr QuickStart
 
-This tutorial will show you how to use KubeDB to run an Solr database.
+This tutorial will show you how to use KubeDB to run a Solr database.
 
 <p align="center">
   <img alt="lifecycle"  src="./images/Lifecycle-of-a-solr-instance.png">
@@ -25,8 +25,6 @@ This tutorial will show you how to use KubeDB to run an Solr database.
 At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
 Now, install the KubeDB operator in your cluster following the steps [here](/docs/setup/install/_index.md).  and make sure install with helm command including `--set global.featureGates.Solr=true --set global.featureGates.ZooKeeper=true` to ensure Solr and ZooKeeper crd.
-
-We use petset resource. remove if there's statefulset anywhere.
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -39,7 +37,7 @@ NAME                 STATUS   AGE
 demo                 Active   9s
 ```
 
-> Note: YAML files used in this tutorial are stored in [guides/solr/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/guides/solr/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 > We have designed this tutorial to demonstrate a production setup of KubeDB managed Solr. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/solr/quickstart/overview/index.md#tips-for-testing).
 
@@ -68,15 +66,15 @@ NAME     VERSION   DB_IMAGE                              DEPRECATED   AGE
 
 Notice the `DEPRECATED` column. Here, `true` means that this SolrVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated SolrVersion.
 
-In this tutorial, we will use `9.4.1` SolrVersion CR to create an Solr cluster.
+In this tutorial, we will use `9.4.1` SolrVersion CR to create a Solr cluster.
 
-> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ZooKeeperVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `xpack-8.11.1` over `7.9.1-xpack`.
+> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use SolrVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `9.4.1` over `8.11.2`.
 
-## Create an Solr Cluster
+## Create a Solr Cluster
 
 The KubeDB operator implements a Solr CRD to define the specification of a Solr database.
 
-The Kubedb Solr runs in solrcloud mode. Hence, it needs a external zookeeper to distribute replicas among pods and save configurations.
+The Kubedb Solr runs in `solrcloud` mode. Hence, it needs a external zookeeper to distribute replicas among pods and save configurations.
 
 We will use KubeDB ZooKeeper for this purpose.
 
@@ -106,10 +104,10 @@ We have to apply zookeeper first and wait till atleast pods are running to make 
 
 Here,
 
-- `spec.version` - is the name of the ZooKeeperVersion CR. Here, an ZooKeeper of version `3.8.3` will be created.
+- `spec.version` - is the name of the ZooKeeperVersion CR. Here, a ZooKeeper of version `3.8.3` will be created.
 - `spec.replicas` - specifies the number of ZooKeeper nodes.
 - `spec.storageType` - specifies the type of storage that will be used for ZooKeeper database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the ZooKeeper database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the Petsets created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
 - `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete ZooKeeper CR. Termination policy `Delete` will delete the database pods, secret and PVC when the ZooKeeper CR is deleted.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
@@ -157,10 +155,10 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the SolrVersion CR. Here, an Solr of version `3.8.3` will be created.
+- `spec.version` - is the name of the SolrVersion CR. Here, a Solr of version `9.4.1` will be created.
 - `spec.replicas` - specifies the number of Solr nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Solr database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Solr database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the Petset created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
 - `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete Solr CR. Termination policy `Delete` will delete the database pods, secret and PVC when the Solr CR is deleted.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
@@ -316,7 +314,7 @@ Events:                    <none>
 
 ### KubeDB Operator Generated Resources
 
-On deployment of an Solr CR, the operator creates the following resources:
+On deployment of a Solr CR, the operator creates the following resources:
 
 ```bash
 $ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=solr-combined'
@@ -349,11 +347,11 @@ persistentvolumeclaim/solr-combined-data-solr-combined-1   Bound    pvc-1649cba5
 persistentvolumeclaim/solr-combined-data-solr-combined-2   Bound    pvc-dcb8c9e2-e64b-4a53-8b46-5c30301bb905   1Gi        RWO            standard       <unset>                 3m26s
 ```
 
-- `PetSet` - a PetSet(Appscode manages customed statefulset) named after the Solr instance. In topology mode, the operator creates 3 PetSets with name `{Solr-Name}-{Sufix}`.
+- `PetSet` - a PetSet(Appscode manages customized statefulset) named after the Solr instance. In topology mode, the operator creates 3 PetSets with name `{Solr-Name}-{Sufix}`.
 - `Services` -  2 services are generated for each Solr database.
     - `{Solr-Name}` - the client service which is used to connect to the database. It points to the `overseer` nodes.
     - `{Solr-Name}-pods` - the node discovery service which is used by the Solr nodes to communicate each other. It is a headless service.
-- `AppBinding` - an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) which hold to connect information for the database. It is also named after the solr instance.
+- `AppBinding` - an [AppBinding](/docs/guides/solr/concepts/appbinding.md) which hold to connect information for the database. It is also named after the solr instance.
 - `Secrets` - 3 types of secrets are generated for each Solr database.
     - `{Solr-Name}-admin-cred` - the auth secrets which hold the `username` and `password` for the solr users. The auth secret `solr-combined-admin-cred` holds the `username` and `password` for `admin` user which lets administrative access.
     - `{Solr-Name}-config` - the default configuration secret created by the operator.
@@ -374,7 +372,7 @@ Forwarding from 127.0.0.1:8983 -> 8983
 Forwarding from [::1]:8983 -> 8983
 ```
 
-Now, our Solr cluster is accessible at `localhost:9200`.
+Now, our Solr cluster is accessible at `localhost:8983`.
 
 **Connection information:**
 
