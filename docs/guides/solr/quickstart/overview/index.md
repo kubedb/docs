@@ -74,7 +74,7 @@ In this tutorial, we will use `9.4.1` SolrVersion CR to create a Solr cluster.
 
 The KubeDB operator implements a Solr CRD to define the specification of a Solr database.
 
-The Kubedb Solr runs in `solrcloud` mode. Hence, it needs a external zookeeper to distribute replicas among pods and save configurations.
+The KubeDB Solr runs in `solrcloud` mode. Hence, it needs a external zookeeper to distribute replicas among pods and save configurations.
 
 We will use KubeDB ZooKeeper for this purpose.
 
