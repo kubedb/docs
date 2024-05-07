@@ -77,24 +77,9 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 
 `spec.initContainer.image` is a required field that specifies the image for init container.
 
-### spec.exporter.image
+### spec.securityContext
 
-`spec.exporter.image` is a required field that specifies the image which will be used to export Prometheus metrics.
-
-### spec.stash
-
-This holds the Backup & Restore task definitions, where a `TaskRef` has a `Name` & `Params` section. Params specifies a list of parameters to pass to the task.
-To learn more, visit [stash documentation](https://stash.run/)
-
-### spec.updateConstraints
-
-updateConstraints specifies the constraints that need to be considered during version update. Here `allowList` contains the versions those are allowed for updating from the current version.
-An empty list of AllowList indicates all the versions are accepted except the denyList.
-On the other hand, `DenyList` contains all the rejected versions for the update request. An empty list indicates no version is rejected.
-
-### spec.podSecurityPolicies.databasePolicyName
-
-`spec.podSecurityPolicies.databasePolicyName` is a required field that specifies the name of the pod security policy required to get the database server pod(s) running. To use a user-defined policy, the name of the policy has to be set in `spec.podSecurityPolicies` and in the list of allowed policy names in KubeDB operator like below:
+DB specific security context which will be added in petset.
 
 ```bash
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
