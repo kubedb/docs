@@ -2,9 +2,9 @@
 title: Kafka Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: kf-quickstart-quickstart
-    name: Overview
-    parent: kf-quickstart-kafka
+    identifier: kf-kafka-overview-kafka
+    name: Kafka
+    parent: kf-overview-kafka
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -17,7 +17,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to run an [Apache Kafka](https://kafka.apache.org/).
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/images/kafka/Kafka-CRD-Lifecycle.png">
+  <img alt="lifecycle"  src="/docs/images/kafka/kafka-crd-lifecycle.png">
 </p>
 
 ## Before You Begin
@@ -39,7 +39,7 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [guides/kafka/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/kafka/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/quickstart/overview/index.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/quickstart/overview/kafka/index.md#tips-for-testing).
 
 ## Find Available StorageClass
 
@@ -55,16 +55,23 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 
 ## Find Available KafkaVersion
 
-When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/catalog.md). The installation process comes with a set of tested KafkaVersion objects. Let's check available KafkaVersions by,
+When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md). The installation process comes with a set of tested KafkaVersion objects. Let's check available KafkaVersions by,
 
 ```bash
-NAME    VERSION   DB_IMAGE                   DEPRECATED   AGE
-3.3.0   3.3.0     kubedb/kafka-kraft:3.3.0                6d
+$ kubectl get kfversion
+
+NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
+3.3.2   3.3.2     ghcr.io/appscode-images/kafka-kraft:3.3.2                26h
+3.4.1   3.4.1     ghcr.io/appscode-images/kafka-kraft:3.4.1                26h
+3.5.1   3.5.1     ghcr.io/appscode-images/kafka-kraft:3.5.1                26h
+3.5.2   3.5.2     ghcr.io/appscode-images/kafka-kraft:3.5.2                26h
+3.6.0   3.6.0     ghcr.io/appscode-images/kafka-kraft:3.6.0                26h
+3.6.1   3.6.1     ghcr.io/appscode-images/kafka-kraft:3.6.1                26h
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this KafkaVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated KafkaVersion. You can also use the short from `kfversion` to check available KafkaVersions.
 
-In this tutorial, we will use `3.3.0` KafkaVersion CR to create a Kafka cluster.
+In this tutorial, we will use `3.6.1` KafkaVersion CR to create a Kafka cluster.
 
 ## Create a Kafka Cluster
 
@@ -94,7 +101,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the KafkaVersion CR. Here, a Kafka of version `3.3.0` will be created.
+- `spec.version` - is the name of the KafkaVersion CR. Here, a Kafka of version `3.6.1` will be created.
 - `spec.replicas` - specifies the number of Kafka brokers.
 - `spec.storageType` - specifies the type of storage that will be used for Kafka. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Kafka using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this Kafka instance. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run Kafka pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
@@ -114,11 +121,11 @@ The Kafka's `STATUS` will go from `Provisioning` to `Ready` state within few min
 ```bash
 $ kubectl get kafka -n demo -w
 NAME               TYPE                  VERSION   STATUS   AGE
-kafka-quickstart   kubedb.com/v1alpha2   3.3.0     Provisioning   2s
-kafka-quickstart   kubedb.com/v1alpha2   3.3.0     Provisioning   4s
+kafka-quickstart   kubedb.com/v1alpha2   3.6.1     Provisioning   2s
+kafka-quickstart   kubedb.com/v1alpha2   3.6.1     Provisioning   4s
 .
 .
-kafka-quickstart   kubedb.com/v1alpha2   3.3.0     Ready          112s
+kafka-quickstart   kubedb.com/v1alpha2   3.6.1     Ready          112s
 
 ```
 
@@ -220,7 +227,7 @@ Spec:
     Storage Class Name:  standard
   Storage Type:          Durable
   Termination Policy:    DoNotTerminate
-  Version:               3.3.0
+  Version:               3.6.1
 Status:
   Conditions:
     Last Transition Time:  2023-01-04T10:13:14Z
@@ -276,7 +283,7 @@ NAME                                READY   AGE
 statefulset.apps/kafka-quickstart   3/3     8m50s
 
 NAME                                                  TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/kafka-quickstart   kubedb.com/kafka   3.3.0     8m50s
+appbinding.appcatalog.appscode.com/kafka-quickstart   kubedb.com/kafka   3.6.1     8m50s
 
 NAME                                 TYPE                       DATA   AGE
 secret/kafka-quickstart-admin-cred   kubernetes.io/basic-auth   2      8m52s
@@ -402,7 +409,8 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 ## Next Steps
 
-- [Quickstart Kafka](/docs/guides/kafka/quickstart/overview/index.md) with KubeDB Operator.
+- [Quickstart Kafka](/docs/guides/kafka/quickstart/overview/kafka/index.md) with KubeDB Operator.
+- [Quickstart ConnectCluster](/docs/guides/kafka/quickstart/overview/connectcluster/index.md) with KubeDB Operator.
 - Kafka Clustering supported by KubeDB
   - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md)
   - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md)

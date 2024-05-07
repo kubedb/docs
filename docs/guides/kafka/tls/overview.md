@@ -49,7 +49,7 @@ Deploying Kafka with TLS/SSL configuration process consists of the following ste
 
 1. At first, a user creates a `Issuer/ClusterIssuer` cr.
 
-2. Then the user creates a `Kafka` cr which refers to the `Issuer/ClusterIssuer` cr that the user created in the previous step.
+2. Then the user creates a `Kafka` CR which refers to the `Issuer/ClusterIssuer` CR that the user created in the previous step.
 
 3. `KubeDB` Provisioner  operator watches for the `Kafka` cr.
 

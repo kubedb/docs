@@ -1,0 +1,12 @@
+apiVersion: kafka.kubedb.com/v1alpha1
+kind: Connector
+metadata:
+  name: mongodb-source-connector
+  namespace: demo
+spec:
+  configSecret:
+    name: mongodb-source-config
+  connectClusterRef:
+    name: connectcluster-quickstart
+    namespace: demo
+  terminationPolicy: WipeOut
