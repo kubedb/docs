@@ -21,7 +21,7 @@ KubeStash v0.1.0+ supports backup and restoration of MongoDB databases. This gui
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install KubeStash Enterprise in your cluster following the steps [here(link needed)]().
 - Install KubeStash `kubectl` plugin following the steps [here(link needed)]().
-- If you are not familiar with how KubeStash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/kubestash/overview/index.md).
+- If you are not familiar with how KubeStash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/kubestash/overview/_index.md).
 
 You have to be familiar with following custom resources:
 
@@ -57,7 +57,7 @@ metadata:
   name: sample-mg-sh
   namespace: demo
 spec:
-  version: 4.2.3
+  version: 4.2.24
   shardTopology:
     configServer:
       replicas: 3
@@ -94,7 +94,7 @@ Let's check if the database is ready to use,
 ```console
 $ kubectl get mongodb -n demo sample-mg-sh
 NAME           VERSION   STATUS   AGE
-sample-mg-sh   4.2.3     Ready    5m39s
+sample-mg-sh   4.2.24     Ready    5m39s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -420,7 +420,7 @@ metadata:
   name: sample-mg-sh-restore
   namespace: demo
 spec:
-  version: 4.2.3
+  version: 4.2.24
   shardTopology:
     configServer:
       replicas: 3
@@ -454,7 +454,7 @@ Let's check if the database is ready to use,
 ```console
 $ kubectl get mg -n demo sample-mg-sh-restore
 NAME                   VERSION   STATUS   AGE
-sample-mg-sh-restore   4.2.3     Ready    7m47s
+sample-mg-sh-restore   4.2.24     Ready    7m47s
 ```
 
 Let's verify all the databases of this `sample-mg-sh-restore` by exec into its mongos pod

@@ -20,9 +20,9 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
-- Install KubeStash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
+- Install KubeStash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
-- If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/overview/index.md).
+- If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/stash/overview/index.md).
 - If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/overview/).
 - If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/database/).
 
@@ -201,7 +201,7 @@ metadata:
     variables.kubestash.com/backupPath: /demo/mgo
     variables.kubestash.com/repoName: s3-repo
 spec:
-  version: "4.4.6"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"

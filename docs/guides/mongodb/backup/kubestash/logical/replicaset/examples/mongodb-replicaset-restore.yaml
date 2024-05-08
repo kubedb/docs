@@ -4,7 +4,7 @@ metadata:
   name: sample-mg-rs-restore
   namespace: demo
 spec:
-  version: "4.2.3"
+  version: "4.2.24"
   replicas: 3
   replicaSet:
     name: rs0
