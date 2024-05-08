@@ -615,13 +615,3 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database. So, we have `Halt` option which preserves all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will delete everything created by KubeDB for a particular FerretDB crd when you delete the mongodb object. For more details about termination policy, please visit [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
 
-## Next Steps
-
-- [Backup and Restore](/docs/guides/mongodb/backup/overview/index.md) FerretDB databases using Stash.
-- Initialize [FerretDB with Script](/docs/guides/mongodb/initialization/using-script.md).
-- Monitor your FerretDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
-- Monitor your FerretDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
-- Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy FerretDB with KubeDB.
-- Detail concepts of [FerretDB object](/docs/guides/mongodb/concepts/mongodb.md).
-- Detail concepts of [FerretDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
