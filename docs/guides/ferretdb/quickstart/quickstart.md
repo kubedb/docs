@@ -55,7 +55,7 @@ NAME     VERSION   DB_IMAGE                                  DEPRECATED   AGE
 ## Create a FerretDB database
 
 FerretDB use Postgres as it's main backend. Currently, KubeDB supports Postgres backend as database engine for FerretDB. Users can use its own Postgres or let KubeDB create and manage backend engine with KubeDB native Postgres. 
-KubeDB implements a `FerretDB` CRD to define the specification of a FerretDB database.
+KubeDB implements a `FerretDB` CR to define the specification of a FerretDB database.
 
 ### Create a FerretDB database with KubeDB managed Postgres
 
@@ -91,10 +91,10 @@ ferretdb.kubedb.com/ferret created
 
 Here,
 
-- `spec.version` is name of the FerretDBVersion crd where the docker images are specified. In this tutorial, a FerretDB 1.18.0 database is created.
+- `spec.version` is name of the FerretDBVersion CR where the docker images are specified. In this tutorial, a FerretDB 1.18.0 database is created.
 - `spec.storageType` specifies the type of storage that will be used for FerretDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create FerretDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `FerretDB` crd or which resources KubeDB should keep or delete when you delete `FerretDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy)
+- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `FerretDB` CR or which resources KubeDB should keep or delete when you delete `FerretDB` CR. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy)
 - `spec.backend` denotes the backend database information for FerretDB instance.
 - `spec.replicas` denotes the number of replicas in the replica-set.
 
@@ -580,7 +580,7 @@ status:
 
 ## Cleaning up
 
-If you don't set the terminationPolicy, then the kubeDB set the TerminationPolicy to `WipeOut` by-default.
+If you don't set the terminationPolicy, then the kubeDB set the TerminationPolicy to `WipeOut` by-default for `FerretDB`.
 
 ### WipeOut
 If you want to cleanup each of the Kubernetes resources created by this tutorial, run:
@@ -588,7 +588,7 @@ If you want to cleanup each of the Kubernetes resources created by this tutorial
 ```bash
 $ kubectl delete -n demo fr/ferret
 
-$ kubectl get fr,sts,svc,secret,pvc -n demo
+$ kubectl get fr,sts,svc,secret,pvc,petset -n demo
 NAME              TYPE              DATA   AGE
 
 $ kubectl delete ns demo
