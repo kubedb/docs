@@ -39,7 +39,7 @@ namespace/demo created
 
 ### Prepare Redis Sentinel Database
 
-Now, we are going to deploy a `RedisSentinel` instance with version `6.2.14` and a `Redis` database with version `6.2.14`. Then, in the next section we are going to apply horizontal scaling on the sentinel and the database using `RedisSentinelOpsRequest` and `RedisOpsRequest` CRD.
+Now, we are going to deploy a `RedisSentinel` instance with version `6.2.14` and a `Redis` database with version `6.2.14`. Then, in the next section we are going to apply horizontal scaling on the sentinel and the database using `RedisSentinelOpsRequest` and `RedisOpsRequest` CRO.
 
 ### Deploy RedisSentinel :
 

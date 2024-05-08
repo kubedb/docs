@@ -256,7 +256,7 @@ maxclients
 
 ```
 
-As we can see from the configuration of running redis, the value of `maxclients` has been changed from `500` to `20000`. So the reconfiguration of the database is successful.
+As we can see from the configuration of running redis, the value of `maxclients` has been changed from `500` to `2000`. So the reconfiguration of the database is successful.
 
 
 ### Reconfigure using apply config
