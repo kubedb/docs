@@ -24,8 +24,6 @@ This tutorial will show you how to use KubeDB to run a FerretDB database.
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
-
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
@@ -46,7 +44,7 @@ This tutorial will show you how to use KubeDB to run a FerretDB database.
 
 ## Find Available FerretDBVersion
 
-When you have installed KubeDB, it has created `FerretDBVersion` crd for all supported FerretDB versions.
+When you have installed KubeDB, it has created `FerretDBVersion` CR for all supported FerretDB versions.
 
 ```bash
 $ kubectl get ferretdbversions
@@ -224,11 +222,19 @@ Status:
 ```
 
 ```bash
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME                        READY   AGE
 ferret                      1/1     29m
+
+$ kubectl get statefulset -n demo
+NAME                        READY   AGE
 ferret-pg-backend           2/2     30m
 ferret-pg-backend-arbiter   1/1     29m
+
+$ kubectl get appbindings -n demo
+NAME                  TYPE                 VERSION   AGE
+ferret                kubedb.com/ferret    1.18.0    29m
+ferret-pg-backend     kubedb.com/postgres  13.13     30m
 
 $ kubectl get pvc -n demo
 NAME                               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
@@ -444,7 +450,7 @@ spec:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 100Mi  
+        storage: 500Mi  
   backend:
     externallyManaged: true
     postgres:
@@ -532,7 +538,7 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 100Mi
+        storage: 500Mi
     storageClassName: standard
   storageType: Durable
   terminationPolicy: WipeOut
