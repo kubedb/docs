@@ -5,6 +5,6 @@ menu:
     identifier: zk-zookeeper-guides
     name: ZooKeeper
     parent: guides
-    weight: 12
+    weight: 10
 menu_name: docs_{{ .version }}
 ---
