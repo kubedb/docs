@@ -50,6 +50,7 @@ kubectl-dba resume (-f FILENAME | TYPE [NAME_PREFIX | -l label] | TYPE/NAME)
   -f, --filename strings    Filename, directory, or URL to files containing the resource to resume
   -h, --help                help for resume
   -k, --kustomize string    Process the kustomization directory. This flag can't be used together with -f or -R.
+      --only-archiver       If provided, only the archiver for the database is resumed.
       --only-backupconfig   If provided, only the backupconfiguration for the database is resumed.
       --only-db             If provided, only the database is resumed.
   -R, --recursive           Process the directory used in -f, --filename recursively. Useful when you want to manage related manifests organized within the same directory.
