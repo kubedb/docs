@@ -18,8 +18,10 @@ aliases:
 Guides to show you how to perform tasks with KubeDB:
 - [Druid](/docs/guides/kafka/README.md). Shows how to manage Druid using KubeDB.
 - [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch & OpenSearch using KubeDB.
+- [Kafka](/docs/guides/kafka/README.md). Shows how to manage Kafka using KubeDB.
 - [MariaDB](/docs/guides/mariadb). Shows how to manage MariaDB using KubeDB.
 - [Memcached](/docs/guides/memcached/README.md). Shows how to manage Memcached using KubeDB.
+- [Microsoft SQL Server](/docs/guides/mssqlserver/README.md). Shows how to manage Microsoft SQL Server using KubeDB.
 - [MongoDB](/docs/guides/mongodb/README.md). Shows how to manage MongoDB using KubeDB.
 - [MySQL](/docs/guides/mysql/README.md). Shows how to manage MySQL using KubeDB.
 - [Percona XtraDB](/docs/guides/percona-xtradb/README.md). Shows how to manage Percona XtraDB using KubeDB.
@@ -28,7 +30,6 @@ Guides to show you how to perform tasks with KubeDB:
 - [PostgreSQL](/docs/guides/postgres/README.md). Shows how to manage PostgreSQL using KubeDB.
 - [ProxySQL](/docs/guides/proxysql/README.md). Shows how to manage ProxySQL using KubeDB.
 - [Redis](/docs/guides/redis/README.md). Shows how to manage Redis using KubeDB.
-- [Kafka](/docs/guides/kafka/README.md). Shows how to manage Kafka using KubeDB.
-- [ZooKeeper](/docs/guides/zookeeper/README.md). Shows how to manage ZooKeeper using KubeDB.
 - [SingleStore](/docs/guides/singlestore/README.md). Shows how to manage SingleStore using KubeDB.
 - [Solr](/docs/guides/solr/README.md). Shows how to manage Solr using KubeDB.
+- [ZooKeeper](/docs/guides/zookeeper/README.md). Shows how to manage ZooKeeper using KubeDB.
