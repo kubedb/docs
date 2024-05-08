@@ -19,6 +19,7 @@ Guides to show you how to perform tasks with KubeDB:
 - [Druid](/docs/guides/kafka/README.md). Shows how to manage Druid using KubeDB.
 - [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch & OpenSearch using KubeDB.
 - [Kafka](/docs/guides/kafka/README.md). Shows how to manage Kafka using KubeDB.
+- [FerretDB](/docs/guides/ferretdb/README.md). Shows how to manage FerretDB using KubeDB.
 - [MariaDB](/docs/guides/mariadb). Shows how to manage MariaDB using KubeDB.
 - [Memcached](/docs/guides/memcached/README.md). Shows how to manage Memcached using KubeDB.
 - [Microsoft SQL Server](/docs/guides/mssqlserver/README.md). Shows how to manage Microsoft SQL Server using KubeDB.
