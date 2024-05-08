@@ -17,16 +17,16 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to run a Microsoft SQL Server database.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/mssqlserver/quickstart/images/mssqlserver-lifecycle.png">
+  <img alt="lifecycle"  src="/docs/guides/mssqlserver/images/mssqlserver-lifecycle.png">
 </p>
 
-> Note: The yaml files used in this tutorial are stored in [docs/guides/mssqlserver/quickstart/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mssqlserver/quickstart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mssqlserver/quickstart/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/quickstart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md)  and make sure install with helm command including `--set global.featureGates.MSSQLServer=true` to ensure MSSQLServer crd installation.
+- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md)  and make sure install with helm command including `--set global.featureGates.MSSQLServer=true` to ensure MSSQLServer crd installation.
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
@@ -80,16 +80,16 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/quickstart/yamls/quickstart.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/quickstart/mssqlserver-quickstart.yaml
 mssqlserver.kubedb.com/mssqlserver-quickstart created
 ```
 
 Here,
 
-- `spec.version` is the name of the MSSQLServerVersion CRD where the docker images are specified. In this tutorial, a MSSQLServer `2022` database is going to be created.
+- `spec.version` is the name of the MSSQLServerVersion CR where the docker images are specified. In this tutorial, a MSSQLServer `2022-cu12` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for MSSQLServer database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MSSQLServer database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MSSQLServer` crd or which resources KubeDB should keep or delete when you delete `MSSQLServer` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
+- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MSSQLServer` CR or which resources KubeDB should keep or delete when you delete `MSSQLServer` CR. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in storage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
@@ -118,10 +118,13 @@ mssqlserver-quickstart-pods   ClusterIP   None           <none>        1433/TCP 
 
 ```
 
-KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified MSSQLServer object:
+KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created and is able to accept client connections. Run the following command to see the modified MSSQLServer object:
+
+```bash
+$ kubectl get ms -n demo mssqlserver-quickstart -o yaml
+```
 
 ```yaml
-$ kubectl get ms -n demo mssqlserver-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
@@ -247,9 +250,6 @@ If you want to use an existing secret please specify that when creating the MSSQ
 Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `mssqlserver-quickstart-auth` secret holds username and password
 
 ```bash
-$ kubectl get pods -n demo mssqlserver-quickstart-0 -oyaml | grep podIP
-  podIP: 10.244.0.168
-
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
 sa
 
@@ -277,9 +277,64 @@ kubedb_system
 
 
 ```
-You can also connect with database management tools like SSMS
-You can also use the external-ip of the service. You can also port forward your service to connect.
 
+
+
+Run the following command to see the appbinding object created:
+```bash
+$ kubectl get appbinding -n demo -oyaml
+```
+
+```yaml
+apiVersion: v1
+items:
+- apiVersion: appcatalog.appscode.com/v1alpha1
+  kind: AppBinding
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-quickstart","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Delete","version":"2022-cu12"}}
+    creationTimestamp: "2024-05-08T06:43:45Z"
+    generation: 1
+    labels:
+      app.kubernetes.io/component: database
+      app.kubernetes.io/instance: mssqlserver-quickstart
+      app.kubernetes.io/managed-by: kubedb.com
+      app.kubernetes.io/name: mssqlservers.kubedb.com
+    name: mssqlserver-quickstart
+    namespace: demo
+    ownerReferences:
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: MSSQLServer
+      name: mssqlserver-quickstart
+      uid: 39836735-3f08-466e-ae2f-eb483c11028d
+    resourceVersion: "351872"
+    uid: da0f5c83-c490-4056-b23f-c911570a8072
+  spec:
+    appRef:
+      apiGroup: kubedb.com
+      kind: MSSQLServer
+      name: mssqlserver-quickstart
+      namespace: demo
+    clientConfig:
+      service:
+        name: mssqlserver-quickstart
+        path: /
+        port: 1433
+        scheme: tcp
+      url: tcp(mssqlserver-quickstart.demo.svc:1433)/
+    secret:
+      name: mssqlserver-quickstart-auth
+    type: kubedb.com/mssqlserver
+    version: "2022"
+kind: List
+metadata:
+  resourceVersion: ""
+```
+
+You can use this appbinding to connect with the mssql server from external
 
 
 

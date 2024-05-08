@@ -5,6 +5,6 @@ menu:
     identifier: guides-mssqlserver
     name: Microsoft SQL Server
     parent: guides
-    weight: 40
+    weight: 10
 menu_name: docs_{{ .version }}
 ---
