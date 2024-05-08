@@ -318,8 +318,6 @@ Now, run the following command to get mssqlserver resources in `demo` namespaces
 ```bash
 $ kubectl get petset,svc,secret,pvc -n demo 
 NAME                                 TYPE                       DATA   AGE
-secret/dbm-login-secret              kubernetes.io/basic-auth   1      56m
-secret/master-key-secret             kubernetes.io/basic-auth   1      56m
 secret/mssqlserver-quickstart-auth   kubernetes.io/basic-auth   2      56m
 
 NAME                                                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
