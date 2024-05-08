@@ -256,11 +256,52 @@ sa
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.\password}' | base64 -d
 axgXHj4oRIVQ1ocK
 ```
-we will exec into the pod `mysql-quickstart-0` and connect to the database using username and password
-
+We can exec into the pod `mysql-quickstart-0` using the following command:
 ```bash
-$ kubectl exec -it -n demo mssqlserver-quickstart-0 -- bash
+kubectl exec -it -n demo mssqlserver-quickstart-0 -- bash
 Defaulted container "mssql" out of: mssql, mssql-init (init)
+mssql@mssqlserver-quickstart-0:/$
+```
+
+We can connect to the database using *sqlcmd* utility, the ODBC-based sqlcmd, available with SQL Server or the Microsoft Command Line Utilities, and part of the mssql-tools package on Linux.
+To determine the version you have installed, run the following statement at the command line:
+```bash
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd "-?"
+Microsoft (R) SQL Server Command Line Tool
+Version 17.10.0001.1 Linux
+Copyright (C) 2017 Microsoft Corporation. All rights reserved.
+
+usage: sqlcmd            [-U login id]          [-P password]
+  [-S server or Dsn if -D is provided] 
+  [-H hostname]          [-E trusted connection]
+  [-N Encrypt Connection][-C Trust Server Certificate]
+  [-d use database name] [-l login timeout]     [-t query timeout]
+  [-h headers]           [-s colseparator]      [-w screen width]
+  [-a packetsize]        [-e echo input]        [-I Enable Quoted Identifiers]
+  [-c cmdend]
+  [-q "cmdline query"]   [-Q "cmdline query" and exit]
+  [-m errorlevel]        [-V severitylevel]     [-W remove trailing spaces]
+  [-u unicode output]    [-r[0|1] msgs to stderr]
+  [-i inputfile]         [-o outputfile]
+  [-k[1|2] remove[replace] control characters]
+  [-y variable length type display width]
+  [-Y fixed length type display width]
+  [-p[1] print statistics[colon format]]
+  [-R use client regional setting]
+  [-K application intent]
+  [-M multisubnet failover]
+  [-b On error batch abort]
+  [-D Dsn flag, indicate -S is Dsn] 
+  [-X[1] disable commands, startup script, environment variables [and exit]]
+  [-x disable variable substitution]
+  [-g enable column encryption]
+  [-G use Azure Active Directory for authentication]
+  [-? show syntax summary]
+```
+
+
+Now, connect to the database using username and password 
+```bash
 mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "axgXHj4oRIVQ1ocK"
 1> select name from sys.databases
 2> go
@@ -280,7 +321,7 @@ kubedb_system
 
 
 
-Run the following command to see the appbinding object created:
+Run the following command to see the created appbinding object:
 ```bash
 $ kubectl get appbinding -n demo -oyaml
 ```
