@@ -574,34 +574,15 @@ status:
 
 ## Cleaning up
 
-If you don't set the terminationPolicy, then the kubeDB set the TerminationPolicy to `Delete` by-default.
-
-### Delete
-If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken snapshots and secrets then you might want to set the mongodb object terminationPolicy to Delete. In this setting, StatefulSet and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
-
-When the TerminationPolicy is set to Delete and the mongodb object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the secret and database backup data(snapshots) intact.
-
-```bash
-$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"terminationPolicy":"Delete"}}' --type="merge"
-kubectl delete -n demo mg/mgo-quickstart
-
-$ kubectl get mg,sts,svc,secret,pvc -n demo
-NAME                         TYPE                                  DATA   AGE
-secret/default-token-swg6h   kubernetes.io/service-account-token   3      27m
-secret/mgo-quickstart-auth   Opaque                                2      27m
-secret/mgo-quickstart-key    Opaque                                1      27m
-
-$ kubectl delete ns demo
-```
+If you don't set the terminationPolicy, then the kubeDB set the TerminationPolicy to `WipeOut` by-default.
 
 ### WipeOut
-But if you want to cleanup each of the Kubernetes resources created by this tutorial, run:
+If you want to cleanup each of the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo mg/mgo-quickstart
+$ kubectl delete -n demo fr/ferret
 
-$ kubectl get mg,sts,svc,secret,pvc -n demo
+$ kubectl get fr,sts,svc,secret,pvc -n demo
 NAME              TYPE              DATA   AGE
 
 $ kubectl delete ns demo
@@ -612,6 +593,4 @@ $ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend using `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database. So, we have `Halt` option which preserves all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will delete everything created by KubeDB for a particular FerretDB crd when you delete the mongodb object. For more details about termination policy, please visit [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
 
