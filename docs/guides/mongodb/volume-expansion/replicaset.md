@@ -37,7 +37,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/mongodb](/docs/examples/mongodb) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Expand Volume of Replicaset
 
@@ -55,7 +55,7 @@ standard (default)   kubernetes.io/gce-pd   Delete          Immediate           
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `MongoDB` replicaSet database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` replicaSet database with version `4.4.26`.
 
 ### Deploy MongoDB
 
@@ -133,8 +133,8 @@ spec:
   databaseRef:
     name: mg-replicaset
   volumeExpansion:
-    mode: "Online"
     replicaSet: 2Gi
+    mode: Online
 ```
 
 Here,
@@ -158,7 +158,6 @@ Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following comman
 
 ```bash
 $ kubectl get mongodbopsrequest -n demo
-Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                         TYPE              STATUS       AGE
 mops-volume-exp-replicaset   VolumeExpansion   Successful   83s
 ```

@@ -21,7 +21,7 @@ spec:
         name: pgadmin
         env:
         - name: PGADMIN_DEFAULT_EMAIL
-          value: "admin"
+          value: "admin@gmail.com"
         - name: PGADMIN_DEFAULT_PASSWORD
           value: "admin"
         - name: PGADMIN_PORT

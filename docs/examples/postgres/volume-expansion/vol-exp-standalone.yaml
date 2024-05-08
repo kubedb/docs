@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pgops-vol-exp
+  namespace: demo
+spec:
+  apply: IfReady
+  databaseRef:
+    name: pg-standalone
+  type: VolumeExpansion
+  volumeExpansion:
+    mode: Online
+    postgres: 12Gi

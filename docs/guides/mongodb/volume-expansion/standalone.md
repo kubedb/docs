@@ -36,7 +36,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/mongodb](/docs/examples/mongodb) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Expand Volume of Standalone Database
 
@@ -127,15 +127,18 @@ spec:
   databaseRef:
     name: mg-standalone
   volumeExpansion:
-    mode: "Online"
     standalone: 2Gi
+    mode: Online
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing volume expansion operation on `mops-volume-exp-standalone` database.
+- `spec.databaseRef.name` specifies that we are performing volume expansion operation on `mg-standalone` database.
 - `spec.type` specifies that we are performing `VolumeExpansion` on our database.
 - `spec.volumeExpansion.standalone` specifies the desired volume size.
+- `spec.volumeExpansion.mode` specifies the desired volume expansion mode(`Online` or `Offline`).
+
+During `Online` VolumeExpansion KubeDB expands volume without pausing database object, it directly updates the underlying PVC. And for `Offline` volume expansion, the database is paused. The Pods are deleted and PVC is updated. Then the database Pods are recreated with updated PVC.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
@@ -152,7 +155,8 @@ Let's wait for `MongoDBOpsRequest` to be `Successful`. Run the following command
 
 ```bash
 $ kubectl get mongodbopsrequest -n demo
-Every 2.0s: kubectl get mongodbopsrequest -n demo
+NAME                         TYPE              STATUS       AGE
+mops-volume-exp-standalone   VolumeExpansion   Successful   75s
 ```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.

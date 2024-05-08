@@ -49,8 +49,8 @@ The Volume Expansion process consists of the following steps:
 
 8. Then the `KubeDB` Ops-manager operator will expand the persistent volume to reach the expected size defined in the `MongoDBOpsRequest` CR.
 
-9. After the successfully expansion of the volume of the related StatefulSet Pods, the `KubeDB` Ops-manager operator updates the new volume size in the `MongoDB` object to reflect the updated state.
+9. After the successful Volume Expansion of the related StatefulSet Pods, the `KubeDB` Ops-manager operator updates the new volume size in the `MongoDB` object to reflect the updated state.
 
 10. After the successful Volume Expansion of the `MongoDB` components, the `KubeDB` Ops-manager operator resumes the `MongoDB` object so that the `KubeDB` Provisioner  operator resumes its usual operations.
 
-In the next docs, we are going to show a step by step guide on Volume Expansion of various MongoDB database components using `MongoDBOpsRequest` CRD.
+In the next docs, we are going to show a step-by-step guide on Volume Expansion of various MongoDB database components using `MongoDBOpsRequest` CRD.
