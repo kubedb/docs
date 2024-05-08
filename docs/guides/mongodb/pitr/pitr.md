@@ -474,7 +474,7 @@ kubectl delete -n demo backupstorage/gcs-storage
 kubectl delete ns demo
 ```
 ## Next Steps
-- Learn about [backup and restore](/docs/guides/mongodb/backup/overview/index.md) MongoDB database using Stash.
+- Learn about [backup and restore](/docs/guides/mongodb/backup/stash/overview/index.md) MongoDB database using Stash.
 - Learn about initializing [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
 - Learn about [custom mongoVersions](/docs/guides/mongodb/concepts/catalog.md).
 - Want to setup MongoDB cluster? Check how to [configure Highly Available MongoDB Cluster](/docs/guides/mongodb/clustering/replicaset.md)

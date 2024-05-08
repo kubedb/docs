@@ -22,7 +22,7 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
-- If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/overview/index.md).
+- If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/stash/overview/index.md).
 - If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/overview/).
 - If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/database/).
 
@@ -295,7 +295,7 @@ app-sample-mongodb-1643781603   BackupConfiguration   app-sample-mongodb   Succe
 Once the backup has been completed successfully, you should see the backed up data has been stored in the bucket at the directory pointed by the `prefix` field of the `Repository`.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mongodb/backup/auto-backup/images/sample-mongodb.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mongodb/backup/stash/auto-backup/images/sample-mongodb.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -481,7 +481,7 @@ app-sample-mongodb-2-1643782861   BackupConfiguration   app-sample-mongodb-2   S
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mongodb/backup/auto-backup/images/sample-mongodb-2.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mongodb/backup/stash/auto-backup/images/sample-mongodb-2.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -671,7 +671,7 @@ app-sample-mongodb-3-1643792101   BackupConfiguration   app-sample-mongodb-3   S
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mongodb/backup/auto-backup/images/sample-mongodb-3.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mongodb/backup/stash/auto-backup/images/sample-mongodb-3.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
