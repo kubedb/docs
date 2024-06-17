@@ -32,10 +32,6 @@ jobs:
           chmod +x codespan-schema-checker
           sudo mv codespan-schema-checker /usr/local/bin/codespan-schema-checker
 
-      - name: Check links
-        run: |
-          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*)$'
-
       - name: Create Kubernetes cluster
         id: kind
         uses: engineerd/setup-kind@v0.5.0
@@ -73,3 +69,7 @@ jobs:
           mv resource-metadata/hub /tmp
           rm -rf resource-metadata
           codespan-schema-checker --content=./docs
+
+      - name: Check links
+        run: |
+          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*)$'
