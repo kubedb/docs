@@ -111,8 +111,8 @@ metadata:
   namespace: demo
 spec:
   version: "1.17.0"
-  databases:
-  - alias: "postgres"
+  database:
+    syncUsers: true
     databaseName: "postgres"
     databaseRef:
       name: "quick-postgres"
