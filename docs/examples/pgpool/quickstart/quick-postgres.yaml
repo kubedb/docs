@@ -16,4 +16,4 @@ spec:
     resources:
       requests:
         storage: 50Mi
-  deletionPolicy: WipeOut
+  terminationPolicy: WipeOut

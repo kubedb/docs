@@ -163,8 +163,6 @@ spec:
     failureThreshold: 3
     periodSeconds: 20
     timeoutSeconds: 10
-  podPlacementPolicy:
-    name: default
   podTemplate:
     controller: {}
     metadata: {}
