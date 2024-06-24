@@ -107,6 +107,9 @@ Another external dependency of Druid is deep storage where the segments are stor
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+
+$ helm repo add minio https://operator.min.io/
+$ helm repo update minio
 $ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
 
 $ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
@@ -114,7 +117,8 @@ $ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
---set tenant.buckets[0].name="druid"
+--set tenant.buckets[0].name="druid" \
+--set tenant.pools[0].name="default"
 
 ```
 
@@ -133,6 +137,7 @@ stringData:
   druid.s3.accessKey: "minio"
   druid.s3.secretKey: "minio123"
   druid.s3.protocol: "http"
+  druid.s3.enablePathStyleAccess: "true"
   druid.s3.endpoint.signingRegion: "us-east-1"
   druid.s3.endpoint.url: "http://myminio-hl.demo.svc.cluster.local:9000/"
 ```
@@ -178,6 +183,7 @@ spec:
       replicas: 1
     historicals:
       replicas: 1
+      storageType: Durable
       storage:
         accessModes:
           - ReadWriteOnce
@@ -187,6 +193,7 @@ spec:
         storageClassName: standard
     middleManagers:
       replicas: 1
+      storageType: Durable
       storage:
         accessModes:
           - ReadWriteOnce
@@ -196,7 +203,6 @@ spec:
         storageClassName: standard
     routers:
       replicas: 1
-  storageType: Durable
   deletionPolicy: Delete
   serviceTemplates:
     - alias: primary

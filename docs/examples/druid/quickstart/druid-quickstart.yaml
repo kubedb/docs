@@ -23,6 +23,7 @@ spec:
       replicas: 1
     historicals:
       replicas: 1
+      storageType: Durable
       storage:
         accessModes:
           - ReadWriteOnce
@@ -32,6 +33,7 @@ spec:
         storageClassName: standard
     middleManagers:
       replicas: 1
+      storageType: Durable
       storage:
         accessModes:
           - ReadWriteOnce
@@ -41,7 +43,6 @@ spec:
         storageClassName: standard
     routers:
       replicas: 1
-  storageType: Durable
   deletionPolicy: Delete
   serviceTemplates:
     - alias: primary
