@@ -226,7 +226,7 @@ Spec:
         Storage:         1Gi
     Storage Class Name:  standard
   Storage Type:          Durable
-  Deletion Policy:    DoNotTerminate
+  Deletion Policy:       DoNotTerminate
   Version:               3.6.1
 Status:
   Conditions:

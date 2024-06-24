@@ -184,7 +184,7 @@ Spec:
       Requests:
         Storage:       500Mi
   Storage Type:        Durable
-  Deletion Policy:  WipeOut
+  Deletion Policy:     WipeOut
   Version:             1.18.0
 Status:
   Conditions:

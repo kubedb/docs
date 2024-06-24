@@ -255,7 +255,7 @@ Spec:
         Storage:         1Gi
     Storage Class Name:  standard
   Storage Type:          Durable
-  Deletion Policy:    Delete
+  Deletion Policy:       Delete
   Version:               9.4.1
   Zookeeper Digest Readonly Secret:
     Name:  solr-combined-zk-digest-readonly

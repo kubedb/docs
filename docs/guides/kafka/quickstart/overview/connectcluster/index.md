@@ -292,7 +292,7 @@ Spec:
       Security Context:
         Fs Group:      1001
   Replicas:            3
-  Deletion Policy:  WipeOut
+  Deletion Policy:     WipeOut
   Version:             3.6.1
 Status:
   Conditions:

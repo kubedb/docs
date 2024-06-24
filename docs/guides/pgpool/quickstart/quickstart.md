@@ -343,7 +343,7 @@ Spec:
   Replicas:            1
   Ssl Mode:            disable
   Sync Users:          true
-  Deletion Policy:  WipeOut
+  Deletion Policy:     WipeOut
   Version:             4.5.0
 Status:
   Conditions:

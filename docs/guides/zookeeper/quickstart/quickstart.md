@@ -178,7 +178,7 @@ Spec:
       Requests:
         Storage:         1Gi
     Storage Class Name:  standard
-  Deletion Policy:    WipeOut
+  Deletion Policy:       WipeOut
   Version:               3.9.1
 Status:
   Conditions:

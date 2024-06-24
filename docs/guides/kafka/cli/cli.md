@@ -535,7 +535,7 @@ Spec:
     Spec:
       Resources:
   Storage Type:        Durable
-  Deletion Policy:  DoNotTerminate
+  Deletion Policy:     DoNotTerminate
   Tls:
     Certificates:
       Alias:        server

@@ -373,7 +373,7 @@ Spec:
     Metadata:
     Spec:
   Storage Type:        Ephemeral
-  Deletion Policy:  Delete
+  Deletion Policy:     Delete
   Topology:
     Brokers:
       Pod Placement Policy:
