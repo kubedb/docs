@@ -34,7 +34,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Solr","metadata":{"annotations":{},"name":"solr-dev","namespace":"dev"},"spec":{"monitor":{"agent":"prometheus.io/builtin"},"replicas":3,"solrModules":["s3-repository","gcs-repository","prometheus-exporter"],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"},"terminationPolicy":"Delete","version":"9.4.1","zookeeperRef":{"name":"zoo-dev","namespace":"dev"}}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Solr","metadata":{"annotations":{},"name":"solr-dev","namespace":"dev"},"spec":{"monitor":{"agent":"prometheus.io/builtin"},"replicas":3,"solrModules":["s3-repository","gcs-repository","prometheus-exporter"],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"},"deletionPolicy":"Delete","version":"9.4.1","zookeeperRef":{"name":"zoo-dev","namespace":"dev"}}}
   creationTimestamp: "2024-05-06T11:25:38Z"
   generation: 1
   labels:

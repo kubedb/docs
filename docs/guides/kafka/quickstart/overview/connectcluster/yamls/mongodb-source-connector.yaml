@@ -9,4 +9,4 @@ spec:
   connectClusterRef:
     name: connectcluster-quickstart
     namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

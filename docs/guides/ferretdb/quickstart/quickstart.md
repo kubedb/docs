@@ -81,7 +81,7 @@ spec:
         storage: 500Mi
   backend:
     externallyManaged: false
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -94,7 +94,7 @@ Here,
 - `spec.version` is name of the FerretDBVersion CR where the docker images are specified. In this tutorial, a FerretDB 1.18.0 database is created.
 - `spec.storageType` specifies the type of storage that will be used for FerretDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create FerretDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `FerretDB` CR or which resources KubeDB should keep or delete when you delete `FerretDB` CR. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy)
+- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `FerretDB` CR or which resources KubeDB should keep or delete when you delete `FerretDB` CR. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy)
 - `spec.backend` denotes the backend database information for FerretDB instance.
 - `spec.replicas` denotes the number of replicas in the replica-set.
 
@@ -184,7 +184,7 @@ Spec:
       Requests:
         Storage:       500Mi
   Storage Type:        Durable
-  Termination Policy:  WipeOut
+  Deletion Policy:  WipeOut
   Version:             1.18.0
 Status:
   Conditions:
@@ -265,7 +265,7 @@ kind: FerretDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"FerretDB","metadata":{"annotations":{},"name":"ferret","namespace":"demo"},"spec":{"authSecret":{"externallyManaged":false},"backend":{"externallyManaged":false},"sslMode":"disabled","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}}},"terminationPolicy":"WipeOut","version":"1.18.0"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"FerretDB","metadata":{"annotations":{},"name":"ferret","namespace":"demo"},"spec":{"authSecret":{"externallyManaged":false},"backend":{"externallyManaged":false},"sslMode":"disabled","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}}},"deletionPolicy":"WipeOut","version":"1.18.0"}}
   creationTimestamp: "2024-03-12T05:04:34Z"
   finalizers:
     - kubedb.com
@@ -324,7 +324,7 @@ spec:
       requests:
         storage: 500Mi
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: 1.18.0
 status:
   conditions:
@@ -458,7 +458,7 @@ spec:
         name: ha-postgres
         namespace: demo
         pgPort: 5432
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -481,7 +481,7 @@ kind: FerretDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"FerretDB","metadata":{"annotations":{},"name":"ferretdb-external","namespace":"demo"},"spec":{"authSecret":{"externallyManaged":true,"name":"ha-postgres-auth"},"backend":{"externallyManaged":true,"postgres":{"service":{"name":"ha-postgres","namespace":"demo","pgPort":5432}}},"sslMode":"disabled","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"100Mi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"1.18.0"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"FerretDB","metadata":{"annotations":{},"name":"ferretdb-external","namespace":"demo"},"spec":{"authSecret":{"externallyManaged":true,"name":"ha-postgres-auth"},"backend":{"externallyManaged":true,"postgres":{"service":{"name":"ha-postgres","namespace":"demo","pgPort":5432}}},"sslMode":"disabled","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"100Mi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"1.18.0"}}
   creationTimestamp: "2024-03-12T06:30:22Z"
   finalizers:
     - kubedb.com
@@ -541,7 +541,7 @@ spec:
         storage: 500Mi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: 1.18.0
 status:
   conditions:
@@ -580,7 +580,7 @@ status:
 
 ## Cleaning up
 
-If you don't set the terminationPolicy, then the kubeDB set the TerminationPolicy to `WipeOut` by-default for `FerretDB`.
+If you don't set the deletionPolicy, then the kubeDB set the DeletionPolicy to `WipeOut` by-default for `FerretDB`.
 
 ### WipeOut
 If you want to cleanup each of the Kubernetes resources created by this tutorial, run:

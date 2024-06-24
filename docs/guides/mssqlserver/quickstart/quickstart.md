@@ -75,7 +75,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 
 ```
 
@@ -89,7 +89,7 @@ Here,
 - `spec.version` is the name of the MSSQLServerVersion CR where the docker images are specified. In this tutorial, a MSSQLServer `2022-cu12` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for MSSQLServer database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MSSQLServer database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MSSQLServer` CR or which resources KubeDB should keep or delete when you delete `MSSQLServer` CR. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
+- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MSSQLServer` CR or which resources KubeDB should keep or delete when you delete `MSSQLServer` CR. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in storage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
@@ -130,7 +130,7 @@ kind: MSSQLServer
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-quickstart","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Delete","version":"2022-cu12"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-quickstart","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Delete","version":"2022-cu12"}}
   creationTimestamp: "2024-05-02T13:42:30Z"
   finalizers:
     - kubedb.com
@@ -203,7 +203,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   version: 2022-cu12
 status:
   conditions:
@@ -334,7 +334,7 @@ items:
   metadata:
     annotations:
       kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-quickstart","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Delete","version":"2022-cu12"}}
+        {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-quickstart","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Delete","version":"2022-cu12"}}
     creationTimestamp: "2024-05-08T06:43:45Z"
     generation: 1
     labels:
@@ -379,30 +379,30 @@ You can use this appbinding to connect with the mssql server from external
 
 
 
-## Database TerminationPolicy
+## Database DeletionPolicy
 
 This field is used to regulate the deletion process of the related resources when `MSSQLServer` object is deleted. User can set the value of this field according to their needs. The available options and their use case scenario is described below:
 
 **DoNotTerminate:**
 
-When `terminationPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
+When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
 $ kubectl delete ms -n demo mssqlserver-quickstart
-The MSSQLServer "mssqlserver-quickstart" is invalid: spec.terminationPolicy: Invalid value: "mssqlserver-quickstart": Can not delete as terminationPolicy is set to "DoNotTerminate"
+The MSSQLServer "mssqlserver-quickstart" is invalid: spec.deletionPolicy: Invalid value: "mssqlserver-quickstart": Can not delete as deletionPolicy is set to "DoNotTerminate"
 ```
 
-Now, run `kubectl patch -n demo ms mssqlserver-quickstart -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"` to set `spec.terminationPolicy` to `Halt` (which deletes the mssqlserver object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
+Now, run `kubectl patch -n demo ms mssqlserver-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"` to set `spec.deletionPolicy` to `Halt` (which deletes the mssqlserver object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
-Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy).
+Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy).
 
 **Halt:**
 
-Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MSSQLServer` object `terminationPolicy` to `Halt`.
+Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MSSQLServer` object `deletionPolicy` to `Halt`.
 
-When the [TerminationPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `halt` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `halt` in existing database using `patch` command for testing.
+When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `halt` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `deletionPolicy` to `halt` in existing database using `patch` command for testing.
 
-At first, run `kubectl patch -n demo ms mssqlserver-quickstart -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"`. Then delete the mssqlserver object,
+At first, run `kubectl patch -n demo ms mssqlserver-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"`. Then delete the mssqlserver object,
 
 ```bash
 $ kubectl delete ms -n demo mssqlserver-quickstart
@@ -423,15 +423,15 @@ persistentvolumeclaim/data-mssqlserver-quickstart-0   Bound    pvc-0e6a361e-9195
 
 From the above output, you can see that all mssqlserver resources(`PetSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mssqlserver again using these resources.
 
->You can also set the `terminationPolicy` to `Halt`(deprecated). It's behavior same as `halt` and right now `halt` is replaced by `Halt`.
+>You can also set the `deletionPolicy` to `Halt`(deprecated). It's behavior same as `halt` and right now `halt` is replaced by `Halt`.
 
 **Delete:**
 
-If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `MSSQLServer` object `terminationPolicy` to `Delete`. In this setting, `PetSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
+If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `MSSQLServer` object `deletionPolicy` to `Delete`. In this setting, `PetSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
 
-When the [TerminationPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `Delete` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
+When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `Delete` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
 
-Suppose, we have a database with `terminationPolicy` set to `Delete`. Now, are going to delete the database using the following command:
+Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
 $ kubectl delete ms -n demo mssqlserver-quickstart 
@@ -449,13 +449,13 @@ secret/mssqlserver-quickstart-auth   kubernetes.io/basic-auth   2      58m
 
 From the above output, you can see that all mssqlserver resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mssqlserver using `snapshots`(if previously taken) and `secret`.
 
->If you don't set the terminationPolicy then the kubeDB set the TerminationPolicy to Delete by-default.
+>If you don't set the deletionPolicy then the kubeDB set the DeletionPolicy to Delete by-default.
 
 **WipeOut:**
 
-You can totally delete the `MSSQLServer` database and relevant resources without any tracking by setting `terminationPolicy` to `WipeOut`. KubeDB operator will delete all relevant resources of this `MSSQLServer` database (i.e, `PVCs`, `Secrets`, `Snapshots`) when the `terminationPolicy` is set to `WipeOut`.
+You can totally delete the `MSSQLServer` database and relevant resources without any tracking by setting `deletionPolicy` to `WipeOut`. KubeDB operator will delete all relevant resources of this `MSSQLServer` database (i.e, `PVCs`, `Secrets`, `Snapshots`) when the `deletionPolicy` is set to `WipeOut`.
 
-Suppose, we have a database with `terminationPolicy` set to `WipeOut`. Now, are going to delete the database using the following command:
+Suppose, we have a database with `deletionPolicy` set to `WipeOut`. Now, are going to delete the database using the following command:
 
 ```yaml
 $ kubectl delete ms -n demo mssqlserver-quickstart
@@ -469,16 +469,16 @@ $ kubectl get petset,svc,secret,pvc -n demo
 No resources found in demo namespace.
 ```
 
-From the above output, you can see that all mssqlserver resources are deleted. there is no option to recreate/reinitialize your database if `terminationPolicy` is set to `WipeOut`.
+From the above output, you can see that all mssqlserver resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `WipeOut`.
 
->Be careful when you set the `terminationPolicy` to `WipeOut`. Because there is no option to trace the database resources if once deleted the database.
+>Be careful when you set the `deletionPolicy` to `WipeOut`. Because there is no option to trace the database resources if once deleted the database.
 
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mssqlserver/mssqlserver-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mssqlserver/mssqlserver-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete mssqlserver -n demo mssqlserver-quickstart 
 
 
@@ -490,7 +490,7 @@ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular MSSQLServer crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy).
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular MSSQLServer crd when you delete the crd. For more details about deletion policy, please visit [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy).
 
 ## Next Steps
 

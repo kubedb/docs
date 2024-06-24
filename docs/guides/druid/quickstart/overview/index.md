@@ -197,7 +197,7 @@ spec:
     routers:
       replicas: 1
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   serviceTemplates:
     - alias: primary
       spec:
@@ -212,7 +212,7 @@ Here,
 - `spec.version` - is the name of the DruidVersion CR. Here, a Druid of version `28.0.1` will be created.
 - `spec.storageType` - specifies the type of storage that will be used for Kafka. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Druid using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this Druid instance. This storage spec will be passed to the PetSet created by the KubeDB operator to run Druid pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete Druid CR. Termination policy `Delete` will delete the database pods and PVC when the Druid CR is deleted.
+- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Druid CR. Deletion policy `Delete` will delete the database pods and PVC when the Druid CR is deleted.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
 
@@ -367,7 +367,7 @@ Spec:
     Metadata:
     Spec:
   Storage Type:        Ephemeral
-  Termination Policy:  Delete
+  Deletion Policy:  Delete
   Topology:
     Brokers:
       Pod Placement Policy:
@@ -744,7 +744,7 @@ You can use this web console for loading data, managing datasources and tasks, a
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo druid druid-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo druid druid-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kafka.kubedb.com/druid-quickstart patched
 
 $ kubectl delete dr druid-quickstart  -n demo
@@ -759,7 +759,7 @@ namespace "demo" deleted
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if the database pod fails. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purposes, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resource that was created with the Druid CR. For more details, please visit [here](/docs/guides/kafka/concepts/kafka.md#specterminationpolicy).
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.deletionPolicy: WipeOut`. It will clean up every resource that was created with the Druid CR. For more details, please visit [here](/docs/guides/kafka/concepts/kafka.md#specdeletionPolicy).
 
 ## Next Steps
 

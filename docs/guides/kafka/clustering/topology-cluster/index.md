@@ -116,7 +116,7 @@ spec:
             storage: 1Gi
         storageClassName: standard
   storageType: Durable
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
  Let's deploy the above example by the following command:
@@ -297,11 +297,11 @@ TO clean up the k8s resources created by this tutorial, run:
 
 ```bash
 # standalone cluster
-$ kubectl patch -n demo kf kafka-prod -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo kf kafka-prod -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete kf -n demo kafka-prod
 
 # multinode cluster
-$ kubectl patch -n demo kf kafka-prod -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo kf kafka-prod -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete kf -n demo kafka-prod
 
 # delete namespace

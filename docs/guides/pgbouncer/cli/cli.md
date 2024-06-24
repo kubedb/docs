@@ -62,10 +62,10 @@ kind: PgBouncer
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"connectionPool":{"adminUsers":["admin","admin1"],"maxClientConnections":20,"reservePoolSize":5},"databases":[{"alias":"postgres","databaseName":"postgres","databaseRef":{"name":"quick-postgres"}},{"alias":"tmpdb","databaseName":"mydb","databaseRef":{"name":"quick-postgres"}}],"monitor":{"agent":"prometheus.io/builtin"},"replicas":1,"userListSecretRef":{"name":"db-user-pass"},"version":"1.17.0"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"connectionPool":{"adminUsers":["admin","admin1"],"maxClientConnections":20,"reservePoolSize":5},"database":{"databaseName":"postgres","databaseRef":{"name":"quick-postgres"}},"monitor":{"agent":"prometheus.io/builtin"},"replicas":1,"userListSecretRef":{"name":"db-user-pass"},"version":"1.17.0"}}
   creationTimestamp: "2019-10-31T10:34:04Z"
   finalizers:
-  - kubedb.com
+    - kubedb.com
   generation: 1
   name: pgbouncer-demo
   namespace: demo
@@ -77,16 +77,11 @@ spec:
     poolMode: session
     port: 5432
     reservePoolSize: 5
-  databases:
-  - alias: postgres
-    databaseName: postgres
+  database:
+    syncUsers: true
+    databaseName: "postgres"
     databaseRef:
-      name: quick-postgres
-      nnamespace: demo
-  - alias: tmpdb
-    databaseName: mydb
-    databaseRef:
-      name: quick-postgres
+      name: "quick-postgres"
       namespace: demo
   monitor:
     agent: prometheus.io/builtin
@@ -197,8 +192,7 @@ Spec:
     Max Client Conn:    20
     Pool Mode:          session
     Reserve Pool Size:  5
-  Databases:
-    Alias:                  postgres
+  Database:
     App Binding Name:       postgres-demo
     App Binding Namespace:  demo
     Database Name:          postgres

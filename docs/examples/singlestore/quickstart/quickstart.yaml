@@ -49,4 +49,4 @@ spec:
   licenseSecret:
     name: license-secret
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

@@ -14,7 +14,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut  # DoNotTerminate(blocks deletion), Halt( retains pvc,secret), Delete (retains secret)
+  deletionPolicy: WipeOut  # DoNotTerminate(blocks deletion), Halt( retains pvc,secret), Delete (retains secret)
   podTemplate:
     spec:
       containers:

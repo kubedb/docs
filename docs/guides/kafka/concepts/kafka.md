@@ -52,7 +52,7 @@ spec:
       labels:
         thisLabel: willGoToSts
   storageType: Durable
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
   tls:
     certificates:
       - alias: server
@@ -368,14 +368,16 @@ KubeDB allows following fields to set in `spec.serviceTemplates`:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.21.1/api/v1/types.go#L237) to understand these fields in detail.
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Kafka` crd or which resources KubeDB should keep or delete when you delete `Kafka` crd. KubeDB provides following four termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Kafka` crd or which resources KubeDB should keep or delete when you delete `Kafka` crd. KubeDB provides following four deletion policies:
 
 - DoNotTerminate
 - WipeOut
+- Halt
+- Delete
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 ## spec.healthChecker
 It defines the attributes for the health checker.

@@ -34,7 +34,7 @@ spec:
   connectClusterRef:
     name: connectcluster-quickstart
     namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ### spec.configSecret
@@ -56,17 +56,17 @@ spec:
     namespace: <connectcluster-appbinding-namespace>
 ```
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Connector` CR or which resources KubeDB should keep or delete when you delete `Connector` CR. KubeDB provides following four termination policies:
+`spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Connector` CR or which resources KubeDB should keep or delete when you delete `Connector` CR. KubeDB provides following three deletion policies:
 
 - Delete
 - DoNotTerminate
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the resource as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the resource as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
-Termination policy `WipeOut` will delete the connector from the ConnectCluster when the Connector CR is deleted and `Delete` keep the connector after deleting the Connector CR.
+Deletion policy `WipeOut` will delete the connector from the ConnectCluster when the Connector CR is deleted and `Delete` keep the connector after deleting the Connector CR.
 
 ## Next Steps
 

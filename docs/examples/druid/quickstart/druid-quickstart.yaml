@@ -42,7 +42,7 @@ spec:
     routers:
       replicas: 1
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   serviceTemplates:
     - alias: primary
       spec:

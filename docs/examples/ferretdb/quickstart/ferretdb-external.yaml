@@ -24,4 +24,4 @@ spec:
         name: ha-postgres
         namespace: demo
         pgPort: 5432
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

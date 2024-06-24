@@ -89,7 +89,7 @@ metadata:
 spec:
   version: 3.8.3
   replicas: 3
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   adminServerPort: 8080
   storage:
     resources:
@@ -108,7 +108,7 @@ Here,
 - `spec.replicas` - specifies the number of ZooKeeper nodes.
 - `spec.storageType` - specifies the type of storage that will be used for ZooKeeper database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the ZooKeeper database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the Petsets created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete ZooKeeper CR. Termination policy `Delete` will delete the database pods, secret and PVC when the ZooKeeper CR is deleted. Checkout the [link](/docs/guides/zookeeper/concepts/zookeeper.md/#specterminationpolicy) for details.
+- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete ZooKeeper CR. Deletion policy `Delete` will delete the database pods, secret and PVC when the ZooKeeper CR is deleted. Checkout the [link](/docs/guides/zookeeper/concepts/zookeeper.md#specdeletionpolicy) for details.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
 
@@ -139,7 +139,7 @@ metadata:
   namespace: demo
 spec:
   version: 9.4.1
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   replicas: 2
   zookeeperRef:
     name: zk-com
@@ -159,7 +159,7 @@ Here,
 - `spec.replicas` - specifies the number of Solr nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Solr database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Solr database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the Petset created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete Solr CR. Termination policy `Delete` will delete the database pods, secret and PVC when the Solr CR is deleted. Checkout the [link](/docs/guides/solr/concepts/solr.md/#specterminationpolicy) for details.
+- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Solr CR. Deletion policy `Delete` will delete the database pods, secret and PVC when the Solr CR is deleted. Checkout the [link](/docs/guides/solr/concepts/solr.md#specdeletionpolicy) for details.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
 
@@ -255,7 +255,7 @@ Spec:
         Storage:         1Gi
     Storage Class Name:  standard
   Storage Type:          Durable
-  Termination Policy:    Delete
+  Deletion Policy:    Delete
   Version:               9.4.1
   Zookeeper Digest Readonly Secret:
     Name:  solr-combined-zk-digest-readonly
@@ -442,12 +442,12 @@ From the health information above, we can see that health of our collections in 
 
 ## Halt Solr
 
-KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` termination policy. If admission webhook is enabled, it prevents the user from deleting the database as long as the `spec.terminationPolicy` is set `DoNotTerminate`.
+KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` deletion policy. If admission webhook is enabled, it prevents the user from deleting the database as long as the `spec.deletionPolicy` is set `DoNotTerminate`.
 
-To halt the database, we have to set `spec.terminationPolicy:` to `Halt` by updating it,
+To halt the database, we have to set `spec.deletionPolicy:` to `Halt` by updating it,
 
 ```bash
-$ kubectl patch -n demo solr solr-combined -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"
+$ kubectl patch -n demo solr solr-combined -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 solr.kubedb.com/solr-combined patched
 ```
 
@@ -477,7 +477,7 @@ persistentvolumeclaim/solr-combined-data-solr-combined-2   Bound    pvc-dcb8c9e2
 
 ## Resume Solr
 
-Say, the Solr CR was deleted with `spec.terminationPolicy` to `Halt` and you want to re-create the Solr cluster using the existing auth secrets and the PVCs.
+Say, the Solr CR was deleted with `spec.deletionPolicy` to `Halt` and you want to re-create the Solr cluster using the existing auth secrets and the PVCs.
 
 You can do it by simpily re-deploying the original Solr object:
 
@@ -491,7 +491,7 @@ solr.kubedb.com/solr-combined created
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo solr solr-combined -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo solr solr-combined -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 solr.kubedb.com/solr-combined patched
 
 $ kubectl delete -n demo sl/solr-combined
@@ -506,4 +506,4 @@ namespace "demo" deleted
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if the database pod fails. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purposes, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resouce that was created with the Solr CR. Checkout the [link](/docs/guides/solr/concepts/solr.md/#specterminationpolicy) for details.
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.deletionPolicy: WipeOut`. It will clean up every resouce that was created with the Solr CR. Checkout the [link](/docs/guides/solr/concepts/solr.md#specdeletionpolicy) for details.

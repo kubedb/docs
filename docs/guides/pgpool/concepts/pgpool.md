@@ -57,7 +57,7 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   syncUsers: true
   initConfig:
     pgpoolConfig:

@@ -172,7 +172,7 @@ spec:
   sslMode: disable
   clientAuthMode: md5
   syncUsers: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Here,
@@ -183,7 +183,7 @@ Here,
 - `spec.sslMode` specifies ssl mode for clients.
 - `spec.clientAuthMode` specifies the authentication method that will be used for clients.
 - `spec.syncUsers` specifies whether user want to sync additional users to Pgpool.
-- `spec.terminationPolicy` specifies what policy to apply while deletion.
+- `spec.deletionPolicy` specifies what policy to apply while deletion.
 
 Now that we've been introduced to the pgpool CRD, let's create it,
 
@@ -273,7 +273,7 @@ Metadata:
         f:replicas:
         f:sslMode:
         f:syncUsers:
-        f:terminationPolicy:
+        f:deletionPolicy:
         f:version:
     Manager:      kubectl-client-side-apply
     Operation:    Update
@@ -343,7 +343,7 @@ Spec:
   Replicas:            1
   Ssl Mode:            disable
   Sync Users:          true
-  Termination Policy:  WipeOut
+  Deletion Policy:  WipeOut
   Version:             4.5.0
 Status:
   Conditions:
@@ -489,15 +489,15 @@ Here, we can see the default configuration KubeDB operator has set for us. You c
 
 ## Cleaning up
 
-If you don't set the terminationPolicy, then the kubeDB set the TerminationPolicy to `Delete` by-default.
+If you don't set the deletionPolicy, then the kubeDB set the DeletionPolicy to `Delete` by-default.
 
 ### Delete
-If you want to delete the existing pgpool, but want to keep the secrets intact then you might want to set the pgpool object terminationPolicy to Delete. In this setting, PetSet and the services will be deleted.
+If you want to delete the existing pgpool, but want to keep the secrets intact then you might want to set the pgpool object deletionPolicy to Delete. In this setting, PetSet and the services will be deleted.
 
-When the TerminationPolicy is set to Delete and the pgpool object is deleted, the KubeDB operator will delete the PetSet and its pods along with the services  but leaves the secrets intact.
+When the DeletionPolicy is set to Delete and the pgpool object is deleted, the KubeDB operator will delete the PetSet and its pods along with the services  but leaves the secrets intact.
 
 ```bash
-$ kubectl patch -n pool pp/quick-pgpool -p '{"spec":{"terminationPolicy":"Delete"}}' --type="merge"
+$ kubectl patch -n pool pp/quick-pgpool -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
 pgpool.kubedb.com/quick-pgpool patched
 
 $ kubectl delete -n pool pp/quick-pgpool
@@ -524,7 +524,7 @@ secret/quick-pgpool-config   Opaque                     2      3h22m
 But if you want to cleanup each of the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n pool pp/quick-pgpool -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n pool pp/quick-pgpool -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 
 $ kubectl delete -n pool pp/quick-pgpool
 pgpool.kubedb.com "quick-pgpool" deleted
