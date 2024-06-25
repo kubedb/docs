@@ -136,20 +136,21 @@ kind: MSSQLServer
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-quickstart","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Delete","version":"2022-cu12"}}
-  creationTimestamp: "2024-05-02T13:42:30Z"
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"storageType":"Durable","tls":{"clientTLS":false,"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-issuer"}},"version":"2022-cu12"}}
+  creationTimestamp: "2024-06-25T06:12:57Z"
   finalizers:
     - kubedb.com
   generation: 2
   name: mssqlserver-quickstart
   namespace: demo
-  resourceVersion: "191795"
-  uid: af908d5e-31ba-4ac5-9d9b-b49f697fceab
+  resourceVersion: "60663"
+  uid: e0fbca5f-b699-489b-a218-4c5b35025394
 spec:
   authSecret:
     name: mssqlserver-quickstart-auth
   coordinator:
     resources: {}
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10
@@ -196,6 +197,8 @@ spec:
             runAsUser: 10001
             seccompProfile:
               type: RuntimeDefault
+      podPlacementPolicy:
+        name: default
       securityContext:
         fsGroup: 10001
   replicas: 1
@@ -207,35 +210,55 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  deletionPolicy: Delete
+  tls:
+    certificates:
+      - alias: server
+        secretName: mssqlserver-quickstart-server-cert
+        subject:
+          organizationalUnits:
+            - server
+          organizations:
+            - kubedb
+      - alias: client
+        secretName: mssqlserver-quickstart-client-cert
+        subject:
+          organizationalUnits:
+            - client
+          organizations:
+            - kubedb
+    clientTLS: false
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: mssqlserver-issuer
   version: 2022-cu12
 status:
   conditions:
-    - lastTransitionTime: "2024-05-02T13:42:30Z"
+    - lastTransitionTime: "2024-06-25T06:12:57Z"
       message: 'The KubeDB operator has started the provisioning of MSSQL: demo/mssqlserver-quickstart'
       observedGeneration: 1
       reason: DatabaseProvisioningStartedSuccessfully
       status: "True"
       type: ProvisioningStarted
-    - lastTransitionTime: "2024-05-02T13:42:50Z"
+    - lastTransitionTime: "2024-06-25T06:15:02Z"
       message: All replicas are ready for MSSQL demo/mssqlserver-quickstart
       observedGeneration: 2
       reason: AllReplicasReady
       status: "True"
       type: ReplicaReady
-    - lastTransitionTime: "2024-05-02T13:43:10Z"
+    - lastTransitionTime: "2024-06-25T06:15:13Z"
       message: database demo/mssqlserver-quickstart is accepting connection
       observedGeneration: 2
       reason: AcceptingConnection
       status: "True"
       type: AcceptingConnection
-    - lastTransitionTime: "2024-05-02T13:43:10Z"
+    - lastTransitionTime: "2024-06-25T06:15:13Z"
       message: database demo/mssqlserver-quickstart is ready
       observedGeneration: 2
       reason: AllReplicasReady
       status: "True"
       type: Ready
-    - lastTransitionTime: "2024-05-02T13:43:10Z"
+    - lastTransitionTime: "2024-06-25T06:16:04Z"
       message: 'The MSSQL: demo/mssqlserver-quickstart is successfully provisioned.'
       observedGeneration: 2
       reason: DatabaseSuccessfullyProvisioned
