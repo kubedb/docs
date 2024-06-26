@@ -7,7 +7,7 @@ spec:
   version: 3.8.3
   adminServerPort: 8080
   replicas: 3
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   storage:
     resources:
       requests:

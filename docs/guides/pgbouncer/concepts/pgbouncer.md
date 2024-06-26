@@ -33,8 +33,8 @@ metadata:
 spec:
   version: "1.18.0"
   replicas: 2
-  databases:
-  - alias: "postgres"
+  database:
+    syncUsers: true
     databaseName: "postgres"
     databaseRef:
       name: "quick-postgres"
@@ -61,11 +61,11 @@ spec:
 
 `spec.replicas` specifies the total number of available pgbouncer server nodes for each crd. KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
 
-### spec.databases
+### spec.database
 
-`spec.databases` specifies an array of postgres databases that pgbouncer should add to its connection pool. It contains three `required` fields and two `optional` fields for each database connection.
+`spec.database` specifies a single postgres database that pgbouncer should add to its connection pool. It contains two `required` fields and one `optional` field for database connection.
 
-- `spec.databases.alias`:  specifies an alias for the target database located in a postgres server specified by an appbinding.
+- `spec.databases.syncUsers`:  specifies whether the pgbouncer should collect usernames and passwords from external secrets with specified labels.
 - `spec.databases.databaseName`:  specifies the name of the target database.
 - `spec.databases.databaseRef`:  specifies the name and namespace of the AppBinding that contains the path to a PostgreSQL server where the target database can be found.
 

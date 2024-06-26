@@ -63,10 +63,10 @@ spec:
     poolMode: session
     port: 5432
     reservePoolSize: 5
-  databases:
-    - alias: postgres
-    databaseName: postgres
+  database:
+    syncUsers: true
+    databaseName: "postgres"
     databaseRef:
-      name: quick-postgres
+      name: "quick-postgres"
       namespace: demo
 ```

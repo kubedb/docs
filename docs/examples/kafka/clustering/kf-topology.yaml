@@ -31,4 +31,4 @@ spec:
             storage: 1Gi
         storageClassName: standard
   storageType: Durable
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate

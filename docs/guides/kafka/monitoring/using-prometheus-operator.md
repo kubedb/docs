@@ -185,7 +185,7 @@ spec:
           release: prometheus
         interval: 10s
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Here,

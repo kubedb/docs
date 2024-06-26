@@ -20,4 +20,4 @@ spec:
   kafkaRef:
     name: kafka-prod
     namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

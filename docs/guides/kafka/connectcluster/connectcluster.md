@@ -7,6 +7,7 @@ menu:
     parent: kf-connectcluster-guides
     weight: 10
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
@@ -107,7 +108,7 @@ spec:
   kafkaRef:
     name: kafka-prod
     namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 Here,
 - `spec.version` - is the name of the KafkaVersion CR. Here, a ConnectCluster of version `3.6.1` will be created.
@@ -117,7 +118,7 @@ Here,
 - `spec.configSecret` - specifies the name of the secret that contains the custom configuration for the ConnectCluster. Here, the ConnectCluster will use the `connectcluster-custom-config` secret for custom configuration.
 - `spec.connectorPlugins` - is the name of the KafkaConnectorVersion CR. Here, mongodb, mysql, postgres, and jdbc connector-plugins will be loaded to the ConnectCluster worker nodes.
 - `spec.kafkaRef` specifies the Kafka instance that the ConnectCluster will connect to. Here, the ConnectCluster will connect to the Kafka instance named `kafka-prod` in the `demo` namespace.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete ConnectCluster CR. Termination policy `WipeOut` will delete the worker pods, secret when the ConnectCluster CR is deleted.
+- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete ConnectCluster CR. Deletion policy `WipeOut` will delete the worker pods, secret when the ConnectCluster CR is deleted.
 
 ## N.B:
 1. If replicas are set to 1, the ConnectCluster will run in standalone mode, you can't scale replica after provision the cluster.
@@ -271,7 +272,7 @@ spec:
   connectClusterRef:
     name: connectcluster-distributed
     namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -421,7 +422,7 @@ spec:
   connectClusterRef:
     name: connectcluster-distributed
     namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -483,7 +484,7 @@ You can customize the connector configuration by updating the `config.properties
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo connectcluster connectcluster-distributed -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo connectcluster connectcluster-distributed -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 connectcluster.kafka.kubedb.com/connectcluster-distributed patched
 
 $ kubectl delete kf connectcluster-distributed  -n demo
@@ -497,7 +498,7 @@ namespace "demo" deleted
 
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
-1 **Use `terminationPolicy: Delete`**. It is nice to be able to resume the cluster from the previous one. So, we preserve auth `Secrets`. If you don't want to resume the cluster, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resource that was created with the ConnectCluster CR. For more details, please visit [here](/docs/guides/kafka/concepts/connectcluster.md#specterminationpolicy).
+1 **Use `deletionPolicy: Delete`**. It is nice to be able to resume the cluster from the previous one. So, we preserve auth `Secrets`. If you don't want to resume the cluster, you can just use `spec.deletionPolicy: WipeOut`. It will clean up every resource that was created with the ConnectCluster CR. For more details, please visit [here](/docs/guides/kafka/concepts/connectcluster.md#specdeletionpolicy).
 
 ## Next Steps
 

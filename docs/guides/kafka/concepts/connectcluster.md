@@ -83,7 +83,7 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ### spec.version
@@ -328,15 +328,15 @@ KubeDB allows following fields to set in `spec.serviceTemplates`:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.21.1/api/v1/types.go#L237) to understand these fields in detail.
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `ConnectCluster` crd or which resources KubeDB should keep or delete when you delete `ConnectCluster` crd. KubeDB provides following four termination policies:
+`spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `ConnectCluster` crd or which resources KubeDB should keep or delete when you delete `ConnectCluster` crd. KubeDB provides following four deletion policies:
 
 - Delete
 - DoNotTerminate
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 ## spec.healthChecker
 It defines the attributes for the health checker.

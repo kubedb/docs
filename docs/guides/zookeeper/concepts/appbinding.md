@@ -34,7 +34,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"ZooKeeper","metadata":{"annotations":{},"name":"zk-cluster","namespace":"demo"},"spec":{"podTemplate":{"spec":{"containers":[{"name":"zookeeper","resources":{"requests":{"cpu":"720m","memory":"846Mi"}}}]}},"replicas":3,"serviceTemplates":[{"alias":"primary","spec":{"type":"LoadBalancer"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"3.9.1"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"ZooKeeper","metadata":{"annotations":{},"name":"zk-cluster","namespace":"demo"},"spec":{"podTemplate":{"spec":{"containers":[{"name":"zookeeper","resources":{"requests":{"cpu":"720m","memory":"846Mi"}}}]}},"replicas":3,"serviceTemplates":[{"alias":"primary","spec":{"type":"LoadBalancer"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"deletionPolicy":"WipeOut","version":"3.9.1"}}
   creationTimestamp: "2024-05-02T10:02:45Z"
   generation: 2
   labels:

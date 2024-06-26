@@ -165,8 +165,8 @@ metadata:
 spec:
   version: "1.18.0"
   replicas: 1
-  databases:
-  - alias: "postgres"
+  database:
+    syncUsers: true
     databaseName: "postgres"
     databaseRef:
       name: "quick-postgres"
@@ -182,19 +182,17 @@ Here,
 
 - `spec.version` is name of the PgBouncerVersion crd where the docker images are specified. In this tutorial, a PgBouncer with base image version 1.17.0 is created.
 - `spec.replicas` specifies the number of replica pgbouncer server pods to be created for the PgBouncer object.
-- `spec.databases` specifies the databases that are going to be served via PgBouncer.
+- `spec.database` specifies the database that are going to be served via PgBouncer.
 - `spec.connectionPool` specifies the configurations for connection pool.
 - `spec.terminationPolicy` specifies what policy to apply while deletion.
 
-### spec.databases
+### spec.database
 
-Databases contain three `required` fields and two `optional` fields.
+Databases contain two `required` fields and one `optional` field.
 
-- `spec.databases.alias`:  specifies an alias for the target database located in a postgres server specified by an appbinding.
+- `spec.databases.syncUsers`:  Specifies whether PgBouncer should collect usernames and passwords from external secrets with specified labels.
 - `spec.databases.databaseName`:  specifies the name of the target database.
 - `spec.databases.databaseRef`:  specifies the name and namespace of the appBinding that contains the path to a PostgreSQL server where the target database can be found.
-- `spec.databases.username` (optional):  specifies the user with whom this particular database should have an exclusive connection. By default, if this field is left empty, all users will be able to use the database.
-- `spec.databases.password` (optional):  specifies password to authenticate the user with whom this particular database should have an exclusive connection.
 
 ### spec.connectionPool
 
@@ -321,7 +319,7 @@ Metadata:
           f:reservePoolSize:
           f:reservePoolTimeoutSeconds:
           f:statsPeriodSeconds:
-        f:databases:
+        f:database:
         f:healthChecker:
           .:
           f:failureThreshold:
@@ -376,8 +374,7 @@ Spec:
     Reserve Pool Size:             5
     Reserve Pool Timeout Seconds:  5
     Stats Period Seconds:          60
-  Databases:
-    Alias:          postgres
+  Database:
     Database Name:  postgres
     Database Ref:
       Name:       quick-postgres

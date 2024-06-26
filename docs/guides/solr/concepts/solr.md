@@ -55,7 +55,7 @@ spec:
           - name:  http
             port:  8983
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   topology:
     coordinator:
       replicas: 1
@@ -264,29 +264,29 @@ KubeDB allows following fields to set in `spec.serviceTemplates`:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Solr` crd or which resources KubeDB should keep or delete when you delete `Solr` crd. KubeDB provides following four termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Solr` crd or which resources KubeDB should keep or delete when you delete `Solr` crd. KubeDB provides following four deletion policies:
 
 - DoNotTerminate
 - Halt
 - Delete (`Default`)
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
-Following table show what KubeDB does when you delete Solr crd for different termination policies,
+Following table show what KubeDB does when you delete Solr crd for different deletion policies,
 
-| Behavior                           | DoNotTerminate | Halt     |  Delete  | WipeOut  |
-|------------------------------------| :------------: |:--------:| :------: | :------: |
-| 1. Block Delete operation          |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Delete Petset                   |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 3. Delete Services                 |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 4. Delete PVCs                     |    &#10007;    | &#10007; | &#10003; | &#10003; |
-| 5. Delete Secrets                  |    &#10007;    | &#10007; | &#10007; | &#10003; |
-| 6. Delete Snapshots                |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| Behavior                            | DoNotTerminate |   Halt   |  Delete  | WipeOut  |
+|-------------------------------------|:--------------:|:--------:|:--------:|:--------:|
+| 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
+| 2. Delete Petset                    |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
+| 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 7. Delete Snapshot data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
-If you don't specify `spec.terminationPolicy` KubeDB uses `Delete` termination policy by default.
+If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` deletion policy by default.
 
 ### spec.halted
 Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.

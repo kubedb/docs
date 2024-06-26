@@ -6,17 +6,12 @@ metadata:
 spec:
   version: "1.17.0"
   replicas: 1
-  databases:
-    - alias: "postgres"
-      databaseName: "postgres"
-      databaseRef:
-        name: "quick-postgres"
-        namespace: demo
-    - alias: "tmpdb"
-      databaseName: "mydb"
-      databaseRef:
-        name: "quick-postgres"
-        namespace: demo
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "quick-postgres"
+      namespace: demo
   connectionPool:
     maxClientConnections: 20
     reservePoolSize: 5
