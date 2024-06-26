@@ -65,5 +65,5 @@ spec:
   sslMode: disable
   clientAuthMode: md5
   syncUsers: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```

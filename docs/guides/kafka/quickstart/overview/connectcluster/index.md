@@ -116,7 +116,7 @@ spec:
   kafkaRef:
     name: kafka-quickstart
     namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Here,
@@ -125,7 +125,7 @@ Here,
 - `spec.replicas` - specifies the number of ConnectCluster workers.
 - `spec.connectorPlugins` - is the name of the KafkaConnectorVersion CR. Here, mongodb, mysql, postgres, and jdbc connector-plugins will be loaded to the ConnectCluster worker nodes.
 - `spec.kafkaRef` specifies the Kafka instance that the ConnectCluster will connect to. Here, the ConnectCluster will connect to the Kafka instance named `kafka-quickstart` in the `demo` namespace.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete ConnectCluster CR. Termination policy `WipeOut` will delete the worker pods, secret when the ConnectCluster CR is deleted.
+- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete ConnectCluster CR. Deletion policy `WipeOut` will delete the worker pods, secret when the ConnectCluster CR is deleted.
 
 ## N.B:
 1. If replicas are set to 1, the ConnectCluster will run in standalone mode, you can't scale replica after provision the cluster. 
@@ -292,7 +292,7 @@ Spec:
       Security Context:
         Fs Group:      1001
   Replicas:            3
-  Termination Policy:  WipeOut
+  Deletion Policy:     WipeOut
   Version:             3.6.1
 Status:
   Conditions:
@@ -418,14 +418,14 @@ spec:
   connectClusterRef:
     name: connectcluster-quickstart
     namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Here,
 
 - `spec.configSecret` - is the name of the secret containing the connector configuration.
 - `spec.connectClusterRef` - is the name of the ConnectCluster instance that the connector will run on. This is an appbinding reference of the ConnectCluster instance.
-- `spec.terminationPolicy` - specifies what KubeDB should do when a user try to delete Connector CR. Termination policy `WipeOut` will delete the connector from the ConnectCluster when the Connector CR is deleted. If you want to keep the connector after deleting the Connector CR, you can set the termination policy to `Delete`.
+- `spec.deletionPolicy` - specifies what KubeDB should do when a user try to delete Connector CR. Deletion policy `WipeOut` will delete the connector from the ConnectCluster when the Connector CR is deleted. If you want to keep the connector after deleting the Connector CR, you can set the deletion policy to `Delete`.
 
 Now, create the `Connector` CR that is shown above:
 
@@ -496,7 +496,7 @@ You can see the data inserted in the MongoDB collection is fetched by the MongoD
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo connectcluster connectcluster-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo connectcluster connectcluster-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 connectcluster.kafka.kubedb.com/connectcluster-quickstart patched
 
 $ kubectl delete kf connectcluster-quickstart  -n demo
@@ -510,7 +510,7 @@ namespace "demo" deleted
 
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
-1 **Use `terminationPolicy: Delete`**. It is nice to be able to resume the cluster from the previous one. So, we preserve auth `Secrets`. If you don't want to resume the cluster, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resource that was created with the ConnectCluster CR. For more details, please visit [here](/docs/guides/kafka/concepts/connectcluster.md#specterminationpolicy).
+1 **Use `deletionPolicy: Delete`**. It is nice to be able to resume the cluster from the previous one. So, we preserve auth `Secrets`. If you don't want to resume the cluster, you can just use `spec.deletionPolicy: WipeOut`. It will clean up every resource that was created with the ConnectCluster CR. For more details, please visit [here](/docs/guides/kafka/concepts/connectcluster.md#specdeletionpolicy).
 
 ## Next Steps
 

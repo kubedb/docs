@@ -81,7 +81,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: "WipeOut"
+  deletionPolicy: "WipeOut"
 ```
 
 ```bash
@@ -93,7 +93,7 @@ Here,
 
 - `spec.version` is name of the ZooKeeperVersion crd where the docker images are specified. In this tutorial, a ZooKeeper 3.9.1 database is created.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `ZooKeeper` crd or which resources KubeDB should keep or delete when you delete `ZooKeeper` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `ZooKeeper` crd or which resources KubeDB should keep or delete when you delete `ZooKeeper` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in storage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
@@ -178,7 +178,7 @@ Spec:
       Requests:
         Storage:         1Gi
     Storage Class Name:  standard
-  Termination Policy:    WipeOut
+  Deletion Policy:       WipeOut
   Version:               3.9.1
 Status:
   Conditions:
@@ -251,7 +251,7 @@ kind: ZooKeeper
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"ZooKeeper","metadata":{"annotations":{},"name":"zk-quickstart","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"3.9.1"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"ZooKeeper","metadata":{"annotations":{},"name":"zk-quickstart","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"deletionPolicy":"WipeOut","version":"3.9.1"}}
   creationTimestamp: "2024-05-02T08:25:26Z"
   finalizers:
   - kubedb.com
@@ -320,7 +320,7 @@ spec:
       requests:
         storage: 1Gi
     storageClassName: standard
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: 3.9.1
 status:
   conditions:
@@ -382,14 +382,14 @@ hello-messege
 
 ## DoNotTerminate Property
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
 $ kubectl delete zk zk-quickstart -n demo
-Error from server (BadRequest): admission webhook "zookeeper.validators.kubedb.com" denied the request: zookeeper "zookeeper-quickstart" can't be deleted. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "zookeeper.validators.kubedb.com" denied the request: zookeeper "zookeeper-quickstart" can't be deleted. To delete, change spec.deletionPolicy
 ```
 
-Now, run `kubectl edit zk zookeeper-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` . Then you will be able to delete/halt the database.
+Now, run `kubectl edit zk zookeeper-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` . Then you will be able to delete/halt the database.
 
 
 ## Cleaning up
@@ -398,7 +398,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 
-$ kubectl patch -n demo zk/zk-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo zk/zk-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 zookeeper.kubedb.com/zk-quickstart patched
 
 $ kubectl delete -n demo zk/zk-quickstart
@@ -412,7 +412,7 @@ namespace "demo" deleted
 
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
-**Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one.So, we preserve all your `PVCs`, auth `Secrets`. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will delete everything created by KubeDB for a particular ZooKeeper crd when you delete the crd. 
+**Use `deletionPolicy: WipeOut`**. It is nice to be able to resume database from previous one.So, we preserve all your `PVCs`, auth `Secrets`. If you don't want to resume database, you can just use `spec.deletionPolicy: WipeOut`. It will delete everything created by KubeDB for a particular ZooKeeper crd when you delete the crd. 
 
 ## Next Steps
 

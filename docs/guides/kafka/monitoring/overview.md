@@ -78,7 +78,7 @@ spec:
           release: prometheus
         interval: 10s
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's deploy the above example by the following command:
