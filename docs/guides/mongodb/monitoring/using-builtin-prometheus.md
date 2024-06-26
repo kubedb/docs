@@ -352,7 +352,7 @@ kubectl delete ns monitoring
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/mongodb/backup/overview/index.md) MongoDB database using Stash.
+- Learn about [backup and restore](/docs/guides/mongodb/backup/stash/overview/index.md) MongoDB database using Stash.
 - Learn how to configure [MongoDB Topology](/docs/guides/mongodb/clustering/sharding.md).
 - Monitor your MongoDB database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.

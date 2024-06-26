@@ -54,7 +54,7 @@ aliases:
 - [Quickstart MongoDB](/docs/guides/mongodb/quickstart/quickstart.md) with KubeDB Operator.
 - [MongoDB Replicaset](/docs/guides/mongodb/clustering/replicaset.md) with KubeDB Operator.
 - [MongoDB Sharding](/docs/guides/mongodb/clustering/sharding.md) with KubeDB Operator.
-- [Backup & Restore](/docs/guides/mongodb/backup/overview/index.md) MongoDB databases using Stash.
+- [Backup & Restore](/docs/guides/mongodb/backup/stash/overview/index.md) MongoDB databases using Stash.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
 - Start [MongoDB with Custom Config](/docs/guides/mongodb/configuration/using-config-file.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
