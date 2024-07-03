@@ -66,6 +66,7 @@ kubedb-webhook-server run [flags]
       --contention-profiling                                    Enable block profiling, if profiling is enabled
       --debug-socket-path string                                Use an unprotected (no authn/authz) unix-domain socket for profiling with the given path
       --egress-selector-config-file string                      File with apiserver egress selector configuration.
+      --enable-http2                                            If set, HTTP/2 will be enabled for the metrics and webhook servers
       --enable-mutating-webhook                                 If true, enables mutating webhooks for KubeDB CRDs. (default true)
       --enable-priority-and-fairness                            If true, replace the max-in-flight handler with an enhanced one that queues and dispatches with priority and fairness
       --enable-validating-webhook                               If true, enables validating webhooks for KubeDB CRDs. (default true)
@@ -73,6 +74,8 @@ kubedb-webhook-server run [flags]
       --http2-max-streams-per-connection int                    The limit that the server gives to clients for the maximum number of streams in an HTTP/2 connection. Zero means to use golang's default. (default 1000)
       --kubeconfig string                                       kubeconfig file pointing at the 'core' kubernetes server.
       --label-key-blacklist strings                             list of keys that are not propagated from a CRD object to its offshoots (default [app.kubernetes.io/name,app.kubernetes.io/version,app.kubernetes.io/instance,app.kubernetes.io/managed-by])
+      --metrics-bind-address string                             The address the metric endpoint binds to. Use the port :8080. If not set, it will be 0 in order to disable the metrics server (default ":8080")
+      --metrics-secure                                          If set the metrics endpoint is served securely
       --permit-address-sharing                                  If true, SO_REUSEADDR will be used when binding the port. This allows binding to wildcard IPs like 0.0.0.0 and specific IPs in parallel, and it avoids waiting for the kernel to release sockets in TIME_WAIT state. [default=false]
       --permit-port-sharing                                     If true, SO_REUSEPORT will be used when binding the port, which allows more than one instance to bind on the same address and port. [default=false]
       --profiling                                               Enable profiling via web interface host:port/debug/pprof/ (default true)
