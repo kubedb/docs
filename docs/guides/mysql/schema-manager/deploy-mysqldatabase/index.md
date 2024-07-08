@@ -68,7 +68,7 @@ spec:
       selector:
         matchLabels:
           app: schemaManager
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Here,

@@ -208,7 +208,7 @@ Once, you have connected to the database with phpMyAdmin go to **Variables** tab
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo my/custom-mysql -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo my/custom-mysql -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo my/custom-mysql
 
 kubectl delete deployment -n demo myadmin

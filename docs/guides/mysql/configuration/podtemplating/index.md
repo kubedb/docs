@@ -99,7 +99,7 @@ spec:
         requests:
           memory: "1Gi"
           cpu: "250m"
-  terminationPolicy: Halt
+  deletionPolicy: Halt
 ```
 
 ```bash

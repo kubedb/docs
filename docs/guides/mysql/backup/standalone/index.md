@@ -66,7 +66,7 @@ spec:
     resources:
       requests:
         storage: 50Mi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Create the above `MySQL` CRD,
@@ -123,7 +123,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"sample-mysql","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}}},"storageType":"Durable","terminationPolicy":"WipeOut","version":"8.0.35"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"sample-mysql","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}}},"storageType":"Durable","deletionPolicy":"WipeOut","version":"8.0.35"}}
   creationTimestamp: "2022-06-30T05:45:43Z"
   generation: 1
   labels:
@@ -456,7 +456,7 @@ spec:
         storage: 50Mi
   init:
     waitForInitialRestore: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the above database,

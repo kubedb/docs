@@ -105,7 +105,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   version: 8.0.35
 ```
 

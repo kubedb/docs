@@ -64,7 +64,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-   terminationPolicy: WipeOut
+   deletionPolicy: WipeOut
 
 ```
 
@@ -174,7 +174,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"mode":"SemiSync","semiSync":{"errantTransactionRecoveryPolicy":"PseudoTransaction","sourceTimeout":"23h","sourceWaitForReplicaCount":1}},"version":"8.0.35"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"mode":"SemiSync","semiSync":{"errantTransactionRecoveryPolicy":"PseudoTransaction","sourceTimeout":"23h","sourceWaitForReplicaCount":1}},"version":"8.0.35"}}
 
     Creation Timestamp:  2022-11-16T05:45:53Z
     Labels:
@@ -303,7 +303,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   topology:
     mode: SemiSync
     semiSync:

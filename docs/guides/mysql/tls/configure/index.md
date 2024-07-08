@@ -139,7 +139,7 @@ spec:
       - localhost
       ipAddresses:
       - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 **Deploy MySQL group replication:**
@@ -192,7 +192,7 @@ spec:
           - localhost
         ipAddresses:
           - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 **Deploy MySQL Innodb Cluster:**
@@ -244,7 +244,7 @@ spec:
           - localhost
         ipAddresses:
           - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 **Deploy MySQL Semi-sync:**
@@ -292,7 +292,7 @@ spec:
           - localhost
         ipAddresses:
           - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 **Deploy Stand Alone MySQL:**

@@ -15,4 +15,4 @@ spec:
         storage: 50Mi
   init:
     waitForInitialRestore: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

@@ -106,7 +106,7 @@ spec:
       ports:
       - name:  http
         port:  9200
-  terminationPolicy: Halt
+  deletionPolicy: Halt
 ```
 
 ### spec.version
@@ -370,18 +370,18 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 
 ### spec.halted
 
-`spec.halted` is an optional field. Suppose you want to delete the `MySQL` resources(`StatefulSet`, `Service` etc.) except `MySQL` object, `PVCs` and `Secret` then you need to set `spec.halted` to `true`. If you set `spec.halted` to `true` then the `terminationPolicy` in `MySQL` object will be set `Halt` by-default.  
+`spec.halted` is an optional field. Suppose you want to delete the `MySQL` resources(`StatefulSet`, `Service` etc.) except `MySQL` object, `PVCs` and `Secret` then you need to set `spec.halted` to `true`. If you set `spec.halted` to `true` then the `deletionPolicy` in `MySQL` object will be set `Halt` by-default.  
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. KubeDB provides the following four termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. KubeDB provides the following four termination policies:
 
 - DoNotTerminate
 - Halt
 - Delete (`Default`)
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete MySQL crd for different termination policies,
 
@@ -394,7 +394,7 @@ Following table show what KubeDB does when you delete MySQL crd for different te
 | 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.terminationPolicy` KubeDB uses `Delete` termination policy by default.
+If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
 
 ## Next Steps
 

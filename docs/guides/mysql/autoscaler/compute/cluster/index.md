@@ -73,7 +73,7 @@ spec:
         limits:
           cpu: "200m"
           memory: "300Mi"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` CRO we have shown above,
