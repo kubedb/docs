@@ -19,9 +19,7 @@ spec:
         storage: 500Mi
   backend:
     externallyManaged: true
-    postgres:
-      service:
+    postgresRef:
         name: ha-postgres
         namespace: demo
-        pgPort: 5432
   deletionPolicy: WipeOut
