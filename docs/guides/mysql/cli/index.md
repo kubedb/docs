@@ -174,7 +174,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  Delete
 
-StatefulSet:          
+PetSet:          
   Name:               mysql-demo
   CreationTimestamp:  Mon, 15 Mar 2021 17:53:48 +0600
   Labels:               app.kubernetes.io/component=database
@@ -264,12 +264,12 @@ Events:
   Normal  Successful  5m    KubeDB Operator  Successfully created governing service
   Normal  Successful  5m    KubeDB Operator  Successfully created service for primary/standalone
   Normal  Successful  5m    KubeDB Operator  Successfully created database auth secret
-  Normal  Successful  5m    KubeDB Operator  Successfully created StatefulSet
+  Normal  Successful  5m    KubeDB Operator  Successfully created PetSet
 ```
 
 `kubectl dba describe` command provides following basic information about a MySQL database.
 
-- StatefulSet
+- PetSet
 - Storage (Persistent Volume)
 - Service
 - Secret (If available)
@@ -316,7 +316,7 @@ spec:
   ....
   authSecret:
     name: mysql-quickstart-auth
-# add database halted = true to delete StatefulSet services and database other resources
+# add database halted = true to delete PetSet services and database other resources
   halted: true
   ....
 
@@ -332,7 +332,7 @@ Various fields of a KubeDB object can't be edited using `edit` command. The foll
 - metadata.name
 - metadata.namespace
 
-If StatefulSets exists for a MySQL database, following fields can't be modified as well.
+If PetSets exists for a MySQL database, following fields can't be modified as well.
 
 - spec.authSecret
 - spec.init

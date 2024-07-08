@@ -309,7 +309,7 @@ mysql.kubedb.com/some-mysql created
 
 **Wait for the database to be ready :**
 
-Now, watch `MySQL` is going to `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
+Now, watch `MySQL` is going to `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
 $ watch -n 3 kubectl get my -n demo some-mysql

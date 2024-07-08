@@ -38,9 +38,9 @@ The Auto Scaling process consists of the following steps:
 
 2. `KubeDB` Community operator watches the `MySQL` CR.
 
-3. When the operator finds a `MySQL` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `MySQL` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
-4. Each StatefulSet creates a Persistent Volume according to the Volume Claim Template provided in the statefulset configuration. This Persistent Volume will be expanded by the `KubeDB` Enterprise operator.
+4. Each PetSet creates a Persistent Volume according to the Volume Claim Template provided in the statefulset configuration. This Persistent Volume will be expanded by the `KubeDB` Enterprise operator.
 
 5. Then, in order to set up storage autoscaling of the `MySQL` database the user creates a `MySQLAutoscaler` CRO with desired configuration.
 

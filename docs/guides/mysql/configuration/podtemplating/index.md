@@ -33,7 +33,7 @@ KubeDB supports providing custom configuration for MySQL via [PodTemplate](/docs
 
 ## Overview
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for MySQL database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for MySQL database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 

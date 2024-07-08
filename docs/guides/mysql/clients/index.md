@@ -72,7 +72,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mysql.kubedb.com/my-group created
 ```
 
-KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and two separate Services for client connection with the cluster. The services have the following format:
+KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new PetSet and two separate Services for client connection with the cluster. The services have the following format:
 
 - `<mysql-object-name>` has both read and write operation.
 - `<mysql-object-name>-standby` has only read operation.
@@ -118,7 +118,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               my-group
   CreationTimestamp:  Mon, 15 Mar 2021 18:18:35 +0600
   Labels:               app.kubernetes.io/component=database
@@ -225,9 +225,9 @@ Events:
   Normal  Successful  2m    KubeDB Operator  Successfully created service for primary/standalone
   Normal  Successful  2m    KubeDB Operator  Successfully created service for secondary replicas
   Normal  Successful  2m    KubeDB Operator  Successfully created database auth secret
-  Normal  Successful  2m    KubeDB Operator  Successfully created StatefulSet
+  Normal  Successful  2m    KubeDB Operator  Successfully created PetSet
   Normal  Successful  2m    KubeDB Operator  Successfully created appbinding
-  Normal  Successful  2m    KubeDB Operator  Successfully patched StatefulSet
+  Normal  Successful  2m    KubeDB Operator  Successfully patched PetSet
 ```
 
 Our database cluster is ready to connect.
@@ -239,7 +239,7 @@ Our database cluster is ready to connect.
 - `mysql.kubedb.com/role:primary` are added for primary.
 - `mysql.kubedb.com/role:secondary` are added for secondary.
 
-Let's verify that the `mysql.kubedb.com/role:<primary/secondary>` label are added into the StatefulSet's replicas,
+Let's verify that the `mysql.kubedb.com/role:<primary/secondary>` label are added into the PetSet's replicas,
 
 ```bash
 $ kubectl get pods -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'

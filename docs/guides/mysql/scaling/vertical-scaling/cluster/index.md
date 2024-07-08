@@ -201,8 +201,8 @@ mysql.kubedb.com/my-group created
 
 **Wait for the cluster to be ready:**
 
-`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc.
-Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
+`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new PetSet, Services, and Secrets, etc.
+Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
 $ watch -n 3 kubectl get my -n demo my-group
@@ -226,7 +226,7 @@ my-group-1   2/2     Running   0          14m
 my-group-2   2/2     Running   0          11m
 ```
 
-Let's check one of the StatefulSet's pod containers resources,
+Let's check one of the PetSet's pod containers resources,
 
 ```bash
 $ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources'
@@ -279,7 +279,7 @@ mysqlopsrequest.ops.kubedb.com/my-scale-group created
 
 **Verify MySQL Group Replication resources updated successfully:**
 
-If everything goes well, `KubeDB` Ops Manager will update the resources of the StatefulSet's `Pod` containers. After a successful scaling process is done, the `KubeDB` Ops Manager updates the resources of the `MySQL` cluster.
+If everything goes well, `KubeDB` Ops Manager will update the resources of the PetSet's `Pod` containers. After a successful scaling process is done, the `KubeDB` Ops Manager updates the resources of the `MySQL` cluster.
 
 First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 

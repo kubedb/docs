@@ -76,9 +76,9 @@ Here,
 - `spec.topology.mode` specifies the mode for MySQL cluster. Here we have used `InnoDBCluster` to tell the operator that we want to deploy a MySQL Innodb Cluster.
 - `spec.topology.innoDBCluster` contains the InnodbCluster info.Innodb cluster comes with a router as a load balancer
 - `spec.topology.Router.replica` is for the number of replica fo innodb cluster router.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-pods`.
+KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the PetSet with the name `<mysql-object-name>-pods`.
 
 ```bash
 $ kubectl dba describe my -n demo innodb
@@ -98,7 +98,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               innodb
   CreationTimestamp:  Tue, 15 Nov 2022 15:14:42 +0600
   Labels:               app.kubernetes.io/component=database
@@ -212,8 +212,8 @@ Events:
   Normal  Successful     27s   MySQL operator  Successfully created service for primary/standalone
   Normal  Successful     27s   MySQL operator  Successfully created service for secondary replicas
   Normal  Successful     27s   MySQL operator  Successfully created database auth secret
-  Normal  Successful     27s   MySQL operator  Successfully created StatefulSet
-  Normal  Successful     27s   MySQL operator  successfully patched created StatefulSet innodb-router
+  Normal  Successful     27s   MySQL operator  Successfully created PetSet
+  Normal  Successful     27s   MySQL operator  successfully patched created PetSet innodb-router
   Normal  Successful     27s   MySQL operator  Successfully created MySQL
   Normal  Successful     27s   MySQL operator  Successfully created appbinding
 

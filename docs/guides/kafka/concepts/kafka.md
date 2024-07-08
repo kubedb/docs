@@ -48,7 +48,7 @@ spec:
         thisLabel: willGoToPod
     controller:
       annotations:
-        passMe: ToStatefulSet
+        passMe: ToPetSet
       labels:
         thisLabel: willGoToSts
   storageType: Durable
@@ -194,7 +194,7 @@ Available configurable fields:
 
 - `topology.broker`:
     - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Kafka `broker` pods. Defaults to `1`.
-    - `suffix` (`: "broker"`) - is an `optional` field that is added as the suffix of the broker StatefulSet name. Defaults to `broker`.
+    - `suffix` (`: "broker"`) - is an `optional` field that is added as the suffix of the broker PetSet name. Defaults to `broker`.
     - `storage` is a `required` field that specifies how much storage to claim for each of the `broker` pods.
     - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `broker` pods.
 
@@ -206,7 +206,7 @@ Available configurable fields:
 
 - `topology.controller`:
     - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Kafka `controller` pods. Defaults to `1`.
-    - `suffix` (`: "controller"`) - is an `optional` field that is added as the suffix of the controller StatefulSet name. Defaults to `controller`.
+    - `suffix` (`: "controller"`) - is an `optional` field that is added as the suffix of the controller PetSet name. Defaults to `controller`.
     - `storage` is a `required` field that specifies how much storage to claim for each of the `controller` pods.
     - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `controller` pods.
 
@@ -287,7 +287,7 @@ The `spec.tls` contains the following fields:
 
 ### spec.storage
 
-If you set `spec.storageType:` to `Durable`, then `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+If you set `spec.storageType:` to `Durable`, then `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 - `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
 - `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
@@ -306,7 +306,7 @@ Kafka managed by KubeDB can be monitored with Prometheus operator out-of-the-box
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for Kafka cluster.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for Kafka cluster.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 

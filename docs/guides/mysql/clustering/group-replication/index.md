@@ -74,9 +74,9 @@ Here,
 - `spec.topology.mode` specifies the mode for MySQL cluster. Here we have used `GroupReplication` to tell the operator that we want to deploy a MySQL replication group.
 - `spec.topology.group` contains group replication info.
 - `spec.topology.group.name` the name for the group. It is a valid version 4 UUID.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-pods`.
+KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the PetSet with the name `<mysql-object-name>-pods`.
 
 ```bash
 $ kubectl dba describe my -n demo my-group
@@ -96,7 +96,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               my-group
   CreationTimestamp:  Tue, 28 Jun 2022 17:54:10 +0600
   Labels:               app.kubernetes.io/component=database
@@ -203,7 +203,7 @@ Events:
   Normal   Successful  1m    Kubedb operator  Successfully created service for primary/standalone
   Normal   Successful  1m    Kubedb operator  Successfully created service for secondary replicas
   Normal   Successful  1m    Kubedb operator  Successfully created database auth secret
-  Normal   Successful  1m    Kubedb operator  Successfully created StatefulSet
+  Normal   Successful  1m    Kubedb operator  Successfully created PetSet
   Normal   Successful  1m    Kubedb operator  Successfully created MySQL
   Normal   Successful  1m    Kubedb operator  Successfully created appbinding
 

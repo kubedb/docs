@@ -627,14 +627,14 @@ Events:
 
 `kubectl describe` command provides following basic information about a database.
 
-- StatefulSet
+- PetSet
 - Storage (Persistent Volume)
 - Service
 - Secret (If available)
 - Topology (If available)
 - Monitoring system (If available)
 
-To hide details about StatefulSet & Service, use flag `--show-workload=false`
+To hide details about PetSet & Service, use flag `--show-workload=false`
 To hide details about Secret, use flag `--show-secret=false`
 To hide events on KubeDB object, use flag `--show-events=false`
 
@@ -669,7 +669,7 @@ Various fields of a KubeDb object can't be edited using `edit` command. The foll
 - metadata.namespace
 - status
 
-If StatefulSets or Deployments exists for a database, following fields can't be modified as well.
+If PetSets or Deployments exists for a database, following fields can't be modified as well.
 
 Kafka:
 

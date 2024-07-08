@@ -37,7 +37,7 @@ The updating process consists of the following steps:
 
 2. `KubeDB` community operator watches for the `MySQL` cr.
 
-3. When it finds one, it creates a `StatefulSet` and related necessary stuff like secret, service, etc.
+3. When it finds one, it creates a `PetSet` and related necessary stuff like secret, service, etc.
 
 4. Then, in order to update the version of the `MySQL` database the user creates a `MySQLOpsRequest` cr with the desired version.
 
