@@ -208,7 +208,7 @@ redissentinelopsrequest.ops.kubedb.com/sen-ops-vertical created
 
 #### Verify RedisSentinel resources updated successfully :
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `RedisSentinel` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `RedisSentinel` object and related `PetSets` and `Pods`.
 
 Let's wait for `RedisSentinelOpsRequest` to be `Successful`.  Run the following command to watch `RedisSentinelOpsRequest` CR,
 
@@ -282,7 +282,7 @@ redisopsrequest.ops.kubedb.com/rd-ops-vertical created
 
 #### Verify Redis resources updated successfully :
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `Redis` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `Redis` object and related `PetSets` and `Pods`.
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 

@@ -46,10 +46,10 @@ The updating process consists of the following steps:
 6. When it finds one, it halts the `MySQL` object so that the `KubeDB` community operator doesn't perform any operation on the `MySQL` during the updating process.
 
 7. By looking at the target version from `MySQLOpsRequest` cr, `KubeDB` Ops Manager takes one of the following steps:
-    - either update the images of the `StatefulSet` for updating between patch/minor versions.
-    - or creates a new `StatefulSet` using targeted image for updating between major versions.
+    - either update the images of the `PetSet` for updating between patch/minor versions.
+    - or creates a new `PetSet` using targeted image for updating between major versions.
 
-8. After successful upgradation of the `StatefulSet` and its `Pod` images, the `KubeDB` Ops Manager updates the image of the `MySQL` object to reflect the updated cluster state.
+8. After successful upgradation of the `PetSet` and its `Pod` images, the `KubeDB` Ops Manager updates the image of the `MySQL` object to reflect the updated cluster state.
 
 9. After successful upgradation of `MySQL` object, the `KubeDB` Ops Manager resumes the `MySQL` object so that the `KubeDB` community operator can resume its usual operations.
 

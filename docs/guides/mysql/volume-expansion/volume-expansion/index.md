@@ -282,7 +282,7 @@ mysqlopsrequest.ops.kubedb.com/my-online-volume-expansion created
 
 #### Verify MySQL volume expanded successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the volume size of `MySQL` object and related `StatefulSets` and `Persistent Volumes`.
+If everything goes well, `KubeDB` Enterprise operator will update the volume size of `MySQL` object and related `PetSets` and `Persistent Volumes`.
 
 Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MySQLOpsRequest` CR,
 

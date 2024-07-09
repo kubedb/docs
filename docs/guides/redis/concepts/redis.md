@@ -80,7 +80,7 @@ spec:
         passMe: ToDatabasePod
     controller:
       annotations:
-        passMe: ToStatefulSet
+        passMe: ToPetSet
     spec:
       serviceAccountName: my-service-account
       schedulerName: my-scheduler

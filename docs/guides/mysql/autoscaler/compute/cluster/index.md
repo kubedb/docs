@@ -371,9 +371,9 @@ Status:
     Last Transition Time:  2022-09-16T11:30:42Z
     Message:               Successfully restarted MySQL pods for MySQLOpsRequest: demo/myops-sample-mysql-6xc1kc
     Observed Generation:   1
-    Reason:                SuccessfullyRestatedStatefulSet
+    Reason:                SuccessfullyRestatedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-09-16T11:30:47Z
     Message:               Vertical scale successful for MySQLOpsRequest: demo/myops-sample-mysql-6xc1kc
     Observed Generation:   1

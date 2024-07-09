@@ -150,7 +150,7 @@ redisopsrequest.ops.kubedb.com/redisops-horizontal created
 
 #### Verify Redis Cluster resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas and master of `Redis` object and related `StatefulSets`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas and master of `Redis` object and related `PetSets`.
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 

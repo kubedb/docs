@@ -155,8 +155,8 @@ mysql.kubedb.com/my-group created
 
 **Wait for the cluster to be ready:**
 
-`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc. A secret called `my-group-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
-Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
+`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new PetSet, Services, and Secrets, etc. A secret called `my-group-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
+Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
 $ watch -n 3 kubectl get my -n demo my-group
@@ -178,7 +178,7 @@ my-group-1   2/2     Running   0          9m53s
 my-group-2   2/2     Running   0          6m48s
 ```
 
-Let's verify the `MySQL`, the `StatefulSet` and its `Pod` image version,
+Let's verify the `MySQL`, the `PetSet` and its `Pod` image version,
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
@@ -193,7 +193,7 @@ $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubern
 "mysql:8.0.35"
 ```
 
-Let's also verify that the StatefulSet’s pods have joined into the group replication,
+Let's also verify that the PetSet’s pods have joined into the group replication,
 
 ```bash
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
@@ -253,7 +253,7 @@ mysqlopsrequest.ops.kubedb.com/my-update-minor-group created
 
 **Verify MySQL version updated successfully:**
 
-If everything goes well, `KubeDB` Ops Manager will update the image of `MySQL`, `StatefulSet`, and its `Pod`.
+If everything goes well, `KubeDB` Ops Manager will update the image of `MySQL`, `PetSet`, and its `Pod`.
 
 At first, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
@@ -263,7 +263,7 @@ NAME                    TYPE            STATUS       AGE
 my-update-minor-group   UpdateVersion   Successful   5m26s
 ```
 
-You can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL` group replication is updated with the new version and the `StatefulSet` is created with a new image.
+You can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL` group replication is updated with the new version and the `PetSet` is created with a new image.
 
 ```bash
 $ kubectl describe myops -n demo my-update-minor-group
@@ -333,7 +333,7 @@ Events:
 
 ```
 
-Now, we are going to verify whether the `MySQL` and `StatefulSet` and it's `Pod` have updated with new image. Let's check,
+Now, we are going to verify whether the `MySQL` and `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
@@ -348,7 +348,7 @@ $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubern
 "mysql:8.0.35"
 ```
 
-Let's also check the StatefulSet pods have joined the `MySQL` group replication,
+Let's also check the PetSet pods have joined the `MySQL` group replication,
 
 ```bash
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d

@@ -37,7 +37,7 @@ The Reconfiguring MySQL TLS process consists of the following steps:
 
 2. `KubeDB` Community operator watches the `MySQL` CRO.
 
-3. When the operator finds a `MySQL` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `MySQL` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
 4. Then, in order to reconfigure the TLS configuration of the `MySQL` database the user creates a `MySQLOpsRequest` CR with desired information.
 

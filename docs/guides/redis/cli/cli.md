@@ -155,7 +155,7 @@ Volume:
   Capacity:      1Gi
   Access Modes:  RWO
 
-StatefulSet:
+PetSet:
   Name:               redis-demo
   CreationTimestamp:  Mon, 01 Oct 2018 14:14:31 +0600
   Labels:               kubedb=cli-demo
@@ -182,9 +182,9 @@ Events:
   Type    Reason      Age   From            Message
   ----    ------      ----  ----            -------
   Normal  Successful  5m    Redis operator  Successfully created Service
-  Normal  Successful  5m    Redis operator  Successfully created StatefulSet
+  Normal  Successful  5m    Redis operator  Successfully created PetSet
   Normal  Successful  5m    Redis operator  Successfully created Redis
-  Normal  Successful  5m    Redis operator  Successfully patched StatefulSet
+  Normal  Successful  5m    Redis operator  Successfully patched PetSet
   Normal  Successful  5m    Redis operator  Successfully patched Redis
 ```
 

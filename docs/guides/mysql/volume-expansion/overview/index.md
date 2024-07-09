@@ -37,7 +37,7 @@ The Volume Expansion process consists of the following steps:
 
 2. `KubeDB` Community operator watches the `MySQL` CR.
 
-3. When the operator finds a `MySQL` CR, it creates required `StatefulSet` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `MySQL` CR, it creates required `PetSet` and related necessary stuff like secrets, services, etc.
 
 4. The statefulSet creates Persistent Volumes according to the Volume Claim Template provided in the statefulset configuration. This Persistent Volume will be expanded by the `KubeDB` Enterprise operator.
 
@@ -49,7 +49,7 @@ The Volume Expansion process consists of the following steps:
 
 8. Then the `KubeDB` Enterprise operator will expand the persistent volume to reach the expected size defined in the `MySQLOpsRequest` CR.
 
-9. After the successfully expansion of the volume of the related StatefulSet Pods, the `KubeDB` Enterprise operator updates the new volume size in the `MySQL` object to reflect the updated state.
+9. After the successfully expansion of the volume of the related PetSet Pods, the `KubeDB` Enterprise operator updates the new volume size in the `MySQL` object to reflect the updated state.
 
 10. After the successful Volume Expansion of the `MySQL`, the `KubeDB` Enterprise operator resumes the `MySQL` object so that the `KubeDB` Community operator resumes its usual operations.
 

@@ -67,7 +67,7 @@ redissentinel.kubedb.com/sen-demo created
 
 Here,
 - `spec.replicas` denotes the number of replica nodes
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 KubeDB operator watches for `RedisSentinel` objects using Kubernetes API. When a `RedisSentinel` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching RedisSentinel object name. KubeDB operator will also create a governing service for StatefulSets named `kubedb`, if one is not already present.
 

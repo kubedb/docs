@@ -157,7 +157,7 @@ spec:
   deletionPolicy: DoNotTerminate
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, StatefulSet, services, secret etc. If everything goes well, we should see that a pod with the name `quick-mysql-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, PetSet, services, secret etc. If everything goes well, we should see that a pod with the name `quick-mysql-0` has been created.
 
 Check that the statefulset's pod is running
 

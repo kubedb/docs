@@ -38,7 +38,7 @@ The replace sentinel process consists of the following steps:
 
 2. `KubeDB` Community operator watches the `Redis` and `RedisSentinel` CR.
 
-3. When the operator finds a `Redis` CR, it creates a `StatefulSet` and related necessary stuff like appbinding, services, etc.
+3. When the operator finds a `Redis` CR, it creates a `PetSet` and related necessary stuff like appbinding, services, etc.
 
 4. When the operator finds a `RedisSentinel` CR, it creates a `StatefulSet` and related necessary stuff like appbinding, services, etc.
 

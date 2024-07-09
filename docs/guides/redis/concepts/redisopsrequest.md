@@ -198,7 +198,7 @@ status:
     status: "True"
     type: VerticalScaling
   - lastTransitionTime: "2023-02-02T09:14:01Z"
-    message: Successfully updated StatefulSets Resources
+    message: Successfully updated PetSets Resources
     observedGeneration: 1
     reason: UpdateStatefulSetResources
     status: "True"

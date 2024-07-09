@@ -75,7 +75,7 @@ spec:
         passMe: ToDatabasePod
     controller:
       annotations:
-        passMe: ToStatefulSet
+        passMe: ToPetSet
     spec:
       serviceAccountName: my-service-account
       imagePullSecrets:

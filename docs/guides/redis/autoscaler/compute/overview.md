@@ -38,7 +38,7 @@ The Auto Scaling process consists of the following steps:
 
 2. `KubeDB` Provisioner  operator watches the `Redis`/`RedisSentinel` CRO.
 
-3. When the operator finds a `Redis`/`RedisSentinel` CRO, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `Redis`/`RedisSentinel` CRO, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
 4. Then, in order to set up autoscaling of the `Redis` database the user creates a `RedisAutoscaler` CRO with desired configuration.
 

@@ -528,7 +528,7 @@ From the above output, you can see that all mysql resources(`PetSet`, `Service`,
 
 If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `MySQL` object `terminationPolicy` to `Delete`. In this setting, `PetSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
 
-When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `Delete` and the MySQL object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
+When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `Delete` and the MySQL object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
 
 Suppose, we have a database with `terminationPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
@@ -546,7 +546,7 @@ secret/default-token-lgbjm     kubernetes.io/service-account-token   3      24h
 secret/mysql-quickstart-auth   Opaque
 ```
 
-From the above output, you can see that all mysql resources(`StatefulSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mysql using `snapshots`(if previously taken) and `secret`.
+From the above output, you can see that all mysql resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mysql using `snapshots`(if previously taken) and `secret`.
 
 >If you don't set the terminationPolicy then the kubeDB set the DeletionPolicy to Delete by-default.
 
@@ -574,7 +574,7 @@ From the above output, you can see that all mysql resources are deleted. there i
 
 ## Database Halted
 
-If you want to delete MySQL resources(`StatefulSet`,`Service`, etc.) without deleting the `MySQL` object, `PVCs` and `Secret` you have to set the `spec.halted` to `true`. KubeDB operator will be able to delete the MySQL related resources except the `MySQL` object, `PVCs` and `Secret`.
+If you want to delete MySQL resources(`PetSet`,`Service`, etc.) without deleting the `MySQL` object, `PVCs` and `Secret` you have to set the `spec.halted` to `true`. KubeDB operator will be able to delete the MySQL related resources except the `MySQL` object, `PVCs` and `Secret`.
 
 Suppose we have a database running `mysql-quickstart` in our cluster. Now, we are going to set `spec.halted` to `true` in `MySQL`  object by running `kubectl edit -n demo mysql-quickstart` command.
 

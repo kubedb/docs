@@ -150,8 +150,8 @@ mysql.kubedb.com/my-standalone created
 
 **Wait for the database to be ready:**
 
-`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc. A secret called `my-standalone-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
-Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
+`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new PetSet, Services, and Secrets, etc. A secret called `my-standalone-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
+Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
 $ watch -n 3 kubectl get my -n demo my-standalone
@@ -170,7 +170,7 @@ NAME              READY   STATUS    RESTARTS   AGE
 my-standalone-0   1/1     Running   0          5m23s
 ```
 
-Let's verify the `MySQL`, the `StatefulSet` and its `Pod` image version,
+Let's verify the `MySQL`, the `PetSet` and its `Pod` image version,
 
 ```bash
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
@@ -222,7 +222,7 @@ mysqlopsrequest.ops.kubedb.com/my-update-minor-standalone created
 
 **Verify MySQL version updated successfully:**
 
-If everything goes well, `KubeDB` Ops Manager will update the image of `MySQL`, `StatefulSet`, and its `Pod`.
+If everything goes well, `KubeDB` Ops Manager will update the image of `MySQL`, `PetSet`, and its `Pod`.
 
 At first, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
@@ -233,7 +233,7 @@ NAME                         TYPE            STATUS       AGE
 my-update-minor-standalone   UpdateVersion   Successful   3m57s
 ```
 
-We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL`, `StatefulSet`, and its `Pod` have updated with a new image.
+We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL`, `PetSet`, and its `Pod` have updated with a new image.
 
 ```bash
 $ kubectl describe myops -n demo my-update-minor-standalone
@@ -297,7 +297,7 @@ Events:
 
 ```
 
-Now, we are going to verify whether the `MySQL`, `StatefulSet` and it's `Pod` have updated with new image. Let's check,
+Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'

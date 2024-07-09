@@ -247,7 +247,7 @@ Here,
 
 - `spec.init.script` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabatically. In this tutorial, a sample .sql script from the git repository `https://github.com/kubedb/mysql-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes) instead of `ConfigMap`.  The \*.sql, \*sql.gz and/or \*.sh sripts that are stored inside the root folder will be executed alphabatically. The scripts inside child folders will be skipped.
 
-KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present. No MySQL specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
+KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present. No MySQL specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
 
 ```bash
 $ kubectl dba describe my -n demo mysql-init-scrip
@@ -267,7 +267,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  Delete
 
-StatefulSet:          
+PetSet:          
   Name:               mysql-init-script
   CreationTimestamp:  Thu, 30 Jun 2022 12:21:15 +0600
   Labels:               app.kubernetes.io/component=database
@@ -367,7 +367,7 @@ Events:
   Normal   Successful  10s   KubeDB operator  Successfully created governing service
   Normal   Successful  10s   KubeDB operator  Successfully created service for primary/standalone
   Normal   Successful  10s   KubeDB operator  Successfully created database auth secret
-  Normal   Successful  10s   KubeDB operator  Successfully created StatefulSet
+  Normal   Successful  10s   KubeDB operator  Successfully created PetSet
   Normal   Successful  10s   KubeDB operator  Successfully created MySQL
   Normal   Successful  10s   KubeDB operator  Successfully created appbinding
 

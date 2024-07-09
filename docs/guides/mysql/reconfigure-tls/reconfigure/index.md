@@ -225,7 +225,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               mysql
   CreationTimestamp:  Mon, 21 Nov 2022 16:18:49 +0600
   Labels:               app.kubernetes.io/component=database
@@ -318,7 +318,7 @@ Events:
   Normal  Phase Changed  1m    KubeDB Operator  phase changed from  to Provisioning reason:
   Normal  Successful     1m    KubeDB Operator  Successfully created governing service
   Normal  Successful     1m    KubeDB Operator  Successfully created service for primary/standalone
-  Normal  Successful     1m    KubeDB Operator  Successfully created StatefulSet
+  Normal  Successful     1m    KubeDB Operator  Successfully created PetSet
   Normal  Successful     1m    KubeDB Operator  Successfully created MySQL
   Normal  Successful     1m    KubeDB Operator  Successfully created appbinding
   Normal  Phase Changed  25s   KubeDB Operator  phase changed from Provisioning to Ready reason:
@@ -554,9 +554,9 @@ Status:
     Last Transition Time:  2022-11-22T04:10:07Z
     Message:               Successfully restarted MySQL pods for MySQLDBOpsRequest: demo/myops-add-tls
     Observed Generation:   1
-    Reason:                SuccessfullyRestartedStatefulSet
+    Reason:                SuccessfullyRestartedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-11-22T04:10:16Z
     Message:               Successfully reconfigured MySQL TLS for MySQLOpsRequest: demo/myops-add-tls
     Observed Generation:   1
@@ -782,9 +782,9 @@ Status:
     Last Transition Time:  2022-11-22T04:39:54Z
     Message:               Successfully restarted MySQL pods for MySQLDBOpsRequest: demo/myops-rotate
     Observed Generation:   1
-    Reason:                SuccessfullyRestartedStatefulSet
+    Reason:                SuccessfullyRestartedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-11-22T04:40:08Z
     Message:               Successfully reconfigured MySQL TLS for MySQLOpsRequest: demo/myops-rotate
     Observed Generation:   1
@@ -989,9 +989,9 @@ Status:
     Last Transition Time:  2022-11-22T04:57:06Z
     Message:               Successfully restarted MySQL pods for MySQLDBOpsRequest: demo/myops-change-issuer
     Observed Generation:   1
-    Reason:                SuccessfullyRestartedStatefulSet
+    Reason:                SuccessfullyRestartedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-11-22T04:57:15Z
     Message:               Successfully reconfigured MySQL TLS for MySQLOpsRequest: demo/myops-change-issuer
     Observed Generation:   1
@@ -1142,9 +1142,9 @@ Status:
     Last Transition Time:  2022-11-22T05:03:08Z
     Message:               Successfully restarted MySQL pods for MySQLDBOpsRequest: demo/myops-remove
     Observed Generation:   1
-    Reason:                SuccessfullyRestartedStatefulSet
+    Reason:                SuccessfullyRestartedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-11-22T05:03:18Z
     Message:               Successfully reconfigured MySQL TLS for MySQLOpsRequest: demo/myops-remove
     Observed Generation:   1

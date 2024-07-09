@@ -150,7 +150,7 @@ redisopsrequest.ops.kubedb.com/redisopsstandalone created
 
 #### Verify Redis Standalone resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `Redis` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the resources of `Redis` object and related `PetSets` and `Pods`.
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
