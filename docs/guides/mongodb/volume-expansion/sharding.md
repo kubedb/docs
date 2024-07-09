@@ -104,7 +104,7 @@ NAME          VERSION    STATUS    AGE
 mg-sharding   4.4.26      Ready     2m45s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume of shards and config servers,
+Let's check volume size from petset, and from the persistent volume of shards and config servers,
 
 ```bash
 $ kubectl get sts -n demo mg-sharding-configsvr -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -125,7 +125,7 @@ pvc-7e20906c-462d-47b7-b4cf-ba0ef69ba26e   1Gi        RWO            Delete     
 pvc-87634059-0f95-4595-ae8a-121944961103   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-configsvr-0   standard                3m7s
 ```
 
-You can see the statefulsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
+You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
 We are now ready to apply the `MongoDBOpsRequest` CR to expand the volume of this database.
 
@@ -170,7 +170,7 @@ mongodbopsrequest.ops.kubedb.com/mops-volume-exp-shard created
 
 #### Verify MongoDB shard volumes expanded successfully
 
-If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `MongoDB` object and related `StatefulSets` and `Persistent Volumes`.
+If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `MongoDB` object and related `PetSets` and `Persistent Volumes`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`. Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -247,7 +247,7 @@ Events:
   Normal  Successful                   50s    KubeDB Ops-manager operator  Successfully Expanded Volume
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo mg-sharding-configsvr -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

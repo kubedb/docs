@@ -157,9 +157,9 @@ spec:
   deletionPolicy: DoNotTerminate
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, deployment, statefulsets, services, secret etc. If everything goes well, we should see that a pod with the name `quick-mongodb-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, deployment, petsets, services, secret etc. If everything goes well, we should see that a pod with the name `quick-mongodb-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo quick-mongodb-0
@@ -221,9 +221,9 @@ spec:
   deletionPolicy: DoNotTerminate
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, deployment, services, secret etc. If everything goes well, we should see that a pod with the name `minute-mongodb-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, deployment, services, secret etc. If everything goes well, we should see that a pod with the name `minute-mongodb-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo minute-mongodb-0

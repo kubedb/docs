@@ -97,7 +97,7 @@ es-combined   xpack-8.11.1   Provisioning   5s
 es-combined   xpack-8.11.1   Ready          50s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
@@ -112,7 +112,7 @@ NAME                                       CAPACITY   ACCESS MODES   RECLAIM POL
 pvc-efe67aee-21bf-4320-9873-5d58d68182ae   1Gi        RWO            Delete           Bound    demo/data-es-combined-0   topolvm-provisioner            8m3s
 ```
 
-You can see the StatefulSet has 1GB storage, and the capacity of the persistent volume is also 1GB.
+You can see the PetSet has 1GB storage, and the capacity of the persistent volume is also 1GB.
 
 We are now ready to apply the `ElasticsearchAutoscaler` CRO to set up storage autoscaling for this database.
 
@@ -275,15 +275,15 @@ Status:
     Last Transition Time:  2021-03-22T15:09:39Z
     Message:               successfully deleted the petSet with orphan propagation policy
     Observed Generation:   1
-    Reason:                OrphanStatefulSetPods
+    Reason:                OrphanPetSetPods
     Status:                True
-    Type:                  OrphanStatefulSetPods
+    Type:                  OrphanPetSetPods
     Last Transition Time:  2021-03-22T15:09:44Z
-    Message:               StatefulSet is recreated
+    Message:               PetSet is recreated
     Observed Generation:   1
-    Reason:                ReadyStatefulSets
+    Reason:                ReadyPetSets
     Status:                True
-    Type:                  ReadyStatefulSets
+    Type:                  ReadyPetSets
     Last Transition Time:  2021-03-22T15:09:44Z
     Message:               Successfully completed the modification process.
     Observed Generation:   1
@@ -297,15 +297,15 @@ Events:
   ----    ------                  ----  ----                        -------
   Normal  PauseDatabase           17m   KubeDB Enterprise Operator  Pausing Elasticsearch demo/es-combined
   Normal  UpdateCombinedNodePVCs  17m   KubeDB Enterprise Operator  successfully expanded combined nodes
-  Normal  OrphanStatefulSetPods   16m   KubeDB Enterprise Operator  successfully deleted the petSet with orphan propagation policy
+  Normal  OrphanPetSetPods   16m   KubeDB Enterprise Operator  successfully deleted the petSet with orphan propagation policy
   Normal  ResumeDatabase          16m   KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-combined
   Normal  ResumeDatabase          16m   KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-combined
-  Normal  ReadyStatefulSets       16m   KubeDB Enterprise Operator  StatefulSet is recreated
+  Normal  ReadyPetSets       16m   KubeDB Enterprise Operator  PetSet is recreated
   Normal  ResumeDatabase          16m   KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-combined
   Normal  Successful              16m   KubeDB Enterprise Operator  Successfully Updated Database
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the combined cluster has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the combined cluster has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'

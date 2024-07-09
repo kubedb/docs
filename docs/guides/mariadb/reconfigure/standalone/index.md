@@ -242,9 +242,9 @@ Status:
     Last Transition Time:  2022-06-14T10:56:11Z
     Message:               Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-reconfigure-config
     Observed Generation:   1
-    Reason:                SuccessfullyRestatedStatefulSet
+    Reason:                SuccessfullyRestatedPetSet
     Status:                True
-    Type:                  RestartStatefulSetPods
+    Type:                  RestartPetSetPods
     Last Transition Time:  2022-06-14T10:56:16Z
     Message:               Successfully reconfigured MariaDB for MariaDBOpsRequest: demo/mdops-reconfigure-config
     Observed Generation:   1
@@ -419,9 +419,9 @@ Status:
     Last Transition Time:  2022-06-14T09:17:24Z
     Message:               Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-reconfigure-apply-config
     Observed Generation:   1
-    Reason:                SuccessfullyRestatedStatefulSet
+    Reason:                SuccessfullyRestatedPetSet
     Status:                True
-    Type:                  RestartStatefulSetPods
+    Type:                  RestartPetSetPods
     Last Transition Time:  2022-06-14T09:17:29Z
     Message:               Successfully reconfigured MariaDB for MariaDBOpsRequest: demo/mdops-reconfigure-apply-config
     Observed Generation:   1

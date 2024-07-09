@@ -77,10 +77,10 @@ Here,
   - `name` denotes the name of mongodb replicaset.
 - `spec.keyFileSecret` (optional) is a secret name that contains keyfile (a random string)against `key.txt` key. Each mongod instances in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the replicaset. Only mongod instances with the correct keyfile can join the replica set. _User can provide the `keyFileSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `keyFileSecret`._ If `keyFileSecret` is not given, KubeDB operator will generate a `keyFileSecret` itself.
 - `spec.replicas` denotes the number of data-bearing members in `rs0` mongodb replicaset.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.arbiter` denotes arbiter spec of the deployed MongoDB CRD. There are two fields under it : configSecret & podTemplate. `spec.arbiter.configSecret` is an optional field to provide custom configuration file for database (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used. `spec.arbiter.podTemplate` holds the arbiter-podSpec. `null` value of it, instructs kubedb operator to use  the default arbiter podTemplate.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create two new StatefulSets (one for replicas & one for arbiter) and a Service with the matching MongoDB object name. This service will always point to the primary of the replicaset. KubeDB operator will also create a governing service for the pods of those two StatefulSets with the name `<mongodb-name>-pods`.
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create two new PetSets (one for replicas & one for arbiter) and a Service with the matching MongoDB object name. This service will always point to the primary of the replicaset. KubeDB operator will also create a governing service for the pods of those two PetSets with the name `<mongodb-name>-pods`.
 
 ```bash
 $ kubectl dba describe mg -n demo mongo-arb
@@ -100,7 +100,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               mongo-arb
   CreationTimestamp:  Thu, 21 Apr 2022 14:39:32 +0600
   Labels:               app.kubernetes.io/component=database
@@ -112,7 +112,7 @@ StatefulSet:
   Replicas:           824639168104 desired | 2 total
   Pods Status:        2 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
-StatefulSet:          
+PetSet:          
   Name:               mongo-arb-arbiter
   CreationTimestamp:  Thu, 21 Apr 2022 14:40:21 +0600
   Labels:               app.kubernetes.io/component=database
@@ -206,7 +206,7 @@ Events:
 
 
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME                READY   AGE
 mongo-arb           2/2     2m37s
 mongo-arb-arbiter   1/1     108s
@@ -738,9 +738,9 @@ rs0:SECONDARY> db.songs.find().pretty()
 
 ## Halt Database
 
-When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
+When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the PetSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
 
-You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the statefulsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
+You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the petsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
 
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
@@ -756,7 +756,7 @@ $ kubectl patch -n demo mg/mongo-arb -p '{"spec":{"halted":true}}' --type="merge
 mongodb.kubedb.com/mongo-arb patched
 ```
 
-After that, kubedb will delete the statefulsets and services and you can see the database Phase as `Halted`.
+After that, kubedb will delete the petsets and services and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 

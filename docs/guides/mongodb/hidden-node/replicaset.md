@@ -94,15 +94,15 @@ Here,
 - `spec.replicas` denotes the number of general members in `rs0` mongodb replicaset.
 - `spec.podTemplate` denotes specifications of all the 3 general replicaset members.
 - `spec.storageEngine` is set to inMemory, & `spec.storageType` to ephemeral.
-- `spec.ephemeralStorage` holds the emptyDir volume specifications. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this ephemeral storage configuration.
+- `spec.ephemeralStorage` holds the emptyDir volume specifications. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this ephemeral storage configuration.
 - `spec.hidden` denotes hidden-node spec of the deployed MongoDB CRD. There are four fields under it : 
   - `spec.hidden.podTemplate` holds the hidden-node podSpec. `null` value of it, instructs kubedb operator to use  the default hidden-node podTemplate.
   - `spec.hidden.configSecret` is an optional field to provide custom configuration file for database (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used. 
   - `spec.hidden.replicas` holds the number of hidden-node in the replica set.
-  - `spec.hidden.storage` specifies the StorageClass of PVC dynamically allocated to store data for these hidden-nodes. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+  - `spec.hidden.storage` specifies the StorageClass of PVC dynamically allocated to store data for these hidden-nodes. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create two new StatefulSets (one for replicas & one for hidden-nodes) and a Service with the matching MongoDB object name. This service will always point to the primary of the replicaset. KubeDB operator will also create a governing service for the pods of those two StatefulSets with the name `<mongodb-name>-pods`.
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create two new PetSets (one for replicas & one for hidden-nodes) and a Service with the matching MongoDB object name. This service will always point to the primary of the replicaset. KubeDB operator will also create a governing service for the pods of those two PetSets with the name `<mongodb-name>-pods`.
 
 ```bash
 $ kubectl dba describe mg -n demo mongo-rs-hid
@@ -119,7 +119,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               mongo-rs-hid
   CreationTimestamp:  Mon, 31 Oct 2022 11:03:50 +0600
   Labels:               app.kubernetes.io/component=database
@@ -131,7 +131,7 @@ StatefulSet:
   Replicas:           824644499032 desired | 3 total
   Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
-StatefulSet:          
+PetSet:          
   Name:               mongo-rs-hid-hidden
   CreationTimestamp:  Mon, 31 Oct 2022 11:04:50 +0600
   Labels:               app.kubernetes.io/component=database
@@ -222,35 +222,35 @@ Events:
   Normal  PhaseChanged  12m   MongoDB operator  Phase changed from  to Provisioning.
   Normal  Successful    12m   MongoDB operator  Successfully created governing service
   Normal  Successful    12m   MongoDB operator  Successfully created Primary Service
-  Normal  Successful    11m   MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid
-  Normal  Successful    11m   MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid
-  Normal  Successful    11m   MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid
-  Normal  Successful    11m   MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid
-  Normal  Successful    11m   MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid
+  Normal  Successful    11m   MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid
+  Normal  Successful    11m   MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid
+  Normal  Successful    11m   MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid
+  Normal  Successful    11m   MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid
+  Normal  Successful    11m   MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid
   Normal  Successful    11m   MongoDB operator  Successfully patched MongoDB
-  Normal  Successful    11m   MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid-hidden
+  Normal  Successful    11m   MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid-hidden
   Normal  Successful    11m   MongoDB operator  Successfully patched MongoDB
   Normal  Successful    11m   MongoDB operator  Successfully created appbinding
-  Normal  Successful    11m   MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid
-  Normal  Successful    11m   MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid-hidden
-  Normal  Successful    11m   MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid
+  Normal  Successful    11m   MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid
+  Normal  Successful    11m   MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid-hidden
+  Normal  Successful    11m   MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid
   Normal  PhaseChanged  11m   MongoDB operator  Phase changed from Provisioning to Ready.
-  Normal  Successful    11m   MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid
-  Normal  Successful    11m   MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid-hidden
+  Normal  Successful    11m   MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid
+  Normal  Successful    11m   MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid-hidden
   Normal  Successful    11m   MongoDB operator  Successfully patched MongoDB
-  Normal  Successful    7m    MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid
-  Normal  Successful    7m    MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid-hidden
+  Normal  Successful    7m    MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid
+  Normal  Successful    7m    MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid-hidden
   Normal  Successful    7m    MongoDB operator  Successfully patched MongoDB
-  Normal  Successful    7m    MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid
-  Normal  Successful    7m    MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid-hidden
+  Normal  Successful    7m    MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid
+  Normal  Successful    7m    MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid-hidden
   Normal  Successful    7m    MongoDB operator  Successfully patched MongoDB
-  Normal  Successful    7m    MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid
-  Normal  Successful    7m    MongoDB operator  Successfully patched StatefulSet demo/mongo-rs-hid-hidden
+  Normal  Successful    7m    MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid
+  Normal  Successful    7m    MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid-hidden
   Normal  Successful    7m    MongoDB operator  Successfully patched MongoDB
 
 
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME                  READY   AGE
 mongo-rs-hid          3/3     13m
 mongo-rs-hid-hidden   2/2     12m

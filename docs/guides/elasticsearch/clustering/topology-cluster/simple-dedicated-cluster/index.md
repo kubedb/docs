@@ -97,13 +97,13 @@ Here,
 - `spec.topology` - specifies the node-specific properties for the Elasticsearch cluster.
   - `topology.master` - specifies the properties of master nodes.
     - `master.replicas` - specifies the number of master nodes.
-    - `master.storage` - specifies the master node storage information that passed to the StatefulSet.
+    - `master.storage` - specifies the master node storage information that passed to the PetSet.
   - `topology.data` - specifies the properties of data nodes.
     - `data.replicas` - specifies the number of data nodes.
-    - `data.storage` - specifies the data node storage information that passed to the StatefulSet.
+    - `data.storage` - specifies the data node storage information that passed to the PetSet.
   - `topology.ingest` - specifies the properties of ingest nodes.
     - `ingest.replicas` - specifies the number of ingest nodes.
-    - `ingest.storage` - specifies the ingest node storage information that passed to the StatefulSet.
+    - `ingest.storage` - specifies the ingest node storage information that passed to the PetSet.
 
 Let's deploy the above example by the following command:
 
@@ -341,9 +341,9 @@ service/es-cluster-master   ClusterIP   None           <none>        9300/TCP   
 service/es-cluster-pods     ClusterIP   None           <none>        9200/TCP   31m
 
 NAME                                 READY   AGE
-statefulset.apps/es-cluster-data     3/3     31m
-statefulset.apps/es-cluster-ingest   2/2     31m
-statefulset.apps/es-cluster-master   2/2     31m
+petset.apps/es-cluster-data     3/3     31m
+petset.apps/es-cluster-ingest   2/2     31m
+petset.apps/es-cluster-master   2/2     31m
 
 NAME                                            TYPE                       VERSION   AGE
 appbinding.appcatalog.appscode.com/es-cluster   kubedb.com/elasticsearch   7.14.2    31m
@@ -367,7 +367,7 @@ persistentvolumeclaim/data-es-cluster-master-1   Bound    pvc-ed4a704c-7b13-421e
 
 ```
 
-- `StatefulSet` - 3 StatefulSets are created for 3 types Elasticsearch nodes. The StatefulSets are named after the Elasticsearch instance with given suffix: `{Elasticsearch-Name}-{Sufix}`.
+- `PetSet` - 3 PetSets are created for 3 types Elasticsearch nodes. The PetSets are named after the Elasticsearch instance with given suffix: `{Elasticsearch-Name}-{Sufix}`.
 - `Services` -  3 services are generated for each Elasticsearch database.
   - `{Elasticsearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
   - `{Elasticsearch-Name}-master` - the master service which is used to connect to the master nodes. It is a headless service.

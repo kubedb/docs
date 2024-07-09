@@ -105,7 +105,7 @@ NAME             VERSION       STATUS    AGE
 proxy-server   2.3.2-debian    Ready    2m36s
 ```
 
-Let's check the number of replicas this cluster has from the ProxySQL object, number of pods the statefulset have,
+Let's check the number of replicas this cluster has from the ProxySQL object, number of pods the petset have,
 
 ```bash
 $ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas'
@@ -174,7 +174,7 @@ proxysqlopsrequest.ops.kubedb.com/scale-up created
 
 ### Verify Cluster replicas scaled up successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `ProxySQL` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas of `ProxySQL` object and related `PetSets` and `Pods`.
 
 Let's wait for `ProxySQLOpsRequest` to be `Successful`.  Run the following command to watch `ProxySQLOpsRequest` CR,
 
@@ -185,7 +185,7 @@ NAME                        TYPE                STATUS       AGE
 scale-up                HorizontalScaling    Successful     106s
 ```
 
-We can see from the above output that the `ProxySQLOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the ProxySQL object, number of pods the statefulset have,
+We can see from the above output that the `ProxySQLOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the ProxySQL object, number of pods the petset have,
 
 ```bash
 $ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas'
@@ -252,7 +252,7 @@ proxysqlopsrequest.ops.kubedb.com/scale-down created
 
 #### Verify Cluster replicas scaled down successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `ProxySQL` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas of `ProxySQL` object and related `PetSets` and `Pods`.
 
 Let's wait for `ProxySQLOpsRequest` to be `Successful`.  Run the following command to watch `ProxySQLOpsRequest` CR,
 
@@ -263,7 +263,7 @@ NAME                          TYPE                STATUS       AGE
 scale-down              HorizontalScaling       Successful   2m32s
 ```
 
-We can see from the above output that the `ProxySQLOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the ProxySQL object, number of pods the statefulset have,
+We can see from the above output that the `ProxySQLOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the ProxySQL object, number of pods the petset have,
 
 ```bash
 $ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas' 

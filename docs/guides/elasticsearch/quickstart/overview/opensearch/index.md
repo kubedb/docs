@@ -163,7 +163,7 @@ Here,
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.replicas` - specifies the number of OpenSearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for OpenSearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the OpenSearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete the operation of Elasticsearch CR. Termination policy `DoNotTerminate` prevents a user from deleting this object if the admission webhook is enabled.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
@@ -374,7 +374,7 @@ service/sample-opensearch-master   ClusterIP   None           <none>        9300
 service/sample-opensearch-pods     ClusterIP   None           <none>        9200/TCP   23m
 
 NAME                                 READY   AGE
-statefulset.apps/sample-opensearch   3/3     23m
+petset.apps/sample-opensearch   3/3     23m
 
 NAME                                                   TYPE                       VERSION   AGE
 appbinding.appcatalog.appscode.com/sample-opensearch   kubedb.com/elasticsearch   1.2.2     23m
@@ -395,7 +395,7 @@ secret/sample-opensearch-transport-cert         kubernetes.io/tls          3    
 
 ```
 
-- `StatefulSet` - a StatefulSet named after the OpenSearch instance.
+- `PetSet` - a PetSet named after the OpenSearch instance.
 - `Services` -  3 services are generated for each OpenSearch database.
   - `{OpenSearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
   - `{OpenSearch-Name}-master` - the master service which is used to connect to the master nodes. It is a headless service.

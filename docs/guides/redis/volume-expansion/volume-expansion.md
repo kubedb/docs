@@ -114,7 +114,7 @@ pvc-aee29446-eff0-430e-95ff-ae853e73a244   1Gi        RWO            Delete     
 pvc-d37fbdf9-90bd-4b5e-b3b2-7e40156c13a8   1Gi        RWO            Delete           Bound    demo/data-sample-redis-shard0-0   topolvm-provisioner                2m56s
 ```
 
-You can see the statefulset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
+You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
 We are now ready to apply the `RedisOpsRequest` CR to expand the volume of this database.
 
@@ -163,7 +163,7 @@ redisopsrequest.ops.kubedb.com/rd-online-volume-expansion created
 
 #### Verify Redis volume expanded successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the volume size of `Redis` object and related `StatefulSets` and `Persistent Volumes`.
+If everything goes well, `KubeDB` Enterprise operator will update the volume size of `Redis` object and related `PetSets` and `Persistent Volumes`.
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
@@ -175,7 +175,7 @@ rd-online-volume-expansion   VolumeExpansion   Successful   96s
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo sample-redis-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

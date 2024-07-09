@@ -315,7 +315,7 @@ spec:
         storage: 1Gi
 ```
 
-Now, wait for few minutes. KubeDB will create necessary secrets, services, and statefulsets.
+Now, wait for few minutes. KubeDB will create necessary secrets, services, and petsets.
 
 Check resources created in demo namespace by KubeDB,
 
@@ -329,7 +329,7 @@ service/es-mon-demo          ClusterIP   10.110.227.143   <none>        9200/TCP
 service/es-mon-demo-master   ClusterIP   10.104.12.90     <none>        9300/TCP   40s
 
 NAME                           DESIRED   CURRENT   AGE
-statefulset.apps/es-mon-demo   1         1         39s
+petset.apps/es-mon-demo   1         1         39s
 ```
 
 Once everything is created, Elasticsearch will go to Running state. Check that Elasticsearch is in running state.

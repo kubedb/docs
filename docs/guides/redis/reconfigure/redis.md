@@ -220,9 +220,9 @@ Status:
     Last Transition Time:  2024-02-02T09:33:11Z
     Message:               reconfiguring redis
     Observed Generation:   1
-    Reason:                UpdateStatefulSets
+    Reason:                UpdatePetSets
     Status:                True
-    Type:                  UpdateStatefulSets
+    Type:                  UpdatePetSets
     Last Transition Time:  2024-02-02T09:33:21Z
     Message:               Restarted pods after reconfiguration
     Observed Generation:   1
@@ -348,9 +348,9 @@ Status:
     Last Transition Time:  2024-02-02T09:42:36Z
     Message:               reconfiguring redis
     Observed Generation:   1
-    Reason:                UpdateStatefulSets
+    Reason:                UpdatePetSets
     Status:                True
-    Type:                  UpdateStatefulSets
+    Type:                  UpdatePetSets
     Last Transition Time:  2024-02-02T09:42:46Z
     Message:               Restarted pods after reconfiguration
     Observed Generation:   1

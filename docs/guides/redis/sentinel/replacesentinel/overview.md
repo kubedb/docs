@@ -40,7 +40,7 @@ The replace sentinel process consists of the following steps:
 
 3. When the operator finds a `Redis` CR, it creates a `PetSet` and related necessary stuff like appbinding, services, etc.
 
-4. When the operator finds a `RedisSentinel` CR, it creates a `StatefulSet` and related necessary stuff like appbinding, services, etc.
+4. When the operator finds a `RedisSentinel` CR, it creates a `PetSet` and related necessary stuff like appbinding, services, etc.
 
 5. Then, in order to replace the sentinel of the `Redis` database the user creates a new `RedisSentinel` object which will replace the old one and `RedisOpsRequest` CR with reference to the newly created sentinel.
 

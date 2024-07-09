@@ -139,7 +139,7 @@ mariadb.kubedb.com/md-standalone-tls created
 
 **Wait for the database to be ready:**
 
-Now, wait for `MariaDB` going on `Running` state and also wait for `StatefulSet` and its pod to be created and going to `Running` state,
+Now, wait for `MariaDB` going on `Running` state and also wait for `PetSet` and its pod to be created and going to `Running` state,
 
 ```bash
 $ kubectl get mariadb -n demo md-standalone-tls
@@ -317,7 +317,7 @@ mariadb.kubedb.com/md-cluster-tls created
 
 **Wait for the database to be ready :**
 
-Now, wait for `MariaDB` going on `Running` state and also wait for `StatefulSet` and its pods to be created and going to `Running` state,
+Now, wait for `MariaDB` going on `Running` state and also wait for `PetSet` and its pods to be created and going to `Running` state,
 
 ```bash
 $ kubectl get mariadb -n demo md-cluster-tls

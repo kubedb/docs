@@ -426,7 +426,7 @@ exit
 From the above output we can see that the cluster is always in sync and the configuration change is always propagated to other cluster nodes. 
 
 ## Cluster failover recovery 
-In case of any pod crash for proxysql cluster, the statefulset which was created by KubeDb operator creates another pod and the is auto joins the cluster. We can delete a pod and wait for that to create again and join the cluster and test this feature. 
+In case of any pod crash for proxysql cluster, the petset which was created by KubeDb operator creates another pod and the is auto joins the cluster. We can delete a pod and wait for that to create again and join the cluster and test this feature. 
 
 Let's see the current status first.
 

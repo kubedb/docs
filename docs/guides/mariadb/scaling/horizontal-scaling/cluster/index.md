@@ -158,7 +158,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-scale-horizontal-up created
 
 #### Verify Cluster replicas scaled up successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MariaDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MariaDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
@@ -229,7 +229,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-scale-horizontal-down created
 
 #### Verify Cluster replicas scaled down successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MariaDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MariaDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 

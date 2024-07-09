@@ -156,7 +156,7 @@ mongodbopsrequest.ops.kubedb.com/mops-vscale-replicaset created
 
 #### Verify MongoDB Replicaset resources updated successfully 
 
-If everything goes well, `KubeDB` Ops-manager operator will update the resources of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the resources of `MongoDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -271,9 +271,9 @@ Events:
   ----    ------                     ----  ----                         -------
   Normal  PauseDatabase              82s   KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-replicaset
   Normal  PauseDatabase              82s   KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-replicaset
-  Normal  Starting                   82s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-replicaset
+  Normal  Starting                   82s   KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-replicaset
   Normal  UpdateReplicaSetResources  82s   KubeDB Ops-manager Operator  Successfully updated replicaset Resources
-  Normal  Starting                   82s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-replicaset
+  Normal  Starting                   82s   KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-replicaset
   Normal  UpdateReplicaSetResources  82s   KubeDB Ops-manager Operator  Successfully updated replicaset Resources
   Normal  UpdateReplicaSetResources  10s   KubeDB Ops-manager Operator  Successfully Vertically Scaled Replicaset Resources
   Normal  ResumeDatabase             10s   KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-replicaset

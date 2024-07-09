@@ -169,7 +169,7 @@ proxysql.kubedb.com/proxy-server created
 
 **Wait for the database to be ready:**
 
-Now, wait for `ProxySQL` going on `Ready` state and also wait for `StatefulSet` and its pod to be created and going to `Running` state,
+Now, wait for `ProxySQL` going on `Ready` state and also wait for `PetSet` and its pod to be created and going to `Running` state,
 
 ```bash
 $ kubectl get proxysql -n demo proxy-server

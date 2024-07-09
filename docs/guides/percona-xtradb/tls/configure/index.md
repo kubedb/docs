@@ -129,7 +129,7 @@ perconaxtradb.kubedb.com/sample-pxc created
 
 **Wait for the database to be ready :**
 
-Now, wait for `PerconaXtraDB` going on `Running` state and also wait for `StatefulSet` and its pods to be created and going to `Running` state,
+Now, wait for `PerconaXtraDB` going on `Running` state and also wait for `PetSet` and its pods to be created and going to `Running` state,
 
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc

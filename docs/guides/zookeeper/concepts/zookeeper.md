@@ -58,7 +58,7 @@ spec:
         passMe: ToDatabasePod
     controller:
       annotations:
-        passMe: ToStatefulSet
+        passMe: ToPetSet
     spec:
       serviceAccountName: my-service-account
       schedulerName: my-scheduler
@@ -147,7 +147,7 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 
 ### spec.storage
 
-If you set `spec.storageType:` to `Durable`, then  `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+If you set `spec.storageType:` to `Durable`, then  `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 - `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
 - `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
@@ -168,14 +168,14 @@ ZooKeeper managed by KubeDB can be monitored with builtin-Prometheus and Prometh
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for ZooKeeper server.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for ZooKeeper server.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
 - metadata:
   - annotations (pod's annotation)
 - controller:
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - args
   - env
@@ -267,7 +267,7 @@ Following table show what KubeDB does when you delete ZooKeeper crd for differen
 | Behavior                            | DoNotTerminate |   Halt   |  Delete  | WipeOut  |
 |-------------------------------------|:--------------:|:--------:|:--------:|:--------:|
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Delete StatefulSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 2. Delete PetSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
 | 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |

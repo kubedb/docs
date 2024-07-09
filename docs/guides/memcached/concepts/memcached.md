@@ -111,7 +111,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 - metadata
   - annotations (pod's annotation)
 - controller
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - args
   - env
@@ -216,7 +216,7 @@ Following table show what KubeDB does when you delete Memcached crd for differen
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
 | 2. Create Dormant Database          |    &#10007;    | &#10003; | &#10007; | &#10007; |
-| 3. Delete StatefulSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 3. Delete PetSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 4. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy by default.

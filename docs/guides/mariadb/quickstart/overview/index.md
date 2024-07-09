@@ -87,12 +87,12 @@ Here,
 
 - `spec.version` is the name of the MariaDBVersion CRD where the docker images are specified. In this tutorial, a MariaDB `10.5.23` database is going to create.
 - `spec.storageType` specifies the type of storage that will be used for MariaDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MariaDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MariaDB` crd or which resources KubeDB should keep or delete when you delete `MariaDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 > Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
-KubeDB operator watches for `MariaDB` objects using Kubernetes api. When a `MariaDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present.
+KubeDB operator watches for `MariaDB` objects using Kubernetes api. When a `MariaDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present.
 
 ```bash
 $ kubectl describe -n demo mariadb sample-mariadb
@@ -166,7 +166,7 @@ Events:
   ----    ------      ----   ----             -------
   Normal  Successful  3m49s  KubeDB Operator  Successfully created governing service
   Normal  Successful  3m49s  KubeDB Operator  Successfully created Service
-  Normal  Successful  3m49s  KubeDB Operator  Successfully created StatefulSet demo/sample-mariadb
+  Normal  Successful  3m49s  KubeDB Operator  Successfully created PetSet demo/sample-mariadb
   Normal  Successful  3m49s  KubeDB Operator  Successfully created MariaDB
   Normal  Successful  3m49s  KubeDB Operator  Successfully created appbinding
 
@@ -290,7 +290,7 @@ Now, run `kubectl edit mariadb sample-mariadb -n demo` to set `spec.deletionPoli
 
 Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MariaDB` object `deletionPolicy` to `Halt`.
 
-When the `DeletionPolicy` is set to `Halt` and the MariaDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `deletionPolicy` to `Halt` in existing database using `edit` command for testing.
+When the `DeletionPolicy` is set to `Halt` and the MariaDB object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `deletionPolicy` to `Halt` in existing database using `edit` command for testing.
 
 At first, run `kubectl edit mariadb sample-mariadb -n demo` to set `spec.deletionPolicy` to `Halt`. Then delete the mariadb object,
 
@@ -311,13 +311,13 @@ NAME                                          STATUS   VOLUME                   
 persistentvolumeclaim/data-sample-mariadb-0   Bound    pvc-7502c222-2b02-4363-9027-91ab0e7b76dc   1Gi        RWO            standard       39s
 ```
 
-From the above output, you can see that all mariadb resources(`StatefulSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mariadb again using this resources.
+From the above output, you can see that all mariadb resources(`PetSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mariadb again using this resources.
 
 **Delete:**
 
-If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `MariaDB` object `deletionPolicy` to `Delete`. In this setting, `StatefulSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
+If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `MariaDB` object `deletionPolicy` to `Delete`. In this setting, `PetSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
 
-When the `DeletionPolicy` is set to `Delete` and the MariaDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
+When the `DeletionPolicy` is set to `Delete` and the MariaDB object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
 
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
@@ -335,7 +335,7 @@ secret/default-token-w2pgw   kubernetes.io/service-account-token   3      31m
 secret/sample-mariadb-auth   kubernetes.io/basic-auth              2      39s
 ```
 
-From the above output, you can see that all mariadb resources(`StatefulSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mariadb using `snapshots`(if previously taken) and `secret`.
+From the above output, you can see that all mariadb resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mariadb using `snapshots`(if previously taken) and `secret`.
 
 >If you don't set the deletionPolicy then the kubeDB set the DeletionPolicy to Delete by-default.
 
@@ -363,7 +363,7 @@ From the above output, you can see that all mariadb resources are deleted. there
 
 ## Database Halted
 
-If you want to delete MariaDB resources(`StatefulSet`,`Service`, etc.) without deleting the `MariaDB` object, `PVCs` and `Secret` you have to set the `spec.halted` to `true`. KubeDB operator will be able to delete the MariaDB related resources except the `MariaDB` object, `PVCs` and `Secret`.
+If you want to delete MariaDB resources(`PetSet`,`Service`, etc.) without deleting the `MariaDB` object, `PVCs` and `Secret` you have to set the `spec.halted` to `true`. KubeDB operator will be able to delete the MariaDB related resources except the `MariaDB` object, `PVCs` and `Secret`.
 
 Suppose we have a database running `mariadb-quickstart` in our cluster. Now, we are going to set `spec.halted` to `true` in `MariaDB`  object by running `kubectl edit -n demo mariadb-quickstart` command.
 

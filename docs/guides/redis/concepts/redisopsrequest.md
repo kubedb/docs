@@ -200,9 +200,9 @@ status:
   - lastTransitionTime: "2023-02-02T09:14:01Z"
     message: Successfully updated PetSets Resources
     observedGeneration: 1
-    reason: UpdateStatefulSetResources
+    reason: UpdatePetSetResources
     status: "True"
-    type: UpdateStatefulSetResources
+    type: UpdatePetSetResources
   - lastTransitionTime: "2023-02-02T09:14:12Z"
     message: Successfully Restarted Pods With Resources
     observedGeneration: 1

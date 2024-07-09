@@ -77,7 +77,7 @@ spec:
     - `name` denotes the name of mongodb replicaset.
 - `spec.replicas` denotes the number of general members in `rs0` mongodb replicaset.
 - `spec.podTemplate` denotes specifications of all the 3 general replicaset members.
-- `spec.ephemeralStorage` holds the emptyDir volume specifications. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this ephemeral storage configuration.
+- `spec.ephemeralStorage` holds the emptyDir volume specifications. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this ephemeral storage configuration.
 - `spec.arbiter` denotes arbiter-node spec of the deployed MongoDB CRD.
 - `spec.hidden` denotes hidden-node spec of the deployed MongoDB CRD.
 
@@ -118,7 +118,7 @@ mongodbopsrequest.ops.kubedb.com/repro created
 
 Now the Ops-manager operator will
 1) Pause the DB
-2) Delete all statefulsets
+2) Delete all petsets
 3) Remove `Provisioned` condition from db
 4) Reconcile the db for start
 5) Wait for DB to be Ready. 
@@ -156,11 +156,11 @@ status:
     status: "True"
     type: Reprovision
   - lastTransitionTime: "2022-10-31T09:50:45Z"
-    message: Successfully Deleted All the StatefulSets
+    message: Successfully Deleted All the PetSets
     observedGeneration: 1
-    reason: DeleteStatefulSets
+    reason: DeletePetSets
     status: "True"
-    type: DeleteStatefulSets
+    type: DeletePetSets
   - lastTransitionTime: "2022-10-31T09:52:05Z"
     message: Database Phase is Ready
     observedGeneration: 1

@@ -207,7 +207,7 @@ mongodbopsrequest.ops.kubedb.com/mops-vscale-shard created
 
 #### Verify MongoDB Shard resources updated successfully 
 
-If everything goes well, `KubeDB` Ops-manager operator will update the resources of `MongoDB` object and related `StatefulSets` and `Pods` of shard nodes.
+If everything goes well, `KubeDB` Ops-manager operator will update the resources of `MongoDB` object and related `PetSets` and `Pods` of shard nodes.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -367,17 +367,17 @@ Events:
   Type    Reason                       Age    From                         Message
   ----    ------                       ----   ----                         -------
   Normal  PauseDatabase                4m51s  KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-sharding
-  Normal  Starting                     4m51s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sharding-configsvr
+  Normal  Starting                     4m51s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-sharding-configsvr
   Normal  UpdateConfigServerResources  4m51s  KubeDB Ops-manager Operator  Successfully updated configServer Resources
-  Normal  Starting                     4m51s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sharding-configsvr
+  Normal  Starting                     4m51s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-sharding-configsvr
   Normal  UpdateConfigServerResources  4m51s  KubeDB Ops-manager Operator  Successfully updated configServer Resources
   Normal  PauseDatabase                4m51s  KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-sharding
   Normal  UpdateConfigServerResources  3m20s  KubeDB Ops-manager Operator  Successfully Vertically Scaled ConfigServer Resources
-  Normal  Starting                     3m20s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sharding-mongos
+  Normal  Starting                     3m20s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-sharding-mongos
   Normal  UpdateMongosResources        3m20s  KubeDB Ops-manager Operator  Successfully updated Mongos Resources
   Normal  UpdateShardResources         2m50s  KubeDB Ops-manager Operator  Successfully updated Shard Resources
-  Normal  Starting                     2m50s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sharding-shard0
-  Normal  Starting                     2m50s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sharding-shard1
+  Normal  Starting                     2m50s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-sharding-shard0
+  Normal  Starting                     2m50s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-sharding-shard1
   Normal  UpdateMongosResources        2m50s  KubeDB Ops-manager Operator  Successfully Vertically Scaled Mongos Resources
   Normal  UpdateShardResources         29s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Shard Resources
   Normal  ResumeDatabase               29s    KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-sharding

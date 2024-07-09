@@ -120,7 +120,7 @@ service/pgbouncer-demo         ClusterIP   10.98.95.4      <none>        5432/TC
 service/pgbouncer-demo-stats   ClusterIP   10.107.214.97   <none>        56790/TCP   5m38s        app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-demo
 
 NAME                              READY       AGE             CONTAINERS           IMAGES
-statefulset.apps/pgbouncer-demo   1/1         5m53s           pgbouncer,exporter   kubedb/pgbouncer:1.17.0,kubedb/pgbouncer_exporter:v0.1.1
+petset.apps/pgbouncer-demo   1/1         5m53s           pgbouncer,exporter   kubedb/pgbouncer:1.17.0,kubedb/pgbouncer_exporter:v0.1.1
 
 NAME                                  VERSION     STATUS          AGE
 pgbouncer.kubedb.com/pgbouncer-demo   1.17.0      Running         5m54s
@@ -162,7 +162,7 @@ pod/pgbouncer-demo-0
 service/kubedb
 service/pgbouncer-demo
 service/pgbouncer-demo-stats
-statefulset.apps/pgbouncer-demo
+petset.apps/pgbouncer-demo
 pgbouncer.kubedb.com/pgbouncer-demo
 ```
 
@@ -212,16 +212,16 @@ Events:
   ----    ------      ----  ----                -------
   Normal  Successful  13m   PgBouncer operator  Successfully created Service
   Normal  Successful  13m   PgBouncer operator  Successfully created PgBouncer configMap
-  Normal  Successful  13m   PgBouncer operator  Successfully created StatefulSet
-  Normal  Successful  13m   PgBouncer operator  Successfully created PgBouncer statefulset
-  Normal  Successful  13m   PgBouncer operator  Successfully patched StatefulSet
-  Normal  Successful  13m   PgBouncer operator  Successfully patched PgBouncer statefulset
+  Normal  Successful  13m   PgBouncer operator  Successfully created PetSet
+  Normal  Successful  13m   PgBouncer operator  Successfully created PgBouncer petset
+  Normal  Successful  13m   PgBouncer operator  Successfully patched PetSet
+  Normal  Successful  13m   PgBouncer operator  Successfully patched PgBouncer petset
 
 ```
 
 `kubectl dba describe` command provides following basic information about a database.
 
-- StatefulSet
+- PetSet
 - Storage (Persistent Volume)
 - Service
 - Secret (If available)

@@ -116,22 +116,22 @@ Here,
 - `spec.topology` - specifies the node-specific properties for the Elasticsearch cluster.
   - `topology.master` - specifies the properties of [master](https://www.elastic.co/guide/en/elasticsearch/reference/7.16/modules-node.html#master-node) nodes.
     - `master.replicas` - specifies the number of master nodes.
-    - `master.storage` - specifies the master node storage information that passed to the StatefulSet.
+    - `master.storage` - specifies the master node storage information that passed to the PetSet.
   - `topology.dataContent` - specifies the properties of [data content](https://www.elastic.co/guide/en/elasticsearch/reference/7.16/modules-node.html#data-content-node) node.
     - `dataContent.replicas` - specifies the number of data content node.
-    - `dataContent.storage` - specifies the data content node storage information that passed to the StatefulSet.
+    - `dataContent.storage` - specifies the data content node storage information that passed to the PetSet.
   - `topology.ingest` - specifies the properties of [ingest](https://www.elastic.co/guide/en/elasticsearch/reference/7.16/modules-node.html#node-ingest-node) nodes.
     - `ingest.replicas` - specifies the number of ingest nodes.
-    - `ingest.storage` - specifies the ingest node storage information that passed to the StatefulSet.
+    - `ingest.storage` - specifies the ingest node storage information that passed to the PetSet.
   - `topology.dataHot` - specifies the properties of [dataHot](https://www.elastic.co/guide/en/elasticsearch/reference/7.16/modules-node.html#data-hot-node) nodes.
     - `dataHot.replicas` - specifies the number of dataHot nodes.
-    - `dataHot.storage` - specifies the dataHot node storage information that passed to the StatefulSet.
+    - `dataHot.storage` - specifies the dataHot node storage information that passed to the PetSet.
   - `topology.dataWarm` - specifies the properties of [dataWarm](https://www.elastic.co/guide/en/elasticsearch/reference/7.16/modules-node.html#data-warm-node) nodes.
     - `dataWarm.replicas` - specifies the number of dataWarm nodes.
-    - `dataWarm.storage` - specifies the dataWarm node storage information that passed to the StatefulSet.
+    - `dataWarm.storage` - specifies the dataWarm node storage information that passed to the PetSet.
   - `topology.dataCold` - specifies the properties of [dataCold](https://www.elastic.co/guide/en/elasticsearch/reference/7.16/modules-node.html#data-cold-node) nodes.
     - `dataCold.replicas` - specifies the number of dataCold nodes.
-    - `dataCold.storage` - specifies the dataCold node storage information that passed to the StatefulSet.
+    - `dataCold.storage` - specifies the dataCold node storage information that passed to the PetSet.
 > Here, we use `linode-block-storage` as storage for every node. But it is recommended to prioritize faster storage for `dataHot` node then `dataWarm` and finally `dataCold`.
 
 Let's deploy the above example by the following command:
@@ -412,12 +412,12 @@ service/es-cluster-master   ClusterIP   None            <none>        9300/TCP  
 service/es-cluster-pods     ClusterIP   None            <none>        9200/TCP   5m50s
 
 NAME                                       READY   AGE
-statefulset.apps/es-cluster-data-cold      2/2     5m48s
-statefulset.apps/es-cluster-data-content   1/1     5m48s
-statefulset.apps/es-cluster-data-hot       3/3     5m48s
-statefulset.apps/es-cluster-data-warm      2/2     5m48s
-statefulset.apps/es-cluster-ingest         2/2     5m48s
-statefulset.apps/es-cluster-master         2/2     5m48s
+petset.apps/es-cluster-data-cold      2/2     5m48s
+petset.apps/es-cluster-data-content   1/1     5m48s
+petset.apps/es-cluster-data-hot       3/3     5m48s
+petset.apps/es-cluster-data-warm      2/2     5m48s
+petset.apps/es-cluster-ingest         2/2     5m48s
+petset.apps/es-cluster-master         2/2     5m48s
 
 NAME                                            TYPE                       VERSION   AGE
 appbinding.appcatalog.appscode.com/es-cluster   kubedb.com/elasticsearch   7.16.2    5m49s
@@ -446,7 +446,7 @@ persistentvolumeclaim/data-es-cluster-master-1         Bound    pvc-cb1d970febff
 
 ```
 
-- `StatefulSet` - 6 StatefulSets are created for 6 types Elasticsearch nodes. The StatefulSets are named after the Elasticsearch instance with given suffix: `{Elasticsearch-Name}-{Sufix}`.
+- `PetSet` - 6 PetSets are created for 6 types Elasticsearch nodes. The PetSets are named after the Elasticsearch instance with given suffix: `{Elasticsearch-Name}-{Sufix}`.
 - `Services` -  3 services are generated for each Elasticsearch database.
   - `{Elasticsearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
   - `{Elasticsearch-Name}-master` - the master service which is used to connect to the master nodes. It is a headless service.

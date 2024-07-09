@@ -68,7 +68,7 @@ spec:
         passMe: ToDatabasePod
     controller:
       annotations:
-        passMe: ToStatefulSet
+        passMe: ToPetSet
     spec:
       serviceAccountName: my-custom-sa
       schedulerName: my-scheduler
@@ -206,7 +206,7 @@ type: Opaque
 
 ### spec.storage
 
-If you don't set `spec.storageType:` to `Ephemeral` then `spec.storage` field is required. This field specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+If you don't set `spec.storageType:` to `Ephemeral` then `spec.storage` field is required. This field specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 - `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
 - `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
@@ -260,14 +260,14 @@ PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and Promet
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for Postgres database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for Postgres database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
 - metadata
   - annotations (pod's annotation)
 - controller
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - serviceAccountName
   - env
@@ -404,7 +404,7 @@ Following table show what KubeDB does when you delete Postgres crd for different
 | ---------------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation                |    &#10003;    | &#10007; | &#10007; | &#10007; |
 | 2. Create Dormant Database               |    &#10007;    | &#10003; | &#10007; | &#10007; |
-| 3. Delete StatefulSet                    |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 3. Delete PetSet                    |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 4. Delete Services                       |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 5. Delete PVCs                           |    &#10007;    | &#10007; | &#10003; | &#10003; |
 | 6. Delete Secrets                        |    &#10007;    | &#10007; | &#10007; | &#10003; |

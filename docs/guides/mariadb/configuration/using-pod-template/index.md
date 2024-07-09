@@ -33,7 +33,7 @@ KubeDB supports providing custom configuration for MariaDB via [PodTemplate](/do
 
 ## Overview
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for MariaDB database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for MariaDB database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -98,9 +98,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mariadb.kubedb.com/sample-mariadb created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `sample-mariadb` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `sample-mariadb` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ $ kubectl get pod -n demo

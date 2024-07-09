@@ -93,7 +93,7 @@ service/es-standalone-master   ClusterIP   None          <none>        9300/TCP 
 service/es-standalone-pods     ClusterIP   None          <none>        9200/TCP   33m
 
 NAME                             READY   AGE
-statefulset.apps/es-standalone   1/1     33m
+petset.apps/es-standalone   1/1     33m
 
 NAME                                               TYPE                       VERSION   AGE
 appbinding.appcatalog.appscode.com/es-standalone   kubedb.com/elasticsearch   7.10.0    33m
@@ -213,7 +213,7 @@ service/es-multinode-master   ClusterIP   None            <none>        9300/TCP
 service/es-multinode-pods     ClusterIP   None            <none>        9200/TCP   6m15s
 
 NAME                            READY   AGE
-statefulset.apps/es-multinode   3/3     6m12s
+petset.apps/es-multinode   3/3     6m12s
 
 NAME                                              TYPE                       VERSION   AGE
 appbinding.appcatalog.appscode.com/es-multinode   kubedb.com/elasticsearch   7.10.0    6m12s

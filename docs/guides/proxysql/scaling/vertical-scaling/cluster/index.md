@@ -179,7 +179,7 @@ proxysqlopsrequest.ops.kubedb.com/proxyops-vscale created
 
 #### Verify ProxySQL Cluster resources updated successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `ProxySQL` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the resources of `ProxySQL` object and related `PetSets` and `Pods`.
 
 Let's wait for `ProxySQLOpsRequest` to be `Successful`.  Run the following command to watch `ProxySQLOpsRequest` CR,
 

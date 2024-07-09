@@ -492,9 +492,9 @@ Status:
     Last Transition Time:  2022-09-16T11:30:42Z
     Message:               Successfully restarted ProxySQL pods for ProxySQLOpsRequest: demo/prxops-proxy-server-6xc1kc
     Observed Generation:   1
-    Reason:                SuccessfullyRestatedStatefulSet
+    Reason:                SuccessfullyRestatedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-09-16T11:30:47Z
     Message:               Vertical scale successful for ProxySQLOpsRequest: demo/prxops-proxy-server-6xc1kc
     Observed Generation:   1

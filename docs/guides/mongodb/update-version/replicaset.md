@@ -126,7 +126,7 @@ mongodbopsrequest.ops.kubedb.com/mops-replicaset-update created
 
 #### Verify MongoDB version updated successfully 
 
-If everything goes well, `KubeDB` Ops-manager operator will update the image of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the image of `MongoDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -208,11 +208,11 @@ Status:
     Status:                True
     Type:                  UpdateVersion
     Last Transition Time:  2022-10-26T10:21:39Z
-    Message:               Successfully updated statefulsets update strategy type
+    Message:               Successfully updated petsets update strategy type
     Observed Generation:   1
-    Reason:                UpdateStatefulSets
+    Reason:                UpdatePetSets
     Status:                True
-    Type:                  UpdateStatefulSets
+    Type:                  UpdatePetSets
     Last Transition Time:  2022-10-26T10:23:09Z
     Message:               Successfully Updated Standalone Image
     Observed Generation:   1
@@ -232,15 +232,15 @@ Events:
   ----    ------                 ----   ----                         -------
   Normal  PauseDatabase          2m27s  KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-replicaset
   Normal  PauseDatabase          2m27s  KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-replicaset
-  Normal  Updating               2m27s  KubeDB Ops-manager Operator  Updating StatefulSets
-  Normal  Updating               2m8s   KubeDB Ops-manager Operator  Successfully Updated StatefulSets
+  Normal  Updating               2m27s  KubeDB Ops-manager Operator  Updating PetSets
+  Normal  Updating               2m8s   KubeDB Ops-manager Operator  Successfully Updated PetSets
   Normal  UpdateStandaloneImage  38s    KubeDB Ops-manager Operator  Successfully Updated Standalone Image
   Normal  ResumeDatabase         38s    KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-replicaset
   Normal  ResumeDatabase         38s    KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mg-replicaset
   Normal  Successful             38s    KubeDB Ops-manager Operator  Successfully Updated Database
 ```
 
-Now, we are going to verify whether the `MongoDB` and the related `StatefulSets` and their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `MongoDB` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get mg -n demo mg-replicaset -o=jsonpath='{.spec.version}{"\n"}'

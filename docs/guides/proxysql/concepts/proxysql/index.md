@@ -73,7 +73,7 @@ spec:
         passMe: ToProxySQLPod
     controller:
       annotations:
-        passMe: ToStatefulSet
+        passMe: ToPetSet
     spec:
       serviceAccountName: my-service-account
       schedulerName: my-scheduler
@@ -275,14 +275,14 @@ The following fields are configurable in the `spec.tls` section:
 
 ### .spec.podTemplate
 
-KubeDB allows providing a template for proxysql pod through `.spec.podTemplate`. KubeDB operator will pass the information provided in `.spec.podTemplate` to the StatefulSet created for ProxySQL. See the api [here](https://pkg.go.dev/kmodules.xyz/offshoot-api/api/v1#PodTemplateSpec)
+KubeDB allows providing a template for proxysql pod through `.spec.podTemplate`. KubeDB operator will pass the information provided in `.spec.podTemplate` to the PetSet created for ProxySQL. See the api [here](https://pkg.go.dev/kmodules.xyz/offshoot-api/api/v1#PodTemplateSpec)
 
 KubeDB accept following fields to set in `.spec.podTemplate`:
 
 - metadata:
   - annotations (pod's annotation)
 - controller:
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - args
   - env

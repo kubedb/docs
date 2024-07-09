@@ -131,9 +131,9 @@ Events:
   Type    Reason      Age   From                Message
   ----    ------      ----  ----                -------
   Normal  Successful  2m    Memcached operator  Successfully created Service
-  Normal  Successful  1m    Memcached operator  Successfully created StatefulSet
+  Normal  Successful  1m    Memcached operator  Successfully created PetSet
   Normal  Successful  1m    Memcached operator  Successfully created Memcached
-  Normal  Successful  1m    Memcached operator  Successfully patched StatefulSet
+  Normal  Successful  1m    Memcached operator  Successfully patched PetSet
   Normal  Successful  1m    Memcached operator  Successfully patched Memcached
 ```
 

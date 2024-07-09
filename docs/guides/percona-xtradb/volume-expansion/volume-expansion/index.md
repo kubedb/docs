@@ -96,7 +96,7 @@ NAME             VERSION   STATUS   AGE
 sample-pxc   8.0.26    Ready    5m4s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo sample-pxc -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -109,7 +109,7 @@ pvc-b90179f8-c40a-4273-ad77-74ca8470b782   1Gi        RWO            Delete     
 pvc-f72411a4-80d5-4d32-b713-cb30ec662180   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-2   topolvm-provisioner            62s
 ```
 
-You can see the statefulset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
+You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
 We are now ready to apply the `PerconaXtraDBOpsRequest` CR to expand the volume of this database.
 
@@ -154,7 +154,7 @@ perconaxtradbopsrequest.ops.kubedb.com/px-online-volume-expansion created
 
 #### Verify PerconaXtraDB volume expanded successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the volume size of `PerconaXtraDB` object and related `StatefulSets` and `Persistent Volumes`.
+If everything goes well, `KubeDB` Enterprise operator will update the volume size of `PerconaXtraDB` object and related `PetSets` and `Persistent Volumes`.
 
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 
@@ -219,7 +219,7 @@ Events:
   
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo sample-pxc -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

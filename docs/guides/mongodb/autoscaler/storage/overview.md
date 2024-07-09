@@ -39,9 +39,9 @@ The Auto Scaling process consists of the following steps:
 
 2. `KubeDB` Provisioner  operator watches the `MongoDB` CR.
 
-3. When the operator finds a `MongoDB` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `MongoDB` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
-- Each StatefulSet creates a Persistent Volume according to the Volume Claim Template provided in the statefulset configuration.
+- Each PetSet creates a Persistent Volume according to the Volume Claim Template provided in the petset configuration.
 
 4. Then, in order to set up storage autoscaling of the various components (ie. ReplicaSet, Shard, ConfigServer etc.) of the `MongoDB` database the user creates a `MongoDBAutoscaler` CRO with desired configuration.
 

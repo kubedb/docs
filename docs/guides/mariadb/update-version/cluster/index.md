@@ -120,7 +120,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-update created
 
 #### Verify MariaDB version updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `MariaDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `MariaDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
@@ -133,7 +133,7 @@ mdops-update      UpdateVersion   Successful    84s
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded.
 
-Now, we are going to verify whether the `MariaDB` and the related `StatefulSets` and their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `MariaDB` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get mariadb -n demo sample-mariadb -o=jsonpath='{.spec.version}{"\n"}'

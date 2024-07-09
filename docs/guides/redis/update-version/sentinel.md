@@ -162,7 +162,7 @@ redissentinelopsrequest.ops.kubedb.com/update-sen-version created
 
 #### Verify RedisSentinel version updated successfully :
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `RedisSentinel` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `RedisSentinel` object and related `PetSets` and `Pods`.
 
 Let's wait for `RedisSentinelOpsRequest` to be `Successful`.  Run the following command to watch `RedisSentinelOpsRequest` CR,
 
@@ -175,7 +175,7 @@ update-sen-version    UpdateVersion   Successful   3m30s
 
 We can see from the above output that the `RedisSentinelOpsRequest` has succeeded.
 
-Now, we are going to verify whether the `RedisSentinel` and the related `StatefulSets` their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `RedisSentinel` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get redissentinel -n demo sen-sample -o=jsonpath='{.spec.version}{"\n"}'
@@ -226,7 +226,7 @@ redisopsrequest.ops.kubedb.com/update-rd-version created
 
 #### Verify Redis version updated successfully :
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `Redis` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `Redis` object and related `PetSets` and `Pods`.
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
@@ -239,7 +239,7 @@ update-rd-version    UpdateVersion   Successful   5m40s
 
 We can see from the above output that the `RedisOpsRequest` has succeeded.
 
-Now, we are going to verify whether the `Redis` and the related `StatefulSets` their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `Redis` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get redis -n demo rd-sample -o=jsonpath='{.spec.version}{"\n"}'

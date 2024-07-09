@@ -120,7 +120,7 @@ Volume:
   Capacity:      1Gi
   Access Modes:  RWO
 
-StatefulSet:
+PetSet:
   Name:               script-postgres
   CreationTimestamp:  Fri, 21 Sep 2018 15:53:28 +0600
   Labels:               app.kubernetes.io/name=postgreses.kubedb.com
@@ -176,11 +176,11 @@ Events:
   ----    ------      ----  ----               -------
   Normal  Successful  1m    Postgres operator  Successfully created Service
   Normal  Successful  1m    Postgres operator  Successfully created Service
-  Normal  Successful  57s   Postgres operator  Successfully created StatefulSet
+  Normal  Successful  57s   Postgres operator  Successfully created PetSet
   Normal  Successful  57s   Postgres operator  Successfully created Postgres
-  Normal  Successful  57s   Postgres operator  Successfully patched StatefulSet
+  Normal  Successful  57s   Postgres operator  Successfully patched PetSet
   Normal  Successful  57s   Postgres operator  Successfully patched Postgres
-  Normal  Successful  57s   Postgres operator  Successfully patched StatefulSet
+  Normal  Successful  57s   Postgres operator  Successfully patched PetSet
   Normal  Successful  57s   Postgres operator  Successfully patched Postgres
 ```
 

@@ -145,7 +145,7 @@ proxysqlopsrequest.ops.kubedb.com/proxyops-update created
 
 ### Verify ProxySQL version updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `ProxySQL` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `ProxySQL` object and related `PetSets` and `Pods`.
 
 Let's wait for `ProxySQLOpsRequest` to be `Successful`.  Run the following command to watch `ProxySQLOpsRequest` CR,
 
@@ -158,7 +158,7 @@ proxyops-update      UpdateVersion   Successful    84s
 
 We can see from the above output that the `ProxySQLOpsRequest` has succeeded.
 
-Now, we are going to verify whether the `ProxySQL` and the related `StatefulSets` and their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `ProxySQL` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get proxysql -n demo proxy-server -o=jsonpath='{.spec.version}{"\n"}'

@@ -37,7 +37,7 @@ The updating process consists of the following steps:
 
 2. `KubeDB` Community operator watches the `ProxySQL` CR.
 
-3. When the operator finds a `ProxySQL` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `ProxySQL` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
 4. Then, in order to update the version of the `ProxySQL` the user creates a `ProxySQLOpsRequest` CR with the desired version.
 
@@ -45,9 +45,9 @@ The updating process consists of the following steps:
 
 6. When it finds a `ProxySQLOpsRequest` CR, it halts the `ProxySQL` object which is referred from the `ProxySQLOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `ProxySQL` object during the updating process.  
 
-7. By looking at the target version from `ProxySQLOpsRequest` CR, `KubeDB` Enterprise operator updates the images of all the `StatefulSets`. After each image update, the operator performs some checks such as if the oplog is synced and database size is almost same or not.
+7. By looking at the target version from `ProxySQLOpsRequest` CR, `KubeDB` Enterprise operator updates the images of all the `PetSets`. After each image update, the operator performs some checks such as if the oplog is synced and database size is almost same or not.
 
-8. After successfully updating the `StatefulSets` and their `Pods` images, the `KubeDB` Enterprise operator updates the image of the `ProxySQL` object to reflect the updated state of the server.
+8. After successfully updating the `PetSets` and their `Pods` images, the `KubeDB` Enterprise operator updates the image of the `ProxySQL` object to reflect the updated state of the server.
 
 9. After successfully updating of `ProxySQL` object, the `KubeDB` Enterprise operator resumes the `ProxySQL` object so that the `KubeDB` Community operator can resume its usual operations.
 

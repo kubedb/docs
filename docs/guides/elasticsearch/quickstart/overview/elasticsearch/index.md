@@ -168,7 +168,7 @@ Here,
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.replicas` - specifies the number of Elasticsearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Elasticsearch CR. Termination policy `Delete` will delete the database pods, secret and PVC when the Elasticsearch CR is deleted.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
@@ -468,7 +468,7 @@ service/es-quickstart-master   ClusterIP   None            <none>        9300/TC
 service/es-quickstart-pods     ClusterIP   None            <none>        9200/TCP   8m10s
 
 NAME                             READY   AGE
-statefulset.apps/es-quickstart   3/3     8m2s
+petset.apps/es-quickstart   3/3     8m2s
 
 NAME                                               TYPE                       VERSION   AGE
 appbinding.appcatalog.appscode.com/es-quickstart   kubedb.com/elasticsearch   8.2.0     8m2s
@@ -492,7 +492,7 @@ persistentvolumeclaim/data-es-quickstart-1   Bound    pvc-fbacd36c-4132-4e2a-a5c
 persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-9f9c6eaf-1ba6-4167-a37d-86eaf1f7e103   1Gi        RWO            standard       5m8s
 ```
 
-- `StatefulSet` - a StatefulSet named after the Elasticsearch instance. In topology mode, the operator creates 3 petSets with name `{Elasticsearch-Name}-{Sufix}`.
+- `PetSet` - a PetSet named after the Elasticsearch instance. In topology mode, the operator creates 3 petSets with name `{Elasticsearch-Name}-{Sufix}`.
 - `Services` -  3 services are generated for each Elasticsearch database.
   - `{Elasticsearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
   - `{Elasticsearch-Name}-master` - the master service which is used to connect to the master nodes. It is a headless service.
@@ -502,7 +502,7 @@ persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-9f9c6eaf-1ba6-4167-a37
   - `{Elasticsearch-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the Elasticsearch users. The auth secret `es-quickstart-elastic-cred` holds the `username` and `password` for `elastic` user which lets administrative access.
   - `{Elasticsearch-Name}-{alias}-cert` - the certificate secrets which hold `tls.crt`, `tls.key`, and `ca.crt` for configuring the Elasticsearch database.
   - `{Elasticsearch-Name}-config` - the default configuration secret created by the operator.
-  - `data-{Elasticsearch-node-name}` - the persistent volume claims created by the StatefulSet.
+  - `data-{Elasticsearch-node-name}` - the persistent volume claims created by the PetSet.
 
 ## Connect with Elasticsearch Database
 

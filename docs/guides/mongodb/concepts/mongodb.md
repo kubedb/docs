@@ -112,7 +112,7 @@ spec:
         thisLabel: willGoToPod
     controller:
       annotations:
-        passMe: ToStatefulSet
+        passMe: ToPetSet
       labels:
         thisLabel: willGoToSts
     spec:
@@ -388,7 +388,7 @@ In this case, you don't have to specify `spec.storage` field. Specify `spec.ephe
 
 ### spec.storage
 
-Since 0.9.0-rc.0, If you set `spec.storageType:` to `Durable`, then `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+Since 0.9.0-rc.0, If you set `spec.storageType:` to `Durable`, then `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 - `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
 - `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
@@ -435,7 +435,7 @@ spec:
         name: mongodb-init-script
 ```
 
-In the above example, KubeDB operator will launch a Job to execute all js script of `mongodb-init-script` in alphabetical order once StatefulSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mongodb/initialization/using-script.md).
+In the above example, KubeDB operator will launch a Job to execute all js script of `mongodb-init-script` in alphabetical order once PetSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mongodb/initialization/using-script.md).
 
 These are the fields of `spec.init` which you can make use of :
 - `spec.init.initialized` indicating that this database has been initialized or not. `false` by default.
@@ -462,7 +462,7 @@ NB. If `spec.shardTopology` is set, then `spec.configSecret` needs to be empty. 
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for MongoDB database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for MongoDB database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -470,8 +470,8 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - annotations (pod's annotation)
   - labels (pod's labels)
 - controller:
-  - annotations (statefulset's annotation)
-  - labels (statefulset's labels)
+  - annotations (petset's annotation)
+  - labels (petset's labels)
 - spec:
   - args
   - env
@@ -593,7 +593,7 @@ Following table show what KubeDB does when you delete MongoDB crd for different 
 | Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Delete StatefulSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 2. Delete PetSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
 | 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |

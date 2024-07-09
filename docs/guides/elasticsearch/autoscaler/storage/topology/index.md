@@ -120,7 +120,7 @@ es-topology   xpack-8.11.1   Provisioning   12s
 es-topology   xpack-8.11.1   Ready          1m50s
 ```
 
-Let's check volume size from the data statefulset, and from the persistent volume,
+Let's check volume size from the data petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
@@ -138,7 +138,7 @@ pvc-a610cbb8-dece-4d2e-8870-b66a2f1fe458   1Gi        RWO            Delete     
 pvc-edb7f4f7-f8ba-4af9-a507-b707462ddc3c   1Gi        RWO            Delete           Bound         demo/data-es-topology-data-1     topolvm-provisioner            119s
 ```
 
-You can see that the data StatefulSet has 1GB storage, and the capacity of all the persistent volume is also 1GB.
+You can see that the data PetSet has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
 We are now ready to apply the `ElasticsearchAutoscaler` CRO to set up storage autoscaling for the data nodes.
 
@@ -306,15 +306,15 @@ Status:
     Last Transition Time:  2021-03-22T16:05:39Z
     Message:               successfully deleted the petSets with orphan propagation policy
     Observed Generation:   1
-    Reason:                OrphanStatefulSetPods
+    Reason:                OrphanPetSetPods
     Status:                True
-    Type:                  OrphanStatefulSetPods
+    Type:                  OrphanPetSetPods
     Last Transition Time:  2021-03-22T16:05:44Z
-    Message:               StatefulSet is recreated
+    Message:               PetSet is recreated
     Observed Generation:   1
-    Reason:                ReadyStatefulSets
+    Reason:                ReadyPetSets
     Status:                True
-    Type:                  ReadyStatefulSets
+    Type:                  ReadyPetSets
     Last Transition Time:  2021-03-22T16:05:44Z
     Message:               Successfully completed the modification process.
     Observed Generation:   1
@@ -328,15 +328,15 @@ Events:
   ----    ------                 ----   ----                        -------
   Normal  PauseDatabase          3m18s  KubeDB Enterprise Operator  Pausing Elasticsearch demo/es-topology
   Normal  UpdateDataNodePVCs     108s   KubeDB Enterprise Operator  successfully expanded data nodes
-  Normal  OrphanStatefulSetPods  93s    KubeDB Enterprise Operator  successfully deleted the petSets with orphan propagation policy
+  Normal  OrphanPetSetPods  93s    KubeDB Enterprise Operator  successfully deleted the petSets with orphan propagation policy
   Normal  ResumeDatabase         93s    KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-topology
   Normal  ResumeDatabase         93s    KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-topology
-  Normal  ReadyStatefulSets      88s    KubeDB Enterprise Operator  StatefulSet is recreated
+  Normal  ReadyPetSets      88s    KubeDB Enterprise Operator  PetSet is recreated
   Normal  ResumeDatabase         88s    KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-topology
   Normal  Successful             88s    KubeDB Enterprise Operator  Successfully Updated Database
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the data nodes of the cluster has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the data nodes of the cluster has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'

@@ -122,7 +122,7 @@ redisopsrequest.ops.kubedb.com/update-version created
 
 #### Verify Redis version updated successfully :
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `Redis` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `Redis` object and related `PetSets` and `Pods`.
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
@@ -135,7 +135,7 @@ update-version    UpdateVersion   Successful   4m6s
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
-Now, we are going to verify whether the `Redis` and the related `StatefulSets` their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `Redis` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get redis -n demo redis-cluster -o=jsonpath='{.spec.version}{"\n"}'

@@ -93,7 +93,7 @@ NAME            VERSION    STATUS    AGE
 mg-standalone   4.4.26      Ready     2m53s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo mg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -104,7 +104,7 @@ NAME                                       CAPACITY   ACCESS MODES   RECLAIM POL
 pvc-d0b07657-a012-4384-862a-b4e437774287   1Gi        RWO            Delete           Bound    demo/datadir-mg-standalone-0   standard                49s
 ```
 
-You can see the statefulset has 1GB storage, and the capacity of the persistent volume is also 1GB.
+You can see the petset has 1GB storage, and the capacity of the persistent volume is also 1GB.
 
 We are now ready to apply the `MongoDBOpsRequest` CR to expand the volume of this database.
 
@@ -149,7 +149,7 @@ mongodbopsrequest.ops.kubedb.com/mops-volume-exp-standalone created
 
 #### Verify MongoDB Standalone volume expanded successfully
 
-If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `MongoDB` object and related `StatefulSets` and `Persistent Volume`.
+If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `MongoDB` object and related `PetSets` and `Persistent Volume`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`. Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -219,7 +219,7 @@ $ kubectl describe mongodbopsrequest -n demo mops-volume-exp-standalone
     Normal  Successful       29s   KubeDB Ops-manager operator  Successfully Scaled Database
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo mg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

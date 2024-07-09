@@ -33,7 +33,7 @@ KubeDB supports providing custom configuration for MongoDB via [PodTemplate](/do
 
 ## Overview
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for MongoDB database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for MongoDB database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -41,8 +41,8 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - annotations (pod's annotation)
   - labels (pod's labels)
 - controller:
-  - annotations (statefulset's annotation)
-  - labels (statefulset's labels)
+  - annotations (petset's annotation)
+  - labels (petset's labels)
 - spec:
   - args
   - env
@@ -101,9 +101,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mgo-misc-config created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `mgo-misc-config-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `mgo-misc-config-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo

@@ -147,7 +147,7 @@ perconaxtradbopsrequest.ops.kubedb.com/pxops-vscale created
 
 #### Verify PerconaXtraDB Cluster resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `PerconaXtraDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the resources of `PerconaXtraDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 

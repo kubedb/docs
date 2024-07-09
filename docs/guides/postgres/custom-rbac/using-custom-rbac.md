@@ -88,7 +88,7 @@ rules:
   resourceNames:
   - quick-postgres
   resources:
-  - statefulsets
+  - petsets
   verbs:
   - get
 - apiGroups:
@@ -191,9 +191,9 @@ spec:
 
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-postgres-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-postgres-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo quick-postgres-0
@@ -260,7 +260,7 @@ rules:
   resourceNames:
   - miniute-postgres
   resources:
-  - statefulsets
+  - petsets
   verbs:
   - get
 - apiGroups:
@@ -316,9 +316,9 @@ spec:
 
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-postgres-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-postgres-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo minute-postgres-0

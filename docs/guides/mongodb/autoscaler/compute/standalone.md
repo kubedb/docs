@@ -460,9 +460,9 @@ Events:
   ----    ------                     ----   ----                         -------
   Normal  PauseDatabase              2m40s  KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-standalone
   Normal  PauseDatabase              2m40s  KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-standalone
-  Normal  Starting                   2m40s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-standalone
+  Normal  Starting                   2m40s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-standalone
   Normal  UpdateStandaloneResources  2m40s  KubeDB Ops-manager Operator  Successfully updated standalone Resources
-  Normal  Starting                   2m40s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-standalone
+  Normal  Starting                   2m40s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-standalone
   Normal  UpdateStandaloneResources  2m40s  KubeDB Ops-manager Operator  Successfully updated standalone Resources
   Normal  UpdateStandaloneResources  2m15s  KubeDB Ops-manager Operator  Successfully Vertically Scaled Standalone Resources
   Normal  ResumeDatabase             2m15s  KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-standalone

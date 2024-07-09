@@ -77,7 +77,7 @@ spec:
     - `name` denotes the name of mongodb replicaset.
 - `spec.replicas` denotes the number of general members in `rs0` mongodb replicaset.
 - `spec.podTemplate` denotes specifications of all the 3 general replicaset members.
-- `spec.ephemeralStorage` holds the emptyDir volume specifications. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this ephemeral storage configuration.
+- `spec.ephemeralStorage` holds the emptyDir volume specifications. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this ephemeral storage configuration.
 - `spec.arbiter` denotes arbiter-node spec of the deployed MongoDB CRD. 
 - `spec.hidden` denotes hidden-node spec of the deployed MongoDB CRD.
 

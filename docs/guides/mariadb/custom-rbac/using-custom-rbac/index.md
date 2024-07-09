@@ -150,7 +150,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, StatefulSet, services, secret etc. If everything goes well, we should see that a pod with the name `sample-mariadb-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, PetSet, services, secret etc. If everything goes well, we should see that a pod with the name `sample-mariadb-0` has been created.
 
 Check that the petset's pod is running
 
@@ -214,7 +214,7 @@ spec:
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `another-mariadb` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo another-mariadb-0

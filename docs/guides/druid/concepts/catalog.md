@@ -95,7 +95,7 @@ section_menu_id: guides
 [//]: # (### spec.pgBouncer.image)
 
 [//]: # ()
-[//]: # (`spec.pgBouncer.image` is a required field that specifies the docker image which will be used to create Statefulset by KubeDB operator to create expected PgBouncer server.)
+[//]: # (`spec.pgBouncer.image` is a required field that specifies the docker image which will be used to create Petset by KubeDB operator to create expected PgBouncer server.)
 
 [//]: # ()
 [//]: # (### spec.exporter.image)

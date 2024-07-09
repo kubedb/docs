@@ -33,14 +33,14 @@ KubeDB supports providing custom configuration for PerconaXtraDB via [PodTemplat
 
 ## Overview
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for PerconaXtraDB database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for PerconaXtraDB database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
 - metadata:
   - annotations (pod's annotation)
 - controller:
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - env
   - resources
@@ -98,9 +98,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 perconaxtradb.kubedb.com/sample-pxc created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `sample-pxc` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `sample-pxc` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo

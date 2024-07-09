@@ -67,9 +67,9 @@ perconaxtradb.kubedb.com/sample-pxc created
 Here,
 
 - `spec.replicas` is the number of nodes in the cluster.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<perconaxtradb-object-name>-pods`.
+KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for the PetSet with the name `<perconaxtradb-object-name>-pods`.
 
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc -o yaml
@@ -189,7 +189,7 @@ status:
 
 $ kubectl get sts,svc,secret,pvc,pv,pod -n demo
 NAME                          READY   AGE
-statefulset.apps/sample-pxc   3/3     7m5s
+petset.apps/sample-pxc   3/3     7m5s
 
 NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 service/sample-pxc        ClusterIP   10.96.207.41   <none>        3306/TCP   7m11s

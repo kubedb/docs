@@ -190,7 +190,7 @@ Events:
 
 `kubectl dba describe` command provides following basic information about a Redis server.
 
-- StatefulSet
+- PetSet
 - Storage (Persistent Volume)
 - Service
 - Monitoring system (If available)
@@ -247,7 +247,7 @@ Various fields of a KubeDB object can't be edited using `edit` command. The foll
 - metadata.name
 - metadata.namespace
 
-If StatefulSets exists for a Redis server, following fields can't be modified as well.
+If PetSets exists for a Redis server, following fields can't be modified as well.
 
 - spec.storageType
 - spec.storage

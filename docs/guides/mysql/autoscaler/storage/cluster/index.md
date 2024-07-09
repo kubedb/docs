@@ -295,7 +295,7 @@ Events:
   Normal  Successful  103s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of MySQL: demo/sample-mysql
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the replicaset database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the replicaset database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

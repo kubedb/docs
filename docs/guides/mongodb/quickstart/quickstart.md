@@ -107,14 +107,14 @@ Here,
 
 - `spec.version` is name of the MongoDBVersion crd where the docker images are specified. In this tutorial, a MongoDB 4.4.26 database is created.
 - `spec.storageType` specifies the type of storage that will be used for MongoDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MongoDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MongoDB` crd or which resources KubeDB should keep or delete when you delete `MongoDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy)
 - `spec.replicaSet` denotes the name of the mongodb replica-set structure.
 - `spec.replicas` denotes the number of replicas in the replica-set.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-name>-pods`.
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for PetSets with the name `<mongodb-name>-pods`.
 
 ```bash
 $ kubectl dba describe mg -n demo mgo-quickstart
@@ -134,7 +134,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  DoNotTerminate
 
-StatefulSet:          
+PetSet:          
   Name:               mgo-quickstart
   CreationTimestamp:  Mon, 13 Jun 2022 18:01:55 +0600
   Labels:               app.kubernetes.io/component=database
@@ -227,7 +227,7 @@ Events:
 ```
 
 ```bash
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME             READY   AGE
 mgo-quickstart   3/3     3m36s
 
@@ -465,9 +465,9 @@ Error from server (BadRequest): admission webhook "mongodbwebhook.validators.kub
 
 ## Halt Database
 
-When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
+When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the PetSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
 
-You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb operator will delete the statefulsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
+You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb operator will delete the petsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
 
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
@@ -483,7 +483,7 @@ $ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"halted":true}}' --type="
 mongodb.kubedb.com/mgo-quickstart patched
 ```
 
-After that, kubedb will delete the statefulsets and services and you can see the database Phase as `Halted`.
+After that, kubedb will delete the petsets and services and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
@@ -544,9 +544,9 @@ rs1:SECONDARY> db.movies.find()
 If you don't set the deletionPolicy, then the kubeDB set the DeletionPolicy to `Delete` by-default.
 
 ### Delete
-If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken snapshots and secrets then you might want to set the mongodb object deletionPolicy to Delete. In this setting, StatefulSet and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
+If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken snapshots and secrets then you might want to set the mongodb object deletionPolicy to Delete. In this setting, PetSet and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
 
-When the DeletionPolicy is set to Delete and the mongodb object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the secret and database backup data(snapshots) intact.
+When the DeletionPolicy is set to Delete and the mongodb object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the secret and database backup data(snapshots) intact.
 
 ```bash
 $ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"

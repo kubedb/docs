@@ -70,9 +70,9 @@ Here,
 
 - `spec.version` is the version to be used for MongoDB.
 - `spec.podTemplate` specifies the resources and other specifications of the pod. Have a look [here](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) to know the other subfields of the podTemplate.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-name>-pods`.
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for PetSets with the name `<mongodb-name>-pods`.
 
 ```bash
 $ kubectl dba describe mg -n demo mg-alone
@@ -91,7 +91,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               mg-alone
   CreationTimestamp:  Fri, 04 Nov 2022 10:30:07 +0600
   Labels:               app.kubernetes.io/component=database
@@ -179,22 +179,22 @@ Events:
   Normal  PhaseChanged  21s   MongoDB operator  Phase changed from  to Provisioning.
   Normal  Successful    21s   MongoDB operator  Successfully created governing service
   Normal  Successful    21s   MongoDB operator  Successfully created Primary Service
-  Normal  Successful    14s   MongoDB operator  Successfully patched StatefulSet demo/mg-alone
+  Normal  Successful    14s   MongoDB operator  Successfully patched PetSet demo/mg-alone
   Normal  Successful    14s   MongoDB operator  Successfully patched MongoDB
   Normal  Successful    14s   MongoDB operator  Successfully created appbinding
   Normal  Successful    14s   MongoDB operator  Successfully patched MongoDB
-  Normal  Successful    14s   MongoDB operator  Successfully patched StatefulSet demo/mg-alone
-  Normal  Successful    4s    MongoDB operator  Successfully patched StatefulSet demo/mg-alone
+  Normal  Successful    14s   MongoDB operator  Successfully patched PetSet demo/mg-alone
+  Normal  Successful    4s    MongoDB operator  Successfully patched PetSet demo/mg-alone
   Normal  Successful    4s    MongoDB operator  Successfully patched MongoDB
   Normal  PhaseChanged  4s    MongoDB operator  Phase changed from Provisioning to Ready.
-  Normal  Successful    4s    MongoDB operator  Successfully patched StatefulSet demo/mg-alone
+  Normal  Successful    4s    MongoDB operator  Successfully patched PetSet demo/mg-alone
   Normal  Successful    4s    MongoDB operator  Successfully patched MongoDB
 
 
 
 $ kubectl get sts,svc,pvc,pv -n demo
 NAME                        READY   AGE
-statefulset.apps/mg-alone   1/1     65s
+petset.apps/mg-alone   1/1     65s
 
 NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 service/mg-alone        ClusterIP   10.96.47.157   <none>        27017/TCP   65s
@@ -430,9 +430,9 @@ As this is a standalone database which doesn't have multiple replicas, It offers
 
 ## Halt Database
 
-When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
+When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the PetSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
 
-You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the statefulsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
+You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the petsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
 
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
@@ -448,7 +448,7 @@ $ kubectl patch -n demo mg/mg-alone -p '{"spec":{"halted":true}}' --type="merge"
 mongodb.kubedb.com/mg-alone patched
 ```
 
-After that, kubedb will delete the statefulsets and services and you can see the database Phase as `Halted`.
+After that, kubedb will delete the petsets and services and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 

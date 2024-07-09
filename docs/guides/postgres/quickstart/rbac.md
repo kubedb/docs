@@ -16,11 +16,11 @@ section_menu_id: guides
 
 If RBAC is enabled in clusters, some PostgreSQL specific RBAC permissions are required. These permissions are required for Leader Election process of PostgreSQL clustering.
 
-Here is the list of additional permissions required by StatefulSet of Postgres:
+Here is the list of additional permissions required by PetSet of Postgres:
 
 | Kubernetes Resource | Resource Names    | Permission required |
 |---------------------|-------------------|---------------------|
-| statefulsets        | `{postgres-name}` | get                 |
+| petsets        | `{postgres-name}` | get                 |
 | pods                |                   | list, patch         |
 | pods/exec           |                   | create              |
 | Postgreses          |                   | get                 |
@@ -71,7 +71,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 postgres.kubedb.com/quick-postgres created
 ```
 
-When this Postgres object is created, KubeDB operator creates Role, ServiceAccount and RoleBinding with the matching PostgreSQL name and uses that ServiceAccount name in the corresponding StatefulSet.
+When this Postgres object is created, KubeDB operator creates Role, ServiceAccount and RoleBinding with the matching PostgreSQL name and uses that ServiceAccount name in the corresponding PetSet.
 
 Let's see what KubeDB operator has created for additional RBAC permission
 
@@ -107,7 +107,7 @@ rules:
     resourceNames:
       - quick-postgres
     resources:
-      - statefulsets
+      - petsets
     verbs:
       - get
   - apiGroups:
@@ -188,7 +188,7 @@ metadata:
 
 ```
 
-This ServiceAccount is used in StatefulSet created for Postgres object.
+This ServiceAccount is used in PetSet created for Postgres object.
 
 ### RoleBinding
 

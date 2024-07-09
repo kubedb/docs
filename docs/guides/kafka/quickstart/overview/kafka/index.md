@@ -104,7 +104,7 @@ Here,
 - `spec.version` - is the name of the KafkaVersion CR. Here, a Kafka of version `3.6.1` will be created.
 - `spec.replicas` - specifies the number of Kafka brokers.
 - `spec.storageType` - specifies the type of storage that will be used for Kafka. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Kafka using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this Kafka instance. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run Kafka pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this Kafka instance. This storage spec will be passed to the PetSet created by the KubeDB operator to run Kafka pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Kafka CR. Deletion policy `Delete` will delete the database pods, secret and PVC when the Kafka CR is deleted.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
@@ -280,7 +280,7 @@ NAME                            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)  
 service/kafka-quickstart-pods   ClusterIP   None         <none>        9092/TCP,9093/TCP,29092/TCP   8m52s
 
 NAME                                READY   AGE
-statefulset.apps/kafka-quickstart   3/3     8m50s
+petset.apps/kafka-quickstart   3/3     8m50s
 
 NAME                                                  TYPE               VERSION   AGE
 appbinding.appcatalog.appscode.com/kafka-quickstart   kubedb.com/kafka   3.6.1     8m50s
@@ -290,7 +290,7 @@ secret/kafka-quickstart-admin-cred   kubernetes.io/basic-auth   2      8m52s
 secret/kafka-quickstart-config       Opaque                     2      8m52s
 ```
 
-- `StatefulSet` - a StatefulSet named after the Kafka instance. In topology mode, the operator creates 3 petSets with name `{Kafka-Name}-{Sufix}`.
+- `PetSet` - a PetSet named after the Kafka instance. In topology mode, the operator creates 3 petSets with name `{Kafka-Name}-{Sufix}`.
 - `Services` -  For a combined Kafka instance only one service is created with name `{Kafka-name}-{pods}`. For topology mode, two services are created.
     - `{Kafka-Name}-{broker}` - the governing service which is used for inter-broker communications. This service is also used to connect to the brokers with external clients. This is a headless service.
     - `{Kafka-Name}-{controller}` - the governing service which is used for inter-controller communications. It is a headless service too.

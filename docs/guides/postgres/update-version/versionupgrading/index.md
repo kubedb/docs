@@ -194,8 +194,8 @@ postgres.kubedb.com/pg created
 
 **Wait for the database to be ready:**
 
-`KubeDB` operator watches for `Postgres` objects using Kubernetes API. When a `Postgres` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc. A secret called `pg-auth` (format: <em>{postgres-object-name}-auth</em>) will be created storing the password for postgres superuser.
-Now, watch `Postgres` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
+`KubeDB` operator watches for `Postgres` objects using Kubernetes API. When a `Postgres` object is created, `KubeDB` operator will create a new PetSet, Services, and Secrets, etc. A secret called `pg-auth` (format: <em>{postgres-object-name}-auth</em>) will be created storing the password for postgres superuser.
+Now, watch `Postgres` is going to  `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
 $ watch -n 3 kubectl get postgres -n demo
@@ -222,7 +222,7 @@ pg-2   2/2     Running   0          3m11s
 
 ```
 
-Let's verify the `Postgres`, the `StatefulSet` and its `Pod` image version,
+Let's verify the `Postgres`, the `PetSet` and its `Pod` image version,
 
 ```bash
 $ kubectl get pg -n demo pg -o=jsonpath='{.spec.version}{"\n"}'
@@ -274,7 +274,7 @@ postgresopsrequest.ops.kubedb.com/pg-update created
 
 **Verify Postgres version updated successfully:**
 
-If everything goes well, `KubeDB` ops-manager operator will update the image of `Postgres`, `StatefulSet`, and its `Pod`.
+If everything goes well, `KubeDB` ops-manager operator will update the image of `Postgres`, `PetSet`, and its `Pod`.
 
 At first, we will wait for `PostgresOpsRequest` to be successful.  Run the following command to watch `PostgresOpsRequest` cr,
 
@@ -286,7 +286,7 @@ NAME                         TYPE            STATUS       AGE
 pg-update                    UpdateVersion   Successful   3m57s
 ```
 
-We can see from the above output that the `PostgresOpsRequest` has succeeded. If we describe the `PostgresOpsRequest`, we shall see that the `Postgres`, `StatefulSet`, and its `Pod` have updated with a new image.
+We can see from the above output that the `PostgresOpsRequest` has succeeded. If we describe the `PostgresOpsRequest`, we shall see that the `Postgres`, `PetSet`, and its `Pod` have updated with a new image.
 
 ```bash
 $ kubectl describe PostgresOpsRequest -n demo pg-update
@@ -353,11 +353,11 @@ Status:
     Status:                True
     Type:                  CopiedOldBinaries
     Last Transition Time:  2021-11-30T07:29:04Z
-    Message:               Successfully updated statefulsets update strategy type
+    Message:               Successfully updated petsets update strategy type
     Observed Generation:   1
-    Reason:                UpdateStatefulSets
+    Reason:                UpdatePetSets
     Status:                True
-    Type:                  UpdateStatefulSets
+    Type:                  UpdatePetSets
     Last Transition Time:  2021-11-30T07:29:10Z
     Message:               Successfully Transferred Leadership to first node before pg-coordinator paused
     Observed Generation:   1
@@ -415,9 +415,9 @@ Status:
     Last Transition Time:  2021-11-30T07:32:24Z
     Message:               Successfully Updated cluster Image
     Observed Generation:   1
-    Reason:                UpdateStatefulSetImage
+    Reason:                UpdatePetSetImage
     Status:                True
-    Type:                  UpdateStatefulSetImage
+    Type:                  UpdatePetSetImage
     Last Transition Time:  2021-11-30T07:32:24Z
     Message:               Successfully completed the modification process.
     Observed Generation:   1
@@ -431,8 +431,8 @@ Events:
   ----    ------                                                ----   ----                        -------
   Normal  PauseDatabase                                         3m50s  KubeDB Enterprise Operator  Pausing Postgres demo/pg
   Normal  PauseDatabase                                         3m50s  KubeDB Enterprise Operator  Successfully paused Postgres demo/pg
-  Normal  Updating                                              3m50s  KubeDB Enterprise Operator  Updating StatefulSets
-  Normal  Updating                                              3m50s  KubeDB Enterprise Operator  Successfully Updated StatefulSets
+  Normal  Updating                                              3m50s  KubeDB Enterprise Operator  Updating PetSets
+  Normal  Updating                                              3m50s  KubeDB Enterprise Operator  Successfully Updated PetSets
   Normal  TransferLeaderShipToFirstNodeBeforeCoordinatorPaused  3m44s  KubeDB Enterprise Operator  Successfully Transferred Leadership to first node before pg-coordinator paused
   Normal  UpdatePrimaryImage                                    3m4s   KubeDB Enterprise Operator  Successfully Updated primary Image
   Normal  TransferPrimaryRoleToDefault                          2m30s  KubeDB Enterprise Operator  Successfully Transfer Primary Role to first node
@@ -445,7 +445,7 @@ Events:
 
  ```
 
-Now, we are going to verify whether the `Postgres`, `StatefulSet` and it's `Pod` have updated with new image. Let's check,
+Now, we are going to verify whether the `Postgres`, `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
 $ kubectl get postgres -n demo pg -o=jsonpath='{.spec.version}{"\n"}'

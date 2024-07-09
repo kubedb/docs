@@ -94,7 +94,7 @@ NAME            VERSION    STATUS    AGE
 mg-standalone   4.4.26      Ready     2m53s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo mg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -105,7 +105,7 @@ NAME                                       CAPACITY   ACCESS MODES   RECLAIM POL
 pvc-cf469ed8-a89a-49ca-bf7c-8c76b7889428   1Gi        RWO            Delete           Bound    demo/datadir-mg-standalone-0   topolvm-provisioner            7m41s
 ```
 
-You can see the statefulset has 1GB storage, and the capacity of the persistent volume is also 1GB.
+You can see the petset has 1GB storage, and the capacity of the persistent volume is also 1GB.
 
 We are now ready to apply the `MongoDBAutoscaler` CRO to set up storage autoscaling for this database.
 
@@ -332,11 +332,11 @@ Status:
     Status:                True
     Type:                  
     Last Transition Time:  2021-03-08T13:20:57Z
-    Message:               StatefulSet is recreated
+    Message:               PetSet is recreated
     Observed Generation:   1
-    Reason:                ReadyStatefulSets
+    Reason:                ReadyPetSets
     Status:                True
-    Type:                  ReadyStatefulSets
+    Type:                  ReadyPetSets
     Last Transition Time:  2021-03-08T13:20:57Z
     Message:               Successfully Expanded Volume
     Observed Generation:   1
@@ -354,11 +354,11 @@ Events:
   Normal                             50s   KubeDB Ops-manager operator  Successfully Expanded Volume
   Normal  ResumeDatabase             50s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-standalone
   Normal  ResumeDatabase             50s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-standalone
-  Normal  ReadyStatefulSets          45s   KubeDB Ops-manager operator  StatefulSet is recreated
+  Normal  ReadyPetSets          45s   KubeDB Ops-manager operator  PetSet is recreated
   Normal  Successful                 45s   KubeDB Ops-manager operator  Successfully Expanded Volume
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo mg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

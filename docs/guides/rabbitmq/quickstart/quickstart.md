@@ -107,7 +107,7 @@ Here,
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in `storage.resources.requests` field. Don't specify limits here. PVC does not get resized automatically.
 
-KubeDB operator watches for `RabbitMQ` objects using Kubernetes api. When a `RabbitMQ` object is created, KubeDB provisioner operator will create new PetSet (aka StatefulSet 2.0), Service (Primary) with the matching RabbitMQ object name and Required secrets for cluster communication and authentication if not present. KubeDB operator will also create an AppBinding resource and governing service for PetSets, if one is not already present. `AppBinding` is a Kubernetes `CustomResourceDefinition`(CRD) which points to an application using either its URL (usually for a non-Kubernetes resident service instance) or a Kubernetes service object (if self-hosted in a Kubernetes cluster), some optional parameters and a credential secret.
+KubeDB operator watches for `RabbitMQ` objects using Kubernetes api. When a `RabbitMQ` object is created, KubeDB provisioner operator will create new PetSet (aka PetSet 2.0), Service (Primary) with the matching RabbitMQ object name and Required secrets for cluster communication and authentication if not present. KubeDB operator will also create an AppBinding resource and governing service for PetSets, if one is not already present. `AppBinding` is a Kubernetes `CustomResourceDefinition`(CRD) which points to an application using either its URL (usually for a non-Kubernetes resident service instance) or a Kubernetes service object (if self-hosted in a Kubernetes cluster), some optional parameters and a credential secret.
 
 ```bash
 $ kubectl get petset -n demo

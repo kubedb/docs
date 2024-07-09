@@ -152,7 +152,7 @@ Volume:
   Capacity:     1Gi
   Access Modes: RWO
 
-StatefulSet:
+PetSet:
   Name:                 postgres-demo
   Replicas:             1 current / 1 desired
   CreationTimestamp:    Tue, 12 Dec 2017 11:46:21 +0600
@@ -187,7 +187,7 @@ No Snapshots.
 Events:
   FirstSeen  LastSeen  From               Type    Reason               Message
   ---------  --------  ----               ----    ------               -------
-  5s         5s        Postgres operator  Normal  SuccessfulCreate     Successfully created StatefulSet
+  5s         5s        Postgres operator  Normal  SuccessfulCreate     Successfully created PetSet
   5s         5s        Postgres operator  Normal  SuccessfulCreate     Successfully created Postgres
   55s        55s       Postgres operator  Normal  SuccessfulValidate   Successfully validate Postgres
   55s        55s       Postgres operator  Normal  Creating             Creating Kubernetes objects
@@ -195,7 +195,7 @@ Events:
 
 `kubectl dba describe` command provides following basic information about a database.
 
-- StatefulSet
+- PetSet
 - Storage (Persistent Volume)
 - Service
 - Secret (If available)
@@ -240,7 +240,7 @@ Various fields of a KubeDb object can't be edited using `edit` command. The foll
 - _metadata.name_
 - _metadata.namespace_
 
-If StatefulSets or Deployments exists for a database, following fields can't be modified as well.
+If PetSets or Deployments exists for a database, following fields can't be modified as well.
 
 - _spec.standby_
 - _spec.streaming_

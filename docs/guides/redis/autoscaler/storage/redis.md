@@ -252,7 +252,7 @@ rdops-rd-standalone-p27c11   VolumeExpansion   Successful    73s
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo rd-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

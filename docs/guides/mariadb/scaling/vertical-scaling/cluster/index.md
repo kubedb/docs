@@ -147,7 +147,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-vscale created
 
 #### Verify MariaDB Cluster resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `MariaDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the resources of `MariaDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 

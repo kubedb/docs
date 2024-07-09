@@ -96,7 +96,7 @@ NAME            VERSION    STATUS    AGE
 pg-standalone   13.13      Ready     3m47s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -107,7 +107,7 @@ NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM
 pvc-7a8a538d017a4f32   10Gi       RWO            Delete           Bound    demo/data-pg-standalone-0   linode-block-storage  <unset>   7m
 ```
 
-You can see the statefulset has 10GB storage, and the capacity of the persistent volume is also 10GB.
+You can see the petset has 10GB storage, and the capacity of the persistent volume is also 10GB.
 
 We are now ready to apply the `PostgresOpsRequest` CR to expand the volume of this database.
 
@@ -155,7 +155,7 @@ postgresopsrequest.ops.kubedb.com/pgops-vol-exp created
 
 #### Verify Postgres Standalone volume expanded successfully
 
-If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `Postgres` object and related `StatefulSet` and `Persistent Volume`.
+If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `Postgres` object and related `PetSet` and `Persistent Volume`.
 
 Let's wait for `PostgresOpsRequest` to be `Successful`. Run the following command to watch `PostgresOpsRequest` CR,
 
@@ -203,11 +203,11 @@ Status:
     Status:                True
     Type:                  VolumeExpansion
     Last Transition Time:  2024-03-14T09:06:08Z
-    Message:               StatefulSet is recreated
+    Message:               PetSet is recreated
     Observed Generation:   1
-    Reason:                ReadyStatefulSets
+    Reason:                ReadyPetSets
     Status:                True
-    Type:                  ReadyStatefulSets
+    Type:                  ReadyPetSets
     Last Transition Time:  2024-03-14T09:06:52Z
     Message:               Successfully Expanded Volume.
     Observed Generation:   1
@@ -226,11 +226,11 @@ Events:
   Normal  ResumeDatabase     11m   KubeDB Ops-manager Operator  Successfully resumed PostgreSQL demo/pg-standalone
   Normal  PauseDatabase      11m   KubeDB Ops-manager Operator  Pausing Postgres demo/pg-standalone
   Normal  PauseDatabase      11m   KubeDB Ops-manager Operator  Successfully paused Postgres demo/pg-standalone
-  Normal  ReadyStatefulSets  10m   KubeDB Ops-manager Operator  StatefulSet is recreated
+  Normal  ReadyPetSets  10m   KubeDB Ops-manager Operator  PetSet is recreated
   Normal  Successful         10m   KubeDB Ops-manager Operator  Successfully Expanded Volume
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

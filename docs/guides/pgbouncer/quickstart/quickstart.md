@@ -224,7 +224,7 @@ Following table show what KubeDB does when you delete Postgres crd for different
 | Behavior                  | DoNotTerminate | Delete   | WipeOut  |
 |---------------------------| :------------: | :------: | :------: |
 | 1. Block Delete operation |    &#10003;    | &#10007; | &#10007; |
-| 2. Delete StatefulSet     |    &#10007;    | &#10003; | &#10003; |
+| 2. Delete PetSet     |    &#10007;    | &#10003; | &#10003; |
 | 3. Delete Services        |    &#10007;    | &#10003; | &#10003; |
 | 4. Delete PVCs            |    &#10007;    | &#10003; | &#10003; |
 | 5. Delete Secrets         |    &#10007;    | &#10007; | &#10003; |
@@ -270,7 +270,7 @@ $ env PGPASSWORD='RoX*L8I;8R7v32ti' psql --host=localhost --port=5432 --username
 (2 rows)
 ```
 
-KubeDB operator watches for PgBouncer objects using Kubernetes api. When a PgBouncer object is created, KubeDB operator will create a new StatefulSet and a Service with the matching name. KubeDB operator will also create a governing service for StatefulSet with the name `kubedb`, if one is not already present.
+KubeDB operator watches for PgBouncer objects using Kubernetes api. When a PgBouncer object is created, KubeDB operator will create a new PetSet and a Service with the matching name. KubeDB operator will also create a governing service for PetSet with the name `kubedb`, if one is not already present.
 
 KubeDB operator sets the `status.phase` to `Running` once the connection-pooling mechanism is ready.
 

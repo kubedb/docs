@@ -83,7 +83,7 @@ Here,
 
 - `spec.init.script` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabatically. In this tutorial, a sample .js script from the git repository `https://github.com/kubedb/mongodb-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes).  The \*.js and/or \*.sh sripts that are stored inside the root folder will be executed alphabatically. The scripts inside child folders will be skipped.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-crd-name>-gvr`, if one is not already present. No MongoDB specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for PetSets with the name `<mongodb-crd-name>-gvr`, if one is not already present. No MongoDB specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
 
 ```bash
 $ kubectl dba describe mg -n demo mgo-init-script
@@ -103,7 +103,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  Delete
 
-StatefulSet:          
+PetSet:          
   Name:               mgo-init-script
   CreationTimestamp:  Thu, 11 Feb 2021 10:58:23 +0600
   Labels:               app.kubernetes.io/component=database
@@ -191,10 +191,10 @@ Events:
   Normal  Successful  46s   MongoDB operator  Successfully  stats service
   Normal  Successful  46s   MongoDB operator  Successfully  stats service
   Normal  Successful  27s   MongoDB operator  Successfully created appbinding
-  Normal  Successful  27s   MongoDB operator  Successfully patched StatefulSet demo/mgo-init-script
+  Normal  Successful  27s   MongoDB operator  Successfully patched PetSet demo/mgo-init-script
   Normal  Successful  27s   MongoDB operator  Successfully patched MongoDB
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME              READY   AGE
 mgo-init-script   1/1     30s
 

@@ -276,7 +276,7 @@ Spec:
         Memory:  500Mi
   Target Ref:
     API Version:  apps/v1
-    Kind:         StatefulSet
+    Kind:         PetSet
     Name:         es-topology-ingest
   Update Policy:
     Update Mode:  Off
@@ -370,9 +370,9 @@ Status:
     Last Transition Time:  2021-03-22T13:04:21Z
     Message:               Successfully updated petSet resources.
     Observed Generation:   1
-    Reason:                UpdateStatefulSetResources
+    Reason:                UpdatePetSetResources
     Status:                True
-    Type:                  UpdateStatefulSetResources
+    Type:                  UpdatePetSetResources
     Last Transition Time:  2021-03-22T13:13:41Z
     Message:               Successfully updated all node resources
     Observed Generation:   1
@@ -391,8 +391,8 @@ Events:
   Type    Reason               Age   From                        Message
   ----    ------               ----  ----                        -------
   Normal  PauseDatabase        10m   KubeDB Enterprise Operator  Pausing Elasticsearch demo/es-topology
-  Normal  Updating             10m   KubeDB Enterprise Operator  Updating StatefulSets
-  Normal  Updating             10m   KubeDB Enterprise Operator  Successfully Updated StatefulSets
+  Normal  Updating             10m   KubeDB Enterprise Operator  Updating PetSets
+  Normal  Updating             10m   KubeDB Enterprise Operator  Successfully Updated PetSets
   Normal  UpdateNodeResources  56s   KubeDB Enterprise Operator  Successfully updated all node resources
   Normal  Updating             56s   KubeDB Enterprise Operator  Updating Elasticsearch
   Normal  Updating             56s   KubeDB Enterprise Operator  Successfully Updated Elasticsearch

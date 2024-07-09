@@ -72,7 +72,7 @@ $ kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" 
 mariadb.kubedb.com/sample-mariadb created
 ```
 
-This MariaDB objetc will create the necessary StatefulSet, Secret, Service etc. for the database. You can easily view all the resources created by MariaDB object using [ketall](https://github.com/corneliusweig/ketall) `kubectl` plugin as below,
+This MariaDB objetc will create the necessary PetSet, Secret, Service etc. for the database. You can easily view all the resources created by MariaDB object using [ketall](https://github.com/corneliusweig/ketall) `kubectl` plugin as below,
 
 ```bash
 $ kubectl get-all -n demo -l app.kubernetes.io/instance=sample-mariadb

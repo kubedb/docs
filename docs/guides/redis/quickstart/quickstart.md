@@ -99,12 +99,12 @@ Here,
 
 - `spec.version` is name of the RedisVersion crd where the docker images are specified. In this tutorial, a Redis 6.2.14 database is created.
 - `spec.storageType` specifies the type of storage that will be used for Redis server. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Redis server using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Redis` crd or which resources KubeDB should keep or delete when you delete `Redis` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy)
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in storage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
-KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present.
+KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis` object is created, KubeDB operator will create a new PetSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present.
 
 ```bash
 $ kubectl get rd -n demo
@@ -128,7 +128,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  DoNotTerminate
 
-StatefulSet:          
+PetSet:          
   Name:               redis-quickstart
   CreationTimestamp:  Tue, 31 May 2022 10:31:38 +0600
   Labels:               app.kubernetes.io/component=database
@@ -363,7 +363,7 @@ Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.m
 
 ## Halt Database
 
-When [DeletionPolicy](/docs/guides/redis/concepts/redis.md#specdeletionpolicy) is set to halt, and you delete the redis object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy).
+When [DeletionPolicy](/docs/guides/redis/concepts/redis.md#specdeletionpolicy) is set to halt, and you delete the redis object, the KubeDB operator will delete the PetSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy).
 
 You can also keep the redis object and halt the database to resume it again later. If you halt the database, the KubeDB operator will delete the petsets and services but will keep the redis object, pvcs, secrets and backup (snapshots).
 

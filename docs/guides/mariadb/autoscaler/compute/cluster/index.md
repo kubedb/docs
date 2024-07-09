@@ -459,9 +459,9 @@ Status:
     Last Transition Time:  2022-09-16T11:30:42Z
     Message:               Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-sample-mariadb-6xc1kc
     Observed Generation:   1
-    Reason:                SuccessfullyRestatedStatefulSet
+    Reason:                SuccessfullyRestatedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-09-16T11:30:47Z
     Message:               Vertical scale successful for MariaDBOpsRequest: demo/mdops-sample-mariadb-6xc1kc
     Observed Generation:   1

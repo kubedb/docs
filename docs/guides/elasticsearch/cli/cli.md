@@ -110,7 +110,7 @@ service/kubedb                      ClusterIP   None            <none>        <n
 service/kubernetes                  ClusterIP   10.96.0.1       <none>        443/TCP    9h        <none>
 
 NAME                                  DESIRED   CURRENT   AGE       CONTAINERS      IMAGES
-statefulset.apps/elasticsearch-demo   1         1         2m        elasticsearch   kubedbci/elasticsearch:5.6-v1
+petset.apps/elasticsearch-demo   1         1         2m        elasticsearch   kubedbci/elasticsearch:5.6-v1
 
 NAME                                               VERSION   DB_IMAGE                          DEPRECATED   AGE
 elasticsearchversion.catalog.kubedb.com/5.6        5.6       kubedbci/elasticsearch:5.6        true         5h
@@ -170,7 +170,7 @@ service/elasticsearch-demo
 service/elasticsearch-demo-master
 service/kubedb
 service/kubernetes
-statefulset.apps/elasticsearch-demo
+petset.apps/elasticsearch-demo
 elasticsearchversion.catalog.kubedb.com/5.6
 elasticsearchversion.catalog.kubedb.com/5.6-v1
 elasticsearchversion.catalog.kubedb.com/5.6.4
@@ -207,7 +207,7 @@ Volume:
   Capacity:      1Gi
   Access Modes:  RWO
 
-StatefulSet:
+PetSet:
   Name:               elasticsearch-demo
   CreationTimestamp:  Mon, 08 Oct 2018 20:22:22 +0600
   Labels:               app.kubernetes.io/name=elasticsearches.kubedb.com
@@ -288,17 +288,17 @@ Events:
   ----    ------      ----  ----                    -------
   Normal  Successful  6m    Elasticsearch operator  Successfully created Service
   Normal  Successful  6m    Elasticsearch operator  Successfully created Service
-  Normal  Successful  6m    Elasticsearch operator  Successfully created StatefulSet
+  Normal  Successful  6m    Elasticsearch operator  Successfully created PetSet
   Normal  Successful  5m    Elasticsearch operator  Successfully created Elasticsearch
-  Normal  Successful  5m    Elasticsearch operator  Successfully patched StatefulSet
+  Normal  Successful  5m    Elasticsearch operator  Successfully patched PetSet
   Normal  Successful  5m    Elasticsearch operator  Successfully patched Elasticsearch
-  Normal  Successful  5m    Elasticsearch operator  Successfully patched StatefulSet
+  Normal  Successful  5m    Elasticsearch operator  Successfully patched PetSet
   Normal  Successful  4m    Elasticsearch operator  Successfully patched Elasticsearch
 ```
 
 `kubectl dba describe` command provides following basic information about a database.
 
-- StatefulSet
+- PetSet
 - Storage (Persistent Volume)
 - Service
 - Secret (If available)
@@ -306,7 +306,7 @@ Events:
 - Snapshots (If any)
 - Monitoring system (If available)
 
-To hide details about StatefulSet & Service, use flag `--show-workload=false`
+To hide details about PetSet & Service, use flag `--show-workload=false`
 To hide details about Secret, use flag `--show-secret=false`
 To hide events on KubeDB object, use flag `--show-events=false`
 
@@ -347,7 +347,7 @@ Various fields of a KubeDb object can't be edited using `edit` command. The foll
 - metadata.namespace
 - status
 
-If StatefulSets or Deployments exists for a database, following fields can't be modified as well.
+If PetSets or Deployments exists for a database, following fields can't be modified as well.
 
 Elasticsearch:
 

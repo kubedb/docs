@@ -144,14 +144,14 @@ PgBouncer managed by KubeDB can be monitored with builtin-Prometheus and Prometh
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for pgbouncer pods through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for PgBouncer server
+KubeDB allows providing a template for pgbouncer pods through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for PgBouncer server
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
 - metadata
   - annotations (pod's annotation)
 - controller
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - env
   - resources

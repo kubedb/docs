@@ -37,7 +37,7 @@ The Volume Expansion process consists of the following steps:
 
 2. `KubeDB` Community operator watches the `Redis` CR.
 
-3. When the operator finds a `Redis` CR, it creates required `StatefulSet` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `Redis` CR, it creates required `PetSet` and related necessary stuff like secrets, services, etc.
 
 4. The petSet creates Persistent Volumes according to the Volume Claim Template provided in the petset configuration. This Persistent Volume will be expanded by the `KubeDB` Enterprise operator.
 
@@ -49,7 +49,7 @@ The Volume Expansion process consists of the following steps:
 
 8. Then the `KubeDB` Enterprise operator will expand the persistent volume to reach the expected size defined in the `RedisOpsRequest` CR.
 
-9. After the successful expansion of the volume of the related StatefulSet Pods, the `KubeDB` Enterprise operator updates the new volume size in the `Redis` object to reflect the updated state.
+9. After the successful expansion of the volume of the related PetSet Pods, the `KubeDB` Enterprise operator updates the new volume size in the `Redis` object to reflect the updated state.
 
 10. After the successful Volume Expansion of the `Redis`, the `KubeDB` Enterprise operator resumes the `Redis` object so that the `KubeDB` Community operator resumes its usual operations.
 

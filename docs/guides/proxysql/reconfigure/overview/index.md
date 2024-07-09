@@ -37,7 +37,7 @@ The Reconfiguring ProxySQL process consists of the following steps:
 
 2. `KubeDB` Community operator watches the `ProxySQL` CR.
 
-3. When the operator finds a `ProxySQL` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `ProxySQL` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
 4. Then, in order to reconfigure the `ProxySQL` standalone or cluster the user creates a `ProxySQLOpsRequest` CR with desired information.
 

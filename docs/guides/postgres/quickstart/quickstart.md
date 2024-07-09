@@ -162,7 +162,7 @@ Here,
 
 - `spec.version` is name of the PostgresVersion crd where the docker images are specified. In this tutorial, a PostgreSQL 13.2 database is created.
 - `spec.storageType` specifies the type of storage that will be used for Postgres database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Postgres database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the size and StorageClass of PVC that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
+- `spec.storage` specifies the size and StorageClass of PVC that will be dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
 - `spec.deletionPolicy` specifies what KubeDB should do when user try to delete Postgres crd. Termination policy `DoNotTerminate` prevents a user from deleting this object if admission webhook is enabled.
 
 >Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in`storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
@@ -174,7 +174,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 postgres.kubedb.com/quick-postgres created
 ```
 
-KubeDB operator watches for Postgres objects using Kubernetes api. When a Postgres object is created, KubeDB operator will create a new StatefulSet and two ClusterIP Service with the matching name. KubeDB operator will also create a governing service for StatefulSet with the name `kubedb`, if one is not already present.
+KubeDB operator watches for Postgres objects using Kubernetes api. When a Postgres object is created, KubeDB operator will create a new PetSet and two ClusterIP Service with the matching name. KubeDB operator will also create a governing service for PetSet with the name `kubedb`, if one is not already present.
 
 If you are using RBAC enabled cluster, PostgreSQL specific RBAC permission is required. For details, please visit [here](/docs/guides/postgres/quickstart/rbac.md).
 
@@ -390,7 +390,7 @@ quick-postgres-pods   ClusterIP   None          <none>        5432/TCP,2380/TCP,
 Here,
 
 - Service *`quick-postgres`* targets only one Pod which is acting as *primary* server
-- Service *`quick-postgres-pods`* targets all Pods created by StatefulSet
+- Service *`quick-postgres-pods`* targets all Pods created by PetSet
 
 KubeDB supports PostgreSQL clustering where Pod can be either *primary* or *standby*. To learn how to configure highly available PostgreSQL cluster, click [here](/docs/guides/postgres/clustering/ha_cluster.md).
 
