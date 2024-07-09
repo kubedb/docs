@@ -122,7 +122,7 @@ The above `spec.updateConstraints.denylist` is showing that updating below versi
 In this section, we are going to deploy a MySQL standalone. Then, in the next section, we will update the version of the database using updating. Below is the YAML of the `MySQL` cr that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: my-standalone

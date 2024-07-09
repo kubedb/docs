@@ -41,7 +41,7 @@ To deploy a MySQL Innodb cluster, specify `spec.topology` field in `MySQL` CRD.
 The following is an example `MySQL` object which creates a MySQL Innodb cluster with three members (one is primary member and the two others are secondary members).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: innodb
@@ -86,7 +86,7 @@ Name:               innodb
 Namespace:          demo
 CreationTimestamp:  Tue, 15 Nov 2022 15:14:42 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"innodb","namespace":"demo"},"spec":{"replicas":3,"storage":{"ac...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"innodb","namespace":"demo"},"spec":{"replicas":3,"storage":{"ac...
 Replicas:           3  total
 Status:             Provisioning
 StorageType:        Durable
@@ -168,7 +168,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"innodb","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"innoDBCluster":{"router":{"replicas":1}},"mode":"InnoDBCluster"},"version":"8.0.31-innodb"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"innodb","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"innoDBCluster":{"router":{"replicas":1}},"mode":"InnoDBCluster"},"version":"8.0.31-innodb"}}
 
     Creation Timestamp:  2022-11-15T09:14:42Z
     Labels:
@@ -247,7 +247,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get  my -n demo innodb -o yaml | kubectl neat
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: innodb

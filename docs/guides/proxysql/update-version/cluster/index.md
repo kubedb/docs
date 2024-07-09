@@ -38,7 +38,7 @@ namespace/demo created
 Also we need a mysql backend for the proxysql server. So we are  creating one with the below yaml. 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-server

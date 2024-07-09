@@ -42,7 +42,7 @@ To test any proxysql functionality we need to have a mysql backend .
 Below, here is the yaml for the KubeDB MySQL backend.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-server

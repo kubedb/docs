@@ -104,7 +104,7 @@ issuer.cert-manager.io/mysql-issuer created
 Now, we are going to deploy a `MySQL` group replication with TLS/SSL configuration. Below is the YAML for MySQL group replication that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: some-mysql
@@ -156,7 +156,7 @@ mysql.kubedb.com/some-mysql created
 Now, we are going to deploy a `MySQL` Innodb with TLS/SSL configuration. Below is the YAML for MySQL innodb cluster that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: some-mysql
@@ -207,7 +207,7 @@ mysql.kubedb.com/some-mysql created
 Now, we are going to deploy a `MySQL` Semi sync cluster with TLS/SSL configuration. Below is the YAML for MySQL semi-sync cluster that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: some-mysql
@@ -262,7 +262,7 @@ mysql.kubedb.com/some-mysql created
 Now, we are going to deploy a stand alone `MySQL` with TLS/SSL configuration. Below is the YAML for stand alone MySQL that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: some-mysql

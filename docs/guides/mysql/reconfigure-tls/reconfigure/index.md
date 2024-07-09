@@ -65,7 +65,7 @@ In this section, we are going to deploy a MySQL database without TLS. In the nex
   <div class="tab-pane fade" id="groupReplication" role="tabpanel" aria-labelledby="gr-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql
@@ -97,7 +97,7 @@ mysql.kubedb.com/mysql created
   <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql
@@ -132,7 +132,7 @@ mysql.kubedb.com/mysql created
   <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: semi-sync-mysql
@@ -170,7 +170,7 @@ mysql.kubedb.com/mysql created
   <div class="tab-pane fade show active" id="standAlone" role="tabpanel" aria-labelledby="st-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql

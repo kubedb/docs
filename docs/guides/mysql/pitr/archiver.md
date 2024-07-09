@@ -209,7 +209,7 @@ $ kubectl apply -f volumesnapshotclass.yaml
 So far we are ready with setup for continuously archive MySQL, We deploy a mysqlql referring the MySQL archiver object
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql
@@ -357,7 +357,7 @@ mysql> select now();
 ### Restore MySQL
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: restore-mysql

@@ -23,7 +23,7 @@ section_menu_id: guides
 As with all other Kubernetes objects, a MySQL needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example MySQL object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: m1
@@ -188,7 +188,7 @@ To initialize a MySQL database using a script (shell script, sql script, etc.), 
 Below is an example showing how a script from a configMap can be used to initialize a MySQL database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: m1

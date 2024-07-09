@@ -37,7 +37,7 @@ In this tutorial we are going to test set up a ProxySQL server with KubeDB opera
 By applying the following yaml we are going to create our MySQL Group Replication 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-server

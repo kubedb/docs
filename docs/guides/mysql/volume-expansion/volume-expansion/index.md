@@ -83,7 +83,7 @@ In this section, we are going to deploy a MySQL Cluster with 1GB volume. Then, i
   <div class="tab-pane fade show active" id="groupReplication" role="tabpanel" aria-labelledby="gr-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: sample-mysql
@@ -116,7 +116,7 @@ mysql.kubedb.com/sample-mysql created
   <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: sample-mysql
@@ -151,7 +151,7 @@ mysql.kubedb.com/sample-mysql created
   <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: sample-mysql
@@ -188,7 +188,7 @@ mysql.kubedb.com/sample-mysql created
   <div class="tab-pane fade" id="standAlone" role="tabpanel" aria-labelledby="st-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: sample-mysql

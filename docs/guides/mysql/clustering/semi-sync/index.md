@@ -42,7 +42,7 @@ To deploy a single primary MySQL semi-synchronous cluster , specify `spec.topolo
 The following is an example `MySQL` object which creates a semi-synchronous cluster with three members (one is primary member and the two others are secondary members).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: semi-sync-mysql
@@ -91,7 +91,7 @@ Name:               semi-sync-mysql
 Namespace:          demo
 CreationTimestamp:  Wed, 16 Nov 2022 11:45:53 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"stor...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"stor...
 Replicas:           3  total
 Status:             Ready
 StorageType:        Durable
@@ -174,7 +174,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"mode":"SemiSync","semiSync":{"errantTransactionRecoveryPolicy":"PseudoTransaction","sourceTimeout":"23h","sourceWaitForReplicaCount":1}},"version":"8.0.35"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"mode":"SemiSync","semiSync":{"errantTransactionRecoveryPolicy":"PseudoTransaction","sourceTimeout":"23h","sourceWaitForReplicaCount":1}},"version":"8.0.35"}}
 
     Creation Timestamp:  2022-11-16T05:45:53Z
     Labels:
@@ -270,7 +270,7 @@ semi-sync-mysql   8.0.35    Ready    16m
 
 ```yaml
 $ kubectl get  my -n demo semi-sync-mysql -o yaml | kubectl neat
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: semi-sync-mysql

@@ -47,7 +47,7 @@ Here, we are going to deploy a `MySQL Server` by using `KubeDB` operator. Also, 
 In this section, we are going to deploy a MySQL Server. Let's deploy it using this following yaml,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-server

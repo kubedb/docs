@@ -92,7 +92,7 @@ In this section, we are going to deploy a MySQL group replication with 3 members
 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: my-group
@@ -132,7 +132,7 @@ In this section, we are going to deploy a MySQL innodb with 3 members. Then, in 
 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: my-group
@@ -173,7 +173,7 @@ In this section, we are going to deploy a MySQL semi-sync with 3 members. Then, 
 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: my-group

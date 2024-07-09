@@ -43,7 +43,7 @@ This tutorial will show you how to monitor ProxySQL database using builtin [Prom
 We need a mysql backend for the proxysql server. So we are  creating one with the below yaml.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-grp

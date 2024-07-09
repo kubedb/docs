@@ -97,7 +97,7 @@ mysql.kubedb.com/custom-mysql created
 Below is the YAML for the MySQL crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: custom-mysql

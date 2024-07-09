@@ -117,7 +117,7 @@ While deploying `MySQL` from private repository, you have to add `myregistrykey`
 Below is the MySQL CRD object we will create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-pvt-reg
