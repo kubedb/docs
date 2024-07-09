@@ -61,7 +61,7 @@ Now, we are going to deploy a `MariaDB` database of 3 replicas with version `10.
 In this section, we are going to deploy a MariaDB Cluster with 1GB volume. Then, in the next section we will expand its volume to 2GB using `MariaDBOpsRequest` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb

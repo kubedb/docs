@@ -43,7 +43,7 @@ This tutorial will show you how to monitor PostgreSQL database using builtin [Pr
 At first, let's deploy an PostgreSQL database with monitoring enabled. Below is the PostgreSQL object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: builtin-prom-postgres

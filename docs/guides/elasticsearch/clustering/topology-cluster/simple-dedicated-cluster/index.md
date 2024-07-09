@@ -50,7 +50,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 We are going to create a Elasticsearch Simple Dedicated Cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, 2 ingest nodes. Here, we are using Elasticsearch version ( `xpack-8.11.1` ) of SearchGuard distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-cluster
@@ -128,7 +128,7 @@ Name:         es-cluster
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         Elasticsearch
 Metadata:
   Creation Timestamp:  2022-04-07T09:48:51Z

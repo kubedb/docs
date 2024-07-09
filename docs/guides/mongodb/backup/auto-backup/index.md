@@ -146,7 +146,7 @@ secret/gcs-secret created
 Now, we are going to create an MongoDB CRO in `demo` namespace. Below is the YAML of the MongoDB object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: sample-mongodb
@@ -320,7 +320,7 @@ secret/gcs-secret created
 Now, we are going to create an MongoDB CRO in `demo-2` namespace. Below is the YAML of the MongoDB object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: sample-mongodb-2
@@ -506,7 +506,7 @@ secret/gcs-secret created
 Now, we are going to create an MongoDB CRO in `demo-3` namespace. Below is the YAML of the MongoDB object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: sample-mongodb-3

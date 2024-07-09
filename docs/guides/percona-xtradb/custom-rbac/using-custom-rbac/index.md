@@ -129,7 +129,7 @@ perconaxtradb.kubedb.com/sample-pxc created
 Below is the YAML for the PerconaXtraDB crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -186,7 +186,7 @@ perconaxtradb.kubedb.com/another-perconaxtradb created
 Below is the YAML for the PerconaXtraDB crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: another-perconaxtradb

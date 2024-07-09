@@ -105,7 +105,7 @@ namespace/demo patched
 At first, let's deploy an MariaDB database with monitoring enabled. Below is the MariaDB object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: coreos-prom-md

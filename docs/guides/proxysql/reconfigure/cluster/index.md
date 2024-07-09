@@ -79,7 +79,7 @@ mysql-server   5.7.44    Ready    3m51s
 Let's create a KubeDB ProxySQL cluster with the following yaml.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server

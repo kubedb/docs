@@ -59,7 +59,7 @@ NAME     VERSION   DB_IMAGE                                DEPRECATED   AGE
 KubeDB implements a `PerconaXtraDB` CRD to define the specification of a PerconaXtraDB database. Below is the `PerconaXtraDB` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -99,7 +99,7 @@ Name:         sample-pxc
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         PerconaXtraDB
 Metadata:
   Creation Timestamp:  2022-12-19T09:54:09Z

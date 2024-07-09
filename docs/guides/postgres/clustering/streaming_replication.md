@@ -37,7 +37,7 @@ namespace/demo created
 The example below demonstrates KubeDB PostgreSQL for Streaming Replication
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: ha-postgres
@@ -182,7 +182,7 @@ Get the postgres CRD at this point.
 
 ```yaml
 $ kubectl get pg -n demo   ha-postgres -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   creationTimestamp: "2019-02-07T12:14:05Z"
@@ -192,7 +192,7 @@ metadata:
   name: ha-postgres
   namespace: demo
   resourceVersion: "44966"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/postgreses/ha-postgres
+  selfLink: /apis/kubedb.com/v1/namespaces/demo/postgreses/ha-postgres
   uid: dcf6d96a-2ad1-11e9-9d44-080027154f61
 spec:
   authSecret:
@@ -280,7 +280,7 @@ You can see here, now `ha-postgres-0` and `ha-postgres-2` are streaming asynchro
 Streaming Replication also works with one or more *hot standby* servers.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: hot-postgres

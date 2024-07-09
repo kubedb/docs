@@ -48,7 +48,7 @@ Now, we are going to deploy a `MariaDB` cluster with version `10.5.23`.
 In this section, we are going to deploy a MariaDB cluster. Then, in the next section we will scale the database using `MariaDBOpsRequest` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb

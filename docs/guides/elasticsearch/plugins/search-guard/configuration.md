@@ -355,7 +355,7 @@ Use this Secret `config-elasticsearch-auth` in `spec.authSecret` field of your E
 Below is the Elasticsearch object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: config-elasticsearch

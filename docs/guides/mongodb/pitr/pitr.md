@@ -234,7 +234,7 @@ stringData:
 So far we are ready with setup for continuously archive MongoDB, We deploy a MongoDB referring the MongoDB archiver object
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-rs
@@ -371,7 +371,7 @@ We can't restore from a full backup since at this point no full backup was perfo
 
 ### Restore MongoDB
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-rs-restored

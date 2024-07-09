@@ -76,7 +76,7 @@ In this section, we are going to deploy a ProxySQL Cluster. Then, in the next se
 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server

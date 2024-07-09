@@ -42,7 +42,7 @@ To deploy a MongoDB ReplicaSet, user have to specify `spec.replicaSet` option in
 The following is an example of a `Mongodb` object which creates MongoDB ReplicaSet of three members.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-rs-hid
@@ -110,7 +110,7 @@ Name:               mongo-rs-hid
 Namespace:          demo
 CreationTimestamp:  Mon, 31 Oct 2022 11:03:50 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":...
 Replicas:           3  total
 Status:             Ready
 StorageType:        Ephemeral
@@ -184,7 +184,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","deletionPolicy":"WipeOut","version":"percona-7.0.4"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","deletionPolicy":"WipeOut","version":"percona-7.0.4"}}
 
     Creation Timestamp:  2022-10-31T05:05:38Z
     Labels:
@@ -278,12 +278,12 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mongo-rs-hid -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","deletionPolicy":"WipeOut","version":"percona-7.0.4"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","deletionPolicy":"WipeOut","version":"percona-7.0.4"}}
   creationTimestamp: "2022-10-31T05:03:50Z"
   finalizers:
     - kubedb.com

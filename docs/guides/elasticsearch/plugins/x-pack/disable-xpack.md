@@ -85,7 +85,7 @@ In order to disable X-Pack, you have to set `spec.disableSecurity` field of `Ela
 Below is the YAML of `Elasticsearch` object that will be created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-xpack-disabled

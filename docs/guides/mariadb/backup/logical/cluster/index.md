@@ -48,7 +48,7 @@ In this section, we are going to deploy a MariaDB database using KubeDB. Then, w
 At first, let's deploy a MariaDB database named `sample-mariadb` of 3 replicas.
 
 ``` yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb

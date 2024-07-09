@@ -44,7 +44,7 @@ Here, we are going to deploy a  `Redis` and `RedisSentinel` instance using a sup
 
 Now, we are going to deploy a `RedisSentinel` version `6.2.14`.
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-demo
@@ -80,7 +80,7 @@ sen-demo   6.2.14     Ready    96s
 
 In this section, we are going to deploy a Redis database in Sentinel Mode. 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-demo
@@ -169,7 +169,7 @@ exit
 
 We are going to create a new `RedisSentinel` object for replacing.
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: new-sentinel

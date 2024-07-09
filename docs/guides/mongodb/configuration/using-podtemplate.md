@@ -70,7 +70,7 @@ Below is the YAML for the MongoDB created in this example. Here, [`spec.podTempl
 In this tutorial, `maxIncomingConnections` is set to `100` (default, 65536) through args `--maxConns=100`.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo-misc-config

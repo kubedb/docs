@@ -42,7 +42,7 @@ To deploy a MongoDB Sharding, user have to specify `spec.shardTopology` option i
 The following is an example of a `Mongodb` object which creates MongoDB Sharding of three members.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-sh
@@ -163,18 +163,18 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mongo-sh -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh","namespace":"demo"},"spec":{"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"replicas":3,"shards":2,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}}},"version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh","namespace":"demo"},"spec":{"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"replicas":3,"shards":2,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}}},"version":"4.4.26"}}
   creationTimestamp: "2021-02-10T12:57:03Z"
   finalizers:
     - kubedb.com
   generation: 3
   managedFields:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:
@@ -215,7 +215,7 @@ metadata:
       manager: kubectl-client-side-apply
       operation: Update
       time: "2021-02-10T12:57:03Z"
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:

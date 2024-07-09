@@ -52,7 +52,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 We are going to create a OpenSearch Cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, 2 ingest nodes. Here, we are using Elasticsearch version ( `opensearch-2.8.0` ) of OpenSearch distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: os-cluster
@@ -130,7 +130,7 @@ Name:         os-cluster
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         Elasticsearch
 Metadata:
   Creation Timestamp:  2022-06-08T06:01:54Z

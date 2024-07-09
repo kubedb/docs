@@ -165,7 +165,7 @@ spec:
 In this section, we are going to deploy a Postgres Instance. Then, in the next section, we will update the version of the database using updating. Below is the YAML of the `Postgres` cr that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: pg

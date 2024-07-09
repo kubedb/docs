@@ -79,7 +79,7 @@ issuer.cert-manager.io/postgres-ca-issuer created
 Here, our issuer `postgres-ca-issuer`  is ready to deploy a `Postgres` Cluster with TLS/SSL configuration. Below is the YAML for Postgres Cluster that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: demo-pg

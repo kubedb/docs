@@ -42,7 +42,7 @@ To deploy a MongoDB ReplicaSet, user have to specify `spec.replicaSet` option in
 The following is an example of a `Mongodb` object which creates MongoDB ReplicaSet of three members.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-arb
@@ -88,7 +88,7 @@ Name:               mongo-arb
 Namespace:          demo
 CreationTimestamp:  Thu, 21 Apr 2022 14:39:32 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplat...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplat...
 Replicas:           2  total
 Status:             Ready
 StorageType:        Durable
@@ -165,7 +165,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":null},"replicaSet":{"name":"rs0"},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"4.4.26"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":null},"replicaSet":{"name":"rs0"},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"4.4.26"}}
 
     Creation Timestamp:  2022-04-21T08:40:21Z
     Labels:
@@ -236,12 +236,12 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mongo-arb -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":null},"replicaSet":{"name":"rs0"},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":null},"replicaSet":{"name":"rs0"},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-04-21T08:39:32Z"
   finalizers:
   - kubedb.com

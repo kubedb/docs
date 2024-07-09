@@ -53,7 +53,7 @@ configmap/md-init-script created
 Below is the `MariaDB` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -87,7 +87,7 @@ KubeDB operator watches for `MariaDB` objects using Kubernetes api. When a `Mari
 
 ```yaml
 $ kubectl get mariadb -n demo sample-mariadb -oyaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   ...

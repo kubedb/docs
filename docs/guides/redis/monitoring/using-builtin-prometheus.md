@@ -43,7 +43,7 @@ This tutorial will show you how to monitor Redis server using builtin [Prometheu
 At first, let's deploy an Redis server with monitoring enabled. Below is the Redis object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: builtin-prom-redis

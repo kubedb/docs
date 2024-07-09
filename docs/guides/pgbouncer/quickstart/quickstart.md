@@ -157,7 +157,7 @@ KubeDB implements a PgBouncer crd to define the specifications of a PgBouncer.
 Below is the PgBouncer object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PgBouncer
 metadata:
   name: pgbouncer-server
@@ -288,7 +288,7 @@ Name:         pgbouncer-server
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         PgBouncer
 Metadata:
   Creation Timestamp:  2023-10-11T06:28:02Z
@@ -296,7 +296,7 @@ Metadata:
     kubedb.com
   Generation:  2
   Managed Fields:
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
@@ -331,7 +331,7 @@ Metadata:
     Manager:      kubectl-client-side-apply
     Operation:    Update
     Time:         2023-10-11T06:28:02Z
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
@@ -343,7 +343,7 @@ Metadata:
     Manager:      kubedb-provisioner
     Operation:    Update
     Time:         2023-10-11T06:28:02Z
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:status:

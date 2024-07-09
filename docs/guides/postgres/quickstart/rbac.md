@@ -46,7 +46,7 @@ namespace/demo created
 Below is the Postgres object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: quick-postgres
@@ -93,7 +93,7 @@ metadata:
   name: quick-postgres
   namespace: demo
   ownerReferences:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       blockOwnerDeletion: true
       controller: true
       kind: Postgres
@@ -177,7 +177,7 @@ metadata:
   name: quick-postgres
   namespace: demo
   ownerReferences:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       blockOwnerDeletion: true
       controller: true
       kind: Postgres
@@ -208,7 +208,7 @@ metadata:
   name: quick-postgres
   namespace: demo
   ownerReferences:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       blockOwnerDeletion: true
       controller: true
       kind: Postgres

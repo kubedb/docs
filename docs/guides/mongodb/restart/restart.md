@@ -36,7 +36,7 @@ KubeDB supports restarting the MongoDB database via a MongoDBOpsRequest. Restart
 In this section, we are going to deploy a MongoDB database using KubeDB.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo

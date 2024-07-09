@@ -123,7 +123,7 @@ issuer.cert-manager.io/proxy-issuer created
 Here, our issuer `proxy-issuer`  is ready to deploy a `ProxySQL` cluster with TLS/SSL configuration. Below is the YAML for ProxySQL Cluster that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server

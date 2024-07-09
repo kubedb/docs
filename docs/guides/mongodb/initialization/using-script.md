@@ -54,7 +54,7 @@ configmap/mg-init-script created
 Below is the `MongoDB` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo-init-script
@@ -91,7 +91,7 @@ Name:               mgo-init-script
 Namespace:          demo
 CreationTimestamp:  Thu, 11 Feb 2021 10:58:22 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script"...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script"...
 Replicas:           1  total
 Status:             Ready
 StorageType:        Durable
@@ -162,7 +162,7 @@ Init:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
 
     Creation Timestamp:  2021-02-11T04:58:42Z
     Labels:
@@ -216,18 +216,18 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mgo-init-script -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
   creationTimestamp: "2021-02-10T04:38:52Z"
   finalizers:
     - kubedb.com
   generation: 3
   managedFields:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:
@@ -256,7 +256,7 @@ metadata:
       manager: kubectl-client-side-apply
       operation: Update
       time: "2021-02-10T04:38:52Z"
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:

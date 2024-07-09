@@ -43,7 +43,7 @@ add TLS to them.
 In this section, we are going to deploy a `RedisSentinel` instance. Below is the YAML of the `RedisSentinel` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-sample
@@ -82,7 +82,7 @@ sen-sample   6.2.14     Ready    5m20s
 In this section, we are going to deploy a Redis Standalone database without TLS. In the next few sections we will reconfigure TLS using `RedisOpsRequest` CRD. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-sample

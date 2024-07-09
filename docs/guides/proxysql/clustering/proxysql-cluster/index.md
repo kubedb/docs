@@ -121,7 +121,7 @@ Bye
 The following is an example `ProxySQL` object which creates a proxysql cluster with three members. 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server

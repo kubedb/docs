@@ -142,7 +142,7 @@ The KubeDB operator implements an Elasticsearch CRD to define the specification 
 The Elasticsearch instance used for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-quickstart
@@ -198,7 +198,7 @@ Name:         es-quickstart
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         Elasticsearch
 Metadata:
   Creation Timestamp:  2022-12-27T05:25:39Z
@@ -206,7 +206,7 @@ Metadata:
     kubedb.com
   Generation:  1
   Managed Fields:
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
@@ -238,7 +238,7 @@ Metadata:
     Manager:      kubectl-client-side-apply
     Operation:    Update
     Time:         2022-12-27T05:25:39Z
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
@@ -248,7 +248,7 @@ Metadata:
     Manager:      kubedb-provisioner
     Operation:    Update
     Time:         2022-12-27T05:25:39Z
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:status:

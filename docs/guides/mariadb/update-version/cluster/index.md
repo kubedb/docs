@@ -46,7 +46,7 @@ In this section, we are going to deploy a MariaDB Cluster. Then, in the next sec
 > If you want to update `MariaDB Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb

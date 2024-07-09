@@ -48,7 +48,7 @@ Here, we are going to deploy a `RedisSentinel` instance using a supported versio
 In this section, we are going to deploy a RedisSentinel instance with version `6.2.14`.  Then, in the next section we will set up autoscaling for this database using `RedisSentinelAutoscaler` CRD. Below is the YAML of the `RedisSentinel` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-demo

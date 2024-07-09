@@ -88,7 +88,7 @@ issuer.cert-manager.io/redis-ca-issuer created
 Below is the YAML for Redis Cluster.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-tls

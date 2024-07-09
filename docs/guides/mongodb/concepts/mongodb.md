@@ -23,7 +23,7 @@ section_menu_id: guides
 As with all other Kubernetes objects, a MongoDB needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example MongoDB object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo1
@@ -422,7 +422,7 @@ To initialize a MongoDB database using a script (shell script, js script), set t
 Below is an example showing how a script from a configMap can be used to initialize a MongoDB database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo1

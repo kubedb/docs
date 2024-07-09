@@ -103,7 +103,7 @@ secret/pg-singapore-auth created
 
 ## Deploy PostgreSQL with TLS/SSL configuration
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: pg-singapore
@@ -237,7 +237,7 @@ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}
 ```
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: pg-london

@@ -42,7 +42,7 @@ First RedisSentinel instance needs to be deployed and then a Redis instance in S
 The following is an example `RedisSentinel` object which creates a Sentinel with three replicas.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-demo
@@ -78,7 +78,7 @@ To deploy a Redis in Sentinel mode, specify `spec.mode` field in `Redis` CRD.
 The following is an example `Redis` object which creates a Redis Sentinel with three replica node, and it is monitored by Sentinel instance `sentinel`
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-demo
@@ -165,12 +165,12 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 $ kubectl get redissentinel -n demo sen-demo -o yaml
 ```
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"RedisSentinel","metadata":{"annotations":{},"name":"sen-demo","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Halt","version":"6.2.14"}}
+      {"apiVersion":"kubedb.com/v1","kind":"RedisSentinel","metadata":{"annotations":{},"name":"sen-demo","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Halt","version":"6.2.14"}}
   creationTimestamp: "2023-02-03T06:36:16Z"
   finalizers:
   - kubedb.com

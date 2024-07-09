@@ -23,7 +23,7 @@ section_menu_id: guides
 As with all other Kubernetes objects, a PerconaXtraDB needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example PerconaXtraDB object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc

@@ -86,7 +86,7 @@ issuer.cert-manager.io/md-issuer created
 Here, our issuer `md-issuer`  is ready to deploy a `MariaDB` standalone with TLS/SSL configuration. Below is the YAML for MariaDB Standalone that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: md-standalone-tls
@@ -274,7 +274,7 @@ From the above output, you can see that only using client certificate we can acc
 Now, we are going to deploy a `MariaDB` Cluster with TLS/SSL configuration. Below is the YAML for MariaDB cluster that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: md-cluster-tls

@@ -133,7 +133,7 @@ secret/es-custom-config created
 Now that the config secret is created, it needs to be mention in the [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md) object's yaml:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-topology

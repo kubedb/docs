@@ -48,7 +48,7 @@ In this section, we are going to deploy an Elasticsearch database using KubeDB. 
 At first, let's deploy a sample Elasticsearch database. Below is the YAML of a sample Elasticsearch crd that we are going to create for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: sample-es
@@ -828,7 +828,7 @@ Now, we are going to deploy an Elasticsearch into `restored` namespace. We are g
 Here, is the YAML of the Elasticsearch object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: init-sample

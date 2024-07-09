@@ -41,7 +41,7 @@ Here, We are going to create a MariaDB database without TLS and then reconfigure
 In this section, we are going to deploy a MariaDB Cluster database without TLS. In the next few sections we will reconfigure TLS using `MariaDBOpsRequest` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -355,7 +355,7 @@ Metadata:
   Generation:          1
   ...
   Owner References:
-    API Version:           kubedb.com/v1alpha2
+    API Version:           kubedb.com/v1
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  MariaDB

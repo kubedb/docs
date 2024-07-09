@@ -62,7 +62,7 @@ Now, we are going to deploy a `MongoDB` standalone database with version `4.4.26
 In this section, we are going to deploy a MongoDB Sharded database with 1GB volume for each of the shard nodes and config servers. Then, in the next sections we will expand the volume of shard nodes and config servers to 2GB using `MongoDBOpsRequest` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-sharding

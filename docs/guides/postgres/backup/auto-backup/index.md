@@ -129,7 +129,7 @@ secret/gcs-secret created
 Now, we are going to create a Postgres CRO in `demo` namespace. Below is the YAML of the PostgreSQL object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: sample-postgres-1
@@ -297,7 +297,7 @@ secret/gcs-secret created
 Now, we are going to create a Postgres CRO in `demo-2` namespace. Below is the YAML of the PostgreSQL object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: sample-postgres-2
@@ -467,7 +467,7 @@ secret/gcs-secret created
 Now, we are going to create a Postgres CRO in `demo-3` namespace. Below is the YAML of the PostgreSQL object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: sample-postgres-3

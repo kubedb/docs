@@ -138,7 +138,7 @@ redis.kubedb.com/quick-redis created
 Below is the YAML for the Redis crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: quick-redis
@@ -188,7 +188,7 @@ redis.kubedb.com/quick-redis created
 Below is the YAML for the Redis crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: minute-redis

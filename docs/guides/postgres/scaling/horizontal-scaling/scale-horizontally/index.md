@@ -90,7 +90,7 @@ The version above that does not show `DEPRECATED` `true` is supported by `KubeDB
 In this section, we are going to deploy a Postgres Cluster with 3 members. Then, in the next section we will scale-up the cluster using horizontal scaling. Below is the YAML of the `Postgres` cr that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: pg

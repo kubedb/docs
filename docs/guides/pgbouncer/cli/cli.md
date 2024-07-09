@@ -57,12 +57,12 @@ To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
 $ kubectl get pgbouncer pgbouncer-demo --output=yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PgBouncer
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"connectionPool":{"adminUsers":["admin","admin1"],"maxClientConnections":20,"reservePoolSize":5},"database":{"databaseName":"postgres","databaseRef":{"name":"quick-postgres"}},"monitor":{"agent":"prometheus.io/builtin"},"replicas":1,"userListSecretRef":{"name":"db-user-pass"},"version":"1.17.0"}}
+      {"apiVersion":"kubedb.com/v1","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"connectionPool":{"adminUsers":["admin","admin1"],"maxClientConnections":20,"reservePoolSize":5},"database":{"databaseName":"postgres","databaseRef":{"name":"quick-postgres"}},"monitor":{"agent":"prometheus.io/builtin"},"replicas":1,"userListSecretRef":{"name":"db-user-pass"},"version":"1.17.0"}}
   creationTimestamp: "2019-10-31T10:34:04Z"
   finalizers:
     - kubedb.com
@@ -70,7 +70,7 @@ metadata:
   name: pgbouncer-demo
   namespace: demo
   resourceVersion: "4733"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/pgbouncers/pgbouncer-demo
+  selfLink: /apis/kubedb.com/v1/namespaces/demo/pgbouncers/pgbouncer-demo
   uid: 158b7c58-ecb2-4a77-bceb-081489b4921a
 spec:
   connectionPool:
@@ -173,7 +173,7 @@ pgbouncer.kubedb.com/pgbouncer-demo
 ```bash
 Name:         pgbouncer-demo
 Namespace:    default
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         PgBouncer
 Metadata:
   Creation Timestamp:  2019-09-09T09:27:48Z
@@ -181,7 +181,7 @@ Metadata:
     kubedb.com
   Generation:        1
   Resource Version:  303596
-  Self Link:         /apis/kubedb.com/v1alpha2/namespaces/demo/pgbouncers/pgbouncer-demo
+  Self Link:         /apis/kubedb.com/v1/namespaces/demo/pgbouncers/pgbouncer-demo
   UID:               f59c58da-ae21-403d-a4ce-affc8e10345c
 Spec:
   Connection Pool:

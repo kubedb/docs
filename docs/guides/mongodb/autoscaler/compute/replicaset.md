@@ -48,7 +48,7 @@ Here, we are going to deploy a `MongoDB` Replicaset using a supported version by
 In this section, we are going to deploy a MongoDB Replicaset database with version `4.4.26`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-rs

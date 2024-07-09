@@ -49,7 +49,7 @@ Now, we are going to deploy a `PerconaXtraDB` cluster database with version `8.0
 In this section, we are going to deploy a PerconaXtraDB cluster database. Then, in the next section we will update the resources of the database using `PerconaXtraDBOpsRequest` CRD. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc

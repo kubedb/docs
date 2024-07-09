@@ -40,7 +40,7 @@ To deploy a MongoDB Standalone, user must have `spec.replicaSet` & `spec.shardTo
 The following is an example of a `Mongodb` object which creates MongoDB Standalone database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-alone
@@ -80,7 +80,7 @@ Name:               mg-alone
 Namespace:          demo
 CreationTimestamp:  Fri, 04 Nov 2022 10:30:07 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{...
 Replicas:           1  total
 Status:             Ready
 StorageType:        Durable
@@ -143,7 +143,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"deletionPolicy":"WipeOut","version":"4.4.26"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"deletionPolicy":"WipeOut","version":"4.4.26"}}
 
     Creation Timestamp:  2022-11-04T04:30:14Z
     Labels:
@@ -212,12 +212,12 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mg-alone -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"deletionPolicy":"WipeOut","version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"deletionPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-11-04T04:30:07Z"
   finalizers:
     - kubedb.com

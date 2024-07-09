@@ -42,7 +42,7 @@ demo    Active  5s
 In order to disable Search Guard, you have to set `spec.authPlugin` field of Elasticsearch object to `None`. Below is the YAML of Elasticsearch object that will be created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-sg-disabled

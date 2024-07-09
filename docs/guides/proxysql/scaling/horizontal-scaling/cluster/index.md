@@ -76,7 +76,7 @@ Here, we are going to deploy a  `ProxySQL` cluster using a supported version by 
 In this section, we are going to deploy a ProxySQL cluster. Then, in the next section we will scale the proxy server using `ProxySQLOpsRequest` CRD. Below is the YAML of the `ProxySQL` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server

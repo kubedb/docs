@@ -45,7 +45,7 @@ Here, We are going to create a Redis database without TLS and then reconfigure t
 In this section, we are going to deploy a Redis Standalone database without TLS. In the next few sections we will reconfigure TLS using `RedisOpsRequest` CRD. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-sample

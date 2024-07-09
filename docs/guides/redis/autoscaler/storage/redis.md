@@ -66,7 +66,7 @@ Now, we are going to deploy a `Redis` standalone using a supported version by `K
 In this section, we are going to deploy a Redis standalone database with version `6.2.14`.  Then, in the next section we will set up autoscaling for this database using `RedisAutoscaler` CRD. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-standalone

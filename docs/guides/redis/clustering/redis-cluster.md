@@ -42,7 +42,7 @@ To deploy a Redis Cluster, specify `spec.mode` and `spec.cluster` fields in `Red
 The following is an example `Redis` object which creates a Redis cluster with three master nodes each of which has one replica node.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: redis-cluster
@@ -122,12 +122,12 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 $ kubectl get rd -n demo redis-cluster -o yaml
 ```
 ``` yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Redis","metadata":{"annotations":{},"name":"redis-cluster","namespace":"demo"},"spec":{"cluster":{"master":3,"replicas":1},"mode":"Cluster","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Halt","version":"6.2.14"}}
+      {"apiVersion":"kubedb.com/v1","kind":"Redis","metadata":{"annotations":{},"name":"redis-cluster","namespace":"demo"},"spec":{"cluster":{"master":3,"replicas":1},"mode":"Cluster","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Halt","version":"6.2.14"}}
   creationTimestamp: "2023-02-02T11:16:57Z"
   finalizers:
   - kubedb.com

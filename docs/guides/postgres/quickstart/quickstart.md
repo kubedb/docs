@@ -140,7 +140,7 @@ KubeDB implements a Postgres CRD to define the specification of a PostgreSQL dat
 Below is the Postgres object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: quick-postgres
@@ -194,7 +194,7 @@ Name:         quick-postgres
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         Postgres
 Metadata:
   Creation Timestamp:  2022-05-30T09:15:36Z
@@ -202,7 +202,7 @@ Metadata:
     kubedb.com
   Generation:  2
   Managed Fields:
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
@@ -231,7 +231,7 @@ Metadata:
     Manager:      kubectl-client-side-apply
     Operation:    Update
     Time:         2022-05-30T09:15:36Z
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
@@ -245,7 +245,7 @@ Metadata:
     Manager:      pg-operator
     Operation:    Update
     Time:         2022-05-30T09:15:37Z
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:status:

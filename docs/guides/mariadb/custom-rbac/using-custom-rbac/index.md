@@ -129,7 +129,7 @@ mariadb.kubedb.com/sample-mariadb created
 Below is the YAML for the MariaDB crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -191,7 +191,7 @@ mariadb.kubedb.com/another-mariadb created
 Below is the YAML for the MariaDB crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: another-mariadb

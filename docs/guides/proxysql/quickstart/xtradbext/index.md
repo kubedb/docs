@@ -269,7 +269,7 @@ We are now ready with our backend. In the next section we will set up our ProxyS
 With the following yaml we are going to create our desired ProxySQL server.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server

@@ -42,7 +42,7 @@ To deploy a MongoDB ReplicaSet, user have to specify `spec.replicaSet` option in
 The following is an example of a `Mongodb` object which creates MongoDB ReplicaSet of three members.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo-replicaset
@@ -82,7 +82,7 @@ Name:               mgo-replicaset
 Namespace:          demo
 CreationTimestamp:  Wed, 10 Feb 2021 11:05:06 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-replicaset","namespace":"demo"},"spec":{"replicaSet":{"na...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-replicaset","namespace":"demo"},"spec":{"replicaSet":{"na...
 Replicas:           3  total
 Status:             Ready
 StorageType:        Durable
@@ -146,7 +146,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-replicaset","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-replicaset","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
 
     Creation Timestamp:  2021-02-10T05:07:10Z
     Labels:
@@ -222,18 +222,18 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mgo-replicaset -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-replicaset","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-replicaset","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
   creationTimestamp: "2021-02-11T04:29:29Z"
   finalizers:
     - kubedb.com
   generation: 3
   managedFields:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:
@@ -259,7 +259,7 @@ metadata:
       manager: kubectl-client-side-apply
       operation: Update
       time: "2021-02-11T04:29:29Z"
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:

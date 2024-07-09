@@ -61,7 +61,7 @@ Now, we are going to deploy a `PerconaXtraDB` database of 3 replicas with versio
 In this section, we are going to deploy a PerconaXtraDB Cluster with 1GB volume. Then, in the next section we will expand its volume to 2GB using `PerconaXtraDBOpsRequest` CRD. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc

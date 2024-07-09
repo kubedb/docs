@@ -23,7 +23,7 @@ section_menu_id: guides
 As with all other Kubernetes objects, a Redis needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example Redis object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sentinel1
@@ -370,7 +370,7 @@ Know details about KubeDB Health checking from this [blog post](https://appscode
 ## Sample Redis instace
 A yaml for a sample Redis instance that can be monitored by this RedisSentinel instance is given below
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: redis1

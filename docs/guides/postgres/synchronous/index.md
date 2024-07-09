@@ -42,7 +42,7 @@ postgres.kubedb.com/demo-pg created
 Below is the YAML for the Postgres crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: demo-pg

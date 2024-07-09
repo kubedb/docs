@@ -40,7 +40,7 @@ Before proceeding:
 The following is an example `PerconaXtraDB` object which creates a multi-master PerconaXtraDB group with three members.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -73,12 +73,12 @@ KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a
 
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"sample-pxc","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"8.0.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"sample-pxc","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"8.0.26"}}
   creationTimestamp: "2022-12-20T05:15:56Z"
   finalizers:
   - kubedb.com

@@ -42,7 +42,7 @@ To deploy a MongoDB Sharding, user have to specify `spec.shardTopology` option i
 The following is an example of a `Mongodb` object which creates MongoDB Sharding of three type of members.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-sh-arb
@@ -179,12 +179,12 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mongo-sh-arb -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":{"spec":{"requests":{"cpu":"200m","memory":"200Mi"},"resources":null}}},"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"300Mi"}}}},"replicas":2,"shards":2,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}}},"deletionPolicy":"WipeOut","version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":{"spec":{"requests":{"cpu":"200m","memory":"200Mi"},"resources":null}}},"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"300Mi"}}}},"replicas":2,"shards":2,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}}},"deletionPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-04-21T09:29:07Z"
   finalizers:
   - kubedb.com

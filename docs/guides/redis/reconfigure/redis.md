@@ -62,7 +62,7 @@ secret/rd-custom-config created
 In this section, we are going to create a Redis object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: sample-redis

@@ -136,7 +136,7 @@ elasticsearch.kubedb.com/quick-elasticsearch created
 Below is the YAML for the Elasticsearch crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: quick-elasticsearch
@@ -187,7 +187,7 @@ elasticsearch.kubedb.com/quick-elasticsearch created
 Below is the YAML for the Elasticsearch crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: minute-elasticsearch

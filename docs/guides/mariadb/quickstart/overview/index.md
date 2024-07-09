@@ -60,7 +60,7 @@ NAME      VERSION   DB_IMAGE          DEPRECATED   AGE
 KubeDB implements a `MariaDB` CRD to define the specification of a MariaDB database. Below is the `MariaDB` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -100,7 +100,7 @@ Name:         sample-mariadb
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         MariaDB
 Metadata:
   Creation Timestamp:  2022-06-06T04:42:27Z
@@ -194,12 +194,12 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get mariadb -n demo sample-mariadb -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"10.5.23"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"10.5.23"}}
   creationTimestamp: "2021-03-10T04:31:09Z"
   finalizers:
   - kubedb.com
@@ -208,7 +208,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
   resourceVersion: "7952"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mariadbs/sample-mariadb
+  selfLink: /apis/kubedb.com/v1/namespaces/demo/mariadbs/sample-mariadb
   uid: 412a4739-ac65-4b5a-a943-5e148f3222b1
 spec:
   authSecret:

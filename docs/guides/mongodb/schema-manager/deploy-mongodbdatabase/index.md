@@ -48,7 +48,7 @@ Firstly, we are going to deploy a `MongoDB Server` by using `KubeDB` operator. A
 In this section, we are going to deploy a MongoDB Server. Let’s deploy it using this following yaml,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongodb

@@ -137,7 +137,7 @@ memcached.kubedb.com/quick-memcached created
 Below is the YAML for the Memcached crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   name: quick-memcached
@@ -189,7 +189,7 @@ memcached.kubedb.com/quick-memcached created
 Below is the YAML for the Memcached crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   name: minute-memcached

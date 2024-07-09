@@ -122,7 +122,7 @@ Now we are ready to deploy and test our ProxySQL server.
 With the following yaml we are going to create our desired ProxySQL server.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server

@@ -42,7 +42,7 @@ Here, We are going to create a MongoDB database without TLS and then reconfigure
 In this section, we are going to deploy a MongoDB Replicaset database without TLS. In the next few sections we will reconfigure TLS using `MongoDBOpsRequest` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-rs
@@ -80,7 +80,7 @@ Name:               mg-rs
 Namespace:          demo
 CreationTimestamp:  Thu, 11 Mar 2021 13:25:05 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"...
 Replicas:           3  total
 Status:             Ready
 StorageType:        Durable
@@ -144,7 +144,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
 
     Creation Timestamp:  2021-03-11T07:26:44Z
     Labels:

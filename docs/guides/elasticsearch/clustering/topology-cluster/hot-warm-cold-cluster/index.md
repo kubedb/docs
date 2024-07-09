@@ -54,7 +54,7 @@ Here, we use `linode-block-storage` as StorageClass in this demo.
 We are going to create a Elasticsearch Hot-Warm-Cold cluster in topology mode. Our cluster will be consist of 2 master nodes, 2 ingest nodes, 1 data content node, 3 data hot nodes, 2 data warm node, and 2 data cold nodes. Here, we are using Elasticsearch version (`xpack-8.11.1`) of ElasticStack distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-cluster
@@ -158,7 +158,7 @@ Name:         es-cluster
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         Elasticsearch
 Metadata:
   Creation Timestamp:  2022-03-14T06:33:20Z

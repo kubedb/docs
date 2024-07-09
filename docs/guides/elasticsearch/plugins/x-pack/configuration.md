@@ -86,7 +86,7 @@ Here, we are going to use ElasticsearchVersion `7.3.2`, which is mentioned earli
 Now, let's create an Elasticsearch server using the following yaml.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: config-elasticsearch
@@ -112,7 +112,7 @@ The deployed elasticsearch object specs, after the mutation is done by kubedb:
 ```yaml
 $ kubectl get elasticsearch -n demo config-elasticsearch -o yaml
 
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   creationTimestamp: "2019-09-30T08:34:10Z"
@@ -122,7 +122,7 @@ metadata:
   name: config-elasticsearch
   namespace: demo
   resourceVersion: "60830"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/elasticsearches/config-elasticsearch
+  selfLink: /apis/kubedb.com/v1/namespaces/demo/elasticsearches/config-elasticsearch
   uid: 13263dfa-e35d-11e9-85c8-42010a8c002f
 spec:
   authSecret:

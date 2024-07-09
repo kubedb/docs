@@ -46,7 +46,7 @@ Now, we are going to deploy a `Redis` cluster database with version `6.2.14`.
 In this section, we are going to deploy a Redis cluster database. Then, in the next section we will update the version of the database using `RedisOpsRequest` CRD. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: redis-cluster

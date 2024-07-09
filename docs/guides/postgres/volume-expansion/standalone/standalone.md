@@ -61,7 +61,7 @@ Now, we are going to deploy a `Postgres` standalone database with version `13.13
 In this section, we are going to deploy a Postgres standalone database with 10GB volume. Then, in the next section we will expand its volume to 12GB using `PostgresOpsRequest` CRD. Below is the YAML of the `Postgres` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: pg-standalone

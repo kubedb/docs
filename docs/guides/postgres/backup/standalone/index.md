@@ -52,7 +52,7 @@ Let's deploy a sample PostgreSQL database and insert some data into it.
 Below is the YAML of a sample Postgres crd that we are going to create for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: sample-postgres
@@ -417,7 +417,7 @@ Now, we are going to deploy the restored database similarly as we have deployed 
 Below is the YAML for `Postgres` crd we are going deploy to initialize from backup,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: restored-postgres

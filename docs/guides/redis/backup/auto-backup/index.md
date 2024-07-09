@@ -123,7 +123,7 @@ secret/gcs-secret created
 Now, we are going to create a Redis CRO in `demo-1` namespace. Below is the YAML of the Redis object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: sample-redis-1
@@ -305,7 +305,7 @@ secret/gcs-secret created
 Let's deploy a Redis database named `sample-redis-2` in the `demo-2` namespace.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: sample-redis-2
@@ -482,7 +482,7 @@ secret/gcs-secret created
 
 Let's deploy a Redis database named `sample-redis-3` in the `demo-3` namespace.
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: sample-redis-3

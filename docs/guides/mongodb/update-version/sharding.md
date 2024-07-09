@@ -46,7 +46,7 @@ Now, we are going to deploy a `MongoDB` sharded database with version `3.6.8`.
 In this section, we are going to deploy a MongoDB sharded database. Then, in the next section we will update the version of the database using `MongoDBOpsRequest` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-sharding

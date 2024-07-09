@@ -137,7 +137,7 @@ The KubeDB operator implements an Elasticsearch CRD to define the specification 
 Here is the yaml we will use for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: sample-opensearch
@@ -195,7 +195,7 @@ Name:         sample-opensearch
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         Elasticsearch
 Metadata:
   Creation Timestamp:  2022-02-15T07:00:21Z

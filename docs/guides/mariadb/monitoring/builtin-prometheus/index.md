@@ -43,7 +43,7 @@ This tutorial will show you how to monitor MariaDB database using builtin [Prome
 At first, let's deploy an MariaDB database with monitoring enabled. Below is the MariaDB object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: builtin-prom-md

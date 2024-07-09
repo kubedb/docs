@@ -50,7 +50,7 @@ In this section, we are going to deploy a Redis standalone database with version
 > If you want to autoscale Redis in `Cluster` or `Sentinel` mode, just deploy a Redis database in respective Mode and rest of the steps are same.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-standalone

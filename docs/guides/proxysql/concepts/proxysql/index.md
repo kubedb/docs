@@ -23,7 +23,7 @@ section_menu_id: guides
 Like any official Kubernetes resource, a `ProxySQL` object has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections. Below is an example of the ProxySQL object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: demo-proxysql

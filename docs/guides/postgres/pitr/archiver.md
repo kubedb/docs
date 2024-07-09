@@ -209,7 +209,7 @@ $ kubectl apply -f volumesnapshotclass.yaml
 So far we are ready with setup for continuously archive PostgreSQL, We deploy a postgresql referring the PostgreSQL archiver object
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: demo-pg
@@ -334,7 +334,7 @@ hi=# select now();
 ### Restore PostgreSQL
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: restore-pg

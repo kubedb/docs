@@ -77,7 +77,7 @@ percona-4.4.10   4.4.10    Percona        percona/percona-server-mongodb:4.4.10 
 KubeDB implements a `MongoDB` CRD to define the specification of a MongoDB database. Below is the `MongoDB` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo-quickstart
@@ -122,7 +122,7 @@ Name:               mgo-quickstart
 Namespace:          demo
 CreationTimestamp:  Mon, 13 Jun 2022 18:01:55 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"na...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"na...
 Replicas:           3  total
 Status:             Ready
 StorageType:        Durable
@@ -186,7 +186,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"4.4.26"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"4.4.26"}}
 
     Creation Timestamp:  2022-06-13T12:01:55Z
     Labels:
@@ -254,12 +254,12 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mgo-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"4.4.26"}}
   creationTimestamp: "2022-06-13T12:01:55Z"
   finalizers:
     - kubedb.com

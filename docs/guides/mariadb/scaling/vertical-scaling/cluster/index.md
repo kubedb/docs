@@ -49,7 +49,7 @@ Now, we are going to deploy a `MariaDB` cluster database with version `10.5.23`.
 In this section, we are going to deploy a MariaDB cluster database. Then, in the next section we will update the resources of the database using `MariaDBOpsRequest` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb

@@ -72,7 +72,7 @@ NAME       VERSION   DB_IMAGE                DEPRECATED   AGE
 KubeDB implements a `Redis` CRD to define the specification of a Redis server. Below is the `Redis` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: redis-quickstart
@@ -225,7 +225,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```bash
 $ kubectl get rd -n demo redis-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   creationTimestamp: "2022-05-31T04:31:38Z"

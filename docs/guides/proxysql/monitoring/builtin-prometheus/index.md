@@ -76,7 +76,7 @@ After applying the above yaml wait for the MySQL to be Ready.
 At first, let's deploy an ProxySQL server with monitoring enabled. Below is the ProxySQL object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server

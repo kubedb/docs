@@ -121,7 +121,7 @@ secret/gcs-secret created
 Now, we are going to create an MariaDB CRO in `demo` namespace. Below is the YAML of the MariaDB object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -289,7 +289,7 @@ secret/gcs-secret created
 Now, we are going to create an MariaDB CRO in `demo-2` namespace. Below is the YAML of the MariaDB object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb-2
@@ -470,7 +470,7 @@ secret/gcs-secret created
 Now, we are going to create an MariaDB CRO in `demo-3` namespace. Below is the YAML of the MariaDB object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb-3

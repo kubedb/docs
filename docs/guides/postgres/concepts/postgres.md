@@ -25,7 +25,7 @@ As with all other Kubernetes objects, a Postgres needs `apiVersion`, `kind`, and
 Below is an example Postgres object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: p1
@@ -232,7 +232,7 @@ To initialize a PostgreSQL database using a script (shell script, db migrator, e
 Below is an example showing how a script from a configMap can be used to initialize a PostgreSQL database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: postgres-db

@@ -124,7 +124,7 @@ Bye
 We are now all set with our backend. Now let's create a KubeDB ProxySQL server. Lets keep the syncUser field true so that we don't need to create the user again. 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -470,7 +470,7 @@ Metadata:
   Generation:          1
   ...
   Owner References:
-    API Version:           kubedb.com/v1alpha2
+    API Version:           kubedb.com/v1
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  ProxySQL
@@ -583,7 +583,7 @@ Metadata:
   Generation:          1
   ...
   Owner References:
-    API Version:           kubedb.com/v1alpha2
+    API Version:           kubedb.com/v1
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  ProxySQL

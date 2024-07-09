@@ -23,7 +23,7 @@ section_menu_id: guides
 As with all other Kubernetes objects, a MariaDB needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example MariaDB object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -176,7 +176,7 @@ To initialize a MariaDB database using a script (shell script, sql script, etc.)
 Below is an example showing how a script from a configMap can be used to initialize a MariaDB database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb

@@ -51,7 +51,7 @@ Let's deploy a sample MongoDB ReplicaSet database and insert some data into it.
 Below is the YAML of a sample MongoDB crd that we are going to create for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: sample-mgo-rs
@@ -126,7 +126,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mgo-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"deletionPolicy":"WipeOut","version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mgo-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"deletionPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-10-26T04:42:05Z"
   generation: 1
   labels:
@@ -137,7 +137,7 @@ metadata:
   name: sample-mgo-rs
   namespace: demo
   ownerReferences:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       blockOwnerDeletion: true
       controller: true
       kind: MongoDB
@@ -610,7 +610,7 @@ No additional configuration is needed to restore the replicaset cluster to a sta
 Standalone MongoDB,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: restored-mongodb

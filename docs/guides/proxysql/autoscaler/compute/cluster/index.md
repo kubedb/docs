@@ -84,7 +84,7 @@ Here, we are going to deploy a `ProxySQL` Cluster using a supported version by `
 In this section, we are going to deploy a ProxySQL Cluster with version `2.3.2-debian`. Then, in the next section we will set up autoscaling for this database using `ProxySQLAutoscaler` CRD. Below is the YAML of the `ProxySQL` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server

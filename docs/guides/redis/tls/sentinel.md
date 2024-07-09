@@ -92,7 +92,7 @@ clusterissuer.cert-manager.io/redis-ca-issuer created
 
 Below is the YAML for Redis  in Sentinel Mode.
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-tls
@@ -164,7 +164,7 @@ tls.key:  1675 bytes
 
 Below is the YAML for Redis  in Sentinel Mode.
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-tls

@@ -51,7 +51,7 @@ Let's deploy a sample MongoDB database and insert some data into it.
 Below is the YAML of a sample MongoDB crd that we are going to create for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: sample-mongodb
@@ -123,7 +123,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mongodb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mongodb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-10-26T05:13:07Z"
   generation: 1
   labels:
@@ -134,7 +134,7 @@ metadata:
   name: sample-mongodb
   namespace: demo
   ownerReferences:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       blockOwnerDeletion: true
       controller: true
       kind: MongoDB
