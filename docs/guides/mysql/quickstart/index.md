@@ -93,7 +93,7 @@ Here,
 - `spec.version` is the name of the MySQLVersion CRD where the docker images are specified. In this tutorial, a MySQL `8.0.35` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for MySQL database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MySQL database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
+- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
 
 > Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
@@ -478,7 +478,7 @@ According to this example, the URL will be [ http://172.18.0.4:30158]( http://17
 
 You can connect multiple different database using db gate. To log into  MySQL select the MYSQL driver and use server __`mysql-quickstart.demo`__ or __`10.244.0.30`__ , username __`root`__ and password __`H(Y.s)pg&cX1Ds3J`__.
 
-## Database TerminationPolicy
+## Database DeletionPolicy
 
 This field is used to regulate the deletion process of the related resources when `MySQL` object is deleted. User can set the value of this field according to their needs. The available options and their use case scenario is described below:
 
@@ -493,13 +493,13 @@ Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" 
 
 Now, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which deletes the mysql object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
-Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy).
+Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy).
 
 **Halt:**
 
 Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MySQL` object `terminationPolicy` to `Halt`.
 
-When the [TerminationPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `halt` and the MySQL object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `halt` in existing database using `edit` command for testing.
+When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `halt` and the MySQL object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `halt` in existing database using `edit` command for testing.
 
 At first, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Halt`. Then delete the mysql object,
 
@@ -528,7 +528,7 @@ From the above output, you can see that all mysql resources(`PetSet`, `Service`,
 
 If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `MySQL` object `terminationPolicy` to `Delete`. In this setting, `PetSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
 
-When the [TerminationPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `Delete` and the MySQL object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
+When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `Delete` and the MySQL object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
 
 Suppose, we have a database with `terminationPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
@@ -548,7 +548,7 @@ secret/mysql-quickstart-auth   Opaque
 
 From the above output, you can see that all mysql resources(`StatefulSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mysql using `snapshots`(if previously taken) and `secret`.
 
->If you don't set the terminationPolicy then the kubeDB set the TerminationPolicy to Delete by-default.
+>If you don't set the terminationPolicy then the kubeDB set the DeletionPolicy to Delete by-default.
 
 **WipeOut:**
 

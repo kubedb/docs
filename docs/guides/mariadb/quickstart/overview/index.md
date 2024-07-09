@@ -270,7 +270,7 @@ MariaDB [(none)]> show databases;
 
 ```
 
-## Database TerminationPolicy
+## Database DeletionPolicy
 
 This field is used to regulate the deletion process of the related resources when `MariaDB` object is deleted. User can set the value of this field according to their needs. The available options and their use case scenario is described below:
 
@@ -290,7 +290,7 @@ Now, run `kubectl edit mariadb sample-mariadb -n demo` to set `spec.terminationP
 
 Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MariaDB` object `terminationPolicy` to `Halt`.
 
-When the `TerminationPolicy` is set to `Halt` and the MariaDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `Halt` in existing database using `edit` command for testing.
+When the `DeletionPolicy` is set to `Halt` and the MariaDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `Halt` in existing database using `edit` command for testing.
 
 At first, run `kubectl edit mariadb sample-mariadb -n demo` to set `spec.terminationPolicy` to `Halt`. Then delete the mariadb object,
 
@@ -317,7 +317,7 @@ From the above output, you can see that all mariadb resources(`StatefulSet`, `Se
 
 If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `MariaDB` object `terminationPolicy` to `Delete`. In this setting, `StatefulSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
 
-When the `TerminationPolicy` is set to `Delete` and the MariaDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
+When the `DeletionPolicy` is set to `Delete` and the MariaDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
 
 Suppose, we have a database with `terminationPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
@@ -337,7 +337,7 @@ secret/sample-mariadb-auth   kubernetes.io/basic-auth              2      39s
 
 From the above output, you can see that all mariadb resources(`StatefulSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mariadb using `snapshots`(if previously taken) and `secret`.
 
->If you don't set the terminationPolicy then the kubeDB set the TerminationPolicy to Delete by-default.
+>If you don't set the terminationPolicy then the kubeDB set the DeletionPolicy to Delete by-default.
 
 **WipeOut:**
 

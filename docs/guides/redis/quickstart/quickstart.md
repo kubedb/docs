@@ -100,7 +100,7 @@ Here,
 - `spec.version` is name of the RedisVersion crd where the docker images are specified. In this tutorial, a Redis 6.2.14 database is created.
 - `spec.storageType` specifies the type of storage that will be used for Redis server. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Redis server using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Redis` crd or which resources KubeDB should keep or delete when you delete `Redis` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy)
+- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Redis` crd or which resources KubeDB should keep or delete when you delete `Redis` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy)
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in storage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
@@ -359,11 +359,11 @@ Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" 
 
 Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` . Then you will be able to delete/halt the database. 
 
-Learn details of all `TerminationPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy)
+Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy)
 
 ## Halt Database
 
-When [TerminationPolicy](/docs/guides/redis/concepts/redis.md#specterminationpolicy) is set to halt, and you delete the redis object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `TerminationPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy).
+When [DeletionPolicy](/docs/guides/redis/concepts/redis.md#specterminationpolicy) is set to halt, and you delete the redis object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy).
 
 You can also keep the redis object and halt the database to resume it again later. If you halt the database, the KubeDB operator will delete the statefulsets and services but will keep the redis object, pvcs, secrets and backup (snapshots).
 
