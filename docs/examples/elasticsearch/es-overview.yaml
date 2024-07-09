@@ -42,17 +42,29 @@ spec:
       nodeSelector:
         disktype: ssd
       imagePullSecrets:
-      - name: myregistrykey
-      env:
-      - name: ES_JAVA_OPTS
-        value: "-Xms128m -Xmx128m"
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+        - name: myregistrykey
+      containers:
+        - name: elasticsearch
+          env:
+            - name: ES_JAVA_OPTS
+              value: "-Xms128m -Xmx128m"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
   serviceTemplates:
     - alias: primary
       metadata:

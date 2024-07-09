@@ -69,11 +69,6 @@ metadata:
 spec:
   authSecret:
     name: elasticsearch-demo-auth
-  podTemplate:
-    controller: {}
-    metadata: {}
-    spec:
-      resources: {}
   replicas: 1
   storage:
     accessModes:

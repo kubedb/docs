@@ -76,7 +76,9 @@ spec:
     controller: {}
     metadata: {}
     spec:
-      resources:
+      containers:
+      - name: memcached
+        resources:
         limits:
           cpu: 500m
           memory: 128Mi

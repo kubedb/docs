@@ -9,10 +9,12 @@ spec:
     name: "replicaset"
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "600m"
-          memory: "600Mi"
+      containers:
+        - name: mongodb
+          resources:
+            requests:
+              cpu: "600m"
+              memory: "600Mi"
   replicas: 3
   storageEngine: inMemory
   storageType: Ephemeral
