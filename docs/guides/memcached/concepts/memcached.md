@@ -54,18 +54,20 @@ spec:
         disktype: ssd
       imagePullSecrets:
       - name: myregistrykey
-      args:
-      - "-u memcache"
-      env:
-      - name: TEST_ENV
-        value: "value"
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+      containers:
+      - name: memcached
+        args:
+        - "-u memcache"
+        env:
+        - name: TEST_ENV
+          value: "value"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
   serviceTemplates:
   - alias: primary
     metadata:

@@ -80,15 +80,17 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      env:
-      - name: MYSQL_DATABASE
-        value: mdDB
-      args:
-      - --character-set-server=utf8mb4
-      resources:
-        requests:
-          memory: "1Gi"
-          cpu: "250m"
+      containers:
+      - name: perconaxtradb
+        env:
+        - name: MYSQL_DATABASE
+          value: mdDB
+        args:
+        - --character-set-server=utf8mb4
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
   deletionPolicy: WipeOut
 ```
 

@@ -76,16 +76,18 @@ spec:
         disktype: ssd
       imagePullSecrets:
       - name: myregistrykey
-      env:
-      - name: POSTGRES_DB
-        value: pgdb
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+      containers:
+      - name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: pgdb
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
   serviceTemplates:
   - alias: primary
     metadata:

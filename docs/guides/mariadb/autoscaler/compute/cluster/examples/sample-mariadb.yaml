@@ -16,6 +16,8 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
+      containers:
+        - name: mariadb
       resources:
         requests:
           cpu: "200m"

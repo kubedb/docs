@@ -280,13 +280,10 @@ spec:
   backend:
     externallyManaged: false
     linkedDB: ferretdb
-    postgres:
-      service:
+    postgresRef:
         name: ferret-pg-backend
         namespace: demo
-        pgPort: 5432
-      url: postgres://ferret-pg-backend.demo.svc.cluster.local:5432/ferretdb
-      version: "13.13"
+    version: "13.13"
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10

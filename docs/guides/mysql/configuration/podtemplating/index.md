@@ -90,15 +90,17 @@ spec:
       annotations:
         annotate-to: statfulset
     spec:
-      env:
-        - name: MYSQL_DATABASE
-          value: myDB
-      args:
-        - --character-set-server=utf8mb4
-      resources:
-        requests:
-          memory: "1Gi"
-          cpu: "250m"
+      containers:
+      - name: mysql
+        env:
+          - name: MYSQL_DATABASE
+            value: myDB
+        args:
+          - --character-set-server=utf8mb4
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
   deletionPolicy: Halt
 ```
 

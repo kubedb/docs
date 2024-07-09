@@ -67,12 +67,14 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "500m"
-        limits:
-          cpu: "500m"
-          memory: "1.2Gi"
+      containers:
+      - name: elasticsearch
+        resources:
+          requests:
+            cpu: "500m"
+          limits:
+            cpu: "500m"
+            memory: "1.2Gi"
   deletionPolicy: WipeOut
 ```
 

@@ -139,13 +139,15 @@ spec:
     name: mc-configuration
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
+      containers:
+      - name: memcached
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 250m
+            memory: 64Mi
 ```
 
 Now, wait a few minutes. KubeDB operator will create the necessary deployment, services etc. If everything goes well, we will see that a deployment with the name `custom-memcached` has been created.

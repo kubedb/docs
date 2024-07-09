@@ -248,10 +248,12 @@ spec:
   replicas: 3
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "500m"
-          memory: "500Mi"
+      containers:
+        - name: mongo
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "500Mi"
   storage:
     accessModes:
       - ReadWriteOnce
@@ -383,10 +385,12 @@ spec:
   replicas: 3
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "500m"
-          memory: "500Mi"
+      containers:
+        - name: mongo
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "500Mi"
   storage:
     accessModes:
       - ReadWriteOnce

@@ -157,37 +157,14 @@ spec:
     controller: {}
     metadata: {}
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: redis-cluster
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: redises.kubedb.com
-                  redis.kubedb.com/shard: ${SHARD_INDEX}
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: redis-cluster
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: redises.kubedb.com
-                  redis.kubedb.com/shard: ${SHARD_INDEX}
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
-      resources:
-        limits:
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+      containers:
+      - name: redis
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
       serviceAccountName: redis-cluster
   replicas: 1
   storage:

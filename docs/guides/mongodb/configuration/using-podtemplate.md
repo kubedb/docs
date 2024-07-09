@@ -87,12 +87,14 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      args:
-      - --maxConns=100
-      resources:
-        requests:
-          memory: "1Gi"
-          cpu: "250m"
+      containers:
+      - name: mongo
+        args:
+        - --maxConns=100
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
   deletionPolicy: Halt
 ```
 

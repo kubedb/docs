@@ -88,18 +88,20 @@ spec:
         disktype: ssd
       imagePullSecrets:
       - name: myregistrykey
-      args:
-      - "--loglevel verbose"
-      env:
-      - name: ENV_VARIABLE
-        value: "value"
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+      containers:
+      - name: redis
+        args:
+        - "--loglevel verbose"
+        env:
+        - name: ENV_VARIABLE
+          value: "value"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
   serviceTemplates:
   - alias: primary
     metadata:

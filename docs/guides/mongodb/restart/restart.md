@@ -47,10 +47,12 @@ spec:
     name: "replicaset"
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "300m"
-          memory: "300Mi"
+      containers:
+      - name: mongo
+        resources:
+          requests:
+            cpu: "300m"
+            memory: "300Mi"
   replicas: 2
   storageType: Durable
   storage:

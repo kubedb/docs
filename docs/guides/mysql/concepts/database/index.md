@@ -84,18 +84,20 @@ spec:
         disktype: ssd
       imagePullSecrets:
       - name: myregistrykey
-      args:
-      - --character-set-server=utf8mb4
-      env:
-      - name: MYSQL_DATABASE
-        value: myDB
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+      containers:
+      - name: mysql
+        args:
+        - --character-set-server=utf8mb4
+        env:
+        - name: MYSQL_DATABASE
+          value: myDB
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
   serviceTemplates:
   - alias: primary
     metadata:

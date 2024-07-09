@@ -11,10 +11,10 @@ spec:
       containers:
         - name: memcached
           resources:
-          limits:
-            cpu: 500m
-            memory: 128Mi
-          requests:
-            cpu: 250m
-            memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
   deletionPolicy: DoNotTerminate

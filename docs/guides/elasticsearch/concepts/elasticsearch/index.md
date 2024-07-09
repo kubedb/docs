@@ -62,41 +62,20 @@ spec:
       annotations:
         passTo: pods
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: es
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: elasticsearches.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: es
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: elasticsearches.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
-      env:
-      - name: node.processors
-        value: "2"
       nodeSelector:
         kubernetes.io/os: linux
-      resources:
-        limits:
-          cpu: "1"
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 512Mi
+      containers:
+      - name: elasticsearch
+        env:
+        - name: node.processors
+          value: "2"
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
       serviceAccountName: es
   replicas: 3
   serviceTemplates:

@@ -44,9 +44,6 @@ spec:
         disktype: ssd
       imagePullSecrets:
       - name: myregistrykey
-      env:
-      - name: POSTGRES_DB
-        value: pgdb
       containers:
         - name: postgres
           resources:
@@ -57,10 +54,8 @@ spec:
               memory: "128Mi"
               cpu: "500m"
           env:
-            - name: MYSQL_DATABASE
-              value: myDB
-          args:
-            - --character-set-server=utf8mb4
+            - name: POSTGRES_DB
+              value: pgdb
   serviceTemplates:
   - alias: primary
     metadata:

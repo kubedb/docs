@@ -65,18 +65,22 @@ spec:
       replicas: 3
       podTemplate:
         spec:
-          resources:
-            requests:
-              cpu: "200m"
-              memory: "300Mi"
+          containers:
+          - name: mongo
+            resources:
+              requests:
+                cpu: "200m"
+                memory: "300Mi"
     mongos:
       replicas: 2
       podTemplate:
         spec:
-          resources:
-            requests:
-              cpu: "200m"
-              memory: "300Mi"
+          containers:
+          - name: mongo
+            resources:
+              requests:
+                cpu: "200m"
+                memory: "300Mi"
     shard:
       storage:
         resources:
@@ -86,10 +90,12 @@ spec:
       shards: 2
       podTemplate:
         spec:
-          resources:
-            requests:
-              cpu: "200m"
-              memory: "300Mi"
+          containers:
+          - name: mongo
+            resources:
+              requests:
+                cpu: "200m"
+                memory: "300Mi"
   deletionPolicy: WipeOut
 ```
 

@@ -68,10 +68,12 @@ spec:
     name: "replicaset"
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "100Mi"
+      containers:
+      - name: mongo
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
   replicas: 3
   storageType: Durable
   storage:
@@ -135,7 +137,7 @@ spec:
   authMethods:
     - type: kubernetes
       path: kubernetes
-  deletionPolicy: WipeOut
+  terminationPolicy: WipeOut
 ```
 
 Here,

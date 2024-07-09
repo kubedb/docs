@@ -62,13 +62,15 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "200m"
-          memory: "300Mi"
-        limits:
-          cpu: "200m"
-          memory: "300Mi"
+      containers:
+      - name: mongo
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "300Mi"
+          limits:
+            cpu: "200m"
+            memory: "300Mi"
   deletionPolicy: WipeOut
 ```
 

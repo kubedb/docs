@@ -63,10 +63,12 @@ spec:
       replicas: 2
       podTemplate:
         spec:
-          resources:
-            requests:
-              cpu: "400m"
-              memory: "300Mi"
+          containers:
+          - name: mongo
+            resources:
+              requests:
+                cpu: "400m"
+                memory: "300Mi"
       shards: 2
       storage:
         resources:

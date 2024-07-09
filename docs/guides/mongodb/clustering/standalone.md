@@ -49,10 +49,12 @@ spec:
   version: "4.4.26"
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "300m"
-          memory: "400Mi"
+      containers:
+      - name: mongo
+        resources:
+          requests:
+            cpu: "300m"
+            memory: "400Mi"
   storage:
     resources:
       requests:
@@ -243,29 +245,6 @@ spec:
     controller: {}
     metadata: {}
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/instance: mg-alone
-                    app.kubernetes.io/managed-by: kubedb.com
-                    app.kubernetes.io/name: mongodbs.kubedb.com
-                namespaces:
-                  - demo
-                topologyKey: kubernetes.io/hostname
-              weight: 100
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/instance: mg-alone
-                    app.kubernetes.io/managed-by: kubedb.com
-                    app.kubernetes.io/name: mongodbs.kubedb.com
-                namespaces:
-                  - demo
-                topologyKey: failure-domain.beta.kubernetes.io/zone
-              weight: 50
       livenessProbe:
         exec:
           command:
@@ -292,12 +271,14 @@ spec:
         periodSeconds: 10
         successThreshold: 1
         timeoutSeconds: 5
-      resources:
-        limits:
-          memory: 400Mi
-        requests:
-          cpu: 300m
-          memory: 400Mi
+      containers:
+      - name: mongo
+        resources:
+          limits:
+            memory: 400Mi
+          requests:
+            cpu: 300m
+            memory: 400Mi
       serviceAccountName: mg-alone
   replicas: 1
   sslMode: disabled

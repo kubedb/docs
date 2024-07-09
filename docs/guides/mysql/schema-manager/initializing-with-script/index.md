@@ -122,7 +122,7 @@ spec:
   authMethods:
     - type: kubernetes
       path: kubernetes
-  deletionPolicy: WipeOut
+  terminationPolicy: WipeOut
 ```
 
 Here,

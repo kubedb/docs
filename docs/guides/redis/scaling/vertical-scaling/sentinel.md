@@ -64,10 +64,12 @@ spec:
       - ReadWriteOnce
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "100Mi"
+      containers:
+      - name: redissentinel
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
   deletionPolicy: DoNotTerminate
 ```
 

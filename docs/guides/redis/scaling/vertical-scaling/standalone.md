@@ -66,6 +66,8 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
+      containers:
+      - name: redis
       resources:
         requests:
           cpu: "100m"

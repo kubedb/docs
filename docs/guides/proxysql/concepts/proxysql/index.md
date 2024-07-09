@@ -81,18 +81,20 @@ spec:
         disktype: ssd
       imagePullSecrets:
       - name: myregistrykey
-      args:
-      - --reload
-      env:
-      - name: LOAD_BALANCE_MODE
-        value: GroupReplication
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+      containers:
+      - name: proxysql
+        args:
+        - --reload
+        env:
+        - name: LOAD_BALANCE_MODE
+          value: GroupReplication
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
   serviceTemplates:
   - alias: primary
     metadata:

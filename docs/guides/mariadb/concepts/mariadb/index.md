@@ -45,36 +45,15 @@ spec:
     controller: {}
     metadata: {}
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: sample-mariadb
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: mariadbs.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: sample-mariadb
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: mariadbs.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+      containers:
+      - name: mariadb
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
       serviceAccountName: sample-mariadb
   replicas: 3
   requireSSL: true

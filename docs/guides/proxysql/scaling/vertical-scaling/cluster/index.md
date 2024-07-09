@@ -91,13 +91,15 @@ spec:
   deletionPolicy: WipeOut
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+      containers:
+      - name: proxysql
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
 ```
 
 Let's create the `ProxySQL` CR we have shown above,

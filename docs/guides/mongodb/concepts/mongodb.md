@@ -122,18 +122,22 @@ spec:
         disktype: ssd
       imagePullSecrets:
         - name: myregistrykey
-      args:
-        - --maxConns=100
-      env:
-        - name: MONGO_INITDB_DATABASE
-          value: myDB
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+      containers:
+      - name: mongo
+        args:
+          - --maxConns=100
+        env:
+          - name: MONGO_INITDB_DATABASE
+            value: myDB
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      - name: mongo
+        
   serviceTemplates:
   - alias: primary
     spec:

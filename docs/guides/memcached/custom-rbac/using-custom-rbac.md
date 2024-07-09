@@ -148,13 +148,15 @@ spec:
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
+      containers:
+        - name: memcached
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
   deletionPolicy: DoNotTerminate
 
 ```
@@ -200,13 +202,15 @@ spec:
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
+      containers:
+        - name: memcached
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
   deletionPolicy: DoNotTerminate
 
 ```

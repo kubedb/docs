@@ -104,13 +104,15 @@ spec:
   version: "1.6.22"
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
+      containers:
+      - name: memcached
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 250m
+            memory: 64Mi
       imagePullSecrets:
       - name: myregistrykey
 ```
