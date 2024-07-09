@@ -65,36 +65,42 @@ spec:
     name: mysql-demo-auth
   podTemplate:
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: mysql-demo
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: mysqls.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: mysql-demo
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: mysqls.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+      containers:
+        - name: mysql
+          resources:
+            limits:
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 999
+            seccompProfile:
+              type: RuntimeDefault
+      initContainers:
+        - name: mysql-init
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 999
+            seccompProfile:
+              type: RuntimeDefault
       serviceAccountName: mysql-demo
   replicas: 1
   storage:
