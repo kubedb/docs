@@ -123,7 +123,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -157,7 +157,7 @@ spec:
           release: prometheus
           release: prometheus
         interval: 10s
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3
 ```

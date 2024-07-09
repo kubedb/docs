@@ -16,4 +16,4 @@ spec:
       requests:
         storage: 500Mi
     storageClassName: standard
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

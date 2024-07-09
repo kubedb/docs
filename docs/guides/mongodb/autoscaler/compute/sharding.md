@@ -90,7 +90,7 @@ spec:
             requests:
               cpu: "200m"
               memory: "300Mi"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MongoDB` CRO we have shown above,

@@ -155,7 +155,7 @@ spec:
         requests:
           cpu: 250m
           memory: 64Mi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 
 ```
 
@@ -207,7 +207,7 @@ spec:
         requests:
           cpu: 250m
           memory: 64Mi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 
 ```
 
@@ -232,10 +232,10 @@ minute-memcached-58798985f-47tm8  1/1       Running   0          14m
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mc/quick-memcached -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/quick-memcached -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/quick-memcached
 
-kubectl patch -n demo mc/minute-memcached -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/minute-memcached -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/minute-memcached
 
 kubectl delete -n demo role my-custom-role

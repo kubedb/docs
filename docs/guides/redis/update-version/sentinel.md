@@ -62,7 +62,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's create the `RedisSentinel` CR we have shown above,
@@ -105,7 +105,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's create the `Redis` CR we have shown above,
@@ -181,7 +181,7 @@ Now, we are going to verify whether the `RedisSentinel` and the related `Statefu
 $ kubectl get redissentinel -n demo sen-sample -o=jsonpath='{.spec.version}{"\n"}'
 7.0.14
 
-$ kubectl get statefulset -n demo sen-sample -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo sen-sample -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 
 $ kubectl get pods -n demo sen-sample-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
@@ -245,7 +245,7 @@ Now, we are going to verify whether the `Redis` and the related `StatefulSets` t
 $ kubectl get redis -n demo rd-sample -o=jsonpath='{.spec.version}{"\n"}'
 7.0.4
 
-$ kubectl get statefulset -n demo rd-sample -o=jsonpath='{.spec.template.spec.containers[1].image}{"\n"}'
+$ kubectl get petset -n demo rd-sample -o=jsonpath='{.spec.template.spec.containers[1].image}{"\n"}'
 redis:7.0.4@sha256:091a7b5de688f283b30a4942280b64cf822bbdab0abfb2d2ce6db989f2d3c3f4
 
 $ kubectl get pods -n demo rd-sample-0 -o=jsonpath='{.spec.containers[1].image}{"\n"}'
@@ -260,7 +260,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 # Delete Redis and RedisOpsRequest
-$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-sample patched
 
 $ kubectl delete -n demo redis rd-sample
@@ -270,7 +270,7 @@ $ kubectl delete -n demo redisopsrequest update-rd-version
 redisopsrequest.ops.kubedb.com "update-rd-version" deleted
 
 # Delete RedisSentinel and RedisSentinelOpsRequest
-$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/sen-sample patched
 
 $ kubectl delete -n demo redissentinel sen-sample

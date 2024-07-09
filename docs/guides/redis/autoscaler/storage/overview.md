@@ -41,7 +41,7 @@ The Auto Scaling process consists of the following steps:
 
 3. When the operator finds a `Redis` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
-4. Each StatefulSet creates a Persistent Volume according to the Volume Claim Template provided in the statefulset configuration.
+4. Each StatefulSet creates a Persistent Volume according to the Volume Claim Template provided in the petset configuration.
 
 5. Then, in order to set up storage autoscaling of the various components (ie. ReplicaSet, Shard, ConfigServer etc.) of the `Redis` database the user creates a `RedisAutoscaler` CRO with desired configuration.
 

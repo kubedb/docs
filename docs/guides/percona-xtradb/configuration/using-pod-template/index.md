@@ -89,7 +89,7 @@ spec:
         requests:
           memory: "1Gi"
           cpu: "250m"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 

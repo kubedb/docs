@@ -8,4 +8,4 @@ spec:
   replicas: 1
   backend:
     name: mysql-server
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

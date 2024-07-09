@@ -144,7 +144,7 @@ spec:
   configSecret:
     name: es-custom-config # mentioned here!
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   topology:
     master:
       replicas: 1

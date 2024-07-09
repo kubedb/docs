@@ -216,7 +216,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   version: "10.2"-v5
 status:
   observedGeneration: 2$4213139756412538772
@@ -388,7 +388,7 @@ So, you can see here that you can connect to *hot standby* and it only accepts r
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo pg/ha-postgres pg/hot-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo pg/ha-postgres pg/hot-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo pg/ha-postgres pg/hot-postgres
 
 $ kubectl delete ns demo

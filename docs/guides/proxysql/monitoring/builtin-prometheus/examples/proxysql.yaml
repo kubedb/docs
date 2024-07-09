@@ -11,6 +11,6 @@ spec:
   syncUsers: true
   monitor:
     agent: prometheus.io/operator
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3

@@ -57,7 +57,7 @@ spec:
   podTemplate:
     controller:
       annotations:
-        passTo: statefulSets
+        passTo: petSets
     metadata:
       annotations:
         passTo: pods
@@ -114,7 +114,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   tls:
     issuerRef:
       apiGroup: "cert-manager.io"
@@ -855,16 +855,16 @@ spec:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.18.9/api/v1/types.go#L192) to understand these fields in detail.
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Elasticsearch` CRD or which resources KubeDB should keep or delete when you delete `Elasticsearch` CRD. The KubeDB operator provides the following termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Elasticsearch` CRD or which resources KubeDB should keep or delete when you delete `Elasticsearch` CRD. The KubeDB operator provides the following termination policies:
 
 - DoNotTerminate
 - Halt
 - Delete (`Default`)
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes v1.9+ to provide safety from accidental deletion of the database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes v1.9+ to provide safety from accidental deletion of the database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete Elasticsearch CRD for different termination policies,
 
@@ -878,7 +878,7 @@ Following table show what KubeDB does when you delete Elasticsearch CRD for diff
 | 6. Delete User Credential Secrets   |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
 
-If the `spec.terminationPolicy` is not specified, the KubeDB operator defaults it to `Delete`.
+If the `spec.deletionPolicy` is not specified, the KubeDB operator defaults it to `Delete`.
 
 ## spec.healthChecker
 It defines the attributes for the health checker.

@@ -74,7 +74,7 @@ spec:
         requests:
           cpu: "100m"
           memory: "100Mi"
-  terminationPolicy: Halt
+  deletionPolicy: Halt
 ```
 
 Let's create the `Redis` CR we have shown above, 
@@ -214,7 +214,7 @@ To clean up the Kubernetes resources created by this turorial, run:
 
 ```bash
 
-$ kubectl patch -n demo rd/redis-cluster -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/redis-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/redis-cluster patched
 
 $ kubectl delete -n demo redis redis-cluster

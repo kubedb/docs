@@ -417,13 +417,13 @@ spec:
   enableSSL: true
   databaseRef:
     name: os-cluster
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 > Note: OpenSearch Database and OpenSearch dashboard should have to be deployed in the same namespace. In this tutorial, we use `demo` namespace for both cases.
 
 - `spec.enableSSL` specifies whether the HTTP layer is secured with certificates or not.
 - `spec.databaseRef.name` refers to the OpenSearch database name.
-- `spec.terminationPolicy` refers to the strategy to follow during dashboard deletion. `Wipeout` means that the database will be deleted without restrictions. It can also be `DoNotTerminate` which will cause a restriction to delete the dashboard. Learn More about these [HERE](https://kubedb.com/docs/v2022.05.24/guides/elasticsearch/concepts/elasticsearch/#specterminationpolicy).
+- `spec.deletionPolicy` refers to the strategy to follow during dashboard deletion. `Wipeout` means that the database will be deleted without restrictions. It can also be `DoNotTerminate` which will cause a restriction to delete the dashboard. Learn More about these [HERE](https://kubedb.com/docs/v2022.05.24/guides/elasticsearch/concepts/elasticsearch/#specdeletionpolicy).
 
 Let's deploy the above yaml by the following command:
 
@@ -547,7 +547,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```bash
 $ kubectl delete elasticsearchdashboard -n demo os-cluster-dashboard
 
-$ kubectl patch -n demo elasticsearch os-cluster -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo elasticsearch os-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 
 $ kubectl delete elasticsearch -n demo os-cluster 
 

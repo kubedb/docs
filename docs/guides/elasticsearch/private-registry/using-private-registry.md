@@ -173,7 +173,7 @@ You can specify `imagePullSecret` for Snapshot objects in `spec.podTemplate.spec
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo es/pvt-reg-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/pvt-reg-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/pvt-reg-elasticsearch
 
 kubectl delete ns demo

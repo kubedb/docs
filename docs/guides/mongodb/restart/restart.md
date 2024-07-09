@@ -60,7 +60,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   arbiter: {}
   hidden:
     replicas: 2

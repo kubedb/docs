@@ -405,7 +405,7 @@ spec:
       manifestRepository:
         name: mg-rs-manifest
         namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 
 ```
 ```bash

@@ -96,7 +96,7 @@ metadata:
   namespace: demo
 spec:
   version: xpack-8.11.1
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
     accessModes:

@@ -56,7 +56,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -88,7 +88,7 @@ spec:
   backend:
     name: mysql-server
   syncUsers: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   podTemplate:
     spec:
       resources:

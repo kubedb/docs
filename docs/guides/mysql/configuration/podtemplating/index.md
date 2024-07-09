@@ -40,7 +40,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 - metadata:
   - annotations (pod's annotation)
 - controller:
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - env
   - resources
@@ -86,7 +86,7 @@ spec:
         annotate-to: pod
     controller:
       labels:
-        pass-to: statefulset
+        pass-to: petset
       annotations:
         annotate-to: statfulset
     spec:
@@ -107,9 +107,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mysql.kubedb.com/mysql-misc-config created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `mysql-misc-config-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `mysql-misc-config-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=mysql-misc-config
@@ -192,7 +192,7 @@ Once, you have connected to the database with phpMyAdmin go to **SQL** tab and r
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo my/mysql-misc-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo my/mysql-misc-config -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo my/mysql-misc-config
 
 kubectl delete deployment -n demo myadmin

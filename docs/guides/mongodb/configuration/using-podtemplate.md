@@ -93,7 +93,7 @@ spec:
         requests:
           memory: "1Gi"
           cpu: "250m"
-  terminationPolicy: Halt
+  deletionPolicy: Halt
 ```
 
 ```bash
@@ -173,7 +173,7 @@ You can see the maximum connection is set to `100` in `parsed.net.maxIncomingCon
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/mgo-misc-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/mgo-misc-config -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-misc-config
 
 kubectl delete ns demo

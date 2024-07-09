@@ -372,7 +372,7 @@ Events:
   Normal   Successful  10s   KubeDB operator  Successfully created appbinding
 
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME                READY   AGE
 mysql-init-script   1/1     2m24s
 
@@ -497,7 +497,7 @@ As you can see here, the initial script has successfully created a table named `
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mysql/mysql-init-script -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mysql/mysql-init-script -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mysql/mysql-init-script
 
 kubectl delete ns demo

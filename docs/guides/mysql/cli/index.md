@@ -127,7 +127,7 @@ service/mysql-demo        ClusterIP   10.107.205.135   <none>        3306/TCP   
 service/mysql-demo-pods   ClusterIP   None             <none>        3306/TCP   2m17s   app.kubernetes.io/instance=mysql-demo,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com
 
 NAME                          READY   AGE     CONTAINERS   IMAGES
-statefulset.apps/mysql-demo   1/1     2m17s   mysql        kubedb/mysql:8.0.35
+petset.apps/mysql-demo   1/1     2m17s   mysql        kubedb/mysql:8.0.35
 
 NAME                                            TYPE               VERSION   AGE
 appbinding.appcatalog.appscode.com/mysql-demo   kubedb.com/mysql   8.0.35    2m17s

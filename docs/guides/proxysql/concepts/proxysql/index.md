@@ -103,7 +103,7 @@ spec:
       ports:
       - name:  http
         port:  6033
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3
 ```

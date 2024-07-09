@@ -87,7 +87,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 ```bash
@@ -100,7 +100,7 @@ Here,
 - `spec.version` is name of the RedisVersion crd where the docker images are specified. In this tutorial, a Redis 6.2.14 database is created.
 - `spec.storageType` specifies the type of storage that will be used for Redis server. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Redis server using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Redis` crd or which resources KubeDB should keep or delete when you delete `Redis` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy)
+- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Redis` crd or which resources KubeDB should keep or delete when you delete `Redis` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy)
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in storage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
@@ -203,7 +203,7 @@ Events:
   Normal  Successful  2m    Redis Operator  Successfully created appbinding
 
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME               READY   AGE
 redis-quickstart    1/1    1m
 
@@ -288,7 +288,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   version: 6.2.14
 status:
   conditions:
@@ -350,27 +350,27 @@ OK
 
 ## DoNotTerminate Property
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
 $ kubectl delete rd redis-quickstart -n demo
-Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be halted. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be halted. To delete, change spec.deletionPolicy
 ```
 
-Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` . Then you will be able to delete/halt the database. 
+Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` . Then you will be able to delete/halt the database. 
 
-Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy)
+Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy)
 
 ## Halt Database
 
-When [DeletionPolicy](/docs/guides/redis/concepts/redis.md#specterminationpolicy) is set to halt, and you delete the redis object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy).
+When [DeletionPolicy](/docs/guides/redis/concepts/redis.md#specdeletionpolicy) is set to halt, and you delete the redis object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy).
 
-You can also keep the redis object and halt the database to resume it again later. If you halt the database, the KubeDB operator will delete the statefulsets and services but will keep the redis object, pvcs, secrets and backup (snapshots).
+You can also keep the redis object and halt the database to resume it again later. If you halt the database, the KubeDB operator will delete the petsets and services but will keep the redis object, pvcs, secrets and backup (snapshots).
 
-To halt the database, first you have to set the terminationPolicy to `Halt` in existing database. You can use the below command to set the terminationPolicy to `Halt`, if it is not already set.
+To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"
+$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 redis.kubedb.com/redis-quickstart patched
 ```
 
@@ -380,7 +380,7 @@ Then, you have to set the `spec.halted` as true to set the database in a `Halted
 $ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"halted":true}}' --type="merge"
 redis.kubedb.com/redis-quickstart patched
 ```
-After that, kubedb will delete the statefulsets and services, and you can see the database Phase as `Halted`.
+After that, kubedb will delete the petsets and services, and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all redis resources in demo namespaces,
 ```bash
@@ -441,7 +441,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/redis-quickstart patched
 
 $ kubectl delete -n demo rd/redis-quickstart
@@ -456,7 +456,7 @@ namespace "demo" deleted
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one.So, we preserve all your `PVCs`, auth `Secrets`. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will delete everything created by KubeDB for a particular Redis crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy).
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to resume database from previous one.So, we preserve all your `PVCs`, auth `Secrets`. If you don't want to resume database, you can just use `spec.deletionPolicy: WipeOut`. It will delete everything created by KubeDB for a particular Redis crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy).
 
 ## Next Steps
 

@@ -234,7 +234,7 @@ Events:
 g
 
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME       READY   AGE
 semi-sync-mysql   3/3     3m47s
 
@@ -398,9 +398,9 @@ Now, you are ready to check newly created semi-sync. Connect and run the followi
 
 $ kubectl get pods -n demo --show-labels
 NAME                READY   STATUS    RESTARTS   AGE    LABELS
-semi-sync-mysql-0   2/2     Running   0          171m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=semi-sync-mysql-0
-semi-sync-mysql-1   2/2     Running   0          170m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=semi-sync-mysql-1
-semi-sync-mysql-2   2/2     Running   0          169m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=semi-sync-mysql-2
+semi-sync-mysql-0   2/2     Running   0          171m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=primary,petset.kubernetes.io/pod-name=semi-sync-mysql-0
+semi-sync-mysql-1   2/2     Running   0          170m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=standby,petset.kubernetes.io/pod-name=semi-sync-mysql-1
+semi-sync-mysql-2   2/2     Running   0          169m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=standby,petset.kubernetes.io/pod-name=semi-sync-mysql-2
 
 From the labels we can see that the `semi-sync-mysql-0` is running as primary and the rest are running as standby.Lets validate with the mysql semisync status
 
@@ -516,7 +516,7 @@ pod "semi-sync-mysql-0" deleted
 
 # check the new primary ID
 $ kubectl get pod -n demo --show-labels | grep primary
-semi-sync-mysql-1   2/2     Running   0          3h9m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=semi-sync-mysql-1
+semi-sync-mysql-1   2/2     Running   0          3h9m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=primary,petset.kubernetes.io/pod-name=semi-sync-mysql-1
 
 # now check the cluster status
 $ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"

@@ -67,7 +67,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Create the above `Postgres` crd,
@@ -434,7 +434,7 @@ spec:
         storage: 1Gi
   init:
     waitForInitialRestore: true
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 
 ```
 

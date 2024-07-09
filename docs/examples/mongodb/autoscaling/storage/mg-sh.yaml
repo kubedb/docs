@@ -24,4 +24,4 @@ spec:
             storage: 1Gi
       replicas: 3
       shards: 2
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

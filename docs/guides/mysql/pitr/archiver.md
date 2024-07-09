@@ -235,7 +235,7 @@ spec:
     ref:
       name: mysqlarchiver-sample
       namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 
@@ -384,7 +384,7 @@ spec:
     resources:
       requests:
         storage: 10Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 
 ```
 

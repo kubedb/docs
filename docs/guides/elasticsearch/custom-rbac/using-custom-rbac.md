@@ -154,7 +154,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 ```bash
@@ -205,7 +205,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 ```bash
@@ -230,10 +230,10 @@ minute-elasticsearch-0   1/1     Running   0          71s
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo es/quick-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/quick-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/quick-elasticsearch
 
-kubectl patch -n demo es/minute-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/minute-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/minute-elasticsearch
 
 kubectl delete -n demo role my-custom-role

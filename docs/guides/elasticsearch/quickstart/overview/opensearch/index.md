@@ -154,7 +154,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Here,
@@ -164,7 +164,7 @@ Here,
 - `spec.replicas` - specifies the number of OpenSearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for OpenSearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the OpenSearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete the operation of Elasticsearch CR. Termination policy `DoNotTerminate` prevents a user from deleting this object if the admission webhook is enabled.
+- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete the operation of Elasticsearch CR. Termination policy `DoNotTerminate` prevents a user from deleting this object if the admission webhook is enabled.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
 
@@ -549,7 +549,7 @@ $ curl -XGET -k --user 'admin:9aHT*ZhEK_qjPS~v' "https://localhost:9200/bands/_s
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo elasticsearch sample-opensearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo elasticsearch sample-opensearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 elasticsearch.kubedb.com/sample-opensearch patched
 
 $ kubectl delete -n demo es/sample-opensearch
@@ -564,7 +564,7 @@ namespace "demo" deleted
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if the database pod fails. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purposes, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resouce that was created with the Elasticsearch CR. For more details, please visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md#specterminationpolicy).
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.deletionPolicy: WipeOut`. It will clean up every resouce that was created with the Elasticsearch CR. For more details, please visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md#specdeletionpolicy).
 
 ## Next Steps
 

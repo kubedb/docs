@@ -88,7 +88,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `Elasticsearch` CRO we have shown above,
@@ -368,7 +368,7 @@ Status:
     Status:                True
     Type:                  VerticalScaling
     Last Transition Time:  2021-03-22T13:04:21Z
-    Message:               Successfully updated statefulSet resources.
+    Message:               Successfully updated petSet resources.
     Observed Generation:   1
     Reason:                UpdateStatefulSetResources
     Status:                True

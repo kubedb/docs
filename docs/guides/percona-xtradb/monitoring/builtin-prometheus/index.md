@@ -50,7 +50,7 @@ metadata:
   namespace: demo
 spec:
   version: "8.0.26"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
     accessModes:

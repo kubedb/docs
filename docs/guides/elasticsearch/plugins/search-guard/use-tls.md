@@ -172,7 +172,7 @@ $ curl --user "elastic:uv2io5au" "https://localhost:9200/_cluster/health?pretty"
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo es/ssl-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo es/ssl-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo es/ssl-elasticsearch
 
 $ kubectl delete ns demo

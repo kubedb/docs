@@ -89,7 +89,7 @@ spec:
             storage: 1Gi
       replicas: 3
       shards: 2
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MongoDB` CRO we have shown above,

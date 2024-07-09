@@ -192,7 +192,7 @@ WHERE name='max_connections' OR name='shared_buffers';
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo pg/custom-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo pg/custom-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/custom-postgres
 
 kubectl delete -n demo secret pg-configuration

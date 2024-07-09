@@ -15,4 +15,4 @@ spec:
   connectionPool:
     maxClientConnections: 20
     reservePoolSize: 5
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

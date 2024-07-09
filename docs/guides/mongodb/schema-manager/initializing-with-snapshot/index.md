@@ -96,7 +96,7 @@ spec:
     resources:
       requests:
         storage: 100Mi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Here,
@@ -105,7 +105,7 @@ Here,
 - `spec.storageType` specifies the type of storage that will be used for MongoDB. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the MongoDB using `EmptyDir` volume.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.allowedSchemas` specifies the namespace and selectors of allowed `Schema Manager`.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete the operation of MongoDB CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mongodb/concepts/mongodb/#specterminationpolicy).
+- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete the operation of MongoDB CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mongodb/concepts/mongodb/#specdeletionpolicy).
 
 Let’s save this yaml configuration into `mongodb.yaml` Then create the above `MongoDB` CR
 
@@ -149,7 +149,7 @@ spec:
   authMethods:
     - type: kubernetes
       path: kubernetes
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Here,
@@ -160,7 +160,7 @@ Here,
 - `spec.unsealer` is an optional field that specifies `Unsealer` configuration. `Unsealer` handles automatic initializing and unsealing of Vault.
 - `spec.backend` is a required field that specifies the Vault backend storage configuration. KubeVault operator generates storage configuration according to this `spec.backend`.
 - `spec.authMethods` is an optional field that specifies the list of auth methods to enable in Vault.
-- `spec.terminationPolicy` is an optional field that gives flexibility whether to nullify(reject) the delete operation of VaultServer crd or which resources KubeVault operator should keep or delete when you delete VaultServer crd. 
+- `spec.deletionPolicy` is an optional field that gives flexibility whether to nullify(reject) the delete operation of VaultServer crd or which resources KubeVault operator should keep or delete when you delete VaultServer crd. 
 
 Let’s save this yaml configuration into `vault.yaml` Then create the above `VaultServer` CR
 

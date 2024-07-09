@@ -102,7 +102,7 @@ spec:
         ports:
           - name:  http
             port:  9200
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   halted: false
   healthChecker:
     periodSeconds: 15
@@ -244,7 +244,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 - metadata:
   - annotations (pod's annotation)
 - controller:
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - args
   - env
@@ -332,16 +332,16 @@ KubeDB allows following fields to set in `spec.serviceTemplates`:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `RedisSentinel` crd or which resources KubeDB should keep or delete when you delete `RedisSentinel` crd. KubeDB provides following four termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `RedisSentinel` crd or which resources KubeDB should keep or delete when you delete `RedisSentinel` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
 - Halt
 - Delete (`Default`)
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete Redis crd for different termination policies,
 
@@ -353,7 +353,7 @@ Following table show what KubeDB does when you delete Redis crd for different te
 | 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
 | 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.terminationPolicy` KubeDB uses `Delete` termination policy by default.
+If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
 
 ### spec.halted
 Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
@@ -404,7 +404,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ## Next Steps

@@ -56,7 +56,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -131,7 +131,7 @@ spec:
   replicas: 3
   backend:
     name: mysql-server
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 To deploy a simple proxysql cluster all you need to do is just set the `.spec.replicas` field to a higher value than 2. 

@@ -17,4 +17,4 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Halt
+  deletionPolicy: Halt

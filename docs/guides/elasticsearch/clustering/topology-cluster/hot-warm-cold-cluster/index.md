@@ -569,7 +569,7 @@ ip        heap.percent ram.percent cpu load_1m load_5m load_15m node.role master
 To cleanup the k8s resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo elasticsearch es-cluster -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo elasticsearch es-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 
 $ kubectl delete elasticsearch -n demo es-cluster 
 

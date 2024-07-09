@@ -80,7 +80,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Halt
+  deletionPolicy: Halt
 ```
 
 Let's create the `Redis` CR we have shown above,
@@ -98,7 +98,7 @@ NAME             VERSION   STATUS   AGE
 sample-redis     6.2.14    Ready    5m4s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo sample-redis-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -211,7 +211,7 @@ $ kubectl delete redisopsrequest -n demo rd-online-volume-expansion
 ```
 
 ```bash
-$ kubectl patch -n demo rd/sample-redis -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/sample-redis -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/sample-redis patched
 
 $ kubectl delete -n demo redis sample-redis

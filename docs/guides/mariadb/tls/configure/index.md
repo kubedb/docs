@@ -116,7 +116,7 @@ spec:
       - localhost
       ipAddresses:
       - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Here,
@@ -305,7 +305,7 @@ spec:
       - localhost
       ipAddresses:
       - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 **Deploy MariaDB Cluster:**

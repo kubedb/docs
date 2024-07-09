@@ -36,4 +36,4 @@ spec:
           requests:
             cpu: "200m"
             memory: "200Mi"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

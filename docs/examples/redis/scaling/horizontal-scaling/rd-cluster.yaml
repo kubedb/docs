@@ -17,4 +17,4 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: Halt
+  deletionPolicy: Halt

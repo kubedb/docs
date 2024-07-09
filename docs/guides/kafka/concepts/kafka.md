@@ -314,8 +314,8 @@ KubeDB accept following fields to set in `spec.podTemplate:`
     - annotations (pod's annotation)
     - labels (pod's labels)
 - controller:
-    - annotations (statefulset's annotation)
-    - labels (statefulset's labels)
+    - annotations (petset's annotation)
+    - labels (petset's labels)
 - spec:
     - resources
     - initContainers

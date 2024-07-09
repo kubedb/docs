@@ -463,7 +463,7 @@ So, we can see from the above that, output that tls is disabled successfully.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo redis/rd-sample -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redis/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-sample patched
 
 $ kubectl delete redis -n demo rd-sample

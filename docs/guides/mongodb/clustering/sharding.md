@@ -463,7 +463,7 @@ spec:
   sslMode: disabled
   storageEngine: wiredTiger
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   version: 4.4.26
 status:
   conditions:
@@ -770,14 +770,14 @@ Here, `demo` database is not partitioned and all collections under `demo` databa
 
 ## Halt Database
 
-When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
+When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
 
 You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the statefulsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
 
-To halt the database, first you have to set the terminationPolicy to `Halt` in existing database. You can use the below command to set the terminationPolicy to `Halt`, if it is not already set.
+To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo mg/mongo-sh -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"
+$ kubectl patch -n demo mg/mongo-sh -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 mongodb.kubedb.com/mongo-sh patched
 ```
 
@@ -901,7 +901,7 @@ mongos> sh.status()
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/mongo-sh -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/mongo-sh -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mongo-sh
 
 kubectl delete ns demo

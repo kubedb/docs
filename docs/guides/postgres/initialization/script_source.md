@@ -227,7 +227,7 @@ We can see TABLE `dashboard` in `data` Schema which is created through initializ
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo pg/script-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo pg/script-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo pg/script-postgres
 
 $ kubectl delete -n demo configmap/pg-init-script

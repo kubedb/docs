@@ -9,4 +9,4 @@ spec:
   backend:
     name: mysql-server
   syncUsers: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

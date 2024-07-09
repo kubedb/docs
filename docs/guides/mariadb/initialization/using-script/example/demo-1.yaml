@@ -16,4 +16,4 @@ spec:
     script:
       configMap:
         name: md-init-script
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

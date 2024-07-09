@@ -149,7 +149,7 @@ redis-pvt-reg   6.2.14    Running   40s
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo rd/redis-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo rd/redis-pvt-reg -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo rd/redis-pvt-reg
 
 kubectl patch -n demo drmn/redis-pvt-reg -p '{"spec":{"wipeOut":true}}' --type="merge"
@@ -159,7 +159,7 @@ kubectl delete ns demo
 ```
 
 ```bash
-$ kubectl patch -n demo rd/redis-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/redis-pvt-reg -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/redis-pvt-reg patched
 
 $ kubectl delete -n demo rd/redis-pvt-reg

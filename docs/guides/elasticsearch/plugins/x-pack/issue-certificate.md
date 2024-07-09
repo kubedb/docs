@@ -501,7 +501,7 @@ $ curl --user "elastic:uft73z6j" "https://localhost:9200/_nodes/_all/settings?pr
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo es/custom-certificate-es-ssl -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/custom-certificate-es-ssl -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/custom-certificate-es-ssl
 
 kubectl delete ns demo

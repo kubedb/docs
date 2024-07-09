@@ -64,7 +64,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MariaDB` CR we have shown above,
@@ -82,7 +82,7 @@ NAME             VERSION   STATUS   AGE
 sample-mariadb   10.5.23    Ready    2m36s
 ```
 
-Let's check the number of replicas this database has from the MariaDB object, number of pods the statefulset have,
+Let's check the number of replicas this database has from the MariaDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.replicas'
@@ -169,7 +169,7 @@ NAME                        TYPE                STATUS       AGE
 mdps-scale-horizontal    HorizontalScaling    Successful     106s
 ```
 
-We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the MariaDB object, number of pods the statefulset have,
+We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the MariaDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.replicas'
@@ -240,7 +240,7 @@ NAME                          TYPE                STATUS       AGE
 mops-hscale-down-replicaset   HorizontalScaling   Successful   2m32s
 ```
 
-We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the MariaDB object, number of pods the statefulset have,
+We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the MariaDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.replicas' 

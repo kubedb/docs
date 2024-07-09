@@ -217,7 +217,7 @@ Events:
   Normal  Successful     27s   MySQL operator  Successfully created MySQL
   Normal  Successful     27s   MySQL operator  Successfully created appbinding
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME       READY   AGE
 NAME            READY   AGE
 innodb          3/3     2m17s

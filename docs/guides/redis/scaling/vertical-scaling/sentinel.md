@@ -68,7 +68,7 @@ spec:
         requests:
           cpu: "100m"
           memory: "100Mi"
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's create the `RedisSentinel` CR we have shown above,
@@ -131,7 +131,7 @@ spec:
         requests:
           cpu: "100m"
           memory: "100Mi"
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's create the `Redis` CR we have shown above,
@@ -317,7 +317,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 # Delete Redis and RedisOpsRequest
-$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-sample patched
 
 $ kubectl delete -n demo redis rd-sample
@@ -327,7 +327,7 @@ $ kubectl delete -n demo redisopsrequest rd-ops-vertical
 redisopsrequest.ops.kubedb.com "rd-ops-vertical" deleted
 
 # Delete RedisSentinel and RedisSentinelOpsRequest
-$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/sen-sample patched
 
 $ kubectl delete -n demo redissentinel sen-sample

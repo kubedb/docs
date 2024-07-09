@@ -175,7 +175,7 @@ spec:
     port: 5432
     maxClientConnections: 20
     reservePoolSize: 5
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Here,
@@ -184,7 +184,7 @@ Here,
 - `spec.replicas` specifies the number of replica pgbouncer server pods to be created for the PgBouncer object.
 - `spec.database` specifies the database that are going to be served via PgBouncer.
 - `spec.connectionPool` specifies the configurations for connection pool.
-- `spec.terminationPolicy` specifies what policy to apply while deletion.
+- `spec.deletionPolicy` specifies what policy to apply while deletion.
 
 ### spec.database
 
@@ -209,15 +209,15 @@ ConnectionPool is used to configure pgbouncer connection pool. All the fields he
 - `spec.connectionPool.maxDbConnections`: specifies the value of max_db_connections.
 - `spec.connectionPool.maxUserConnections`: specifies the value of max_user_connections.
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PgBouncer` crd or which resources KubeDB should keep or delete when you delete `PgBouncer` crd. KubeDB provides following four termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PgBouncer` crd or which resources KubeDB should keep or delete when you delete `PgBouncer` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
 - Delete (`Default`)
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete Postgres crd for different termination policies,
 
@@ -326,7 +326,7 @@ Metadata:
           f:periodSeconds:
           f:timeoutSeconds:
         f:replicas:
-        f:terminationPolicy:
+        f:deletionPolicy:
         f:version:
     Manager:      kubectl-client-side-apply
     Operation:    Update

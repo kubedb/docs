@@ -148,7 +148,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, StatefulSet, services, secret etc. If everything goes well, we should see that a pod with the name `sample-pxc-0` has been created.
@@ -205,7 +205,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `another-perconaxtradb` has been created.

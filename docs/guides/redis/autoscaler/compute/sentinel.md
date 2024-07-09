@@ -70,7 +70,7 @@ spec:
         limits:
           cpu: "200m"
           memory: "300Mi"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `RedisSentinel` CRO we have shown above,
@@ -379,7 +379,7 @@ The above output verifies that we have successfully auto-scaled the resources of
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/sen-demo patched
 
 $ kubectl delete redissentinel -n demo sen-demo

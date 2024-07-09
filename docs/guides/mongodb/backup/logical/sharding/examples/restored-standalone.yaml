@@ -15,4 +15,4 @@ spec:
         storage: 1Gi
   init:
     waitForInitialRestore: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

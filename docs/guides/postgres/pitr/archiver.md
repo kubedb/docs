@@ -232,7 +232,7 @@ spec:
     ref:
       name: postgresarchiver-sample
       namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 
 ```
 
@@ -363,7 +363,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash

@@ -63,4 +63,4 @@ spec:
         ports:
         - name:  http
           port:  9200
-  terminationPolicy: "DoNotTerminate"
+  deletionPolicy: "DoNotTerminate"

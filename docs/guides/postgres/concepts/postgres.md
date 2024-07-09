@@ -105,7 +105,7 @@ spec:
       ports:
       - name:  http
         port:  5432
-  terminationPolicy: "Halt"
+  deletionPolicy: "Halt"
 ```
 
 ### spec.version
@@ -387,16 +387,16 @@ The fileds of `spec.replicaServiceTemplate` is similar to `spec.serviceTemplate`
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Postgres` crd or which resources KubeDB should keep or delete when you delete `Postgres` crd. KubeDB provides following four termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Postgres` crd or which resources KubeDB should keep or delete when you delete `Postgres` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
 - Halt
 - Delete (`Default`)
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete Postgres crd for different termination policies,
 
@@ -411,7 +411,7 @@ Following table show what KubeDB does when you delete Postgres crd for different
 | 7. Delete Snapshots                      |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 8. Delete Snapshot data from bucket      |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.terminationPolicy` KubeDB uses `Halt` termination policy by default.
+If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy by default.
 
 ## Next Steps
 

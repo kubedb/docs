@@ -144,7 +144,7 @@ memcd-pvt-reg   1.6.22   Running   59s
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mc/memcd-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/memcd-pvt-reg -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/memcd-pvt-reg
 
 kubectl patch -n demo drmn/memcd-pvt-reg -p '{"spec":{"wipeOut":true}}' --type="merge"

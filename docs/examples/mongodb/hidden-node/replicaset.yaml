@@ -33,4 +33,4 @@ spec:
       resources:
         requests:
           storage: 2Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

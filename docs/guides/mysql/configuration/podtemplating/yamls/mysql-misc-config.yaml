@@ -21,7 +21,7 @@ spec:
         annotate-to: pod
     controller:
       labels:
-        pass-to: statefulset
+        pass-to: petset
       annotations:
         annotate-to: statfulset
     spec:

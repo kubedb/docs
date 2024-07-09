@@ -78,7 +78,7 @@ spec:
     resources:
       requests:
         storage: 10Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `Postgres` CR we have shown above,

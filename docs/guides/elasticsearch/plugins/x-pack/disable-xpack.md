@@ -248,7 +248,7 @@ Here, `xpack.security.enabled` is set to `false`. As a result, `xpack` security 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo es/es-xpack-disabled -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/es-xpack-disabled -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/es-xpack-disabled
 
 kubectl delete ns demo

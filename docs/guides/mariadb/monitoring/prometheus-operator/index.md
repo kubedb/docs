@@ -112,7 +112,7 @@ metadata:
   namespace: demo
 spec:
   version: "10.5.23"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
     accessModes:

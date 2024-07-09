@@ -387,7 +387,7 @@ sg-elasticsearch   6.3-v1    Running   1m
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo es/sg-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo es/sg-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo es/sg-elasticsearch
 
 $ kubectl delete ns demo

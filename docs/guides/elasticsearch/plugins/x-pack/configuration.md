@@ -142,7 +142,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   version: xpack-8.11.1
 status:
   observedGeneration: 1$4210395375389091791
@@ -354,7 +354,7 @@ As you can see, `xpack.security.enabled` is set to true.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo es/config-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/config-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/config-elasticsearch
 
 kubectl delete ns demo

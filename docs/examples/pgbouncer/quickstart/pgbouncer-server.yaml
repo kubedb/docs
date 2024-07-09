@@ -16,4 +16,4 @@ spec:
     port: 5432
     maxClientConnections: 20
     reservePoolSize: 5
-  terminationPolicy: Delete
+  deletionPolicy: Delete

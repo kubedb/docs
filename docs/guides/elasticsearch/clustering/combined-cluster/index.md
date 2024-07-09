@@ -57,7 +57,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's deploy the above example by the following command:
@@ -175,7 +175,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's deploy the above example by the following command:
@@ -282,11 +282,11 @@ TO cleanup the k8s resources created by this tutorial, run:
 
 ```bash
 # standalone cluster
-$ kubectl patch -n demo elasticsearch es-standalone -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo elasticsearch es-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete elasticsearch -n demo es-standalone
 
 # multinode cluster
-$ kubectl patch -n demo elasticsearch es-multinode -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo elasticsearch es-multinode -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete elasticsearch -n demo es-multinode
 
 # delete namespace

@@ -84,7 +84,7 @@ spec:
           cpu: 250m
           memory: 64Mi
   replicas: 3
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   version: 1.6.22
 status:
   observedGeneration: 1$7916315637361465932

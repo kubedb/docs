@@ -72,7 +72,7 @@ spec:
         limits:
           cpu: "200m"
           memory: "300Mi"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 
 ```
 

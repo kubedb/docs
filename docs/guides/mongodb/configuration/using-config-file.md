@@ -184,7 +184,7 @@ As we can see from the configuration of running mongodb, the value of `maxIncomi
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/mgo-custom-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/mgo-custom-config -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-custom-config
 
 kubectl delete -n demo secret mg-configuration

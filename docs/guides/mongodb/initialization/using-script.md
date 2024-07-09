@@ -359,7 +359,7 @@ spec:
     storageClassName: standard
   storageEngine: wiredTiger
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   version: 4.4.26
 status:
   conditions:
@@ -466,7 +466,7 @@ As you can see here, the initial script has successfully created a database name
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/mgo-init-script -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/mgo-init-script -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-init-script
 
 kubectl delete ns demo

@@ -118,7 +118,7 @@ $ curl "localhost:9200/_cluster/health?pretty"
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo es/es-sg-disabled -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo es/es-sg-disabled -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo es/es-sg-disabled
 
 $ kubectl delete ns demo

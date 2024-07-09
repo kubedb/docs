@@ -64,4 +64,4 @@ spec:
       ports:
       - name:  http
         port:  5432
-  terminationPolicy: "DoNotTerminate"
+  deletionPolicy: "DoNotTerminate"

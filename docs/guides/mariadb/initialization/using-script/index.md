@@ -71,7 +71,7 @@ spec:
     script:
       configMap:
         name: md-init-script
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -112,7 +112,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: 10.5.23
 status:
   ...

@@ -56,7 +56,7 @@ spec:
     certificates:
       - alias: database-client
         secretName: es-cluster-client-cert
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 

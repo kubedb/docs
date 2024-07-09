@@ -112,7 +112,7 @@ spec:
     spec:
       imagePullSecrets:
       - name: pxregistrykey
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Now run the command to deploy this `PerconaXtraDB` object:

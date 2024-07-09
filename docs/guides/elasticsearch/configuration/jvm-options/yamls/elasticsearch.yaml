@@ -9,7 +9,7 @@ spec:
   enableSSL: false 
   version: opensearch-2.8.0
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   topology:
     master:
       suffix: master

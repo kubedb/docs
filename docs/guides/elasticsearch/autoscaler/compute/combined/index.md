@@ -73,7 +73,7 @@ spec:
         limits:
           cpu: "500m"
           memory: "1.2Gi"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `Elasticsearch` CRO we have shown above,

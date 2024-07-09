@@ -114,7 +114,7 @@ spec:
     resources:
       requests:
         storage: 100Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Now, create the Elasticsearch object by the following command:

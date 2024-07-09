@@ -9,4 +9,4 @@ spec:
   syncUsers: true
   backend:
     name: xtradb-galera-appbinding
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

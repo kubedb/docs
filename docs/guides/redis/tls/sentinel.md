@@ -262,13 +262,13 @@ OK
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo redis/rd-tls -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redis/rd-tls -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-tls patched
 
 $ kubectl delete -n demo redis rd-tls
 redis.kubedb.com "rd-tls" deleted
 
-$ kubectl patch -n demo redissentinel/sen-tls -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/sen-tls -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/sen-tls patched
 
 $ kubectl delete -n demo redissentinel sen-tls

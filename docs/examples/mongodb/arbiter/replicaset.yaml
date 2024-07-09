@@ -18,5 +18,5 @@ spec:
         storage: 500Mi
   arbiter:
     podTemplate: {}
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 

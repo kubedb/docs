@@ -350,7 +350,7 @@ $ curl --user "elastic:err5ns7w"  "https://localhost:9200/_nodes/_all/settings?p
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo es/ssl-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/ssl-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/ssl-elasticsearch
 
 kubectl delete ns demo

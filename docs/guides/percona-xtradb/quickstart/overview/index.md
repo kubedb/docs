@@ -74,7 +74,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 ```bash
@@ -87,7 +87,7 @@ Here,
 - `spec.version` is the name of the PerconaXtraDBVersion CRD where the docker images are specified. In this tutorial, a PerconaXtraDB `8.0.26` database is going to create.
 - `spec.storageType` specifies the type of storage that will be used for PerconaXtraDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create PerconaXtraDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PerconaXtraDB` crd or which resources KubeDB should keep or delete when you delete `PerconaXtraDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PerconaXtraDB` crd or which resources KubeDB should keep or delete when you delete `PerconaXtraDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in `storage.resources.requests` field. Don't specify limits here. PVC does not get resized automatically.
 
@@ -299,23 +299,23 @@ This field is used to regulate the deletion process of the related resources whe
 
 **DoNotTerminate:**
 
-When `terminationPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. If you create a database with `terminationPolicy`  `DoNotTerminate` and try to delete it, you will see this:
+When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. If you create a database with `deletionPolicy`  `DoNotTerminate` and try to delete it, you will see this:
 
 ```bash
 $ kubectl delete perconaxtradb sample-pxc -n demo
-Error from server (BadRequest): admission webhook "perconaxtradb.validators.kubedb.com" denied the request: perconaxtradb "perconaxtradb-quickstart" can't be halted. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "perconaxtradb.validators.kubedb.com" denied the request: perconaxtradb "perconaxtradb-quickstart" can't be halted. To delete, change spec.deletionPolicy
 ```
 
-Now, run `kubectl edit perconaxtradb sample-pxc -n demo` to set `spec.terminationPolicy` to `Halt` (which deletes the perconaxtradb object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
+Now, run `kubectl edit perconaxtradb sample-pxc -n demo` to set `spec.deletionPolicy` to `Halt` (which deletes the perconaxtradb object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
 
 **Halt:**
 
-Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `PerconaXtraDB` object `terminationPolicy` to `Halt`.
+Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `PerconaXtraDB` object `deletionPolicy` to `Halt`.
 
-When the `DeletionPolicy` is set to `Halt` and the PerconaXtraDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `Halt` in existing database using `edit` command for testing.
+When the `DeletionPolicy` is set to `Halt` and the PerconaXtraDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `deletionPolicy` to `Halt` in existing database using `edit` command for testing.
 
-At first, run `kubectl edit perconaxtradb sample-pxc -n demo` to set `spec.terminationPolicy` to `Halt`. Then delete the perconaxtradb object,
+At first, run `kubectl edit perconaxtradb sample-pxc -n demo` to set `spec.deletionPolicy` to `Halt`. Then delete the perconaxtradb object,
 
 ```bash
 $ kubectl delete perconaxtradb sample-pxc -n demo
@@ -338,11 +338,11 @@ From the above output, you can see that all perconaxtradb resources(`StatefulSet
 
 **Delete:**
 
-If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `PerconaXtraDB` object `terminationPolicy` to `Delete`. In this setting, `StatefulSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
+If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `PerconaXtraDB` object `deletionPolicy` to `Delete`. In this setting, `StatefulSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
 
 When the `DeletionPolicy` is set to `Delete` and the PerconaXtraDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
 
-Suppose, we have a database with `terminationPolicy` set to `Delete`. Now, are going to delete the database using the following command:
+Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
 $ kubectl delete perconaxtradb sample-pxc -n demo
@@ -375,13 +375,13 @@ persistentvolumeclaim/data-sample-pxc-2   Bound    pvc-85a35a7c-dfb8-4ca2-96a6-2
 
 From the above output, you can see that all perconaxtradb resources(`StatefulSet`, `Service`, `PVCs` etc.) are deleted except `Secret`.
 
->If you don't set the terminationPolicy then the kubeDB set the DeletionPolicy to Delete by-default.
+>If you don't set the deletionPolicy then the kubeDB set the DeletionPolicy to Delete by-default.
 
 **WipeOut:**
 
-You can totally delete the `PerconaXtraDB` database and relevant resources without any tracking by setting `terminationPolicy` to `WipeOut`. KubeDB operator will delete all relevant resources of this `PerconaXtraDB` database (i.e, `PVCs`, `Secrets`, `Snapshots`) when the `terminationPolicy` is set to `WipeOut`.
+You can totally delete the `PerconaXtraDB` database and relevant resources without any tracking by setting `deletionPolicy` to `WipeOut`. KubeDB operator will delete all relevant resources of this `PerconaXtraDB` database (i.e, `PVCs`, `Secrets`, `Snapshots`) when the `deletionPolicy` is set to `WipeOut`.
 
-Suppose, we have a database with `terminationPolicy` set to `WipeOut`. Now, are going to delete the database using the following command:
+Suppose, we have a database with `deletionPolicy` set to `WipeOut`. Now, are going to delete the database using the following command:
 
 ```yaml
 $ kubectl delete perconaxtradb sample-pxc -n demo
@@ -395,9 +395,9 @@ $ kubectl get sts,svc,secret,pvc -n demo
 No resources found in demo namespace.
 ```
 
-From the above output, you can see that all perconaxtradb resources are deleted. there is no option to recreate/reinitialize your database if `terminationPolicy` is set to `Delete`.
+From the above output, you can see that all perconaxtradb resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `Delete`.
 
->Be careful when you set the `terminationPolicy` to `Delete`. Because there is no option to trace the database resources if once deleted the database.
+>Be careful when you set the `deletionPolicy` to `Delete`. Because there is no option to trace the database resources if once deleted the database.
 
 ## Database Halted
 
@@ -431,7 +431,7 @@ persistentvolumeclaim/data-sample-pxc-2   Bound    pvc-85a35a7c-dfb8-4ca2-96a6-2
 
 From the above output , you can see that `PerconaXtraDB` object, `PVCs`, `Secret` are still alive. Then you can recreate your `PerconaXtraDB` with same configuration.
 
->When you set `spec.halted` to `true` in `PerconaXtraDB` object then the `terminationPolicy` is also set to `Halt` by KubeDB operator.
+>When you set `spec.halted` to `true` in `PerconaXtraDB` object then the `deletionPolicy` is also set to `Halt` by KubeDB operator.
 
 ## Cleaning up
 
@@ -448,7 +448,7 @@ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular PerconaXtraDB crd when you delete the crd.
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular PerconaXtraDB crd when you delete the crd.
 
 ## Next Steps
 

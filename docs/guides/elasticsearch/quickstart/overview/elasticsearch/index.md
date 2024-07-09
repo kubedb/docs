@@ -159,7 +159,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Here,
@@ -169,7 +169,7 @@ Here,
 - `spec.replicas` - specifies the number of Elasticsearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete Elasticsearch CR. Termination policy `Delete` will delete the database pods, secret and PVC when the Elasticsearch CR is deleted.
+- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Elasticsearch CR. Termination policy `Delete` will delete the database pods, secret and PVC when the Elasticsearch CR is deleted.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
 
@@ -233,7 +233,7 @@ Metadata:
               f:storage:
           f:storageClassName:
         f:storageType:
-        f:terminationPolicy:
+        f:deletionPolicy:
         f:version:
     Manager:      kubectl-client-side-apply
     Operation:    Update
@@ -492,7 +492,7 @@ persistentvolumeclaim/data-es-quickstart-1   Bound    pvc-fbacd36c-4132-4e2a-a5c
 persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-9f9c6eaf-1ba6-4167-a37d-86eaf1f7e103   1Gi        RWO            standard       5m8s
 ```
 
-- `StatefulSet` - a StatefulSet named after the Elasticsearch instance. In topology mode, the operator creates 3 statefulSets with name `{Elasticsearch-Name}-{Sufix}`.
+- `StatefulSet` - a StatefulSet named after the Elasticsearch instance. In topology mode, the operator creates 3 petSets with name `{Elasticsearch-Name}-{Sufix}`.
 - `Services` -  3 services are generated for each Elasticsearch database.
   - `{Elasticsearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
   - `{Elasticsearch-Name}-master` - the master service which is used to connect to the master nodes. It is a headless service.
@@ -563,15 +563,15 @@ From the health information above, we can see that our Elasticsearch cluster's s
 
 ## Halt Elasticsearch
 
-KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` termination policy. If admission webhook is enabled, it prevents the user from deleting the database as long as the `spec.terminationPolicy` is set `DoNotTerminate`.
+KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` termination policy. If admission webhook is enabled, it prevents the user from deleting the database as long as the `spec.deletionPolicy` is set `DoNotTerminate`.
 
-To halt the database, we have to set `spec.terminationPolicy:` to `Halt` by updating it,
+To halt the database, we have to set `spec.deletionPolicy:` to `Halt` by updating it,
 
 ```bash
 $ kubectl edit elasticsearch -n demo es-quickstart
 
 >> spec:
->>   terminationPolicy: Halt
+>>   deletionPolicy: Halt
 ```
 
 Now, if you delete the Elasticsearch object, the KubeDB operator will delete every resource created for this Elasticsearch CR, but leaves the auth secrets, and PVCs.
@@ -602,7 +602,7 @@ persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-dad75b1b-37ed-4318-a82
 
 ## Resume Elasticsearch
 
-Say, the Elasticsearch CR was deleted with `spec.terminationPolicy` to `Halt` and you want to re-create the Elasticsearch cluster using the existing auth secrets and the PVCs.
+Say, the Elasticsearch CR was deleted with `spec.deletionPolicy` to `Halt` and you want to re-create the Elasticsearch cluster using the existing auth secrets and the PVCs.
 
 You can do it by simpily re-deploying the original Elasticsearch object:
 
@@ -616,7 +616,7 @@ elasticsearch.kubedb.com/es-quickstart created
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo elasticsearch es-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo elasticsearch es-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 elasticsearch.kubedb.com/es-quickstart patched
 
 $ kubectl delete -n demo es/quick-elasticsearch
@@ -631,7 +631,7 @@ namespace "demo" deleted
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if the database pod fails. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purposes, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resouce that was created with the Elasticsearch CR. For more details, please visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md#specterminationpolicy).
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.deletionPolicy: WipeOut`. It will clean up every resouce that was created with the Elasticsearch CR. For more details, please visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md#specdeletionpolicy).
 
 ## Next Steps
 

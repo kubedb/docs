@@ -135,7 +135,7 @@ Now, we are going to verify whether the `Redis` and the related `StatefulSets` t
 $ kubectl get redis -n demo redis-quickstart -o=jsonpath='{.spec.version}{"\n"}'
 7.0.14
 
-$ kubectl get statefulset -n demo redis-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo redis-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 
 $ kubectl get pods -n demo redis-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
@@ -149,7 +149,7 @@ You can see from above, our `Redis` standalone database has been updated with th
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/redis-quickstart patched
 
 $ kubectl delete -n demo redis redis-quickstart

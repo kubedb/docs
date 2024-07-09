@@ -80,7 +80,7 @@ spec:
           requests:
             cpu: "200m"
             memory: "200Mi"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -184,7 +184,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":{"spec":{"requests":{"cpu":"200m","memory":"200Mi"},"resources":null}}},"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"300Mi"}}}},"replicas":2,"shards":2,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}}},"terminationPolicy":"WipeOut","version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":{"spec":{"requests":{"cpu":"200m","memory":"200Mi"},"resources":null}}},"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"300Mi"}}}},"replicas":2,"shards":2,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}}},"deletionPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-04-21T09:29:07Z"
   finalizers:
   - kubedb.com
@@ -477,7 +477,7 @@ spec:
   sslMode: disabled
   storageEngine: wiredTiger
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: 4.4.26
 status:
   conditions:
@@ -909,14 +909,14 @@ Here, `demo` database is not partitioned and all collections under `demo` databa
 
 ## Halt Database
 
-When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
+When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
 
 You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the statefulsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
 
-To halt the database, first you have to set the terminationPolicy to `Halt` in existing database. You can use the below command to set the terminationPolicy to `Halt`, if it is not already set.
+To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo mg/mongo-sh-arb -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"
+$ kubectl patch -n demo mg/mongo-sh-arb -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 mongodb.kubedb.com/mongo-sh-arb patched
 ```
 
@@ -1049,7 +1049,7 @@ mongos> sh.status()
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/mongo-sh-arb -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/mongo-sh-arb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mongo-sh-arb
 
 kubectl delete ns demo

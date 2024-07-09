@@ -290,7 +290,7 @@ secret/kafka-quickstart-admin-cred   kubernetes.io/basic-auth   2      8m52s
 secret/kafka-quickstart-config       Opaque                     2      8m52s
 ```
 
-- `StatefulSet` - a StatefulSet named after the Kafka instance. In topology mode, the operator creates 3 statefulSets with name `{Kafka-Name}-{Sufix}`.
+- `StatefulSet` - a StatefulSet named after the Kafka instance. In topology mode, the operator creates 3 petSets with name `{Kafka-Name}-{Sufix}`.
 - `Services` -  For a combined Kafka instance only one service is created with name `{Kafka-name}-{pods}`. For topology mode, two services are created.
     - `{Kafka-Name}-{broker}` - the governing service which is used for inter-broker communications. This service is also used to connect to the brokers with external clients. This is a headless service.
     - `{Kafka-Name}-{controller}` - the governing service which is used for inter-controller communications. It is a headless service too.

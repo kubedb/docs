@@ -97,7 +97,7 @@ metadata:
 spec:
   replicas: 3
   version: "1.6.22"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   podTemplate:
     spec:
       resources:

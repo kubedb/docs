@@ -244,9 +244,9 @@ Let's verify that the `mysql.kubedb.com/role:<primary/secondary>` label are adde
 ```bash
 $ kubectl get pods -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
 Name         Labels                                                                                                                                                                           PodIP
-my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary statefulset.kubernetes.io/pod-name:my-group-0]     10.244.1.8
-my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
-my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-2]   10.244.2.13
+my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary petset.kubernetes.io/pod-name:my-group-0]     10.244.1.8
+my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
+my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-2]   10.244.2.13
 ```
 
 You can see from the above output that the `my-group-0` pod is selected as a primary member in our existing database cluster. It has the `mysql.kubedb.com/role:primary` label and the podIP is `10.244.1.8`. Besides, the rest of the replicas are selected as a secondary member which has `mysql.kubedb.com/role:secondary` label.
@@ -412,9 +412,9 @@ Now wait for a few minute to automatically elect the primary replica and also wa
 ```bash
 $ kubectl get pods -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
 Name         Labels                                                                                                                                                                           PodIP
-my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-0]   10.244.2.18
-my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
-my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary statefulset.kubernetes.io/pod-name:my-group-2]     10.244.2.13
+my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-0]   10.244.2.18
+my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
+my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary petset.kubernetes.io/pod-name:my-group-2]     10.244.2.13
 ```
 
 You can see from the above output that `my-group-2` pod is elected as a primary automatically and the others become secondary.

@@ -186,7 +186,7 @@ To clean up the Kubernetes resources created by this turorial, run:
 
 ```bash
 
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/redis-quickstart patched
 
 $ kubectl delete -n demo redis redis-quickstart

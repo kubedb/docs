@@ -23,4 +23,4 @@ spec:
         limits:
           cpu: "500m"
           memory: "1.2Gi"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

@@ -58,7 +58,7 @@ spec:
     storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/sentinel.yaml
@@ -97,7 +97,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: Halt
+  deletionPolicy: Halt
 
 ```
 
@@ -123,7 +123,7 @@ $ kubectl get redis -n demo
 NAME      VERSION   STATUS         AGE
 rd-demo   6.2.14     Ready   2m41s
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME       READY   AGE
 rd-demo    3/3     86s
 sen-demo   3/3     12m
@@ -170,7 +170,7 @@ kind: RedisSentinel
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"RedisSentinel","metadata":{"annotations":{},"name":"sen-demo","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Halt","version":"6.2.14"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"RedisSentinel","metadata":{"annotations":{},"name":"sen-demo","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Halt","version":"6.2.14"}}
   creationTimestamp: "2023-02-03T06:36:16Z"
   finalizers:
   - kubedb.com
@@ -230,7 +230,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   version: 6.2.14
 status:
   conditions:
@@ -471,7 +471,7 @@ First set termination policy to `WipeOut` all the things created by KubeDB opera
 to clean what you created in this tutorial.
 
 ```bash
-$ kubectl patch -n demo rd/rd-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/rd-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-demo patched
 
 $ kubectl delete rd rd-demo -n demo
@@ -480,7 +480,7 @@ redis.kubedb.com "rd-demo" deleted
 
 Now delete the RedisSentinel instance similarly.
 ```bash
-$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/sen-demo patched
 
 $ kubectl delete redissentinel sen-demo -n demo

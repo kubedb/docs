@@ -77,7 +77,7 @@ spec:
       resources:
         requests:
           storage: 2Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 > Note: inMemory databases are only allowed for Percona variations of mongodb
 
@@ -184,7 +184,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","terminationPolicy":"WipeOut","version":"percona-7.0.4"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","deletionPolicy":"WipeOut","version":"percona-7.0.4"}}
 
     Creation Timestamp:  2022-10-31T05:05:38Z
     Labels:
@@ -283,7 +283,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","terminationPolicy":"WipeOut","version":"percona-7.0.4"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-rs-hid","namespace":"demo"},"spec":{"ephemeralStorage":{"sizeLimit":"900Mi"},"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"podTemplate":{"spec":{"resources":{"requests":{"cpu":"600m","memory":"600Mi"}}}},"replicaSet":{"name":"replicaset"},"replicas":3,"storageEngine":"inMemory","storageType":"Ephemeral","deletionPolicy":"WipeOut","version":"percona-7.0.4"}}
   creationTimestamp: "2022-10-31T05:03:50Z"
   finalizers:
     - kubedb.com
@@ -444,7 +444,7 @@ spec:
   sslMode: disabled
   storageEngine: inMemory
   storageType: Ephemeral
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: percona-7.0.4
 status:
   conditions:

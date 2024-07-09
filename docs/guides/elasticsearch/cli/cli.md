@@ -83,7 +83,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   version: xpack-8.11.1
 status:
   observedGeneration: 3$4212299729528774793

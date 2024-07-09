@@ -54,7 +54,7 @@ metadata:
   namespace: databases
 spec:
   version: "4.4.26"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   configSecret:
     name: config
   storageType: Durable

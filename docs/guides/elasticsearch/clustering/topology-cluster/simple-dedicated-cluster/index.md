@@ -517,7 +517,7 @@ curl -XGET -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/info/_se
 To cleanup the k8s resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo elasticsearch es-cluster -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo elasticsearch es-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 
 $ kubectl delete elasticsearch -n demo es-cluster 
 

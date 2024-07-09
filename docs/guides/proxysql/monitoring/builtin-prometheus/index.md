@@ -61,7 +61,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -89,7 +89,7 @@ spec:
   syncUsers: true
   monitor:
     agent: prometheus.io/operator
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3
 

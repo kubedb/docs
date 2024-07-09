@@ -78,7 +78,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `Elasticsearch` CRO we have shown above,
@@ -273,7 +273,7 @@ Status:
     Status:                True
     Type:                  UpdateCombinedNodePVCs
     Last Transition Time:  2021-03-22T15:09:39Z
-    Message:               successfully deleted the statefulSet with orphan propagation policy
+    Message:               successfully deleted the petSet with orphan propagation policy
     Observed Generation:   1
     Reason:                OrphanStatefulSetPods
     Status:                True
@@ -297,7 +297,7 @@ Events:
   ----    ------                  ----  ----                        -------
   Normal  PauseDatabase           17m   KubeDB Enterprise Operator  Pausing Elasticsearch demo/es-combined
   Normal  UpdateCombinedNodePVCs  17m   KubeDB Enterprise Operator  successfully expanded combined nodes
-  Normal  OrphanStatefulSetPods   16m   KubeDB Enterprise Operator  successfully deleted the statefulSet with orphan propagation policy
+  Normal  OrphanStatefulSetPods   16m   KubeDB Enterprise Operator  successfully deleted the petSet with orphan propagation policy
   Normal  ResumeDatabase          16m   KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-combined
   Normal  ResumeDatabase          16m   KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-combined
   Normal  ReadyStatefulSets       16m   KubeDB Enterprise Operator  StatefulSet is recreated

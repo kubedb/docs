@@ -71,7 +71,7 @@ spec:
         limits:
           cpu: "200m"
           memory: "300Mi"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `Redis` CRO we have shown above,
@@ -350,7 +350,7 @@ The above output verifies that we have successfully auto-scaled the resources of
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo rd/rd-standalone -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/rd-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-standalone patched
 
 $ kubectl delete rd -n demo rd-standalone

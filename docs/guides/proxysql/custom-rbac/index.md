@@ -150,7 +150,7 @@ spec:
   podTemplate:
     spec:
       serviceAccountName: prx-custom-sa
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3
 

@@ -95,7 +95,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 ```bash
@@ -108,7 +108,7 @@ Here,
 - `spec.version` is name of the MongoDBVersion crd where the docker images are specified. In this tutorial, a MongoDB 4.4.26 database is created.
 - `spec.storageType` specifies the type of storage that will be used for MongoDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MongoDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MongoDB` crd or which resources KubeDB should keep or delete when you delete `MongoDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy)
+- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MongoDB` crd or which resources KubeDB should keep or delete when you delete `MongoDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy)
 - `spec.replicaSet` denotes the name of the mongodb replica-set structure.
 - `spec.replicas` denotes the number of replicas in the replica-set.
 
@@ -186,7 +186,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"4.4.26"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"4.4.26"}}
 
     Creation Timestamp:  2022-06-13T12:01:55Z
     Labels:
@@ -259,7 +259,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"replicaSet":{"name":"rs1"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"4.4.26"}}
   creationTimestamp: "2022-06-13T12:01:55Z"
   finalizers:
     - kubedb.com
@@ -353,7 +353,7 @@ spec:
     storageClassName: standard
   storageEngine: wiredTiger
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   version: 4.4.26
 status:
   conditions:
@@ -456,23 +456,23 @@ This field is used to regulate the deletion process of the related resources whe
 
 ## DoNotTerminate Property
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
 $ kubectl delete mg mgo-quickstart -n demo
-Error from server (BadRequest): admission webhook "mongodbwebhook.validators.kubedb.com" denied the request: mongodb "demo/mgo-quickstart" can't be terminated. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "mongodbwebhook.validators.kubedb.com" denied the request: mongodb "demo/mgo-quickstart" can't be terminated. To delete, change spec.deletionPolicy
 ```
 
 ## Halt Database
 
-When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
+When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
 
 You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb operator will delete the statefulsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
 
-To halt the database, first you have to set the terminationPolicy to `Halt` in existing database. You can use the below command to set the terminationPolicy to `Halt`, if it is not already set.
+To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"
+$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 mongodb.kubedb.com/mgo-quickstart patched
 ```
 
@@ -541,15 +541,15 @@ rs1:SECONDARY> db.movies.find()
 
 ## Cleaning up
 
-If you don't set the terminationPolicy, then the kubeDB set the DeletionPolicy to `Delete` by-default.
+If you don't set the deletionPolicy, then the kubeDB set the DeletionPolicy to `Delete` by-default.
 
 ### Delete
-If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken snapshots and secrets then you might want to set the mongodb object terminationPolicy to Delete. In this setting, StatefulSet and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
+If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken snapshots and secrets then you might want to set the mongodb object deletionPolicy to Delete. In this setting, StatefulSet and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
 
 When the DeletionPolicy is set to Delete and the mongodb object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the secret and database backup data(snapshots) intact.
 
 ```bash
-$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"terminationPolicy":"Delete"}}' --type="merge"
+$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
 kubectl delete -n demo mg/mgo-quickstart
 
 $ kubectl get mg,sts,svc,secret,pvc -n demo
@@ -565,7 +565,7 @@ $ kubectl delete ns demo
 But if you want to cleanup each of the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo mg/mgo-quickstart
 
 $ kubectl get mg,sts,svc,secret,pvc -n demo
@@ -580,7 +580,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend using `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
 
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database. So, we have `Halt` option which preserves all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will delete everything created by KubeDB for a particular MongoDB crd when you delete the mongodb object. For more details about termination policy, please visit [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to resume database. So, we have `Halt` option which preserves all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.deletionPolicy: WipeOut`. It will delete everything created by KubeDB for a particular MongoDB crd when you delete the mongodb object. For more details about termination policy, please visit [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
 
 ## Next Steps
 

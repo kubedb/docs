@@ -265,7 +265,7 @@ KubeDB accepts the following fields to set in `spec.podTemplate:`
 - metadata:
   - annotations (pod's annotation)
 - controller:
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - args
   - env

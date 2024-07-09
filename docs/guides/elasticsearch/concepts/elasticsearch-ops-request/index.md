@@ -514,7 +514,7 @@ ElasticsearchOpsRequest has the following types of conditions:
 | `Progressing`                   | The operator has started to process the Ops request                       |
 | `Successful`                    | The Ops request has successfully executed                                 |
 | `Failed`                        | The operation on the database failed                                      |
-| `OrphanStatefulSetPods`         | The statefulSet has deleted leaving the pods orphaned                     |
+| `OrphanStatefulSetPods`         | The petSet has deleted leaving the pods orphaned                     |
 | `ReadyStatefulSets`             | The StatefulSet are ready                                                 |
 | `ScaleDownCombinedNode`         | Scaled down the combined nodes                                            |
 | `ScaleDownDataNode`             | Scaled down the data nodes                                                |

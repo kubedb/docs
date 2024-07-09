@@ -25,4 +25,4 @@ spec:
         storageClassName: standard
   init:
     waitForInitialRestore: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

@@ -208,7 +208,7 @@ Events:
   Normal   Successful  1m    Kubedb operator  Successfully created appbinding
 
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME       READY   AGE
 my-group   3/3     3m47s
 

@@ -60,7 +60,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -148,7 +148,7 @@ spec:
       - localhost
       ipAddresses:
       - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Here,

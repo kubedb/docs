@@ -129,7 +129,7 @@ spec:
             storage: 1Gi
         storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ### Deploy MongoDB Sharding

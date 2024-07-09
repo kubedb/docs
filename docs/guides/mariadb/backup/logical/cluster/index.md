@@ -64,7 +64,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ``` bash
@@ -87,7 +87,7 @@ service/sample-mariadb                                demo       28m
 service/sample-mariadb-pods                           demo       28m  
 appbinding.appcatalog.appscode.com/sample-mariadb     demo       28m  
 controllerrevision.apps/sample-mariadb-7b7f58b68f     demo       28m  
-statefulset.apps/sample-mariadb                       demo       28m  
+petset.apps/sample-mariadb                       demo       28m  
 poddisruptionbudget.policy/sample-mariadb             demo       28m  
 rolebinding.rbac.authorization.k8s.io/sample-mariadb  demo       28m  
 role.rbac.authorization.k8s.io/sample-mariadb         demo       28m

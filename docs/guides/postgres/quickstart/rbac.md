@@ -61,7 +61,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Create above Postgres object with following command
@@ -234,7 +234,7 @@ This  object binds Role `quick-postgres` with ServiceAccount `quick-postgres`.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo pg/quick-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo pg/quick-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/quick-postgres
 
 kubectl delete ns demo

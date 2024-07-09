@@ -56,7 +56,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -78,7 +78,7 @@ kind: MariaDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"10.5.23"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"10.5.23"}}
   creationTimestamp: "2021-03-16T09:39:01Z"
   finalizers:
   - kubedb.com
@@ -101,7 +101,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: 10.5.23
 status:
   conditions:
@@ -139,7 +139,7 @@ status:
 
 $ kubectl get sts,svc,secret,pvc,pv,pod -n demo
 NAME                              READY   AGE
-statefulset.apps/sample-mariadb   3/3     116m
+petset.apps/sample-mariadb   3/3     116m
 
 NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 service/sample-mariadb        ClusterIP   10.97.162.171   <none>        3306/TCP   116m

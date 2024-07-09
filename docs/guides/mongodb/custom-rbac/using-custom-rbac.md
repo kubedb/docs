@@ -154,7 +154,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, deployment, statefulsets, services, secret etc. If everything goes well, we should see that a pod with the name `quick-mongodb-0` has been created.
@@ -218,7 +218,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, deployment, services, secret etc. If everything goes well, we should see that a pod with the name `minute-mongodb-0` has been created.
@@ -255,10 +255,10 @@ MongoDB init process complete; ready for start up.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/quick-mongodb -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/quick-mongodb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/quick-mongodb
 
-kubectl patch -n demo mg/minute-mongodb -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/minute-mongodb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/minute-mongodb
 
 kubectl delete -n demo role my-custom-role

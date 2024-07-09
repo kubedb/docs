@@ -40,7 +40,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 - metadata:
   - annotations (pod's annotation)
 - controller:
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - env
   - resources
@@ -89,7 +89,7 @@ spec:
         requests:
           memory: "1Gi"
           cpu: "250m"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 

@@ -101,7 +101,7 @@ Here,
 - `.spec.replica` is used to provide the number of required replicas or, peers for intended rabbitmq cluster. 
 - `spec.version` is the name of the RabbitMQVersion CRD where the docker images are specified. In this tutorial, a RabbitMQ `3.12.12` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for RabbitMQ database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create RabbitMQ database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `RabbitMQ` CRD or which resources KubeDB should keep or delete when you delete `RabbitMQ` CRD. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
+- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `RabbitMQ` CRD or which resources KubeDB should keep or delete when you delete `RabbitMQ` CRD. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy)
 - `.spec.podTemplate` is used to provide specific pod specifications or container specification. You can override default resources, securityContext etc.  set for rabbitmq container. Find details [here](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec)
 - `spec.serviceTemplates` is used to provide template for the services created by KubeDB operator for RabbitMQ database. This will allow you to set the type and other properties of the services.
 
@@ -330,13 +330,13 @@ The RabbitMQ "rm-quickstart" is invalid: spec.deletionPolicy: Invalid value: "rm
 
 Now, run `kubectl patch -n demo rm rm-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"` to set `spec.deletionPolicy` to `Halt` (which deletes the RabbitMQ object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
-Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy).
+Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy).
 
 **Halt:**
 
 Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `RabbitMQ` object `deletionPolicy` to `Halt`.
 
-When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `halt` and the RabbitMQ object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `deletionPolicy` to `halt` in existing database using `patch` command for testing.
+When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy) is set to `halt` and the RabbitMQ object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `deletionPolicy` to `halt` in existing database using `patch` command for testing.
 
 At first, run `kubectl patch -n demo rm rm-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"`. Then delete the RabbitMQ object,
 
@@ -367,7 +367,7 @@ From the above output, you can see that all RabbitMQ resources(`PetSet`, `Servic
 
 If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `RabbitMQ` object `deletionPolicy` to `Delete`. In this setting, `PetSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
 
-When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy) is set to `Delete` and the RabbitMQ object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
+When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy) is set to `Delete` and the RabbitMQ object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
 
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
@@ -425,4 +425,4 @@ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular RabbitMQ crd when you delete the crd. For more details about deletion policy, please visit [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy).
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular RabbitMQ crd when you delete the crd. For more details about deletion policy, please visit [here](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy).

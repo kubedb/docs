@@ -101,7 +101,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 
 ```
 
@@ -137,7 +137,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` CR we have shown above,
@@ -173,7 +173,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` CR we have shown above,
@@ -203,7 +203,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` CR we have shown above,
@@ -224,7 +224,7 @@ NAME             VERSION   STATUS   AGE
 sample-mysql     8.0.35    Ready    5m4s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -237,7 +237,7 @@ pvc-b90179f8-c40a-4273-ad77-74ca8470b782   1Gi        RWO            Delete     
 pvc-f72411a4-80d5-4d32-b713-cb30ec662180   1Gi        RWO            Delete           Bound    demo/data-sample-mysql-2   topolvm-provisioner            62s
 ```
 
-You can see the statefulset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
+You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
 We are now ready to apply the `MySQLOpsRequest` CR to expand the volume of this database.
 

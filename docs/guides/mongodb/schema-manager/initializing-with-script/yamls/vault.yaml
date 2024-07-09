@@ -28,4 +28,4 @@ spec:
   authMethods:
     - type: kubernetes
       path: kubernetes
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

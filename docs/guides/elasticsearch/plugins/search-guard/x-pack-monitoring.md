@@ -488,7 +488,7 @@ Now, your production clusters will send monitoring data to the monitoring-cluste
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo es/es-mon-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo es/es-mon-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 
 $ kubectl delete -n demo es/es-mon-demo
 

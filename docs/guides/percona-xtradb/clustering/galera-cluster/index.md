@@ -56,7 +56,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -78,7 +78,7 @@ kind: PerconaXtraDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"sample-pxc","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"8.0.26"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"sample-pxc","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"8.0.26"}}
   creationTimestamp: "2022-12-20T05:15:56Z"
   finalizers:
   - kubedb.com
@@ -152,7 +152,7 @@ spec:
       name: sample-pxc-monitor
     replicationUserSecret:
       name: sample-pxc-replication
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: 8.0.26
 status:
   conditions:

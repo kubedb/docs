@@ -61,7 +61,7 @@ spec:
     storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
-  terminationPolicy: Halt
+  deletionPolicy: Halt
 ```
 
 ```bash
@@ -85,7 +85,7 @@ NAME            VERSION   STATUS   AGE
 redis-cluster   6.2.14     Ready    82s
 
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME                   READY   AGE
 redis-cluster-shard0   2/2     92s
 redis-cluster-shard1   2/2     88s
@@ -127,7 +127,7 @@ kind: Redis
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Redis","metadata":{"annotations":{},"name":"redis-cluster","namespace":"demo"},"spec":{"cluster":{"master":3,"replicas":1},"mode":"Cluster","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Halt","version":"6.2.14"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Redis","metadata":{"annotations":{},"name":"redis-cluster","namespace":"demo"},"spec":{"cluster":{"master":3,"replicas":1},"mode":"Cluster","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Halt","version":"6.2.14"}}
   creationTimestamp: "2023-02-02T11:16:57Z"
   finalizers:
   - kubedb.com
@@ -198,7 +198,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   version: 6.2.14
 status:
   conditions:
@@ -371,7 +371,7 @@ First set termination policy to `WipeOut` all the things created by KubeDB opera
 to clean what you created in this tutorial.
 
 ```bash
-$ kubectl patch -n demo rd/redis-cluster -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/redis-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/redis-cluster patched
 
 $ kubectl delete rd redis-cluster -n demo

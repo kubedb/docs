@@ -39,7 +39,7 @@ The Volume Expansion process consists of the following steps:
 
 3. When the operator finds a `MySQL` CR, it creates required `PetSet` and related necessary stuff like secrets, services, etc.
 
-4. The statefulSet creates Persistent Volumes according to the Volume Claim Template provided in the statefulset configuration. This Persistent Volume will be expanded by the `KubeDB` Enterprise operator.
+4. The PetSet creates Persistent Volumes according to the Volume Claim Template provided in the petset configuration. This Persistent Volume will be expanded by the `KubeDB` Enterprise operator.
 
 5. Then, in order to expand the volume of the `MySQL` database the user creates a `MySQLOpsRequest` CR with desired information.
 

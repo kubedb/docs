@@ -54,7 +54,7 @@ metadata:
   namespace: databases
 spec:
   version: 6.0.20
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   configSecret: # configure Redis to use password for authentication
     name: redis-config
   storageType: Durable

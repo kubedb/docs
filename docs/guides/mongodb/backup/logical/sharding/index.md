@@ -76,7 +76,7 @@ spec:
           requests:
             storage: 1Gi
         storageClassName: standard
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Create the above `MongoDB` crd,
@@ -137,7 +137,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mgo-sh","namespace":"demo"},"spec":{"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"replicas":3,"shards":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}}},"terminationPolicy":"WipeOut","version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"sample-mgo-sh","namespace":"demo"},"spec":{"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"replicas":3,"shards":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}}},"deletionPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-10-26T05:11:20Z"
   generation: 1
   labels:
@@ -636,7 +636,7 @@ spec:
         storage: 1Gi
   init:
     waitForInitialRestore: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 This time, we have to provide `spec.task` section in `RestoreSession` object,

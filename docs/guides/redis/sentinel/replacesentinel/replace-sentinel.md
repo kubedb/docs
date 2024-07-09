@@ -60,7 +60,7 @@ spec:
     storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 Let's create the `RedisSentinel` CR we have shown above,
 
@@ -100,7 +100,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `Redis` CR we have shown above, 
@@ -185,7 +185,7 @@ spec:
     storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 Let's create the `RedisSentinel` CR we have shown above,
 
@@ -314,7 +314,7 @@ First set termination policy to `WipeOut` all the things created by KubeDB opera
 to clean what you created in this tutorial.
 
 ```bash
-$ kubectl patch -n demo rd/rd-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/rd-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-demo patched
 
 $ kubectl delete rd rd-demo -n demo
@@ -326,13 +326,13 @@ redisopsrequest.ops.kubedb.com "replace-sentinel" deleted
 
 Now delete the RedisSentinel instance similarly.
 ```bash
-$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/sen-demo patched
 
 $ kubectl delete redissentinel sen-demo -n demo
 redis.kubedb.com "sen-demo" deleted
 
-$ kubectl patch -n demo redissentinel/new-sentinel -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/new-sentinel -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/new-sentinel patched
 
 $ kubectl delete redissentinel new-sentinel -n demo

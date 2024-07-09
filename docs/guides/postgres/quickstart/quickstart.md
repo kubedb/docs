@@ -155,7 +155,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Here,
@@ -163,7 +163,7 @@ Here,
 - `spec.version` is name of the PostgresVersion crd where the docker images are specified. In this tutorial, a PostgreSQL 13.2 database is created.
 - `spec.storageType` specifies the type of storage that will be used for Postgres database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Postgres database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the size and StorageClass of PVC that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
-- `spec.terminationPolicy` specifies what KubeDB should do when user try to delete Postgres crd. Termination policy `DoNotTerminate` prevents a user from deleting this object if admission webhook is enabled.
+- `spec.deletionPolicy` specifies what KubeDB should do when user try to delete Postgres crd. Termination policy `DoNotTerminate` prevents a user from deleting this object if admission webhook is enabled.
 
 >Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in`storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
 
@@ -226,7 +226,7 @@ Metadata:
               f:storage:
           f:storageClassName:
         f:storageType:
-        f:terminationPolicy:
+        f:deletionPolicy:
         f:version:
     Manager:      kubectl-client-side-apply
     Operation:    Update
@@ -461,14 +461,14 @@ Now, go to pgAdmin dashboard and connect to the database using the connection in
 
 ## Halt Database
 
-KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` termination policy. If admission webhook is enabled, it prevents user from deleting the database as long as the `spec.terminationPolicy` is set `DoNotTerminate`.
+KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` termination policy. If admission webhook is enabled, it prevents user from deleting the database as long as the `spec.deletionPolicy` is set `DoNotTerminate`.
 
-To halt the database, we have to set `spec.terminationPolicy:` to `Halt` by updating it,
+To halt the database, we have to set `spec.deletionPolicy:` to `Halt` by updating it,
 
 ```bash
 $ kubectl edit pg -n demo quick-postgres
 spec:
-  terminationPolicy: Halt
+  deletionPolicy: Halt
 ```
 
 Now, if you delete the Postgres object, the KubeDB operator will delete every resource created for this Postgres CR, but leaves the auth secrets, and PVCs.
@@ -490,7 +490,7 @@ persistentvolumeclaim/data-quick-postgres-0   Bound    pvc-b30e3255-a7ea-4f61-86
 ```
 
 ## Resume Postgres
-Say, the Postgres CR was deleted with `spec.terminationPolicy` to `Halt` and you want to re-create the Postgres using the existing auth secrets and the PVCs.
+Say, the Postgres CR was deleted with `spec.deletionPolicy` to `Halt` and you want to re-create the Postgres using the existing auth secrets and the PVCs.
 
 You can do it by simpily re-deploying the original Postgres object:
 ```bash
@@ -502,7 +502,7 @@ postgres.kubedb.com/quick-postgres created
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo pg/quick-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo pg/quick-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/quick-postgres
 
 kubectl delete ns demo
@@ -513,7 +513,7 @@ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we preserve all your `PVCs`, `Secrets`, etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will delete everything created by KubeDB for a particular Postgres crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/postgres/concepts/postgres.md#specterminationpolicy).
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we preserve all your `PVCs`, `Secrets`, etc. If you don't want to resume database, you can just use `spec.deletionPolicy: WipeOut`. It will delete everything created by KubeDB for a particular Postgres crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/postgres/concepts/postgres.md#specdeletionpolicy).
 
 ## Next Steps
 

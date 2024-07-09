@@ -199,7 +199,7 @@ Prometheus operator watches for `Prometheus` crd. Once a `Prometheus` crd is cre
 Let's check `PetSet` has been created,
 
 ```bash
-$ kubectl get statefulset -n monitoring
+$ kubectl get petset -n monitoring
 NAME                    DESIRED   CURRENT   AGE
 prometheus-prometheus   1         1         2m14s
 ```
