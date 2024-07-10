@@ -450,11 +450,9 @@ spec:
         storage: 500Mi  
   backend:
     externallyManaged: true
-    postgres:
-      service:
+    postgresRef:
         name: ha-postgres
         namespace: demo
-        pgPort: 5432
   deletionPolicy: WipeOut
 ```
 
@@ -494,12 +492,9 @@ spec:
   backend:
     externallyManaged: true
     linkedDB: postgres
-    postgres:
-      service:
+    postgresRef:
         name: ha-postgres
         namespace: demo
-        pgPort: 5432
-      url: postgres://ha-postgres.demo.svc.cluster.local:5432/postgres
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10

@@ -138,11 +138,11 @@ spec:
             cpu: "500m"
       - name: replication-mode-detector
         resources:
-        requests:
-          cpu: "300m"
-          memory: 500Mi
+          requests:
+            cpu: "300m"
+            memory: 500Mi
         securityContext:
-          runAsUser: 1001
+            runAsUser: 1001
   serviceTemplates:
   - alias: primary
     spec:

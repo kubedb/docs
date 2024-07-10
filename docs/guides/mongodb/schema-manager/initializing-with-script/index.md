@@ -70,10 +70,10 @@ spec:
     spec:
       containers:
       - name: mongo
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "100Mi"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
   replicas: 3
   storageType: Durable
   storage:
