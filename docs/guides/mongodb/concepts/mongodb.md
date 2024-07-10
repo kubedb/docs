@@ -136,8 +136,13 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
-      - name: mongo
-        
+      - name: replication-mode-detector
+        resources:
+        requests:
+          cpu: "300m"
+          memory: 500Mi
+        securityContext:
+          runAsUser: 1001
   serviceTemplates:
   - alias: primary
     spec:
@@ -166,13 +171,6 @@ spec:
     selector:
       matchLabels:
         "schema.kubedb.com": "mongo"
-  coordinator:
-    resources:
-      requests:
-        cpu: "300m"
-        memory: 500Mi
-    securityContext:
-      runAsUser: 1001
   healthChecker:
     periodSeconds: 15
     timeoutSeconds: 10

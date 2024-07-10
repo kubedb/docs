@@ -68,6 +68,8 @@ spec:
     name: "replicaset"
   podTemplate:
     spec:
+      containers:
+      - name: mongo
       resources:
         requests:
           cpu: "100m"
@@ -135,7 +137,7 @@ spec:
   authMethods:
     - type: kubernetes
       path: kubernetes
-  deletionPolicy: WipeOut
+  terminationPolicy: WipeOut
 ```
 
 Here,
