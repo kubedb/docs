@@ -313,8 +313,6 @@ spec:
   authSecret:
     name: mongo-arb-auth
   clusterAuthMode: keyFile
-  coordinator:
-    resources: {}
   keyFileSecret:
     name: mongo-arb-key
   podTemplate:

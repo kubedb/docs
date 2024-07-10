@@ -116,8 +116,6 @@ Spec:
   Auth Secret:
     Name:  sample-pxc-auth
   Auto Ops:
-  Coordinator:
-    Resources:
   Health Checker:
     Failure Threshold:  1
     Period Seconds:     10

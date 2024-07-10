@@ -260,8 +260,6 @@ spec:
   authSecret:
     name: mongo-sh-arb-auth
   clusterAuthMode: keyFile
-  coordinator:
-    resources: {}
   keyFileSecret:
     name: mongo-sh-arb-key
   shardTopology:

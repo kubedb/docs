@@ -180,8 +180,6 @@ spec:
     name: mongo-sh-hid-auth
   autoOps: {}
   clusterAuthMode: keyFile
-  coordinator:
-    resources: {}
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10

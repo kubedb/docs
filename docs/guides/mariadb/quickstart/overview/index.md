@@ -116,8 +116,6 @@ Spec:
       From:  Same
   Auth Secret:
     Name:  sample-mariadb-auth
-  Coordinator:
-    Resources:
   Pod Template:
     ...
   Replicas:                  1

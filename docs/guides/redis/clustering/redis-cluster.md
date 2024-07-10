@@ -146,8 +146,6 @@ spec:
   cluster:
     master: 3
     replicas: 1
-  coordinator:
-    resources: {}
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10

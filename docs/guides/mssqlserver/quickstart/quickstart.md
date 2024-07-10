@@ -148,8 +148,6 @@ metadata:
 spec:
   authSecret:
     name: mssqlserver-quickstart-auth
-  coordinator:
-    resources: {}
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 1

@@ -302,8 +302,6 @@ spec:
     name: mongo-rs-hid-auth
   autoOps: {}
   clusterAuthMode: keyFile
-  coordinator:
-    resources: {}
   ephemeralStorage:
     sizeLimit: 900Mi
   healthChecker:

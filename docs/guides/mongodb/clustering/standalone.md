@@ -235,8 +235,6 @@ spec:
   authSecret:
     name: mg-alone-auth
   autoOps: {}
-  coordinator:
-    resources: {}
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10

@@ -257,8 +257,6 @@ spec:
       from: Same
   authSecret:
     name: mysql-quickstart-auth
-  coordinator:
-    resources: {}
   podTemplate:
     controller: {}
     metadata: {}

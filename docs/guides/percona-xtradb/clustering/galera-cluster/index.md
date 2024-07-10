@@ -94,8 +94,6 @@ spec:
   authSecret:
     name: sample-pxc-auth
   autoOps: {}
-  coordinator:
-    resources: {}
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10

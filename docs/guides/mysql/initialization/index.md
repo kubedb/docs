@@ -418,8 +418,6 @@ spec:
       from: Same
   authSecret:
     name: mysql-init-script-auth
-  coordinator:
-    resources: {}
   init:
     initialized: true
     script:

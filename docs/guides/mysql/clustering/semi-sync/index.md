@@ -285,8 +285,6 @@ spec:
   authSecret:
     name: semi-sync-mysql-auth
   autoOps: {}
-  coordinator:
-    resources: {}
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10

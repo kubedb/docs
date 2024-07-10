@@ -276,8 +276,6 @@ spec:
   authSecret:
     name: mgo-quickstart-auth
   clusterAuthMode: keyFile
-  coordinator:
-    resources: {}
   keyFileSecret:
     name: mgo-quickstart-key
   podTemplate:
