@@ -53,7 +53,7 @@ spec:
   databaseRef:
     name: redis-cluster
   horizontalScaling:
-    master: 5
+    shards: 5
     replicas: 2 
 ```
 
@@ -127,7 +127,7 @@ If you want to update your Redis version, you have to specify the `spec.updateVe
 If you want to scale-up or scale-down your Redis cluster, you have to specify `spec.horizontalScaling` section. This field consists of the following sub-field:
 
 - `spec.horizontalScaling.replicas` indicates the desired number of replicas for your Redis instance after scaling. For example, if your cluster currently has 4 replicas, and you want to add additional 2 replicas then you have to specify 6 in `spec.horizontalScaling.replicas` field. Similarly, if you want to remove one replicas, you have to specify 3  in `spec.horizontalScaling.replicas` field.
-- `spec.horizontalScaling.master` indicates the desired number of master for your Redis cluster. It is only applicable for Cluster Mode.
+- `spec.horizontalScaling.shards` indicates the desired number of shards for your Redis cluster. It is only applicable for Cluster Mode.
 
 #### spec.verticalScaling
 

@@ -34,7 +34,7 @@ spec:
   version: 6.2.14
   mode: Cluster
   cluster:
-    master: 3
+    shards: 3
     replicas: 1
   disableAuth: false
   authSecret:
@@ -149,8 +149,8 @@ When `spec.mode` is set to `Sentinel`, `spec.sentinelRef.name` and `spec.sentine
 
 If `spec.mode` is set to `"Cluster"`, users can optionally provide a cluster specification. Currently, the following two parameters can be configured:
 
-- `spec.cluster.master`: specifies the number of Redis master nodes. It must be greater or equal to 3. If not set, the operator set it to 3.
-- `spec.cluster.replicas`: specifies the number of replica nodes per master. It must be greater than 0. If not set, the operator set it to 1.
+- `spec.cluster.shards`: specifies the number of Redis shard nodes. It must be greater or equal to 3. If not set, the operator set it to 3.
+- `spec.cluster.replicas`: specifies the number of replica nodes per shard. It must be greater than 0. If not set, the operator set it to 1.
 
 KubeDB uses `PodDisruptionBudget` to ensure that majority of these cluster replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained and no data loss is occurred.
 

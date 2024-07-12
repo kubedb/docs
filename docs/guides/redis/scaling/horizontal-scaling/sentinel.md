@@ -211,7 +211,7 @@ sen-ops-horizontal   HorizontalScaling   Successful   5m27s
 
 We can see from the above output that the `RedisSentinelOpsRequest` has succeeded.
 
-Let's check the number of master and replicas this database has from the RedisSentinel object
+Let's check the number of replicas this database has from the RedisSentinel object
 
 ```bash
 $ kubectl get redissentinel -n demo sen-sample -o json | jq '.spec.replicas'

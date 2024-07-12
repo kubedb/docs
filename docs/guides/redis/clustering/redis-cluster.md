@@ -39,7 +39,7 @@ Before proceeding:
 
 To deploy a Redis Cluster, specify `spec.mode` and `spec.cluster` fields in `Redis` CRD.
 
-The following is an example `Redis` object which creates a Redis cluster with three master nodes each of which has one replica node.
+The following is an example `Redis` object which creates a Redis cluster with three shard nodes each of which has one replica node.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -51,7 +51,7 @@ spec:
   version: 6.2.14
   mode: Cluster
   cluster:
-    master: 3
+    shards: 3
     replicas: 1
   storageType: Durable
   storage:
@@ -73,8 +73,8 @@ Here,
 
 - `spec.mode` specifies the mode for Redis. Here we have used `Cluster` to tell the operator that we want to deploy Redis in cluster mode.
 - `spec.cluster` represents the cluster configuration.
-  - `master` denotes the number of master nodes.
-  - `replicas` denotes the number of replica nodes per master.
+  - `shards` denotes the number of shard nodes.
+  - `replicas` denotes the number of replica nodes per shard.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 KubeDB operator watches for `Redis` objects using Kubernetes API. When a `Redis` object is created, KubeDB operator will create a new PetSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for PetSets named `kubedb`, if one is not already present.
@@ -127,7 +127,7 @@ kind: Redis
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"Redis","metadata":{"annotations":{},"name":"redis-cluster","namespace":"demo"},"spec":{"cluster":{"master":3,"replicas":1},"mode":"Cluster","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Halt","version":"6.2.14"}}
+      {"apiVersion":"kubedb.com/v1","kind":"Redis","metadata":{"annotations":{},"name":"redis-cluster","namespace":"demo"},"spec":{"cluster":{"shards":3,"replicas":1},"mode":"Cluster","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Halt","version":"6.2.14"}}
   creationTimestamp: "2023-02-02T11:16:57Z"
   finalizers:
   - kubedb.com
@@ -144,7 +144,7 @@ spec:
     name: redis-cluster-auth
   autoOps: {}
   cluster:
-    master: 3
+    shards: 3
     replicas: 1
   healthChecker:
     failureThreshold: 1
@@ -232,7 +232,7 @@ status:
 Now, you can connect to this database using the service using the credentials. 
 ## Check Cluster Scenario
 
-The operator creates a cluster according to the newly created `Redis` object. This cluster has 3 masters and one replica per master. And every node in the cluster is responsible for a subset of the total **16384** hash slots.
+The operator creates a cluster according to the newly created `Redis` object. This cluster has 3 shards and one replica per shard. And every node in the cluster is responsible for a subset of the total **16384** hash slots.
 
 ```bash
 # first list the redis pods list

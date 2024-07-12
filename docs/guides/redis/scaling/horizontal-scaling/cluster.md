@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Horizontal Scale Redis Cluster
 
-This guide will give an overview on how KubeDB Ops-manager operator scales up or down `Redis` database master and replicas Redis in Cluster mode.
+This guide will give an overview on how KubeDB Ops-manager operator scales up or down `Redis` database shards and replicas Redis in Cluster mode.
 
 
 ## Before You Begin
@@ -59,7 +59,7 @@ spec:
   version: 6.2.14
   mode: Cluster
   cluster:
-    master: 3
+    shards: 3
     replicas: 2
   storageType: Durable
   storage:
@@ -87,10 +87,10 @@ NAME            VERSION   STATUS   AGE
 redis-cluster   6.2.14     Ready    7m
 ```
 
-Let's check the number of master and replicas this database has from the Redis object
+Let's check the number of shards and replicas this database has from the Redis object
 
 ```bash
-$ kubectl get redis -n demo redis-cluster -o json | jq '.spec.cluster.master'
+$ kubectl get redis -n demo redis-cluster -o json | jq '.spec.cluster.shards'
 3
 $ kubectl get redis -n demo redis-cluster -o json | jq '.spec.cluster.replicas'
 2
@@ -113,11 +113,11 @@ We are now ready to apply the `RedisOpsRequest` CR to update the resources of th
 
 ### Horizontal Scaling
 
-Here, we are going to scale up the master and scale down the replicas of the redis cluster to meet the desired resources after scaling.
+Here, we are going to scale up the shards and scale down the replicas of the redis cluster to meet the desired resources after scaling.
 
 #### Create RedisOpsRequest
 
-In order to  scale up the master and scale down the replicas of the redis cluster, we have to create a `RedisOpsRequest` CR with our desired number of masters and replicas. Below is the YAML of the `RedisOpsRequest` CR that we are going to create,
+In order to  scale up the shards and scale down the replicas of the redis cluster, we have to create a `RedisOpsRequest` CR with our desired number of shards and replicas. Below is the YAML of the `RedisOpsRequest` CR that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -130,7 +130,7 @@ spec:
   databaseRef:
     name: redis-cluster
   horizontalScaling:
-    master: 4
+    shards: 4
     replicas: 1
 ```
 
@@ -138,7 +138,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling operation on `redis-cluster` database.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our database.
-- `spec.horizontalScaling.master` specifies the desired number of master after scaling.
+- `spec.horizontalScaling.shards` specifies the desired number of shards after scaling.
 - `spec.horizontalScaling.replicas` specifies the desired number of replicas after scaling.
 
 Let's create the `RedisOpsRequest` CR we have shown above,
@@ -150,7 +150,7 @@ redisopsrequest.ops.kubedb.com/redisops-horizontal created
 
 #### Verify Redis Cluster resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas and master of `Redis` object and related `PetSets`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas and shards of `Redis` object and related `PetSets`.
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
@@ -160,10 +160,10 @@ NAME                  TYPE                STATUS       AGE
 redisops-horizontal   HorizontalScaling   Successful   6m11s
 ```
 
-Now, we are going to verify if the number of master and replicas the redis cluster has updated to meet up the desired state, Let's check,
+Now, we are going to verify if the number of shards and replicas the redis cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get redis -n demo redis-cluster -o json | jq '.spec.cluster.master'
+$ kubectl get redis -n demo redis-cluster -o json | jq '.spec.cluster.shards'
 4
 $ kubectl get redis -n demo redis-cluster -o json | jq '.spec.cluster.replicas'
 1
@@ -181,7 +181,7 @@ $ kubectl exec -it -n demo redis-cluster-shard0-0 -c redis -- redis-cli -c clust
 4
 ```
 
-The above output verifies that we have successfully scaled up the master and scaled down the replicas of the Redis cluster database. The slots in redis shard 
+The above output verifies that we have successfully scaled up the shards and scaled down the replicas of the Redis cluster database. The slots in redis shard 
 is also distributed among 4 master.
 
 ## Cleaning up

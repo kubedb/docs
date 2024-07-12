@@ -7,7 +7,7 @@ spec:
   version: 6.0.20
   mode: Cluster
   cluster:
-    master: 3
+    shards: 3
     replicas: 1
   storageType: Durable
   storage:
