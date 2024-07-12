@@ -129,10 +129,12 @@ spec:
       - ReadWriteOnce
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "100Mi"
+      containers:
+      - name: redis
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
   deletionPolicy: DoNotTerminate
 ```
 

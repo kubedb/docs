@@ -68,10 +68,10 @@ spec:
     spec:
       containers:
       - name: redis
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "100Mi"
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
 ```
 
 Let's create the `Redis` CR we have shown above, 
