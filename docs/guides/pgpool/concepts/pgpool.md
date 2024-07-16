@@ -159,8 +159,8 @@ secret "pgpool-auth" created
 ```yaml
 apiVersion: v1
 data:
-  password: O9xE1mZZDAdBTbrV
-  username: jhon-doe
+  password: "O9xE1mZZDAdBTbrV"
+  username: "jhon-doe"
 kind: Secret
 metadata:
   name: pgpool-auth
