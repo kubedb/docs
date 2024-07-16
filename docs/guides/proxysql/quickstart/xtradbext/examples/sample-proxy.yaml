@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -9,4 +9,4 @@ spec:
   syncUsers: true
   backend:
     name: xtradb-galera-appbinding
-  deletionPolicy: WipeOut
+  terminationPolicy: WipeOut

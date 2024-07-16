@@ -1,10 +1,10 @@
-apiVersion: kubedb.com/v1alpha2
-kind: Postgres
+apiVersion: kubedb.com/v1
+kind: Redis
 metadata:
-  name: quick-postgres
+  name: redis-quickstart
   namespace: demo
 spec:
-  version: "13.13"
+  version: 6.2.14
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -13,4 +13,4 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: DoNotTerminate

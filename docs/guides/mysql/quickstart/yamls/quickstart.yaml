@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: mysql-quickstart
@@ -9,8 +9,8 @@ spec:
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: Delete
+  terminationPolicy: Delete

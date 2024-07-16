@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: mysql-server
@@ -16,4 +16,4 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: WipeOut
+  terminationPolicy: WipeOut

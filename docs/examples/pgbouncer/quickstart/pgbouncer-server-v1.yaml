@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PgBouncer
 metadata:
   name: pgbouncer-server
@@ -16,4 +16,4 @@ spec:
     port: 5432
     maxClientConnections: 20
     reservePoolSize: 5
-  terminationPolicy: Delete
+  deletionPolicy: Delete

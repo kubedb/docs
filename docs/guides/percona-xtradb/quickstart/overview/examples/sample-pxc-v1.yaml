@@ -1,10 +1,10 @@
-apiVersion: kubedb.com/v1alpha2
-kind: Postgres
+apiVersion: kubedb.com/v1
+kind: PerconaXtraDB
 metadata:
-  name: quick-postgres
+  name: sample-pxc
   namespace: demo
 spec:
-  version: "13.13"
+  version: "8.0.26"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -13,4 +13,4 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete

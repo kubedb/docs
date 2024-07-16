@@ -1,10 +1,12 @@
-apiVersion: kubedb.com/v1alpha2
-kind: Postgres
+apiVersion: kubedb.com/v1
+kind: Elasticsearch
 metadata:
-  name: quick-postgres
+  name: es-quickstart
   namespace: demo
 spec:
-  version: "13.13"
+  version: xpack-8.2.3
+  enableSSL: true
+  replicas: 3
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -13,4 +15,4 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete

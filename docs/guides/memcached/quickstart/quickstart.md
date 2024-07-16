@@ -56,6 +56,8 @@ NAME       VERSION   DB_IMAGE                    DEPRECATED   AGE
 
 KubeDB implements a `Memcached` CRD to define the specification of a Memcached server. Below is the `Memcached` object created in this tutorial.
 
+If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+
 ```yaml
 apiVersion: kubedb.com/v1
 kind: Memcached
@@ -76,7 +78,36 @@ spec:
             requests:
               cpu: 250m
               memory: 64Mi
-  deletionPolicy: Delete
+  deletionPolicy: DoNotTerminate
+
+```
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/quickstart/demo-v1.yaml
+memcached.kubedb.com/memcd-quickstart created
+```
+
+If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion.
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Memcached
+metadata:
+  name: memcd-quickstart
+  namespace: demo
+spec:
+  replicas: 3
+  version: "1.6.22"
+  podTemplate:
+    spec:
+      resources:
+        limits:
+          cpu: 500m
+          memory: 128Mi
+        requests:
+          cpu: 250m
+          memory: 64Mi
+  terminationPolicy: DoNotTerminate
 ```
 
 ```bash
@@ -89,7 +120,7 @@ Here,
 - `spec.replicas` is an optional field that specifies the number of desired Instances/Replicas of Memcached server. It defaults to 1.
 - `spec.version` is the version of Memcached server. In this tutorial, a Memcached 1.5.4 database is going to be created.
 - `spec.resource` is an optional field that specifies how much CPU and memory (RAM) each Container needs. To learn details about Managing Compute Resources for Containers, please visit [here](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/).
-- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Memcached` crd or which resources KubeDB should keep or delete when you delete `Memcached` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy)
+- `spec.deletionPolicy` or `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Memcached` crd or which resources KubeDB should keep or delete when you delete `Memcached` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy)
 
 KubeDB operator watches for `Memcached` objects using Kubernetes api. When a `Memcached` object is created, KubeDB operator will create a new Deployment and a ClusterIP Service with the matching Memcached object name.
 

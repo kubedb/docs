@@ -58,8 +58,36 @@ NAME     VERSION   DB_IMAGE                                DEPRECATED   AGE
 
 KubeDB implements a `PerconaXtraDB` CRD to define the specification of a PerconaXtraDB database. Below is the `PerconaXtraDB` object created in this tutorial.
 
+If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+
 ```yaml
 apiVersion: kubedb.com/v1
+kind: PerconaXtraDB
+metadata:
+  name: sample-pxc
+  namespace: demo
+spec:
+  version: "8.0.26"
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: Delete
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/quickstart/overview/examples/sample-pxc-v1.yaml
+perconaxtradb.kubedb.com/sample-pxc created
+```
+
+If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion.
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -74,7 +102,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: Delete
+  terminationPolicy: Delete
 ```
 
 ```bash
@@ -86,8 +114,8 @@ Here,
 
 - `spec.version` is the name of the PerconaXtraDBVersion CRD where the docker images are specified. In this tutorial, a PerconaXtraDB `8.0.26` database is going to create.
 - `spec.storageType` specifies the type of storage that will be used for PerconaXtraDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create PerconaXtraDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PerconaXtraDB` crd or which resources KubeDB should keep or delete when you delete `PerconaXtraDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PerconaXtraDB` crd or which resources KubeDB should keep or delete when you delete `PerconaXtraDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in `storage.resources.requests` field. Don't specify limits here. PVC does not get resized automatically.
 

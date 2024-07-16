@@ -141,6 +141,8 @@ The KubeDB operator implements an Elasticsearch CRD to define the specification 
 
 The Elasticsearch instance used for this tutorial:
 
+If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+
 ```yaml
 apiVersion: kubedb.com/v1
 kind: Elasticsearch
@@ -162,23 +164,49 @@ spec:
   deletionPolicy: Delete
 ```
 
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch-v1.yaml
+elasticsearch.kubedb.com/es-quickstart created
+```
+
+If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion. 
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Elasticsearch
+metadata:
+  name: es-quickstart
+  namespace: demo
+spec:
+  version: xpack-8.2.3
+  enableSSL: true
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: Delete
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch.yaml
+elasticsearch.kubedb.com/es-quickstart created
+```
+
 Here,
 
 - `spec.version` - is the name of the ElasticsearchVersion CR. Here, an Elasticsearch of version `8.2.0` will be created with `x-pack` security plugin.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.replicas` - specifies the number of Elasticsearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
-- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Elasticsearch CR. Termination policy `Delete` will delete the database pods, secret and PVC when the Elasticsearch CR is deleted.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
+- `spec.terminationPolicy` or `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Elasticsearch CR. Termination policy `Delete` will delete the database pods, secret and PVC when the Elasticsearch CR is deleted.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
-
-Let's create the Elasticsearch CR that is shown above:
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch.yaml
-elasticsearch.kubedb.com/es-quickstart created
-```
 
 The Elasticsearch's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
 
@@ -631,7 +659,7 @@ namespace "demo" deleted
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if the database pod fails. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purposes, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.deletionPolicy: WipeOut`. It will clean up every resouce that was created with the Elasticsearch CR. For more details, please visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md#specdeletionpolicy).
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.terminationPolicy: WipeOut`. It will clean up every resouce that was created with the Elasticsearch CR. For more details, please visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md#specterminationpolicy).
 
 ## Next Steps
 

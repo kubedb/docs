@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: sample-opensearch
@@ -11,8 +11,8 @@ spec:
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: DoNotTerminate
+  terminationPolicy: DoNotTerminate

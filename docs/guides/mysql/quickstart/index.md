@@ -64,8 +64,36 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED 
 
 KubeDB implements a `MySQL` CRD to define the specification of a MySQL database. Below is the `MySQL` object created in this tutorial.
 
+If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+
 ```yaml
 apiVersion: kubedb.com/v1
+kind: MySQL
+metadata:
+  name: mysql-quickstart
+  namespace: demo
+spec:
+  version: "8.0.35"
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: Delete
+```
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/quickstart-v1.yaml
+mysql.kubedb.com/mysql-quickstart created
+```
+
+If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion. 
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: mysql-quickstart
@@ -80,7 +108,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: Delete
+  terminationPolicy: Delete
 ```
 
 ```bash
@@ -92,8 +120,8 @@ Here,
 
 - `spec.version` is the name of the MySQLVersion CRD where the docker images are specified. In this tutorial, a MySQL `8.0.35` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for MySQL database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MySQL database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy)
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
 
 > Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 

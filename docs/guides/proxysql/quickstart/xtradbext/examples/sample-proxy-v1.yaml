@@ -1,12 +1,12 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
   namespace: demo
 spec:
-  version: "2.3.2-debian"
+  version: "2.4.4-debian"
   replicas: 1
   syncUsers: true
   backend:
-    name: mysql-server
-  terminationPolicy: WipeOut
+    name: xtradb-galera-appbinding
+  deletionPolicy: WipeOut
