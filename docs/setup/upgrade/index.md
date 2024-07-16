@@ -28,6 +28,9 @@ Helm [does not upgrade the CRDs](https://github.com/helm/helm/issues/6581) bundl
 
 ```bash
 kubectl apply -f https://github.com/kubedb/installer/raw/{{< param "info.version" >}}/crds/kubedb-catalog-crds.yaml
+
+kubectl apply -f https://github.com/kubeops/petset/raw/v0.0.6/crds/apps.k8s.appscode.com_petsets.yaml
+kubectl apply -f https://github.com/kubeops/petset/raw/v0.0.6/crds/apps.k8s.appscode.com_placementpolicies.yaml
 ```
 
 #### 2. Upgrade KubeDB Operator
