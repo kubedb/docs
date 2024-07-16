@@ -354,7 +354,7 @@ kubectl delete ns monitoring
 ## Next Steps
 
 
-- Monitor your Pgpool database with KubeDB using [Prometheus-Operator](/docs/guides/pgpool/monitoring/using-prometheus-operator.md).
+- Monitor your Pgpool database with KubeDB using [out-of-the-box prometheus-Operator](/docs/guides/pgpool/monitoring/using-prometheus-operator.md).
 - Detail concepts of [Pgpool object](/docs/guides/pgpool/concepts/pgpool.md).
 - Detail concepts of [PgpoolVersion object](/docs/guides/pgpool/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

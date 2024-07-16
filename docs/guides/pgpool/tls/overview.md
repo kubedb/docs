@@ -41,7 +41,7 @@ When, `sslMode` is set to `require`, the users must specify the `tls.issuerRef` 
 The following figure shows how `KubeDB` enterprise used to configure TLS/SSL in Pgpool. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-<img alt="Deploy Pgpool with TLS/SSL" src="/docs/images/day-2-operation/pgpool/pgpool-tls.svg">
+<img alt="Deploy Pgpool with TLS/SSL" src="/docs/images/day-2-operation/pgpool/pp-tls.svg">
 <figcaption align="center">Fig: Deploy Pgpool with TLS/SSL</figcaption>
 </figure>
 
@@ -67,4 +67,4 @@ Deploying Pgpool with TLS/SSL configuration process consists of the following st
 
 10. When it finds all the tls-secret, it creates the related `StatefulSets` so that Pgpool database can be configured with TLS/SSL.
 
-In the next doc, we are going to show a step by step guide on how to configure a `Pgpool` database with TLS/SSL.
+In the next doc, we are going to show a step-by-step guide on how to configure a `Pgpool` database with TLS/SSL.
