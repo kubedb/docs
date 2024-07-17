@@ -140,13 +140,10 @@ Spec:
   Backend:
     Externally Managed:  false
     Linked DB:           ferretdb
-    Postgres:
-      Service:
-        Name:       ferret-pg-backend
-        Namespace:  demo
-        Pg Port:    5432
-      URL:          postgres://ferret-pg-backend.demo.svc.cluster.local:5432/ferretdb
-      Version:      13.13
+    Postgres Ref:
+      Name:       ferret-pg-backend
+      Namespace:  demo
+    Version:      13.13
   Health Checker:
     Failure Threshold:  1
     Period Seconds:     10
@@ -426,7 +423,7 @@ All these data inside FerretDB is also storing inside `ferret-pg-backend` Postgr
 
 ### Create a FerretDB database with externally managed Postgres
 
-If user wants to use its own Postgres database as backend engine, he can specify it in `spec.backend.postgres` section. Below is the FerretDB object created in this tutorial.
+If user wants to use its own Postgres database as backend engine, he needs to create an [AppBinding](https://kubedb.com/docs/latest/guides/mongodb/concepts/appbinding/) for his Postgres and specify it in `spec.backend.postgresRef` section. Below is the FerretDB object created in this tutorial.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -436,9 +433,6 @@ metadata:
   namespace: demo
 spec:
   version: "1.18.0"
-  authSecret:
-    externallyManaged: true
-    name: ha-postgres-auth
   sslMode: disabled
   storageType: Durable
   storage:
@@ -462,8 +456,7 @@ ferretdb.kubedb.com/ferretdb-external created
 ```
 Here,
 
-- `spec.postgres.serivce` is service information of users external postgres exist in the cluster.
-- `spec.authSecret.name` is the name of the authentication secret of users external postgres database.
+- `spec.backend.postgresRef` is AppBinding information of users external postgres exist in the cluster.
 
 KubeDB will deploy a FerretDB database and connect with the users given external postgres through service.
 
@@ -487,7 +480,6 @@ metadata:
   uid: 8380f0a1-c8e9-42e2-8fa9-6ce5870d02f4
 spec:
   authSecret:
-    externallyManaged: true
     name: ha-postgres-auth
   backend:
     externallyManaged: true
@@ -579,9 +571,6 @@ If you want to cleanup each of the Kubernetes resources created by this tutorial
 
 ```bash
 $ kubectl delete -n demo fr/ferret
-
-$ kubectl get fr,sts,svc,secret,pvc,petset -n demo
-NAME              TYPE              DATA   AGE
 
 $ kubectl delete ns demo
 ```
