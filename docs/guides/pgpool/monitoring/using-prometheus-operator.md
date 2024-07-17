@@ -165,6 +165,9 @@ status:
 
 Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.serviceMonitor.labels` field of Pgpool crd.
 
+## Prepare Postgres
+Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/clustering/streaming_replication.md), or you can use any externally managed postgres but in that case you need to create an [appbinding](/docs/guides/pgpool/concepts/appbinding.md) yourself. In this tutorial we will use 3 node Postgres cluster named `ha-postgres`.
+
 ## Deploy Pgpool with Monitoring Enabled
 
 At first, let's deploy an Pgpool database with monitoring enabled. Below is the Pgpool object that we are going to create.
