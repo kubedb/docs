@@ -108,6 +108,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 issuer.cert-manager.io/pgpool-ca-issuer created
 ```
 
+## Prepare Postgres
+Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/clustering/streaming_replication.md), or you can use any externally managed postgres but in that case you need to create an [appbinding](/docs/guides/pgpool/concepts/appbinding.md) yourself. In this tutorial we will use 3 node Postgres cluster named `ha-postgres`.
+
 ## TLS/SSL encryption in Pgpool
 
 Below is the YAML for Pgpool with TLS enabled:
@@ -144,7 +147,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-### Deploy Pgpool Standalone
+### Deploy Pgpool
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/tls/pgpool-ssl.yaml

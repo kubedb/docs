@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgpoolOpsRequest
+metadata:
+  name: pgpool-version-update
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: pp-update
+  updateVersion:
+    targetVersion: 4.5.0

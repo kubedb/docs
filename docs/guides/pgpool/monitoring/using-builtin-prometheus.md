@@ -38,6 +38,9 @@ This tutorial will show you how to monitor Pgpool database using builtin [Promet
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgpool](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgpool) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
+## Prepare Postgres
+Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/clustering/streaming_replication.md), or you can use any externally managed postgres but in that case you need to create an [appbinding](/docs/guides/pgpool/concepts/appbinding.md) yourself. In this tutorial we will use 3 node Postgres cluster named `ha-postgres`.
+
 ## Deploy Pgpool with Monitoring Enabled
 
 At first, let's deploy a Pgpool with monitoring enabled. Below is the Pgpool object that we are going to create.
