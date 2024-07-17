@@ -234,7 +234,7 @@ stringData:
 So far we are ready with setup for continuously archive MongoDB, We deploy a MongoDB referring the MongoDB archiver object
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-rs
@@ -248,10 +248,12 @@ spec:
   replicas: 3
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "500m"
-          memory: "500Mi"
+      containers:
+        - name: mongo
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "500Mi"
   storage:
     accessModes:
       - ReadWriteOnce
@@ -371,7 +373,7 @@ We can't restore from a full backup since at this point no full backup was perfo
 
 ### Restore MongoDB
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-rs-restored
@@ -383,10 +385,12 @@ spec:
   replicas: 3
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "500m"
-          memory: "500Mi"
+      containers:
+        - name: mongo
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "500Mi"
   storage:
     accessModes:
       - ReadWriteOnce
@@ -405,7 +409,7 @@ spec:
       manifestRepository:
         name: mg-rs-manifest
         namespace: demo
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 
 ```
 ```bash

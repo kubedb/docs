@@ -37,7 +37,7 @@ The Reconfiguring MongoDB TLS process consists of the following steps:
 
 2. `KubeDB` Provisioner  operator watches the `MongoDB` CRO.
 
-3. When the operator finds a `MongoDB` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `MongoDB` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
 4. Then, in order to reconfigure the TLS configuration of the `MongoDB` database the user creates a `MongoDBOpsRequest` CR with desired information.
 

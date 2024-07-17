@@ -63,7 +63,7 @@ Now, we are going to deploy a `MongoDB` sharded database using a supported versi
 In this section, we are going to deploy a MongoDB sharded database with version `4.4.26`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-sh
@@ -89,7 +89,7 @@ spec:
             storage: 1Gi
       replicas: 3
       shards: 2
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MongoDB` CRO we have shown above,
@@ -107,7 +107,7 @@ NAME      VERSION    STATUS    AGE
 mg-sh     4.4.26      Ready     3m51s
 ```
 
-Let's check volume size from one of the shard statefulset, and from the persistent volume,
+Let's check volume size from one of the shard petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo mg-sh-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -126,7 +126,7 @@ pvc-c838a27d-c75d-4caa-9c1d-456af3bfaba0   1Gi        RWO            Delete     
 pvc-d47f19be-f206-41c5-a0b1-5022776fea2f   1Gi        RWO            Delete           Bound    demo/datadir-mg-sh-shard0-1      topolvm-provisioner            4m25s
 ```
 
-You can see the statefulset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
+You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
 We are now ready to apply the `MongoDBAutoscaler` CRO to set up storage autoscaling for this database.
 
@@ -356,11 +356,11 @@ Status:
     Status:                True
     Type:                  
     Last Transition Time:  2021-03-08T14:34:42Z
-    Message:               StatefulSet is recreated
+    Message:               PetSet is recreated
     Observed Generation:   1
-    Reason:                ReadyStatefulSets
+    Reason:                ReadyPetSets
     Status:                True
-    Type:                  ReadyStatefulSets
+    Type:                  ReadyPetSets
     Last Transition Time:  2021-03-08T14:34:42Z
     Message:               Successfully Expanded Volume
     Observed Generation:   1
@@ -378,11 +378,11 @@ Events:
   Normal                        36s    KubeDB Ops-manager operator  Successfully Expanded Volume
   Normal  ResumeDatabase        36s    KubeDB Ops-manager operator  Resuming MongoDB demo/mg-sh
   Normal  ResumeDatabase        36s    KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-sh
-  Normal  ReadyStatefulSets     31s    KubeDB Ops-manager operator  StatefulSet is recreated
+  Normal  ReadyPetSets     31s    KubeDB Ops-manager operator  PetSet is recreated
   Normal  Successful            31s    KubeDB Ops-manager operator  Successfully Expanded Volume
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the shard nodes of the database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the shard nodes of the database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo mg-sh-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

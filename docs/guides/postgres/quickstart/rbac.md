@@ -16,11 +16,11 @@ section_menu_id: guides
 
 If RBAC is enabled in clusters, some PostgreSQL specific RBAC permissions are required. These permissions are required for Leader Election process of PostgreSQL clustering.
 
-Here is the list of additional permissions required by StatefulSet of Postgres:
+Here is the list of additional permissions required by PetSet of Postgres:
 
 | Kubernetes Resource | Resource Names    | Permission required |
 |---------------------|-------------------|---------------------|
-| statefulsets        | `{postgres-name}` | get                 |
+| petsets        | `{postgres-name}` | get                 |
 | pods                |                   | list, patch         |
 | pods/exec           |                   | create              |
 | Postgreses          |                   | get                 |
@@ -46,7 +46,7 @@ namespace/demo created
 Below is the Postgres object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: quick-postgres
@@ -61,7 +61,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Create above Postgres object with following command
@@ -71,7 +71,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 postgres.kubedb.com/quick-postgres created
 ```
 
-When this Postgres object is created, KubeDB operator creates Role, ServiceAccount and RoleBinding with the matching PostgreSQL name and uses that ServiceAccount name in the corresponding StatefulSet.
+When this Postgres object is created, KubeDB operator creates Role, ServiceAccount and RoleBinding with the matching PostgreSQL name and uses that ServiceAccount name in the corresponding PetSet.
 
 Let's see what KubeDB operator has created for additional RBAC permission
 
@@ -93,7 +93,7 @@ metadata:
   name: quick-postgres
   namespace: demo
   ownerReferences:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       blockOwnerDeletion: true
       controller: true
       kind: Postgres
@@ -107,7 +107,7 @@ rules:
     resourceNames:
       - quick-postgres
     resources:
-      - statefulsets
+      - petsets
     verbs:
       - get
   - apiGroups:
@@ -177,7 +177,7 @@ metadata:
   name: quick-postgres
   namespace: demo
   ownerReferences:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       blockOwnerDeletion: true
       controller: true
       kind: Postgres
@@ -188,7 +188,7 @@ metadata:
 
 ```
 
-This ServiceAccount is used in StatefulSet created for Postgres object.
+This ServiceAccount is used in PetSet created for Postgres object.
 
 ### RoleBinding
 
@@ -208,7 +208,7 @@ metadata:
   name: quick-postgres
   namespace: demo
   ownerReferences:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       blockOwnerDeletion: true
       controller: true
       kind: Postgres
@@ -234,7 +234,7 @@ This  object binds Role `quick-postgres` with ServiceAccount `quick-postgres`.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo pg/quick-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo pg/quick-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/quick-postgres
 
 kubectl delete ns demo

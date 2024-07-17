@@ -33,14 +33,14 @@ KubeDB supports providing custom configuration for MySQL via [PodTemplate](/docs
 
 ## Overview
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for MySQL database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for MySQL database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
 - metadata:
   - annotations (pod's annotation)
 - controller:
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - env
   - resources
@@ -63,7 +63,7 @@ Below is the YAML for the MySQL created in this example. Here, [`spec.podTemplat
 In this tutorial, an initial database `myDB` will be created by providing `env` `MYSQL_DATABASE` while the server character set will be set to `utf8mb4` by adding extra `args`. Note that, `character-set-server` in `MySQL 5.7.44` is `latin1`.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-misc-config
@@ -86,20 +86,22 @@ spec:
         annotate-to: pod
     controller:
       labels:
-        pass-to: statefulset
+        pass-to: petset
       annotations:
         annotate-to: statfulset
     spec:
-      env:
-        - name: MYSQL_DATABASE
-          value: myDB
-      args:
-        - --character-set-server=utf8mb4
-      resources:
-        requests:
-          memory: "1Gi"
-          cpu: "250m"
-  terminationPolicy: Halt
+      containers:
+      - name: mysql
+        env:
+          - name: MYSQL_DATABASE
+            value: myDB
+        args:
+          - --character-set-server=utf8mb4
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
+  deletionPolicy: Halt
 ```
 
 ```bash
@@ -107,9 +109,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mysql.kubedb.com/mysql-misc-config created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `mysql-misc-config-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `mysql-misc-config-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=mysql-misc-config
@@ -192,7 +194,7 @@ Once, you have connected to the database with phpMyAdmin go to **SQL** tab and r
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo my/mysql-misc-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo my/mysql-misc-config -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo my/mysql-misc-config
 
 kubectl delete deployment -n demo myadmin

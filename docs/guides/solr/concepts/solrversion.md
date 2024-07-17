@@ -71,7 +71,7 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 
 ### spec.db.image
 
-`spec.db.image` is a required field that specifies the docker image which will be used to create Petset(Appscode managed customized statefulset) by KubeDB operator to create expected Solr server.
+`spec.db.image` is a required field that specifies the docker image which will be used to create Petset(Appscode managed customized petset) by KubeDB operator to create expected Solr server.
 
 ### spec.initContainer.image
 

@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: restored-postgres
@@ -15,4 +15,4 @@ spec:
         storage: 1Gi
   init:
     waitForInitialRestore: true
-  terminationPolicy: Delete
+  deletionPolicy: Delete

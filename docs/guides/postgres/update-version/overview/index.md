@@ -37,7 +37,7 @@ The updating process consists of the following steps:
 
 2. `KubeDB-Provisioner` operator watches for the `Postgres` cr.
 
-3. When it finds one, it creates a `StatefulSet` and related necessary stuff like secret, service, etc.
+3. When it finds one, it creates a `PetSet` and related necessary stuff like secret, service, etc.
 
 4. Then, in order to update the version of the `Postgres` database the user creates a `PostgresOpsRequest` cr with the desired version.
 
@@ -46,10 +46,10 @@ The updating process consists of the following steps:
 6. When it finds one, it Pauses the `Postgres` object so that the `KubeDB-Provisioner` operator doesn't perform any operation on the `Postgres` during the updating process.
 
 7. By looking at the target version from `PostgresOpsRequest` cr, In case of major update `KubeDB-ops-manager` does some pre-update steps as we need old bin and lib files to update from current to target Postgres version. 
-8. Then By looking at the target version from `PostgresOpsRequest` cr, `KubeDB-ops-manager` operator updates the images of the `StatefulSet` for updating versions.
+8. Then By looking at the target version from `PostgresOpsRequest` cr, `KubeDB-ops-manager` operator updates the images of the `PetSet` for updating versions.
   
 
-9. After successful upgradation of the `StatefulSet` and its `Pod` images, the `KubeDB-ops-manager` updates the image of the `Postgres` object to reflect the updated cluster state.
+9. After successful upgradation of the `PetSet` and its `Pod` images, the `KubeDB-ops-manager` updates the image of the `Postgres` object to reflect the updated cluster state.
 
 10. After successful upgradation of `Postgres` object, the `KubeDB` ops manager resumes the `Postgres` object so that the `KubeDB-provisioner` can resume its usual operations.
 

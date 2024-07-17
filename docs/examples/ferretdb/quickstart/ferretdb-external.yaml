@@ -5,9 +5,6 @@ metadata:
   namespace: demo
 spec:
   version: "1.18.0"
-  authSecret:
-    externallyManaged: true
-    name: ha-postgres-auth
   sslMode: disabled
   storageType: Durable
   storage:
@@ -19,9 +16,7 @@ spec:
         storage: 500Mi
   backend:
     externallyManaged: true
-    postgres:
-      service:
+    postgresRef:
         name: ha-postgres
         namespace: demo
-        pgPort: 5432
   deletionPolicy: WipeOut

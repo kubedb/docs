@@ -37,7 +37,7 @@ namespace/demo created
 The example below demonstrates KubeDB PostgreSQL for Streaming Replication
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: ha-postgres
@@ -107,9 +107,9 @@ KubeDB operator creates three Pod as PostgreSQL server.
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
 NAME            READY   STATUS    RESTARTS   AGE   LABELS
-ha-postgres-0   1/1     Running   0          20s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=ha-postgres-0
-ha-postgres-1   1/1     Running   0          16s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-1
-ha-postgres-2   1/1     Running   0          10s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-2
+ha-postgres-0   1/1     Running   0          20s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=ha-postgres-0
+ha-postgres-1   1/1     Running   0          16s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-1
+ha-postgres-2   1/1     Running   0          10s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-2
 ```
 
 Here,
@@ -182,7 +182,7 @@ Get the postgres CRD at this point.
 
 ```yaml
 $ kubectl get pg -n demo   ha-postgres -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   creationTimestamp: "2019-02-07T12:14:05Z"
@@ -192,7 +192,7 @@ metadata:
   name: ha-postgres
   namespace: demo
   resourceVersion: "44966"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/postgreses/ha-postgres
+  selfLink: /apis/kubedb.com/v1/namespaces/demo/postgreses/ha-postgres
   uid: dcf6d96a-2ad1-11e9-9d44-080027154f61
 spec:
   authSecret:
@@ -216,7 +216,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   version: "10.2"-v5
 status:
   observedGeneration: 2$4213139756412538772
@@ -244,9 +244,9 @@ kubectl delete pod -n demo ha-postgres-0
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
 NAME            READY     STATUS    RESTARTS   AGE       LABELS
-ha-postgres-0   1/1       Running   0          10s       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-0
-ha-postgres-1   1/1       Running   0          52m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=ha-postgres-1
-ha-postgres-2   1/1       Running   0          51m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-2
+ha-postgres-0   1/1       Running   0          10s       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-0
+ha-postgres-1   1/1       Running   0          52m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=ha-postgres-1
+ha-postgres-2   1/1       Running   0          51m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-2
 ```
 
 Here,
@@ -280,7 +280,7 @@ You can see here, now `ha-postgres-0` and `ha-postgres-2` are streaming asynchro
 Streaming Replication also works with one or more *hot standby* servers.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: hot-postgres
@@ -328,9 +328,9 @@ KubeDB operator creates three Pod as PostgreSQL server.
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hot-postgres" --show-labels
 NAME             READY     STATUS    RESTARTS   AGE       LABELS
-hot-postgres-0   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=hot-postgres-0
-hot-postgres-1   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=hot-postgres-1
-hot-postgres-2   1/1       Running   0          48s       controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=hot-postgres-2
+hot-postgres-0   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=hot-postgres-0
+hot-postgres-1   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=hot-postgres-1
+hot-postgres-2   1/1       Running   0          48s       controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=hot-postgres-2
 ```
 
 Here,
@@ -388,7 +388,7 @@ So, you can see here that you can connect to *hot standby* and it only accepts r
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo pg/ha-postgres pg/hot-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo pg/ha-postgres pg/hot-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo pg/ha-postgres pg/hot-postgres
 
 $ kubectl delete ns demo

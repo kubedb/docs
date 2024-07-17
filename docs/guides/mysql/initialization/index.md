@@ -106,7 +106,7 @@ Below is the `MySQL` object created in this tutorial.
   <div class="tab-pane fade show active" id="groupReplication" role="tabpanel" aria-labelledby="gr-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-init-script
@@ -140,7 +140,7 @@ mysql.kubedb.com/mysql-init-script created
   <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-init-script
@@ -176,7 +176,7 @@ mysql.kubedb.com/mysql-init-script created
   <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-init-script
@@ -214,7 +214,7 @@ mysql.kubedb.com/mysql-init-script created
   <div class="tab-pane fade" id="standAlone" role="tabpanel" aria-labelledby="st-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-init-script
@@ -247,7 +247,7 @@ Here,
 
 - `spec.init.script` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabatically. In this tutorial, a sample .sql script from the git repository `https://github.com/kubedb/mysql-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes) instead of `ConfigMap`.  The \*.sql, \*sql.gz and/or \*.sh sripts that are stored inside the root folder will be executed alphabatically. The scripts inside child folders will be skipped.
 
-KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present. No MySQL specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
+KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present. No MySQL specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
 
 ```bash
 $ kubectl dba describe my -n demo mysql-init-scrip
@@ -255,7 +255,7 @@ Name:               mysql-init-script
 Namespace:          demo
 CreationTimestamp:  Thu, 30 Jun 2022 12:21:15 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script"...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script"...
 Replicas:           1  total
 Status:             Provisioning
 StorageType:        Durable
@@ -267,7 +267,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  Delete
 
-StatefulSet:          
+PetSet:          
   Name:               mysql-init-script
   CreationTimestamp:  Thu, 30 Jun 2022 12:21:15 +0600
   Labels:               app.kubernetes.io/component=database
@@ -326,7 +326,7 @@ Init:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.35"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.35"}}
 
     Creation Timestamp:  2022-06-30T06:21:15Z
     Labels:
@@ -367,12 +367,12 @@ Events:
   Normal   Successful  10s   KubeDB operator  Successfully created governing service
   Normal   Successful  10s   KubeDB operator  Successfully created service for primary/standalone
   Normal   Successful  10s   KubeDB operator  Successfully created database auth secret
-  Normal   Successful  10s   KubeDB operator  Successfully created StatefulSet
+  Normal   Successful  10s   KubeDB operator  Successfully created PetSet
   Normal   Successful  10s   KubeDB operator  Successfully created MySQL
   Normal   Successful  10s   KubeDB operator  Successfully created appbinding
 
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME                READY   AGE
 mysql-init-script   1/1     2m24s
 
@@ -395,12 +395,12 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get my -n demo mysql-init-script -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.35"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.35"}}
   creationTimestamp: "2022-06-30T06:21:15Z"
   finalizers:
   - kubedb.com
@@ -418,8 +418,6 @@ spec:
       from: Same
   authSecret:
     name: mysql-init-script-auth
-  coordinator:
-    resources: {}
   init:
     initialized: true
     script:
@@ -447,7 +445,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   useAddressType: DNS
   version: 8.0.35
 status:
@@ -497,7 +495,7 @@ As you can see here, the initial script has successfully created a table named `
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mysql/mysql-init-script -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mysql/mysql-init-script -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mysql/mysql-init-script
 
 kubectl delete ns demo

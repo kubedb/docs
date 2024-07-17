@@ -33,7 +33,7 @@ KubeDB supports providing custom configuration for MongoDB via [PodTemplate](/do
 
 ## Overview
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for MongoDB database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for MongoDB database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -41,8 +41,8 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - annotations (pod's annotation)
   - labels (pod's labels)
 - controller:
-  - annotations (statefulset's annotation)
-  - labels (statefulset's labels)
+  - annotations (petset's annotation)
+  - labels (petset's labels)
 - spec:
   - args
   - env
@@ -70,7 +70,7 @@ Below is the YAML for the MongoDB created in this example. Here, [`spec.podTempl
 In this tutorial, `maxIncomingConnections` is set to `100` (default, 65536) through args `--maxConns=100`.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo-misc-config
@@ -87,13 +87,15 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      args:
-      - --maxConns=100
-      resources:
-        requests:
-          memory: "1Gi"
-          cpu: "250m"
-  terminationPolicy: Halt
+      containers:
+      - name: mongo
+        args:
+        - --maxConns=100
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
+  deletionPolicy: Halt
 ```
 
 ```bash
@@ -101,9 +103,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mgo-misc-config created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `mgo-misc-config-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `mgo-misc-config-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo
@@ -173,7 +175,7 @@ You can see the maximum connection is set to `100` in `parsed.net.maxIncomingCon
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/mgo-misc-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/mgo-misc-config -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-misc-config
 
 kubectl delete ns demo

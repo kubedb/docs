@@ -83,7 +83,7 @@ In this section, we are going to deploy a MySQL Cluster with 1GB volume. Then, i
   <div class="tab-pane fade show active" id="groupReplication" role="tabpanel" aria-labelledby="gr-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: sample-mysql
@@ -101,7 +101,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 
 ```
 
@@ -116,7 +116,7 @@ mysql.kubedb.com/sample-mysql created
   <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: sample-mysql
@@ -137,7 +137,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` CR we have shown above,
@@ -151,7 +151,7 @@ mysql.kubedb.com/sample-mysql created
   <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: sample-mysql
@@ -173,7 +173,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` CR we have shown above,
@@ -188,7 +188,7 @@ mysql.kubedb.com/sample-mysql created
   <div class="tab-pane fade" id="standAlone" role="tabpanel" aria-labelledby="st-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: sample-mysql
@@ -203,7 +203,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` CR we have shown above,
@@ -224,7 +224,7 @@ NAME             VERSION   STATUS   AGE
 sample-mysql     8.0.35    Ready    5m4s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -237,7 +237,7 @@ pvc-b90179f8-c40a-4273-ad77-74ca8470b782   1Gi        RWO            Delete     
 pvc-f72411a4-80d5-4d32-b713-cb30ec662180   1Gi        RWO            Delete           Bound    demo/data-sample-mysql-2   topolvm-provisioner            62s
 ```
 
-You can see the statefulset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
+You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
 We are now ready to apply the `MySQLOpsRequest` CR to expand the volume of this database.
 
@@ -282,7 +282,7 @@ mysqlopsrequest.ops.kubedb.com/my-online-volume-expansion created
 
 #### Verify MySQL volume expanded successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the volume size of `MySQL` object and related `StatefulSets` and `Persistent Volumes`.
+If everything goes well, `KubeDB` Enterprise operator will update the volume size of `MySQL` object and related `PetSets` and `Persistent Volumes`.
 
 Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MySQLOpsRequest` CR,
 
@@ -347,7 +347,7 @@ Events:
   
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

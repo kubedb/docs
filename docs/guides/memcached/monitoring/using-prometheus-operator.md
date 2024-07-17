@@ -89,7 +89,7 @@ Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` la
 At first, let's deploy an Memcached server with monitoring enabled. Below is the Memcached object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   name: coreos-prom-memcd
@@ -97,16 +97,18 @@ metadata:
 spec:
   replicas: 3
   version: "1.6.22"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
+      containers:
+      - name: memcached
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 250m
+            memory: 64Mi
   monitor:
     agent: prometheus.io/operator
     prometheus:

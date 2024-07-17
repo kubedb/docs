@@ -137,7 +137,7 @@ memcached.kubedb.com/quick-memcached created
 Below is the YAML for the Memcached crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   name: quick-memcached
@@ -148,14 +148,16 @@ spec:
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
-  terminationPolicy: DoNotTerminate
+      containers:
+        - name: memcached
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
+  deletionPolicy: DoNotTerminate
 
 ```
 
@@ -189,7 +191,7 @@ memcached.kubedb.com/quick-memcached created
 Below is the YAML for the Memcached crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   name: minute-memcached
@@ -200,14 +202,16 @@ spec:
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
-  terminationPolicy: DoNotTerminate
+      containers:
+        - name: memcached
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
+  deletionPolicy: DoNotTerminate
 
 ```
 
@@ -232,10 +236,10 @@ minute-memcached-58798985f-47tm8  1/1       Running   0          14m
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mc/quick-memcached -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/quick-memcached -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/quick-memcached
 
-kubectl patch -n demo mc/minute-memcached -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/minute-memcached -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/minute-memcached
 
 kubectl delete -n demo role my-custom-role

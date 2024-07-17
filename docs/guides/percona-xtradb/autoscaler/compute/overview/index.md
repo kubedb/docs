@@ -38,7 +38,7 @@ The Auto Scaling process consists of the following steps:
 
 2. `KubeDB` Community operator watches the `PerconaXtraDB` CRO.
 
-3. When the operator finds a `PerconaXtraDB` CRO, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `PerconaXtraDB` CRO, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
 4. Then, in order to set up autoscaling of the CPU & Memory resources of the `PerconaXtraDB` database the user creates a `PerconaXtraDBAutoscaler` CRO with desired configuration.
 

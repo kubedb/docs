@@ -86,7 +86,7 @@ The version above that does not show `DEPRECATED` `true` is supported by `KubeDB
 In this section, we are going to deploy a Postgres instance. Then, in the next section, we will update the resources of the database server using vertical scaling. Below is the YAML of the `Postgres` cr that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: pg
@@ -103,7 +103,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `Postgres` cr we have shown above,
@@ -115,8 +115,8 @@ postgres.kubedb.com/pg created
 
 **Check postgres Ready to Scale:**
 
-`KubeDB-Provisioner` watches for `Postgres` objects using Kubernetes API. When a `Postgres` object is created, `KubeDB-Provisioner` will create a new StatefulSet, Services, and Secrets, etc.
-Now, watch `Postgres` is going to be in `Running` state and also watch `StatefulSet` and its pod is created and going to be in `Running` state,
+`KubeDB-Provisioner` watches for `Postgres` objects using Kubernetes API. When a `Postgres` object is created, `KubeDB-Provisioner` will create a new PetSet, Services, and Secrets, etc.
+Now, watch `Postgres` is going to be in `Running` state and also watch `PetSet` and its pod is created and going to be in `Running` state,
 
 ```bash
 $ watch -n 3 kubectl get postgres -n demo pg
@@ -203,7 +203,7 @@ postgresopsrequest.ops.kubedb.com/pg-scale-vertical created
 
 **Verify Postgres resources updated successfully:**
 
-If everything goes well, `KubeDB-Ops-Manager` will update the resources of the StatefulSet's `Pod` containers. After a successful scaling process is done, the `KubeDB-Ops-Manager` updates the resources of the `Postgres` object.
+If everything goes well, `KubeDB-Ops-Manager` will update the resources of the PetSet's `Pod` containers. After a successful scaling process is done, the `KubeDB-Ops-Manager` updates the resources of the `Postgres` object.
 
 First, we will wait for `PostgresOpsRequest` to be successful. Run the following command to watch `PostgresOpsRequest` cr,
 
@@ -293,11 +293,11 @@ Status:
     Status:                True
     Type:                  Progressing
     Last Transition Time:  2021-12-02T05:06:07Z
-    Message:               Successfully updated statefulsets resources
+    Message:               Successfully updated petsets resources
     Observed Generation:   1
-    Reason:                UpdateStatefulSetResources
+    Reason:                UpdatePetSetResources
     Status:                True
-    Type:                  UpdateStatefulSetResources
+    Type:                  UpdatePetSetResources
     Last Transition Time:  2021-12-02T05:08:02Z
     Message:               SuccessfullyPerformedVerticalScaling
     Observed Generation:   1

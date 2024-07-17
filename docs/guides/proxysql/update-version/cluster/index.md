@@ -38,7 +38,7 @@ namespace/demo created
 Also we need a mysql backend for the proxysql server. So we are  creating one with the below yaml. 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-server
@@ -56,7 +56,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -76,7 +76,7 @@ In this section, we are going to deploy a ProxySQL Cluster. Then, in the next se
 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -87,7 +87,7 @@ spec:
   backend:
     name: mysql-server
   syncUsers: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 
 ```
 
@@ -145,7 +145,7 @@ proxysqlopsrequest.ops.kubedb.com/proxyops-update created
 
 ### Verify ProxySQL version updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `ProxySQL` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `ProxySQL` object and related `PetSets` and `Pods`.
 
 Let's wait for `ProxySQLOpsRequest` to be `Successful`.  Run the following command to watch `ProxySQLOpsRequest` CR,
 
@@ -158,7 +158,7 @@ proxyops-update      UpdateVersion   Successful    84s
 
 We can see from the above output that the `ProxySQLOpsRequest` has succeeded.
 
-Now, we are going to verify whether the `ProxySQL` and the related `StatefulSets` and their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `ProxySQL` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get proxysql -n demo proxy-server -o=jsonpath='{.spec.version}{"\n"}'

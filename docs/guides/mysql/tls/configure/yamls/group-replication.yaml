@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: some-mysql
@@ -33,4 +33,4 @@ spec:
           - localhost
         ipAddresses:
           - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

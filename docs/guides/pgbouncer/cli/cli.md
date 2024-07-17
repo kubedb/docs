@@ -57,12 +57,12 @@ To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
 $ kubectl get pgbouncer pgbouncer-demo --output=yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PgBouncer
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"connectionPool":{"adminUsers":["admin","admin1"],"maxClientConnections":20,"reservePoolSize":5},"database":{"databaseName":"postgres","databaseRef":{"name":"quick-postgres"}},"monitor":{"agent":"prometheus.io/builtin"},"replicas":1,"userListSecretRef":{"name":"db-user-pass"},"version":"1.17.0"}}
+      {"apiVersion":"kubedb.com/v1","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"connectionPool":{"adminUsers":["admin","admin1"],"maxClientConnections":20,"reservePoolSize":5},"database":{"databaseName":"postgres","databaseRef":{"name":"quick-postgres"}},"monitor":{"agent":"prometheus.io/builtin"},"replicas":1,"userListSecretRef":{"name":"db-user-pass"},"version":"1.17.0"}}
   creationTimestamp: "2019-10-31T10:34:04Z"
   finalizers:
     - kubedb.com
@@ -70,7 +70,7 @@ metadata:
   name: pgbouncer-demo
   namespace: demo
   resourceVersion: "4733"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/pgbouncers/pgbouncer-demo
+  selfLink: /apis/kubedb.com/v1/namespaces/demo/pgbouncers/pgbouncer-demo
   uid: 158b7c58-ecb2-4a77-bceb-081489b4921a
 spec:
   connectionPool:
@@ -120,7 +120,7 @@ service/pgbouncer-demo         ClusterIP   10.98.95.4      <none>        5432/TC
 service/pgbouncer-demo-stats   ClusterIP   10.107.214.97   <none>        56790/TCP   5m38s        app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-demo
 
 NAME                              READY       AGE             CONTAINERS           IMAGES
-statefulset.apps/pgbouncer-demo   1/1         5m53s           pgbouncer,exporter   kubedb/pgbouncer:1.17.0,kubedb/pgbouncer_exporter:v0.1.1
+petset.apps/pgbouncer-demo   1/1         5m53s           pgbouncer,exporter   kubedb/pgbouncer:1.17.0,kubedb/pgbouncer_exporter:v0.1.1
 
 NAME                                  VERSION     STATUS          AGE
 pgbouncer.kubedb.com/pgbouncer-demo   1.17.0      Running         5m54s
@@ -162,7 +162,7 @@ pod/pgbouncer-demo-0
 service/kubedb
 service/pgbouncer-demo
 service/pgbouncer-demo-stats
-statefulset.apps/pgbouncer-demo
+petset.apps/pgbouncer-demo
 pgbouncer.kubedb.com/pgbouncer-demo
 ```
 
@@ -173,7 +173,7 @@ pgbouncer.kubedb.com/pgbouncer-demo
 ```bash
 Name:         pgbouncer-demo
 Namespace:    default
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         PgBouncer
 Metadata:
   Creation Timestamp:  2019-09-09T09:27:48Z
@@ -181,7 +181,7 @@ Metadata:
     kubedb.com
   Generation:        1
   Resource Version:  303596
-  Self Link:         /apis/kubedb.com/v1alpha2/namespaces/demo/pgbouncers/pgbouncer-demo
+  Self Link:         /apis/kubedb.com/v1/namespaces/demo/pgbouncers/pgbouncer-demo
   UID:               f59c58da-ae21-403d-a4ce-affc8e10345c
 Spec:
   Connection Pool:
@@ -212,16 +212,16 @@ Events:
   ----    ------      ----  ----                -------
   Normal  Successful  13m   PgBouncer operator  Successfully created Service
   Normal  Successful  13m   PgBouncer operator  Successfully created PgBouncer configMap
-  Normal  Successful  13m   PgBouncer operator  Successfully created StatefulSet
-  Normal  Successful  13m   PgBouncer operator  Successfully created PgBouncer statefulset
-  Normal  Successful  13m   PgBouncer operator  Successfully patched StatefulSet
-  Normal  Successful  13m   PgBouncer operator  Successfully patched PgBouncer statefulset
+  Normal  Successful  13m   PgBouncer operator  Successfully created PetSet
+  Normal  Successful  13m   PgBouncer operator  Successfully created PgBouncer petset
+  Normal  Successful  13m   PgBouncer operator  Successfully patched PetSet
+  Normal  Successful  13m   PgBouncer operator  Successfully patched PgBouncer petset
 
 ```
 
 `kubectl dba describe` command provides following basic information about a database.
 
-- StatefulSet
+- PetSet
 - Storage (Persistent Volume)
 - Service
 - Secret (If available)

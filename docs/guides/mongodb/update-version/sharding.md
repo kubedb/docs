@@ -46,7 +46,7 @@ Now, we are going to deploy a `MongoDB` sharded database with version `3.6.8`.
 In this section, we are going to deploy a MongoDB sharded database. Then, in the next section we will update the version of the database using `MongoDBOpsRequest` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-sharding
@@ -133,7 +133,7 @@ mongodbopsrequest.ops.kubedb.com/mops-shard-update created
 
 #### Verify MongoDB version updated successfully
 
-If everything goes well, `KubeDB` Ops-manager operator will update the image of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the image of `MongoDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -222,11 +222,11 @@ Status:
     Status:                True
     Type:                  StoppingBalancer
     Last Transition Time:  2022-10-26T10:30:54Z
-    Message:               Successfully updated statefulsets update strategy type
+    Message:               Successfully updated petsets update strategy type
     Observed Generation:   1
-    Reason:                UpdateStatefulSets
+    Reason:                UpdatePetSets
     Status:                True
-    Type:                  UpdateStatefulSets
+    Type:                  UpdatePetSets
     Last Transition Time:  2022-10-26T10:32:00Z
     Message:               Successfully Updated ConfigServer Image
     Observed Generation:   1
@@ -266,11 +266,11 @@ Events:
   Normal   PauseDatabase            8m27s  KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-sharding
   Normal   StoppingBalancer         8m27s  KubeDB Ops-manager Operator  Stopping Balancer
   Normal   StoppingBalancer         8m27s  KubeDB Ops-manager Operator  Successfully Stopped Balancer
-  Normal   Updating                 8m27s  KubeDB Ops-manager Operator  Updating StatefulSets
-  Normal   Updating                 7m2s   KubeDB Ops-manager Operator  Successfully Updated StatefulSets
-  Normal   Updating                 7m2s   KubeDB Ops-manager Operator  Updating StatefulSets
+  Normal   Updating                 8m27s  KubeDB Ops-manager Operator  Updating PetSets
+  Normal   Updating                 7m2s   KubeDB Ops-manager Operator  Successfully Updated PetSets
+  Normal   Updating                 7m2s   KubeDB Ops-manager Operator  Updating PetSets
   Normal   UpdateConfigServerImage  5m56s  KubeDB Ops-manager Operator  Successfully Updated ConfigServer Image
-  Normal   Updating                 5m45s  KubeDB Ops-manager Operator  Successfully Updated StatefulSets
+  Normal   Updating                 5m45s  KubeDB Ops-manager Operator  Successfully Updated PetSets
   Normal   UpdateShardImage         2m24s  KubeDB Ops-manager Operator  Successfully Updated Shard Image
   Normal   UpdateMongosImage        109s   KubeDB Ops-manager Operator  Successfully Updated Mongos Image
   Normal   Updating                 109s   KubeDB Ops-manager Operator  Starting Balancer
@@ -280,7 +280,7 @@ Events:
   Normal   Successful               109s   KubeDB Ops-manager Operator  Successfully Updated Database
 ```
 
-Now, we are going to verify whether the `MongoDB` and the related `StatefulSets` of `Mongos`, `Shard` and `ConfigeServer` and their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `MongoDB` and the related `PetSets` of `Mongos`, `Shard` and `ConfigeServer` and their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get mg -n demo mg-sharding -o=jsonpath='{.spec.version}{"\n"}'

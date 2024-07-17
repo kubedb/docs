@@ -42,7 +42,7 @@ To deploy a MongoDB Sharding, user have to specify `spec.shardTopology` option i
 The following is an example of a `Mongodb` object which creates MongoDB Sharding of three type of members.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-sh-arb
@@ -63,10 +63,12 @@ spec:
       replicas: 2
       podTemplate:
         spec:
-          resources:
-            requests:
-              cpu: "400m"
-              memory: "300Mi"
+          containers:
+          - name: mongo
+            resources:
+              requests:
+                cpu: "400m"
+                memory: "300Mi"
       shards: 2
       storage:
         resources:
@@ -80,7 +82,7 @@ spec:
           requests:
             cpu: "200m"
             memory: "200Mi"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -112,7 +114,7 @@ Here,
 - `spec.keyFileSecret` (optional) is a secret name that contains keyfile (a random string)against `key.txt` key. Each mongod instances in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the replicaset. Only mongod instances with the correct keyfile can join the replica set. _User can provide the `keyFileSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `keyFileSecret`._ If `keyFileSecret` is not given, KubeDB operator will generate a `keyFileSecret` itself.
 - `spec.arbiter` denotes arbiter spec of the deployed MongoDB CRD. There are two fields under it : configSecret & podTemplate. `spec.arbiter.configSecret` is an optional field to provide custom configuration file for database (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used. `spec.arbiter.podTemplate` holds the arbiter-podSpec. `null` value of it, instructs kubedb operator to use  the default arbiter podTemplate.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create some new StatefulSets : 1 for mongos, 1 for configServer, and 1 for each of the shard & arbiter. It creates a primary Service with the matching MongoDB object name. KubeDB operator will also create governing services for StatefulSets with the name `<mongodb-name>-<node-type>-pods`.
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create some new PetSets : 1 for mongos, 1 for configServer, and 1 for each of the shard & arbiter. It creates a primary Service with the matching MongoDB object name. KubeDB operator will also create governing services for PetSets with the name `<mongodb-name>-<node-type>-pods`.
 
 MongoDB `mongo-sh-arb` state,
 
@@ -122,17 +124,17 @@ NAME                              VERSION   STATUS   AGE
 mongodb.kubedb.com/mongo-sh-arb   4.4.26     Ready    97s
 ```
 
-All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as statefulset.
+All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as petset.
 
 ```bash
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME                                           READY   AGE
-statefulset.apps/mongo-sh-arb-configsvr        3/3     97s
-statefulset.apps/mongo-sh-arb-mongos           2/2     29s
-statefulset.apps/mongo-sh-arb-shard0           2/2     97s
-statefulset.apps/mongo-sh-arb-shard0-arbiter   1/1     53s
-statefulset.apps/mongo-sh-arb-shard1           2/2     97s
-statefulset.apps/mongo-sh-arb-shard1-arbiter   1/1     52s
+petset.apps/mongo-sh-arb-configsvr        3/3     97s
+petset.apps/mongo-sh-arb-mongos           2/2     29s
+petset.apps/mongo-sh-arb-shard0           2/2     97s
+petset.apps/mongo-sh-arb-shard0-arbiter   1/1     53s
+petset.apps/mongo-sh-arb-shard1           2/2     97s
+petset.apps/mongo-sh-arb-shard1-arbiter   1/1     52s
 ```
 
 All PVCs and PVs for MongoDB `mongo-sh-arb`,
@@ -179,12 +181,12 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mongo-sh-arb -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":{"spec":{"requests":{"cpu":"200m","memory":"200Mi"},"resources":null}}},"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"300Mi"}}}},"replicas":2,"shards":2,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}}},"terminationPolicy":"WipeOut","version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-arb","namespace":"demo"},"spec":{"arbiter":{"podTemplate":{"spec":{"requests":{"cpu":"200m","memory":"200Mi"},"resources":null}}},"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"300Mi"}}}},"replicas":2,"shards":2,"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"}}},"deletionPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-04-21T09:29:07Z"
   finalizers:
   - kubedb.com
@@ -258,8 +260,6 @@ spec:
   authSecret:
     name: mongo-sh-arb-auth
   clusterAuthMode: keyFile
-  coordinator:
-    resources: {}
   keyFileSecret:
     name: mongo-sh-arb-key
   shardTopology:
@@ -477,7 +477,7 @@ spec:
   sslMode: disabled
   storageEngine: wiredTiger
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: 4.4.26
 status:
   conditions:
@@ -909,14 +909,14 @@ Here, `demo` database is not partitioned and all collections under `demo` databa
 
 ## Halt Database
 
-When [TerminationPolicy](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
+When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the PetSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
 
-You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the statefulsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
+You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the petsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
 
-To halt the database, first you have to set the terminationPolicy to `Halt` in existing database. You can use the below command to set the terminationPolicy to `Halt`, if it is not already set.
+To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo mg/mongo-sh-arb -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"
+$ kubectl patch -n demo mg/mongo-sh-arb -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 mongodb.kubedb.com/mongo-sh-arb patched
 ```
 
@@ -927,7 +927,7 @@ $ kubectl patch -n demo mg/mongo-sh-arb -p '{"spec":{"halted":true}}' --type="me
 mongodb.kubedb.com/mongo-sh-arb patched
 ```
 
-After that, kubedb will delete the statefulsets and services and you can see the database Phase as `Halted`.
+After that, kubedb will delete the petsets and services and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
@@ -1049,7 +1049,7 @@ mongos> sh.status()
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/mongo-sh-arb -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/mongo-sh-arb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mongo-sh-arb
 
 kubectl delete ns demo

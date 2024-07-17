@@ -13,9 +13,11 @@ concurrency:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Set up Go 1.x
         uses: actions/setup-go@v2
@@ -26,7 +28,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Install yq
         run: |
@@ -37,7 +39,7 @@ jobs:
 
       - name: Install Hugo
         run: |
-          curl -fsSL -o hugo_extended.deb https://github.com/gohugoio/hugo/releases/download/v0.111.1/hugo_extended_0.111.1_linux-amd64.deb
+          curl -fsSL -o hugo_extended.deb https://github.com/gohugoio/hugo/releases/download/v0.128.2/hugo_extended_0.128.2_linux-amd64.deb
           sudo dpkg -i hugo_extended.deb
           rm hugo_extended.deb
 

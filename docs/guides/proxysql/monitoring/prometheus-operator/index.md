@@ -105,7 +105,7 @@ namespace/demo patched
 We need a mysql backend for the proxysql server. So we are  creating one with the below yaml.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-grp
@@ -123,7 +123,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -138,7 +138,7 @@ After applying the above yaml wait for the MySQL to be Ready.
 At first, let's deploy an ProxySQL database with monitoring enabled. Below is the ProxySQL object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -157,7 +157,7 @@ spec:
           release: prometheus
           release: prometheus
         interval: 10s
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3
 ```

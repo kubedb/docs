@@ -95,7 +95,7 @@ The k8s secret must be of type: kubernetes.io/basic-auth with the following keys
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for the Elasticsearch database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for the Elasticsearch database.
 
 KubeDB accepts the following fields to set in `spec.podTemplate`:
 

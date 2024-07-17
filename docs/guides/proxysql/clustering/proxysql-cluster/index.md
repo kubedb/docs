@@ -38,7 +38,7 @@ namespace/demo created
 We need a mysql backend for the proxysql server. So we are creating one with the below yaml.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-server
@@ -56,7 +56,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -121,7 +121,7 @@ Bye
 The following is an example `ProxySQL` object which creates a proxysql cluster with three members. 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -131,7 +131,7 @@ spec:
   replicas: 3
   backend:
     name: mysql-server
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 To deploy a simple proxysql cluster all you need to do is just set the `.spec.replicas` field to a higher value than 2. 
@@ -426,7 +426,7 @@ exit
 From the above output we can see that the cluster is always in sync and the configuration change is always propagated to other cluster nodes. 
 
 ## Cluster failover recovery 
-In case of any pod crash for proxysql cluster, the statefulset which was created by KubeDb operator creates another pod and the is auto joins the cluster. We can delete a pod and wait for that to create again and join the cluster and test this feature. 
+In case of any pod crash for proxysql cluster, the petset which was created by KubeDb operator creates another pod and the is auto joins the cluster. We can delete a pod and wait for that to create again and join the cluster and test this feature. 
 
 Let's see the current status first.
 

@@ -755,7 +755,7 @@ Important: Ops-manager Operator can skip an opsRequest, only if its execution ha
 | `UpdateReplicaSetImage`       | Specifies such a state that the Replicaset Image has been updated         |
 | `UpdateConfigServerImage`     | Specifies such a state that the ConfigServer Image has been updated       |
 | `UpdateMongosImage`           | Specifies such a state that the Mongos Image has been updated             |
-| `UpdateStatefulSetResources`  | Specifies such a state that the Statefulset resources has been updated    |
+| `UpdatePetSetResources`  | Specifies such a state that the Petset resources has been updated    |
 | `UpdateShardResources`        | Specifies such a state that the Shard resources has been updated          |
 | `UpdateReplicaSetResources`   | Specifies such a state that the Replicaset resources has been updated     |
 | `UpdateConfigServerResources` | Specifies such a state that the ConfigServer resources has been updated   |

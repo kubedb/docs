@@ -69,7 +69,7 @@ The version above that does not show `DEPRECATED` `true` is supported by `KubeDB
 In this section, we are going to deploy a MySQL standalone. Then, in the next section, we will update the resources of the database server using vertical scaling. Below is the YAML of the `MySQL` cr that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: my-standalone
@@ -84,7 +84,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` cr we have shown above,
@@ -96,8 +96,8 @@ mysql.kubedb.com/my-standalone created
 
 **Check Standalone Ready to Scale:**
 
-`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc.
-Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
+`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new PetSet, Services, and Secrets, etc.
+Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
 $ watch -n 3 kubectl get my -n demo my-standalone
@@ -174,7 +174,7 @@ mysqlopsrequest.ops.kubedb.com/my-scale-standalone created
 
 **Verify MySQL Standalone resources updated successfully:**
 
-If everything goes well, `KubeDB` Ops Manager will update the resources of the StatefulSet's `Pod` containers. After a successful scaling process is done, the `KubeDB` Ops Manager updates the resources of the `MySQL` object.
+If everything goes well, `KubeDB` Ops Manager will update the resources of the PetSet's `Pod` containers. After a successful scaling process is done, the `KubeDB` Ops Manager updates the resources of the `MySQL` object.
 
 First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 

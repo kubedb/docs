@@ -37,7 +37,7 @@ The Reconfiguring PerconaXtraDB process consists of the following steps:
 
 2. `KubeDB` Community operator watches the `PerconaXtraDB` CR.
 
-3. When the operator finds a `PerconaXtraDB` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `PerconaXtraDB` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
 4. Then, in order to reconfigure the `PerconaXtraDB` standalone or cluster the user creates a `PerconaXtraDBOpsRequest` CR with desired information.
 
@@ -47,7 +47,7 @@ The Reconfiguring PerconaXtraDB process consists of the following steps:
 
 7. Then the `KubeDB` Enterprise operator will replace the existing configuration with the new configuration provided or merge the new configuration with the existing configuration according to the `PerconaXtraDBOpsRequest` CR.
 
-8. Then the `KubeDB` Enterprise operator will restart the related StatefulSet Pods so that they restart with the new configuration defined in the `PerconaXtraDBOpsRequest` CR.
+8. Then the `KubeDB` Enterprise operator will restart the related PetSet Pods so that they restart with the new configuration defined in the `PerconaXtraDBOpsRequest` CR.
 
 9. After the successful reconfiguring of the `PerconaXtraDB`, the `KubeDB` Enterprise operator resumes the `PerconaXtraDB` object so that the `KubeDB` Community operator resumes its usual operations.
 

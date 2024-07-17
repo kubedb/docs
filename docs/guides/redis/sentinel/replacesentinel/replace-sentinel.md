@@ -44,7 +44,7 @@ Here, we are going to deploy a  `Redis` and `RedisSentinel` instance using a sup
 
 Now, we are going to deploy a `RedisSentinel` version `6.2.14`.
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-demo
@@ -60,7 +60,7 @@ spec:
     storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 Let's create the `RedisSentinel` CR we have shown above,
 
@@ -80,7 +80,7 @@ sen-demo   6.2.14     Ready    96s
 
 In this section, we are going to deploy a Redis database in Sentinel Mode. 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-demo
@@ -100,7 +100,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `Redis` CR we have shown above, 
@@ -169,7 +169,7 @@ exit
 
 We are going to create a new `RedisSentinel` object for replacing.
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: new-sentinel
@@ -185,7 +185,7 @@ spec:
     storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 Let's create the `RedisSentinel` CR we have shown above,
 
@@ -314,7 +314,7 @@ First set termination policy to `WipeOut` all the things created by KubeDB opera
 to clean what you created in this tutorial.
 
 ```bash
-$ kubectl patch -n demo rd/rd-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/rd-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-demo patched
 
 $ kubectl delete rd rd-demo -n demo
@@ -326,13 +326,13 @@ redisopsrequest.ops.kubedb.com "replace-sentinel" deleted
 
 Now delete the RedisSentinel instance similarly.
 ```bash
-$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/sen-demo patched
 
 $ kubectl delete redissentinel sen-demo -n demo
 redis.kubedb.com "sen-demo" deleted
 
-$ kubectl patch -n demo redissentinel/new-sentinel -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/new-sentinel -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/new-sentinel patched
 
 $ kubectl delete redissentinel new-sentinel -n demo

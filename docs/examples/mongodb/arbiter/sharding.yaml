@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-sh-arb
@@ -19,10 +19,12 @@ spec:
       replicas: 2
       podTemplate:
         spec:
-          resources:
-            requests:
-              cpu: "400m"
-              memory: "300Mi"
+          containers:
+            - name: mongodb
+              resources:
+                requests:
+                  cpu: "400m"
+                  memory: "300Mi"
       shards: 2
       storage:
         resources:
@@ -36,4 +38,4 @@ spec:
           requests:
             cpu: "200m"
             memory: "200Mi"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

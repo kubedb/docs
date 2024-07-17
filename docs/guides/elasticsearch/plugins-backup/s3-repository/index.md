@@ -102,7 +102,7 @@ secret/es-custom-config created
 Now that we have deployed our configuration secrets, it's time to deploy our Elasticsearch instance.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: sample-es

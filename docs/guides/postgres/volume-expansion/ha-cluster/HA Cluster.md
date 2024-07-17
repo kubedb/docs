@@ -61,7 +61,7 @@ Now, we are going to deploy a `Postgres` HA cluster database with version `13.13
 In this section, we are going to deploy a Postgres HA database with 10GB volume. Then, in the next section we will expand its volume to 12GB using `PostgresOpsRequest` CRD. Below is the YAML of the `Postgres` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: pg-ha-cluster
@@ -78,7 +78,7 @@ spec:
     resources:
       requests:
         storage: 10Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `Postgres` CR we have shown above,
@@ -96,7 +96,7 @@ NAME            VERSION   STATUS   AGE
 pg-ha-cluster   13.13     Ready    3m6s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo pg-ha-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -109,7 +109,7 @@ pvc-3bd05d8b36c84c0a   10Gi       RWO            Delete           Bound    demo/
 pvc-f03277c318c44029   10Gi       RWO            Delete           Bound    demo/data-pg-ha-cluster-2           linode-block-storage            3m35s
 ```
 
-You can see the statefulset has 10GB storage, and the capacity of the persistent volume is also 10GB.
+You can see the petset has 10GB storage, and the capacity of the persistent volume is also 10GB.
 
 We are now ready to apply the `PostgresOpsRequest` CR to expand the volume of this HA Cluster. 
 
@@ -153,7 +153,7 @@ postgresopsrequest.ops.kubedb.com/pgops-vol-exp-ha-cluster created
 
 #### Verify Postgres HA Cluster volume expanded successfully
 
-If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `Postgres` object and related `StatefulSet` and `Persistent Volume`.
+If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `Postgres` object and related `PetSet` and `Persistent Volume`.
 
 Let's wait for `PostgresOpsRequest` to be `Successful`. Run the following command to watch `PostgresOpsRequest` CR,
 
@@ -201,11 +201,11 @@ Status:
     Status:                True
     Type:                  VolumeExpansion
     Last Transition Time:  2024-03-15T05:13:16Z
-    Message:               StatefulSet is recreated
+    Message:               PetSet is recreated
     Observed Generation:   1
-    Reason:                ReadyStatefulSets
+    Reason:                ReadyPetSets
     Status:                True
-    Type:                  ReadyStatefulSets
+    Type:                  ReadyPetSets
     Last Transition Time:  2024-03-15T05:13:17Z
     Message:               Successfully Expanded Volume.
     Observed Generation:   1
@@ -224,13 +224,13 @@ Events:
   Normal  ResumeDatabase            2m8s   KubeDB Ops-manager Operator  Successfully resumed PostgreSQL demo/pg-ha-cluster
   Normal  PauseDatabase             2m8s   KubeDB Ops-manager Operator  Pausing Postgres demo/pg-ha-cluster
   Normal  PauseDatabase             2m8s   KubeDB Ops-manager Operator  Successfully paused Postgres demo/pg-ha-cluster
-  Normal  ReadyStatefulSets         2m3s   KubeDB Ops-manager Operator  StatefulSet is recreated
+  Normal  ReadyPetSets         2m3s   KubeDB Ops-manager Operator  PetSet is recreated
   Normal  ResumeDatabase            2m3s   KubeDB Ops-manager Operator  Resuming PostgreSQL demo/pg-ha-cluster
   Normal  ResumeDatabase            2m3s   KubeDB Ops-manager Operator  Successfully resumed PostgreSQL demo/pg-ha-cluster
   Normal  Successful                2m2s   KubeDB Ops-manager Operator  Successfully Expanded Volume
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the `pg-ha-cluster` has expanded to meet the desired state, Let's check that particular statefulset,
+Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the `pg-ha-cluster` has expanded to meet the desired state, Let's check that particular petset,
 
 ```bash
 $ kubectl get sts -n demo pg-ha-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

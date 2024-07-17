@@ -46,7 +46,7 @@ Now, we are going to deploy a `RedisSentinel` instance with version `6.2.14` and
 In this section, we are going to deploy a `RedisSentinel` instance. Below is the YAML of the `RedisSentinel` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-sample
@@ -62,7 +62,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's create the `RedisSentinel` CR we have shown above,
@@ -85,7 +85,7 @@ sen-sample   6.2.14     Ready    5m20s
 In this section, we are going to deploy a `Redis` instance which will be monitored by previously created `sen-sample`. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-sample
@@ -105,7 +105,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's create the `Redis` CR we have shown above,
@@ -162,7 +162,7 @@ redissentinelopsrequest.ops.kubedb.com/update-sen-version created
 
 #### Verify RedisSentinel version updated successfully :
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `RedisSentinel` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `RedisSentinel` object and related `PetSets` and `Pods`.
 
 Let's wait for `RedisSentinelOpsRequest` to be `Successful`.  Run the following command to watch `RedisSentinelOpsRequest` CR,
 
@@ -175,13 +175,13 @@ update-sen-version    UpdateVersion   Successful   3m30s
 
 We can see from the above output that the `RedisSentinelOpsRequest` has succeeded.
 
-Now, we are going to verify whether the `RedisSentinel` and the related `StatefulSets` their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `RedisSentinel` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get redissentinel -n demo sen-sample -o=jsonpath='{.spec.version}{"\n"}'
 7.0.14
 
-$ kubectl get statefulset -n demo sen-sample -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo sen-sample -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 
 $ kubectl get pods -n demo sen-sample-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
@@ -226,7 +226,7 @@ redisopsrequest.ops.kubedb.com/update-rd-version created
 
 #### Verify Redis version updated successfully :
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `Redis` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `Redis` object and related `PetSets` and `Pods`.
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
@@ -239,13 +239,13 @@ update-rd-version    UpdateVersion   Successful   5m40s
 
 We can see from the above output that the `RedisOpsRequest` has succeeded.
 
-Now, we are going to verify whether the `Redis` and the related `StatefulSets` their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `Redis` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get redis -n demo rd-sample -o=jsonpath='{.spec.version}{"\n"}'
 7.0.4
 
-$ kubectl get statefulset -n demo rd-sample -o=jsonpath='{.spec.template.spec.containers[1].image}{"\n"}'
+$ kubectl get petset -n demo rd-sample -o=jsonpath='{.spec.template.spec.containers[1].image}{"\n"}'
 redis:7.0.4@sha256:091a7b5de688f283b30a4942280b64cf822bbdab0abfb2d2ce6db989f2d3c3f4
 
 $ kubectl get pods -n demo rd-sample-0 -o=jsonpath='{.spec.containers[1].image}{"\n"}'
@@ -260,7 +260,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 # Delete Redis and RedisOpsRequest
-$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-sample patched
 
 $ kubectl delete -n demo redis rd-sample
@@ -270,7 +270,7 @@ $ kubectl delete -n demo redisopsrequest update-rd-version
 redisopsrequest.ops.kubedb.com "update-rd-version" deleted
 
 # Delete RedisSentinel and RedisSentinelOpsRequest
-$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/sen-sample patched
 
 $ kubectl delete -n demo redissentinel sen-sample

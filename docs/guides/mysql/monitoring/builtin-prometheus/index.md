@@ -43,14 +43,14 @@ This tutorial will show you how to monitor MySQL database using builtin [Prometh
 At first, let's deploy an MySQL database with monitoring enabled. Below is the MySQL object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: builtin-prom-mysql
   namespace: demo
 spec:
   version: "8.0.35"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
     accessModes:

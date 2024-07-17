@@ -37,9 +37,9 @@ The Volume Expansion process consists of the following steps:
 
 2. `KubeDB` Community operator watches the `MariaDB` CR.
 
-3. When the operator finds a `MariaDB` CR, it creates required `StatefulSet` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `MariaDB` CR, it creates required `PetSet` and related necessary stuff like secrets, services, etc.
 
-4. The statefulSet creates Persistent Volumes according to the Volume Claim Template provided in the statefulset configuration. This Persistent Volume will be expanded by the `KubeDB` Enterprise operator.
+4. The petSet creates Persistent Volumes according to the Volume Claim Template provided in the petset configuration. This Persistent Volume will be expanded by the `KubeDB` Enterprise operator.
 
 5. Then, in order to expand the volume of the `MariaDB` database the user creates a `MariaDBOpsRequest` CR with desired information.
 
@@ -49,7 +49,7 @@ The Volume Expansion process consists of the following steps:
 
 8. Then the `KubeDB` Enterprise operator will expand the persistent volume to reach the expected size defined in the `MariaDBOpsRequest` CR.
 
-9. After the successfully expansion of the volume of the related StatefulSet Pods, the `KubeDB` Enterprise operator updates the new volume size in the `MariaDB` object to reflect the updated state.
+9. After the successfully expansion of the volume of the related PetSet Pods, the `KubeDB` Enterprise operator updates the new volume size in the `MariaDB` object to reflect the updated state.
 
 10. After the successful Volume Expansion of the `MariaDB`, the `KubeDB` Enterprise operator resumes the `MariaDB` object so that the `KubeDB` Community operator resumes its usual operations.
 

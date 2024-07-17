@@ -94,7 +94,7 @@ While deploying `PerconaXtraDB` from private repository, you have to add `pxregi
 Below is the PerconaXtraDB CRD object we will create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: px-pvt-reg
@@ -112,7 +112,7 @@ spec:
     spec:
       imagePullSecrets:
       - name: pxregistrykey
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Now run the command to deploy this `PerconaXtraDB` object:

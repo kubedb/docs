@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-combined
@@ -17,10 +17,12 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "500m"
-        limits:
-          cpu: "500m"
-          memory: "1.2Gi"
-  terminationPolicy: WipeOut
+      containers:
+        - name: elasticsearch
+          resources:
+            requests:
+              cpu: "500m"
+            limits:
+              cpu: "500m"
+              memory: "1.2Gi"
+  deletionPolicy: WipeOut

@@ -48,7 +48,7 @@ Now, we are going to deploy a `PerconaXtraDB` cluster with version `8.0.26`.
 In this section, we are going to deploy a PerconaXtraDB cluster. Then, in the next section we will scale the database using `PerconaXtraDBOpsRequest` CRD. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -64,7 +64,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `PerconaXtraDB` CR we have shown above,
@@ -82,7 +82,7 @@ NAME             VERSION   STATUS   AGE
 sample-pxc       8.0.26    Ready    2m36s
 ```
 
-Let's check the number of replicas this database has from the PerconaXtraDB object, number of pods the statefulset have,
+Let's check the number of replicas this database has from the PerconaXtraDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas'
@@ -158,7 +158,7 @@ perconaxtradbopsrequest.ops.kubedb.com/pxops-scale-horizontal-up created
 
 #### Verify Cluster replicas scaled up successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `PerconaXtraDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas of `PerconaXtraDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 
@@ -169,7 +169,7 @@ NAME                        TYPE                STATUS       AGE
 pxps-scale-horizontal    HorizontalScaling    Successful     106s
 ```
 
-We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the PerconaXtraDB object, number of pods the statefulset have,
+We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the PerconaXtraDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas'
@@ -229,7 +229,7 @@ perconaxtradbopsrequest.ops.kubedb.com/pxops-scale-horizontal-down created
 
 #### Verify Cluster replicas scaled down successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `PerconaXtraDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas of `PerconaXtraDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 
@@ -240,7 +240,7 @@ NAME                          TYPE                STATUS       AGE
 mops-hscale-down-replicaset   HorizontalScaling   Successful   2m32s
 ```
 
-We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the PerconaXtraDB object, number of pods the statefulset have,
+We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the PerconaXtraDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas' 

@@ -95,7 +95,7 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 ### spec.db.image
 
-`spec.db.image` is a required field that specifies the docker image which will be used to create Statefulset by KubeDB operator to create expected MySQL database.
+`spec.db.image` is a required field that specifies the docker image which will be used to create Petset by KubeDB operator to create expected MySQL database.
 
 ### spec.exporter.image
 

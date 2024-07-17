@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-sh-hid
@@ -20,10 +20,12 @@ spec:
   hidden:
     podTemplate:
       spec:
-        resources:
-          requests:
-            cpu: "400m"
-            memory: "400Mi"
+        containers:
+          - name: mongodb
+            resources:
+              requests:
+                cpu: "400m"
+                memory: "400Mi"
     replicas: 2
     storage:
       storageClassName: "standard"
@@ -32,4 +34,4 @@ spec:
       resources:
         requests:
           storage: 2Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

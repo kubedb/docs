@@ -106,7 +106,7 @@ secret/mysql-singapore-auth created
 ## Deploy MySQL with TLS/SSL configuration
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-singapore
@@ -141,7 +141,7 @@ spec:
           - localhost
         ipAddresses:
           - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -284,7 +284,7 @@ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}
 ```
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-london
@@ -313,20 +313,20 @@ spec:
     resources:
       requests:
         storage: 10Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 Here,
 
 - `spec.topology` contains the information about the mysql server.
 - `spec.topology.mode` we are defining the server will be working a `Remote Replica`.
 - `spec.topology.remoteReplica.sourceref` we are referring to source to read. The  mysql instance we previously created.
-- `spec.terminationPolicy` specifies what KubeDB should do when a user try to delete the operation of MySQL CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mysql/concepts/database/#specterminationpolicy).
+- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete the operation of MySQL CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mysql/concepts/database/#specdeletionpolicy).
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clustering/remote-replica/yamls/mysql-london.yaml
 mysql.kubedb.com/mysql-london created
 ```
 
-Now we will be able to see kubedb will provision a Remote Replica from the source mysql instance. Lets checkout out the statefulSet , pvc , pv and services associated with it
+Now we will be able to see kubedb will provision a Remote Replica from the source mysql instance. Lets checkout out the petSet , pvc , pv and services associated with it
 .
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified `MySQL` object:
 ```bash

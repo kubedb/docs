@@ -71,7 +71,7 @@ spec:
         thisLabel: willGoToPod
     controller:
       annotations:
-        passMe: ToStatefulSet
+        passMe: ToPetSet
       labels:
         thisLabel: willGoToSts
   monitor:
@@ -268,7 +268,7 @@ ConnectCluster managed by KubeDB can be monitored with Prometheus operator out-o
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for ConnectCluster.
+KubeDB allows providing a template for pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for ConnectCluster.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -276,8 +276,8 @@ KubeDB accept following fields to set in `spec.podTemplate:`
     - annotations (pod's annotation)
     - labels (pod's labels)
 - controller:
-    - annotations (statefulset's annotation)
-    - labels (statefulset's labels)
+    - annotations (petset's annotation)
+    - labels (petset's labels)
 - spec:
     - volumes
     - initContainers

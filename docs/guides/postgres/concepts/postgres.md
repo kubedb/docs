@@ -25,7 +25,7 @@ As with all other Kubernetes objects, a Postgres needs `apiVersion`, `kind`, and
 Below is an example Postgres object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: p1
@@ -68,7 +68,7 @@ spec:
         passMe: ToDatabasePod
     controller:
       annotations:
-        passMe: ToStatefulSet
+        passMe: ToPetSet
     spec:
       serviceAccountName: my-custom-sa
       schedulerName: my-scheduler
@@ -76,16 +76,18 @@ spec:
         disktype: ssd
       imagePullSecrets:
       - name: myregistrykey
-      env:
-      - name: POSTGRES_DB
-        value: pgdb
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+      containers:
+      - name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: pgdb
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
   serviceTemplates:
   - alias: primary
     metadata:
@@ -105,7 +107,7 @@ spec:
       ports:
       - name:  http
         port:  5432
-  terminationPolicy: "Halt"
+  deletionPolicy: "Halt"
 ```
 
 ### spec.version
@@ -206,7 +208,7 @@ type: Opaque
 
 ### spec.storage
 
-If you don't set `spec.storageType:` to `Ephemeral` then `spec.storage` field is required. This field specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+If you don't set `spec.storageType:` to `Ephemeral` then `spec.storage` field is required. This field specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 - `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
 - `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
@@ -232,7 +234,7 @@ To initialize a PostgreSQL database using a script (shell script, db migrator, e
 Below is an example showing how a script from a configMap can be used to initialize a PostgreSQL database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: postgres-db
@@ -260,14 +262,14 @@ PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and Promet
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for Postgres database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for Postgres database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
 - metadata
   - annotations (pod's annotation)
 - controller
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - serviceAccountName
   - env
@@ -387,16 +389,16 @@ The fileds of `spec.replicaServiceTemplate` is similar to `spec.serviceTemplate`
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Postgres` crd or which resources KubeDB should keep or delete when you delete `Postgres` crd. KubeDB provides following four termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Postgres` crd or which resources KubeDB should keep or delete when you delete `Postgres` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
 - Halt
 - Delete (`Default`)
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete Postgres crd for different termination policies,
 
@@ -404,14 +406,14 @@ Following table show what KubeDB does when you delete Postgres crd for different
 | ---------------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation                |    &#10003;    | &#10007; | &#10007; | &#10007; |
 | 2. Create Dormant Database               |    &#10007;    | &#10003; | &#10007; | &#10007; |
-| 3. Delete StatefulSet                    |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 3. Delete PetSet                    |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 4. Delete Services                       |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 5. Delete PVCs                           |    &#10007;    | &#10007; | &#10003; | &#10003; |
 | 6. Delete Secrets                        |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 7. Delete Snapshots                      |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 8. Delete Snapshot data from bucket      |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.terminationPolicy` KubeDB uses `Halt` termination policy by default.
+If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy by default.
 
 ## Next Steps
 

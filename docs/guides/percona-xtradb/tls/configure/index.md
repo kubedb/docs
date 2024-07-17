@@ -86,7 +86,7 @@ issuer.cert-manager.io/px-issuer created
 Now, we are going to deploy a `PerconaXtraDB` Cluster with TLS/SSL configuration. Below is the YAML for PerconaXtraDB cluster that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -117,7 +117,7 @@ spec:
       - localhost
       ipAddresses:
       - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 **Deploy PerconaXtraDB Cluster:**
@@ -129,7 +129,7 @@ perconaxtradb.kubedb.com/sample-pxc created
 
 **Wait for the database to be ready :**
 
-Now, wait for `PerconaXtraDB` going on `Running` state and also wait for `StatefulSet` and its pods to be created and going to `Running` state,
+Now, wait for `PerconaXtraDB` going on `Running` state and also wait for `PetSet` and its pods to be created and going to `Running` state,
 
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc

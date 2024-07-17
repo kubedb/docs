@@ -37,7 +37,7 @@ The horizontal scaling process consists of the following steps:
 
 2. `KubeDB` community operator watches for the `Postgres` cr.
 
-3. When it finds one, it creates a `StatefulSet` and related necessary stuff like secret, service, etc.
+3. When it finds one, it creates a `PetSet` and related necessary stuff like secret, service, etc.
 
 4. Then, in order to scale the cluster, the user creates a `PostgresOpsRequest` cr with the desired number of members after scaling.
 
@@ -47,9 +47,9 @@ The horizontal scaling process consists of the following steps:
 
 7. Then `KubeDB` Ops Manager will add nodes in case of scale up or remove nodes in case of scale down.
 
-8. Then the `KubeDB` Ops Manager will scale the StatefulSet replicas to reach the expected number of replicas for the cluster.
+8. Then the `KubeDB` Ops Manager will scale the PetSet replicas to reach the expected number of replicas for the cluster.
 
-9.  After successful scaling of the StatefulSet's replica, the `KubeDB` Ops Manager updates the `spec.replicas` field of `Postgres` object to reflect the updated cluster state.
+9.  After successful scaling of the PetSet's replica, the `KubeDB` Ops Manager updates the `spec.replicas` field of `Postgres` object to reflect the updated cluster state.
 
 10. After successful scaling of the `Postgres` replicas, the `KubeDB` Ops Manager resumes the `Postgres` object so that the `KubeDB` community operator can resume its usual operations.
 

@@ -47,14 +47,14 @@ In order to enable monitoring for a database, you have to configure `spec.monito
 A sample YAML for MongoDB crd with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: sample-mongo
   namespace: databases
 spec:
   version: "4.4.26"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   configSecret:
     name: config
   storageType: Durable

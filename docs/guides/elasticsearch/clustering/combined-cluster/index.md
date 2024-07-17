@@ -40,7 +40,7 @@ demo                 Active   9s
 Here, we are going to create a standalone (ie. `replicas: 1`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opensearch-2.8.0`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-standalone
@@ -57,7 +57,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's deploy the above example by the following command:
@@ -93,7 +93,7 @@ service/es-standalone-master   ClusterIP   None          <none>        9300/TCP 
 service/es-standalone-pods     ClusterIP   None          <none>        9200/TCP   33m
 
 NAME                             READY   AGE
-statefulset.apps/es-standalone   1/1     33m
+petset.apps/es-standalone   1/1     33m
 
 NAME                                               TYPE                       VERSION   AGE
 appbinding.appcatalog.appscode.com/es-standalone   kubedb.com/elasticsearch   7.10.0    33m
@@ -158,7 +158,7 @@ $ curl -XGET -k -u 'admin:V,YY1.qXxoAch9)B' "https://localhost:9200/_cluster/hea
 Here, we are going to create a multi-node (say `replicas: 3`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opensearch-2.8.0`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-multinode
@@ -175,7 +175,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's deploy the above example by the following command:
@@ -213,7 +213,7 @@ service/es-multinode-master   ClusterIP   None            <none>        9300/TCP
 service/es-multinode-pods     ClusterIP   None            <none>        9200/TCP   6m15s
 
 NAME                            READY   AGE
-statefulset.apps/es-multinode   3/3     6m12s
+petset.apps/es-multinode   3/3     6m12s
 
 NAME                                              TYPE                       VERSION   AGE
 appbinding.appcatalog.appscode.com/es-multinode   kubedb.com/elasticsearch   7.10.0    6m12s
@@ -282,11 +282,11 @@ TO cleanup the k8s resources created by this tutorial, run:
 
 ```bash
 # standalone cluster
-$ kubectl patch -n demo elasticsearch es-standalone -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo elasticsearch es-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete elasticsearch -n demo es-standalone
 
 # multinode cluster
-$ kubectl patch -n demo elasticsearch es-multinode -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo elasticsearch es-multinode -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete elasticsearch -n demo es-multinode
 
 # delete namespace

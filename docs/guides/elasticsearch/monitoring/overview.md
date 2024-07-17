@@ -47,14 +47,14 @@ In order to enable monitoring for a database, you have to configure `spec.monito
 A sample YAML for Redis crd with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: sample-redis
   namespace: databases
 spec:
   version: 6.0.20
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   configSecret: # configure Redis to use password for authentication
     name: redis-config
   storageType: Durable

@@ -52,7 +52,7 @@ Let's deploy a sample Redis database and insert some data into it.
 Below is the YAML of a sample Redis crd that we are going to create for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: sample-redis

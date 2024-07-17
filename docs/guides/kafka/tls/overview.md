@@ -65,6 +65,6 @@ Deploying Kafka with TLS/SSL configuration process consists of the following ste
 
 9. `KubeDB` Provisioner  operator watches for the Certificate secrets `tls-secrets`.
 
-10. When it finds all the tls-secret, it creates the related `StatefulSets` so that Kafka database can be configured with TLS/SSL.
+10. When it finds all the tls-secret, it creates the related `PetSets` so that Kafka database can be configured with TLS/SSL.
 
 In the next doc, we are going to show a step-by-step guide on how to configure a `Kafka` cluster with TLS/SSL.

@@ -349,8 +349,8 @@ demo        service/kafka-broker       ClusterIP   None         <none>        90
 demo        service/kafka-controller   ClusterIP   None         <none>        9093/TCP             46m   app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,kubedb.com/role=controller
 
 NAMESPACE   NAME                                READY   AGE   CONTAINERS   IMAGES
-demo        statefulset.apps/kafka-broker       3/3     45m   kafka        ghcr.io/appscode-images/kafka-kraft:3.6.1@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
-demo        statefulset.apps/kafka-controller   3/3     45m   kafka        ghcr.io/appscode-images/kafka-kraft:3.6.1@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
+demo        petset.apps/kafka-broker       3/3     45m   kafka        ghcr.io/appscode-images/kafka-kraft:3.6.1@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
+demo        petset.apps/kafka-controller   3/3     45m   kafka        ghcr.io/appscode-images/kafka-kraft:3.6.1@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
 
 NAMESPACE   NAME                                       TYPE               VERSION   AGE
 demo        appbinding.appcatalog.appscode.com/kafka   kubedb.com/kafka   3.4.0     45m
@@ -371,12 +371,12 @@ You can print labels with objects. The following command will list all Snapshots
 ```bash
 $ kubectl get pods -n demo --show-labels
 NAME                 READY   STATUS    RESTARTS      AGE   LABELS
-kafka-broker-0       1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-broker-5f568d57c9,kubedb.com/role=broker,statefulset.kubernetes.io/pod-name=kafka-broker-0
-kafka-broker-1       1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-broker-5f568d57c9,kubedb.com/role=broker,statefulset.kubernetes.io/pod-name=kafka-broker-1
-kafka-broker-2       1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-broker-5f568d57c9,kubedb.com/role=broker,statefulset.kubernetes.io/pod-name=kafka-broker-2
-kafka-controller-0   1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-controller-96ddd885f,kubedb.com/role=controller,statefulset.kubernetes.io/pod-name=kafka-controller-0
-kafka-controller-1   1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-controller-96ddd885f,kubedb.com/role=controller,statefulset.kubernetes.io/pod-name=kafka-controller-1
-kafka-controller-2   1/1     Running   3 (47m ago)   47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-controller-96ddd885f,kubedb.com/role=controller,statefulset.kubernetes.io/pod-name=kafka-controller-2
+kafka-broker-0       1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-broker-5f568d57c9,kubedb.com/role=broker,petset.kubernetes.io/pod-name=kafka-broker-0
+kafka-broker-1       1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-broker-5f568d57c9,kubedb.com/role=broker,petset.kubernetes.io/pod-name=kafka-broker-1
+kafka-broker-2       1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-broker-5f568d57c9,kubedb.com/role=broker,petset.kubernetes.io/pod-name=kafka-broker-2
+kafka-controller-0   1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-controller-96ddd885f,kubedb.com/role=controller,petset.kubernetes.io/pod-name=kafka-controller-0
+kafka-controller-1   1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-controller-96ddd885f,kubedb.com/role=controller,petset.kubernetes.io/pod-name=kafka-controller-1
+kafka-controller-2   1/1     Running   3 (47m ago)   47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-controller-96ddd885f,kubedb.com/role=controller,petset.kubernetes.io/pod-name=kafka-controller-2
 ```
 
 You can also filter list using `--selector` flag.
@@ -400,8 +400,8 @@ pod/kafka-controller-1
 pod/kafka-controller-2
 service/kafka-broker
 service/kafka-controller
-statefulset.apps/kafka-broker
-statefulset.apps/kafka-controller
+petset.apps/kafka-broker
+petset.apps/kafka-controller
 appbinding.appcatalog.appscode.com/kafka
 ```
 
@@ -627,14 +627,14 @@ Events:
 
 `kubectl describe` command provides following basic information about a database.
 
-- StatefulSet
+- PetSet
 - Storage (Persistent Volume)
 - Service
 - Secret (If available)
 - Topology (If available)
 - Monitoring system (If available)
 
-To hide details about StatefulSet & Service, use flag `--show-workload=false`
+To hide details about PetSet & Service, use flag `--show-workload=false`
 To hide details about Secret, use flag `--show-secret=false`
 To hide events on KubeDB object, use flag `--show-events=false`
 
@@ -669,7 +669,7 @@ Various fields of a KubeDb object can't be edited using `edit` command. The foll
 - metadata.namespace
 - status
 
-If StatefulSets or Deployments exists for a database, following fields can't be modified as well.
+If PetSets or Deployments exists for a database, following fields can't be modified as well.
 
 Kafka:
 

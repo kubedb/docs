@@ -23,7 +23,7 @@ section_menu_id: guides
 As with all other Kubernetes objects, an Elasticsearch needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example Elasticsearch object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: myes
@@ -57,46 +57,25 @@ spec:
   podTemplate:
     controller:
       annotations:
-        passTo: statefulSets
+        passTo: petSets
     metadata:
       annotations:
         passTo: pods
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: es
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: elasticsearches.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: es
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: elasticsearches.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
-      env:
-      - name: node.processors
-        value: "2"
       nodeSelector:
         kubernetes.io/os: linux
-      resources:
-        limits:
-          cpu: "1"
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 512Mi
+      containers:
+      - name: elasticsearch
+        env:
+        - name: node.processors
+          value: "2"
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
       serviceAccountName: es
   replicas: 3
   serviceTemplates:
@@ -114,7 +93,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   tls:
     issuerRef:
       apiGroup: "cert-manager.io"
@@ -411,21 +390,21 @@ The `spec.topology` contains the following fields:
 
 - `topology.master`:
   - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the `master` nodes. Defaults to `1`.
-  - `suffix` (`: "master"`) - is an `optional` field that is added as the suffix of the master StatefulSet name. Defaults to `master`.
+  - `suffix` (`: "master"`) - is an `optional` field that is added as the suffix of the master PetSet name. Defaults to `master`.
   - `storage` is a `required` field that specifies how much storage to claim for each of the `master` nodes.
   - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `master` nodes.
   - `maxUnavailable` is an `optional` field that specifies the exact number of master nodes (ie. pods) that can be safely evicted before the pod disruption budget (PDB) kicks in. KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss occurs.
 
 - `topology.data`:
   - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the `data` nodes. Defaults to `1`.
-  - `suffix` (`: "data"`) - is an `optional` field that is added as the suffix of the data StatefulSet name. Defaults to `data`.
+  - `suffix` (`: "data"`) - is an `optional` field that is added as the suffix of the data PetSet name. Defaults to `data`.
   - `storage` is a `required` field that specifies how much storage to claim for each of the `data` nodes.
   - `resources` (` cpu: 500m, memory: 1Gi `) - is an `optional` field that specifies which amount of computational resources to request or to limit for each of the `data` nodes.
   - `maxUnavailable` is an `optional` field that specifies the exact number of data nodes (ie. pods) that can be safely evicted before the pod disruption budget (PDB) kicks in. KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss occurs.
 
 - `topology.ingest`:
   - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the `ingest` nodes. Defaults to `1`.
-  - `suffix` (`: "ingest"`) - is an `optional` field that is added as the suffix of the data StatefulSet name. Defaults to `ingest`.
+  - `suffix` (`: "ingest"`) - is an `optional` field that is added as the suffix of the data PetSet name. Defaults to `ingest`.
   - `storage` is a `required` field that specifies how much storage to claim for each of the `ingest` nodes.
   - `resources` (` cpu: 500m, memory: 1Gi `) - is an `optional` field that specifies which amount of computational resources to request or to limit for each of the `data` nodes.
   - `maxUnavailable` is an `optional` field that specifies the exact number of ingest nodes (ie. pods) that can be safely evicted before the pod disruption budget (PDB) kicks in. KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss is occurs.
@@ -603,7 +582,7 @@ spec:
 
 ### spec.storage
 
-If the `spec.storageType`  is not set to `Ephemeral` and if the `spec.topology` field also is not set then `spec.storage` field is `required`. This field specifies the StorageClass of the PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+If the `spec.storageType`  is not set to `Ephemeral` and if the `spec.topology` field also is not set then `spec.storage` field is `required`. This field specifies the StorageClass of the PVCs dynamically allocated to store data for the database. This storage spec will be passed to the PetSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 ```yaml
 spec:
@@ -728,7 +707,7 @@ stringData:
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for Elasticsearch database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for Elasticsearch database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -736,8 +715,8 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - annotations (pod's annotation)
   - labels (pod's labels)
 - controller:
-  - annotations (statefulset's annotation)
-  - labels (statefulset's labels)
+  - annotations (petset's annotation)
+  - labels (petset's labels)
 - spec:
   - args
   - env
@@ -855,30 +834,30 @@ spec:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.18.9/api/v1/types.go#L192) to understand these fields in detail.
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Elasticsearch` CRD or which resources KubeDB should keep or delete when you delete `Elasticsearch` CRD. The KubeDB operator provides the following termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Elasticsearch` CRD or which resources KubeDB should keep or delete when you delete `Elasticsearch` CRD. The KubeDB operator provides the following termination policies:
 
 - DoNotTerminate
 - Halt
 - Delete (`Default`)
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes v1.9+ to provide safety from accidental deletion of the database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes v1.9+ to provide safety from accidental deletion of the database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete Elasticsearch CRD for different termination policies,
 
 | Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Delete StatefulSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 2. Delete PetSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 4. Delete TLS Credential Secrets    |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 5. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
 | 6. Delete User Credential Secrets   |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
 
-If the `spec.terminationPolicy` is not specified, the KubeDB operator defaults it to `Delete`.
+If the `spec.deletionPolicy` is not specified, the KubeDB operator defaults it to `Delete`.
 
 ## spec.healthChecker
 It defines the attributes for the health checker.

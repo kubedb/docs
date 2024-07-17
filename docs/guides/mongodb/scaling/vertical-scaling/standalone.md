@@ -49,7 +49,7 @@ Now, we are going to deploy a `MongoDB` standalone database with version `4.4.26
 In this section, we are going to deploy a MongoDB standalone database. Then, in the next section we will update the resources of the database using `MongoDBOpsRequest` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-standalone
@@ -151,7 +151,7 @@ mongodbopsrequest.ops.kubedb.com/mops-vscale-standalone created
 
 #### Verify MongoDB Standalone resources updated successfully 
 
-If everything goes well, `KubeDB` Ops-manager operator will update the resources of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the resources of `MongoDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -266,9 +266,9 @@ Events:
   ----    ------                     ----  ----                         -------
   Normal  PauseDatabase              34s   KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-standalone
   Normal  PauseDatabase              34s   KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-standalone
-  Normal  Starting                   34s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-standalone
+  Normal  Starting                   34s   KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-standalone
   Normal  UpdateStandaloneResources  34s   KubeDB Ops-manager Operator  Successfully updated standalone Resources
-  Normal  Starting                   34s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-standalone
+  Normal  Starting                   34s   KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-standalone
   Normal  UpdateStandaloneResources  34s   KubeDB Ops-manager Operator  Successfully updated standalone Resources
   Normal  UpdateStandaloneResources  4s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Standalone Resources
   Normal  UpdateStandaloneResources  4s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Standalone Resources

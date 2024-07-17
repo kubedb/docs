@@ -23,7 +23,7 @@ section_menu_id: guides
 As with all other Kubernetes objects, a MongoDB needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example MongoDB object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo1
@@ -112,7 +112,7 @@ spec:
         thisLabel: willGoToPod
     controller:
       annotations:
-        passMe: ToStatefulSet
+        passMe: ToPetSet
       labels:
         thisLabel: willGoToSts
     spec:
@@ -122,18 +122,27 @@ spec:
         disktype: ssd
       imagePullSecrets:
         - name: myregistrykey
-      args:
-        - --maxConns=100
-      env:
-        - name: MONGO_INITDB_DATABASE
-          value: myDB
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+      containers:
+      - name: mongo
+        args:
+          - --maxConns=100
+        env:
+          - name: MONGO_INITDB_DATABASE
+            value: myDB
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      - name: replication-mode-detector
+        resources:
+          requests:
+            cpu: "300m"
+            memory: 500Mi
+        securityContext:
+            runAsUser: 1001
   serviceTemplates:
   - alias: primary
     spec:
@@ -142,7 +151,7 @@ spec:
         - name: primary
           port: 27017
           nodePort: 300006
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   halted: false
   arbiter:
     podTemplate:
@@ -162,13 +171,6 @@ spec:
     selector:
       matchLabels:
         "schema.kubedb.com": "mongo"
-  coordinator:
-    resources:
-      requests:
-        cpu: "300m"
-        memory: 500Mi
-    securityContext:
-      runAsUser: 1001
   healthChecker:
     periodSeconds: 15
     timeoutSeconds: 10
@@ -388,7 +390,7 @@ In this case, you don't have to specify `spec.storage` field. Specify `spec.ephe
 
 ### spec.storage
 
-Since 0.9.0-rc.0, If you set `spec.storageType:` to `Durable`, then `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+Since 0.9.0-rc.0, If you set `spec.storageType:` to `Durable`, then `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 - `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
 - `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
@@ -422,7 +424,7 @@ To initialize a MongoDB database using a script (shell script, js script), set t
 Below is an example showing how a script from a configMap can be used to initialize a MongoDB database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo1
@@ -435,7 +437,7 @@ spec:
         name: mongodb-init-script
 ```
 
-In the above example, KubeDB operator will launch a Job to execute all js script of `mongodb-init-script` in alphabetical order once StatefulSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mongodb/initialization/using-script.md).
+In the above example, KubeDB operator will launch a Job to execute all js script of `mongodb-init-script` in alphabetical order once PetSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mongodb/initialization/using-script.md).
 
 These are the fields of `spec.init` which you can make use of :
 - `spec.init.initialized` indicating that this database has been initialized or not. `false` by default.
@@ -462,7 +464,7 @@ NB. If `spec.shardTopology` is set, then `spec.configSecret` needs to be empty. 
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for MongoDB database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for MongoDB database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -470,8 +472,8 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - annotations (pod's annotation)
   - labels (pod's labels)
 - controller:
-  - annotations (statefulset's annotation)
-  - labels (statefulset's labels)
+  - annotations (petset's annotation)
+  - labels (petset's labels)
 - spec:
   - args
   - env
@@ -577,30 +579,30 @@ KubeDB allows following fields to set in `spec.serviceTemplates`:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.21.1/api/v1/types.go#L237) to understand these fields in detail.
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MongoDB` crd or which resources KubeDB should keep or delete when you delete `MongoDB` crd. KubeDB provides following four termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MongoDB` crd or which resources KubeDB should keep or delete when you delete `MongoDB` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
 - Halt
 - Delete (`Default`)
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete MongoDB crd for different termination policies,
 
 | Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Delete StatefulSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 2. Delete PetSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
 | 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 7. Delete Snapshot data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.terminationPolicy` KubeDB uses `Delete` termination policy by default.
+If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
 
 ### spec.halted
 Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.

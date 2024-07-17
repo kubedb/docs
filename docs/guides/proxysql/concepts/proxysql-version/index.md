@@ -65,7 +65,7 @@ The default value of this field is `false`. If `.spec.deprecated` is set `true`,
 
 ### .spec.proxysql.image
 
-`.spec.proxysql.image` is a required field that specifies the docker image which will be used to create Statefulset by KubeDB operator to deploy expected ProxySQL.
+`.spec.proxysql.image` is a required field that specifies the docker image which will be used to create Petset by KubeDB operator to deploy expected ProxySQL.
 
 ### .spec.exporter.image
 

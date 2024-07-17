@@ -42,7 +42,7 @@ To deploy a MongoDB Sharding, user have to specify `spec.shardTopology` option i
 The following is an example of a `Mongodb` object which creates MongoDB Sharding of three members.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-sh
@@ -97,7 +97,7 @@ Here,
     - `podTemplate` is an optional configuration for pods.
 - `spec.keyFileSecret` (optional) is a secret name that contains keyfile (a random string)against `key.txt` key. Each mongod instances in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the replicaset. Only mongod instances with the correct keyfile can join the replica set. _User can provide the `keyFileSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `keyFileSecret`._ If `keyFileSecret` is not given, KubeDB operator will generate a `keyFileSecret` itself.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create some new StatefulSets : 1 for mongos, 1 for configServer & 1 for each of the shards. It creates a primary Service with the matching MongoDB object name. KubeDB operator will also create governing services for StatefulSets with the name `<mongodb-name>-<node-type>-pods`.
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create some new PetSets : 1 for mongos, 1 for configServer & 1 for each of the shards. It creates a primary Service with the matching MongoDB object name. KubeDB operator will also create governing services for PetSets with the name `<mongodb-name>-<node-type>-pods`.
 
 MongoDB `mongo-sh` state,
 
@@ -107,10 +107,10 @@ NAME       VERSION   STATUS    AGE
 mongo-sh   4.4.26     Ready     9m41s
 ```
 
-All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as statefulset.
+All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as petset.
 
 ```bash
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME                 READY   AGE
 mongo-sh-configsvr   3/3     11m
 mongo-sh-mongos      3/3     8m41s
@@ -163,18 +163,18 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mongo-sh -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh","namespace":"demo"},"spec":{"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"replicas":3,"shards":2,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}}},"version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh","namespace":"demo"},"spec":{"shardTopology":{"configServer":{"replicas":3,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"mongos":{"replicas":2},"shard":{"replicas":3,"shards":2,"storage":{"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}}},"version":"4.4.26"}}
   creationTimestamp: "2021-02-10T12:57:03Z"
   finalizers:
     - kubedb.com
   generation: 3
   managedFields:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:
@@ -215,7 +215,7 @@ metadata:
       manager: kubectl-client-side-apply
       operation: Update
       time: "2021-02-10T12:57:03Z"
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:
@@ -463,7 +463,7 @@ spec:
   sslMode: disabled
   storageEngine: wiredTiger
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   version: 4.4.26
 status:
   conditions:
@@ -770,14 +770,14 @@ Here, `demo` database is not partitioned and all collections under `demo` databa
 
 ## Halt Database
 
-When [TerminationPolicy](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
+When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the PetSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
 
-You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the statefulsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
+You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the petsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
 
-To halt the database, first you have to set the terminationPolicy to `Halt` in existing database. You can use the below command to set the terminationPolicy to `Halt`, if it is not already set.
+To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo mg/mongo-sh -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"
+$ kubectl patch -n demo mg/mongo-sh -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 mongodb.kubedb.com/mongo-sh patched
 ```
 
@@ -788,7 +788,7 @@ $ kubectl patch -n demo mg/mongo-sh -p '{"spec":{"halted":true}}' --type="merge"
 mongodb.kubedb.com/mongo-sh patched
 ```
 
-After that, kubedb will delete the statefulsets and services and you can see the database Phase as `Halted`.
+After that, kubedb will delete the petsets and services and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
@@ -901,7 +901,7 @@ mongos> sh.status()
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/mongo-sh -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/mongo-sh -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mongo-sh
 
 kubectl delete ns demo

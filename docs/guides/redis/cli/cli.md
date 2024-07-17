@@ -57,7 +57,7 @@ To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
 $ kubectl get redis redis-demo --output=yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   creationTimestamp: 2018-10-01T08:14:27Z
@@ -69,7 +69,7 @@ metadata:
   name: redis-demo
   namespace: demo
   resourceVersion: "18201"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/redises/redis-demo
+  selfLink: /apis/kubedb.com/v1/namespaces/default/redises/redis-demo
   uid: 039aeaa1-c552-11e8-9ba7-0800274bef12
 spec:
   mode: Standalone
@@ -87,7 +87,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   version: 4.0-v1
 status:
   observedGeneration: 1$7916315637361465932
@@ -155,7 +155,7 @@ Volume:
   Capacity:      1Gi
   Access Modes:  RWO
 
-StatefulSet:
+PetSet:
   Name:               redis-demo
   CreationTimestamp:  Mon, 01 Oct 2018 14:14:31 +0600
   Labels:               kubedb=cli-demo
@@ -182,15 +182,15 @@ Events:
   Type    Reason      Age   From            Message
   ----    ------      ----  ----            -------
   Normal  Successful  5m    Redis operator  Successfully created Service
-  Normal  Successful  5m    Redis operator  Successfully created StatefulSet
+  Normal  Successful  5m    Redis operator  Successfully created PetSet
   Normal  Successful  5m    Redis operator  Successfully created Redis
-  Normal  Successful  5m    Redis operator  Successfully patched StatefulSet
+  Normal  Successful  5m    Redis operator  Successfully patched PetSet
   Normal  Successful  5m    Redis operator  Successfully patched Redis
 ```
 
 `kubectl dba describe` command provides following basic information about a Redis server.
 
-- StatefulSet
+- PetSet
 - Storage (Persistent Volume)
 - Service
 - Monitoring system (If available)
@@ -247,7 +247,7 @@ Various fields of a KubeDB object can't be edited using `edit` command. The foll
 - metadata.name
 - metadata.namespace
 
-If StatefulSets exists for a Redis server, following fields can't be modified as well.
+If PetSets exists for a Redis server, following fields can't be modified as well.
 
 - spec.storageType
 - spec.storage

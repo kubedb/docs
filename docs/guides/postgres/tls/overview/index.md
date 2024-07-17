@@ -72,6 +72,6 @@ Deploying Postgres with TLS/SSL configuration process consists of the following 
 
 9. `KubeDB` community operator watches for the Certificate secrets `tls-secrets`.
 
-10. When it finds all the tls-secret, it creates a `StatefulSet` so that Postgres server is configured with TLS/SSL.
+10. When it finds all the tls-secret, it creates a `PetSet` so that Postgres server is configured with TLS/SSL.
 
 In the next doc, we are going to show a step by step guide on how to configure a `Postgres` database with TLS/SSL.

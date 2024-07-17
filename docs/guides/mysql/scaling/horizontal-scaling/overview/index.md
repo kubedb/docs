@@ -37,7 +37,7 @@ The horizontal scaling process consists of the following steps:
 
 2. `KubeDB` community operator watches for the `MySQL` cr.
 
-3. When it finds one, it creates a `StatefulSet` and related necessary stuff like secret, service, etc.
+3. When it finds one, it creates a `PetSet` and related necessary stuff like secret, service, etc.
 
 4. Then, in order to scale the cluster, the user creates a `MySQLOpsRequest` cr with the desired number of members after scaling.
 
@@ -45,9 +45,9 @@ The horizontal scaling process consists of the following steps:
 
 6. When it finds one, it halts the `MySQL` object so that the `KubeDB` community operator doesn't perform any operation on the `MySQL` during the scaling process.  
 
-7. Then the `KubeDB` Ops Manager will scale the StatefulSet replicas to reach the expected number of members for the group replication.
+7. Then the `KubeDB` Ops Manager will scale the PetSet replicas to reach the expected number of members for the group replication.
 
-8. After successful scaling of the StatefulSet's replica, the `KubeDB` Ops Manager updates the `spec.replicas` field of `MySQL` object to reflect the updated cluster state.
+8. After successful scaling of the PetSet's replica, the `KubeDB` Ops Manager updates the `spec.replicas` field of `MySQL` object to reflect the updated cluster state.
 
 9. After successful scaling of the `MySQL` replicas, the `KubeDB` Ops Manager resumes the `MySQL` object so that the `KubeDB` community operator can resume its usual operations.
 

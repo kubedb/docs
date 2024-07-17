@@ -48,7 +48,7 @@ Here, we are going to deploy a `MongoDB` Replicaset using a supported version by
 In this section, we are going to deploy a MongoDB Replicaset database with version `4.4.26`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-rs
@@ -65,14 +65,16 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "200m"
-          memory: "300Mi"
-        limits:
-          cpu: "200m"
-          memory: "300Mi"
-  terminationPolicy: WipeOut
+      containers:
+      - name: mongo
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "300Mi"
+          limits:
+            cpu: "200m"
+            memory: "300Mi"
+  deletionPolicy: WipeOut
 
 ```
 
@@ -480,9 +482,9 @@ Events:
   ----    ------                     ----   ----                         -------
   Normal  PauseDatabase              4m9s   KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-rs
   Normal  PauseDatabase              4m9s   KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-rs
-  Normal  Starting                   4m9s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-rs
+  Normal  Starting                   4m9s   KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-rs
   Normal  UpdateReplicaSetResources  4m9s   KubeDB Ops-manager Operator  Successfully updated replicaset Resources
-  Normal  Starting                   4m9s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-rs
+  Normal  Starting                   4m9s   KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-rs
   Normal  UpdateReplicaSetResources  4m9s   KubeDB Ops-manager Operator  Successfully updated replicaset Resources
   Normal  UpdateReplicaSetResources  2m44s  KubeDB Ops-manager Operator  Successfully Vertically Scaled Replicaset Resources
   Normal  ResumeDatabase             2m43s  KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-rs

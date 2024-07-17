@@ -64,7 +64,7 @@ secret/px-configuration created
 In this section, we are going to create a PerconaXtraDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -82,7 +82,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `PerconaXtraDB` CR we have shown above,
@@ -254,9 +254,9 @@ Status:
     Last Transition Time:  2022-06-10T04:47:25Z
     Message:               Successfully restarted PerconaXtraDB pods for PerconaXtraDBOpsRequest: demo/pxops-reconfigure-config
     Observed Generation:   1
-    Reason:                SuccessfullyRestatedStatefulSet
+    Reason:                SuccessfullyRestatedPetSet
     Status:                True
-    Type:                  RestartStatefulSetPods
+    Type:                  RestartPetSetPods
     Last Transition Time:  2022-06-10T04:47:30Z
     Message:               Successfully reconfigured PerconaXtraDB for PerconaXtraDBOpsRequest: demo/pxops-reconfigure-config
     Observed Generation:   1
@@ -453,9 +453,9 @@ Status:
     Last Transition Time:  2022-06-10T09:17:24Z
     Message:               Successfully restarted PerconaXtraDB pods for PerconaXtraDBOpsRequest: demo/pxops-reconfigure-apply-config
     Observed Generation:   1
-    Reason:                SuccessfullyRestatedStatefulSet
+    Reason:                SuccessfullyRestatedPetSet
     Status:                True
-    Type:                  RestartStatefulSetPods
+    Type:                  RestartPetSetPods
     Last Transition Time:  2022-06-10T09:17:29Z
     Message:               Successfully reconfigured PerconaXtraDB for PerconaXtraDBOpsRequest: demo/pxops-reconfigure-apply-config
     Observed Generation:   1

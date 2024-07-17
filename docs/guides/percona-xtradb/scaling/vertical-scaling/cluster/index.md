@@ -49,7 +49,7 @@ Now, we are going to deploy a `PerconaXtraDB` cluster database with version `8.0
 In this section, we are going to deploy a PerconaXtraDB cluster database. Then, in the next section we will update the resources of the database using `PerconaXtraDBOpsRequest` CRD. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -65,7 +65,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `PerconaXtraDB` CR we have shown above,
@@ -147,7 +147,7 @@ perconaxtradbopsrequest.ops.kubedb.com/pxops-vscale created
 
 #### Verify PerconaXtraDB Cluster resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `PerconaXtraDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the resources of `PerconaXtraDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 

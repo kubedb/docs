@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: sample-mgo-sh
@@ -23,4 +23,4 @@ spec:
           requests:
             storage: 1Gi
         storageClassName: standard
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

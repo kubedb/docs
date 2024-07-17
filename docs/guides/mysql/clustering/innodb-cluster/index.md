@@ -41,7 +41,7 @@ To deploy a MySQL Innodb cluster, specify `spec.topology` field in `MySQL` CRD.
 The following is an example `MySQL` object which creates a MySQL Innodb cluster with three members (one is primary member and the two others are secondary members).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: innodb
@@ -62,7 +62,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -76,9 +76,9 @@ Here,
 - `spec.topology.mode` specifies the mode for MySQL cluster. Here we have used `InnoDBCluster` to tell the operator that we want to deploy a MySQL Innodb Cluster.
 - `spec.topology.innoDBCluster` contains the InnodbCluster info.Innodb cluster comes with a router as a load balancer
 - `spec.topology.Router.replica` is for the number of replica fo innodb cluster router.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-pods`.
+KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the PetSet with the name `<mysql-object-name>-pods`.
 
 ```bash
 $ kubectl dba describe my -n demo innodb
@@ -86,7 +86,7 @@ Name:               innodb
 Namespace:          demo
 CreationTimestamp:  Tue, 15 Nov 2022 15:14:42 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"innodb","namespace":"demo"},"spec":{"replicas":3,"storage":{"ac...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"innodb","namespace":"demo"},"spec":{"replicas":3,"storage":{"ac...
 Replicas:           3  total
 Status:             Provisioning
 StorageType:        Durable
@@ -98,7 +98,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               innodb
   CreationTimestamp:  Tue, 15 Nov 2022 15:14:42 +0600
   Labels:               app.kubernetes.io/component=database
@@ -168,7 +168,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"innodb","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"innoDBCluster":{"router":{"replicas":1}},"mode":"InnoDBCluster"},"version":"8.0.31-innodb"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"innodb","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"innoDBCluster":{"router":{"replicas":1}},"mode":"InnoDBCluster"},"version":"8.0.31-innodb"}}
 
     Creation Timestamp:  2022-11-15T09:14:42Z
     Labels:
@@ -212,12 +212,12 @@ Events:
   Normal  Successful     27s   MySQL operator  Successfully created service for primary/standalone
   Normal  Successful     27s   MySQL operator  Successfully created service for secondary replicas
   Normal  Successful     27s   MySQL operator  Successfully created database auth secret
-  Normal  Successful     27s   MySQL operator  Successfully created StatefulSet
-  Normal  Successful     27s   MySQL operator  successfully patched created StatefulSet innodb-router
+  Normal  Successful     27s   MySQL operator  Successfully created PetSet
+  Normal  Successful     27s   MySQL operator  successfully patched created PetSet innodb-router
   Normal  Successful     27s   MySQL operator  Successfully created MySQL
   Normal  Successful     27s   MySQL operator  Successfully created appbinding
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME       READY   AGE
 NAME            READY   AGE
 innodb          3/3     2m17s
@@ -247,7 +247,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get  my -n demo innodb -o yaml | kubectl neat
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: innodb
@@ -297,7 +297,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   topology:
     innoDBCluster:
       mode: Single-Primary

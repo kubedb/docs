@@ -103,7 +103,7 @@ secret/pg-singapore-auth created
 
 ## Deploy PostgreSQL with TLS/SSL configuration
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: pg-singapore
@@ -142,7 +142,7 @@ spec:
         storage: 1Gi
     storageClassName: linode-block-storage
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: "15.5"
 ```
 
@@ -237,7 +237,7 @@ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}
 ```
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: pg-london
@@ -265,7 +265,7 @@ spec:
         storage: 1Gi
     storageClassName: linode-block-storage
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: "15.5"
 ```
 
@@ -274,7 +274,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 postgres.kubedb.com/pg-london created
 ```
 
-Now we will be able to see kubedb will provision a Remote Replica from the source postgres instance. Lets checkout out the statefulSet , pvc , pv and services associated with it
+Now we will be able to see kubedb will provision a Remote Replica from the source postgres instance. Lets checkout out the petSet , pvc , pv and services associated with it
 .
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified `PostgreSQL` object:
 ```bash

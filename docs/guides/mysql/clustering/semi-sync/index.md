@@ -42,7 +42,7 @@ To deploy a single primary MySQL semi-synchronous cluster , specify `spec.topolo
 The following is an example `MySQL` object which creates a semi-synchronous cluster with three members (one is primary member and the two others are secondary members).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: semi-sync-mysql
@@ -64,7 +64,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-   terminationPolicy: WipeOut
+   deletionPolicy: WipeOut
 
 ```
 
@@ -81,9 +81,9 @@ Here,
 - `spec.topology.semiSync.sourceWaitForReplicaCount:` explains the number of replica semi-sync  primary wait before commit a transaction
 - `spec.topology.semiSync.sourceTimeout:` explains the timeout  for primary to wait for a replica and fall back to asynchronous replication
 - `spec.topology.semiSync.errantTransactionRecoveryPolicy:` it's possible to have errant transaction during a Primary failover . kubedb supports two types of recovery using `PseudoTransaction` and `Clone`
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-pods`.
+KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the PetSet with the name `<mysql-object-name>-pods`.
 
 ```bash
 $ kubectl dba describe my -n demo semi-sync-mysql
@@ -91,7 +91,7 @@ Name:               semi-sync-mysql
 Namespace:          demo
 CreationTimestamp:  Wed, 16 Nov 2022 11:45:53 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"stor...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"stor...
 Replicas:           3  total
 Status:             Ready
 StorageType:        Durable
@@ -103,7 +103,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               semi-sync-mysql
   CreationTimestamp:  Wed, 16 Nov 2022 11:45:53 +0600
   Labels:               app.kubernetes.io/component=database
@@ -174,7 +174,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"mode":"SemiSync","semiSync":{"errantTransactionRecoveryPolicy":"PseudoTransaction","sourceTimeout":"23h","sourceWaitForReplicaCount":1}},"version":"8.0.35"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"semi-sync-mysql","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"mode":"SemiSync","semiSync":{"errantTransactionRecoveryPolicy":"PseudoTransaction","sourceTimeout":"23h","sourceWaitForReplicaCount":1}},"version":"8.0.35"}}
 
     Creation Timestamp:  2022-11-16T05:45:53Z
     Labels:
@@ -217,7 +217,7 @@ Events:
   Normal  Successful     7m    MySQL operator  Successfully created service for primary/standalone
   Normal  Successful     7m    MySQL operator  Successfully created service for secondary replicas
   Normal  Successful     7m    MySQL operator  Successfully created database auth secret
-  Normal  Successful     7m    MySQL operator  Successfully created StatefulSet
+  Normal  Successful     7m    MySQL operator  Successfully created PetSet
   Normal  Successful     7m    MySQL operator  Successfully created MySQL
   Normal  Successful     7m    MySQL operator  Successfully created appbinding
   Normal  Successful     7m    MySQL operator  Successfully patched governing service
@@ -234,7 +234,7 @@ Events:
 g
 
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME       READY   AGE
 semi-sync-mysql   3/3     3m47s
 
@@ -270,7 +270,7 @@ semi-sync-mysql   8.0.35    Ready    16m
 
 ```yaml
 $ kubectl get  my -n demo semi-sync-mysql -o yaml | kubectl neat
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: semi-sync-mysql
@@ -285,8 +285,6 @@ spec:
   authSecret:
     name: semi-sync-mysql-auth
   autoOps: {}
-  coordinator:
-    resources: {}
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10
@@ -303,7 +301,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   topology:
     mode: SemiSync
     semiSync:
@@ -398,9 +396,9 @@ Now, you are ready to check newly created semi-sync. Connect and run the followi
 
 $ kubectl get pods -n demo --show-labels
 NAME                READY   STATUS    RESTARTS   AGE    LABELS
-semi-sync-mysql-0   2/2     Running   0          171m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=semi-sync-mysql-0
-semi-sync-mysql-1   2/2     Running   0          170m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=semi-sync-mysql-1
-semi-sync-mysql-2   2/2     Running   0          169m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=semi-sync-mysql-2
+semi-sync-mysql-0   2/2     Running   0          171m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=primary,petset.kubernetes.io/pod-name=semi-sync-mysql-0
+semi-sync-mysql-1   2/2     Running   0          170m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=standby,petset.kubernetes.io/pod-name=semi-sync-mysql-1
+semi-sync-mysql-2   2/2     Running   0          169m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=standby,petset.kubernetes.io/pod-name=semi-sync-mysql-2
 
 From the labels we can see that the `semi-sync-mysql-0` is running as primary and the rest are running as standby.Lets validate with the mysql semisync status
 
@@ -516,7 +514,7 @@ pod "semi-sync-mysql-0" deleted
 
 # check the new primary ID
 $ kubectl get pod -n demo --show-labels | grep primary
-semi-sync-mysql-1   2/2     Running   0          3h9m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=semi-sync-mysql-1
+semi-sync-mysql-1   2/2     Running   0          3h9m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=primary,petset.kubernetes.io/pod-name=semi-sync-mysql-1
 
 # now check the cluster status
 $ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"

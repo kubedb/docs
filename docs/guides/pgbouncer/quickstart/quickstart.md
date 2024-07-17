@@ -157,7 +157,7 @@ KubeDB implements a PgBouncer crd to define the specifications of a PgBouncer.
 Below is the PgBouncer object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PgBouncer
 metadata:
   name: pgbouncer-server
@@ -175,7 +175,7 @@ spec:
     port: 5432
     maxClientConnections: 20
     reservePoolSize: 5
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Here,
@@ -184,7 +184,7 @@ Here,
 - `spec.replicas` specifies the number of replica pgbouncer server pods to be created for the PgBouncer object.
 - `spec.database` specifies the database that are going to be served via PgBouncer.
 - `spec.connectionPool` specifies the configurations for connection pool.
-- `spec.terminationPolicy` specifies what policy to apply while deletion.
+- `spec.deletionPolicy` specifies what policy to apply while deletion.
 
 ### spec.database
 
@@ -209,22 +209,22 @@ ConnectionPool is used to configure pgbouncer connection pool. All the fields he
 - `spec.connectionPool.maxDbConnections`: specifies the value of max_db_connections.
 - `spec.connectionPool.maxUserConnections`: specifies the value of max_user_connections.
 
-### spec.terminationPolicy
+### spec.deletionPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PgBouncer` crd or which resources KubeDB should keep or delete when you delete `PgBouncer` crd. KubeDB provides following four termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PgBouncer` crd or which resources KubeDB should keep or delete when you delete `PgBouncer` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
 - Delete (`Default`)
 - WipeOut
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete Postgres crd for different termination policies,
 
 | Behavior                  | DoNotTerminate | Delete   | WipeOut  |
 |---------------------------| :------------: | :------: | :------: |
 | 1. Block Delete operation |    &#10003;    | &#10007; | &#10007; |
-| 2. Delete StatefulSet     |    &#10007;    | &#10003; | &#10003; |
+| 2. Delete PetSet     |    &#10007;    | &#10003; | &#10003; |
 | 3. Delete Services        |    &#10007;    | &#10003; | &#10003; |
 | 4. Delete PVCs            |    &#10007;    | &#10003; | &#10003; |
 | 5. Delete Secrets         |    &#10007;    | &#10007; | &#10003; |
@@ -270,7 +270,7 @@ $ env PGPASSWORD='RoX*L8I;8R7v32ti' psql --host=localhost --port=5432 --username
 (2 rows)
 ```
 
-KubeDB operator watches for PgBouncer objects using Kubernetes api. When a PgBouncer object is created, KubeDB operator will create a new StatefulSet and a Service with the matching name. KubeDB operator will also create a governing service for StatefulSet with the name `kubedb`, if one is not already present.
+KubeDB operator watches for PgBouncer objects using Kubernetes api. When a PgBouncer object is created, KubeDB operator will create a new PetSet and a Service with the matching name. KubeDB operator will also create a governing service for PetSet with the name `kubedb`, if one is not already present.
 
 KubeDB operator sets the `status.phase` to `Running` once the connection-pooling mechanism is ready.
 
@@ -288,7 +288,7 @@ Name:         pgbouncer-server
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         PgBouncer
 Metadata:
   Creation Timestamp:  2023-10-11T06:28:02Z
@@ -296,7 +296,7 @@ Metadata:
     kubedb.com
   Generation:  2
   Managed Fields:
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
@@ -326,12 +326,12 @@ Metadata:
           f:periodSeconds:
           f:timeoutSeconds:
         f:replicas:
-        f:terminationPolicy:
+        f:deletionPolicy:
         f:version:
     Manager:      kubectl-client-side-apply
     Operation:    Update
     Time:         2023-10-11T06:28:02Z
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:metadata:
@@ -343,7 +343,7 @@ Metadata:
     Manager:      kubedb-provisioner
     Operation:    Update
     Time:         2023-10-11T06:28:02Z
-    API Version:  kubedb.com/v1alpha2
+    API Version:  kubedb.com/v1
     Fields Type:  FieldsV1
     fieldsV1:
       f:status:

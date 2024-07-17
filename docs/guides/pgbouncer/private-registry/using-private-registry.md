@@ -104,7 +104,7 @@ While deploying PgBouncer from private repository, you have to add `myregistryke
 Below is the PgBouncer object we will create in this tutorial
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PgBouncer
 metadata:
   name: pvt-reg-pgbouncer

@@ -132,14 +132,14 @@ Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` la
 At first, let's deploy an MongoDB database with monitoring enabled. Below is the MongoDB object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: coreos-prom-mgo
   namespace: demo
 spec:
   version: "4.4.26"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
     accessModes:

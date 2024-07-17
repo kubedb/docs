@@ -46,7 +46,7 @@ In this section, we are going to deploy a PerconaXtraDB Cluster. Then, in the ne
 > If you want to update `PerconaXtraDB Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -62,7 +62,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 
 ```
 
@@ -120,7 +120,7 @@ perconaxtradbopsrequest.ops.kubedb.com/pxops-update created
 
 #### Verify PerconaXtraDB version updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `PerconaXtraDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `PerconaXtraDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 
@@ -133,7 +133,7 @@ pxops-update      UpdateVersion   Successful    84s
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded.
 
-Now, we are going to verify whether the `PerconaXtraDB` and the related `StatefulSets` and their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `PerconaXtraDB` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc -o=jsonpath='{.spec.version}{"\n"}'

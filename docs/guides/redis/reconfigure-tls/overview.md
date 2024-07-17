@@ -38,7 +38,7 @@ The Reconfiguring Redis/RedisSentinel TLS process consists of the following step
 
 2. `KubeDB` Community operator watches the `Redis` and `RedisSentinel` CR.
 
-3. When the operator finds a `Redis`/`RedisSentinel` CR, it creates required number of `StatefulSets` and related necessary stuff like appbinding, services, etc.
+3. When the operator finds a `Redis`/`RedisSentinel` CR, it creates required number of `PetSets` and related necessary stuff like appbinding, services, etc.
 
 4. Then, in order to reconfigure the TLS configuration of the `Redis` database the user creates a `RedisOpsRequest` CR with the desired version.
 

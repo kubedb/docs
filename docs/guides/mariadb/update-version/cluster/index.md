@@ -46,7 +46,7 @@ In this section, we are going to deploy a MariaDB Cluster. Then, in the next sec
 > If you want to update `MariaDB Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -62,7 +62,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 
 ```
 
@@ -120,7 +120,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-update created
 
 #### Verify MariaDB version updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `MariaDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `MariaDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
@@ -133,7 +133,7 @@ mdops-update      UpdateVersion   Successful    84s
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded.
 
-Now, we are going to verify whether the `MariaDB` and the related `StatefulSets` and their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `MariaDB` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get mariadb -n demo sample-mariadb -o=jsonpath='{.spec.version}{"\n"}'

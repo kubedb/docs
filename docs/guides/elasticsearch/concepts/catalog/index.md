@@ -106,7 +106,7 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 ### spec.db.image
 
-`spec.db.image` is a `required` field that specifies the docker image which will be used to create StatefulSet by KubeDB provisioner operator to create the expected Elasticsearch/OpenSearch database.
+`spec.db.image` is a `required` field that specifies the docker image which will be used to create PetSet by KubeDB provisioner operator to create the expected Elasticsearch/OpenSearch database.
 
 ### spec.dashboard.image
 `spec.dashboard.image` is an `optional` field that specifies the docker image which will be used to create Deployment by KubeDB dashboard operator to create the expected Kibana/Opensearch-dashboards.

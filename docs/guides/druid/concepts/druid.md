@@ -228,7 +228,7 @@ section_menu_id: guides
 [//]: # (### spec.podTemplate)
 
 [//]: # ()
-[//]: # (KubeDB allows providing a template for pgbouncer pods through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for PgBouncer server)
+[//]: # (KubeDB allows providing a template for pgbouncer pods through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for PgBouncer server)
 
 [//]: # ()
 [//]: # (KubeDB accept following fields to set in `spec.podTemplate:`)
@@ -240,7 +240,7 @@ section_menu_id: guides
 
 [//]: # (- controller)
 
-[//]: # (  - annotations &#40;statefulset's annotation&#41;)
+[//]: # (  - annotations &#40;petset's annotation&#41;)
 
 [//]: # (- spec:)
 

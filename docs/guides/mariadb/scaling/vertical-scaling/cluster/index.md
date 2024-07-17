@@ -49,7 +49,7 @@ Now, we are going to deploy a `MariaDB` cluster database with version `10.5.23`.
 In this section, we are going to deploy a MariaDB cluster database. Then, in the next section we will update the resources of the database using `MariaDBOpsRequest` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -65,7 +65,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MariaDB` CR we have shown above,
@@ -147,7 +147,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-vscale created
 
 #### Verify MariaDB Cluster resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `MariaDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the resources of `MariaDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 

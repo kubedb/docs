@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: quick-postgres
@@ -14,4 +14,4 @@ spec:
     resources:
       requests:
         storage: 50Mi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

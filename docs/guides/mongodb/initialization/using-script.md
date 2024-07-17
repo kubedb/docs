@@ -54,7 +54,7 @@ configmap/mg-init-script created
 Below is the `MongoDB` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo-init-script
@@ -83,7 +83,7 @@ Here,
 
 - `spec.init.script` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabatically. In this tutorial, a sample .js script from the git repository `https://github.com/kubedb/mongodb-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes).  The \*.js and/or \*.sh sripts that are stored inside the root folder will be executed alphabatically. The scripts inside child folders will be skipped.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-crd-name>-gvr`, if one is not already present. No MongoDB specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for PetSets with the name `<mongodb-crd-name>-gvr`, if one is not already present. No MongoDB specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
 
 ```bash
 $ kubectl dba describe mg -n demo mgo-init-script
@@ -91,7 +91,7 @@ Name:               mgo-init-script
 Namespace:          demo
 CreationTimestamp:  Thu, 11 Feb 2021 10:58:22 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script"...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script"...
 Replicas:           1  total
 Status:             Ready
 StorageType:        Durable
@@ -103,7 +103,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  Delete
 
-StatefulSet:          
+PetSet:          
   Name:               mgo-init-script
   CreationTimestamp:  Thu, 11 Feb 2021 10:58:23 +0600
   Labels:               app.kubernetes.io/component=database
@@ -162,7 +162,7 @@ Init:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
 
     Creation Timestamp:  2021-02-11T04:58:42Z
     Labels:
@@ -191,10 +191,10 @@ Events:
   Normal  Successful  46s   MongoDB operator  Successfully  stats service
   Normal  Successful  46s   MongoDB operator  Successfully  stats service
   Normal  Successful  27s   MongoDB operator  Successfully created appbinding
-  Normal  Successful  27s   MongoDB operator  Successfully patched StatefulSet demo/mgo-init-script
+  Normal  Successful  27s   MongoDB operator  Successfully patched PetSet demo/mgo-init-script
   Normal  Successful  27s   MongoDB operator  Successfully patched MongoDB
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME              READY   AGE
 mgo-init-script   1/1     30s
 
@@ -216,18 +216,18 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mgo-init-script -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
   creationTimestamp: "2021-02-10T04:38:52Z"
   finalizers:
     - kubedb.com
   generation: 3
   managedFields:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:
@@ -256,7 +256,7 @@ metadata:
       manager: kubectl-client-side-apply
       operation: Update
       time: "2021-02-10T04:38:52Z"
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       fieldsType: FieldsV1
       fieldsV1:
         f:metadata:
@@ -359,7 +359,7 @@ spec:
     storageClassName: standard
   storageEngine: wiredTiger
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   version: 4.4.26
 status:
   conditions:
@@ -466,7 +466,7 @@ As you can see here, the initial script has successfully created a database name
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/mgo-init-script -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/mgo-init-script -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-init-script
 
 kubectl delete ns demo

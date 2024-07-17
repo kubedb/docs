@@ -124,7 +124,7 @@ While deploying `MongoDB` from private repository, you have to add `myregistryke
 Below is the MongoDB CRD object we will create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo-pvt-reg
@@ -169,7 +169,7 @@ mgo-pvt-reg   4.4.26     Ready     38s
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/mgo-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/mgo-pvt-reg -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-pvt-reg
 
 kubectl delete ns demo

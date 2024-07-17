@@ -66,7 +66,7 @@ Now, we are going to deploy a `Redis` standalone using a supported version by `K
 In this section, we are going to deploy a Redis standalone database with version `6.2.14`.  Then, in the next section we will set up autoscaling for this database using `RedisAutoscaler` CRD. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-standalone
@@ -79,7 +79,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `Redis` CRO we have shown above,
@@ -97,7 +97,7 @@ NAME            VERSION    STATUS    AGE
 rd-standalone   6.2.14      Ready     2m53s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo rd-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -108,7 +108,7 @@ NAME                                       CAPACITY   ACCESS MODES   RECLAIM POL
 pvc-cf469ed8-a89a-49ca-bf7c-8c76b7889428   1Gi        RWO            Delete           Bound    demo/datadir-rd-standalone-0   topolvm-provisioner            7m41s
 ```
 
-You can see the statefulset has 1GB storage, and the capacity of the persistent volume is also 1GB.
+You can see the petset has 1GB storage, and the capacity of the persistent volume is also 1GB.
 
 We are now ready to apply the `RedisAutoscaler` CRO to set up storage autoscaling for this database.
 
@@ -252,7 +252,7 @@ rdops-rd-standalone-p27c11   VolumeExpansion   Successful    73s
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo rd-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -269,7 +269,7 @@ The above output verifies that we have successfully autoscaled the volume of the
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo rd/rd-standalone -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/rd-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-standalone patched
 
 $ kubectl delete rd -n demo rd-standalone

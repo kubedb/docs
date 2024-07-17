@@ -42,7 +42,7 @@ First RedisSentinel instance needs to be deployed and then a Redis instance in S
 The following is an example `RedisSentinel` object which creates a Sentinel with three replicas.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-demo
@@ -58,7 +58,7 @@ spec:
     storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/sentinel.yaml
@@ -67,9 +67,9 @@ redissentinel.kubedb.com/sen-demo created
 
 Here,
 - `spec.replicas` denotes the number of replica nodes
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `RedisSentinel` objects using Kubernetes API. When a `RedisSentinel` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching RedisSentinel object name. KubeDB operator will also create a governing service for StatefulSets named `kubedb`, if one is not already present.
+KubeDB operator watches for `RedisSentinel` objects using Kubernetes API. When a `RedisSentinel` object is created, KubeDB operator will create a new PetSet and a Service with the matching RedisSentinel object name. KubeDB operator will also create a governing service for PetSets named `kubedb`, if one is not already present.
 
 
 Now we will deploy a Redis instance with giving the sentinelRef to the previously created RedisSentinel instance.
@@ -78,7 +78,7 @@ To deploy a Redis in Sentinel mode, specify `spec.mode` field in `Redis` CRD.
 The following is an example `Redis` object which creates a Redis Sentinel with three replica node, and it is monitored by Sentinel instance `sentinel`
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-demo
@@ -97,7 +97,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: Halt
+  deletionPolicy: Halt
 
 ```
 
@@ -110,9 +110,9 @@ Here,
 
 - `spec.mode` specifies the mode for Redis. Here we have used `Redis` to tell the operator that we want to deploy Redis in sentinel mode.
 - `spec.replicas` denotes the number of replica nodes
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `Redis` objects using Kubernetes API. When a `Redis` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for StatefulSets named `kubedb`, if one is not already present.
+KubeDB operator watches for `Redis` objects using Kubernetes API. When a `Redis` object is created, KubeDB operator will create a new PetSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for PetSets named `kubedb`, if one is not already present.
 
 ```bash
 $ kubectl get redissentinel -n demo
@@ -123,7 +123,7 @@ $ kubectl get redis -n demo
 NAME      VERSION   STATUS         AGE
 rd-demo   6.2.14     Ready   2m41s
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME       READY   AGE
 rd-demo    3/3     86s
 sen-demo   3/3     12m
@@ -165,12 +165,12 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 $ kubectl get redissentinel -n demo sen-demo -o yaml
 ```
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"RedisSentinel","metadata":{"annotations":{},"name":"sen-demo","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Halt","version":"6.2.14"}}
+      {"apiVersion":"kubedb.com/v1","kind":"RedisSentinel","metadata":{"annotations":{},"name":"sen-demo","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Halt","version":"6.2.14"}}
   creationTimestamp: "2023-02-03T06:36:16Z"
   finalizers:
   - kubedb.com
@@ -191,35 +191,14 @@ spec:
     controller: {}
     metadata: {}
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: sen-demo
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: redissentinels.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: sen-demo
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: redissentinels.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
-      resources:
-        limits:
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+      containers:
+      - name: redis
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
       serviceAccountName: sen-demo
   replicas: 3
   storage:
@@ -230,7 +209,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   version: 6.2.14
 status:
   conditions:
@@ -471,7 +450,7 @@ First set termination policy to `WipeOut` all the things created by KubeDB opera
 to clean what you created in this tutorial.
 
 ```bash
-$ kubectl patch -n demo rd/rd-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/rd-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-demo patched
 
 $ kubectl delete rd rd-demo -n demo
@@ -480,7 +459,7 @@ redis.kubedb.com "rd-demo" deleted
 
 Now delete the RedisSentinel instance similarly.
 ```bash
-$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/sen-demo patched
 
 $ kubectl delete redissentinel sen-demo -n demo

@@ -80,7 +80,7 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 
 ### spec.db.image
 
-`spec.db.image` is a required field that specifies the docker image which will be used to create StatefulSet by KubeDB operator to create expected Kafka database.
+`spec.db.image` is a required field that specifies the docker image which will be used to create PetSet by KubeDB operator to create expected Kafka database.
 
 ### spec.cruiseControl.image
 
@@ -88,7 +88,7 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 
 ### spec.connectCluster.image
 
-`spec.connectCluster.image` is a required field that specifies the docker image which will be used to create StatefulSet by KubeDB operator to create expected Kafka Connect Cluster.
+`spec.connectCluster.image` is a required field that specifies the docker image which will be used to create PetSet by KubeDB operator to create expected Kafka Connect Cluster.
 
 <!---
 ### spec.stash

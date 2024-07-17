@@ -31,9 +31,9 @@ The Auto Scaling process consists of the following steps:
 
 2. `KubeDB` Provisioner  operator watches the `Elasticsearch` CR.
 
-3. When the operator finds a `Elasticsearch` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `Elasticsearch` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
-- Each StatefulSet creates a Persistent Volume according to the Volume Claim Template provided in the statefulset configuration.
+- Each PetSet creates a Persistent Volume according to the Volume Claim Template provided in the petset configuration.
 
 4. Then, in order to set up storage autoscaling of the various components of the `Elasticsearch` database the user creates a `ElasticsearchAutoscaler` CRO with desired configuration.
 

@@ -42,7 +42,7 @@ To deploy a MongoDB Sharding, user have to specify `spec.shardTopology` option i
 The following is an example of a `Mongodb` object which creates MongoDB Sharding of three type of members.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-sh-hid
@@ -76,7 +76,7 @@ spec:
       resources:
         requests:
           storage: 2Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -107,17 +107,17 @@ Here,
     - `podTemplate` is an optional configuration for pods.
 - `spec.keyFileSecret` (optional) is a secret name that contains keyfile (a random string)against `key.txt` key. Each mongod instances in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the replicaset. Only mongod instances with the correct keyfile can join the replica set. _User can provide the `keyFileSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `keyFileSecret`._ If `keyFileSecret` is not given, KubeDB operator will generate a `keyFileSecret` itself.
 - `spec.storageEngine` is set to inMemory, & `spec.storageType` to ephemeral.
-- `spec.shardTopology.(configSerer/shard).ephemeralStorage` holds the emptyDir volume specifications. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this ephemeral storage configuration.
+- `spec.shardTopology.(configSerer/shard).ephemeralStorage` holds the emptyDir volume specifications. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this ephemeral storage configuration.
 - `spec.hidden` denotes hidden-node spec of the deployed MongoDB CRD. There are four fields under it :
   - `spec.hidden.podTemplate` holds the hidden-node podSpec. `null` value of it, instructs kubedb operator to use  the default hidden-node podTemplate.
   - `spec.hidden.configSecret` is an optional field to provide custom configuration file for database (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used.
   - `spec.hidden.replicas` holds the number of hidden-node in the replica set.
-  - `spec.hidden.storage` specifies the StorageClass of PVC dynamically allocated to store data for these hidden-nodes. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+  - `spec.hidden.storage` specifies the StorageClass of PVC dynamically allocated to store data for these hidden-nodes. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create some new StatefulSets : 1 for mongos, 1 for configServer, and 1 for each of the shard & hidden node. It creates a primary Service with the matching MongoDB object name. KubeDB operator will also create governing services for StatefulSets with the name `<mongodb-name>-<node-type>-pods`.
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create some new PetSets : 1 for mongos, 1 for configServer, and 1 for each of the shard & hidden node. It creates a primary Service with the matching MongoDB object name. KubeDB operator will also create governing services for PetSets with the name `<mongodb-name>-<node-type>-pods`.
 
 MongoDB `mongo-sh-hid` state,
-All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as statefulset.
+All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as petset.
 
 ```bash
 $ kubectl get mg,sts,svc,pvc,pv -n demo
@@ -125,12 +125,12 @@ NAME                              VERSION          STATUS   AGE
 mongodb.kubedb.com/mongo-sh-hid   percona-7.0.4   Ready    4m46s
 
 NAME                                          READY   AGE
-statefulset.apps/mongo-sh-hid-configsvr       3/3     4m46s
-statefulset.apps/mongo-sh-hid-mongos          2/2     2m52s
-statefulset.apps/mongo-sh-hid-shard0          3/3     4m46s
-statefulset.apps/mongo-sh-hid-shard0-hidden   2/2     3m45s
-statefulset.apps/mongo-sh-hid-shard1          3/3     4m46s
-statefulset.apps/mongo-sh-hid-shard1-hidden   2/2     3m36s
+petset.apps/mongo-sh-hid-configsvr       3/3     4m46s
+petset.apps/mongo-sh-hid-mongos          2/2     2m52s
+petset.apps/mongo-sh-hid-shard0          3/3     4m46s
+petset.apps/mongo-sh-hid-shard0-hidden   2/2     3m45s
+petset.apps/mongo-sh-hid-shard1          3/3     4m46s
+petset.apps/mongo-sh-hid-shard1-hidden   2/2     3m36s
 
 NAME                                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 service/mongo-sh-hid                  ClusterIP   10.96.57.155   <none>        27017/TCP   4m46s
@@ -158,12 +158,12 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mongo-sh-hid -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-hid","namespace":"demo"},"spec":{"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"shardTopology":{"configServer":{"ephemeralStorage":{},"replicas":3},"mongos":{"replicas":2},"shard":{"ephemeralStorage":{},"replicas":3,"shards":2}},"storageEngine":"inMemory","storageType":"Ephemeral","terminationPolicy":"WipeOut","version":"percona-7.0.4"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-hid","namespace":"demo"},"spec":{"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"shardTopology":{"configServer":{"ephemeralStorage":{},"replicas":3},"mongos":{"replicas":2},"shard":{"ephemeralStorage":{},"replicas":3,"shards":2}},"storageEngine":"inMemory","storageType":"Ephemeral","deletionPolicy":"WipeOut","version":"percona-7.0.4"}}
   creationTimestamp: "2022-10-31T05:59:43Z"
   finalizers:
     - kubedb.com
@@ -180,8 +180,6 @@ spec:
     name: mongo-sh-hid-auth
   autoOps: {}
   clusterAuthMode: keyFile
-  coordinator:
-    resources: {}
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10
@@ -465,7 +463,7 @@ spec:
   sslMode: disabled
   storageEngine: inMemory
   storageType: Ephemeral
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: percona-7.0.4
 status:
   conditions:

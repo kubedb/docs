@@ -36,7 +36,7 @@ KubeDB supports restarting the MongoDB database via a MongoDBOpsRequest. Restart
 In this section, we are going to deploy a MongoDB database using KubeDB.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo
@@ -47,10 +47,12 @@ spec:
     name: "replicaset"
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "300m"
-          memory: "300Mi"
+      containers:
+      - name: mongo
+        resources:
+          requests:
+            cpu: "300m"
+            memory: "300Mi"
   replicas: 2
   storageType: Durable
   storage:
@@ -60,7 +62,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   arbiter: {}
   hidden:
     replicas: 2
@@ -77,7 +79,7 @@ spec:
     - `name` denotes the name of mongodb replicaset.
 - `spec.replicas` denotes the number of general members in `rs0` mongodb replicaset.
 - `spec.podTemplate` denotes specifications of all the 3 general replicaset members.
-- `spec.ephemeralStorage` holds the emptyDir volume specifications. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this ephemeral storage configuration.
+- `spec.ephemeralStorage` holds the emptyDir volume specifications. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this ephemeral storage configuration.
 - `spec.arbiter` denotes arbiter-node spec of the deployed MongoDB CRD. 
 - `spec.hidden` denotes hidden-node spec of the deployed MongoDB CRD.
 

@@ -155,8 +155,8 @@ service/kafka-prod-broker       ClusterIP   None         <none>        9092/TCP,
 service/kafka-prod-controller   ClusterIP   None         <none>        9093/TCP             4m14s
 
 NAME                                     READY   AGE
-statefulset.apps/kafka-prod-broker       3/3     4m10s
-statefulset.apps/kafka-prod-controller   3/3     4m8s
+petset.apps/kafka-prod-broker       3/3     4m10s
+petset.apps/kafka-prod-controller   3/3     4m8s
 
 NAME                                            TYPE               VERSION   AGE
 appbinding.appcatalog.appscode.com/kafka-prod   kubedb.com/kafka   3.6.1     4m8s
