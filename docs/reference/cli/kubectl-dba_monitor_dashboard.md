@@ -33,15 +33,22 @@ kubectl-dba monitor dashboard
   --prom-svc-name=prometheus-kube-prometheus-prometheus --prom-svc-namespace=monitoring --prom-svc-port=9090
   
   Valid dashboards include:
+  * connectcluster
+  * druid
   * elasticsearch
   * kafka
   * mariadb
   * mongodb
   * mysql
   * perconaxtradb
+  * pgpool
   * postgres
   * proxysql
+  * rabbitmq
   * redis
+  * singlestore
+  * solr
+  * zookeeper
   
   If --file is given, that is the local file. absolute or relative path both accepted.
   If --url is given, that is the remote file. You have to specify the full raw url.
@@ -55,6 +62,7 @@ kubectl-dba monitor dashboard
   -b, --branch string   branch name of the github repo (default "master")
   -f, --file string     absolute or relative path of the file containing dashboard
   -h, --help            help for dashboard
+  -d, --isdb            for non db object's. just provide the url (default true)
   -u, --url string      url of the raw file containing dashboard. For example: https://raw.githubusercontent.com/appscode/grafana-dashboards/master/mongodb/mongodb-summary-dashboard.json
 ```
 

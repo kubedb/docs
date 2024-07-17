@@ -31,15 +31,22 @@ kubectl-dba monitor check-connection
   --prom-svc-name=prometheus-kube-prometheus-prometheus --prom-svc-namespace=monitoring --prom-svc-port=9090
   
   Valid resource types include:
+  * connectcluster
+  * druid
   * elasticsearch
   * kafka
   * mariadb
   * mongodb
   * mysql
   * perconaxtradb
+  * pgpool
   * postgres
   * proxysql
+  * rabbitmq
   * redis
+  * singlestore
+  * solr
+  * zookeeper
 ```
 
 ### Options
