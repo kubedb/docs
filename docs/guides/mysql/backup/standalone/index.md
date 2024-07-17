@@ -51,7 +51,7 @@ Let's deploy a sample MySQL database and insert some data into it.
 Below is the YAML of a sample MySQL CRD that we are going to create for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: sample-mysql
@@ -66,7 +66,7 @@ spec:
     resources:
       requests:
         storage: 50Mi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Create the above `MySQL` CRD,
@@ -123,7 +123,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"sample-mysql","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}}},"storageType":"Durable","terminationPolicy":"WipeOut","version":"8.0.35"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"sample-mysql","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}}},"storageType":"Durable","deletionPolicy":"WipeOut","version":"8.0.35"}}
   creationTimestamp: "2022-06-30T05:45:43Z"
   generation: 1
   labels:
@@ -134,7 +134,7 @@ metadata:
   name: sample-mysql
   namespace: demo
   ownerReferences:
-  - apiVersion: kubedb.com/v1alpha2
+  - apiVersion: kubedb.com/v1
     blockOwnerDeletion: true
     controller: true
     kind: MySQL
@@ -439,7 +439,7 @@ Now, we have to deploy the restored database similarly as we have deployed the o
 Below is the YAML for `MySQL` CRD we are going deploy to initialize from backup,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: restored-mysql
@@ -456,7 +456,7 @@ spec:
         storage: 50Mi
   init:
     waitForInitialRestore: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the above database,

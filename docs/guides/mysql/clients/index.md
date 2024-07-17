@@ -42,7 +42,7 @@ Here, we are going to deploy a `MySQL` group replication using a supported versi
 Below is the YAML of `MySQL` group replication with 3 members (one is a primary member and the two others are secondary members) that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: my-group
@@ -62,7 +62,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the MySQL CR we have shown above,
@@ -72,7 +72,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mysql.kubedb.com/my-group created
 ```
 
-KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and two separate Services for client connection with the cluster. The services have the following format:
+KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new PetSet and two separate Services for client connection with the cluster. The services have the following format:
 
 - `<mysql-object-name>` has both read and write operation.
 - `<mysql-object-name>-standby` has only read operation.
@@ -106,7 +106,7 @@ Name:               my-group
 Namespace:          demo
 CreationTimestamp:  Mon, 15 Mar 2021 18:18:35 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
 Replicas:           3  total
 Status:             Provisioning
 StorageType:        Durable
@@ -118,7 +118,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               my-group
   CreationTimestamp:  Mon, 15 Mar 2021 18:18:35 +0600
   Labels:               app.kubernetes.io/component=database
@@ -183,7 +183,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.35"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"group":{"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.35"}}
 
     Creation Timestamp:  2021-03-15T12:18:35Z
     Labels:
@@ -225,9 +225,9 @@ Events:
   Normal  Successful  2m    KubeDB Operator  Successfully created service for primary/standalone
   Normal  Successful  2m    KubeDB Operator  Successfully created service for secondary replicas
   Normal  Successful  2m    KubeDB Operator  Successfully created database auth secret
-  Normal  Successful  2m    KubeDB Operator  Successfully created StatefulSet
+  Normal  Successful  2m    KubeDB Operator  Successfully created PetSet
   Normal  Successful  2m    KubeDB Operator  Successfully created appbinding
-  Normal  Successful  2m    KubeDB Operator  Successfully patched StatefulSet
+  Normal  Successful  2m    KubeDB Operator  Successfully patched PetSet
 ```
 
 Our database cluster is ready to connect.
@@ -239,14 +239,14 @@ Our database cluster is ready to connect.
 - `mysql.kubedb.com/role:primary` are added for primary.
 - `mysql.kubedb.com/role:secondary` are added for secondary.
 
-Let's verify that the `mysql.kubedb.com/role:<primary/secondary>` label are added into the StatefulSet's replicas,
+Let's verify that the `mysql.kubedb.com/role:<primary/secondary>` label are added into the PetSet's replicas,
 
 ```bash
 $ kubectl get pods -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
 Name         Labels                                                                                                                                                                           PodIP
-my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary statefulset.kubernetes.io/pod-name:my-group-0]     10.244.1.8
-my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
-my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-2]   10.244.2.13
+my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary petset.kubernetes.io/pod-name:my-group-0]     10.244.1.8
+my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
+my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-2]   10.244.2.13
 ```
 
 You can see from the above output that the `my-group-0` pod is selected as a primary member in our existing database cluster. It has the `mysql.kubedb.com/role:primary` label and the podIP is `10.244.1.8`. Besides, the rest of the replicas are selected as a secondary member which has `mysql.kubedb.com/role:secondary` label.
@@ -412,9 +412,9 @@ Now wait for a few minute to automatically elect the primary replica and also wa
 ```bash
 $ kubectl get pods -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
 Name         Labels                                                                                                                                                                           PodIP
-my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-0]   10.244.2.18
-my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
-my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary statefulset.kubernetes.io/pod-name:my-group-2]     10.244.2.13
+my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-0]   10.244.2.18
+my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
+my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary petset.kubernetes.io/pod-name:my-group-2]     10.244.2.13
 ```
 
 You can see from the above output that `my-group-2` pod is elected as a primary automatically and the others become secondary.
@@ -440,7 +440,7 @@ my-group-replicas   10.244.2.11:3306,10.244.2.18:3306   112m
 Clean what you created in this tutorial.
 
 ```bash
-$ kubectl patch -n demo my/my-group -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo my/my-group -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo my/my-group
 
 $ kubectl delete ns demo

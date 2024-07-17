@@ -42,7 +42,7 @@ postgres.kubedb.com/demo-pg created
 Below is the YAML for the Postgres crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: demo-pg
@@ -60,7 +60,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 By default, KubeDB create a Synchronous Replication where one Replica Postgres server out of all the replicas will be in `sync` with Current `primary`. 
@@ -121,7 +121,7 @@ on the standby server(s).
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo pg/demo-pg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo pg/demo-pg -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/demo-pg
 
 kubectl delete ns demo

@@ -23,7 +23,7 @@ section_menu_id: guides
 Like any official Kubernetes resource, a `ProxySQL` object has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections. Below is an example of the ProxySQL object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: demo-proxysql
@@ -73,7 +73,7 @@ spec:
         passMe: ToProxySQLPod
     controller:
       annotations:
-        passMe: ToStatefulSet
+        passMe: ToPetSet
     spec:
       serviceAccountName: my-service-account
       schedulerName: my-scheduler
@@ -81,18 +81,20 @@ spec:
         disktype: ssd
       imagePullSecrets:
       - name: myregistrykey
-      args:
-      - --reload
-      env:
-      - name: LOAD_BALANCE_MODE
-        value: GroupReplication
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+      containers:
+      - name: proxysql
+        args:
+        - --reload
+        env:
+        - name: LOAD_BALANCE_MODE
+          value: GroupReplication
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
   serviceTemplates:
   - alias: primary
     metadata:
@@ -103,7 +105,7 @@ spec:
       ports:
       - name:  http
         port:  6033
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3
 ```
@@ -275,14 +277,14 @@ The following fields are configurable in the `spec.tls` section:
 
 ### .spec.podTemplate
 
-KubeDB allows providing a template for proxysql pod through `.spec.podTemplate`. KubeDB operator will pass the information provided in `.spec.podTemplate` to the StatefulSet created for ProxySQL. See the api [here](https://pkg.go.dev/kmodules.xyz/offshoot-api/api/v1#PodTemplateSpec)
+KubeDB allows providing a template for proxysql pod through `.spec.podTemplate`. KubeDB operator will pass the information provided in `.spec.podTemplate` to the PetSet created for ProxySQL. See the api [here](https://pkg.go.dev/kmodules.xyz/offshoot-api/api/v1#PodTemplateSpec)
 
 KubeDB accept following fields to set in `.spec.podTemplate`:
 
 - metadata:
   - annotations (pod's annotation)
 - controller:
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - args
   - env

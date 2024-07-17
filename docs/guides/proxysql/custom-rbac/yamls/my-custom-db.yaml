@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -12,6 +12,6 @@ spec:
   podTemplate:
     spec:
       serviceAccountName: prx-custom-sa
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3

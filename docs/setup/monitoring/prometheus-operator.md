@@ -194,12 +194,12 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 prometheus.monitoring.coreos.com/prometheus created
 ```
 
-Prometheus operator watches for `Prometheus` crd. Once a `Prometheus` crd is created, it generates respective configuration and creates a `StatefulSet` to run Prometheus server.
+Prometheus operator watches for `Prometheus` crd. Once a `Prometheus` crd is created, it generates respective configuration and creates a `PetSet` to run Prometheus server.
 
-Let's check `StatefulSet` has been created,
+Let's check `PetSet` has been created,
 
 ```bash
-$ kubectl get statefulset -n monitoring
+$ kubectl get petset -n monitoring
 NAME                    DESIRED   CURRENT   AGE
 prometheus-prometheus   1         1         2m14s
 ```

@@ -123,7 +123,7 @@ secret/gcs-secret created
 Now, we are going to create a Redis CRO in `demo-1` namespace. Below is the YAML of the Redis object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: sample-redis-1
@@ -140,7 +140,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Notice the `annotations` section. We are pointing to the `BackupBlueprint` that we have created earlier through `stash.appscode.com/backup-blueprint` annotation. Stash will watch this annotation and create a `Repository` and a `BackupConfiguration` according to the `BackupBlueprint`.
@@ -305,7 +305,7 @@ secret/gcs-secret created
 Let's deploy a Redis database named `sample-redis-2` in the `demo-2` namespace.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: sample-redis-2
@@ -323,7 +323,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Notice the `annotations` section. This time, we have passed a schedule via `stash.appscode.com/schedule` annotation along with the `stash.appscode.com/backup-blueprint` annotation.
@@ -482,7 +482,7 @@ secret/gcs-secret created
 
 Let's deploy a Redis database named `sample-redis-3` in the `demo-3` namespace.
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: sample-redis-3
@@ -500,7 +500,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Notice the `annotations` section. This time, we have passed an argument via `params.stash.appscode.com/args` annotation along with the `stash.appscode.com/backup-blueprint` annotation.

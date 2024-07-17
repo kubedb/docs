@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo
@@ -9,10 +9,12 @@ spec:
     name: "replicaset"
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "300m"
-          memory: "300Mi"
+      containers:
+        - name: mongodb
+          resources:
+            requests:
+              cpu: "300m"
+              memory: "300Mi"
   replicas: 2
   storageType: Durable
   storage:
@@ -22,7 +24,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   arbiter: {}
   hidden:
     replicas: 2

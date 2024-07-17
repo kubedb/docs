@@ -46,7 +46,7 @@ In this section, we are going to deploy a PerconaXtraDB Cluster with version `8.
 > If you want to autoscale PerconaXtraDB `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -64,14 +64,16 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "200m"
-          memory: "300Mi"
-        limits:
-          cpu: "200m"
-          memory: "300Mi"
-  terminationPolicy: WipeOut
+      containers:
+      - name: perconaxtradb
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "300Mi"
+          limits:
+            cpu: "200m"
+            memory: "300Mi"
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `PerconaXtraDB` CRO we have shown above,
@@ -412,9 +414,9 @@ Status:
     Last Transition Time:  2022-09-16T11:30:42Z
     Message:               Successfully restarted PerconaXtraDB pods for PerconaXtraDBOpsRequest: demo/pxops-sample-pxc-6xc1kc
     Observed Generation:   1
-    Reason:                SuccessfullyRestatedStatefulSet
+    Reason:                SuccessfullyRestatedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-09-16T11:30:47Z
     Message:               Vertical scale successful for PerconaXtraDBOpsRequest: demo/pxops-sample-pxc-6xc1kc
     Observed Generation:   1

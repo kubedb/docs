@@ -136,7 +136,7 @@ elasticsearch.kubedb.com/quick-elasticsearch created
 Below is the YAML for the Elasticsearch crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: quick-elasticsearch
@@ -154,7 +154,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 ```bash
@@ -163,9 +163,9 @@ NAME                  VERSION   STATUS    AGE
 quick-elasticsearch   7.3.2     Running   74s
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-elasticsearch-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-elasticsearch-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo quick-elasticsearch-0
@@ -187,7 +187,7 @@ elasticsearch.kubedb.com/quick-elasticsearch created
 Below is the YAML for the Elasticsearch crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: minute-elasticsearch
@@ -205,7 +205,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 ```bash
@@ -215,9 +215,9 @@ minute-elasticsearch   7.3.2     Running   59s
 quick-elasticsearch    7.3.2     Running   3m17s
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-elasticsearch-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-elasticsearch-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo minute-elasticsearch-0
@@ -230,10 +230,10 @@ minute-elasticsearch-0   1/1     Running   0          71s
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo es/quick-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/quick-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/quick-elasticsearch
 
-kubectl patch -n demo es/minute-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/minute-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/minute-elasticsearch
 
 kubectl delete -n demo role my-custom-role

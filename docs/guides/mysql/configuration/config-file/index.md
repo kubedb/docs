@@ -97,7 +97,7 @@ mysql.kubedb.com/custom-mysql created
 Below is the YAML for the MySQL crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: custom-mysql
@@ -115,9 +115,9 @@ spec:
         storage: 1Gi
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `custom-mysql-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `custom-mysql-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo
@@ -208,7 +208,7 @@ Once, you have connected to the database with phpMyAdmin go to **Variables** tab
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo my/custom-mysql -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo my/custom-mysql -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo my/custom-mysql
 
 kubectl delete deployment -n demo myadmin

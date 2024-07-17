@@ -42,7 +42,7 @@ demo    Active  5s
 In order to enable TLS, we have to set `spec.enableSSL` field of Elasticsearch object to `true`. Below is the YAML of Elasticsearch object that will be created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: ssl-elasticsearch
@@ -172,7 +172,7 @@ $ curl --user "elastic:uv2io5au" "https://localhost:9200/_cluster/health?pretty"
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo es/ssl-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo es/ssl-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo es/ssl-elasticsearch
 
 $ kubectl delete ns demo

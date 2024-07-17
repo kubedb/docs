@@ -355,7 +355,7 @@ Use this Secret `config-elasticsearch-auth` in `spec.authSecret` field of your E
 Below is the Elasticsearch object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: config-elasticsearch
@@ -433,7 +433,7 @@ $ curl --user "admin:$ADMIN_PASSWORD" "localhost:9200/_cluster/health?pretty"
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo es/config-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo es/config-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo es/config-elasticsearch
 
 $ kubectl delete ns demo

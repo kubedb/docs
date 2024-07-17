@@ -347,7 +347,7 @@ persistentvolumeclaim/solr-combined-data-solr-combined-1   Bound    pvc-1649cba5
 persistentvolumeclaim/solr-combined-data-solr-combined-2   Bound    pvc-dcb8c9e2-e64b-4a53-8b46-5c30301bb905   1Gi        RWO            standard       <unset>                 3m26s
 ```
 
-- `PetSet` - a PetSet(Appscode manages customized statefulset) named after the Solr instance. In topology mode, the operator creates 3 PetSets with name `{Solr-Name}-{Sufix}`.
+- `PetSet` - a PetSet(Appscode manages customized petset) named after the Solr instance. In topology mode, the operator creates 3 PetSets with name `{Solr-Name}-{Sufix}`.
 - `Services` -  2 services are generated for each Solr database.
     - `{Solr-Name}` - the client service which is used to connect to the database. It points to the `overseer` nodes.
     - `{Solr-Name}-pods` - the node discovery service which is used by the Solr nodes to communicate each other. It is a headless service.

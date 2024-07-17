@@ -92,12 +92,12 @@ zookeeper.kubedb.com/zk-quickstart created
 Here,
 
 - `spec.version` is name of the ZooKeeperVersion crd where the docker images are specified. In this tutorial, a ZooKeeper 3.9.1 database is created.
-- `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `ZooKeeper` crd or which resources KubeDB should keep or delete when you delete `ZooKeeper` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in storage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
-KubeDB operator watches for `ZooKeeper` objects using Kubernetes api. When a `ZooKeeper` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching ZooKeeper object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present.
+KubeDB operator watches for `ZooKeeper` objects using Kubernetes api. When a `ZooKeeper` object is created, KubeDB operator will create a new PetSet and a Service with the matching ZooKeeper object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present.
 
 ```bash
 $ kubectl get zk -n demo

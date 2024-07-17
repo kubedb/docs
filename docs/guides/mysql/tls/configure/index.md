@@ -104,7 +104,7 @@ issuer.cert-manager.io/mysql-issuer created
 Now, we are going to deploy a `MySQL` group replication with TLS/SSL configuration. Below is the YAML for MySQL group replication that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: some-mysql
@@ -139,7 +139,7 @@ spec:
       - localhost
       ipAddresses:
       - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 **Deploy MySQL group replication:**
@@ -156,7 +156,7 @@ mysql.kubedb.com/some-mysql created
 Now, we are going to deploy a `MySQL` Innodb with TLS/SSL configuration. Below is the YAML for MySQL innodb cluster that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: some-mysql
@@ -192,7 +192,7 @@ spec:
           - localhost
         ipAddresses:
           - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 **Deploy MySQL Innodb Cluster:**
@@ -207,7 +207,7 @@ mysql.kubedb.com/some-mysql created
 Now, we are going to deploy a `MySQL` Semi sync cluster with TLS/SSL configuration. Below is the YAML for MySQL semi-sync cluster that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: some-mysql
@@ -244,7 +244,7 @@ spec:
           - localhost
         ipAddresses:
           - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 **Deploy MySQL Semi-sync:**
@@ -262,7 +262,7 @@ mysql.kubedb.com/some-mysql created
 Now, we are going to deploy a stand alone `MySQL` with TLS/SSL configuration. Below is the YAML for stand alone MySQL that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: some-mysql
@@ -292,7 +292,7 @@ spec:
           - localhost
         ipAddresses:
           - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 **Deploy Stand Alone MySQL:**
@@ -309,7 +309,7 @@ mysql.kubedb.com/some-mysql created
 
 **Wait for the database to be ready :**
 
-Now, watch `MySQL` is going to `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
+Now, watch `MySQL` is going to `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
 $ watch -n 3 kubectl get my -n demo some-mysql

@@ -95,7 +95,7 @@ Now that the config secret is created, it needs to be mention in the [Elasticsea
 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-multinode
@@ -114,7 +114,7 @@ spec:
     resources:
       requests:
         storage: 100Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Now, create the Elasticsearch object by the following command:

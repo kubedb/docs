@@ -48,7 +48,7 @@ Here, we are going to deploy a `MongoDB` sharded database using a supported vers
 In this section, we are going to deploy a MongoDB sharded database with version `4.4.26`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-sh
@@ -65,18 +65,22 @@ spec:
       replicas: 3
       podTemplate:
         spec:
-          resources:
-            requests:
-              cpu: "200m"
-              memory: "300Mi"
+          containers:
+          - name: mongo
+            resources:
+              requests:
+                cpu: "200m"
+                memory: "300Mi"
     mongos:
       replicas: 2
       podTemplate:
         spec:
-          resources:
-            requests:
-              cpu: "200m"
-              memory: "300Mi"
+          containers:
+          - name: mongo
+            resources:
+              requests:
+                cpu: "200m"
+                memory: "300Mi"
     shard:
       storage:
         resources:
@@ -86,11 +90,13 @@ spec:
       shards: 2
       podTemplate:
         spec:
-          resources:
-            requests:
-              cpu: "200m"
-              memory: "300Mi"
-  terminationPolicy: WipeOut
+          containers:
+          - name: mongo
+            resources:
+              requests:
+                cpu: "200m"
+                memory: "300Mi"
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MongoDB` CRO we have shown above,
@@ -518,11 +524,11 @@ Events:
   ----    ------                ----   ----                         -------
   Normal  PauseDatabase         3m27s  KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-sh
   Normal  PauseDatabase         3m27s  KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-sh
-  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sh-shard0
-  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sh-shard1
+  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-sh-shard0
+  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-sh-shard1
   Normal  UpdateShardResources  3m27s  KubeDB Ops-manager Operator  Successfully updated Shard Resources
-  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sh-shard0
-  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-sh-shard1
+  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-sh-shard0
+  Normal  Starting              3m27s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-sh-shard1
   Normal  UpdateShardResources  3m27s  KubeDB Ops-manager Operator  Successfully updated Shard Resources
   Normal  UpdateShardResources  46s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Shard Resources
   Normal  ResumeDatabase        46s    KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-sh

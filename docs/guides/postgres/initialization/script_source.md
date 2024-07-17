@@ -56,7 +56,7 @@ configmap/pg-init-script created
 Following YAML describes the Postgres object with `init.script`,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: script-postgres
@@ -105,7 +105,7 @@ Name:               script-postgres
 Namespace:          demo
 CreationTimestamp:  Fri, 21 Sep 2018 15:53:27 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"Postgres","metadata":{"annotations":{},"name":"script-postgres","namespace":"demo"},"spec":{"init":{"script...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"Postgres","metadata":{"annotations":{},"name":"script-postgres","namespace":"demo"},"spec":{"init":{"script...
 Replicas:           1  total
 Status:             Running
 Init:
@@ -120,7 +120,7 @@ Volume:
   Capacity:      1Gi
   Access Modes:  RWO
 
-StatefulSet:
+PetSet:
   Name:               script-postgres
   CreationTimestamp:  Fri, 21 Sep 2018 15:53:28 +0600
   Labels:               app.kubernetes.io/name=postgreses.kubedb.com
@@ -176,11 +176,11 @@ Events:
   ----    ------      ----  ----               -------
   Normal  Successful  1m    Postgres operator  Successfully created Service
   Normal  Successful  1m    Postgres operator  Successfully created Service
-  Normal  Successful  57s   Postgres operator  Successfully created StatefulSet
+  Normal  Successful  57s   Postgres operator  Successfully created PetSet
   Normal  Successful  57s   Postgres operator  Successfully created Postgres
-  Normal  Successful  57s   Postgres operator  Successfully patched StatefulSet
+  Normal  Successful  57s   Postgres operator  Successfully patched PetSet
   Normal  Successful  57s   Postgres operator  Successfully patched Postgres
-  Normal  Successful  57s   Postgres operator  Successfully patched StatefulSet
+  Normal  Successful  57s   Postgres operator  Successfully patched PetSet
   Normal  Successful  57s   Postgres operator  Successfully patched Postgres
 ```
 
@@ -227,7 +227,7 @@ We can see TABLE `dashboard` in `data` Schema which is created through initializ
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo pg/script-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo pg/script-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo pg/script-postgres
 
 $ kubectl delete -n demo configmap/pg-init-script

@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: p1
@@ -44,16 +44,18 @@ spec:
         disktype: ssd
       imagePullSecrets:
       - name: myregistrykey
-      env:
-      - name: POSTGRES_DB
-        value: pgdb
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+      containers:
+        - name: postgres
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: POSTGRES_DB
+              value: pgdb
   serviceTemplates:
   - alias: primary
     metadata:
@@ -64,4 +66,4 @@ spec:
       ports:
       - name:  http
         port:  5432
-  terminationPolicy: "DoNotTerminate"
+  deletionPolicy: "DoNotTerminate"

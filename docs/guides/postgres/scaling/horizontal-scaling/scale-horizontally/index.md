@@ -90,7 +90,7 @@ The version above that does not show `DEPRECATED` `true` is supported by `KubeDB
 In this section, we are going to deploy a Postgres Cluster with 3 members. Then, in the next section we will scale-up the cluster using horizontal scaling. Below is the YAML of the `Postgres` cr that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: pg
@@ -107,7 +107,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `Postgres` cr we have shown above,
@@ -119,8 +119,8 @@ postgres.kubedb.com/pg created
 
 **Wait for the cluster to be ready:**
 
-`KubeDB` operator watches for `Postgres` objects using Kubernetes API. When a `Postgres` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc. A secret called `pg-auth` (format: <em>{postgres-object-name}-auth</em>) will be created storing the password for postgres superuser.
-Now, watch `Postgres` is going to `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
+`KubeDB` operator watches for `Postgres` objects using Kubernetes API. When a `Postgres` object is created, `KubeDB` operator will create a new PetSet, Services, and Secrets, etc. A secret called `pg-auth` (format: <em>{postgres-object-name}-auth</em>) will be created storing the password for postgres superuser.
+Now, watch `Postgres` is going to `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
 $ watch -n 3 kubectl get postgres -n demo pg
@@ -148,7 +148,7 @@ pg-2   2/2     Running   0          4h26m
 
 ```
 
-Let's verify that the StatefulSet's pods have joined into cluster,
+Let's verify that the PetSet's pods have joined into cluster,
 
 ```bash
 $ kubectl get secrets -n demo pg-auth -o jsonpath='{.data.\username}' | base64 -d
@@ -198,7 +198,7 @@ postgresopsrequest.ops.kubedb.com/pg-scale-up created
 
 **Verify Scale-Up Succeeded:**
 
-If everything goes well, `KubeDB` Ops Manager will scale up the StatefulSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` Ops Manager updates the replicas of the `Postgres` object.
+If everything goes well, `KubeDB` Ops Manager will scale up the PetSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` Ops Manager updates the replicas of the `Postgres` object.
 
 First, we will wait for `PostgresOpsRequest` to be successful. Run the following command to watch `PostgresOpsRequest` cr,
 
@@ -354,7 +354,7 @@ postgresopsrequest.ops.kubedb.com/pg-scale-down created
 
 **Verify Scale-down Succeeded:**
 
-If everything goes well, `KubeDB` Ops Manager will scale down the StatefulSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` Ops Manager updates the replicas of the `Postgres` object.
+If everything goes well, `KubeDB` Ops Manager will scale down the PetSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` Ops Manager updates the replicas of the `Postgres` object.
 
 Now, we will wait for `PostgresOpsRequest` to be successful. Run the following command to watch `PostgresOpsRequest` cr,
 

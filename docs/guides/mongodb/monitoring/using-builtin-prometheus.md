@@ -43,14 +43,14 @@ This tutorial will show you how to monitor MongoDB database using builtin [Prome
 At first, let's deploy an MongoDB database with monitoring enabled. Below is the MongoDB object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: builtin-prom-mgo
   namespace: demo
 spec:
   version: "4.4.26"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
     accessModes:

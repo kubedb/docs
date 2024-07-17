@@ -42,7 +42,7 @@ namespace/demo created
 We need a mysql backend for the proxysql server. So we are creating one with the following yaml. 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-server
@@ -60,7 +60,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -123,7 +123,7 @@ issuer.cert-manager.io/proxy-issuer created
 Here, our issuer `proxy-issuer`  is ready to deploy a `ProxySQL` cluster with TLS/SSL configuration. Below is the YAML for ProxySQL Cluster that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -148,7 +148,7 @@ spec:
       - localhost
       ipAddresses:
       - "127.0.0.1"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Here,
@@ -169,7 +169,7 @@ proxysql.kubedb.com/proxy-server created
 
 **Wait for the database to be ready:**
 
-Now, wait for `ProxySQL` going on `Ready` state and also wait for `StatefulSet` and its pod to be created and going to `Running` state,
+Now, wait for `ProxySQL` going on `Ready` state and also wait for `PetSet` and its pod to be created and going to `Running` state,
 
 ```bash
 $ kubectl get proxysql -n demo proxy-server

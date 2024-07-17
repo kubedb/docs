@@ -85,7 +85,7 @@ In order to disable X-Pack, you have to set `spec.disableSecurity` field of `Ela
 Below is the YAML of `Elasticsearch` object that will be created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-xpack-disabled
@@ -248,7 +248,7 @@ Here, `xpack.security.enabled` is set to `false`. As a result, `xpack` security 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo es/es-xpack-disabled -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/es-xpack-disabled -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/es-xpack-disabled
 
 kubectl delete ns demo

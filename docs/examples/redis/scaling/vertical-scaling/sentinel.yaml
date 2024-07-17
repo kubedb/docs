@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-sample
@@ -16,8 +16,10 @@ spec:
       - ReadWriteOnce
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "100Mi"
-  terminationPolicy: DoNotTerminate
+      containers:
+        - name: redissentinel
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+  deletionPolicy: DoNotTerminate

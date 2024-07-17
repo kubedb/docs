@@ -93,14 +93,14 @@ Here,
 
 - `spec.version` is name of the FerretDBVersion CR where the docker images are specified. In this tutorial, a FerretDB 1.18.0 database is created.
 - `spec.storageType` specifies the type of storage that will be used for FerretDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create FerretDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `FerretDB` CR or which resources KubeDB should keep or delete when you delete `FerretDB` CR. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy)
+- `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `FerretDB` CR or which resources KubeDB should keep or delete when you delete `FerretDB` CR. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy)
 - `spec.backend` denotes the backend database information for FerretDB instance.
 - `spec.replicas` denotes the number of replicas in the replica-set.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
-KubeDB operator watches for `FerretDB` objects using Kubernetes api. When a `FerretDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching FerretDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<ferretdb-name>-pods`.
+KubeDB operator watches for `FerretDB` objects using Kubernetes api. When a `FerretDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching FerretDB object name. KubeDB operator will also create a governing service for PetSets with the name `<ferretdb-name>-pods`.
 
 Here `spec.backend.externallyManaged` section is `false`. So backend Postgres database will be managed by internally through KubeDB. 
 KubeDB will create a Postgres database alongside with FerretDB for FerretDB's backend engine.
@@ -140,13 +140,10 @@ Spec:
   Backend:
     Externally Managed:  false
     Linked DB:           ferretdb
-    Postgres:
-      Service:
-        Name:       ferret-pg-backend
-        Namespace:  demo
-        Pg Port:    5432
-      URL:          postgres://ferret-pg-backend.demo.svc.cluster.local:5432/ferretdb
-      Version:      13.13
+    Postgres Ref:
+      Name:       ferret-pg-backend
+      Namespace:  demo
+    Version:      13.13
   Health Checker:
     Failure Threshold:  1
     Period Seconds:     10
@@ -226,7 +223,7 @@ $ kubectl get petset -n demo
 NAME                        READY   AGE
 ferret                      1/1     29m
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME                        READY   AGE
 ferret-pg-backend           2/2     30m
 ferret-pg-backend-arbiter   1/1     29m
@@ -280,13 +277,10 @@ spec:
   backend:
     externallyManaged: false
     linkedDB: ferretdb
-    postgres:
-      service:
+    postgresRef:
         name: ferret-pg-backend
         namespace: demo
-        pgPort: 5432
-      url: postgres://ferret-pg-backend.demo.svc.cluster.local:5432/ferretdb
-      version: "13.13"
+    version: "13.13"
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10
@@ -429,7 +423,7 @@ All these data inside FerretDB is also storing inside `ferret-pg-backend` Postgr
 
 ### Create a FerretDB database with externally managed Postgres
 
-If user wants to use its own Postgres database as backend engine, he can specify it in `spec.backend.postgres` section. Below is the FerretDB object created in this tutorial.
+If user wants to use its own Postgres database as backend engine, he needs to create an [AppBinding](https://kubedb.com/docs/latest/guides/mongodb/concepts/appbinding/) for his Postgres and specify it in `spec.backend.postgresRef` section. Below is the FerretDB object created in this tutorial.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -439,9 +433,6 @@ metadata:
   namespace: demo
 spec:
   version: "1.18.0"
-  authSecret:
-    externallyManaged: true
-    name: ha-postgres-auth
   sslMode: disabled
   storageType: Durable
   storage:
@@ -453,11 +444,9 @@ spec:
         storage: 500Mi  
   backend:
     externallyManaged: true
-    postgres:
-      service:
+    postgresRef:
         name: ha-postgres
         namespace: demo
-        pgPort: 5432
   deletionPolicy: WipeOut
 ```
 
@@ -467,8 +456,7 @@ ferretdb.kubedb.com/ferretdb-external created
 ```
 Here,
 
-- `spec.postgres.serivce` is service information of users external postgres exist in the cluster.
-- `spec.authSecret.name` is the name of the authentication secret of users external postgres database.
+- `spec.backend.postgresRef` is AppBinding information of users external postgres exist in the cluster.
 
 KubeDB will deploy a FerretDB database and connect with the users given external postgres through service.
 
@@ -492,17 +480,13 @@ metadata:
   uid: 8380f0a1-c8e9-42e2-8fa9-6ce5870d02f4
 spec:
   authSecret:
-    externallyManaged: true
     name: ha-postgres-auth
   backend:
     externallyManaged: true
     linkedDB: postgres
-    postgres:
-      service:
+    postgresRef:
         name: ha-postgres
         namespace: demo
-        pgPort: 5432
-      url: postgres://ha-postgres.demo.svc.cluster.local:5432/postgres
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10
@@ -587,9 +571,6 @@ If you want to cleanup each of the Kubernetes resources created by this tutorial
 
 ```bash
 $ kubectl delete -n demo fr/ferret
-
-$ kubectl get fr,sts,svc,secret,pvc,petset -n demo
-NAME              TYPE              DATA   AGE
 
 $ kubectl delete ns demo
 ```

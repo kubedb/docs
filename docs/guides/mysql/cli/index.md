@@ -55,7 +55,7 @@ To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
 $ kubectl get mysql mysql-demo -n demo --output=yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-demo
@@ -65,36 +65,42 @@ spec:
     name: mysql-demo-auth
   podTemplate:
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: mysql-demo
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: mysqls.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: mysql-demo
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: mysqls.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+      containers:
+        - name: mysql
+          resources:
+            limits:
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 999
+            seccompProfile:
+              type: RuntimeDefault
+      initContainers:
+        - name: mysql-init
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsGroup: 999
+            runAsNonRoot: true
+            runAsUser: 999
+            seccompProfile:
+              type: RuntimeDefault
       serviceAccountName: mysql-demo
   replicas: 1
   storage:
@@ -105,7 +111,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   version: 8.0.35
 ```
 
@@ -127,7 +133,7 @@ service/mysql-demo        ClusterIP   10.107.205.135   <none>        3306/TCP   
 service/mysql-demo-pods   ClusterIP   None             <none>        3306/TCP   2m17s   app.kubernetes.io/instance=mysql-demo,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com
 
 NAME                          READY   AGE     CONTAINERS   IMAGES
-statefulset.apps/mysql-demo   1/1     2m17s   mysql        kubedb/mysql:8.0.35
+petset.apps/mysql-demo   1/1     2m17s   mysql        kubedb/mysql:8.0.35
 
 NAME                                            TYPE               VERSION   AGE
 appbinding.appcatalog.appscode.com/mysql-demo   kubedb.com/mysql   8.0.35    2m17s
@@ -162,7 +168,7 @@ Name:               mysql-demo
 Namespace:          demo
 CreationTimestamp:  Mon, 15 Mar 2021 17:53:48 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-demo","namespace":"demo"},"spec":{"storage":{"accessModes...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-demo","namespace":"demo"},"spec":{"storage":{"accessModes...
 Replicas:           1  total
 Status:             Ready
 StorageType:        Durable
@@ -174,7 +180,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  Delete
 
-StatefulSet:          
+PetSet:          
   Name:               mysql-demo
   CreationTimestamp:  Mon, 15 Mar 2021 17:53:48 +0600
   Labels:               app.kubernetes.io/component=database
@@ -226,7 +232,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-demo","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.35"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-demo","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.35"}}
 
     Creation Timestamp:  2021-03-15T11:53:48Z
     Labels:
@@ -264,12 +270,12 @@ Events:
   Normal  Successful  5m    KubeDB Operator  Successfully created governing service
   Normal  Successful  5m    KubeDB Operator  Successfully created service for primary/standalone
   Normal  Successful  5m    KubeDB Operator  Successfully created database auth secret
-  Normal  Successful  5m    KubeDB Operator  Successfully created StatefulSet
+  Normal  Successful  5m    KubeDB Operator  Successfully created PetSet
 ```
 
 `kubectl dba describe` command provides following basic information about a MySQL database.
 
-- StatefulSet
+- PetSet
 - Storage (Persistent Volume)
 - Service
 - Secret (If available)
@@ -316,7 +322,7 @@ spec:
   ....
   authSecret:
     name: mysql-quickstart-auth
-# add database halted = true to delete StatefulSet services and database other resources
+# add database halted = true to delete PetSet services and database other resources
   halted: true
   ....
 
@@ -332,7 +338,7 @@ Various fields of a KubeDB object can't be edited using `edit` command. The foll
 - metadata.name
 - metadata.namespace
 
-If StatefulSets exists for a MySQL database, following fields can't be modified as well.
+If PetSets exists for a MySQL database, following fields can't be modified as well.
 
 - spec.authSecret
 - spec.init

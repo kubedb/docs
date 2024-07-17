@@ -48,7 +48,7 @@ Now, we are going to deploy a `MariaDB` cluster with version `10.5.23`.
 In this section, we are going to deploy a MariaDB cluster. Then, in the next section we will scale the database using `MariaDBOpsRequest` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -64,7 +64,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MariaDB` CR we have shown above,
@@ -82,7 +82,7 @@ NAME             VERSION   STATUS   AGE
 sample-mariadb   10.5.23    Ready    2m36s
 ```
 
-Let's check the number of replicas this database has from the MariaDB object, number of pods the statefulset have,
+Let's check the number of replicas this database has from the MariaDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.replicas'
@@ -158,7 +158,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-scale-horizontal-up created
 
 #### Verify Cluster replicas scaled up successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MariaDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MariaDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
@@ -169,7 +169,7 @@ NAME                        TYPE                STATUS       AGE
 mdps-scale-horizontal    HorizontalScaling    Successful     106s
 ```
 
-We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the MariaDB object, number of pods the statefulset have,
+We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the MariaDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.replicas'
@@ -229,7 +229,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-scale-horizontal-down created
 
 #### Verify Cluster replicas scaled down successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MariaDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MariaDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
@@ -240,7 +240,7 @@ NAME                          TYPE                STATUS       AGE
 mops-hscale-down-replicaset   HorizontalScaling   Successful   2m32s
 ```
 
-We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the MariaDB object, number of pods the statefulset have,
+We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the MariaDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.replicas' 

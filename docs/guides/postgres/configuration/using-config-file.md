@@ -87,7 +87,7 @@ postgres.kubedb.com/custom-postgres created
 Below is the YAML for the Postgres crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: custom-postgres
@@ -105,9 +105,9 @@ spec:
         storage: 1Gi
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `custom-postgres-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `custom-postgres-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo custom-postgres-0
@@ -192,7 +192,7 @@ WHERE name='max_connections' OR name='shared_buffers';
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo pg/custom-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo pg/custom-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/custom-postgres
 
 kubectl delete -n demo secret pg-configuration

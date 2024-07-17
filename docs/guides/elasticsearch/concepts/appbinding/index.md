@@ -34,7 +34,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Elasticsearch","metadata":{"annotations":{},"name":"es-quickstart","namespace":"demo"},"spec":{"enableSSL":true,"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"Delete","version":"xpack-8.2.3"}}
+      {"apiVersion":"kubedb.com/v1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"es-quickstart","namespace":"demo"},"spec":{"enableSSL":true,"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Delete","version":"xpack-8.2.3"}}
   creationTimestamp: "2022-12-29T05:03:33Z"
   generation: 1
   labels:
@@ -45,7 +45,7 @@ metadata:
   name: es-quickstart
   namespace: demo
   ownerReferences:
-    - apiVersion: kubedb.com/v1alpha2
+    - apiVersion: kubedb.com/v1
       blockOwnerDeletion: true
       controller: true
       kind: Elasticsearch

@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: sample-redis-3
@@ -16,4 +16,4 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete

@@ -37,7 +37,7 @@ The vertical scaling process consists of the following steps:
 
 2. `KubeDB` community operator watches for the `Postgres` cr.
 
-3. When it finds one, it creates a `StatefulSet` and related necessary stuff like secret, service, etc.
+3. When it finds one, it creates a `PetSet` and related necessary stuff like secret, service, etc.
 
 4. Then, in order to update the resources(for example `CPU`, `Memory` etc.) of the `Postgres` database the user creates a `PostgresOpsRequest` cr.
 
@@ -45,9 +45,9 @@ The vertical scaling process consists of the following steps:
 
 6. When it finds one, it halts the `Postgres` object so that the `KubeDB` Provisioner operator doesn't perform any operation on the `Postgres` during the scaling process.
 
-7. Then the `KubeDB` Ops Manager operator will update resources of the StatefulSet replicas to reach the desired state.
+7. Then the `KubeDB` Ops Manager operator will update resources of the PetSet replicas to reach the desired state.
 
-8. After successful updating of the resources of the StatefulSet's replica, the `KubeDB` Ops Manager updates the `Postgres` object resources to reflect the updated state.
+8. After successful updating of the resources of the PetSet's replica, the `KubeDB` Ops Manager updates the `Postgres` object resources to reflect the updated state.
 
 9. After successful updating of the `Postgres` resources, the `KubeDB` Ops Manager resumes the `Postgres` object so that the `KubeDB` Provisioner operator resumes its usual operations.
 

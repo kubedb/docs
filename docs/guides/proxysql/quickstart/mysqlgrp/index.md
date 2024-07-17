@@ -37,7 +37,7 @@ In this tutorial we are going to test set up a ProxySQL server with KubeDB opera
 By applying the following yaml we are going to create our MySQL Group Replication 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-server
@@ -55,7 +55,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -122,7 +122,7 @@ Now we are ready to deploy and test our ProxySQL server.
 With the following yaml we are going to create our desired ProxySQL server.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -133,7 +133,7 @@ spec:
   syncUsers: true
   backend:
     name: mysql-server
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 This is the simplest version of a KubeDB ProxySQL server. Here in the `.spec.version` field we are saying that we want a ProxySQL-2.3.2 with base image of debian. In the `.spec.replicas` section we have written 1, so the operator will create a single node ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend MySQL server will be fetched to the ProxySQL server. 

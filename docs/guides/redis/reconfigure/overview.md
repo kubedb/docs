@@ -37,7 +37,7 @@ The Reconfiguring Redis process consists of the following steps:
 
 2. `KubeDB` operator watches the `Redis` CR.
 
-3. When the operator finds a `Redis` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `Redis` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
 4. Then, in order to reconfigure the `Redis` database the user creates a `RedisOpsRequest` CR with desired information.
 
@@ -47,7 +47,7 @@ The Reconfiguring Redis process consists of the following steps:
 
 7. Then the `KubeDB` Ops-manager operator will replace the existing configuration with the new configuration provided or merge the new configuration with the existing configuration according to the `RedisOpsRequest` CR.
 
-8. Then the `KubeDB` Ops-manager operator will restart the related StatefulSet Pods so that they restart with the new configuration defined in the `RedisOpsRequest` CR.
+8. Then the `KubeDB` Ops-manager operator will restart the related PetSet Pods so that they restart with the new configuration defined in the `RedisOpsRequest` CR.
 
 9. After the successful reconfiguring of the `Redis` components, the `KubeDB` Ops-manager operator resumes the `Redis` object so that the `KubeDB` Provisioner  operator resumes its usual operations.
 

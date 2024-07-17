@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -15,13 +15,15 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      env:
-      - name: MYSQL_DATABASE
-        value: mdDB
-      args:
-      - --character-set-server=utf8mb4
-      resources:
-        requests:
-          memory: "1Gi"
-          cpu: "250m"
-  terminationPolicy: WipeOut
+      containers:
+      - name: perconaxtradb
+        env:
+        - name: MYSQL_DATABASE
+          value: mdDB
+        args:
+        - --character-set-server=utf8mb4
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
+  deletionPolicy: WipeOut

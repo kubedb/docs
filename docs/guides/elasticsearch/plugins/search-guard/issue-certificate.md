@@ -346,7 +346,7 @@ Use this Secret `sg-elasticsearch-cert` in your Elasticsearch object.
 Below is the Elasticsearch object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: sg-elasticsearch
@@ -387,7 +387,7 @@ sg-elasticsearch   6.3-v1    Running   1m
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo es/sg-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo es/sg-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo es/sg-elasticsearch
 
 $ kubectl delete ns demo

@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: sample-redis
@@ -7,7 +7,7 @@ spec:
   version: 6.2.14
   mode: Cluster
   cluster:
-    master: 3
+    shards: 3
     replicas: 1
   storageType: Durable
   storage:
@@ -17,4 +17,4 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Halt
+  deletionPolicy: Halt

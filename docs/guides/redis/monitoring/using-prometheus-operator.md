@@ -89,14 +89,14 @@ Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` la
 At first, let's deploy an Redis server with monitoring enabled. Below is the Redis object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: coreos-prom-redis
   namespace: demo
 spec:
   version: 6.0.20
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
     accessModes:

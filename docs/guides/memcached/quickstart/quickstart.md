@@ -57,7 +57,7 @@ NAME       VERSION   DB_IMAGE                    DEPRECATED   AGE
 KubeDB implements a `Memcached` CRD to define the specification of a Memcached server. Below is the `Memcached` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   name: memcd-quickstart
@@ -67,14 +67,16 @@ spec:
   version: "1.6.22"
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
-  terminationPolicy: Delete
+      containers:
+        - name: memcached
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
+  deletionPolicy: Delete
 ```
 
 ```bash
@@ -87,7 +89,7 @@ Here,
 - `spec.replicas` is an optional field that specifies the number of desired Instances/Replicas of Memcached server. It defaults to 1.
 - `spec.version` is the version of Memcached server. In this tutorial, a Memcached 1.5.4 database is going to be created.
 - `spec.resource` is an optional field that specifies how much CPU and memory (RAM) each Container needs. To learn details about Managing Compute Resources for Containers, please visit [here](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/).
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Memcached` crd or which resources KubeDB should keep or delete when you delete `Memcached` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specterminationpolicy)
+- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Memcached` crd or which resources KubeDB should keep or delete when you delete `Memcached` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy)
 
 KubeDB operator watches for `Memcached` objects using Kubernetes api. When a `Memcached` object is created, KubeDB operator will create a new Deployment and a ClusterIP Service with the matching Memcached object name.
 
@@ -131,9 +133,9 @@ Events:
   Type    Reason      Age   From                Message
   ----    ------      ----  ----                -------
   Normal  Successful  2m    Memcached operator  Successfully created Service
-  Normal  Successful  1m    Memcached operator  Successfully created StatefulSet
+  Normal  Successful  1m    Memcached operator  Successfully created PetSet
   Normal  Successful  1m    Memcached operator  Successfully created Memcached
-  Normal  Successful  1m    Memcached operator  Successfully patched StatefulSet
+  Normal  Successful  1m    Memcached operator  Successfully patched PetSet
   Normal  Successful  1m    Memcached operator  Successfully patched Memcached
 ```
 
@@ -141,7 +143,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get mc -n demo memcd-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   creationTimestamp: 2018-10-03T09:40:38Z
@@ -151,7 +153,7 @@ metadata:
   name: memcd-quickstart
   namespace: demo
   resourceVersion: "23592"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/memcacheds/memcd-quickstart
+  selfLink: /apis/kubedb.com/v1/namespaces/demo/memcacheds/memcd-quickstart
   uid: 62b08ec3-c6f0-11e8-8ebc-0800275bbbee
 spec:
   podTemplate:
@@ -166,7 +168,7 @@ spec:
           cpu: 250m
           memory: 64Mi
   replicas: 3
-  terminationPolicy: Delete
+  deletionPolicy: Delete
   version: 1.6.22
 status:
   observedGeneration: 1$4210395375389091791
@@ -217,20 +219,20 @@ quit
 
 ## DoNotTerminate Property
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
 $ kubectl delete mc memcd-quickstart -n demo
-Error from server (BadRequest): admission webhook "memcached.validators.kubedb.com" denied the request: memcached "memcd-quickstart" can't be halted. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "memcached.validators.kubedb.com" denied the request: memcached "memcd-quickstart" can't be halted. To delete, change spec.deletionPolicy
 ```
 
-Now, run `kubectl edit mc memcd-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which creates `dormantdatabase` when memcached is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Halt`). Then you will be able to delete/halt the database. 
+Now, run `kubectl edit mc memcd-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` (which creates `dormantdatabase` when memcached is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Halt`). Then you will be able to delete/halt the database. 
 
-Learn details of all `TerminationPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specterminationpolicy)
+Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy)
 
 ## Halt Database
 
-When [TerminationPolicy](/docs/guides/memcached/concepts/memcached.md#specterminationpolicy) is set to `Halt`, it will halt the Memcached server instead of deleting it. Here, you delete the Memcached object, KubeDB operator will delete the Deployment and its pods. In KubeDB parlance, we say that `memcd-quickstart` Memcached server has entered into dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
+When [DeletionPolicy](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy) is set to `Halt`, it will halt the Memcached server instead of deleting it. Here, you delete the Memcached object, KubeDB operator will delete the Deployment and its pods. In KubeDB parlance, we say that `memcd-quickstart` Memcached server has entered into dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```bash
 $ kubectl delete mc memcd-quickstart -n demo
@@ -247,7 +249,7 @@ memcd-quickstart   Halted    2m
 
 ```yaml
 $ kubectl get drmn -n demo memcd-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: DormantDatabase
 metadata:
   creationTimestamp: 2018-10-03T09:49:16Z
@@ -259,7 +261,7 @@ metadata:
   name: memcd-quickstart
   namespace: demo
   resourceVersion: "24242"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/dormantdatabases/memcd-quickstart
+  selfLink: /apis/kubedb.com/v1/namespaces/demo/dormantdatabases/memcd-quickstart
   uid: 97ad28ef-c6f1-11e8-8ebc-0800275bbbee
 spec:
   origin:
@@ -281,7 +283,7 @@ spec:
                 cpu: 250m
                 memory: 64Mi
         replicas: 3
-        terminationPolicy: Halt
+        deletionPolicy: Halt
         version: 1.6.22
 status:
   observedGeneration: 1$7678503742307285743
@@ -316,7 +318,7 @@ $ kubectl delete mc memcd-quickstart -n demo
 memcached "memcd-quickstart" deleted
 
 $ kubectl edit drmn -n demo memcd-quickstart
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: DormantDatabase
 metadata:
   name: memcd-quickstart
@@ -346,7 +348,7 @@ dormantdatabase "memcd-quickstart" deleted
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/memcd-quickstart
 
 kubectl patch -n demo drmn/memcd-quickstart -p '{"spec":{"wipeOut":true}}' --type="merge"

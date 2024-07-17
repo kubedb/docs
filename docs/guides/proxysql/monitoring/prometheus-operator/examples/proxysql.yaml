@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -17,6 +17,6 @@ spec:
           release: prometheus
           release: prometheus
         interval: 10s
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3

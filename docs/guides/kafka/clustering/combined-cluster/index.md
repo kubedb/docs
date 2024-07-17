@@ -91,7 +91,7 @@ NAME                            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)  
 service/kafka-standalone-pods   ClusterIP   None         <none>        9092/TCP,9093/TCP,29092/TCP   8m59s
 
 NAME                                READY   AGE
-statefulset.apps/kafka-standalone   1/1     8m56s
+petset.apps/kafka-standalone   1/1     8m56s
 
 NAME                                                  TYPE               VERSION   AGE
 appbinding.appcatalog.appscode.com/kafka-standalone   kubedb.com/kafka   3.6.1     8m56s
@@ -161,7 +161,7 @@ NAME                           TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   
 service/kafka-multinode-pods   ClusterIP   None         <none>        9092/TCP,9093/TCP,29092/TCP   6m7s
 
 NAME                               READY   AGE
-statefulset.apps/kafka-multinode   3/3     6m2s
+petset.apps/kafka-multinode   3/3     6m2s
 
 NAME                                                 TYPE               VERSION   AGE
 appbinding.appcatalog.appscode.com/kafka-multinode   kubedb.com/kafka   3.6.1     6m2s

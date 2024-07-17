@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-arb
@@ -18,5 +18,5 @@ spec:
         storage: 500Mi
   arbiter:
     podTemplate: {}
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 

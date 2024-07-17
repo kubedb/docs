@@ -42,7 +42,7 @@ Here, We are going to create a MongoDB database without TLS and then reconfigure
 In this section, we are going to deploy a MongoDB Replicaset database without TLS. In the next few sections we will reconfigure TLS using `MongoDBOpsRequest` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-rs
@@ -80,7 +80,7 @@ Name:               mg-rs
 Namespace:          demo
 CreationTimestamp:  Thu, 11 Mar 2021 13:25:05 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"...
 Replicas:           3  total
 Status:             Ready
 StorageType:        Durable
@@ -92,7 +92,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  Delete
 
-StatefulSet:          
+PetSet:          
   Name:               mg-rs
   CreationTimestamp:  Thu, 11 Mar 2021 13:25:05 +0600
   Labels:               app.kubernetes.io/component=database
@@ -144,7 +144,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-rs","namespace":"demo"},"spec":{"replicaSet":{"name":"rs0"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.4.26"}}
 
     Creation Timestamp:  2021-03-11T07:26:44Z
     Labels:
@@ -189,7 +189,7 @@ Events:
   Normal  Successful  13m   MongoDB operator  Successfully  stats service
   Normal  Successful  13m   MongoDB operator  Successfully  stats service
   Normal  Successful  12m   MongoDB operator  Successfully  stats service
-  Normal  Successful  12m   MongoDB operator  Successfully patched StatefulSet demo/mg-rs
+  Normal  Successful  12m   MongoDB operator  Successfully patched PetSet demo/mg-rs
 ```
 
 Now, we can connect to this database through [mongo-shell](https://docs.mongodb.com/v4.2/mongo/) and verify that the TLS is disabled.
@@ -400,7 +400,7 @@ Status:
     Status:                True
     Type:                  ReconfigureTLS
     Last Transition Time:  2021-03-11T13:32:25Z
-    Message:               Successfully Updated StatefulSets
+    Message:               Successfully Updated PetSets
     Observed Generation:   1
     Reason:                TLSAdded
     Status:                True
@@ -424,7 +424,7 @@ Events:
   ----    ------             ----   ----                        -------
   Normal  PauseDatabase      2m10s  KubeDB Ops-manager operator  Pausing MongoDB demo/mg-rs
   Normal  PauseDatabase      2m10s  KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-rs
-  Normal  TLSAdded           2m10s  KubeDB Ops-manager operator  Successfully Updated StatefulSets
+  Normal  TLSAdded           2m10s  KubeDB Ops-manager operator  Successfully Updated PetSets
   Normal  RestartReplicaSet  10s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
   Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Resuming MongoDB demo/mg-rs
   Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-rs
@@ -931,7 +931,7 @@ Status:
     Status:                True
     Type:                  ReconfigureTLS
     Last Transition Time:  2021-03-11T16:35:37Z
-    Message:               Successfully Updated StatefulSets
+    Message:               Successfully Updated PetSets
     Observed Generation:   1
     Reason:                TLSRemoved
     Status:                True
@@ -955,7 +955,7 @@ Events:
   ----    ------             ----  ----                        -------
   Normal  PauseDatabase      2m5s  KubeDB Ops-manager operator  Pausing MongoDB demo/mg-rs
   Normal  PauseDatabase      2m5s  KubeDB Ops-manager operator  Successfully paused MongoDB demo/mg-rs
-  Normal  TLSRemoved         2m5s  KubeDB Ops-manager operator  Successfully Updated StatefulSets
+  Normal  TLSRemoved         2m5s  KubeDB Ops-manager operator  Successfully Updated PetSets
   Normal  RestartReplicaSet  35s   KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
   Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-rs
   Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-rs

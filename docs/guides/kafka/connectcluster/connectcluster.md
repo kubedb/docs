@@ -192,7 +192,7 @@ service/connectcluster-distributed        ClusterIP   10.128.238.9   <none>     
 service/connectcluster-distributed-pods   ClusterIP   None           <none>        8083/TCP   17m
 
 NAME                                          READY   AGE
-statefulset.apps/connectcluster-distributed   2/2     8m56s
+petset.apps/connectcluster-distributed   2/2     8m56s
 
 NAME                                                            TYPE                              VERSION   AGE
 appbinding.appcatalog.appscode.com/connectcluster-distributed   kafka.kubedb.com/connectcluster   3.6.1     8m56s

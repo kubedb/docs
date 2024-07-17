@@ -121,7 +121,7 @@ secret/gcs-secret created
 Now, we are going to create an MariaDB CRO in `demo` namespace. Below is the YAML of the MariaDB object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -139,7 +139,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Notice the `annotations` section. We are pointing to the `BackupBlueprint` that we have created earlier though `stash.appscode.com/backup-blueprint` annotation. Stash will watch this annotation and create a `Repository` and a `BackupConfiguration` according to the `BackupBlueprint`.
@@ -289,7 +289,7 @@ secret/gcs-secret created
 Now, we are going to create an MariaDB CRO in `demo-2` namespace. Below is the YAML of the MariaDB object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb-2
@@ -308,7 +308,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Notice the `annotations` section. This time, we have passed a schedule via `stash.appscode.com/schedule` annotation along with the `stash.appscode.com/backup-blueprint` annotation.
@@ -470,7 +470,7 @@ secret/gcs-secret created
 Now, we are going to create an MariaDB CRO in `demo-3` namespace. Below is the YAML of the MariaDB object that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb-3
@@ -489,7 +489,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 
 ```
 

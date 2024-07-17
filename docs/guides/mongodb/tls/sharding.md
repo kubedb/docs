@@ -96,7 +96,7 @@ issuer.cert-manager.io/mongo-ca-issuer created
 Below is the YAML for MongoDB Sharding. Here, [`spec.sslMode`](/docs/guides/mongodb/concepts/mongodb.md#specsslMode) specifies `sslMode` for `sharding` and [`spec.clusterAuthMode`](/docs/guides/mongodb/concepts/mongodb.md#specclusterAuthMode) provides `clusterAuthMode` for sharding servers.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-sh-tls
@@ -129,7 +129,7 @@ spec:
             storage: 1Gi
         storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ### Deploy MongoDB Sharding

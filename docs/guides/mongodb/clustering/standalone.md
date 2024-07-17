@@ -40,7 +40,7 @@ To deploy a MongoDB Standalone, user must have `spec.replicaSet` & `spec.shardTo
 The following is an example of a `Mongodb` object which creates MongoDB Standalone database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-alone
@@ -49,16 +49,18 @@ spec:
   version: "4.4.26"
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "300m"
-          memory: "400Mi"
+      containers:
+      - name: mongo
+        resources:
+          requests:
+            cpu: "300m"
+            memory: "400Mi"
   storage:
     resources:
       requests:
         storage: 500Mi
     storageClassName: standard
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -70,9 +72,9 @@ Here,
 
 - `spec.version` is the version to be used for MongoDB.
 - `spec.podTemplate` specifies the resources and other specifications of the pod. Have a look [here](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) to know the other subfields of the podTemplate.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-name>-pods`.
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for PetSets with the name `<mongodb-name>-pods`.
 
 ```bash
 $ kubectl dba describe mg -n demo mg-alone
@@ -80,7 +82,7 @@ Name:               mg-alone
 Namespace:          demo
 CreationTimestamp:  Fri, 04 Nov 2022 10:30:07 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{...
 Replicas:           1  total
 Status:             Ready
 StorageType:        Durable
@@ -91,7 +93,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               mg-alone
   CreationTimestamp:  Fri, 04 Nov 2022 10:30:07 +0600
   Labels:               app.kubernetes.io/component=database
@@ -143,7 +145,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.4.26"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"deletionPolicy":"WipeOut","version":"4.4.26"}}
 
     Creation Timestamp:  2022-11-04T04:30:14Z
     Labels:
@@ -179,22 +181,22 @@ Events:
   Normal  PhaseChanged  21s   MongoDB operator  Phase changed from  to Provisioning.
   Normal  Successful    21s   MongoDB operator  Successfully created governing service
   Normal  Successful    21s   MongoDB operator  Successfully created Primary Service
-  Normal  Successful    14s   MongoDB operator  Successfully patched StatefulSet demo/mg-alone
+  Normal  Successful    14s   MongoDB operator  Successfully patched PetSet demo/mg-alone
   Normal  Successful    14s   MongoDB operator  Successfully patched MongoDB
   Normal  Successful    14s   MongoDB operator  Successfully created appbinding
   Normal  Successful    14s   MongoDB operator  Successfully patched MongoDB
-  Normal  Successful    14s   MongoDB operator  Successfully patched StatefulSet demo/mg-alone
-  Normal  Successful    4s    MongoDB operator  Successfully patched StatefulSet demo/mg-alone
+  Normal  Successful    14s   MongoDB operator  Successfully patched PetSet demo/mg-alone
+  Normal  Successful    4s    MongoDB operator  Successfully patched PetSet demo/mg-alone
   Normal  Successful    4s    MongoDB operator  Successfully patched MongoDB
   Normal  PhaseChanged  4s    MongoDB operator  Phase changed from Provisioning to Ready.
-  Normal  Successful    4s    MongoDB operator  Successfully patched StatefulSet demo/mg-alone
+  Normal  Successful    4s    MongoDB operator  Successfully patched PetSet demo/mg-alone
   Normal  Successful    4s    MongoDB operator  Successfully patched MongoDB
 
 
 
 $ kubectl get sts,svc,pvc,pv -n demo
 NAME                        READY   AGE
-statefulset.apps/mg-alone   1/1     65s
+petset.apps/mg-alone   1/1     65s
 
 NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 service/mg-alone        ClusterIP   10.96.47.157   <none>        27017/TCP   65s
@@ -212,12 +214,12 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 ```yaml
 $ kubectl get mg -n demo mg-alone -o yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"terminationPolicy":"WipeOut","version":"4.4.26"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mg-alone","namespace":"demo"},"spec":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"300m","memory":"400Mi"}}}},"storage":{"resources":{"requests":{"storage":"500Mi"}},"storageClassName":"standard"},"deletionPolicy":"WipeOut","version":"4.4.26"}}
   creationTimestamp: "2022-11-04T04:30:07Z"
   finalizers:
     - kubedb.com
@@ -233,8 +235,6 @@ spec:
   authSecret:
     name: mg-alone-auth
   autoOps: {}
-  coordinator:
-    resources: {}
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10
@@ -243,29 +243,6 @@ spec:
     controller: {}
     metadata: {}
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/instance: mg-alone
-                    app.kubernetes.io/managed-by: kubedb.com
-                    app.kubernetes.io/name: mongodbs.kubedb.com
-                namespaces:
-                  - demo
-                topologyKey: kubernetes.io/hostname
-              weight: 100
-            - podAffinityTerm:
-                labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/instance: mg-alone
-                    app.kubernetes.io/managed-by: kubedb.com
-                    app.kubernetes.io/name: mongodbs.kubedb.com
-                namespaces:
-                  - demo
-                topologyKey: failure-domain.beta.kubernetes.io/zone
-              weight: 50
       livenessProbe:
         exec:
           command:
@@ -292,12 +269,14 @@ spec:
         periodSeconds: 10
         successThreshold: 1
         timeoutSeconds: 5
-      resources:
-        limits:
-          memory: 400Mi
-        requests:
-          cpu: 300m
-          memory: 400Mi
+      containers:
+      - name: mongo
+        resources:
+          limits:
+            memory: 400Mi
+          requests:
+            cpu: 300m
+            memory: 400Mi
       serviceAccountName: mg-alone
   replicas: 1
   sslMode: disabled
@@ -308,7 +287,7 @@ spec:
     storageClassName: standard
   storageEngine: wiredTiger
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   version: 4.4.26
 status:
   conditions:
@@ -430,14 +409,14 @@ As this is a standalone database which doesn't have multiple replicas, It offers
 
 ## Halt Database
 
-When [TerminationPolicy](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
+When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the PetSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
 
-You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the statefulsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
+You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb will delete the petsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
 
-To halt the database, first you have to set the terminationPolicy to `Halt` in existing database. You can use the below command to set the terminationPolicy to `Halt`, if it is not already set.
+To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo mg/mg-alone -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"
+$ kubectl patch -n demo mg/mg-alone -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 mongodb.kubedb.com/mg-alone patched
 ```
 
@@ -448,7 +427,7 @@ $ kubectl patch -n demo mg/mg-alone -p '{"spec":{"halted":true}}' --type="merge"
 mongodb.kubedb.com/mg-alone patched
 ```
 
-After that, kubedb will delete the statefulsets and services and you can see the database Phase as `Halted`.
+After that, kubedb will delete the petsets and services and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
@@ -505,7 +484,7 @@ movie
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mg/mg-alone -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mg/mg-alone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mg-alone
 
 kubectl delete ns demo

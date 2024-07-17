@@ -40,7 +40,7 @@ namespace/demo created
 We need a mysql backend for the proxysql server. So we are creating one with the below yaml.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-server
@@ -58,7 +58,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -79,7 +79,7 @@ mysql-server   5.7.44    Ready    3m51s
 Let's create a KubeDB ProxySQL cluster with the following yaml.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -89,7 +89,7 @@ spec:
   replicas: 3
   backend:
     name: mysql-server
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash

@@ -88,7 +88,7 @@ rules:
   resourceNames:
   - quick-postgres
   resources:
-  - statefulsets
+  - petsets
   verbs:
   - get
 - apiGroups:
@@ -167,7 +167,7 @@ postgres.kubedb.com/quick-postgres created
 Below is the YAML for the Postgres crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: quick-postgres
@@ -191,9 +191,9 @@ spec:
 
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-postgres-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-postgres-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo quick-postgres-0
@@ -260,7 +260,7 @@ rules:
   resourceNames:
   - miniute-postgres
   resources:
-  - statefulsets
+  - petsets
   verbs:
   - get
 - apiGroups:
@@ -292,7 +292,7 @@ postgres.kubedb.com/quick-postgres created
 Below is the YAML for the Postgres crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: minute-postgres
@@ -316,9 +316,9 @@ spec:
 
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-postgres-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-postgres-0` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo minute-postgres-0
@@ -365,10 +365,10 @@ LOG:  autovacuum launcher started
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo pg/quick-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo pg/quick-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/quick-postgres
 
-kubectl patch -n demo pg/minute-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo pg/minute-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/minute-postgres
 
 kubectl delete -n demo role my-custom-role

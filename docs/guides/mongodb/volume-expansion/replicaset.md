@@ -62,7 +62,7 @@ Now, we are going to deploy a `MongoDB` replicaSet database with version `4.4.26
 In this section, we are going to deploy a MongoDB Replicaset database with 1GB volume. Then, in the next section we will expand its volume to 2GB using `MongoDBOpsRequest` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-replicaset
@@ -97,7 +97,7 @@ NAME            VERSION    STATUS    AGE
 mg-replicaset   4.4.26      Ready     10m
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -110,7 +110,7 @@ pvc-9db1aeb0-f1af-4555-93a3-0ca754327751   1Gi        RWO            Delete     
 pvc-d38f42a8-50d4-4fa9-82ba-69fc7a464ff4   1Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-1   standard                10m
 ```
 
-You can see the statefulset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
+You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
 We are now ready to apply the `MongoDBOpsRequest` CR to expand the volume of this database.
 
@@ -152,7 +152,7 @@ mongodbopsrequest.ops.kubedb.com/mops-volume-exp-replicaset created
 
 #### Verify MongoDB replicaset volume expanded successfully 
 
-If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `MongoDB` object and related `StatefulSets` and `Persistent Volumes`.
+If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `MongoDB` object and related `PetSets` and `Persistent Volumes`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -222,7 +222,7 @@ Events:
   Normal  Successful       3m11s  KubeDB Ops-manager operator  Successfully Scaled Database  
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

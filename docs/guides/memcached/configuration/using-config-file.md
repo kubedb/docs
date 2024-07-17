@@ -127,7 +127,7 @@ memcached.kubedb.com/custom-memcached created
 Below is the YAML for the Memcached crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   name: custom-memcached
@@ -139,13 +139,15 @@ spec:
     name: mc-configuration
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
+      containers:
+      - name: memcached
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 250m
+            memory: 64Mi
 ```
 
 Now, wait a few minutes. KubeDB operator will create the necessary deployment, services etc. If everything goes well, we will see that a deployment with the name `custom-memcached` has been created.
@@ -191,7 +193,7 @@ Here, `limit_maxbytes` is represented in bytes.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mc/custom-memcached -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/custom-memcached -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/custom-memcached
 
 kubectl patch -n demo drmn/custom-memcached -p '{"spec":{"wipeOut":true}}' --type="merge"

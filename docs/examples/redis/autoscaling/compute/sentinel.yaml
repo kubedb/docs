@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-demo
@@ -13,11 +13,13 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "200m"
-          memory: "300Mi"
-        limits:
-          cpu: "200m"
-          memory: "300Mi"
-  terminationPolicy: WipeOut
+      containers:
+        - name: redissentinel
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "300Mi"
+            limits:
+              cpu: "200m"
+              memory: "300Mi"
+  deletionPolicy: WipeOut

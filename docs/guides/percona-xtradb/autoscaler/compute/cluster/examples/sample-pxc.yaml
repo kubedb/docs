@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: sample-pxc
@@ -16,11 +16,13 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "200m"
-          memory: "300Mi"
-        limits:
-          cpu: "200m"
-          memory: "300Mi"
-  terminationPolicy: WipeOut
+      containers:
+      - name: perconaxtradb
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "300Mi"
+          limits:
+            cpu: "200m"
+            memory: "300Mi"
+  deletionPolicy: WipeOut

@@ -50,7 +50,7 @@ Now, we are going to deploy a `MongoDB` replicaset database with version `4.4.26
 In this section, we are going to deploy a MongoDB replicaset database. Then, in the next section we will scale the database using `MongoDBOpsRequest` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-replicaset
@@ -85,7 +85,7 @@ NAME            VERSION   STATUS    AGE
 mg-replicaset   4.4.26     Ready     2m36s
 ```
 
-Let's check the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
+Let's check the number of replicas this database has from the MongoDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'
@@ -233,7 +233,7 @@ mongodbopsrequest.ops.kubedb.com/mops-hscale-up-replicaset created
 
 #### Verify Replicaset replicas scaled up successfully 
 
-If everything goes well, `KubeDB` Ops-manager operator will update the replicas of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the replicas of `MongoDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -330,7 +330,7 @@ Events:
   Normal  Successful         45s   KubeDB Ops-manager operator  Successfully Horizontally Scaled Database
 ```
 
-Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
+Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'
@@ -490,7 +490,7 @@ mongodbopsrequest.ops.kubedb.com/mops-hscale-down-replicaset created
 
 #### Verify Replicaset replicas scaled down successfully 
 
-If everything goes well, `KubeDB` Ops-manager operator will update the replicas of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the replicas of `MongoDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -587,7 +587,7 @@ Events:
   Normal  Successful           30s   KubeDB Ops-manager operator  Successfully Horizontally Scaled Database
 ```
 
-Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
+Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the petset have,
 
 ```bash
 $ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas' 

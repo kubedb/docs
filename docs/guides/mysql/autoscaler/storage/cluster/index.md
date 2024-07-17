@@ -63,7 +63,7 @@ In this section, we are going to deploy a MySQL replicaset database with version
 > If you want to autoscale MySQL `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: sample-mysql
@@ -81,7 +81,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` CRO we have shown above,
@@ -99,7 +99,7 @@ NAME             VERSION   STATUS   AGE
 sample-mysql   10.5.23    Ready    3m46s
 ```
 
-Let's check volume size from statefulset, and from the persistent volume,
+Let's check volume size from petset, and from the persistent volume,
 
 ```bash
 $ kubectl get sts -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -112,7 +112,7 @@ pvc-4a509b05-774b-42d9-b36d-599c9056af37   1Gi        RWO            Delete     
 pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1Gi        RWO            Delete           Bound    demo/data-sample-mysql-1   topolvm-provisioner            57s
 ```
 
-You can see the statefulset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
+You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
 We are now ready to apply the `MySQLAutoscaler` CRO to set up storage autoscaling for this database.
 
@@ -295,7 +295,7 @@ Events:
   Normal  Successful  103s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of MySQL: demo/sample-mysql
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the replicaset database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the replicaset database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'

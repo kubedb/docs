@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: redis-quickstart
@@ -15,7 +15,9 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "100Mi"
+      containers:
+        - name: redis
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"

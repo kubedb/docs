@@ -105,14 +105,14 @@ namespace/demo patched
 At first, let's deploy an PerconaXtraDB database with monitoring enabled. Below is the PerconaXtraDB object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
   name: coreos-prom-px
   namespace: demo
 spec:
   version: "8.0.26"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
     accessModes:

@@ -143,7 +143,7 @@ spec:
 ### Complete YAML
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -205,5 +205,5 @@ spec:
       cluster_mysql_users_diffs_before_sync: "3"
       refresh_interval: "2000"
       cluster_check_interval_ms: "200"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   ```

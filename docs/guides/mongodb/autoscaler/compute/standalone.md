@@ -48,7 +48,7 @@ Here, we are going to deploy a `MongoDB` standalone using a supported version by
 In this section, we are going to deploy a MongoDB standalone database with version `4.4.26`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-standalone
@@ -62,14 +62,16 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "200m"
-          memory: "300Mi"
-        limits:
-          cpu: "200m"
-          memory: "300Mi"
-  terminationPolicy: WipeOut
+      containers:
+      - name: mongo
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "300Mi"
+          limits:
+            cpu: "200m"
+            memory: "300Mi"
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MongoDB` CRO we have shown above,
@@ -460,9 +462,9 @@ Events:
   ----    ------                     ----   ----                         -------
   Normal  PauseDatabase              2m40s  KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-standalone
   Normal  PauseDatabase              2m40s  KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-standalone
-  Normal  Starting                   2m40s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-standalone
+  Normal  Starting                   2m40s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-standalone
   Normal  UpdateStandaloneResources  2m40s  KubeDB Ops-manager Operator  Successfully updated standalone Resources
-  Normal  Starting                   2m40s  KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-standalone
+  Normal  Starting                   2m40s  KubeDB Ops-manager Operator  Updating Resources of PetSet: mg-standalone
   Normal  UpdateStandaloneResources  2m40s  KubeDB Ops-manager Operator  Successfully updated standalone Resources
   Normal  UpdateStandaloneResources  2m15s  KubeDB Ops-manager Operator  Successfully Vertically Scaled Standalone Resources
   Normal  ResumeDatabase             2m15s  KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-standalone

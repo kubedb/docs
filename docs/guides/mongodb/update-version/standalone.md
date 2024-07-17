@@ -45,7 +45,7 @@ Now, we are going to deploy a `MongoDB` standalone database with version `3.6.8`
 In this section, we are going to deploy a MongoDB standalone database. Then, in the next section we will update the version of the database using `MongoDBOpsRequest` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-standalone
@@ -123,7 +123,7 @@ mongodbopsrequest.ops.kubedb.com/mops-update created
 
 #### Verify MongoDB version updated successfully :
 
-If everything goes well, `KubeDB` Ops-manager operator will update the image of `MongoDB` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the image of `MongoDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -205,11 +205,11 @@ Status:
     Status:                True
     Type:                  UpdateVersion
     Last Transition Time:  2022-10-26T10:07:30Z
-    Message:               Successfully updated statefulsets update strategy type
+    Message:               Successfully updated petsets update strategy type
     Observed Generation:   1
-    Reason:                UpdateStatefulSets
+    Reason:                UpdatePetSets
     Status:                True
-    Type:                  UpdateStatefulSets
+    Type:                  UpdatePetSets
     Last Transition Time:  2022-10-26T10:08:25Z
     Message:               Successfully Updated Standalone Image
     Observed Generation:   1
@@ -229,8 +229,8 @@ Events:
   ----    ------                 ----  ----                         -------
   Normal  PauseDatabase          2m5s  KubeDB Ops-manager Operator  Pausing MongoDB demo/mg-standalone
   Normal  PauseDatabase          2m5s  KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mg-standalone
-  Normal  Updating               2m5s  KubeDB Ops-manager Operator  Updating StatefulSets
-  Normal  Updating               105s  KubeDB Ops-manager Operator  Successfully Updated StatefulSets
+  Normal  Updating               2m5s  KubeDB Ops-manager Operator  Updating PetSets
+  Normal  Updating               105s  KubeDB Ops-manager Operator  Successfully Updated PetSets
   Normal  UpdateStandaloneImage  50s   KubeDB Ops-manager Operator  Successfully Updated Standalone Image
   Normal  ResumeDatabase         50s   KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-standalone
   Normal  ResumeDatabase         50s   KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mg-standalone
@@ -238,7 +238,7 @@ Events:
 
 ```
 
-Now, we are going to verify whether the `MongoDB` and the related `StatefulSets` their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `MongoDB` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get mg -n demo mg-standalone -o=jsonpath='{.spec.version}{"\n"}'                                                                                          

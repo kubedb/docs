@@ -49,7 +49,7 @@ Now, we are going to deploy a `Redis` cluster database with version `6.2.14`.
 In this section, we are going to deploy a Redis cluster database. Then, in the next section we will update the resources of the database using `RedisOpsRequest` CRD. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: redis-cluster
@@ -58,7 +58,7 @@ spec:
   version: 7.0.14
   mode: Cluster
   cluster:
-    master: 3
+    shards: 3
     replicas: 1
   storageType: Durable
   storage:
@@ -70,11 +70,13 @@ spec:
       - ReadWriteOnce
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "100Mi"
-  terminationPolicy: Halt
+      containers:
+      - name: redis
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+  deletionPolicy: Halt
 ```
 
 Let's create the `Redis` CR we have shown above, 
@@ -167,7 +169,7 @@ redisopsrequest.ops.kubedb.com/redisops-vertical created
 
 #### Verify Redis Cluster resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `Redis` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the resources of `Redis` object and related `PetSets` and `Pods`.
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
@@ -214,7 +216,7 @@ To clean up the Kubernetes resources created by this turorial, run:
 
 ```bash
 
-$ kubectl patch -n demo rd/redis-cluster -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/redis-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/redis-cluster patched
 
 $ kubectl delete -n demo redis redis-cluster

@@ -37,7 +37,7 @@ The Horizontal scaling process consists of the following steps:
 
 2. `KubeDB` Community operator watches the `MariaDB` CR.
 
-3. When the operator finds a `MariaDB` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `MariaDB` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
 4. Then, in order to scale the `MariaDB` database the user creates a `MariaDBOpsRequest` CR with desired information.
 
@@ -45,9 +45,9 @@ The Horizontal scaling process consists of the following steps:
 
 6. When it finds a `MariaDBOpsRequest` CR, it pauses the `MariaDB` object which is referred from the `MariaDBOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `MariaDB` object during the horizontal scaling process.  
 
-7. Then the `KubeDB` Enterprise operator will scale the related StatefulSet Pods to reach the expected number of replicas defined in the `MariaDBOpsRequest` CR.
+7. Then the `KubeDB` Enterprise operator will scale the related PetSet Pods to reach the expected number of replicas defined in the `MariaDBOpsRequest` CR.
 
-8. After the successfully scaling the replicas of the StatefulSet Pods, the `KubeDB` Enterprise operator updates the number of replicas in the `MariaDB` object to reflect the updated state.
+8. After the successfully scaling the replicas of the PetSet Pods, the `KubeDB` Enterprise operator updates the number of replicas in the `MariaDB` object to reflect the updated state.
 
 9. After the successful scaling of the `MariaDB` replicas, the `KubeDB` Enterprise operator resumes the `MariaDB` object so that the `KubeDB` Community operator resumes its usual operations.
 

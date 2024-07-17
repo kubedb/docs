@@ -45,7 +45,7 @@ Now, we are going to deploy a `Redis` standalone database with version `6.2.14`.
 In this section, we are going to deploy a Redis standalone database. Then, in the next section we will update the version of the database using `RedisOpsRequest` CRD. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: redis-quickstart
@@ -116,7 +116,7 @@ redisopsrequest.ops.kubedb.com/update-standalone created
 
 #### Verify Redis version updated successfully :
 
-If everything goes well, `KubeDB` Enterprise operator will update the image of `Redis` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the image of `Redis` object and related `PetSets` and `Pods`.
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
@@ -129,13 +129,13 @@ update-standalone       UpdateVersion   Successful   3m45s
 
 We can see from the above output that the `RedisOpsRequest` has succeeded.
 
-Now, we are going to verify whether the `Redis` and the related `StatefulSets` their `Pods` have the new version image. Let's check,
+Now, we are going to verify whether the `Redis` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
 $ kubectl get redis -n demo redis-quickstart -o=jsonpath='{.spec.version}{"\n"}'
 7.0.14
 
-$ kubectl get statefulset -n demo redis-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo redis-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 
 $ kubectl get pods -n demo redis-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
@@ -149,7 +149,7 @@ You can see from above, our `Redis` standalone database has been updated with th
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/redis-quickstart patched
 
 $ kubectl delete -n demo redis redis-quickstart

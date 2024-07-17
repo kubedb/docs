@@ -75,7 +75,7 @@ secret/es-custom-config created
 Now Deploy the Elasticsearch Cluster with the custom `jvm.options` file:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-test
@@ -87,7 +87,7 @@ spec:
   enableSSL: false 
   version: opensearch-2.8.0
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   topology:
     master:
       suffix: master

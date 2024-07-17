@@ -48,7 +48,7 @@ Here, we are going to deploy a `RedisSentinel` instance using a supported versio
 In this section, we are going to deploy a RedisSentinel instance with version `6.2.14`.  Then, in the next section we will set up autoscaling for this database using `RedisSentinelAutoscaler` CRD. Below is the YAML of the `RedisSentinel` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-demo
@@ -63,14 +63,16 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "200m"
-          memory: "300Mi"
-        limits:
-          cpu: "200m"
-          memory: "300Mi"
-  terminationPolicy: WipeOut
+      containers:
+      - name: redissentinel
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "300Mi"
+          limits:
+            cpu: "200m"
+            memory: "300Mi"
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `RedisSentinel` CRO we have shown above,
@@ -379,7 +381,7 @@ The above output verifies that we have successfully auto-scaled the resources of
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/sen-demo patched
 
 $ kubectl delete redissentinel -n demo sen-demo

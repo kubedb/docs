@@ -47,14 +47,14 @@ In order to enable monitoring for a database, you have to configure `spec.monito
 A sample YAML for MySQL crd with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: prom-operator-mysql
   namespace: demo
 spec:
   version: "8.0.35"
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
     accessModes:

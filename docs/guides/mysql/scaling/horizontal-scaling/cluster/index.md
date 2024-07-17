@@ -92,7 +92,7 @@ In this section, we are going to deploy a MySQL group replication with 3 members
 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: my-group
@@ -112,7 +112,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` cr we have shown above,
@@ -132,7 +132,7 @@ In this section, we are going to deploy a MySQL innodb with 3 members. Then, in 
 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: my-group
@@ -153,7 +153,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` cr we have shown above,
@@ -173,7 +173,7 @@ In this section, we are going to deploy a MySQL semi-sync with 3 members. Then, 
 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: my-group
@@ -195,7 +195,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` cr we have shown above,
@@ -212,8 +212,8 @@ mysql.kubedb.com/my-group created
 
 **Wait for the cluster to be ready:**
 
-`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc. A secret called `my-group-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
-Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
+`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new PetSet, Services, and Secrets, etc. A secret called `my-group-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
+Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 
 ```bash
@@ -238,7 +238,7 @@ my-group-1   2/2     Running   0          14m
 my-group-2   2/2     Running   0          11m
 ```
 
-Let's verify that the StatefulSet's pods have joined into a group replication cluster,
+Let's verify that the PetSet's pods have joined into a group replication cluster,
 
 ```bash
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
@@ -297,7 +297,7 @@ mysqlopsrequest.ops.kubedb.com/my-scale-up created
 
 **Verify Scale-Up Succeeded:**
 
-If everything goes well, `KubeDB` Ops Manager will scale up the StatefulSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` Ops Manager updates the replicas of the `MySQL` object.
+If everything goes well, `KubeDB` Ops Manager will scale up the PetSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` Ops Manager updates the replicas of the `MySQL` object.
 
 First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
@@ -430,7 +430,7 @@ mysqlopsrequest.ops.kubedb.com/my-scale-down created
 
 **Verify Scale-down Succeeded:**
 
-If everything goes well, `KubeDB` Ops Manager will scale down the StatefulSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` Ops Manager updates the replicas of the `MySQL` object.
+If everything goes well, `KubeDB` Ops Manager will scale down the PetSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` Ops Manager updates the replicas of the `MySQL` object.
 
 Now, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 

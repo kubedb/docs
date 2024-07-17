@@ -300,7 +300,7 @@ Use this Secret `custom-certificate-es-ssl-cert` in your Elasticsearch object.
 Below is the Elasticsearch object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: custom-certificate-es-ssl
@@ -501,7 +501,7 @@ $ curl --user "elastic:uft73z6j" "https://localhost:9200/_nodes/_all/settings?pr
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo es/custom-certificate-es-ssl -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/custom-certificate-es-ssl -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/custom-certificate-es-ssl
 
 kubectl delete ns demo

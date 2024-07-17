@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   name: custom-memcached
@@ -10,10 +10,12 @@ spec:
     name: mc-custom-config
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
+      containers:
+        - name: memcached
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi

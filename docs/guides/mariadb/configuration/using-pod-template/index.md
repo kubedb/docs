@@ -33,14 +33,14 @@ KubeDB supports providing custom configuration for MariaDB via [PodTemplate](/do
 
 ## Overview
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for MariaDB database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for MariaDB database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
 - metadata:
   - annotations (pod's annotation)
 - controller:
-  - annotations (statefulset's annotation)
+  - annotations (petset's annotation)
 - spec:
   - env
   - resources
@@ -63,7 +63,7 @@ Below is the YAML for the MariaDB created in this example. Here, [`spec.podTempl
 In this tutorial, an initial database `mdDB` will be created by providing `env` `MYSQL_DATABASE` while the server character set will be set to `utf8mb4` by adding extra `args`. 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -80,16 +80,18 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      env:
-      - name: MYSQL_DATABASE
-        value: mdDB
-      args:
-      - --character-set-server=utf8mb4
-      resources:
-        requests:
-          memory: "1Gi"
-          cpu: "250m"
-  terminationPolicy: WipeOut
+      containers:
+      - name: mariadb
+        env:
+        - name: MYSQL_DATABASE
+          value: mdDB
+        args:
+        - --character-set-server=utf8mb4
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "250m"
+  deletionPolicy: WipeOut
 ```
 
 
@@ -98,9 +100,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mariadb.kubedb.com/sample-mariadb created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `sample-mariadb` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `sample-mariadb` has been created.
 
-Check that the statefulset's pod is running
+Check that the petset's pod is running
 
 ```bash
 $ $ kubectl get pod -n demo

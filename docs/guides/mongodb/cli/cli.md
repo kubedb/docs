@@ -57,7 +57,7 @@ To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
 $ kubectl get mongodb mongodb-demo --output=yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   creationTimestamp: "2019-02-06T10:31:04Z"
@@ -67,7 +67,7 @@ metadata:
   name: mongodb-demo
   namespace: demo
   resourceVersion: "94703"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/mongodbs/mongodb-demo
+  selfLink: /apis/kubedb.com/v1/namespaces/default/mongodbs/mongodb-demo
   uid: 4eaaba0e-29fa-11e9-aebf-080027875192
 spec:
   authSecret:
@@ -107,7 +107,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Halt
+  deletionPolicy: Halt
   version: 3.4-v3
 status:
   observedGeneration: 2$4213139756412538772
@@ -192,7 +192,7 @@ Volume:
   Capacity:      1Gi
   Access Modes:  RWO
 
-StatefulSet:
+PetSet:
   Name:               mongodb-demo
   CreationTimestamp:  Wed, 06 Feb 2019 16:31:05 +0600
   Labels:               app.kubernetes.io/name=mongodbs.kubedb.com
@@ -242,16 +242,16 @@ Events:
   Type    Reason      Age   From             Message
   ----    ------      ----  ----             -------
   Normal  Successful  2m    KubeDB operator  Successfully created Service
-  Normal  Successful  2m    KubeDB operator  Successfully created StatefulSet
+  Normal  Successful  2m    KubeDB operator  Successfully created PetSet
   Normal  Successful  2m    KubeDB operator  Successfully created MongoDB
   Normal  Successful  2m    KubeDB operator  Successfully created appbinding
-  Normal  Successful  2m    KubeDB operator  Successfully patched StatefulSet
+  Normal  Successful  2m    KubeDB operator  Successfully patched PetSet
   Normal  Successful  2m    KubeDB operator  Successfully patched MongoDB
 ```
 
 `kubectl dba describe` command provides following basic information about a MongoDB database.
 
-- StatefulSet
+- PetSet
 - Storage (Persistent Volume)
 - Service
 - Secret (If available)
@@ -295,7 +295,7 @@ Various fields of a KubeDb object can't be edited using `edit` command. The foll
 - metadata.name
 - metadata.namespace
 
-If StatefulSets exists for a MongoDB database, following fields can't be modified as well.
+If PetSets exists for a MongoDB database, following fields can't be modified as well.
 
 - spec.ReplicaSet
 - spec.authSecret

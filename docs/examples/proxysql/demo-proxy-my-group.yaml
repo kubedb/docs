@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-my-group
@@ -8,4 +8,4 @@ spec:
   replicas: 1
   backend:
     name: mysql-server
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

@@ -52,7 +52,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 We are going to create a OpenSearch Cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, 2 ingest nodes. Here, we are using Elasticsearch version ( `opensearch-2.8.0` ) of OpenSearch distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: os-cluster
@@ -99,13 +99,13 @@ Here,
 - `spec.topology` - specifies the node-specific properties for the OpenSearch cluster.
   - `topology.master` - specifies the properties of master nodes.
     - `master.replicas` - specifies the number of master nodes.
-    - `master.storage` - specifies the master node storage information that passed to the StatefulSet.
+    - `master.storage` - specifies the master node storage information that passed to the PetSet.
   - `topology.data` - specifies the properties of data nodes.
     - `data.replicas` - specifies the number of data nodes.
-    - `data.storage` - specifies the data node storage information that passed to the StatefulSet.
+    - `data.storage` - specifies the data node storage information that passed to the PetSet.
   - `topology.ingest` - specifies the properties of ingest nodes.
     - `ingest.replicas` - specifies the number of ingest nodes.
-    - `ingest.storage` - specifies the ingest node storage information that passed to the StatefulSet.
+    - `ingest.storage` - specifies the ingest node storage information that passed to the PetSet.
 
 Let's deploy the above yaml by the following command:
 
@@ -130,7 +130,7 @@ Name:         os-cluster
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         Elasticsearch
 Metadata:
   Creation Timestamp:  2022-06-08T06:01:54Z
@@ -363,9 +363,9 @@ service/os-cluster-master   ClusterIP   None            <none>        9300/TCP  
 service/os-cluster-pods     ClusterIP   None            <none>        9200/TCP   16m
 
 NAME                                 READY   AGE
-statefulset.apps/os-cluster-data     3/3     16m
-statefulset.apps/os-cluster-ingest   2/2     16m
-statefulset.apps/os-cluster-master   2/2     16m
+petset.apps/os-cluster-data     3/3     16m
+petset.apps/os-cluster-ingest   2/2     16m
+petset.apps/os-cluster-master   2/2     16m
 
 NAME                                            TYPE                       VERSION   AGE
 appbinding.appcatalog.appscode.com/os-cluster   kubedb.com/elasticsearch   1.3.2     16m
@@ -394,7 +394,7 @@ persistentvolumeclaim/data-os-cluster-master-0   Bound    pvc-59e14a54-6311-4639
 persistentvolumeclaim/data-os-cluster-master-1   Bound    pvc-37783550-3c3a-4280-b9ac-9e967ab248af   1Gi        RWO            standard       16m
 ```
 
-- `StatefulSet` - 3 StatefulSets are created for 3 type of nodes. The StatefulSets are named after the OpenSearch instance with given suffix: `{OpenSearch-Name}-{Sufix}`.
+- `PetSet` - 3 PetSets are created for 3 type of nodes. The PetSets are named after the OpenSearch instance with given suffix: `{OpenSearch-Name}-{Sufix}`.
 - `Services` -  3 services are generated for each OpenSearch database.
   - `{OpenSearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
   - `{OpenSearch-Name}-master` - the master service which is used to connect to the master nodes. It is a headless service.
@@ -423,7 +423,7 @@ spec:
 
 - `spec.enableSSL` specifies whether the HTTP layer is secured with certificates or not.
 - `spec.databaseRef.name` refers to the OpenSearch database name.
-- `spec.terminationPolicy` refers to the strategy to follow during dashboard deletion. `Wipeout` means that the database will be deleted without restrictions. It can also be `DoNotTerminate` which will cause a restriction to delete the dashboard. Learn More about these [HERE](https://kubedb.com/docs/v2022.05.24/guides/elasticsearch/concepts/elasticsearch/#specterminationpolicy).
+- `spec.deletionPolicy` refers to the strategy to follow during dashboard deletion. `Wipeout` means that the database will be deleted without restrictions. It can also be `DoNotTerminate` which will cause a restriction to delete the dashboard. Learn More about these [HERE](https://kubedb.com/docs/v2022.05.24/guides/elasticsearch/concepts/elasticsearch/#specdeletionpolicy).
 
 Let's deploy the above yaml by the following command:
 
@@ -547,7 +547,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```bash
 $ kubectl delete elasticsearchdashboard -n demo os-cluster-dashboard
 
-$ kubectl patch -n demo elasticsearch os-cluster -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo elasticsearch os-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 
 $ kubectl delete elasticsearch -n demo os-cluster 
 

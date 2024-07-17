@@ -97,7 +97,7 @@ redis.kubedb.com "custom-redis" created
 Below is the YAML for the Redis crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: custom-redis
@@ -115,7 +115,7 @@ spec:
         storage: 1Gi
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary statefulset, services etc. If everything goes well, we will see that a pod with the name `custom-redis-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary petset, services etc. If everything goes well, we will see that a pod with the name `custom-redis-0` has been created.
 
 
 Check if the database is ready
@@ -149,7 +149,7 @@ root@custom-redis-0:/data#
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo rd/custom-redis -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/custom-redis -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/custom-redis patched
 
 $ kubectl delete -n demo redis custom-redis

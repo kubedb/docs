@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-sample
@@ -20,8 +20,10 @@ spec:
       - ReadWriteOnce
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "100Mi"
-  terminationPolicy: DoNotTerminate
+      containers:
+        - name: redis
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+  deletionPolicy: DoNotTerminate

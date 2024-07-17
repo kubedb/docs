@@ -94,7 +94,7 @@ While deploying `Memcached` from private repository, you have to add `myregistry
 Below is the Memcached CRD object we will create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   name: memcd-pvt-reg
@@ -104,13 +104,15 @@ spec:
   version: "1.6.22"
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
+      containers:
+      - name: memcached
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 250m
+            memory: 64Mi
       imagePullSecrets:
       - name: myregistrykey
 ```
@@ -144,7 +146,7 @@ memcd-pvt-reg   1.6.22   Running   59s
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mc/memcd-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/memcd-pvt-reg -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/memcd-pvt-reg
 
 kubectl patch -n demo drmn/memcd-pvt-reg -p '{"spec":{"wipeOut":true}}' --type="merge"

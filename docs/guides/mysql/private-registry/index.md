@@ -117,7 +117,7 @@ While deploying `MySQL` from private repository, you have to add `myregistrykey`
 Below is the MySQL CRD object we will create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-pvt-reg
@@ -157,7 +157,7 @@ mysql-pvt-reg-0   1/1       Running   0          56s
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mysql/mysql-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mysql/mysql-pvt-reg -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mysql/mysql-pvt-reg
 
 kubectl patch -n demo drmn/mysql-pvt-reg -p '{"spec":{"wipeOut":true}}' --type="merge"

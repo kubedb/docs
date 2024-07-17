@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mg-standalone
@@ -12,11 +12,13 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "200m"
-          memory: "300Mi"
-        limits:
-          cpu: "200m"
-          memory: "300Mi"
-  terminationPolicy: WipeOut
+      containers:
+        - name: mongodb
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "300Mi"
+            limits:
+              cpu: "200m"
+              memory: "300Mi"
+  deletionPolicy: WipeOut

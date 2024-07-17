@@ -48,7 +48,7 @@ In this section, we are going to deploy a MariaDB database using KubeDB. Then, w
 At first, let's deploy a MariaDB database named `sample-mariadb` of 3 replicas.
 
 ``` yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -64,7 +64,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ``` bash
@@ -72,7 +72,7 @@ $ kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" 
 mariadb.kubedb.com/sample-mariadb created
 ```
 
-This MariaDB object will create the necessary StatefulSet, Secret, Service etc for the database. You can easily view all the resources created by MariaDB object using [ketall](https://github.com/corneliusweig/ketall) `kubectl` plugin as below,
+This MariaDB object will create the necessary PetSet, Secret, Service etc for the database. You can easily view all the resources created by MariaDB object using [ketall](https://github.com/corneliusweig/ketall) `kubectl` plugin as below,
 
 ```bash
 $ kubectl get-all -n demo -l app.kubernetes.io/instance=sample-mariadb
@@ -87,7 +87,7 @@ service/sample-mariadb                                demo       28m
 service/sample-mariadb-pods                           demo       28m  
 appbinding.appcatalog.appscode.com/sample-mariadb     demo       28m  
 controllerrevision.apps/sample-mariadb-7b7f58b68f     demo       28m  
-statefulset.apps/sample-mariadb                       demo       28m  
+petset.apps/sample-mariadb                       demo       28m  
 poddisruptionbudget.policy/sample-mariadb             demo       28m  
 rolebinding.rbac.authorization.k8s.io/sample-mariadb  demo       28m  
 role.rbac.authorization.k8s.io/sample-mariadb         demo       28m

@@ -94,7 +94,7 @@ While deploying `MariaDB` from private repository, you have to add `myregistryke
 Below is the MariaDB CRD object we will create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: md-pvt-reg
@@ -112,7 +112,7 @@ spec:
     spec:
       imagePullSecrets:
       - name: myregistrykey
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Now run the command to deploy this `MariaDB` object:

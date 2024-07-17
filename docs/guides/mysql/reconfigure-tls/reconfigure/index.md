@@ -65,7 +65,7 @@ In this section, we are going to deploy a MySQL database without TLS. In the nex
   <div class="tab-pane fade" id="groupReplication" role="tabpanel" aria-labelledby="gr-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql
@@ -82,7 +82,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Let's create the `MySQL` CR we have shown above,
@@ -97,7 +97,7 @@ mysql.kubedb.com/mysql created
   <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql
@@ -117,7 +117,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 ```
 
 Let's create the `MySQL` CR we have shown above,
@@ -132,7 +132,7 @@ mysql.kubedb.com/mysql created
   <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: semi-sync-mysql
@@ -154,7 +154,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MySQL` CR we have shown above,
@@ -170,7 +170,7 @@ mysql.kubedb.com/mysql created
   <div class="tab-pane fade show active" id="standAlone" role="tabpanel" aria-labelledby="st-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql
@@ -185,7 +185,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: Delete
+  deletionPolicy: Delete
 
 ```
 
@@ -213,7 +213,7 @@ Name:               mysql
 Namespace:          demo
 CreationTimestamp:  Mon, 21 Nov 2022 16:18:44 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql","namespace":"demo"},"spec":{"storage":{"accessModes":["R...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql","namespace":"demo"},"spec":{"storage":{"accessModes":["R...
 Replicas:           1  total
 Status:             Ready
 StorageType:        Durable
@@ -225,7 +225,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               mysql
   CreationTimestamp:  Mon, 21 Nov 2022 16:18:49 +0600
   Labels:               app.kubernetes.io/component=database
@@ -277,7 +277,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"8.0.35"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"8.0.35"}}
 
     Creation Timestamp:  2022-11-21T10:18:49Z
     Labels:
@@ -318,7 +318,7 @@ Events:
   Normal  Phase Changed  1m    KubeDB Operator  phase changed from  to Provisioning reason:
   Normal  Successful     1m    KubeDB Operator  Successfully created governing service
   Normal  Successful     1m    KubeDB Operator  Successfully created service for primary/standalone
-  Normal  Successful     1m    KubeDB Operator  Successfully created StatefulSet
+  Normal  Successful     1m    KubeDB Operator  Successfully created PetSet
   Normal  Successful     1m    KubeDB Operator  Successfully created MySQL
   Normal  Successful     1m    KubeDB Operator  Successfully created appbinding
   Normal  Phase Changed  25s   KubeDB Operator  phase changed from Provisioning to Ready reason:
@@ -554,9 +554,9 @@ Status:
     Last Transition Time:  2022-11-22T04:10:07Z
     Message:               Successfully restarted MySQL pods for MySQLDBOpsRequest: demo/myops-add-tls
     Observed Generation:   1
-    Reason:                SuccessfullyRestartedStatefulSet
+    Reason:                SuccessfullyRestartedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-11-22T04:10:16Z
     Message:               Successfully reconfigured MySQL TLS for MySQLOpsRequest: demo/myops-add-tls
     Observed Generation:   1
@@ -782,9 +782,9 @@ Status:
     Last Transition Time:  2022-11-22T04:39:54Z
     Message:               Successfully restarted MySQL pods for MySQLDBOpsRequest: demo/myops-rotate
     Observed Generation:   1
-    Reason:                SuccessfullyRestartedStatefulSet
+    Reason:                SuccessfullyRestartedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-11-22T04:40:08Z
     Message:               Successfully reconfigured MySQL TLS for MySQLOpsRequest: demo/myops-rotate
     Observed Generation:   1
@@ -989,9 +989,9 @@ Status:
     Last Transition Time:  2022-11-22T04:57:06Z
     Message:               Successfully restarted MySQL pods for MySQLDBOpsRequest: demo/myops-change-issuer
     Observed Generation:   1
-    Reason:                SuccessfullyRestartedStatefulSet
+    Reason:                SuccessfullyRestartedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-11-22T04:57:15Z
     Message:               Successfully reconfigured MySQL TLS for MySQLOpsRequest: demo/myops-change-issuer
     Observed Generation:   1
@@ -1142,9 +1142,9 @@ Status:
     Last Transition Time:  2022-11-22T05:03:08Z
     Message:               Successfully restarted MySQL pods for MySQLDBOpsRequest: demo/myops-remove
     Observed Generation:   1
-    Reason:                SuccessfullyRestartedStatefulSet
+    Reason:                SuccessfullyRestartedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-11-22T05:03:18Z
     Message:               Successfully reconfigured MySQL TLS for MySQLOpsRequest: demo/myops-remove
     Observed Generation:   1

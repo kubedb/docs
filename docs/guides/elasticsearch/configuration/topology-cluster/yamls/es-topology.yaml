@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-topology
@@ -9,7 +9,7 @@ spec:
   configSecret:
     name: es-custom-config
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   topology:
     master:
       replicas: 1

@@ -41,7 +41,7 @@ namespace/demo created
 We need a mysql backend for the proxysql server. So we are creating one with the below yaml.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-server
@@ -59,7 +59,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -84,7 +84,7 @@ Here, we are going to deploy a `ProxySQL` Cluster using a supported version by `
 In this section, we are going to deploy a ProxySQL Cluster with version `2.3.2-debian`. Then, in the next section we will set up autoscaling for this database using `ProxySQLAutoscaler` CRD. Below is the YAML of the `ProxySQL` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -95,16 +95,18 @@ spec:
   backend:
     name: mysql-server
   syncUsers: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 200m
-          memory: 300Mi
-        requests:
-          cpu: 200m
-          memory: 300Mi
+      containers:
+      - name: proxysql
+        resources:
+          limits:
+            cpu: 200m
+            memory: 300Mi
+          requests:
+            cpu: 200m
+            memory: 300Mi
 ```
 
 Let's create the `ProxySQL` CRO we have shown above,
@@ -492,9 +494,9 @@ Status:
     Last Transition Time:  2022-09-16T11:30:42Z
     Message:               Successfully restarted ProxySQL pods for ProxySQLOpsRequest: demo/prxops-proxy-server-6xc1kc
     Observed Generation:   1
-    Reason:                SuccessfullyRestatedStatefulSet
+    Reason:                SuccessfullyRestatedPetSet
     Status:                True
-    Type:                  RestartStatefulSet
+    Type:                  RestartPetSet
     Last Transition Time:  2022-09-16T11:30:47Z
     Message:               Vertical scale successful for ProxySQLOpsRequest: demo/prxops-proxy-server-6xc1kc
     Observed Generation:   1

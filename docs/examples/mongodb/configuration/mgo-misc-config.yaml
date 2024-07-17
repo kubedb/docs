@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mgo-misc-config
@@ -15,10 +15,12 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      args:
-      - --maxConns=100
-      resources:
-        requests:
-          memory: "1Gi"
-          cpu: "250m"
-  terminationPolicy: Halt
+      containers:
+        - name: mongodb
+          args:
+            - --maxConns=100
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "250m"
+  deletionPolicy: Halt

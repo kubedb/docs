@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
   name: mongo-rs-hid
@@ -9,10 +9,12 @@ spec:
     name: "replicaset"
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "600m"
-          memory: "600Mi"
+      containers:
+        - name: mongodb
+          resources:
+            requests:
+              cpu: "600m"
+              memory: "600Mi"
   replicas: 3
   storageEngine: inMemory
   storageType: Ephemeral
@@ -33,4 +35,4 @@ spec:
       resources:
         requests:
           storage: 2Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut

@@ -42,7 +42,7 @@ To deploy a single primary MySQL replication group , specify `spec.topology` fie
 The following is an example `MySQL` object which creates a MySQL group with three members (one is primary member and the two others are secondary members).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: my-group
@@ -60,7 +60,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -74,9 +74,9 @@ Here,
 - `spec.topology.mode` specifies the mode for MySQL cluster. Here we have used `GroupReplication` to tell the operator that we want to deploy a MySQL replication group.
 - `spec.topology.group` contains group replication info.
 - `spec.topology.group.name` the name for the group. It is a valid version 4 UUID.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-pods`.
+KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the PetSet with the name `<mysql-object-name>-pods`.
 
 ```bash
 $ kubectl dba describe my -n demo my-group
@@ -84,7 +84,7 @@ Name:               my-group
 Namespace:          demo
 CreationTimestamp:  Tue, 28 Jun 2022 17:54:10 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
 Replicas:           3  total
 Status:             Provisioning
 StorageType:        Durable
@@ -96,7 +96,7 @@ Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
-StatefulSet:          
+PetSet:          
   Name:               my-group
   CreationTimestamp:  Tue, 28 Jun 2022 17:54:10 +0600
   Labels:               app.kubernetes.io/component=database
@@ -161,7 +161,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.35"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"group":{"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.35"}}
 
     Creation Timestamp:  2022-06-28T11:54:10Z
     Labels:
@@ -203,12 +203,12 @@ Events:
   Normal   Successful  1m    Kubedb operator  Successfully created service for primary/standalone
   Normal   Successful  1m    Kubedb operator  Successfully created service for secondary replicas
   Normal   Successful  1m    Kubedb operator  Successfully created database auth secret
-  Normal   Successful  1m    Kubedb operator  Successfully created StatefulSet
+  Normal   Successful  1m    Kubedb operator  Successfully created PetSet
   Normal   Successful  1m    Kubedb operator  Successfully created MySQL
   Normal   Successful  1m    Kubedb operator  Successfully created appbinding
 
 
-$ kubectl get statefulset -n demo
+$ kubectl get petset -n demo
 NAME       READY   AGE
 my-group   3/3     3m47s
 
@@ -237,7 +237,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get  my -n demo my-group -o yaml | kubectl neat
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: my-group
@@ -287,7 +287,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   topology:
     group:
       name: dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b

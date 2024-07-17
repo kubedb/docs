@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -9,13 +9,15 @@ spec:
   backend:
     name: mysql-server
   syncUsers: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+      containers:
+      - name: proxysql
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi

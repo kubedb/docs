@@ -148,7 +148,7 @@ While deploying PostgreSQL from private repository, you have to add `myregistryk
 Below is the Postgres object we will create in this tutorial
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: pvt-reg-postgres
@@ -192,7 +192,7 @@ You can specify `imagePullSecret` for Snapshot objects in `spec.podTemplate.spec
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo pg/pvt-reg-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo pg/pvt-reg-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/pvt-reg-postgres
 
 kubectl delete ns demo

@@ -46,7 +46,7 @@ Now, we are going to deploy a `RedisSentinel` instance with version `6.2.14` and
 In this section, we are going to deploy a `RedisSentinel` instance. Below is the YAML of the `RedisSentinel` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: RedisSentinel
 metadata:
   name: sen-sample
@@ -62,7 +62,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's create the `RedisSentinel` CR we have shown above,
@@ -92,7 +92,7 @@ $ kubectl get redissentinel -n demo sen-sample -o json | jq '.spec.replicas'
 In this section, we are going to deploy a `Redis` instance which will be monitored by previously created `sen-sample`. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   name: rd-sample
@@ -112,7 +112,7 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  terminationPolicy: DoNotTerminate
+  deletionPolicy: DoNotTerminate
 ```
 
 Let's create the `Redis` CR we have shown above,
@@ -211,7 +211,7 @@ sen-ops-horizontal   HorizontalScaling   Successful   5m27s
 
 We can see from the above output that the `RedisSentinelOpsRequest` has succeeded.
 
-Let's check the number of master and replicas this database has from the RedisSentinel object
+Let's check the number of replicas this database has from the RedisSentinel object
 
 ```bash
 $ kubectl get redissentinel -n demo sen-sample -o json | jq '.spec.replicas'
@@ -309,7 +309,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 # Delete Redis and RedisOpsRequest
-$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redis.kubedb.com/rd-sample patched
 
 $ kubectl delete -n demo redis rd-sample
@@ -319,7 +319,7 @@ $ kubectl delete -n demo redisopsrequest rd-ops-horizontal
 redisopsrequest.ops.kubedb.com "rd-ops-horizontal" deleted
 
 # Delete RedisSentinel and RedisSentinelOpsRequest
-$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 redissentinel.kubedb.com/sen-sample patched
 
 $ kubectl delete -n demo redissentinel sen-sample

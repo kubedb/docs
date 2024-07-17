@@ -38,7 +38,7 @@ namespace/demo created
 Also we need a mysql backend for the proxysql server. So we are  creating one with the below yaml.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
   name: mysql-server
@@ -56,7 +56,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -77,7 +77,7 @@ Now, we are going to deploy a `ProxySQL` cluster database with version `2.3.2-de
 In this section, we are going to deploy a ProxySQL cluster. Then, in the next section we will update the resources of the servers using `ProxySQLOpsRequest` CRD. Below is the YAML of the `ProxySQL` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: ProxySQL
 metadata:
   name: proxy-server
@@ -88,16 +88,18 @@ spec:
   backend:
     name: mysql-server
   syncUsers: true
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+      containers:
+      - name: proxysql
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
 ```
 
 Let's create the `ProxySQL` CR we have shown above,
@@ -179,7 +181,7 @@ proxysqlopsrequest.ops.kubedb.com/proxyops-vscale created
 
 #### Verify ProxySQL Cluster resources updated successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `ProxySQL` object and related `StatefulSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the resources of `ProxySQL` object and related `PetSets` and `Pods`.
 
 Let's wait for `ProxySQLOpsRequest` to be `Successful`.  Run the following command to watch `ProxySQLOpsRequest` CR,
 

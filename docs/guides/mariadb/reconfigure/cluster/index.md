@@ -64,7 +64,7 @@ secret/md-configuration created
 In this section, we are going to create a MariaDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MariaDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
   name: sample-mariadb
@@ -82,7 +82,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MariaDB` CR we have shown above,
@@ -246,9 +246,9 @@ Status:
     Last Transition Time:  2022-06-10T04:47:25Z
     Message:               Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-reconfigure-config
     Observed Generation:   1
-    Reason:                SuccessfullyRestatedStatefulSet
+    Reason:                SuccessfullyRestatedPetSet
     Status:                True
-    Type:                  RestartStatefulSetPods
+    Type:                  RestartPetSetPods
     Last Transition Time:  2022-06-10T04:47:30Z
     Message:               Successfully reconfigured MariaDB for MariaDBOpsRequest: demo/mdops-reconfigure-config
     Observed Generation:   1
@@ -426,9 +426,9 @@ Status:
     Last Transition Time:  2022-06-10T09:17:24Z
     Message:               Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-reconfigure-apply-config
     Observed Generation:   1
-    Reason:                SuccessfullyRestatedStatefulSet
+    Reason:                SuccessfullyRestatedPetSet
     Status:                True
-    Type:                  RestartStatefulSetPods
+    Type:                  RestartPetSetPods
     Last Transition Time:  2022-06-10T09:17:29Z
     Message:               Successfully reconfigured MariaDB for MariaDBOpsRequest: demo/mdops-reconfigure-apply-config
     Observed Generation:   1

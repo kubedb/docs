@@ -347,7 +347,7 @@ service/connectcluster-quickstart        ClusterIP   10.128.221.44   <none>     
 service/connectcluster-quickstart-pods   ClusterIP   None            <none>        8083/TCP   3m55s
 
 NAME                                         READY   AGE
-statefulset.apps/connectcluster-quickstart   3/3     3m50s
+petset.apps/connectcluster-quickstart   3/3     3m50s
 
 NAME                                                           TYPE                              VERSION   AGE
 appbinding.appcatalog.appscode.com/connectcluster-quickstart   kafka.kubedb.com/connectcluster   3.6.1     3m50s
@@ -358,7 +358,7 @@ secret/connectcluster-quickstart-connect-cred   kubernetes.io/basic-auth   2    
 
 ```
 
-- `StatefulSet` - a StatefulSet named after the ConnectCluster instance.
+- `PetSet` - a PetSet named after the ConnectCluster instance.
 - `Services` -  For a ConnectCluster instance headless service is created with name `{ConnectCluster-name}-{pods}` and a primary service created with name `{ConnectCluster-name}`.
 - `AppBinding` - an [AppBinding](/docs/guides/kafka/concepts/appbinding.md) which hold to connect information for the ConnectCluster worker nodes. It is also named after the ConnectCluster instance.
 - `Secrets` - 3 types of secrets are generated for each Connect cluster.

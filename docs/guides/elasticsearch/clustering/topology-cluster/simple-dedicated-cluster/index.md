@@ -50,7 +50,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 We are going to create a Elasticsearch Simple Dedicated Cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, 2 ingest nodes. Here, we are using Elasticsearch version ( `xpack-8.11.1` ) of SearchGuard distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
   name: es-cluster
@@ -97,13 +97,13 @@ Here,
 - `spec.topology` - specifies the node-specific properties for the Elasticsearch cluster.
   - `topology.master` - specifies the properties of master nodes.
     - `master.replicas` - specifies the number of master nodes.
-    - `master.storage` - specifies the master node storage information that passed to the StatefulSet.
+    - `master.storage` - specifies the master node storage information that passed to the PetSet.
   - `topology.data` - specifies the properties of data nodes.
     - `data.replicas` - specifies the number of data nodes.
-    - `data.storage` - specifies the data node storage information that passed to the StatefulSet.
+    - `data.storage` - specifies the data node storage information that passed to the PetSet.
   - `topology.ingest` - specifies the properties of ingest nodes.
     - `ingest.replicas` - specifies the number of ingest nodes.
-    - `ingest.storage` - specifies the ingest node storage information that passed to the StatefulSet.
+    - `ingest.storage` - specifies the ingest node storage information that passed to the PetSet.
 
 Let's deploy the above example by the following command:
 
@@ -128,7 +128,7 @@ Name:         es-cluster
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha2
+API Version:  kubedb.com/v1
 Kind:         Elasticsearch
 Metadata:
   Creation Timestamp:  2022-04-07T09:48:51Z
@@ -341,9 +341,9 @@ service/es-cluster-master   ClusterIP   None           <none>        9300/TCP   
 service/es-cluster-pods     ClusterIP   None           <none>        9200/TCP   31m
 
 NAME                                 READY   AGE
-statefulset.apps/es-cluster-data     3/3     31m
-statefulset.apps/es-cluster-ingest   2/2     31m
-statefulset.apps/es-cluster-master   2/2     31m
+petset.apps/es-cluster-data     3/3     31m
+petset.apps/es-cluster-ingest   2/2     31m
+petset.apps/es-cluster-master   2/2     31m
 
 NAME                                            TYPE                       VERSION   AGE
 appbinding.appcatalog.appscode.com/es-cluster   kubedb.com/elasticsearch   7.14.2    31m
@@ -367,7 +367,7 @@ persistentvolumeclaim/data-es-cluster-master-1   Bound    pvc-ed4a704c-7b13-421e
 
 ```
 
-- `StatefulSet` - 3 StatefulSets are created for 3 types Elasticsearch nodes. The StatefulSets are named after the Elasticsearch instance with given suffix: `{Elasticsearch-Name}-{Sufix}`.
+- `PetSet` - 3 PetSets are created for 3 types Elasticsearch nodes. The PetSets are named after the Elasticsearch instance with given suffix: `{Elasticsearch-Name}-{Sufix}`.
 - `Services` -  3 services are generated for each Elasticsearch database.
   - `{Elasticsearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
   - `{Elasticsearch-Name}-master` - the master service which is used to connect to the master nodes. It is a headless service.
@@ -517,7 +517,7 @@ curl -XGET -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/info/_se
 To cleanup the k8s resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo elasticsearch es-cluster -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo elasticsearch es-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 
 $ kubectl delete elasticsearch -n demo es-cluster 
 

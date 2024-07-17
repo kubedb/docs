@@ -37,9 +37,9 @@ The Volume Expansion process consists of the following steps:
 
 2. `KubeDB` Provisioner  operator watches the `MongoDB` CR.
 
-3. When the operator finds a `MongoDB` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `MongoDB` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
-4. Each StatefulSet creates a Persistent Volume according to the Volume Claim Template provided in the statefulset configuration. This Persistent Volume will be expanded by the `KubeDB` Ops-manager operator.
+4. Each PetSet creates a Persistent Volume according to the Volume Claim Template provided in the petset configuration. This Persistent Volume will be expanded by the `KubeDB` Ops-manager operator.
 
 5. Then, in order to expand the volume of the various components (ie. ReplicaSet, Shard, ConfigServer, Mongos, etc.) of the `MongoDB` database the user creates a `MongoDBOpsRequest` CR with desired information.
 
@@ -49,7 +49,7 @@ The Volume Expansion process consists of the following steps:
 
 8. Then the `KubeDB` Ops-manager operator will expand the persistent volume to reach the expected size defined in the `MongoDBOpsRequest` CR.
 
-9. After the successful Volume Expansion of the related StatefulSet Pods, the `KubeDB` Ops-manager operator updates the new volume size in the `MongoDB` object to reflect the updated state.
+9. After the successful Volume Expansion of the related PetSet Pods, the `KubeDB` Ops-manager operator updates the new volume size in the `MongoDB` object to reflect the updated state.
 
 10. After the successful Volume Expansion of the `MongoDB` components, the `KubeDB` Ops-manager operator resumes the `MongoDB` object so that the `KubeDB` Provisioner  operator resumes its usual operations.
 

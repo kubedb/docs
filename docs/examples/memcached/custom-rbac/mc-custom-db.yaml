@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   name: quick-memcached
@@ -9,11 +9,13 @@ spec:
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
-      resources:
-        limits:
-          cpu: 500m
-          memory: 128Mi
-        requests:
-          cpu: 250m
-          memory: 64Mi
-  terminationPolicy: DoNotTerminate
+      containers:
+        - name: memcached
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
+  deletionPolicy: DoNotTerminate
