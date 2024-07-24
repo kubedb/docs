@@ -59,7 +59,7 @@ NAME      VERSION   DB_IMAGE          DEPRECATED   AGE
 
 KubeDB implements a `MariaDB` CRD to define the specification of a MariaDB database. Below is the `MariaDB` object created in this tutorial.
 
-If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -85,8 +85,6 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mariadb.kubedb.com/sample-mariadb created
 ```
 
-If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion.
-
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
@@ -107,7 +105,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb-v1alpha2.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 

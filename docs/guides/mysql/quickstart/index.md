@@ -64,7 +64,7 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED 
 
 KubeDB implements a `MySQL` CRD to define the specification of a MySQL database. Below is the `MySQL` object created in this tutorial.
 
-If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -90,8 +90,6 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mysql.kubedb.com/mysql-quickstart created
 ```
 
-If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion. 
-
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MySQL
@@ -112,7 +110,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/quickstart.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/quickstart-v1alpha2.yaml
 mysql.kubedb.com/mysql-quickstart created
 ```
 

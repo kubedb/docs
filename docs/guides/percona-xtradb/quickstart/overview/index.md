@@ -58,7 +58,7 @@ NAME     VERSION   DB_IMAGE                                DEPRECATED   AGE
 
 KubeDB implements a `PerconaXtraDB` CRD to define the specification of a PerconaXtraDB database. Below is the `PerconaXtraDB` object created in this tutorial.
 
-If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -84,8 +84,6 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 perconaxtradb.kubedb.com/sample-pxc created
 ```
 
-If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion.
-
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
@@ -106,7 +104,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/quickstart/overview/examples/sample-pxc.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/quickstart/overview/examples/sample-pxc-v1alpha2.yaml
 perconaxtradb.kubedb.com/sample-pxc created
 ```
 

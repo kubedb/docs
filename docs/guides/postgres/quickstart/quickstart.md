@@ -139,7 +139,7 @@ KubeDB implements a Postgres CRD to define the specification of a PostgreSQL dat
 
 Below is the Postgres object created in this tutorial.
 
-If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -165,8 +165,6 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 postgres.kubedb.com/quick-postgres created
 ```
 
-If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion.
-
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Postgres
@@ -187,7 +185,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres-v1alpha2.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 

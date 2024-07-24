@@ -36,7 +36,7 @@ namespace/demo created
 In this tutorial we are going to test set up a ProxySQL server with KubeDB operator for a MySQL Group Replication. We will use KubeDb to set up our MySQL servers here. 
 By applying the following yaml we are going to create our MySQL Group Replication 
 
-If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -65,8 +65,6 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysql.kubedb.com/mysql-server created
 ```
 
-If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion.
-
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MySQL
@@ -90,7 +88,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-mysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-mysql-v1alpha2.yaml
 mysql.kubedb.com/mysql-server created
 ```
 
@@ -152,7 +150,7 @@ Now we are ready to deploy and test our ProxySQL server.
 
 With the following yaml we are going to create our desired ProxySQL server.
 
-If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -175,7 +173,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 ```
 
 
-If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion.
+
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2

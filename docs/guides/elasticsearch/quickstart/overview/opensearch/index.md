@@ -136,7 +136,7 @@ The KubeDB operator implements an Elasticsearch CRD to define the specification 
 
 Here is the yaml we will use for this tutorial:
 
-If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -164,8 +164,6 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 elasticsearch.kubedb.com/es-quickstart created
 ```
 
-If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion.
-
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
@@ -188,7 +186,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/opensearch/yamls/opensearch.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/opensearch/yamls/opensearch-v1alpha2.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 

@@ -79,7 +79,7 @@ The KubeDB operator implements a Kafka CRD to define the specification of Kafka.
 
 The Kafka instance used for this tutorial:
 
-If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -106,8 +106,6 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 kafka.kubedb.com/kafka-quickstart created
 ```
 
-If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion. 
-
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Kafka
@@ -129,7 +127,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/overview/kafka/yamls/kafka.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/overview/kafka/yamls/kafka-v1alpha2.yaml
 kafka.kubedb.com/kafka-quickstart created
 ```
 

@@ -268,7 +268,7 @@ We are now ready with our backend. In the next section we will set up our ProxyS
 
 With the following yaml we are going to create our desired ProxySQL server.
 
-If your `KubeDB version` is greater than `v2024.6.4` use `v1` apiVersion.
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -290,7 +290,6 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
   proxysql.kubedb.com/proxysql-server created
 ```
 
-If your `KubeDB version` is less than or equal to `v2024.6.4` use `v1alpha2` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -308,7 +307,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/xtradbext/examples/sample-proxysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/xtradbext/examples/sample-proxysql-v1alpha2.yaml
   proxysql.kubedb.com/proxysql-server created
 ```
 
