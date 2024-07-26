@@ -79,6 +79,33 @@ The KubeDB operator implements a Kafka CRD to define the specification of Kafka.
 
 The Kafka instance used for this tutorial:
 
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
+
+```yaml
+apiVersion: kubedb.com/v1
+kind: Kafka
+metadata:
+  name: kafka-quickstart
+  namespace: demo
+spec:
+  replicas: 3
+  version: 3.6.1
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
+  storageType: Durable
+  deletionPolicy: DoNotTerminate
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/overview/kafka/yamls/kafka-v1.yaml
+kafka.kubedb.com/kafka-quickstart created
+```
+
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Kafka
@@ -99,6 +126,11 @@ spec:
   deletionPolicy: DoNotTerminate
 ```
 
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/overview/kafka/yamls/kafka-v1alpha2.yaml
+kafka.kubedb.com/kafka-quickstart created
+```
+
 Here,
 
 - `spec.version` - is the name of the KafkaVersion CR. Here, a Kafka of version `3.6.1` will be created.
@@ -108,13 +140,6 @@ Here,
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Kafka CR. Deletion policy `Delete` will delete the database pods, secret and PVC when the Kafka CR is deleted.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
-
-Let's create the Kafka CR that is shown above:
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/overview/yamls/druid-quickstart.yaml
-kafka.kubedb.com/kafka-quickstart created
-```
 
 The Kafka's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the Kafka.
 

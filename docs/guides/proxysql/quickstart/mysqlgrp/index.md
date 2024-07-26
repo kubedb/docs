@@ -36,6 +36,8 @@ namespace/demo created
 In this tutorial we are going to test set up a ProxySQL server with KubeDB operator for a MySQL Group Replication. We will use KubeDb to set up our MySQL servers here. 
 By applying the following yaml we are going to create our MySQL Group Replication 
 
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
+
 ```yaml
 apiVersion: kubedb.com/v1
 kind: MySQL
@@ -59,7 +61,34 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-mysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-mysql-v1.yaml
+mysql.kubedb.com/mysql-server created
+```
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: mysql-server
+  namespace: demo
+spec:
+  version: "5.7.44"
+  replicas: 3
+  topology:
+    mode: GroupReplication
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-mysql-v1alpha2.yaml
 mysql.kubedb.com/mysql-server created
 ```
 
@@ -121,6 +150,8 @@ Now we are ready to deploy and test our ProxySQL server.
 
 With the following yaml we are going to create our desired ProxySQL server.
 
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
+
 ```yaml
 apiVersion: kubedb.com/v1
 kind: ProxySQL
@@ -136,14 +167,35 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-This is the simplest version of a KubeDB ProxySQL server. Here in the `.spec.version` field we are saying that we want a ProxySQL-2.3.2 with base image of debian. In the `.spec.replicas` section we have written 1, so the operator will create a single node ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend MySQL server will be fetched to the ProxySQL server. 
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-proxysql-v1.yaml
+  proxysql.kubedb.com/proxysql-server created
+```
 
-Now let's apply the yaml. 
+
+
 
 ```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: ProxySQL
+metadata:
+  name: proxy-server
+  namespace: demo
+spec:
+  version: "2.3.2-debian"
+  replicas: 1
+  syncUsers: true
+  backend:
+    name: mysql-server
+  terminationPolicy: WipeOut
+```
+
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-proxysql.yaml
   proxysql.kubedb.com/proxysql-server created
 ```
+
+This is the simplest version of a KubeDB ProxySQL server. Here in the `.spec.version` field we are saying that we want a ProxySQL-2.3.2 with base image of debian. In the `.spec.replicas` section we have written 1, so the operator will create a single node ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend MySQL server will be fetched to the ProxySQL server.
 
 Let's wait for the ProxySQL to be Ready. 
 
