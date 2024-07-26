@@ -268,6 +268,8 @@ We are now ready with our backend. In the next section we will set up our ProxyS
 
 With the following yaml we are going to create our desired ProxySQL server.
 
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
+
 ```yaml
 apiVersion: kubedb.com/v1
 kind: ProxySQL
@@ -283,14 +285,33 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-This is the simplest version of a KubeDB ProxySQL server. Here in the `.spec.version` field we are saying that we want a ProxySQL-2.4.4 with base image of debian. In the `.spec.replicas` section we have written 1, so the operator will create a single node ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend MySQL server will be fetched to the ProxySQL server. 
-
-Now let's apply the yaml. 
-
-```yaml
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/xtradbext/examples/sample-proxysql.yaml
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/xtradbext/examples/sample-proxysql-v1.yaml
   proxysql.kubedb.com/proxysql-server created
 ```
+
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: ProxySQL
+metadata:
+  name: proxy-server
+  namespace: demo
+spec:
+  version: "2.4.4-debian"
+  replicas: 1
+  syncUsers: true
+  backend:
+    name: xtradb-galera-appbinding
+  terminationPolicy: WipeOut
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/xtradbext/examples/sample-proxysql-v1alpha2.yaml
+  proxysql.kubedb.com/proxysql-server created
+```
+
+This is the simplest version of a KubeDB ProxySQL server. Here in the `.spec.version` field we are saying that we want a ProxySQL-2.4.4 with base image of debian. In the `.spec.replicas` section we have written 1, so the operator will create a single node ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend MySQL server will be fetched to the ProxySQL server. 
 
 Let's wait for the ProxySQL to be Ready. 
 

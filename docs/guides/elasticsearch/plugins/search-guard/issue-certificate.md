@@ -45,7 +45,7 @@ NAME    STATUS  AGE
 demo    Active  5s
 ```
 
-You also need to have [*OpenSSL*](https://www.openssl.org/source/) and Java *keytool* for generating all required artifacts.
+You also need to have [*OpenSSL*](https://www.openssl.org) and Java *keytool* for generating all required artifacts.
 
 In order to find out if you have OpenSSL installed, open a terminal and type
 

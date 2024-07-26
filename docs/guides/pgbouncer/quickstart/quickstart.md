@@ -156,6 +156,8 @@ KubeDB implements a PgBouncer crd to define the specifications of a PgBouncer.
 
 Below is the PgBouncer object created in this tutorial.
 
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
+
 ```yaml
 apiVersion: kubedb.com/v1
 kind: PgBouncer
@@ -178,13 +180,45 @@ spec:
   deletionPolicy: Delete
 ```
 
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-v1.yaml
+pgbouncer.kubedb.com/pgbouncer-server created
+```
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: PgBouncer
+metadata:
+  name: pgbouncer-server
+  namespace: demo
+spec:
+  version: "1.18.0"
+  replicas: 1
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "quick-postgres"
+      namespace: demo
+  connectionPool:
+    port: 5432
+    maxClientConnections: 20
+    reservePoolSize: 5
+  terminationPolicy: Delete
+```
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-v1alpha2.yaml
+pgbouncer.kubedb.com/pgbouncer-server created
+```
+
 Here,
 
 - `spec.version` is name of the PgBouncerVersion crd where the docker images are specified. In this tutorial, a PgBouncer with base image version 1.17.0 is created.
 - `spec.replicas` specifies the number of replica pgbouncer server pods to be created for the PgBouncer object.
 - `spec.database` specifies the database that are going to be served via PgBouncer.
 - `spec.connectionPool` specifies the configurations for connection pool.
-- `spec.deletionPolicy` specifies what policy to apply while deletion.
+- `spec.terminationPolicy` or `spec.deletionPolicy` specifies what policy to apply while deletion.
 
 ### spec.database
 
