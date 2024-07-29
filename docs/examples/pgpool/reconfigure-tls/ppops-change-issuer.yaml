@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgpoolOpsRequest
+metadata:
+  name: ppops-change-issuer
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: pgpool
+  tls:
+    issuerRef:
+      name: pp-new-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"

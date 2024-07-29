@@ -253,8 +253,6 @@ statement_level_load_balance = 'off'
 memory_cache_enabled = 'off'
 memqcache_oiddir = '/tmp/oiddir/'
 allow_clear_text_frontend_auth = 'false'
-
-
 failover_on_backend_error = 'off'
 pgpool-0:/$ exit
 exit
@@ -360,67 +358,32 @@ pgpoolopsrequest.ops.kubedb.com/ppops-add-tls created
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CRO,
 
 ```bash
-$ kubectl get pgpoolopsrequest -n demo
+$ watch kubectl get pgpoolopsrequest -n demo
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
-NAME           TYPE             STATUS        AGE
-mops-add-tls   ReconfigureTLS   Successful    91s
+NAME            TYPE             STATUS       AGE
+ppops-add-tls   ReconfigureTLS   Successful   107s
 ```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo mops-add-tls 
-Name:         mops-add-tls
+$ kubectl describe pgpoolopsrequest -n demo ppops-add-tls 
+Name:         ppops-add-tls
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         PgpoolOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-11T13:32:18Z
+  Creation Timestamp:  2024-07-29T06:47:24Z
   Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:databaseRef:
-          .:
-          f:name:
-        f:tls:
-          .:
-          f:certificates:
-          f:issuerRef:
-            .:
-            f:apiGroup:
-            f:kind:
-            f:name:
-        f:type:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2021-03-11T13:32:18Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-enterprise
-    Operation:       Update
-    Time:            2021-03-11T13:32:19Z
-  Resource Version:  488264
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/pgpoolopsrequests/mops-add-tls
-  UID:               0024ec16-0d43-4686-a2d7-1cdeb96e41a5
+  Resource Version:    8910
+  UID:                 679969d1-4a1b-460e-a64a-d0255db4f1c8
 Spec:
+  Apply:  IfReady
   Database Ref:
-    Name:  mg-rs
+    Name:   pgpool
+  Timeout:  5m
   Tls:
     Certificates:
       Alias:  client
@@ -428,34 +391,84 @@ Spec:
         Organizational Units:
           client
         Organizations:
-          mongo
+          pgpool
+    Client Auth Mode:  cert
     Issuer Ref:
       API Group:  cert-manager.io
       Kind:       Issuer
-      Name:       mg-issuer
+      Name:       pgpool-issuer
+    Ssl Mode:     require
   Type:           ReconfigureTLS
 Status:
   Conditions:
-    Last Transition Time:  2021-03-11T13:32:19Z
-    Message:               Pgpool ops request is reconfiguring TLS
+    Last Transition Time:  2024-07-29T06:47:24Z
+    Message:               Pgpool ops-request has started to reconfigure tls for RabbitMQ nodes
     Observed Generation:   1
     Reason:                ReconfigureTLS
     Status:                True
     Type:                  ReconfigureTLS
-    Last Transition Time:  2021-03-11T13:32:25Z
-    Message:               Successfully Updated StatefulSets
+    Last Transition Time:  2024-07-29T06:47:27Z
+    Message:               Successfully paused database
     Observed Generation:   1
-    Reason:                TLSAdded
+    Reason:                DatabasePauseSucceeded
     Status:                True
-    Type:                  TLSAdded
-    Last Transition Time:  2021-03-11T13:34:25Z
-    Message:               Successfully Restarted ReplicaSet nodes
+    Type:                  DatabasePauseSucceeded
+    Last Transition Time:  2024-07-29T06:47:38Z
+    Message:               Successfully synced all certificates
     Observed Generation:   1
-    Reason:                RestartReplicaSet
+    Reason:                CertificateSynced
     Status:                True
-    Type:                  RestartReplicaSet
-    Last Transition Time:  2021-03-11T13:34:25Z
-    Message:               Successfully Reconfigured TLS
+    Type:                  CertificateSynced
+    Last Transition Time:  2024-07-29T06:47:33Z
+    Message:               get certificate; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetCertificate
+    Last Transition Time:  2024-07-29T06:47:33Z
+    Message:               check ready condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckReadyCondition
+    Last Transition Time:  2024-07-29T06:47:33Z
+    Message:               check issuing condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckIssuingCondition
+    Last Transition Time:  2024-07-29T06:47:45Z
+    Message:               successfully reconciled the Pgpool with TLS
+    Observed Generation:   1
+    Reason:                UpdatePetSets
+    Status:                True
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-07-29T06:48:30Z
+    Message:               Successfully Restarted Pgpool pods
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-07-29T06:47:50Z
+    Message:               get pod; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--pgpool-0
+    Last Transition Time:  2024-07-29T06:47:50Z
+    Message:               evict pod; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--pgpool-0
+    Last Transition Time:  2024-07-29T06:48:25Z
+    Message:               check pod running; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--pgpool-0
+    Last Transition Time:  2024-07-29T06:48:37Z
+    Message:               Successfully updated Pgpool
+    Observed Generation:   1
+    Reason:                UpdateDatabase
+    Status:                True
+    Type:                  UpdateDatabase
+    Last Transition Time:  2024-07-29T06:48:39Z
+    Message:               Successfully updated Pgpool TLS
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -463,65 +476,122 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason             Age    From                        Message
-  ----    ------             ----   ----                        -------
-  Normal  PauseDatabase      2m10s  KubeDB Ops-manager operator  Pausing Pgpool demo/mg-rs
-  Normal  PauseDatabase      2m10s  KubeDB Ops-manager operator  Successfully paused Pgpool demo/mg-rs
-  Normal  TLSAdded           2m10s  KubeDB Ops-manager operator  Successfully Updated StatefulSets
-  Normal  RestartReplicaSet  10s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
-  Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Resuming Pgpool demo/mg-rs
-  Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Successfully resumed Pgpool demo/mg-rs
-  Normal  Successful         10s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
+  Type     Reason                                                      Age    From                         Message
+  ----     ------                                                      ----   ----                         -------
+  Normal   Starting                                                    2m12s  KubeDB Ops-manager Operator  Start processing for PgpoolOpsRequest: demo/ppops-add-tls
+  Normal   Starting                                                    2m12s  KubeDB Ops-manager Operator  Pausing Pgpool databse: demo/pgpool
+  Normal   Successful                                                  2m12s  KubeDB Ops-manager Operator  Successfully paused Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-add-tls
+  Warning  get certificate; ConditionStatus:True                       2m3s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 2m3s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               2m3s   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       2m3s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 2m3s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               2m3s   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       2m3s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 2m3s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               2m3s   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Normal   CertificateSynced                                           2m3s   KubeDB Ops-manager Operator  Successfully synced all certificates
+  Warning  get certificate; ConditionStatus:True                       118s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 118s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               118s   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       118s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 118s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               118s   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       118s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 118s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               118s   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Normal   CertificateSynced                                           118s   KubeDB Ops-manager Operator  Successfully synced all certificates
+  Normal   UpdatePetSets                                               111s   KubeDB Ops-manager Operator  successfully reconciled the Pgpool with TLS
+  Warning  get pod; ConditionStatus:True; PodName:pgpool-0             106s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pgpool-0
+  Warning  evict pod; ConditionStatus:True; PodName:pgpool-0           106s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:pgpool-0
+  Warning  check pod running; ConditionStatus:False; PodName:pgpool-0  101s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:pgpool-0
+  Warning  check pod running; ConditionStatus:True; PodName:pgpool-0   71s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:pgpool-0
+  Normal   RestartPods                                                 66s    KubeDB Ops-manager Operator  Successfully Restarted Pgpool pods
+  Normal   Starting                                                    57s    KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pgpool
+  Normal   Successful                                                  57s    KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-add-tls
 ```
 
-Now, Let's exec into a database primary node and find out the username to connect in a mongo shell,
+Now, we let exec into a pgpool pod and verify that the TLS is enabled.
 
 ```bash
-$ kubectl exec -it mg-rs-2 -n demo bash
-root@mgo-rs-tls-2:/$ ls /var/run/pgpool/tls
-ca.crt  client.pem  mongo.pem
-root@mgo-rs-tls-2:/$ openssl x509 -in /var/run/pgpool/tls/client.pem -inform PEM -subject -nameopt RFC2253 -noout
-subject=CN=root,OU=client,O=mongo
+$ kubectl exec -it -n demo pgpool-0 -- bash
+pgpool-0:/$ cat opt/pgpool-II/etc/pgpool.conf
+pgpool-0:/$ cat opt/pgpool-II/etc/pgpool.conf
+backend_hostname0 = 'ha-postgres.demo.svc'
+backend_port0 = 5432
+backend_weight0 = 1
+backend_flag0 = 'ALWAYS_PRIMARY|DISALLOW_TO_FAILOVER'
+backend_hostname1 = 'ha-postgres-standby.demo.svc'
+backend_port1 = 5432
+backend_weight1 = 1
+backend_flag1 = 'DISALLOW_TO_FAILOVER'
+enable_pool_hba = on
+listen_addresses = *
+port = 9999
+socket_dir = '/var/run/pgpool'
+pcp_listen_addresses = *
+pcp_port = 9595
+pcp_socket_dir = '/var/run/pgpool'
+log_per_node_statement = on
+sr_check_period = 0
+health_check_period = 0
+backend_clustering_mode = 'streaming_replication'
+num_init_children = 5
+max_pool = 15
+child_life_time = 300
+child_max_connections = 0
+connection_life_time = 0
+client_idle_limit = 0
+connection_cache = on
+load_balance_mode = on
+ssl_ca_cert = '/opt/pgpool-II/tls/ca.pem'
+ssl = on
+failover_on_backend_error = 'off'
+log_min_messages = 'warning'
+statement_level_load_balance = 'off'
+memory_cache_enabled = 'off'
+memqcache_oiddir = '/tmp/oiddir/'
+allow_clear_text_frontend_auth = 'false'
+ssl = 'on'
+ssl_key = '/opt/pgpool-II/tls/tls.key'
+ssl_cert = '/opt/pgpool-II/tls/tls.crt'
+failover_on_backend_error = 'off'
+pgpool-0:/$ exit
+exit
 ```
+We can see from the above output that `ssl='on'` so we can verify that TLS is enabled for this pgpool.
 
-Now, we can connect using `CN=root,OU=client,O=mongo` as root to connect to the mongo shell of the master pod,
-
+Now, let's connect with just client certificate using psql. For that first save the `tls.crt` and `tls.key` from the secret named `pgpool-client-cert`.
 ```bash
-root@mgo-rs-tls-2:/$ mongo --tls --tlsCAFile /var/run/pgpool/tls/ca.crt --tlsCertificateKeyFile /var/run/pgpool/tls/client.pem admin --host localhost --authenticationMechanism MONGODB-X509 --authenticationDatabase='$external' -u "CN=root,OU=client,O=mongo" --quiet
-rs0:PRIMARY>
+$ kubectl get secrets -n demo pgpool-client-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > client.crt                                    master ⬆ ⬇ ✱ ◼
+$ kubectl get secrets -n demo pgpool-client-cert -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
 ```
-
-We are connected to the mongo shell. Let's run some command to verify the sslMode and the user,
-
+Now let's port forward to the main service of the pgpool:
 ```bash
-rs0:PRIMARY> db.adminCommand({ getParameter:1, sslMode:1 })
-{
-	"sslMode" : "requireSSL",
-	"ok" : 1,
-	"$clusterTime" : {
-		"clusterTime" : Timestamp(1615472249, 1),
-		"signature" : {
-			"hash" : BinData(0,"AAAAAAAAAAAAAAAAAAAAAAAAAAA="),
-			"keyId" : NumberLong(0)
-		}
-	},
-	"operationTime" : Timestamp(1615472249, 1)
-}
+$ kubectl port-forward -n demo svc/pgpool 9999                                                                                                                                         pgpool ✱ ◼
+Forwarding from 127.0.0.1:9999 -> 9999
 ```
+Now connect with `psql`:
+```bash
+psql "sslmode=require port=9999 host=localhost dbname=postgres user=postgres sslrootcert=ca.crt sslcert=client.crt sslkey=client.key"     master ⬆ ⬇ ✱ ◼
+psql (16.3 (Ubuntu 16.3-1.pgdg22.04+1), server 16.1)
+SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)
+Type "help" for help.
 
-We can see from the above output that, `sslMode` is set to `requireSSL`. So, database TLS is enabled successfully to this database.
-
+postgres=# 
+```
+So, here we have connected using the client certificate and now password was needed and the connection is tls secured. So, we can safely assume that tls enabling was successful.
 ## Rotate Certificate
 
 Now we are going to rotate the certificate of this database. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it mg-rs-2 -n demo bash
-root@mg-rs-2:/# openssl x509 -in /var/run/pgpool/tls/client.pem -inform PEM -enddate -nameopt RFC2253 -noout
-notAfter=Jun  9 13:32:20 2021 GMT
+$ kubectl exec -it -n demo pgpool-0 -- bash                                                                                                 master ⬆ ⬇ ✱ ◼
+pgpool-0:/$ openssl x509 -in /opt/pgpool-II/tls/ca.pem -inform PEM -enddate -nameopt RFC2253 -noout
+notAfter=Oct 27 06:47:28 2024 GMT
 ```
 
-So, the certificate will expire on this time `Jun  9 13:32:20 2021 GMT`. 
+So, the certificate will expire on this time `27 06:47:28 2024 GMT`. 
 
 ### Create PgpoolOpsRequest
 
@@ -531,27 +601,27 @@ Now we are going to increase it using a PgpoolOpsRequest. Below is the yaml of t
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PgpoolOpsRequest
 metadata:
-  name: mops-rotate
+  name: ppops-rotate
   namespace: demo
 spec:
   type: ReconfigureTLS
   databaseRef:
-    name: mg-rs
+    name: pgpool
   tls:
     rotateCertificates: true
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing reconfigure TLS operation on `mg-rs` database.
-- `spec.type` specifies that we are performing `ReconfigureTLS` on our database.
-- `spec.tls.rotateCertificates` specifies that we want to rotate the certificate of this database.
+- `spec.databaseRef.name` specifies that we are performing reconfigure TLS operation on `pgpool`.
+- `spec.type` specifies that we are performing `ReconfigureTLS` on our pgpool.
+- `spec.tls.rotateCertificates` specifies that we want to rotate the certificate of this pgpool.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/mops-rotate.yaml
-pgpoolopsrequest.ops.kubedb.com/mops-rotate created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/ppops-rotate.yaml
+pgpoolopsrequest.ops.kubedb.com/ppops-rotate created
 ```
 
 #### Verify Certificate Rotated Successfully
@@ -559,93 +629,110 @@ pgpoolopsrequest.ops.kubedb.com/mops-rotate created
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CRO,
 
 ```bash
-$ kubectl get pgpoolopsrequest -n demo
+$ watch kubectl get pgpoolopsrequest -n demo
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
-NAME           TYPE             STATUS        AGE
-mops-rotate    ReconfigureTLS   Successful    112s
+NAME           TYPE             STATUS       AGE
+ppops-rotate   ReconfigureTLS   Successful   113s
 ```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo mops-rotate
-Name:         mops-rotate
+$ kubectl describe pgpoolopsrequest -n demo ppops-rotate
+Name:         ppops-rotate
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         PgpoolOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-11T16:17:55Z
+  Creation Timestamp:  2024-07-29T07:10:15Z
   Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:databaseRef:
-          .:
-          f:name:
-        f:tls:
-          .:
-          f:rotateCertificates:
-        f:type:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2021-03-11T16:17:55Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-enterprise
-    Operation:       Update
-    Time:            2021-03-11T16:17:55Z
-  Resource Version:  521643
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/pgpoolopsrequests/mops-rotate
-  UID:               6d96ead2-a868-47d8-85fb-77eecc9a96b4
+  Resource Version:    10505
+  UID:                 6399fdad-bf2a-43de-b542-9ad09f032844
 Spec:
+  Apply:  IfReady
   Database Ref:
-    Name:  mg-rs
+    Name:  pgpool
   Tls:
     Rotate Certificates:  true
   Type:                   ReconfigureTLS
 Status:
   Conditions:
-    Last Transition Time:  2021-03-11T16:17:55Z
-    Message:               Pgpool ops request is reconfiguring TLS
+    Last Transition Time:  2024-07-29T07:10:15Z
+    Message:               Pgpool ops-request has started to reconfigure tls for RabbitMQ nodes
     Observed Generation:   1
     Reason:                ReconfigureTLS
     Status:                True
     Type:                  ReconfigureTLS
-    Last Transition Time:  2021-03-11T16:17:55Z
-    Message:               Successfully Added Issuing Condition in Certificates
+    Last Transition Time:  2024-07-29T07:10:18Z
+    Message:               Successfully paused database
     Observed Generation:   1
-    Reason:                IssuingConditionUpdated
+    Reason:                DatabasePauseSucceeded
     Status:                True
-    Type:                  IssuingConditionUpdated
-    Last Transition Time:  2021-03-11T16:18:00Z
-    Message:               Successfully Issued New Certificates
+    Type:                  DatabasePauseSucceeded
+    Last Transition Time:  2024-07-29T07:10:19Z
+    Message:               successfully add issuing condition to all the certificates
     Observed Generation:   1
-    Reason:                CertificateIssuingSuccessful
+    Reason:                IssueCertificatesSucceeded
     Status:                True
-    Type:                  CertificateIssuingSuccessful
-    Last Transition Time:  2021-03-11T16:19:45Z
-    Message:               Successfully Restarted ReplicaSet nodes
+    Type:                  IssueCertificatesSucceeded
+    Last Transition Time:  2024-07-29T07:10:31Z
+    Message:               Successfully synced all certificates
     Observed Generation:   1
-    Reason:                RestartReplicaSet
+    Reason:                CertificateSynced
     Status:                True
-    Type:                  RestartReplicaSet
-    Last Transition Time:  2021-03-11T16:19:45Z
-    Message:               Successfully Reconfigured TLS
+    Type:                  CertificateSynced
+    Last Transition Time:  2024-07-29T07:10:25Z
+    Message:               get certificate; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetCertificate
+    Last Transition Time:  2024-07-29T07:10:25Z
+    Message:               check ready condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckReadyCondition
+    Last Transition Time:  2024-07-29T07:10:25Z
+    Message:               check issuing condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckIssuingCondition
+    Last Transition Time:  2024-07-29T07:10:39Z
+    Message:               successfully reconciled the Pgpool with TLS
+    Observed Generation:   1
+    Reason:                UpdatePetSets
+    Status:                True
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-07-29T07:11:25Z
+    Message:               Successfully Restarted Pgpool pods
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-07-29T07:10:45Z
+    Message:               get pod; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--pgpool-0
+    Last Transition Time:  2024-07-29T07:10:45Z
+    Message:               evict pod; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--pgpool-0
+    Last Transition Time:  2024-07-29T07:11:20Z
+    Message:               check pod running; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--pgpool-0
+    Last Transition Time:  2024-07-29T07:11:25Z
+    Message:               Successfully updated Pgpool
+    Observed Generation:   1
+    Reason:                UpdateDatabase
+    Status:                True
+    Type:                  UpdateDatabase
+    Last Transition Time:  2024-07-29T07:11:25Z
+    Message:               Successfully updated Pgpool TLS
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -653,19 +740,47 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason                        Age    From                        Message
-  ----    ------                        ----   ----                        -------
-  Normal  CertificateIssuingSuccessful  2m10s  KubeDB Ops-manager operator  Successfully Issued New Certificates
-  Normal  RestartReplicaSet             25s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
-  Normal  Successful                    25s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
+  Type     Reason                                                      Age    From                         Message
+  ----     ------                                                      ----   ----                         -------
+  Normal   Starting                                                    2m16s  KubeDB Ops-manager Operator  Start processing for PgpoolOpsRequest: demo/ppops-rotate
+  Normal   Starting                                                    2m16s  KubeDB Ops-manager Operator  Pausing Pgpool databse: demo/pgpool
+  Normal   Successful                                                  2m16s  KubeDB Ops-manager Operator  Successfully paused Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-rotate
+  Warning  get certificate; ConditionStatus:True                       2m6s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 2m6s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               2m6s   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       2m6s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 2m6s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               2m6s   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       2m6s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 2m6s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               2m6s   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Normal   CertificateSynced                                           2m6s   KubeDB Ops-manager Operator  Successfully synced all certificates
+  Warning  get certificate; ConditionStatus:True                       2m1s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 2m1s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               2m1s   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       2m1s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 2m1s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               2m1s   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       2m     KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 2m     KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               2m     KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Normal   CertificateSynced                                           2m     KubeDB Ops-manager Operator  Successfully synced all certificates
+  Normal   UpdatePetSets                                               112s   KubeDB Ops-manager Operator  successfully reconciled the Pgpool with TLS
+  Warning  get pod; ConditionStatus:True; PodName:pgpool-0             106s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pgpool-0
+  Warning  evict pod; ConditionStatus:True; PodName:pgpool-0           106s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:pgpool-0
+  Warning  check pod running; ConditionStatus:False; PodName:pgpool-0  101s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:pgpool-0
+  Warning  check pod running; ConditionStatus:True; PodName:pgpool-0   71s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:pgpool-0
+  Normal   RestartPods                                                 66s    KubeDB Ops-manager Operator  Successfully Restarted Pgpool pods
+  Normal   Starting                                                    66s    KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pgpool
+  Normal   Successful                                                  66s    KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-rotate
 ```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it mg-rs-2 -n demo bash
-root@mg-rs-2:/# openssl x509 -in /var/run/pgpool/tls/client.pem -inform PEM -enddate -nameopt RFC2253 -noout
-notAfter=Jun  9 16:17:55 2021 GMT
+$ kubectl exec -it -n demo pgpool-0 -- bash                                                                                                 master ⬆ ⬇ ✱ ◼
+pgpool-0:/$ openssl x509 -in /opt/pgpool-II/tls/ca.pem -inform PEM -enddate -nameopt RFC2253 -noout
+notAfter=Oct 27 07:10:20 2024 GMT
 ```
 
 As we can see from the above output, the certificate has been rotated successfully.
@@ -688,31 +803,31 @@ writing new private key to './ca.key'
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls mongo-new-ca \
+$ kubectl create secret tls pgpool-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/mongo-new-ca created
+secret/pgpool-new-ca created
 ```
 
-Now, Let's create a new `Issuer` using the `mongo-new-ca` secret that we have just created. The `YAML` file looks like this:
+Now, Let's create a new `Issuer` using the `pgpool-new-ca` secret that we have just created. The `YAML` file looks like this:
 
 ```yaml
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: mg-new-issuer
+  name: pp-new-issuer
   namespace: demo
 spec:
   ca:
-    secretName: mongo-new-ca
+    secretName: pgpool-new-ca
 ```
 
 Let's apply the `YAML` file:
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/new-issuer.yaml
-issuer.cert-manager.io/mg-new-issuer created
+issuer.cert-manager.io/pp-new-issuer created
 ```
 
 ### Create PgpoolOpsRequest
@@ -723,30 +838,30 @@ In order to use the new issuer to issue new certificates, we have to create a `P
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PgpoolOpsRequest
 metadata:
-  name: mops-change-issuer
+  name: ppops-change-issuer
   namespace: demo
 spec:
   type: ReconfigureTLS
   databaseRef:
-    name: mg-rs
+    name: pgpool
   tls:
     issuerRef:
-      name: mg-new-issuer
+      name: pp-new-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing reconfigure TLS operation on `mg-rs` database.
-- `spec.type` specifies that we are performing `ReconfigureTLS` on our database.
+- `spec.databaseRef.name` specifies that we are performing reconfigure TLS operation on `pgpool`.
+- `spec.type` specifies that we are performing `ReconfigureTLS` on our pgpool.
 - `spec.tls.issuerRef` specifies the issuer name, kind and api group.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/mops-change-issuer.yaml
-pgpoolopsrequest.ops.kubedb.com/mops-change-issuer created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/ppops-change-issuer.yaml
+pgpoolopsrequest.ops.kubedb.com/ppops-change-issuer created
 ```
 
 #### Verify Issuer is changed successfully
@@ -754,94 +869,107 @@ pgpoolopsrequest.ops.kubedb.com/mops-change-issuer created
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CRO,
 
 ```bash
-$ kubectl get pgpoolopsrequest -n demo
+$ watch kubectl get pgpoolopsrequest -n demo
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
-NAME                  TYPE             STATUS        AGE
-mops-change-issuer    ReconfigureTLS   Successful    105s
+NAME                  TYPE             STATUS       AGE
+ppops-change-issuer   ReconfigureTLS   Successful   87s
 ```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo mops-change-issuer
-Name:         mops-change-issuer
+$ kubectl describe pgpoolopsrequest -n demo ppops-change-issuer
+Name:         ppops-change-issuer
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         PgpoolOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-11T16:27:47Z
+  Creation Timestamp:  2024-07-29T07:37:09Z
   Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:databaseRef:
-          .:
-          f:name:
-        f:tls:
-          .:
-          f:issuerRef:
-            .:
-            f:apiGroup:
-            f:kind:
-            f:name:
-        f:type:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2021-03-11T16:27:47Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-enterprise
-    Operation:       Update
-    Time:            2021-03-11T16:27:47Z
-  Resource Version:  523903
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/pgpoolopsrequests/mops-change-issuer
-  UID:               cdfe8a7d-52ef-466c-a5dd-97e74ad598ca
+  Resource Version:    12367
+  UID:                 f48452ed-7264-4e99-80f1-58d7e826d9a9
 Spec:
+  Apply:  IfReady
   Database Ref:
-    Name:  mg-rs
+    Name:  pgpool
   Tls:
     Issuer Ref:
       API Group:  cert-manager.io
       Kind:       Issuer
-      Name:       mg-new-issuer
+      Name:       pp-new-issuer
   Type:           ReconfigureTLS
 Status:
   Conditions:
-    Last Transition Time:  2021-03-11T16:27:47Z
-    Message:               Pgpool ops request is reconfiguring TLS
+    Last Transition Time:  2024-07-29T07:37:09Z
+    Message:               Pgpool ops-request has started to reconfigure tls for RabbitMQ nodes
     Observed Generation:   1
     Reason:                ReconfigureTLS
     Status:                True
     Type:                  ReconfigureTLS
-    Last Transition Time:  2021-03-11T16:27:52Z
-    Message:               Successfully Issued New Certificates
+    Last Transition Time:  2024-07-29T07:37:12Z
+    Message:               Successfully paused database
     Observed Generation:   1
-    Reason:                CertificateIssuingSuccessful
+    Reason:                DatabasePauseSucceeded
     Status:                True
-    Type:                  CertificateIssuingSuccessful
-    Last Transition Time:  2021-03-11T16:29:37Z
-    Message:               Successfully Restarted ReplicaSet nodes
+    Type:                  DatabasePauseSucceeded
+    Last Transition Time:  2024-07-29T07:37:24Z
+    Message:               Successfully synced all certificates
     Observed Generation:   1
-    Reason:                RestartReplicaSet
+    Reason:                CertificateSynced
     Status:                True
-    Type:                  RestartReplicaSet
-    Last Transition Time:  2021-03-11T16:29:37Z
-    Message:               Successfully Reconfigured TLS
+    Type:                  CertificateSynced
+    Last Transition Time:  2024-07-29T07:37:18Z
+    Message:               get certificate; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetCertificate
+    Last Transition Time:  2024-07-29T07:37:18Z
+    Message:               check ready condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckReadyCondition
+    Last Transition Time:  2024-07-29T07:37:18Z
+    Message:               check issuing condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckIssuingCondition
+    Last Transition Time:  2024-07-29T07:37:30Z
+    Message:               successfully reconciled the Pgpool with TLS
+    Observed Generation:   1
+    Reason:                UpdatePetSets
+    Status:                True
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-07-29T07:38:15Z
+    Message:               Successfully Restarted Pgpool pods
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-07-29T07:37:35Z
+    Message:               get pod; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--pgpool-0
+    Last Transition Time:  2024-07-29T07:37:35Z
+    Message:               evict pod; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--pgpool-0
+    Last Transition Time:  2024-07-29T07:38:10Z
+    Message:               check pod running; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--pgpool-0
+    Last Transition Time:  2024-07-29T07:38:15Z
+    Message:               Successfully updated Pgpool
+    Observed Generation:   1
+    Reason:                UpdateDatabase
+    Status:                True
+    Type:                  UpdateDatabase
+    Last Transition Time:  2024-07-29T07:38:16Z
+    Message:               Successfully updated Pgpool TLS
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -849,26 +977,54 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason                        Age    From                        Message
-  ----    ------                        ----   ----                        -------
-  Normal  CertificateIssuingSuccessful  2m27s  KubeDB Ops-manager operator  Successfully Issued New Certificates
-  Normal  RestartReplicaSet             42s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
-  Normal  Successful                    42s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
+  Type     Reason                                                      Age    From                         Message
+  ----     ------                                                      ----   ----                         -------
+  Normal   Starting                                                    3m39s  KubeDB Ops-manager Operator  Start processing for PgpoolOpsRequest: demo/ppops-change-issuer
+  Normal   Starting                                                    3m39s  KubeDB Ops-manager Operator  Pausing Pgpool databse: demo/pgpool
+  Normal   Successful                                                  3m39s  KubeDB Ops-manager Operator  Successfully paused Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-change-issuer
+  Warning  get certificate; ConditionStatus:True                       3m30s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 3m30s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               3m30s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       3m30s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 3m30s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               3m30s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       3m30s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 3m30s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               3m30s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Normal   CertificateSynced                                           3m30s  KubeDB Ops-manager Operator  Successfully synced all certificates
+  Warning  get certificate; ConditionStatus:True                       3m25s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 3m25s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               3m24s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       3m24s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 3m24s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               3m24s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                       3m24s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                 3m24s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True               3m24s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Normal   CertificateSynced                                           3m24s  KubeDB Ops-manager Operator  Successfully synced all certificates
+  Normal   UpdatePetSets                                               3m18s  KubeDB Ops-manager Operator  successfully reconciled the Pgpool with TLS
+  Warning  get pod; ConditionStatus:True; PodName:pgpool-0             3m13s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pgpool-0
+  Warning  evict pod; ConditionStatus:True; PodName:pgpool-0           3m13s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:pgpool-0
+  Warning  check pod running; ConditionStatus:False; PodName:pgpool-0  3m8s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:pgpool-0
+  Warning  check pod running; ConditionStatus:True; PodName:pgpool-0   2m38s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:pgpool-0
+  Normal   RestartPods                                                 2m33s  KubeDB Ops-manager Operator  Successfully Restarted Pgpool pods
+  Normal   Starting                                                    2m32s  KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pgpool
+  Normal   Successful                                                  2m32s  KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-change-issuer
 ```
 
-Now, Let's exec into a database node and find out the ca subject to see if it matches the one we have provided.
+Now, Let's exec pgpool and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it mg-rs-2 -n demo bash
-root@mgo-rs-tls-2:/$ openssl x509 -in /var/run/pgpool/tls/ca.crt -inform PEM -subject -nameopt RFC2253 -noout
+$ kubectl exec -it -n demo pgpool-0 -- bash
+pgpool-0:/$ openssl x509 -in /opt/pgpool-II/tls/ca.pem -inform PEM -subject -nameopt RFC2253 -noout
 subject=O=kubedb-updated,CN=ca-updated
 ```
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
-## Remove TLS from the Database
+## Remove TLS from the pgpool
 
-Now, we are going to remove TLS from this database using a PgpoolOpsRequest.
+Now, we are going to remove TLS from this pgpool using a PgpoolOpsRequest.
 
 ### Create PgpoolOpsRequest
 
@@ -878,27 +1034,27 @@ Below is the YAML of the `PgpoolOpsRequest` CRO that we are going to create,
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PgpoolOpsRequest
 metadata:
-  name: mops-remove
+  name: ppops-remove
   namespace: demo
 spec:
   type: ReconfigureTLS
   databaseRef:
-    name: mg-rs
+    name: pgpool
   tls:
     remove: true
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing reconfigure TLS operation on `mg-rs` database.
-- `spec.type` specifies that we are performing `ReconfigureTLS` on our database.
-- `spec.tls.remove` specifies that we want to remove tls from this database.
+- `spec.databaseRef.name` specifies that we are performing reconfigure TLS operation on `pgpool`.
+- `spec.type` specifies that we are performing `ReconfigureTLS` on our pgpool.
+- `spec.tls.remove` specifies that we want to remove tls from this pgpool.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/mops-remove.yaml
-pgpoolopsrequest.ops.kubedb.com/mops-remove created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/ppops-remove.yaml
+pgpoolopsrequest.ops.kubedb.com/ppops-remove created
 ```
 
 #### Verify TLS Removed Successfully
@@ -906,87 +1062,83 @@ pgpoolopsrequest.ops.kubedb.com/mops-remove created
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CRO,
 
 ```bash
-$ kubectl get pgpoolopsrequest -n demo
+$ wacth kubectl get pgpoolopsrequest -n demo
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
-NAME          TYPE             STATUS        AGE
-mops-remove   ReconfigureTLS   Successful    105s
+NAME           TYPE             STATUS       AGE
+ppops-remove   ReconfigureTLS   Successful   65s
 ```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo mops-remove
-Name:         mops-remove
+$ kubectl describe pgpoolopsrequest -n demo ppops-remove
+Name:         ppops-remove
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         PgpoolOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-11T16:35:32Z
+  Creation Timestamp:  2024-07-29T08:38:35Z
   Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:databaseRef:
-          .:
-          f:name:
-        f:tls:
-          .:
-          f:remove:
-        f:type:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2021-03-11T16:35:32Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-enterprise
-    Operation:       Update
-    Time:            2021-03-11T16:35:32Z
-  Resource Version:  525550
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/pgpoolopsrequests/mops-remove
-  UID:               99184cc4-1595-4f0f-b8eb-b65c5d0e86a6
+  Resource Version:    16378
+  UID:                 f848e04f-0fd1-48ce-813d-67dbdc3e4a55
 Spec:
+  Apply:  IfReady
   Database Ref:
-    Name:  mg-rs
+    Name:  pgpool
   Tls:
     Remove:  true
   Type:      ReconfigureTLS
 Status:
   Conditions:
-    Last Transition Time:  2021-03-11T16:35:32Z
-    Message:               Pgpool ops request is reconfiguring TLS
+    Last Transition Time:  2024-07-29T08:38:37Z
+    Message:               Pgpool ops-request has started to reconfigure tls for RabbitMQ nodes
     Observed Generation:   1
     Reason:                ReconfigureTLS
     Status:                True
     Type:                  ReconfigureTLS
-    Last Transition Time:  2021-03-11T16:35:37Z
-    Message:               Successfully Updated StatefulSets
+    Last Transition Time:  2024-07-29T08:38:41Z
+    Message:               Successfully paused database
     Observed Generation:   1
-    Reason:                TLSRemoved
+    Reason:                DatabasePauseSucceeded
     Status:                True
-    Type:                  TLSRemoved
-    Last Transition Time:  2021-03-11T16:37:07Z
-    Message:               Successfully Restarted ReplicaSet nodes
+    Type:                  DatabasePauseSucceeded
+    Last Transition Time:  2024-07-29T08:38:47Z
+    Message:               successfully reconciled the Pgpool with TLS
     Observed Generation:   1
-    Reason:                RestartReplicaSet
+    Reason:                UpdatePetSets
     Status:                True
-    Type:                  RestartReplicaSet
-    Last Transition Time:  2021-03-11T16:37:07Z
-    Message:               Successfully Reconfigured TLS
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-07-29T08:39:32Z
+    Message:               Successfully Restarted Pgpool pods
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-07-29T08:38:52Z
+    Message:               get pod; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--pgpool-0
+    Last Transition Time:  2024-07-29T08:38:52Z
+    Message:               evict pod; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--pgpool-0
+    Last Transition Time:  2024-07-29T08:39:27Z
+    Message:               check pod running; ConditionStatus:True; PodName:pgpool-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--pgpool-0
+    Last Transition Time:  2024-07-29T08:39:32Z
+    Message:               Successfully updated Pgpool
+    Observed Generation:   1
+    Reason:                UpdateDatabase
+    Status:                True
+    Type:                  UpdateDatabase
+    Last Transition Time:  2024-07-29T08:39:33Z
+    Message:               Successfully updated Pgpool TLS
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -994,46 +1146,74 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason             Age   From                        Message
-  ----    ------             ----  ----                        -------
-  Normal  PauseDatabase      2m5s  KubeDB Ops-manager operator  Pausing Pgpool demo/mg-rs
-  Normal  PauseDatabase      2m5s  KubeDB Ops-manager operator  Successfully paused Pgpool demo/mg-rs
-  Normal  TLSRemoved         2m5s  KubeDB Ops-manager operator  Successfully Updated StatefulSets
-  Normal  RestartReplicaSet  35s   KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
-  Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Resuming Pgpool demo/mg-rs
-  Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Successfully resumed Pgpool demo/mg-rs
-  Normal  Successful         35s   KubeDB Ops-manager operator  Successfully Reconfigured TLS
+  Type     Reason                                                      Age   From                         Message
+  ----     ------                                                      ----  ----                         -------
+  Normal   Starting                                                    84s   KubeDB Ops-manager Operator  Start processing for PgpoolOpsRequest: demo/ppops-remove
+  Normal   Starting                                                    84s   KubeDB Ops-manager Operator  Pausing Pgpool databse: demo/pgpool
+  Normal   Successful                                                  83s   KubeDB Ops-manager Operator  Successfully paused Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-remove
+  Normal   UpdatePetSets                                               74s   KubeDB Ops-manager Operator  successfully reconciled the Pgpool with TLS
+  Warning  get pod; ConditionStatus:True; PodName:pgpool-0             69s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pgpool-0
+  Warning  evict pod; ConditionStatus:True; PodName:pgpool-0           69s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:pgpool-0
+  Warning  check pod running; ConditionStatus:False; PodName:pgpool-0  64s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:pgpool-0
+  Warning  check pod running; ConditionStatus:True; PodName:pgpool-0   34s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:pgpool-0
+  Normal   RestartPods                                                 29s   KubeDB Ops-manager Operator  Successfully Restarted Pgpool pods
+  Normal   Starting                                                    29s   KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pgpool
+  Normal   Successful                                                  28s   KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-remove
 ```
 
-Now, Let's exec into the database primary node and find out that TLS is disabled or not.
+Now, Let's exec into pgpool and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -it -n demo mg-rs-1 -- mongo admin -u root -p 'U6(h_pYrekLZ2OOd'
-rs0:PRIMARY> db.adminCommand({ getParameter:1, sslMode:1 })
-{
-	"sslMode" : "disabled",
-	"ok" : 1,
-	"$clusterTime" : {
-		"clusterTime" : Timestamp(1615480817, 1),
-		"signature" : {
-			"hash" : BinData(0,"CWJngDTQqDhKXyx7WMFJqqUfvhY="),
-			"keyId" : NumberLong("6938294279689207810")
-		}
-	},
-	"operationTime" : Timestamp(1615480817, 1)
-}
+$ kubectl exec -it -n demo pgpool-0 -- bash
+pgpool-0:/$ cat opt/pgpool-II/etc/pgpool.conf
+backend_hostname0 = 'ha-postgres.demo.svc'
+backend_port0 = 5432
+backend_weight0 = 1
+backend_flag0 = 'ALWAYS_PRIMARY|DISALLOW_TO_FAILOVER'
+backend_hostname1 = 'ha-postgres-standby.demo.svc'
+backend_port1 = 5432
+backend_weight1 = 1
+backend_flag1 = 'DISALLOW_TO_FAILOVER'
+enable_pool_hba = on
+listen_addresses = *
+port = 9999
+socket_dir = '/var/run/pgpool'
+pcp_listen_addresses = *
+pcp_port = 9595
+pcp_socket_dir = '/var/run/pgpool'
+log_per_node_statement = on
+sr_check_period = 0
+health_check_period = 0
+backend_clustering_mode = 'streaming_replication'
+num_init_children = 5
+max_pool = 15
+child_life_time = 300
+child_max_connections = 0
+connection_life_time = 0
+client_idle_limit = 0
+connection_cache = on
+load_balance_mode = on
+ssl = 'off'
+failover_on_backend_error = 'off'
+log_min_messages = 'warning'
+statement_level_load_balance = 'off'
+memory_cache_enabled = 'off'
+memqcache_oiddir = '/tmp/oiddir/'
+allow_clear_text_frontend_auth = 'false'
+failover_on_backend_error = 'off'
 ```
 
-So, we can see from the above that, output that tls is disabled successfully.
+We can see from the above output that `ssl='off'` so we can verify that TLS is disabled successfully for this pgpool.
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete pgpool -n demo mg-rs
-kubectl delete issuer -n demo mg-issuer mg-new-issuer
-kubectl delete pgpoolopsrequest mops-add-tls mops-remove mops-rotate mops-change-issuer
+kubectl delete pgpool -n demo pgpool
+kubectl delete issuer -n demo pgpool-issuer pp-new-issuer
+kubectl delete pgpoolopsrequest -n demo ppops-add-tls ppops-remove ppops-rotate ppops-change-issuer
+kubectl delete pg -n demo ha-postgres
 kubectl delete ns demo
 ```
 
