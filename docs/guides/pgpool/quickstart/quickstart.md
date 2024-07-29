@@ -188,7 +188,7 @@ Here,
 Now that we've been introduced to the pgpool CRD, let's create it,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/quickstart/pgpool-server.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/quickstart/quick-pgpool.yaml
 pgpool.kubedb.com/quick-pgpool created
 ```
 

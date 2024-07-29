@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pgpool
+  namespace: demo
+spec:
+  version: "4.4.5"
+  replicas: 1
+  postgresRef:
+    name: ha-postgres
+    namespace: demo
+  podTemplate:
+    spec:
+      containers:
+        - name: pgpool
+          env:
+            - name: "ALICE_USERNAME"
+              value: alice
+            - name: "ALICE_PASSWORD"
+              value: '123'
+            - name: "BOB_USERNAME"
+              value: bob
+            - name: "BOB_PASSWORD"
+              value: '456'
+  deletionPolicy: WipeOut
