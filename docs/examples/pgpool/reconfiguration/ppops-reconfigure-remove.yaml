@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgpoolOpsRequest
+metadata:
+  name: ppops-reconfigure-remove
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: pp-custom
+  configuration:
+    removeCustomConfig: true
+  timeout: 5m
+  apply: IfReady

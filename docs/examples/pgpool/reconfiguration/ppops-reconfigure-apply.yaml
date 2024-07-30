@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgpoolOpsRequest
+metadata:
+  name: ppops-reconfigure-apply
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: pp-custom
+  configuration:
+    applyConfig:
+      pgpool.conf: |-
+        max_pool = 75
+  timeout: 5m
+  apply: IfReady
