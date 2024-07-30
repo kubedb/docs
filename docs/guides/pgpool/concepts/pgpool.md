@@ -151,7 +151,7 @@ Example:
 
 ```bash
 $ kubectl create secret generic pgpool-auth -n demo \
---from-literal=username=jhon-doe \
+--from-literal=username=jhon \
 --from-literal=password=O9xE1mZZDAdBTbrV
 secret "pgpool-auth" created
 ```
@@ -160,7 +160,7 @@ secret "pgpool-auth" created
 apiVersion: v1
 data:
   password: "O9xE1mZZDAdBTbrV"
-  username: "jhon-doe"
+  username: "jhon"
 kind: Secret
 metadata:
   name: pgpool-auth
@@ -297,14 +297,18 @@ apiVersion: v1
 kind: Secret
 metadata:
   labels:
-    app.kubernetes.io/instance: <Appbinding name mentioned in .spec.postgresRef.name>
+    app.kubernetes.io/instance: ha-postgres
     app.kubernetes.io/name: postgreses.kubedb.com
   name: pg-user
-  namespace: <Namespace mentioned in .spec.postgresRef.namespace>
+  namespace: demo
 stringData:
   password: "12345"
-  username: alice
+  username: "alice"
 ```
+- `app.kubernetes.io/instance` should be same as`appbinding name mentioned in .spec.postgresRef.name`.
+- `app.kubernetes.io/name` should be `postgreses.kubedb.com`.
+- `namespace` should be same as `namespace mentioned in .spec.postgresRef.namespace`.
+
 In every `10 seconds` KubeDB operator will sync all the users to Pgpool. 
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
