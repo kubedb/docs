@@ -27,7 +27,7 @@ This guide will give you an overview on how KubeDB Ops-manager operator update t
 The following diagram shows how KubeDB Ops-manager operator used to update the version of `Pgpool`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="updating Process of Pgpool" src="/docs/images/day-2-operation/pgpool/pg-updating.png">
+  <img alt="updating Process of Pgpool" src="/docs/images/day-2-operation/pgpool/pp-updating.png">
 <figcaption align="center">Fig: updating Process of Pgpool</figcaption>
 </figure>
 
