@@ -213,7 +213,8 @@ $ kubectl delete namespace demo
 
 - Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka.md).
 - Different Kafka topology clustering modes [here](/docs/guides/kafka/clustering/_index.md).
-- Monitor your Kafka database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
-- Monitor your Kafka database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
+- Monitor your Kafka database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/kafka/monitoring/using-prometheus-operator.md).
+
+[//]: # (- Monitor your Kafka database with KubeDB using [out-of-the-box builtin-Prometheus]&#40;/docs/guides/kafka/monitoring/using-builtin-prometheus.md&#41;.)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

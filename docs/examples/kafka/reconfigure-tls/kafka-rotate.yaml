@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+  name: kfops-rotate
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: kafka-prod
+  tls:
+    rotateCertificates: true
