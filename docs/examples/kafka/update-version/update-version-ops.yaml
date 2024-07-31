@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+    name: kafka-update-version
+    namespace: demo
+spec:
+    type: UpdateVersion
+    databaseRef:
+        name: kafka-prod
+    updateVersion:
+        targetVersion: 3.6.1
+    timeout: 5m
+    apply: IfReady
