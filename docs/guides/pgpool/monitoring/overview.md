@@ -3,9 +3,9 @@ title: Pgpool Monitoring Overview
 description: Pgpool Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-monitoring-overview
+    identifier: pp-monitoring-overview
     name: Overview
-    parent: mg-monitoring-pgpool
+    parent: pp-monitoring-pgpool
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
