@@ -2,10 +2,10 @@
 title: Run Pgpool with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: using-podtemplate-configuration
+    identifier: using-podtemplate-configuration-pp
     name: Customize PodTemplate
     parent: pp-configuration
-    weight: 15
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
