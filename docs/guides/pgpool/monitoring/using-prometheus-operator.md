@@ -16,6 +16,13 @@ section_menu_id: guides
 
 [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor Pgpool database deployed with KubeDB.
 
+The following diagram shows how KubeDB Provisioner operator monitor `Pgpool` using Prometheus Operator. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Monitoring process of Pgpool using Prometheus Operator" src="/docs/images/day-2-operation/pgpool/prometheus-operator.png">
+<figcaption align="center">Fig: Monitoring process of Pgpool</figcaption>
+</figure>
+
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
