@@ -7,7 +7,7 @@ spec:
   replicas: 2
   version: 3.6.1
   configSecret:
-    name: configsecret-combined
+    name: kf-combined-custom-config
   storage:
     accessModes:
       - ReadWriteOnce

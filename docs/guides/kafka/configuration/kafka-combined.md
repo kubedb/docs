@@ -91,17 +91,6 @@ spec:
   version: 3.6.1
   configSecret:
     name: configsecret-combined
-  podTemplate:
-    spec:
-      containers:
-        - name: kafka
-          resources:
-            limits:
-              cpu: 1
-              memory: 2Gi
-            requests:
-              cpu: 500m
-              memory: 1Gi
   storage:
     accessModes:
       - ReadWriteOnce
@@ -160,9 +149,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete kf -n demo kafka-dev 
-
 $ kubectl delete secret -n demo configsecret-combined 
-
 $ kubectl delete namespace demo
 ```
 

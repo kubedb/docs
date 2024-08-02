@@ -6,7 +6,7 @@ metadata:
 spec:
   version: 3.6.1
   configSecret:
-    name: configsecret-topology
+    name: kf-topology-custom-config
   topology:
     broker:
       replicas: 2

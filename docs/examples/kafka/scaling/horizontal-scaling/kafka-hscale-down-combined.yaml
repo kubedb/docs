@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+  name: kfops-hscale-down-combined
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: kafka-dev
+  horizontalScaling:
+    node: 2
