@@ -103,14 +103,6 @@ spec:
   topology:
     broker:
       replicas: 2
-      podTemplate:
-        spec:
-          containers:
-            - name: kafka
-              resources:
-                requests:
-                  cpu: "500m"
-                  memory: "1Gi"
       storage:
         accessModes:
           - ReadWriteOnce
@@ -120,14 +112,6 @@ spec:
         storageClassName: standard
     controller:
       replicas: 2
-      podTemplate:
-        spec:
-          containers:
-            - name: kafka
-              resources:
-                requests:
-                  cpu: "500m"
-                  memory: "1Gi"
       storage:
         accessModes:
           - ReadWriteOnce
