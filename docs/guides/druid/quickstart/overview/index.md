@@ -69,40 +69,9 @@ In this tutorial, we will use `28.0.1` DruidVersion CR to create a Druid cluster
 
 ## Get External Dependencies Ready
 
-### Metadata Storage
-
-Druid uses the metadata store to house various metadata about the system, but not to store the actual data. The metadata store retains all metadata essential for a Druid cluster to work. **Apache Derby** is the default metadata store for Druid, however, it is not suitable for production. **MySQL** and **PostgreSQL** are more production suitable metadata stores.
-
-Luckily, **PostgreSQL** and **MySQL** both are readily available in KubeDB as CRD and can easily be deployed using the [MySQL-Guide](/docs/guides/mysql/quickstart/index.md) and [PostgreSQL-Guide](/docs/guides/postgres/quickstart/quickstart.md).
-
-In this tutorial, we will use a **MySQL** named `mysql-demo` in the `demo` namespace and create a database named `druid` inside it using [initialization script](/docs/guides/mysql/initialization/#prepare-initialization-scripts).
-
-Let’s create a ConfigMap with initialization script first and then create the `mysql-demo` database,
-
-```bash
-$ kubectl create configmap -n demo my-init-script \
---from-literal=init.sql="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/mysql-init-script.sql)"
-configmap/my-init-script created
-
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/mysql-demo.yaml
-mysql.kubedb.com/mysql-demo created
-```
-
-### ZooKeeper
-
-Apache Druid uses [Apache ZooKeeper](https://zookeeper.apache.org/) (ZK) for management of current cluster state i.e. internal service discovery, coordination, and leader election.
-
-Fortunately, KubeDB also has support for **ZooKeeper** and can easily be deployed using the guide [here](/docs/guides/zookeeper/quickstart/quickstart.md)
-
-In this tutorial, we will create a ZooKeeper named `zk-demo` in the `demo` namespace.
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/zk-demo.yaml
-zookeeper.kubedb.com/zk-demo created
-```
-
 ### Deep Storage
 
-Another external dependency of Druid is deep storage where the segments are stored. It is a storage mechanism that Apache Druid does not provide. **Amazon S3**, **Google Cloud Storage**, or **Azure Blob Storage**, **S3-compatible storage** (like **Minio**), or **HDFS** are generally convenient options for deep storage.
+One of the external dependency of Druid is deep storage where the segments are stored. It is a storage mechanism that Apache Druid does not provide. **Amazon S3**, **Google Cloud Storage**, or **Azure Blob Storage**, **S3-compatible storage** (like **Minio**), or **HDFS** are generally convenient options for deep storage.
 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
@@ -151,6 +120,46 @@ secret/deep-storage-config created
 
 You can also use options like **Amazon S3**, **Google Cloud Storage**, **Azure Blob Storage** or **HDFS** and create a connection information `Secret` like this, and you are good to go.
 
+### Metadata Storage
+
+Druid uses the metadata store to house various metadata about the system, but not to store the actual data. The metadata store retains all metadata essential for a Druid cluster to work. **Apache Derby** is the default metadata store for Druid, however, it is not suitable for production. **MySQL** and **PostgreSQL** are more production suitable metadata stores.
+
+Luckily, **PostgreSQL** and **MySQL** both are readily available in KubeDB as CRD and KubeDB operator will automatically create a **MySQL** cluster and create a database in it named `druid` by default. 
+
+If you choose to use  **PostgreSQL** as metadata storage, you can simply mention that in the `spec.metadataStorage.type` of the `Druid` CR and KubeDB operator will deploy a `PostgreSQL` cluster for druid to use. 
+
+[//]: # (In this tutorial, we will use a **MySQL** named `mysql-demo` in the `demo` namespace and create a database named `druid` inside it using [initialization script]&#40;/docs/guides/mysql/initialization/#prepare-initialization-scripts&#41;.)
+
+[//]: # (Let’s create a ConfigMap with initialization script first and then create the `mysql-demo` database,)
+
+[//]: # ()
+[//]: # (```bash)
+
+[//]: # ($ kubectl create configmap -n demo my-init-script \)
+
+[//]: # (--from-literal=init.sql="$&#40;curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/mysql-init-script.sql&#41;")
+
+[//]: # (configmap/my-init-script created)
+
+[//]: # ()
+[//]: # ($ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/mysql-demo.yaml)
+
+[//]: # (mysql.kubedb.com/mysql-demo created)
+
+[//]: # (```)
+
+### ZooKeeper
+
+Apache Druid uses [Apache ZooKeeper](https://zookeeper.apache.org/) (ZK) for management of current cluster state i.e. internal service discovery, coordination, and leader election.
+
+Fortunately, KubeDB also has support for **ZooKeeper** and can easily be deployed using the guide [here](/docs/guides/zookeeper/quickstart/quickstart.md)
+
+In this tutorial, we will create a ZooKeeper named `zk-demo` in the `demo` namespace.
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/zk-demo.yaml
+zookeeper.kubedb.com/zk-demo created
+```
+
 ## Create a Druid Cluster
 
 The KubeDB operator implements a Druid CRD to define the specification of Druid.
@@ -169,38 +178,7 @@ spec:
     type: s3
     configSecret:
       name: deep-storage-config
-  metadataStorage:
-    name: mysql-demo
-    namespace: demo
-    createTables: true
-  zookeeperRef:
-    name: zk-demo
-    namespace: demo
   topology:
-    coordinators:
-      replicas: 1
-    brokers:
-      replicas: 1
-    historicals:
-      replicas: 1
-      storageType: Durable
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
-    middleManagers:
-      replicas: 1
-      storageType: Durable
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
     routers:
       replicas: 1
   deletionPolicy: Delete
@@ -214,13 +192,12 @@ spec:
 ```
 
 Here,
-
 - `spec.version` - is the name of the DruidVersion CR. Here, a Druid of version `28.0.1` will be created.
-- `spec.storageType` - specifies the type of storage that will be used for Kafka. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Druid using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this Druid instance. This storage spec will be passed to the PetSet created by the KubeDB operator to run Druid pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
+- `spec.deepStorage` - contains the information of deep storage configuration with `spec.deepStorage.type` being the deep storage type and `spec.deepStorage.configSecret` is a reference to the configuration secret. 
+- `spec.topology` - is the definition of the topology that will be deployed. The required nodes such as `coordinators`, `historicals`, `middleManagers`, and `brokers` will be deployed by default with one replica. You can also add optional nodes including `routers` and `overlords` in the topology. 
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Druid CR. Deletion policy `Delete` will delete the database pods and PVC when the Druid CR is deleted.
 
-> Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
+> Note: `spec.topology.historicals(/middleManagers).storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
 
 Let's create the Druid CR that is shown above:
 
@@ -252,11 +229,21 @@ Annotations:  <none>
 API Version:  kubedb.com/v1alpha2
 Kind:         Druid
 Metadata:
-  Creation Timestamp:  2024-05-02T10:00:12Z
+  Creation Timestamp:  2024-07-16T10:35:14Z
   Finalizers:
     kubedb.com/druid
   Generation:  1
   Managed Fields:
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .:
+          v:"kubedb.com/druid":
+    Manager:      druid-operator
+    Operation:    Update
+    Time:         2024-07-16T10:35:14Z
     API Version:  kubedb.com/v1alpha2
     Fields Type:  FieldsV1
     fieldsV1:
@@ -275,70 +262,16 @@ Metadata:
           f:failureThreshold:
           f:periodSeconds:
           f:timeoutSeconds:
-        f:metadataStorage:
-          .:
-          f:createTables:
-          f:name:
-          f:namespace:
-        f:storageType:
+        f:serviceTemplates:
         f:topology:
           .:
-          f:brokers:
-            .:
-            f:podPlacementPolicy:
-            f:replicas:
-          f:coordinators:
-            .:
-            f:podPlacementPolicy:
-            f:replicas:
-          f:historicals:
-            .:
-            f:podPlacementPolicy:
-            f:replicas:
-            f:storage:
-              .:
-              f:accessModes:
-              f:resources:
-                .:
-                f:requests:
-                  .:
-                  f:storage:
-              f:storageClassName:
-          f:middleManagers:
-            .:
-            f:podPlacementPolicy:
-            f:replicas:
-            f:storage:
-              .:
-              f:accessModes:
-              f:resources:
-                .:
-                f:requests:
-                  .:
-                  f:storage:
-              f:storageClassName:
           f:routers:
             .:
-            f:podPlacementPolicy:
             f:replicas:
         f:version:
-        f:zookeeperRef:
-          .:
-          f:name:
-          f:namespace:
     Manager:      kubectl-client-side-apply
     Operation:    Update
-    Time:         2024-05-02T10:00:12Z
-    API Version:  kubedb.com/v1alpha2
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:finalizers:
-          .:
-          v:"kubedb.com/druid":
-    Manager:      kubedb-provisioner
-    Operation:    Update
-    Time:         2024-05-02T10:00:12Z
+    Time:         2024-07-16T10:35:14Z
     API Version:  kubedb.com/v1alpha2
     Fields Type:  FieldsV1
     fieldsV1:
@@ -346,12 +279,12 @@ Metadata:
         .:
         f:conditions:
         f:phase:
-    Manager:         kubedb-provisioner
+    Manager:         druid-operator
     Operation:       Update
     Subresource:     status
-    Time:            2024-05-02T10:01:34Z
-  Resource Version:  68607
-  UID:               7759adad-4e49-4f44-80ae-fc04cc474813
+    Time:            2024-07-16T10:38:33Z
+  Resource Version:  149232
+  UID:               5a52ae03-1e4a-4262-9d04-384025c372db
 Spec:
   Auth Secret:
     Name:  druid-quickstart-admin-cred
@@ -359,6 +292,7 @@ Spec:
     Config Secret:
       Name:          deep-storage-config
     Type:            s3
+  Deletion Policy:   Delete
   Disable Security:  false
   Health Checker:
     Failure Threshold:  3
@@ -366,18 +300,21 @@ Spec:
     Timeout Seconds:    10
   Metadata Storage:
     Create Tables:  true
-    Name:           mysql-demo
-    Namespace:      druid
-  Pod Template:
-    Controller:
+    Linked DB:      druid
+    Name:           druid-quickstart-mysql-metadata
+    Namespace:      demo
+    Type:           MySQL
+    Version:        8.0.35
+  Service Templates:
+    Alias:  primary
     Metadata:
     Spec:
-  Storage Type:        Ephemeral
-  Deletion Policy:     Delete
+      Ports:
+        Name:  routers
+        Port:  8888
+      Type:    LoadBalancer
   Topology:
     Brokers:
-      Pod Placement Policy:
-        Name:  default
       Pod Template:
         Controller:
         Metadata:
@@ -416,12 +353,12 @@ Spec:
               Run As User:      1000
               Seccomp Profile:
                 Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
           Security Context:
             Fs Group:  1000
       Replicas:        1
     Coordinators:
-      Pod Placement Policy:
-        Name:  default
       Pod Template:
         Controller:
         Metadata:
@@ -460,12 +397,12 @@ Spec:
               Run As User:      1000
               Seccomp Profile:
                 Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
           Security Context:
             Fs Group:  1000
-      Replicas:        2
+      Replicas:        1
     Historicals:
-      Pod Placement Policy:
-        Name:  default
       Pod Template:
         Controller:
         Metadata:
@@ -504,6 +441,8 @@ Spec:
               Run As User:      1000
               Seccomp Profile:
                 Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
           Security Context:
             Fs Group:  1000
       Replicas:        1
@@ -512,11 +451,9 @@ Spec:
           ReadWriteOnce
         Resources:
           Requests:
-            Storage:         1Gi
-        Storage Class Name:  standard
+            Storage:  1Gi
+      Storage Type:   Durable
     Middle Managers:
-      Pod Placement Policy:
-        Name:  default
       Pod Template:
         Controller:
         Metadata:
@@ -555,6 +492,8 @@ Spec:
               Run As User:      1000
               Seccomp Profile:
                 Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
           Security Context:
             Fs Group:  1000
       Replicas:        1
@@ -563,11 +502,9 @@ Spec:
           ReadWriteOnce
         Resources:
           Requests:
-            Storage:         1Gi
-        Storage Class Name:  standard
+            Storage:  1Gi
+      Storage Type:   Durable
     Routers:
-      Pod Placement Policy:
-        Name:  default
       Pod Template:
         Controller:
         Metadata:
@@ -606,40 +543,49 @@ Spec:
               Run As User:      1000
               Seccomp Profile:
                 Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
           Security Context:
             Fs Group:  1000
       Replicas:        1
   Version:             28.0.1
   Zookeeper Ref:
-    Name:       zk-demo
-    Namespace:  druid
+    Name:       druid-quickstart-zk
+    Namespace:  demo
+    Version:    3.7.2
 Status:
   Conditions:
-    Last Transition Time:  2024-05-02T10:00:12Z
+    Last Transition Time:  2024-07-16T10:35:14Z
     Message:               The KubeDB operator has started the provisioning of Druid: demo/druid-quickstart
     Observed Generation:   1
     Reason:                DatabaseProvisioningStartedSuccessfully
     Status:                True
     Type:                  ProvisioningStarted
-    Last Transition Time:  2024-05-02T10:00:40Z
+    Last Transition Time:  2024-07-16T10:36:44Z
+    Message:               Database dependency is ready
+    Observed Generation:   1
+    Reason:                DatabaseDependencyReady
+    Status:                True
+    Type:                  DatabaseDependencyReady
+    Last Transition Time:  2024-07-16T10:37:21Z
     Message:               All desired replicas are ready.
     Observed Generation:   1
     Reason:                AllReplicasReady
     Status:                True
     Type:                  ReplicaReady
-    Last Transition Time:  2024-05-02T10:01:11Z
+    Last Transition Time:  2024-07-16T10:37:51Z
     Message:               The Druid: demo/druid-quickstart is accepting client requests and nodes formed a cluster
     Observed Generation:   1
     Reason:                DatabaseAcceptingConnectionRequest
     Status:                True
     Type:                  AcceptingConnection
-    Last Transition Time:  2024-05-02T10:01:34Z
+    Last Transition Time:  2024-07-16T10:38:33Z
     Message:               The Druid: demo/druid-quickstart is ready.
     Observed Generation:   1
     Reason:                ReadinessCheckSucceeded
     Status:                True
     Type:                  Ready
-    Last Transition Time:  2024-05-02T10:01:34Z
+    Last Transition Time:  2024-07-16T10:38:33Z
     Message:               The Druid: demo/druid-quickstart is successfully provisioned.
     Observed Generation:   1
     Reason:                DatabaseSuccessfullyProvisioned
@@ -647,7 +593,6 @@ Status:
     Type:                  Provisioned
   Phase:                   Ready
 Events:                    <none>
-
 ```
 
 ### KubeDB Operator Generated Resources

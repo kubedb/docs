@@ -9,38 +9,7 @@ spec:
     type: s3
     configSecret:
       name: deep-storage-config
-  metadataStorage:
-    name: mysql-demo
-    namespace: demo
-    createTables: true
-  zookeeperRef:
-    name: zk-demo
-    namespace: demo
   topology:
-    coordinators:
-      replicas: 1
-    brokers:
-      replicas: 1
-    historicals:
-      replicas: 1
-      storageType: Durable
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
-    middleManagers:
-      replicas: 1
-      storageType: Durable
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
     routers:
       replicas: 1
   deletionPolicy: Delete
