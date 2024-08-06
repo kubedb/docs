@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgpoolOpsRequest
+metadata:
+  name: pgpool-horizontal-scale-up
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: pp-horizontal
+  horizontalScaling:
+    node: 3

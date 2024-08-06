@@ -1,0 +1,15 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pp-horizontal
+  namespace: demo
+spec:
+  version: "4.5.0"
+  replicas: 1
+  postgresRef:
+    name: ha-postgres
+    namespace: demo
+  initConfig:
+    pgpoolConfig:
+      max_pool : 60
+  deletionPolicy: WipeOut

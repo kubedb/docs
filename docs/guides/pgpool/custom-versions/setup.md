@@ -43,7 +43,7 @@ spec:
   exporter:
     image: ghcr.io/appscode-images/pgpool2_exporter:v1.2.2
   pgpool:
-    image: ghcr.io/appscode-images/pgpool2:4.5.0
+    image: myco/pgpool:custom-4.5.0
   version: 4.5.0
   deprecated: false
 ```
