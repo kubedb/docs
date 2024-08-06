@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1
+kind: Kafka
+metadata:
+  name: kafka-prod
+  namespace: demo
+spec:
+  version: 3.6.1
+  topology:
+    broker:
+      replicas: 2
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+    controller:
+      replicas: 2
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+  storageType: Durable
+  deletionPolicy: WipeOut

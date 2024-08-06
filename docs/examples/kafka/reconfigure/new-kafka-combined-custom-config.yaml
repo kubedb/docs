@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: new-kf-combined-custom-config
+  namespace: demo
+stringData:
+  server.properties: |-
+    log.retention.hours=125

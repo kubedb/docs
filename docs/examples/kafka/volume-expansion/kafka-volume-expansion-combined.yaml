@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+  name: kf-volume-exp-combined
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: kafka-dev
+  volumeExpansion:
+    node: 2Gi
+    mode: Online

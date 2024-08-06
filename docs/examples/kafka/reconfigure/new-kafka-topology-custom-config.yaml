@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: new-kf-topology-custom-config
+  namespace: demo
+stringData:
+  broker.properties: |-
+    log.retention.hours=125

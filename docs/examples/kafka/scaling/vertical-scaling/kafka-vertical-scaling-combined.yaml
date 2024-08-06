@@ -1,0 +1,20 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+  name: kfops-vscale-combined
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: kafka-dev
+  verticalScaling:
+    node:
+      resources:
+        requests:
+          memory: "1.2Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.2Gi"
+          cpu: "0.6"
+  timeout: 5m
+  apply: IfReady
