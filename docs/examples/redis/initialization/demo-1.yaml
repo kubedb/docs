@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Redis
+metadata:
+  name: rd-init-script
+  namespace: demo
+spec:
+  version: 7.2.3
+  disableAuth: false
+  storageType: Durable
+  init:
+    script:
+      projected:
+        sources:
+          - configMap:
+              name: redis-init-script
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
