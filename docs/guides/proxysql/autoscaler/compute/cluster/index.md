@@ -174,7 +174,7 @@ metadata:
   name: proxy-as-compute
   namespace: demo
 spec:
-  proxyRef:
+  databaseRef:
     name: proxy-server
   opsRequestOptions:
     timeout: 3m
