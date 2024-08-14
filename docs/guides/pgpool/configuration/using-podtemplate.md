@@ -163,7 +163,7 @@ postgres=# exit
 Now, let's verify if we can to the database through pgpool with the new users,
 ```bash
 $ export PGPASSWORD='123'
-$ psql --host=localhost --port=9999 --username=alice postgres                                    ✘ 2
+$ psql --host=localhost --port=9999 --username=alice postgres                                    
 psql (16.3 (Ubuntu 16.3-1.pgdg22.04+1), server 16.1)
 Type "help" for help.
 
@@ -178,12 +178,138 @@ postgres=> exit
 
 You can see we can use these new users to connect to the database.
 
+## Custom Sidecar Containers
+
+Here in this example we will add an extra sidecar container with our pgpool container. Suppose, you are running a KubeDB-managed Pgpool, and you need to monitor the general logs. We can configure pgpool to write those logs in any directory, in this example we will configure pgpool to write logs to `/tmp/pgpool_log` directory with file name format `pgpool-%Y-%m-%d_%H%M%S.log`. In order to export those logs to some remote monitoring solution (such as, Elasticsearch, Logstash, Kafka or Redis) will need a tool like [Filebeat](https://www.elastic.co/beats/filebeat). Filebeat is used to ship logs and files from devices, cloud, containers and hosts. So, it is required to run Filebeat as a sidecar container along with the KubeDB-managed Pgpool. Here’s a quick demonstration on how to accomplish it.
+
+Firstly, we are going to make our custom filebeat image with our required configuration.
+```yaml
+filebeat.inputs:
+  - type: log
+    paths:
+      - /tmp/pgpool_log/*.log
+output.console:
+  pretty: true
+```
+Save this yaml with name `filebeat.yml`. Now prepare the dockerfile,
+```dockerfile
+FROM elastic/filebeat:7.17.1
+COPY filebeat.yml /usr/share/filebeat
+USER root
+RUN chmod go-w /usr/share/filebeat/filebeat.yml
+USER filebeat
+```
+Now run these following commands to build and push the docker image to your docker repository.
+```bash
+$ docker build -t repository_name/custom_filebeat:latest .
+$ docker push repository_name/custom_filebeat:latest
+```
+Now we will deploy our pgpool with custom sidecar container and will also use the `spec.initConfig` to configure the logs related settings. Here is the yaml of our pgpool:
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pgpool-custom-sidecar
+  namespace: demo
+spec:
+  version: "4.4.5"
+  replicas: 1
+  postgresRef:
+    name: ha-postgres
+    namespace: demo
+  podTemplate:
+    spec:
+      containers:
+        - name: pgpool
+          volumeMounts:
+          - mountPath: /tmp/pgpool_log
+            name: data
+            readOnly: false
+        - name: filebeat
+          image: repository_name/custom_filebeat:latest
+          volumeMounts:
+          - mountPath: /tmp/pgpool_log
+            name: data
+            readOnly: true
+      volumes:
+      - name: data
+        emptyDir: {}
+  initConfig:
+    pgpoolConfig:
+      log_destination : 'stderr'
+      logging_collector : on
+      log_directory : '/tmp/pgpool_log'
+      log_filename : 'pgpool-%Y-%m-%d_%H%M%S.log'
+      log_file_mode : 0777
+      log_truncate_on_rotation : off
+      log_rotation_age : 1d
+      log_rotation_size : 10MB
+  deletionPolicy: WipeOut
+```
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/configuration/pgpool-config-sidecar.yaml
+pgpool.kubedb.com/pgpool-custom-sidecar created
+```
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `pp-misc-config-0` has been created.
+
+Check that the petset's pod is running
+
+```bash
+$ kubectl get pod -n demo
+NAME                      READY   STATUS    RESTARTS      AGE
+pgpool-custom-sidecar-0   2/2     Running   0             33s
+
+```
+
+Now, Let’s fetch the logs shipped to filebeat console output. The outputs will be generated in json format.
+
+```bash
+$ kubectl logs -f -n demo pgpool-custom-sidecar-0 -c filebeat
+```
+We will find the query logs in filebeat console output. Sample output:
+```json
+{
+  "@timestamp": "2024-08-14T06:14:38.461Z",
+  "@metadata": {
+    "beat": "filebeat",
+    "type": "_doc",
+    "version": "7.17.1"
+  },
+  "host": {
+    "name": "pgpool-custom-sidecar-0"
+  },
+  "agent": {
+    "ephemeral_id": "17afa770-9fe2-450c-a4fd-eae1301fa3f5",
+    "id": "3833c41c-e37c-49d7-9881-bf4a4796d31d",
+    "name": "pgpool-custom-sidecar-0",
+    "type": "filebeat",
+    "version": "7.17.1",
+    "hostname": "pgpool-custom-sidecar-0"
+  },
+  "log": {
+    "offset": 2913,
+    "file": {
+      "path": "/tmp/pgpool_log/pgpool-2024-08-14_061421.log"
+    }
+  },
+  "message": "2024-08-14 06:14:33.919: [unknown] pid 70: LOG:  pool_send_and_wait: Error or notice message from backend: : DB node id: 0 backend pid: 20986 statement: \"create table if not exists kubedb_write_check_pgpool (health_key varchar(50) NOT NULL, health_value varchar(50) NOT NULL, PRIMARY KEY (health_key));\" message: \"relation \"kubedb_write_check_pgpool\" already exists, skipping\"",
+  "input": {
+    "type": "log"
+  },
+  "ecs": {
+    "version": "1.12.0"
+  }
+}
+```
+So, we have successfully extracted logs from pgpool to our sidecar filebeat container.
+
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete -n demo pp/pp-misc-config
+kubectl delete -n demo pp/pgpool-custom-sidecar
 kubectl delete -n demo pg/ha-postgres
 kubectl delete ns demo
 ```

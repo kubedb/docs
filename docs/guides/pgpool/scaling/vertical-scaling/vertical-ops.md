@@ -3,7 +3,7 @@ title: Vertical Scaling Pgpool
 menu:
   docs_{{ .version }}:
     identifier: pp-vertical-scaling-ops
-    name: pp-vertical-scaling-ops
+    name: VerticalScaling OpsRequest
     parent: pp-vertical-scaling
     weight: 20
 menu_name: docs_{{ .version }}

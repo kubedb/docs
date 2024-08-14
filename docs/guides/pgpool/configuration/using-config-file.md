@@ -3,7 +3,7 @@ title: Run Pgpool with Custom Configuration
 menu:
   docs_{{ .version }}:
     identifier: pp-using-config-file-configuration
-    name: Config File
+    name: Customize Configurations
     parent: pp-configuration
     weight: 10
 menu_name: docs_{{ .version }}

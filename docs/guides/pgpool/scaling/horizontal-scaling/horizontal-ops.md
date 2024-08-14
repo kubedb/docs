@@ -3,7 +3,7 @@ title: Horizontal Scaling Pgpool
 menu:
   docs_{{ .version }}:
     identifier: pp-horizontal-scaling-ops
-    name: pp-horizontal-scaling-ops
+    name: HorizontalScaling OpsRequest
     parent: pp-horizontal-scaling
     weight: 20
 menu_name: docs_{{ .version }}
