@@ -33,7 +33,7 @@ metadata:
   name: psops-autoscale
   namespace: demo
 spec:
-  proxyRef:
+  databaseRef:
     name: sample-proxysql
   compute:
     proxysql:

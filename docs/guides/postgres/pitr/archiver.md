@@ -143,13 +143,13 @@ spec:
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
-      schedule: "/30 * * * *"
+      schedule: "30 * * * *"
     sessionHistoryLimit: 2
   manifestBackup:
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1 
-      schedule: "/30 * * * *"
+      schedule: "30 * * * *"
     sessionHistoryLimit: 2
   backupStorage:
     ref:
@@ -288,16 +288,21 @@ hi=# create table tab_1 (a int);
 CREATE TABLE
 hi=# insert into tab_1 values(generate_series(1,100));
 INSERT 0 100
-hi=# select pg_switch_wal();
- 0/504A0D8
-(1 row)
 
+# we will restore here. till now we have 100 rows
+hi=# select now(); 
+ 2023-12-12 13:43:41.300216+00
+
+# This insert is necessary unless postgres will wait
+# for data to be available at `2023-12-12 13:43:41.300216+00`
+# regardless of our switch wal operation
 hi=# insert into tab_1 values(generate_series(1,100));
 INSERT 0 100
 
-hi=# select now(); 
- 2023-12-12 13:43:41.300216+00
- 
+# switching wall so that this wal is available when we restore
+# in general this will be archived when either of them occurs
+# - archive_timeout passed
+# - wal file gets full by wal record
 hi=# select pg_switch_wal();
  0/6013240
 
@@ -325,7 +330,7 @@ LINE 1: select count(*) from tab_1 ;
 We can't restore from a full backup since at this point no full backup was perform. so we can choose a specific time in which time we want to restore.We can get the specfice time from the wal that archived in the backup storage . Go to the binlog file and find where to store. You can parse wal-files using  `pg-waldump`.
 
 
-For the demo I will use the previous time we get form `select now()`
+For the demo I will use the previous time we got from `select now()`
 
 ```bash 
 hi=# select now(); 
@@ -399,7 +404,7 @@ bash-5.1$ psql
 postgres=# \c hi
 
 hi=# select count(*) from tab_1 ;
-   200
+   100
 ```
 
 **so we are able to successfully recover from a disaster**
