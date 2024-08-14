@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgpoolOpsRequest
+metadata:
+  name: restart-pgpool
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: pgpool
+  timeout: 3m
+  apply: Always

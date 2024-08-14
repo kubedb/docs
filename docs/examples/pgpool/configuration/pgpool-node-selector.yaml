@@ -1,0 +1,16 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pgpool-node-selector
+  namespace: demo
+spec:
+  version: "4.4.5"
+  replicas: 1
+  postgresRef:
+    name: ha-postgres
+    namespace: demo
+  podTemplate:
+    spec:
+      nodeSelector:
+        disktype: ssd
+  deletionPolicy: WipeOut
