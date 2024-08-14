@@ -250,7 +250,7 @@ spec:
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/configuration/pgpool-config-sidecar.yaml
 pgpool.kubedb.com/pgpool-custom-sidecar created
 ```
-Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `pp-misc-config-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `pgpool-custom-sidecar-0` has been created.
 
 Check that the petset's pod is running
 
@@ -303,13 +303,294 @@ We will find the query logs in filebeat console output. Sample output:
 ```
 So, we have successfully extracted logs from pgpool to our sidecar filebeat container.
 
+## Using Node Selector
+
+Here in this example we will use [node selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/) to schedule our pgpool pod to a specific node. Applying nodeSelector to the Pod involves several steps. We first need to assign a label to some node that will be later used by the `nodeSelector` . Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:  
+
+```bash
+$ kubectl get nodes --show-labels
+NAME                            STATUS   ROLES    AGE   VERSION   LABELS
+lke212553-307295-339173d10000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-339173d10000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=618158120a299c6fd37f00d01d355ca18794c467,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
+lke212553-307295-5541798e0000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5541798e0000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=75cfe3dbbb0380f1727efc53f5192897485e95d5,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
+lke212553-307295-5b53c5520000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5b53c5520000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=792bac078d7ce0e548163b9423416d7d8c88b08f,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
+```
+As you see, we have three nodes in the cluster: lke212553-307295-339173d10000, lke212553-307295-5541798e0000, and lke212553-307295-5b53c5520000.
+
+Next, select a node to which you want to add a label. For example, let’s say we want to add a new label with the key `disktype` and value ssd to the `lke212553-307295-5541798e0000` node, which is a node with the SSD storage. To do so, run:
+```bash
+$ kubectl label nodes lke212553-307295-5541798e0000 disktype=ssd
+node/lke212553-307295-5541798e0000 labeled
+```
+As you noticed, the command above follows the format `kubectl label nodes <node-name> <label-key>=<label-value>` .
+Finally, let’s verify that the new label was added by running:
+```bash
+ $ kubectl get nodes --show-labels                                                                                                                                                                  
+NAME                            STATUS   ROLES    AGE   VERSION   LABELS
+lke212553-307295-339173d10000   Ready    <none>   41m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-339173d10000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=618158120a299c6fd37f00d01d355ca18794c467,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
+lke212553-307295-5541798e0000   Ready    <none>   41m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,disktype=ssd,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5541798e0000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=75cfe3dbbb0380f1727efc53f5192897485e95d5,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
+lke212553-307295-5b53c5520000   Ready    <none>   41m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5b53c5520000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=792bac078d7ce0e548163b9423416d7d8c88b08f,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
+```
+As you see, the lke212553-307295-5541798e0000 now has a new label disktype=ssd. To see all labels attached to the node, you can also run:
+```bash
+$ kubectl describe node "lke212553-307295-5541798e0000"
+Name:               lke212553-307295-5541798e0000
+Roles:              <none>
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/instance-type=g6-dedicated-4
+                    beta.kubernetes.io/os=linux
+                    disktype=ssd
+                    failure-domain.beta.kubernetes.io/region=ap-south
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=lke212553-307295-5541798e0000
+                    kubernetes.io/os=linux
+                    lke.linode.com/pool-id=307295
+                    node.k8s.linode.com/host-uuid=75cfe3dbbb0380f1727efc53f5192897485e95d5
+                    node.kubernetes.io/instance-type=g6-dedicated-4
+                    topology.kubernetes.io/region=ap-south
+                    topology.linode.com/region=ap-south
+```
+Along with the `disktype=ssd` label we’ve just added, you can see other labels such as `beta.kubernetes.io/arch` or `kubernetes.io/hostname`. These are all default labels attached to Kubernetes nodes.
+
+Now let's create a pgpool with this new label as nodeSelector. Below is the yaml we are going to apply:
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pgpool-node-selector
+  namespace: demo
+spec:
+  version: "4.4.5"
+  replicas: 1
+  postgresRef:
+    name: ha-postgres
+    namespace: demo
+  podTemplate:
+    spec:
+      nodeSelector:
+        disktype: ssd
+  deletionPolicy: WipeOut
+```
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/configuration/pgpool-node-selector.yaml
+pgpool.kubedb.com/pgpool-node-selector created
+```
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `pgpool-node-selector-0` has been created.
+
+Check that the petset's pod is running
+
+```bash
+$ kubectl get pods -n demo
+NAME                     READY   STATUS    RESTARTS   AGE
+pgpool-node-selector-0   1/1     Running   0          60s
+```
+As we see the pod is running, you can verify that by running `kubectl get pods -n demo pgpool-node-selector-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
+```bash
+$ kubectl get pods -n demo pgpool-node-selector-0 -o wide
+NAME                     READY   STATUS    RESTARTS   AGE     IP         NODE                            NOMINATED NODE   READINESS GATES
+pgpool-node-selector-0   1/1     Running   0          3m19s   10.2.1.7   lke212553-307295-5541798e0000   <none>           <none>
+```
+We can successfully verify that our pod was scheduled to our desired node.
+
+## Using Taints and Tolerations
+
+Here in this example we will use [Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to schedule our pgpool pod to a specific node and also prevent from scheduling to nodes. Applying taints and tolerations to the Pod involves several steps. Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:
+
+```bash
+$ kubectl get nodes --show-labels
+NAME                            STATUS   ROLES    AGE   VERSION   LABELS
+lke212553-307295-339173d10000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-339173d10000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=618158120a299c6fd37f00d01d355ca18794c467,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
+lke212553-307295-5541798e0000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5541798e0000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=75cfe3dbbb0380f1727efc53f5192897485e95d5,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
+lke212553-307295-5b53c5520000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5b53c5520000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=792bac078d7ce0e548163b9423416d7d8c88b08f,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
+```
+As you see, we have three nodes in the cluster: lke212553-307295-339173d10000, lke212553-307295-5541798e0000, and lke212553-307295-5b53c5520000.
+
+Next, we are going to taint these nodes.
+```bash
+$ kubectl taint nodes lke212553-307295-339173d10000 key1=node1:NoSchedule
+node/lke212553-307295-339173d10000 tainted
+
+$ kubectl taint nodes lke212553-307295-5541798e0000 key1=node2:NoSchedule
+node/lke212553-307295-5541798e0000 tainted
+
+$ kubectl taint nodes lke212553-307295-5b53c5520000 key1=node3:NoSchedule
+node/lke212553-307295-5b53c5520000 tainted
+```
+Let's see our tainted nodes here,
+```bash
+$ kubectl get nodes -o json | jq -r '.items[] | select(.spec.taints != null) | .metadata.name, .spec.taints'
+lke212553-307295-339173d10000
+[
+  {
+    "effect": "NoSchedule",
+    "key": "key1",
+    "value": "node1"
+  }
+]
+lke212553-307295-5541798e0000
+[
+  {
+    "effect": "NoSchedule",
+    "key": "key1",
+    "value": "node2"
+  }
+]
+lke212553-307295-5b53c5520000
+[
+  {
+    "effect": "NoSchedule",
+    "key": "key1",
+    "value": "node3"
+  }
+]
+```
+We can see that our taints were successfully assigned. Now let's try to create a pgpool without proper tolerations. Here is the yaml of pgpool we are going to createc
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pgpool-without-tolerations
+  namespace: demo
+spec:
+  version: "4.4.5"
+  replicas: 1
+  postgresRef:
+    name: ha-postgres
+    namespace: demo
+  deletionPolicy: WipeOut
+```
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/configuration/pgpool-without-tolerations.yaml
+pgpool.kubedb.com/pgpool-without-tolerations created
+```
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `pgpool-without-tolerations-0` has been created and running.
+
+Check that the petset's pod is running or not,
+```bash
+$ kubectl get pods -n demo
+NAME                           READY   STATUS    RESTARTS   AGE
+pgpool-without-tolerations-0   0/1     Pending   0          3m35s
+```
+Here we can see that the pod is not running. So let's describe the pod,
+```bash
+$ kubectl describe pods -n demo pgpool-without-tolerations-0 
+Name:             pgpool-without-tolerations-0
+Namespace:        demo
+Priority:         0
+Service Account:  default
+Node:             <none>
+Labels:           app.kubernetes.io/component=connection-pooler
+                  app.kubernetes.io/instance=pgpool-without-tolerations
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=pgpools.kubedb.com
+                  apps.kubernetes.io/pod-index=0
+                  controller-revision-hash=pgpool-without-tolerations-5b85f9cd
+                  statefulset.kubernetes.io/pod-name=pgpool-without-tolerations-0
+Annotations:      <none>
+Status:           Pending
+IP:               
+IPs:              <none>
+Controlled By:    PetSet/pgpool-without-tolerations
+Containers:
+  pgpool:
+    Image:           ghcr.io/appscode-images/pgpool2:4.4.5@sha256:7f2537e3dc69dae2cebea3500502e6a2b764b42911881e623195eeed32569217
+    Ports:           9999/TCP, 9595/TCP
+    Host Ports:      0/TCP, 0/TCP
+    SeccompProfile:  RuntimeDefault
+    Limits:
+      memory:  1Gi
+    Requests:
+      cpu:     500m
+      memory:  1Gi
+    Environment:
+      POSTGRES_USERNAME:                  postgres
+      POSTGRES_PASSWORD:                  5ja8dHF79x4o6Ot6
+      PGPOOL_PCP_USER:                    <set to the key 'username' in secret 'pgpool-without-tolerations-auth'>  Optional: false
+      PGPOOL_PCP_PASSWORD:                <set to the key 'password' in secret 'pgpool-without-tolerations-auth'>  Optional: false
+      PGPOOL_PASSWORD_ENCRYPTION_METHOD:  scram-sha-256
+      PGPOOL_ENABLE_POOL_PASSWD:          true
+      PGPOOL_SKIP_PASSWORD_ENCRYPTION:    false
+    Mounts:
+      /config from pgpool-config (rw)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-69qx2 (ro)
+Conditions:
+  Type           Status
+  PodScheduled   False 
+Volumes:
+  pgpool-config:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  pgpool-without-tolerations-config
+    Optional:    false
+  kube-api-access-69qx2:
+    Type:                     Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:   3607
+    ConfigMapName:            kube-root-ca.crt
+    ConfigMapOptional:        <nil>
+    DownwardAPI:              true
+QoS Class:                    Burstable
+Node-Selectors:               <none>
+Tolerations:                  node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                              node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Topology Spread Constraints:  kubernetes.io/hostname:ScheduleAnyway when max skew 1 is exceeded for selector app.kubernetes.io/component=connection-pooler,app.kubernetes.io/instance=pgpool-without-tolerations,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=pgpools.kubedb.com
+                              topology.kubernetes.io/zone:ScheduleAnyway when max skew 1 is exceeded for selector app.kubernetes.io/component=connection-pooler,app.kubernetes.io/instance=pgpool-without-tolerations,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=pgpools.kubedb.com
+Events:
+  Type     Reason             Age                   From                Message
+  ----     ------             ----                  ----                -------
+  Warning  FailedScheduling   5m20s                 default-scheduler   0/3 nodes are available: 1 node(s) had untolerated taint {key1: node1}, 1 node(s) had untolerated taint {key1: node2}, 1 node(s) had untolerated taint {key1: node3}. preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.
+  Warning  FailedScheduling   11s                   default-scheduler   0/3 nodes are available: 1 node(s) had untolerated taint {key1: node1}, 1 node(s) had untolerated taint {key1: node2}, 1 node(s) had untolerated taint {key1: node3}. preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.
+  Normal   NotTriggerScaleUp  13s (x31 over 5m15s)  cluster-autoscaler  pod didn't trigger scale-up:
+```
+Here we can see that the pod has no tolerations for the tainted nodes and because of that the pod is not able to scheduled.
+
+So, let's add proper tolerations and create another pgpool. Here is the yaml we are going to apply,
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pgpool-with-tolerations
+  namespace: demo
+spec:
+  version: "4.4.5"
+  replicas: 1
+  postgresRef:
+    name: ha-postgres
+    namespace: demo
+  podTemplate:
+    spec:
+      tolerations:
+      - key: "key1"
+        operator: "Equal"
+        value: "node1"
+        effect: "NoSchedule"
+  deletionPolicy: WipeOut
+```
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/configuration/pgpool-with-tolerations.yaml
+pgpool.kubedb.com/pgpool-with-tolerations created
+```
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `pgpool-with-tolerations-0` has been created.
+
+Check that the petset's pod is running
+
+```bash
+$ kubectl get pods -n demo
+NAME                           READY   STATUS    RESTARTS   AGE
+pgpool-with-tolerations-0      1/1     Running   0          2m
+```
+As we see the pod is running, you can verify that by running `kubectl get pods -n demo pgpool-with-tolerations-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
+```bash
+$ kubectl get pods -n demo pgpool-with-tolerations-0 -o wide
+NAME                        READY   STATUS    RESTARTS   AGE     IP         NODE                            NOMINATED NODE   READINESS GATES
+pgpool-with-tolerations-0   1/1     Running   0          3m49s   10.2.0.8   lke212553-307295-339173d10000   <none>           <none>
+```
+We can successfully verify that our pod was scheduled to the node which it has tolerations.
+
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete -n demo pp/pp-misc-config
-kubectl delete -n demo pp/pgpool-custom-sidecar
+kubectl delete -n demo pp pp-misc-config pgpool-custom-sidecar pgpool-node-selector pgpool-with-tolerations pgpool-without-tolerations
 kubectl delete -n demo pg/ha-postgres
 kubectl delete ns demo
 ```
