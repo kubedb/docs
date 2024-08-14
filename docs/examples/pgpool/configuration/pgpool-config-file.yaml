@@ -1,0 +1,14 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pp-custom-config
+  namespace: demo
+spec:
+  version: "4.4.5"
+  replicas: 1
+  configSecret:
+    name: pp-configuration
+  postgresRef:
+    name: ha-postgres
+    namespace: demo
+  deletionPolicy: WipeOut

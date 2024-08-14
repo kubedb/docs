@@ -1,0 +1,25 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgpoolOpsRequest
+metadata:
+  name: ppops-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: pgpool
+  tls:
+    sslMode: require
+    clientAuthMode: cert
+    issuerRef:
+      name: pgpool-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    certificates:
+      - alias: client
+        subject:
+          organizations:
+            - pgpool
+          organizationalUnits:
+            - client
+  timeout: 5m
+  apply: IfReady

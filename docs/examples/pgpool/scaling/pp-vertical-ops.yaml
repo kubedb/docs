@@ -1,0 +1,20 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgpoolOpsRequest
+metadata:
+  name: pgpool-scale-vertical
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: pp-vertical
+  verticalScaling:
+    node:
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "1"
+  timeout: 5m
+  apply: IfReady

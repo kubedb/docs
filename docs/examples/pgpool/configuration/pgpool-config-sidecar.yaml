@@ -1,0 +1,39 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pgpool-custom-sidecar
+  namespace: demo
+spec:
+  version: "4.4.5"
+  replicas: 1
+  postgresRef:
+    name: ha-postgres
+    namespace: demo
+  podTemplate:
+    spec:
+      containers:
+        - name: pgpool
+          volumeMounts:
+            - mountPath: /tmp/pgpool_log
+              name: data
+              readOnly: false
+        - name: filebeat
+          image: repository_name/custom_filebeat:latest
+          volumeMounts:
+            - mountPath: /tmp/pgpool_log
+              name: data
+              readOnly: true
+      volumes:
+        - name: data
+          emptyDir: {}
+  initConfig:
+    pgpoolConfig:
+      log_destination : 'stderr'
+      logging_collector : on
+      log_directory : '/tmp/pgpool_log'
+      log_filename : 'pgpool-%Y-%m-%d_%H%M%S.log'
+      log_file_mode : 0777
+      log_truncate_on_rotation : off
+      log_rotation_age : 1d
+      log_rotation_size : 10MB
+  deletionPolicy: WipeOut

@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pgpool-autoscale
+  namespace: demo
+spec:
+  version: "4.5.0"
+  replicas: 1
+  postgresRef:
+    name: ha-postgres
+    namespace: demo
+  podTemplate:
+    spec:
+      containers:
+        - name: pgpool
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "300Mi"
+            limits:
+              cpu: "200m"
+              memory: "300Mi"
+  deletionPolicy: WipeOut
