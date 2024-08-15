@@ -11,7 +11,7 @@ spec:
       bucket: kubestash-testing
       region: us-east-1
       prefix: demo-sharding
-      secret: s3-secret
+      secretName: s3-secret
   usagePolicy:
     allowedNamespaces:
       from: All

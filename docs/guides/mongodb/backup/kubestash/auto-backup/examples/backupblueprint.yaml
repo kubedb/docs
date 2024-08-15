@@ -20,6 +20,8 @@ spec:
     sessions:
     - name: frequent
       scheduler:
+        jobTemplate:
+          backoffLimit: 1
         schedule: ${scheduleTime}
       repositories:
         - name: ${repoName}

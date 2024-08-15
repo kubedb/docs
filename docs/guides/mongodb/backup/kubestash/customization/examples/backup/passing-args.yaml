@@ -21,6 +21,8 @@ spec:
     - name: frequent
       scheduler:
         schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
       repositories:
         - name: s3-repo
           backend: s3-backend

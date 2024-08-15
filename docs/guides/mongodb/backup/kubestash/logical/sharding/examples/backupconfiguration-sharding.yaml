@@ -20,6 +20,8 @@ spec:
   sessions:
     - name: frequent
       scheduler:
+        jobTemplate:
+          backoffLimit: 1
         schedule: "*/3 * * * *"
       repositories:
         - name: s3-repo
