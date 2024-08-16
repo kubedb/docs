@@ -329,7 +329,7 @@ $ kubectl get pod -n demo rd-standalone-0 -o json | jq '.spec.containers[].resou
   }
 }
 
-$ kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redis") | .resources'
 {
   "limits": {
     "cpu": "400m",
