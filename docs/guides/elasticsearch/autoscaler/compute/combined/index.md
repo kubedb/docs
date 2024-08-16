@@ -117,7 +117,7 @@ $ kubectl get pod -n demo es-combined-0 -o json | jq '.spec.containers[].resourc
 Let's check the Elasticsearch resources,
 
 ```json
-$ kubectl get elasticsearch -n demo es-combined -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get elasticsearch -n demo es-combined -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "elasticsearch") | .resources'
 {
   "limits": {
     "cpu": "500m",
@@ -492,7 +492,7 @@ $ kubectl get pod -n demo es-combined-0 -o json | jq '.spec.containers[].resourc
   }
 }
 
-$ kubectl get elasticsearch -n demo es-combined -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get elasticsearch -n demo es-combined -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "elasticsearch") | .resources'
 {
   "limits": {
     "cpu": "1",

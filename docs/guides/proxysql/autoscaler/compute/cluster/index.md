@@ -142,7 +142,7 @@ $ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resour
 
 Let's check the ProxySQL resources,
 ```bash
-$ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "proxysql") | .resources'
 {
   "limits": {
     "cpu": "200m",
@@ -542,7 +542,7 @@ $ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resour
   }
 }
 
-$ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "proxysql") | .resources'
 {
   "limits": {
     "cpu": "250m",

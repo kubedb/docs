@@ -109,7 +109,7 @@ $ kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resource
 
 Let's check the PerconaXtraDB resources,
 ```bash
-$ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "perconaxtradb") | .resources'
 {
   "limits": {
     "cpu": "200m",
@@ -462,7 +462,7 @@ $ kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resource
   }
 }
 
-$ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "perconaxtradb") | .resources'
 {
   "limits": {
     "cpu": "250m",
