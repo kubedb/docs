@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: sdb-autoscaler-concepts
     name: SingleStoreAutoscaler
-    parent: guides-singlestore
+    parent: sdb-concepts-singlestore
     weight: 26
 menu_name: docs_{{ .version }}
 section_menu_id: guides
