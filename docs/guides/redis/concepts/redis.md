@@ -316,7 +316,7 @@ The `spec.podTemplate.spec.volumes` is an optional field. This can be used to pr
 
 #### spec.podTemplate.spec.podPlacementPolicy
 
-`spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy
+`spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
 
 #### spec.podTemplate.spec.imagePullSecret
 
