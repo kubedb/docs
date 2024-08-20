@@ -153,8 +153,9 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 - controller
   - annotations (petset's annotation)
 - spec:
-  - env
-  - resources
+  - containers
+  - volumes
+  - podPlacementPolicy
   - initContainers
   - imagePullSecrets
   - affinity
@@ -163,11 +164,37 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - priority
   - lifecycle
 
+You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go#L26C1-L279C1).
 Usage of some fields in `spec.podTemplate` is described below,
 
-#### spec.podTemplate.spec.env
+#### spec.podTemplate.spec.tolerations
 
-`spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the PgBouncer docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/kubedb/pgbouncer/).
+The `spec.podTemplate.spec.tolerations` is an optional field. This can be used to specify the pod's tolerations.
+
+#### spec.podTemplate.spec.volumes
+
+The `spec.podTemplate.spec.volumes` is an optional field. This can be used to provide the list of volumes that can be mounted by containers belonging to the pod.
+
+#### spec.podTemplate.spec.podPlacementPolicy
+
+`spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
+
+
+
+
+#### spec.podTemplate.spec.containers
+
+The `spec.podTemplate.spec.containers` can be used to provide the list containers and their configurations for to the database pod. some of the fields are described below,
+
+##### spec.podTemplate.spec.containers[].name
+The `spec.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
+
+##### spec.podTemplate.spec.containers[].args
+`spec.podTemplate.spec.containers[].args` is an optional field. This can be used to provide additional arguments to database installation.
+
+##### spec.podTemplate.spec.containers[].env
+
+`spec.podTemplate.spec.containers[].env` is an optional field that specifies the environment variables to pass to the PgBouncer containers. To know about supported environment variables, please visit [here](https://hub.docker.com/kubedb/pgbouncer/).
 
 Also, note that KubeDB does not allow updates to the environment variables as updating them does not have any effect once the server is created. If you try to update environment variables, KubeDB operator will reject the request with following error,
 
@@ -184,6 +211,10 @@ At least one of the following was changed:
     spec.podTemplate.spec.nodeSelector
 ```
 
+##### spec.podTemplate.spec.containers[].resources
+
+`spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
+
 #### spec.podTemplate.spec.imagePullSecrets
 
 `spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker image if you are using a private docker registry. For more details on how to use private docker registry, please visit [here](/docs/guides/pgbouncer/private-registry/using-private-registry.md).
@@ -191,10 +222,6 @@ At least one of the following was changed:
 #### spec.podTemplate.spec.nodeSelector
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
-
-#### spec.podTemplate.spec.resources
-
-`spec.podTemplate.spec.resources` is an optional field. This can be used to request compute resources required by the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
 ### spec.serviceTemplate
 
