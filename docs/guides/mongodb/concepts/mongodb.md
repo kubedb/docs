@@ -475,9 +475,9 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - annotations (petset's annotation)
   - labels (petset's labels)
 - spec:
-  - args
-  - env
-  - resources
+  - containers
+  - volumes
+  - podPlacementPolicy
   - initContainers
   - imagePullSecrets
   - nodeSelector
@@ -492,17 +492,39 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - readinessProbe
   - lifecycle
 
-You can checkout the full list [here](https://github.com/kmodules/offshoot-api/blob/ea366935d5bad69d7643906c7556923271592513/api/v1/types.go#L42-L259). Uses of some field of `spec.podTemplate` is described below,
+You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go#L26C1-L279C1).
+Uses of some field of `spec.podTemplate` is described below,
 
 NB. If `spec.shardTopology` is set, then `spec.podTemplate` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.podTemplate`
 
-#### spec.podTemplate.spec.args
+#### spec.podTemplate.spec.tolerations
 
-`spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments to database installation. To learn about available args of `mongod`, visit [here](https://docs.mongodb.com/manual/reference/program/mongod/).
+The `spec.podTemplate.spec.tolerations` is an optional field. This can be used to specify the pod's tolerations.
 
-#### spec.podTemplate.spec.env
+#### spec.podTemplate.spec.volumes
 
-`spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the MongoDB docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/r/_/mongo/).
+The `spec.podTemplate.spec.volumes` is an optional field. This can be used to provide the list of volumes that can be mounted by containers belonging to the pod.
+
+#### spec.podTemplate.spec.podPlacementPolicy
+
+`spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
+
+
+
+
+#### spec.podTemplate.spec.containers
+
+The `spec.podTemplate.spec.containers` can be used to provide the list containers and their configurations for to the database pod. some of the fields are described below,
+
+##### spec.podTemplate.spec.containers[].name
+The `spec.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
+
+##### spec.podTemplate.spec.containers[].args
+`spec.podTemplate.spec.containers[].args` is an optional field. This can be used to provide additional arguments to database installation.
+
+##### spec.podTemplate.spec.containers[].env
+
+`spec.podTemplate.spec.containers[].env` is an optional field that specifies the environment variables to pass to the MongoDB docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/r/_/mongo/).
 
 Note that, KubeDB does not allow `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` environment variables to set in `spec.podTemplate.spec.env`. If you want to use custom superuser and password, please use `spec.authSecret` instead described earlier.
 
@@ -532,6 +554,10 @@ for: "./mongodb.yaml": admission webhook "mongodb.validators.kubedb.com" denied 
     spec.podTemplate.spec.env
 ```
 
+##### spec.podTemplate.spec.containers[].resources
+
+`spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
+
 #### spec.podTemplate.spec.imagePullSecret
 
 `KubeDB` provides the flexibility of deploying MongoDB database from a private Docker registry. `spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker image if you are using a private docker registry. To learn how to deploy MongoDB from a private registry, please visit [here](/docs/guides/mongodb/private-registry/using-private-registry.md).
@@ -549,10 +575,6 @@ If this field is left empty, the KubeDB operator will create a service account n
 If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
 If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mongodb/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
-
-#### spec.podTemplate.spec.resources
-
-`spec.podTemplate.spec.resources` is an optional field. This can be used to request compute resources required by the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
 ### spec.serviceTemplates
 
