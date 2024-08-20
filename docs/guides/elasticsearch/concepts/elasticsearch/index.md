@@ -333,13 +333,16 @@ Currently supported node types are -
     data:
       maxUnavailable: 1
       replicas: 3
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+      podTemplate: 
+        spec:
+          containers:
+            - name: "elasticsearch"
+              resources:
+                requests:
+                  cpu: "500m"
+                limits:
+                  cpu: "600m"
+                  memory: "1.5Gi"
       storage:
         accessModes:
         - ReadWriteOnce
@@ -351,13 +354,16 @@ Currently supported node types are -
     ingest:
       maxUnavailable: 1
       replicas: 3
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+      podTemplate:
+        spec:
+          containers:
+            - name: "elasticsearch"
+              resources:
+                requests:
+                  cpu: "500m"
+                limits:
+                  cpu: "600m"
+                  memory: "1.5Gi"
       storage:
         accessModes:
         - ReadWriteOnce
@@ -369,13 +375,17 @@ Currently supported node types are -
     master:
       maxUnavailable: 1
       replicas: 2
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
+      podTemplate:
+        spec:
+          containers:
+            - name: "elasticsearch"
+              resources:
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+                requests:
+                  cpu: 500m
+                  memory: 1Gi
       storage:
         accessModes:
         - ReadWriteOnce
@@ -718,9 +728,9 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - annotations (petset's annotation)
   - labels (petset's labels)
 - spec:
-  - args
-  - env
-  - resources
+  - containers
+  - volumes
+  - podPlacementPolicy
   - initContainers
   - imagePullSecrets
   - nodeSelector
@@ -735,24 +745,24 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - readinessProbe
   - lifecycle
 
-You can checkout the full list [here](https://github.com/kmodules/offshoot-api/blob/ea366935d5bad69d7643906c7556923271592513/api/v1/types.go#L42-L259). Uses of some field of `spec.podTemplate` is described below,
+You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go#L26C1-L279C1).
 
 Uses of some fields of `spec.podTemplate` are described below,
 
-#### spec.podTemplate.spec.env
-
-`spec.podTemplate.spec.env` is an `optional` field that specifies the environment variables to pass to the Elasticsearch Docker image.
-
-You are not allowed to pass the following `env`:
-- `node.name`
-- `node.ingest`
-- `node.master`
-- `node.data`
 
 
-```ini
-Error from server (Forbidden): error when creating "./elasticsearch.yaml": admission webhook "elasticsearch.validators.kubedb.com" denied the request: environment variable node.name is forbidden to use in Elasticsearch spec
-```
+#### spec.podTemplate.spec.tolerations
+
+The `spec.podTemplate.spec.tolerations` is an optional field. This can be used to specify the pod's tolerations.
+
+#### spec.podTemplate.spec.volumes
+
+The `spec.podTemplate.spec.volumes` is an optional field. This can be used to provide the list of volumes that can be mounted by containers belonging to the pod.
+
+#### spec.podTemplate.spec.podPlacementPolicy
+
+`spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
+
 
 #### spec.podTemplate.spec.imagePullSecrets
 
@@ -779,22 +789,51 @@ spec:
       serviceAccountName: es
 ```
 
-#### spec.podTemplate.spec.resources
+#### spec.podTemplate.spec.containers
 
-`spec.podTemplate.spec.resources` is an `optional` field. If the `spec.topology` field is not set, then it can be used to request or limit computational resources required by the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
+The `spec.podTemplate.spec.containers` can be used to provide the list containers and their configurations for to the database pod. some of the fields are described below,
+
+##### spec.podTemplate.spec.containers[].name
+The `spec.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
+
+##### spec.podTemplate.spec.containers[].args
+`spec.podTemplate.spec.containers[].args` is an optional field. This can be used to provide additional arguments to database installation.
+
+##### spec.podTemplate.spec.containers[].env
+
+`spec.podTemplate.spec.env` is an `optional` field that specifies the environment variables to pass to the Elasticsearch Containers.
+
+You are not allowed to pass the following `env`:
+- `node.name`
+- `node.ingest`
+- `node.master`
+- `node.data`
+
+
+```ini
+Error from server (Forbidden): error when creating "./elasticsearch.yaml": admission webhook "elasticsearch.validators.kubedb.com" denied the request: environment variable node.name is forbidden to use in Elasticsearch spec
+```
+
+##### spec.podTemplate.spec.containers[].resources
+
+`spec.podTemplate.spec.containers[].resources` is an `optional` field. then it can be used to request or limit computational resources required by the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
 ```yaml
 spec:
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: "1"
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 512Mi
+      containers:
+        - name: "elasticsearch"
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
 ```
+
+
 
 ### spec.serviceTemplates
 
