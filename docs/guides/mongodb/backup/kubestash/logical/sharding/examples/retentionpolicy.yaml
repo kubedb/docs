@@ -1,0 +1,12 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: RetentionPolicy
+metadata:
+  name: backup-rp
+  namespace: demo
+spec:
+  maxRetentionPeriod: 2mo
+  successfulSnapshots:
+    last: 10
+  usagePolicy:
+    allowedNamespaces:
+      from: All

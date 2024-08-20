@@ -186,7 +186,7 @@ If you would like to uninstall KubeDB operator, please follow the steps [here](/
 ## Next Steps
 
 - [Quickstart MongoDB](/docs/guides/mongodb/quickstart/quickstart.md) with KubeDB Operator.
-- [Backup and Restore](/docs/guides/mongodb/backup/overview/index.md) MongoDB databases using Stash.
+- [Backup and Restore](/docs/guides/mongodb/backup/stash/overview/index.md) MongoDB databases using Stash.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
