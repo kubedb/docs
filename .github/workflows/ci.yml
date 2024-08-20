@@ -60,8 +60,7 @@ jobs:
           kubectl create -f https://github.com/kubevault/installer/raw/master/crds/kubevault-crds.yaml
           kubectl create -f https://github.com/kubedb/installer/raw/master/crds/kubedb-crds.yaml
           kubectl create -f https://github.com/kubernetes-csi/external-snapshotter/raw/master/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
-          kubectl create -f https://github.com/kubestash/apimachinery/raw/master/crds/storage.kubestash.com_backupstorages.yaml
-          kubectl create -f https://github.com/kubestash/apimachinery/raw/master/crds/storage.kubestash.com_retentionpolicies.yaml
+          kubectl create -f https://github.com/kubestash/installer/raw/master/crds/kubestash-crds.yaml
 
       - name: Check codespan schema
         run: |

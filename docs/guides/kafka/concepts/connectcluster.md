@@ -250,7 +250,7 @@ The `spec.tls` contains the following fields:
         - `postalCodes` ( `[]string` | `nil` ) - is a list of postal codes.
         - `serialNumber` ( `string` | `""` ) is a serial number.
 
-      For more details, visit [here](https://golang.org/pkg/crypto/x509/pkix/#Name).
+      For more details, visit [here](https://pkg.go.dev/crypto/x509/pkix#Name).
 
     - `duration` ( `string` | `""` ) - is the period during which the certificate is valid. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as `"300m"`, `"1.5h"` or `"20h45m"`. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
     - `renewBefore` ( `string` | `""` ) - is a specifiable time before expiration duration.
