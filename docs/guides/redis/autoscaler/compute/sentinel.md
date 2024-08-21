@@ -108,7 +108,7 @@ $ kubectl get pod -n demo sen-demo-0 -o json | jq '.spec.containers[].resources'
 
 Let's check the RedisSentinel resources,
 ```bash
-$ kubectl get redissentinel -n demo sen-demo -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get redissentinel -n demo sen-demo -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redissentinel") | .resources'
 {
   "limits": {
     "cpu": "200m",
@@ -358,7 +358,7 @@ $ kubectl get pod -n demo sen-demo-0 -o json | jq '.spec.containers[].resources'
   }
 }
 
-$ kubectl get redis -n demo sen-demo -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get redis -n demo sen-demo -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redissentinel") | .resources'
 {
   "limits": {
     "cpu": "400m",

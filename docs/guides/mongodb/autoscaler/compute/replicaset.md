@@ -111,7 +111,7 @@ $ kubectl get pod -n demo mg-rs-0 -o json | jq '.spec.containers[].resources'
 
 Let's check the MongoDB resources,
 ```bash
-$ kubectl get mongodb -n demo mg-rs -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get mongodb -n demo mg-rs -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mongodb") | .resources'
 {
   "limits": {
     "cpu": "200m",
@@ -509,7 +509,7 @@ $ kubectl get pod -n demo mg-rs-0 -o json | jq '.spec.containers[].resources'
   }
 }
 
-$ kubectl get mongodb -n demo mg-rs -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get mongodb -n demo mg-rs -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mongodb") | .resources'
 {
   "limits": {
     "cpu": "400m",
