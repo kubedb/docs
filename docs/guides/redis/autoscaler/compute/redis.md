@@ -86,7 +86,7 @@ redis.kubedb.com/rd-standalone created
 Now, wait until `rd-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+$ kubectl get rd -n demo
 NAME            VERSION    STATUS    AGE
 rd-standalone   6.2.14      Ready     2m53s
 ```
@@ -109,7 +109,7 @@ $ kubectl get pod -n demo rd-standalone-0 -o json | jq '.spec.containers[].resou
 
 Let's check the Redis resources,
 ```bash
-$ kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redis") | .resources'
 {
   "limits": {
     "cpu": "200m",
@@ -168,7 +168,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing compute resource autoscaling on `rd-standalone` database.
 - `spec.compute.standalone.trigger` specifies that compute resource autoscaling is enabled for this database.
 - `spec.compute.standalone.podLifeTimeThreshold` specifies the minimum lifetime for at least one of the pod to initiate a vertical scaling.
-- `spec.compute.replicaset.resourceDiffPercentage` specifies the minimum resource difference in percentage. The default is 10%.
+- `spec.compute.standalone.resourceDiffPercentage` specifies the minimum resource difference in percentage. The default is 10%.
   If the difference between current & recommended resource is less than ResourceDiffPercentage, Autoscaler Operator will ignore the updating.
 - `spec.compute.standalone.minAllowed` specifies the minimum allowed resources for the database.
 - `spec.compute.standalone.maxAllowed` specifies the maximum allowed resources for the database.
@@ -329,7 +329,7 @@ $ kubectl get pod -n demo rd-standalone-0 -o json | jq '.spec.containers[].resou
   }
 }
 
-$ kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redis") | .resources'
 {
   "limits": {
     "cpu": "400m",

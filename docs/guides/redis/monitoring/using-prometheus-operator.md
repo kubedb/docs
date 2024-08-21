@@ -172,15 +172,18 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these informati
 KubeDB will also create a `ServiceMonitor` crd in `monitoring` namespace that select the endpoints of `coreos-prom-redis-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
-$ kubectl get servicemonitor -n monitoring
+$ kubectl get servicemonitor -n demo
 NAME                            AGE
 kubedb-demo-coreos-prom-redis   1m
 ```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of Redis crd.
 
+```bash
+$ kubectl get servicemonitor -n demo kubedb-demo-coreos-prom-redis -o yaml
+```
+
 ```yaml
-$ kubectl get servicemonitor -n monitoring kubedb-demo-coreos-prom-redis -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:

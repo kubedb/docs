@@ -100,7 +100,7 @@ rd-standalone   6.2.14      Ready     2m53s
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo rd-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo rd-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo
@@ -146,7 +146,7 @@ Here,
 - `spec.storage.standalone.trigger` specifies that storage autoscaling is enabled for this database.
 - `spec.storage.standalone.usageThreshold` specifies storage usage threshold, if storage usage exceeds `60%` then storage autoscaling will be triggered.
 - `spec.storage.standalone.scalingThreshold` specifies the scaling threshold. Storage will be scaled to `50%` of the current amount.
-- It has another field `spec.storage.replicaSet.expansionMode` to set the opsRequest volumeExpansionMode, which support two values: `Online` & `Offline`. Default value is `Online`.
+- It has another field `spec.storage.standalone.expansionMode` to set the opsRequest volumeExpansionMode, which support two values: `Online` & `Offline`. Default value is `Online`.
 
 Let's create the `RedisAutoscaler` CR we have shown above,
 
@@ -255,7 +255,7 @@ We can see from the above output that the `RedisOpsRequest` has succeeded.
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo rd-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo rd-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1594884096"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS          REASON   AGE

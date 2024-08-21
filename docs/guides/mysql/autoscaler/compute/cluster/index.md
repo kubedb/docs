@@ -111,7 +111,7 @@ $ kubectl get pod -n demo sample-mysql-0 -o json | jq '.spec.containers[].resour
 
 Let's check the MySQL resources,
 ```bash
-$ kubectl get mysql -n demo sample-mysql -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get mysql -n demo sample-mysql -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mysql") | .resources'
 {
   "limits": {
     "cpu": "200m",
@@ -421,7 +421,7 @@ $ kubectl get pod -n demo sample-mysql-0 -o json | jq '.spec.containers[].resour
   }
 }
 
-$ kubectl get mysql -n demo sample-mysql -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get mysql -n demo sample-mysql -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mysql") | .resources'
 {
   "limits": {
     "cpu": "250m",

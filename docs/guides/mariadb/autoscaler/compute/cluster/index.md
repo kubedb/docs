@@ -109,7 +109,7 @@ $ kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].reso
 
 Let's check the MariaDB resources,
 ```bash
-$ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mariadb") | .resources'
 {
   "limits": {
     "cpu": "200m",
@@ -509,7 +509,7 @@ $ kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].reso
   }
 }
 
-$ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.podTemplate.spec.resources'
+$ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mariadb") | .resources'
 {
   "limits": {
     "cpu": "250m",
