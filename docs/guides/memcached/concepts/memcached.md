@@ -115,9 +115,9 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 - controller
   - annotations (petset's annotation)
 - spec:
-  - args
-  - env
-  - resources
+  - containers
+  - volumes
+  - podPlacementPolicy
   - initContainers
   - imagePullSecrets
   - nodeSelector
@@ -134,13 +134,35 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 
 Uses of some field of `spec.podTemplate` is described below,
 
-#### spec.podTemplate.spec.args
 
-`spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments to database installation.
+You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go#L26C1-L279C1).
+Uses of some field of `spec.podTemplate` is described below,
 
-#### spec.podTemplate.spec.env
+#### spec.podTemplate.spec.tolerations
 
-`spec.env` is an optional field that specifies the environment variables to pass to the Memcached docker image.
+The `spec.podTemplate.spec.tolerations` is an optional field. This can be used to specify the pod's tolerations.
+
+#### spec.podTemplate.spec.volumes
+
+The `spec.podTemplate.spec.volumes` is an optional field. This can be used to provide the list of volumes that can be mounted by containers belonging to the pod.
+
+#### spec.podTemplate.spec.podPlacementPolicy
+
+`spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
+
+#### spec.podTemplate.spec.containers
+
+The `spec.podTemplate.spec.containers` can be used to provide the list containers and their configurations for to the database pod. some of the fields are described below,
+
+##### spec.podTemplate.spec.containers[].name
+The `spec.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
+
+##### spec.podTemplate.spec.containers[].args
+`spec.podTemplate.spec.containers[].args` is an optional field. This can be used to provide additional arguments to database installation.
+
+##### spec.podTemplate.spec.containers[].env
+
+`.env` is an optional field that specifies the environment variables to pass to the Memcached containers.
 
 Note that, KubeDB does not allow to update the environment variables. If you try to update environment variables, KubeDB operator will reject the request with following error,
 
@@ -157,6 +179,10 @@ At least one of the following was changed:
 	spec.podTemplate.spec.nodeSelector
     spec.podTemplate.spec.env
 ```
+
+##### spec.podTemplate.spec.containers[].resources
+
+`spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
 #### spec.podTemplate.spec.imagePullSecrets
 

@@ -269,9 +269,9 @@ KubeDB accepts the following fields to set in `spec.podTemplate:`
 - controller:
   - annotations (petset's annotation)
 - spec:
-  - args
-  - env
-  - resources
+  - containers
+  - volumes
+  - podPlacementPolicy
   - initContainers
   - imagePullSecrets
   - nodeSelector
@@ -286,15 +286,37 @@ KubeDB accepts the following fields to set in `spec.podTemplate:`
   - readinessProbe
   - lifecycle
 
+You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go#L26C1-L279C1).
 Uses of some field of `spec.podTemplate` is described below,
 
-#### spec.podTemplate.spec.args
+#### spec.podTemplate.spec.tolerations
 
-`spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments for database installation. To learn about available args of `mysqld`, visit [here](https://dev.mysql.com/doc/refman/8.0/en/server-options.html).
+The `spec.podTemplate.spec.tolerations` is an optional field. This can be used to specify the pod's tolerations.
 
-#### spec.podTemplate.spec.env
+#### spec.podTemplate.spec.volumes
 
-`spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the MySQL docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/_/mysql/).
+The `spec.podTemplate.spec.volumes` is an optional field. This can be used to provide the list of volumes that can be mounted by containers belonging to the pod.
+
+#### spec.podTemplate.spec.podPlacementPolicy
+
+`spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
+
+
+
+
+#### spec.podTemplate.spec.containers
+
+The `spec.podTemplate.spec.containers` can be used to provide the list containers and their configurations for to the database pod. some of the fields are described below,
+
+##### spec.podTemplate.spec.containers[].name
+The `spec.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
+
+##### spec.podTemplate.spec.containers[].args
+`spec.podTemplate.spec.containers[].args` is an optional field. This can be used to provide additional arguments to database installation.
+
+##### spec.podTemplate.spec.containers[].env
+
+`spec.podTemplate.spec.containers[].env` is an optional field that specifies the environment variables to pass to the MySQL docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/_/mysql/).
 
 Note that, KubeDB does not allow `MYSQL_ROOT_PASSWORD`, `MYSQL_ALLOW_EMPTY_PASSWORD`, `MYSQL_RANDOM_ROOT_PASSWORD`, and `MYSQL_ONETIME_PASSWORD` environment variables to set in `spec.env`. If you want to set the root password, please use `spec.authSecret` instead described earlier.
 
@@ -323,6 +345,10 @@ for: "./mysql.yaml": admission webhook "mysql.validators.kubedb.com" denied the 
     spec.podTemplate.spec.env
 ```
 
+##### spec.podTemplate.spec.containers[].resources
+
+`spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
+
 #### spec.podTemplate.spec.imagePullSecrets
 
 `KubeDB` provides the flexibility of deploying MySQL database from a private Docker registry. `spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker image if you are using a private docker registry. To learn how to deploy MySQL from a private registry, please visit [here](/docs/guides/mysql/private-registry/index.md).
@@ -340,10 +366,6 @@ for: "./mysql.yaml": admission webhook "mysql.validators.kubedb.com" denied the 
  If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mysql/custom-rbac/index.md) to grant necessary permissions in this scenario.
-
-#### spec.podTemplate.spec.resources
-
-`spec.podTemplate.spec.resources` is an optional field. This can be used to request compute resources required by the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
 ### spec.serviceTemplate
 
@@ -370,9 +392,7 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 
 `spec.halted` is an optional field. This field will be used to halt the kubeDB operator. When you set `spec.halted` to `true`, the KubeDB operator doesn't perform any operation on `MySQL` object.
 
-### spec.halted
-
-`spec.halted` is an optional field. Suppose you want to delete the `MySQL` resources(`PetSet`, `Service` etc.) except `MySQL` object, `PVCs` and `Secret` then you need to set `spec.halted` to `true`. If you set `spec.halted` to `true` then the `deletionPolicy` in `MySQL` object will be set `Halt` by-default.  
+Suppose you want to delete the `MySQL` resources(`PetSet`, `Service` etc.) except `MySQL` object, `PVCs` and `Secret` then you need to set `spec.halted` to `true`. If you set `spec.halted` to `true` then the `deletionPolicy` in `MySQL` object will be set `Halt` by-default.  
 
 ### spec.deletionPolicy
 

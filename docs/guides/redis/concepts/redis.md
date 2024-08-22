@@ -128,10 +128,9 @@ AutoOps is an optional field to control the generation of version update & TLS-r
 
 `spec.version` is a required field specifying the name of the [RedisVersion](/docs/guides/redis/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `RedisVersion` crds,
 
-- `4.0.6-v2`, `4.0.11`, `6.2.14`, `5.0.14`
-- `6.0.20`, `6.2.14`, `6.2.14` `6.2.14`
-- `7.0.4`, `7.0.14`, `7.0.6`
-
+- `4.0.11`, `5.0.14`
+- `6.0.20`, `6.2.14`
+- `7.0.14`, `7.0.15`, `7.2.3`, `7.2.4`
 ### spec.mode
 
 `spec.mode` specifies the mode in which Redis server instance(s) will be deployed. The possible values are either `"Standalone"`, `"Cluster"` and `"Sentinel""`. The default value is `"Standalone"`.
@@ -150,7 +149,7 @@ When `spec.mode` is set to `Sentinel`, `spec.sentinelRef.name` and `spec.sentine
 If `spec.mode` is set to `"Cluster"`, users can optionally provide a cluster specification. Currently, the following two parameters can be configured:
 
 - `spec.cluster.shards`: specifies the number of Redis shard nodes. It must be greater or equal to 3. If not set, the operator set it to 3.
-- `spec.cluster.replicas`: specifies the number of replica nodes per shard. It must be greater than 0. If not set, the operator set it to 1.
+- `spec.cluster.replicas`: specifies the number of replica nodes per shard. It must be greater than 1. If not set, the operator set it to 2.
 
 KubeDB uses `PodDisruptionBudget` to ensure that majority of these cluster replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained and no data loss is occurred.
 
@@ -287,10 +286,10 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 - controller:
   - annotations (petset's annotation)
 - spec:
-  - args
-  - env
-  - resources
   - initContainers
+  - containers
+  - volumes
+  - podPlacementPolicy
   - imagePullSecrets
   - nodeSelector
   - affinity
@@ -304,16 +303,20 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - readinessProbe
   - lifecycle
 
-You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/ea366935d5bad69d7643906c7556923271592513/api/v1/types.go#L42-L259).
+You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go#L26C1-L279C1).
 Uses of some field of `spec.podTemplate` is described below,
 
-#### spec.podTemplate.spec.args
- `spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments to database installation.
+#### spec.podTemplate.spec.tolerations
 
-### spec.podTemplate.spec.env
+The `spec.podTemplate.spec.tolerations` is an optional field. This can be used to specify the pod's tolerations.
 
-`spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the Redis docker image.
+#### spec.podTemplate.spec.volumes
 
+The `spec.podTemplate.spec.volumes` is an optional field. This can be used to provide the list of volumes that can be mounted by containers belonging to the pod.
+
+#### spec.podTemplate.spec.podPlacementPolicy
+
+`spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
 
 #### spec.podTemplate.spec.imagePullSecret
 
@@ -322,6 +325,24 @@ Uses of some field of `spec.podTemplate` is described below,
 #### spec.podTemplate.spec.nodeSelector
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
+
+#### spec.podTemplate.spec.containers
+
+The `spec.podTemplate.spec.containers` can be used to provide the list containers and their configurations for to the database pod. some of the fields are described below,
+
+##### spec.podTemplate.spec.containers[].name
+The `spec.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
+
+##### spec.podTemplate.spec.containers[].args
+`spec.podTemplate.spec.containers[].args` is an optional field. This can be used to provide additional arguments to database installation.
+
+##### spec.podTemplate.spec.containers[].env
+
+`spec.podTemplate.spec.containers[].env` is an optional field that specifies the environment variables to pass to the Redis containers.
+
+##### spec.podTemplate.spec.containers[].resources
+
+`spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
 #### spec.podTemplate.spec.serviceAccountName
 
@@ -333,9 +354,6 @@ Uses of some field of `spec.podTemplate` is described below,
 
   If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/redis/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
 
-#### spec.podTemplate.spec.resources
-
-`spec.podTemplate.spec.resources` is an optional field. This can be used to request compute resources required by the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
 ### spec.serviceTemplates
 
