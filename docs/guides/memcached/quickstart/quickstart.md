@@ -24,7 +24,7 @@ This tutorial will show you how to use KubeDB to run a Memcached server.
 
 ## Before You Begin
 
-- At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+- At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
 - Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
@@ -45,11 +45,10 @@ When you have installed KubeDB, it has created `MemcachedVersion` crd for all su
 
 ```bash
 $ kubectl get memcachedversions
-NAME       VERSION   DB_IMAGE                    DEPRECATED   AGE
-1.5        1.5       kubedb/memcached:1.5        true         2h
-1.5-v1     1.5       kubedb/memcached:1.5-v1                  2h
-1.5.4      1.5.4     kubedb/memcached:1.5.4      true         2h
-1.6.22   1.5.4     kubedb/memcached:1.6.22                2h
+NAME        VERSION    DB_IMAGE                                            DEPRECATED   AGE
+1.5.22      1.5.22     ghcr.io/appscode-images/memcached:1.5.22-alpine                  2h
+1.6.22      1.6.22     ghcr.io/appscode-images/memcached:1.6.22-alpine                  2h
+1.6.29      1.6.29     ghcr.io/appscode-images/memcached:1.6.29-alpine                  2h
 ```
 
 ## Create a Memcached server
@@ -120,52 +119,119 @@ Here,
 - `spec.resource` is an optional field that specifies how much CPU and memory (RAM) each Container needs. To learn details about Managing Compute Resources for Containers, please visit [here](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/).
 - `spec.deletionPolicy` or `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Memcached` crd or which resources KubeDB should keep or delete when you delete `Memcached` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy)
 
-KubeDB operator watches for `Memcached` objects using Kubernetes api. When a `Memcached` object is created, KubeDB operator will create a new Deployment and a ClusterIP Service with the matching Memcached object name.
-
+KubeDB operator watches for `Memcached` objects using Kubernetes api. When a `Memcached` object is created, KubeDB operator will create a new PetSet and a Service with the matching Memcached object name.
 ```bash
 $ kubectl get mc -n demo
 NAME               VERSION    STATUS    AGE
-memcd-quickstart   1.6.22   Running   2m
+memcd-quickstart   1.6.22     Running   2m
 
-$ kubectl dba describe mc -n demo memcd-quickstart
-Name:               memcd-quickstart
-Namespace:          demo
-CreationTimestamp:  Wed, 03 Oct 2018 15:40:38 +0600
-Labels:             <none>
-Annotations:        <none>
-Replicas:           3  total
-Status:             Running
-
-Deployment:
-  Name:               memcd-quickstart
-  CreationTimestamp:  Wed, 03 Oct 2018 15:40:40 +0600
-  Labels:               app.kubernetes.io/name=memcacheds.kubedb.com
-                        app.kubernetes.io/instance=memcd-quickstart
-  Annotations:          deployment.kubernetes.io/revision=1
-  Replicas:           3 desired | 3 updated | 3 total | 3 available | 0 unavailable
-  Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
-
-Service:
-  Name:         memcd-quickstart
-  Labels:         app.kubernetes.io/name=memcacheds.kubedb.com
-                  app.kubernetes.io/instance=memcd-quickstart
-  Annotations:  <none>
-  Type:         ClusterIP
-  IP:           10.111.81.177
-  Port:         db  11211/TCP
-  TargetPort:   db/TCP
-  Endpoints:    172.17.0.4:11211,172.17.0.14:11211,172.17.0.6:11211
-
-No Snapshots.
-
+$ kubectl describe mc -n demo memcd-quickstart
+Name:         memcd-quickstart
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  kubedb.com/v1
+Kind:         Memcached
+Metadata:
+  Creation Timestamp:  2024-08-22T13:54:45Z
+  Finalizers:
+    kubedb.com
+  Generation:        1
+  Resource Version:  3428
+  UID:               4c8bea2e-c4a3-4310-9a7d-d8b60ac47d5b
+Spec:
+  Deletion Policy:  DoNotTerminate
+  Health Checker:
+    Failure Threshold:  1
+    Period Seconds:     10
+    Timeout Seconds:    10
+  Pod Template:
+    Controller:
+    Metadata:
+    Spec:
+      Containers:
+        Name:  memcached
+        Resources:
+          Limits:
+            Cpu:     500m
+            Memory:  128Mi
+          Requests:
+            Cpu:     250m
+            Memory:  64Mi
+        Security Context:
+          Allow Privilege Escalation:  false
+          Capabilities:
+            Drop:
+              ALL
+          Run As Group:     999
+          Run As Non Root:  true
+          Run As User:      999
+          Seccomp Profile:
+            Type:  RuntimeDefault
+      Pod Placement Policy:
+        Name:  default
+      Security Context:
+        Fs Group:            999
+      Service Account Name:  memcd-quickstart
+  Replicas:                  3
+  Version:                   1.6.22
+Status:
+  Conditions:
+    Last Transition Time:  2024-08-22T13:54:45Z
+    Message:               The KubeDB operator has started the provisioning of Memcached: demo/memcd-quickstart
+    Reason:                DatabaseProvisioningStartedSuccessfully
+    Status:                True
+    Type:                  ProvisioningStarted
+    Last Transition Time:  2024-08-22T13:54:55Z
+    Message:               All desired replicas are ready.
+    Reason:                AllReplicasReady
+    Status:                True
+    Type:                  ReplicaReady
+    Last Transition Time:  2024-08-22T13:55:05Z
+    Message:               The Memcached: demo/memcd-quickstart is accepting mcClient requests.
+    Observed Generation:   1
+    Reason:                DatabaseAcceptingConnectionRequest
+    Status:                True
+    Type:                  AcceptingConnection
+    Last Transition Time:  2024-08-22T13:55:05Z
+    Message:               The Memcached: demo/memcd-quickstart is ready.
+    Observed Generation:   1
+    Reason:                ReadinessCheckSucceeded
+    Status:                True
+    Type:                  Ready
+    Last Transition Time:  2024-08-22T13:55:05Z
+    Message:               The Memcached: demo/memcd-quickstart is successfully provisioned.
+    Observed Generation:   1
+    Reason:                DatabaseSuccessfullyProvisioned
+    Status:                True
+    Type:                  Provisioned
+  Observed Generation:     1
+  Phase:                   Ready
 Events:
-  Type    Reason      Age   From                Message
-  ----    ------      ----  ----                -------
-  Normal  Successful  2m    Memcached operator  Successfully created Service
-  Normal  Successful  1m    Memcached operator  Successfully created PetSet
-  Normal  Successful  1m    Memcached operator  Successfully created Memcached
-  Normal  Successful  1m    Memcached operator  Successfully patched PetSet
-  Normal  Successful  1m    Memcached operator  Successfully patched Memcached
+  Type    Reason      Age    From             Message
+  ----    ------      ----   ----             -------
+  Normal  Successful  5m37s  KubeDB Operator  Successfully created governing service
+  Normal  Successful  5m37s  KubeDB Operator  Successfully created Service
+  Normal  Successful  5m37s  KubeDB Operator  Successfully created appbinding
+  Normal  Successful  5m28s  KubeDB Operator  Successfully patched PetSet
+  Normal  Successful  5m28s  KubeDB Operator  Successfully patched Memcached
+  Normal  Successful  5m28s  KubeDB Operator  Successfully patched PetSet
+  Normal  Successful  5m28s  KubeDB Operator  Successfully patched Memcached
+  Normal  Successful  5m18s  KubeDB Operator  Successfully patched PetSet
+  Normal  Successful  5m18s  KubeDB Operator  Successfully patched Memcached
+  Normal  Successful  5m18s  KubeDB Operator  Successfully patched PetSet
+  Normal  Successful  5m18s  KubeDB Operator  Successfully patched Memcached
+  Normal  Successful  5m18s  KubeDB Operator  Successfully patched PetSet
+  Normal  Successful  5m18s  KubeDB Operator  Successfully patched Memcached
+
+$ kubectl get petset -n demo
+NAME               AGE
+memcd-quickstart   8m15s
+
+$ kubectl get service -n demo
+NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
+memcd-quickstart        ClusterIP   10.96.115.90   <none>        11211/TCP   9m7s
+memcd-quickstart-pods   ClusterIP   None           <none>        11211/TCP   9m7s
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Memcached object:
