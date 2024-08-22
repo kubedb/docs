@@ -124,9 +124,9 @@ You can also use options like **Amazon S3**, **Google Cloud Storage**, **Azure B
 
 Druid uses the metadata store to house various metadata about the system, but not to store the actual data. The metadata store retains all metadata essential for a Druid cluster to work. **Apache Derby** is the default metadata store for Druid, however, it is not suitable for production. **MySQL** and **PostgreSQL** are more production suitable metadata stores.
 
-Luckily, **PostgreSQL** and **MySQL** both are readily available in KubeDB as CRD and KubeDB operator will automatically create a **MySQL** cluster and create a database in it named `druid` by default. 
+Luckily, **PostgreSQL** and **MySQL** both are readily available in KubeDB as CRD and **KubeDB** operator will automatically create a **MySQL** cluster and create a database in it named `druid` by default. 
 
-If you choose to use  **PostgreSQL** as metadata storage, you can simply mention that in the `spec.metadataStorage.type` of the `Druid` CR and KubeDB operator will deploy a `PostgreSQL` cluster for druid to use. 
+If you choose to use  **PostgreSQL** as metadata storage, you can simply mention that in the `spec.metadataStorage.type` of the `Druid` CR and KubeDB operator will deploy a `PostgreSQL` cluster for druid to use.
 
 [//]: # (In this tutorial, we will use a **MySQL** named `mysql-demo` in the `demo` namespace and create a database named `druid` inside it using [initialization script]&#40;/docs/guides/mysql/initialization/#prepare-initialization-scripts&#41;.)
 
@@ -134,8 +134,6 @@ If you choose to use  **PostgreSQL** as metadata storage, you can simply mention
 
 [//]: # ()
 [//]: # (```bash)
-
-[//]: # ($ kubectl create configmap -n demo my-init-script \)
 
 [//]: # (--from-literal=init.sql="$&#40;curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/mysql-init-script.sql&#41;")
 
@@ -152,13 +150,7 @@ If you choose to use  **PostgreSQL** as metadata storage, you can simply mention
 
 Apache Druid uses [Apache ZooKeeper](https://zookeeper.apache.org/) (ZK) for management of current cluster state i.e. internal service discovery, coordination, and leader election.
 
-Fortunately, KubeDB also has support for **ZooKeeper** and can easily be deployed using the guide [here](/docs/guides/zookeeper/quickstart/quickstart.md)
-
-In this tutorial, we will create a ZooKeeper named `zk-demo` in the `demo` namespace.
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/zk-demo.yaml
-zookeeper.kubedb.com/zk-demo created
-```
+Fortunately, KubeDB also has support for **ZooKeeper** and **KubeDB** operator will automatically create a **ZooKeeper** cluster for druid to use.
 
 ## Create a Druid Cluster
 
