@@ -30,17 +30,30 @@ As with all other Kubernetes objects, a MemcachedVersion needs `apiVersion`, `ki
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MemcachedVersion
 metadata:
-  name: "1.6.22"
+  annotations:
+    meta.helm.sh/release-name: kubedb
+    meta.helm.sh/release-namespace: kubedb
+  creationTimestamp: "2024-08-22T13:48:12Z"
+  generation: 1
   labels:
-    app: kubedb
+    app.kubernetes.io/instance: kubedb
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kubedb-catalog
+    app.kubernetes.io/version: v2024.8.21
+    helm.sh/chart: kubedb-catalog-v2024.8.21
+  name: 1.6.22
+  resourceVersion: "2566"
+  uid: 90041c04-21b8-4b39-a2a6-af2e6a2ccacd
 spec:
-  version: "1.5.4"
   db:
-    image: "${KUBEDB_DOCKER_REGISTRY}/memcached:1.6.22"
+    image: ghcr.io/appscode-images/memcached:1.6.22-alpine
   exporter:
-    image: "${KUBEDB_DOCKER_REGISTRY}/memcached-exporter:v0.4.1"
+    image: ghcr.io/appscode-images/memcached_exporter:v0.14.3-ac
   podSecurityPolicies:
-    databasePolicyName: "memcached-db"
+    databasePolicyName: memcached-db
+  securityContext:
+    runAsUser: 999
+  version: 1.6.22
 ```
 
 ### metadata.name
@@ -51,7 +64,7 @@ We follow this convention for naming MemcachedVersion crd:
 
 - Name format: `{Original Memcached image version}-{modification tag}`
 
-We modify original Memcached docker image to support additional features. An image with higher modification tag will have more features than the images with lower modification tag. Hence, it is recommended to use MemcachedVersion crd with highest modification tag to take advantage of the latest features.
+We modify original Memcached docker image to support Memcached and re-tag the image with v1, v2 etc. modification tag. An image with higher modification tag will have more features than the images with lower modification tag. Hence, it is recommended to use MemcachedVersion crd with highest modification tag to take advantage of the latest features.
 
 ### spec.version
 
@@ -59,9 +72,9 @@ We modify original Memcached docker image to support additional features. An ima
 
 ### spec.deprecated
 
-`spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator. For example, we have modified `kubedb/memcached:1.5.4` docker image to support custom configuration and re-tagged as `kubedb/memcached:1.6.22`. Now, KubeDB `0.9.0-rc.0` supports providing custom configuration which required `kubedb/memcached:1.6.22` docker image. So, we have marked `kubedb/memcached:1.5.4` as deprecated for KubeDB `0.9.0-rc.0`.
+`spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator.
 
-The default value of this field is `false`. If `spec.deprecated` is set `true`, KubeDB operator will not create the database and other respective resources for this version.
+The default value of this field is `false`. If `spec.deprecated` is set to `true`, KubeDB operator will skip processing this CRD object and will add a event to the CRD object specifying that the DB version is deprecated.
 
 ### spec.db.image
 

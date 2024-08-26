@@ -7,7 +7,7 @@ spec:
   replicas: 1
   version: "1.6.22"
   configSecret:
-    name: mc-custom-config
+    name: mc-configuration
   podTemplate:
     spec:
       containers:
@@ -19,3 +19,4 @@ spec:
             requests:
               cpu: 250m
               memory: 64Mi
+  deletionPolicy: WipeOut

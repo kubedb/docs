@@ -1,0 +1,10 @@
+apiVersion: v1
+stringData:
+  memcached.conf: |
+    --conn-limit=500
+    --memory-limit=512
+kind: Secret
+metadata:
+  name: mc-configuration
+  namespace: demo
+  resourceVersion: "4505"

@@ -143,7 +143,7 @@ metadata:
   name: quick-memcached
   namespace: demo
 spec:
-  replicas: 3
+  replicas: 1
   version: "1.6.22"
   podTemplate:
     spec:
@@ -161,20 +161,14 @@ spec:
 
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, deployment, services, secret etc. If everything goes well, we should see that a pod with the name `quick-memcached-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-memcached-0` has been created.
 
-Check that the deployment's pod is running
+Check that the pod is running:
 
 ```bash
 $ kubectl get pods -n demo
-NAME                              READY   STATUS    RESTARTS   AGE
-quick-memcached-d866d6d89-sdlkx   1/1     Running   0          5m52s
-quick-memcached-d866d6d89-wpdz2   1/1     Running   0          5m52s
-quick-memcached-d866d6d89-wvg7c   1/1     Running   0          5m52s
-
-$ kubectl get pod -n demo quick-memcached-0
-NAME                              READY     STATUS    RESTARTS   AGE
-quick-memcached-d866d6d89-wvg7c   1/1       Running   0          14m
+NAME                READY   STATUS    RESTARTS   AGE
+quick-memcached-0   1/1     Running   0          5m52s
 ```
 
 ## Reusing Service Account
@@ -197,7 +191,7 @@ metadata:
   name: minute-memcached
   namespace: demo
 spec:
-  replicas: 3
+  replicas: 1
   version: "1.6.22"
   podTemplate:
     spec:
@@ -215,20 +209,14 @@ spec:
 
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, deployment, services, secret etc. If everything goes well, we should see that a pod with the name `minute-memcached-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-memcached-0` has been created.
 
-Check that the deployment's pod is running
+Check that the pod is running:
 
 ```bash
 $ kubectl get pods -n demo
-NAME                              READY   STATUS    RESTARTS   AGE
-minute-memcached-58798985f-47tm8  1/1     Running   0          5m52s
-minute-memcached-58798985f-47tm8  1/1     Running   0          5m52s
-minute-memcached-58798985f-47tm8  1/1     Running   0          5m52s
-
-$ kubectl get pod -n demo minute-memcached-0
-NAME                              READY     STATUS    RESTARTS   AGE
-minute-memcached-58798985f-47tm8  1/1       Running   0          14m
+NAME                READY   STATUS    RESTARTS   AGE
+minute-memcached-0  1/1     Running   0          5m52s
 ```
 
 ## Cleaning up
@@ -236,18 +224,29 @@ minute-memcached-58798985f-47tm8  1/1       Running   0          14m
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mc/quick-memcached -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo mc/quick-memcached
+$ kubectl patch -n demo mc/quick-memcached -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+memcached.kubedb.com/quick-memcached patched
 
-kubectl patch -n demo mc/minute-memcached -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo mc/minute-memcached
+$ kubectl delete -n demo mc/quick-memcached
+memcached.kubedb.com "quick-memcached" deleted
 
-kubectl delete -n demo role my-custom-role
-kubectl delete -n demo rolebinding my-custom-rolebinding
+$ kubectl patch -n demo mc/minute-memcached -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+memcached.kubedb.com/minute-memcached patched
 
-kubectl delete sa -n demo my-custom-serviceaccount
+$ kubectl delete -n demo mc/minute-memcached
+memcached.kubedb.com "minute-memcached" deleted
 
-kubectl delete ns demo
+$ kubectl delete -n demo role my-custom-role
+role.rbac.authorization.k8s.io "my-custom-role" deleted
+
+$ kubectl delete -n demo rolebinding my-custom-rolebinding
+rolebinding.rbac.authorization.k8s.io "my-custom-rolebinding" deleted
+
+$ kubectl delete sa -n demo my-custom-serviceaccount
+serviceaccount "my-custom-serviceaccount" deleted
+
+$ kubectl delete ns demo
+namespace "demo" deleted
 ```
 
 If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).

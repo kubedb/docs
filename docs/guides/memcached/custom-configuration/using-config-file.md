@@ -43,78 +43,48 @@ To know more about configuring Memcached server see [here](https://github.com/me
 
 At first, you have to create a config file named `memcached.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Memcached crd. KubeDB will mount this volume into `/usr/config` directory of the database pod.
 
-In this tutorial, we will configure [max_connections](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L672) and [limit_maxbytes](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L720) via a custom config file. We will use a Secret as volume source.
+In this tutorial, we will configure [max_connections](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L672) and [limit_maxbytes](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L720) via secret.
 
-**Configuration File Format:**
-KubeDB support providing `memcached.conf` file in the following formats,
-
-```ini
-# maximum simultaneous connection
--c 500
-# maximum allowed memory for the database in MB.
--m 128
-```
-
-or
-
-```ini
-# This is a comment line. It will be ignored.
---conn-limit=500
---memory-limit=128
-```
-
-or
-
-```ini
-# This is a comment line. It will be ignored.
-conn-limit = 500
-memory-limit = 128
-```
-
-## Custom Configuration
-
-At first, let's create `memcached.conf` file setting `max_connections` and `limit_maxbytes` parameters. Default value of `max_connections` is 1024 and `limit_maxbytes` is 64MB (68157440 bytes).
-
-```ini
-$ cat <<EOF >memcached.conf
--c 500
-# maximum allowed memory in MB
--m 128
-EOF
-
-$ cat memcached.conf
--c 500
-# maximum allowed memory in MB
--m 128
-```
-
-> Note that config file name must be `memcached.conf`
-
-Now, create a Secret with this configuration file.
-
-```bash
- $ kubectl create secret generic -n demo mc-configuration --from-file=./memcached.conf
-secret/mc-configuration created
-```
-
-Verify the Secret has the configuration file.
-
+First, create a secret with custom configuration file:
 ```yaml
-$ kubectl get secrets -n demo mc-configuration -o yaml
 apiVersion: v1
 stringData:
   memcached.conf: |
-    -c 500
-    # maximum allowed memory in MB
-    -m 128
+    --conn-limit=500
+    --memory-limit=128
 kind: Secret
 metadata:
-  creationTimestamp: 2018-10-04T05:29:37Z
   name: mc-configuration
   namespace: demo
   resourceVersion: "4505"
-  selfLink: /api/v1/namespaces/demo/secrets/mc-configuration
-  uid: 7c38b5fd-c796-11e8-bb11-0800272ad446
+```
+Here, --con-limit means max simultaneous connections which is default value is 1024.
+and --memory-limit means item memory in megabytes which default value is 64.
+
+```bash
+ $ kubectl apply -f mc-configuration.yaml
+secret/mc-configuration created
+```
+
+Let's get the mc-configuration `secret` with custom configuration:
+
+
+```yaml
+$ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/mc-configuration.yaml
+apiVersion: v1
+data:
+  memcached.conf: LS1jb25uLWxpbWl0PTUwMAotLW1lbW9yeS1saW1pdD01MTIK
+kind: Secret
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Secret","metadata":{"annotations":{},"name":"mc-configuration","namespace":"demo","resourceVersion":"4505"},"stringData":{"memcached.conf":"--conn-limit=500\n--memory-limit=512\n"}}
+  creationTimestamp: "2024-08-26T12:19:54Z"
+  name: mc-configuration
+  namespace: demo
+  resourceVersion: "4580860"
+  uid: 02d41fc0-590e-44d1-ae95-2ee8f9632d36
+type: Opaque
 ```
 
 Now, create Memcached crd specifying `spec.configSecret` field.
@@ -140,32 +110,33 @@ spec:
   podTemplate:
     spec:
       containers:
-      - name: memcached
-        resources:
-          limits:
-            cpu: 500m
-            memory: 128Mi
-          requests:
-            cpu: 250m
-            memory: 64Mi
+        - name: memcached
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
+  deletionPolicy: WipeOut
 ```
 
-Now, wait a few minutes. KubeDB operator will create the necessary deployment, services etc. If everything goes well, we will see that a deployment with the name `custom-memcached` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary petset, services etc. If everything goes well, we will see that a pod with the name `custom-memcached-0` has been created.
 
-Check that the pods for the deployment is running:
+Check if the database is ready
 
 ```bash
-$ kubectl get pods -n demo
-NAME                                READY     STATUS    RESTARTS   AGE
-custom-memcached-747b866f4b-j6clt   1/1       Running   0          5m
+$ kubectl get mc -n demo
+NAME               VERSION   STATUS   AGE
+custom-memcached   1.6.22    Ready    17m
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided. We will use [stats](https://github.com/memcached/memcached/wiki/ConfiguringServer#inspecting-running-configuration) command to check the configuration.
 
-We will connect to `custom-memcached-5b5866f5b8-cbc2d` pod from local-machine using port-frowarding.
+We will connect to `custom-memcached-0` pod from local-machine using port-frowarding.
 
 ```bash
-$ kubectl port-forward -n demo custom-memcached-5b5866f5b8-cbc2d  11211
+$ kubectl port-forward -n demo custom-memcached-0 11211
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
 ```

@@ -251,11 +251,23 @@ Following table show what KubeDB does when you delete Memcached crd for differen
 | Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Create Dormant Database          |    &#10007;    | &#10003; | &#10007; | &#10007; |
-| 3. Delete PetSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 4. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 2. Delete PetSet          |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 3. Delete Services               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 4. Delete Secrets                 |    &#10007;    | &#10007; | &#1000; | &#10003; |
 
-If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy by default.
+If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
+
+### spec.halted
+Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
+
+## spec.helathChecker
+It defines the attributes for the health checker.
+- spec.healthChecker.periodSeconds specifies how often to perform the health check.
+- spec.healthChecker.timeoutSeconds specifies the number of seconds after which the probe times out.
+- spec.healthChecker.failureThreshold specifies minimum consecutive failures for the healthChecker to be considered failed.
+- spec.healthChecker.disableWriteCheck specifies whether to disable the writeCheck or not.
+
+Know details about KubeDB Health checking from this blog post.
 
 ## Next Steps
 

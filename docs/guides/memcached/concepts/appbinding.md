@@ -29,40 +29,35 @@ Like any official Kubernetes resource, an `AppBinding` has `TypeMeta`, `ObjectMe
 An `AppBinding` object created by `KubeDB` for PostgreSQL database is shown below,
 
 ```yaml
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  name: quick-postgres
-  namespace: demo
-  labels:
-    app.kubernetes.io/component: database
-    app.kubernetes.io/instance: quick-postgres
-    app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: postgres
-    app.kubernetes.io/version: "10.2"-v2
-    app.kubernetes.io/name: postgreses.kubedb.com
-    app.kubernetes.io/instance: quick-postgres
-spec:
-  type: kubedb.com/postgres
-  secret:
-    name: quick-postgres-auth
-  clientConfig:
-    service:
-      name: quick-postgres
-      path: /
-      port: 5432
-      query: sslmode=disable
-      scheme: postgresql
-  secretTransforms:
-    - renameKey:
-        from: POSTGRES_USER
-        to: username
-    - renameKey:
-        from: POSTGRES_PASSWORD
-        to: password
-  version: "10.2"
+  apiVersion: appcatalog.appscode.com/v1alpha1
+  kind: AppBinding
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"appcatalog.appscode.com/v1alpha1","kind":"AppBinding","metadata":{"annotations":{},"name":"memcached-appbinding","namespace":"demo"},"spec":{"appRef":{"apiGroup":"kubedb.com","kind":"Memcached","name":"mc1","namespace":"demo"},"clientConfig":{"service":{"name":"memcached","namespace":"demo","port":11211,"scheme":"tcp"}},"secret":{"name":"memcached-auth"},"type":"kubedb.com/memcached","version":"1.6.22"}}
+    creationTimestamp: "2024-08-26T09:51:57Z"
+    generation: 1
+    name: memcached-appbinding
+    namespace: demo
+    resourceVersion: "4172425"
+    uid: 01a902e2-3de6-45de-85a3-4f115b334625
+  spec:
+    appRef:
+      apiGroup: kubedb.com
+      kind: Memcached
+      name: mc1
+      namespace: demo
+    clientConfig:
+      service:
+        name: memcached
+        namespace: demo
+        port: 11211
+        scheme: tcp
+    secret:
+      name: memcached-auth
+    type: kubedb.com/memcached
+    version: 1.6.22
 ```
-
 Here, we are going to describe the sections of an `AppBinding` crd.
 
 ### AppBinding `Spec`
