@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Monitoring Memcached with builtin Prometheus
 
-This tutorial will show you how to monitor Memcached server using builtin [Prometheus](https://github.com/prometheus/prometheus) scraper.
+This tutorial will show you how to monitor Memcached server using builtin [Prometheus](https://github.com/prometheus/prometheus) scraper.z
 
 ## Before You Begin
 
@@ -59,12 +59,24 @@ spec:
         resources:
           limits:
             cpu: 500m
-            memory: 128Mi
+            memory: 256Mi
           requests:
-            cpu: 250m
-            memory: 64Mi
+            cpu: 500m
+            memory: 256Mi
   monitor:
-    agent: prometheus.io/builtin
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+      exporter:
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 200m
+          limits:
+            memory: 512Mi
+            cpu: 250m
 ```
 
 Here,
@@ -83,7 +95,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get mc -n demo builtin-prom-memcd
 NAME                 VERSION    STATUS    AGE
-builtin-prom-memcd   1.6.22   Running   1m
+builtin-prom-memcd   1.6.22     Running   10s
 ```
 
 KubeDB will create a separate stats service with name `{Memcached crd name}-stats` for monitoring purpose.
@@ -91,8 +103,9 @@ KubeDB will create a separate stats service with name `{Memcached crd name}-stat
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-memcd"
 NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-builtin-prom-memcd         ClusterIP   10.105.40.31    <none>        11211/TCP   2m6s
-builtin-prom-memcd-stats   ClusterIP   10.110.89.251   <none>        56790/TCP   94s
+builtin-prom-memcd         ClusterIP   10.96.168.132   <none>        11211/TCP   20s
+builtin-prom-memcd-pods    ClusterIP   None            <none>        11211/TCP   20s
+builtin-prom-memcd-stats   ClusterIP   10.96.40.60     <none>        56790/TCP   20s
 ```
 
 Here, `builtin-prom-memcd-stats` service has been created for monitoring purpose. Let's describe the service.
@@ -101,20 +114,24 @@ Here, `builtin-prom-memcd-stats` service has been created for monitoring purpose
 $ kubectl describe svc -n demo builtin-prom-memcd-stats
 Name:              builtin-prom-memcd-stats
 Namespace:         demo
-Labels:            app.kubernetes.io/name=memcacheds.kubedb.com
+Labels:            app.kubernetes.io/component=database
                    app.kubernetes.io/instance=builtin-prom-memcd
-Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
-                   prometheus.io/path: /metrics
-                   prometheus.io/port: 56790
-                   prometheus.io/scrape: true
-Selector:          app.kubernetes.io/name=memcacheds.kubedb.com,app.kubernetes.io/instance=builtin-prom-memcd
+                   app.kubernetes.io/managed-by=kubedb.com
+                   app.kubernetes.io/name=memcacheds.kubedb.com
+                   kubedb.com/role=stats
+Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
+Selector:          app.kubernetes.io/instance=builtin-prom-memcd,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=memcacheds.kubedb.com
 Type:              ClusterIP
-IP:                10.110.89.251
-Port:              prom-http  56790/TCP
-TargetPort:        prom-http/TCP
-Endpoints:         172.17.0.14:56790,172.17.0.7:56790,172.17.0.8:56790
+IP Family Policy:  SingleStack
+IP Families:       IPv4
+IP:                10.96.40.60
+IPs:               10.96.40.60
+Port:              metrics  56790/TCP
+TargetPort:        metrics/TCP
+Endpoints:         10.244.0.186:56790
 Session Affinity:  None
 Events:            <none>
+
 ```
 
 You can see that the service contains following annotations.
@@ -270,7 +287,7 @@ data:
 Let's create above `ConfigMap`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
+$ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/v2024.8.21/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
 
@@ -307,13 +324,13 @@ At first, let's check if the Prometheus pod is in `Running` state.
 ```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                          READY   STATUS    RESTARTS   AGE
-prometheus-8568c86d86-95zhn   1/1     Running   0          77s
+prometheus-d64b668fb-4jq99   1/1     Running   0          77s
 ```
 
-Now, run following command on a separate terminal to forward 9090 port of `prometheus-8568c86d86-95zhn` pod,
+Now, run following command on a separate terminal to forward 9090 port of `prometheus-d64b668fb-4jq99` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-8568c86d86-95zhn 9090
+$ kubectl port-forward -n monitoring prometheus-d64b668fb-4jq99 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```

@@ -1,0 +1,34 @@
+apiVersion: kubedb.com/v1
+kind: Memcached
+metadata:
+  name: builtin-prom-memcd
+  namespace: demo
+spec:
+  replicas: 1
+  version: "1.6.22"
+  deletionPolicy: WipeOut
+  podTemplate:
+    spec:
+      containers:
+      - name: memcached
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 500m
+            memory: 256Mi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+      exporter:
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 200m
+          limits:
+            memory: 512Mi
+            cpu: 250m

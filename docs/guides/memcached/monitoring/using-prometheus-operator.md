@@ -95,7 +95,7 @@ metadata:
   name: coreos-prom-memcd
   namespace: demo
 spec:
-  replicas: 3
+  replicas: 1
   version: "1.6.22"
   deletionPolicy: WipeOut
   podTemplate:
@@ -139,7 +139,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get mc -n demo coreos-prom-memcd
 NAME                VERSION    STATUS    AGE
-coreos-prom-memcd   1.6.22   Running   19s
+coreos-prom-memcd   1.6.22     Running   19s
 ```
 
 KubeDB will create a separate stats service with name `{Memcached crd name}-stats` for monitoring purpose.
@@ -225,7 +225,7 @@ At first, let's find out the respective Prometheus pod for `prometheus` Promethe
 ```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                      READY   STATUS    RESTARTS   AGE
-prometheus-prometheus-0   3/3     Running   1          63m
+prometheus-prometheus-0   1/1     Running   0          63m
 ```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
