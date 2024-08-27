@@ -20,7 +20,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 
 - You should be familiar with the following `KubeDB` concepts:
   - [Kafka](/docs/guides/mongodb/concepts/mongodb.md)
-  - [KafkaAutoscaler](/docs/guides/kafka/concepts/autoscaler.md)
+  - [KafkaAutoscaler](/docs/guides/kafka/concepts/kafkaautoscaler.md)
   - [KafkaOpsRequest](/docs/guides/kafka/concepts/kafkaopsrequest.md)
 
 ## How Compute Autoscaling Works
