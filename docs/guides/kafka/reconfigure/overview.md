@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 The following diagram shows how KubeDB Ops-manager operator reconfigures `Kafka` components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Reconfiguring process of Kafka" src="/docs/images/day-2-operation/mongodb/mg-reconfigure.svg">
+  <img alt="Reconfiguring process of Kafka" src="/docs/images/day-2-operation/kafka/kf-reconfigure.svg">
 <figcaption align="center">Fig: Reconfiguring process of Kafka</figcaption>
 </figure>
 

@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 The following diagram shows how KubeDB Ops-manager operator reconfigures TLS of a `Kafka`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Reconfiguring TLS process of Kafka" src="/docs/images/day-2-operation/mongodb/mg-reconfigure-tls.svg">
+  <img alt="Reconfiguring TLS process of Kafka" src="/docs/images/day-2-operation/kafka/kf-reconfigure-tls.svg">
 <figcaption align="center">Fig: Reconfiguring TLS process of Kafka</figcaption>
 </figure>
 

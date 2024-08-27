@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator scales up or
 The following diagram shows how KubeDB Ops-manager operator scales up or down `Kafka` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Horizontal scaling process of Kafka" src="/docs/images/day-2-operation/mongodb/mg-horizontal-scaling.svg">
+  <img alt="Horizontal scaling process of Kafka" src="/docs/images/day-2-operation/kafka/kf-horizontal-scaling.svg">
 <figcaption align="center">Fig: Horizontal scaling process of Kafka</figcaption>
 </figure>
 

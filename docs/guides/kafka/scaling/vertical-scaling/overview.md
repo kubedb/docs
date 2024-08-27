@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator updates the 
 The following diagram shows how KubeDB Ops-manager operator updates the resources of the `Kafka`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Vertical scaling process of Kafka" src="/docs/images/day-2-operation/mongodb/mg-vertical-scaling.svg">
+  <img alt="Vertical scaling process of Kafka" src="/docs/images/day-2-operation/kafka/kf-vertical-scaling.svg">
 <figcaption align="center">Fig: Vertical scaling process of Kafka</figcaption>
 </figure>
 
