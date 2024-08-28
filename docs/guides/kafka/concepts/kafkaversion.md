@@ -115,4 +115,4 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 ## Next Steps
 
 - Learn about Kafka CRD [here](/docs/guides/kafka/concepts/kafka.md).
-- Deploy your first Kafka database with KubeDB by following the guide [here](/docs/guides/kafka/quickstart/overview/kafka/index.md).
+- Deploy your first Kafka database with KubeDB by following the guide [here](/docs/guides/kafka/quickstart/kafka/index.md).

@@ -2,9 +2,9 @@
 title: Kafka Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: kf-kafka-overview-kafka
+    identifier: kf-kafka-quickstart-kafka
     name: Kafka
-    parent: kf-overview-kafka
+    parent: kf-quickstart-kafka
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -37,9 +37,9 @@ NAME                 STATUS   AGE
 demo                 Active   9s
 ```
 
-> Note: YAML files used in this tutorial are stored in [guides/kafka/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/kafka/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [guides/kafka/quickstart/kafka/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/kafka/quickstart/kafka/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/quickstart/overview/kafka/index.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/quickstart/kafka/index.md#tips-for-testing).
 
 ## Find Available StorageClass
 
@@ -102,7 +102,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/overview/kafka/yamls/kafka-v1.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/kafka/yamls/kafka-v1.yaml
 kafka.kubedb.com/kafka-quickstart created
 ```
 
@@ -127,7 +127,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/overview/kafka/yamls/kafka-v1alpha2.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/kafka/yamls/kafka-v1alpha2.yaml
 kafka.kubedb.com/kafka-quickstart created
 ```
 
@@ -434,8 +434,8 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 ## Next Steps
 
-- [Quickstart Kafka](/docs/guides/kafka/quickstart/overview/kafka/index.md) with KubeDB Operator.
-- [Quickstart ConnectCluster](/docs/guides/kafka/quickstart/overview/connectcluster/index.md) with KubeDB Operator.
+- [Quickstart Kafka](/docs/guides/kafka/quickstart/kafka/index.md) with KubeDB Operator.
+- [Quickstart ConnectCluster](/docs/guides/kafka/quickstart/connectcluster/index.md) with KubeDB Operator.
 - Kafka Clustering supported by KubeDB
   - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md)
   - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md)

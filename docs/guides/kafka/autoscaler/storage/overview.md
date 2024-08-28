@@ -2,9 +2,9 @@
 title: Kafka Storage Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-storage-auto-scaling-overview
+    identifier: kf-storage-auto-scaling-overview
     name: Overview
-    parent: mg-storage-auto-scaling
+    parent: kf-storage-auto-scaling
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -28,7 +28,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `Kafka` cluster components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Storage Auto Scaling process of Kafka" src="/docs/images/mongodb/storage-process.svg">
+  <img alt="Storage Auto Scaling process of Kafka" src="/docs/images/day-2-operation/kafka/kf-storage-autoscaling.svg">
 <figcaption align="center">Fig: Storage Auto Scaling process of Kafka</figcaption>
 </figure>
 

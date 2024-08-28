@@ -2,9 +2,9 @@
 title: Kafka Compute Autoscaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-auto-scaling-overview
+    identifier: kf-auto-scaling-overview
     name: Overview
-    parent: mg-compute-auto-scaling
+    parent: kf-compute-auto-scaling
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -19,7 +19,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [Kafka](/docs/guides/mongodb/concepts/mongodb.md)
+  - [Kafka](/docs/guides/kafka/concepts/kafka.md)
   - [KafkaAutoscaler](/docs/guides/kafka/concepts/kafkaautoscaler.md)
   - [KafkaOpsRequest](/docs/guides/kafka/concepts/kafkaopsrequest.md)
 
@@ -28,7 +28,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `Kafka` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Compute Auto Scaling process of Kafka" src="/docs/images/mongodb/compute-process.svg">
+  <img alt="Compute Auto Scaling process of Kafka" src="/docs/images/day-2-operation/kafka/kf-compute-autoscaling.svg">
 <figcaption align="center">Fig: Compute Auto Scaling process of Kafka</figcaption>
 </figure>
 

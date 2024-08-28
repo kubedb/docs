@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator expand the v
 The following diagram shows how KubeDB Ops-manager operator expand the volumes of `Kafka` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Volume Expansion process of Kafka" src="/docs/images/day-2-operation/mongodb/mg-volume-expansion.svg">
+  <img alt="Volume Expansion process of Kafka" src="/docs/images/day-2-operation/kafka/kf-volume-expansion.svg">
 <figcaption align="center">Fig: Volume Expansion process of Kafka</figcaption>
 </figure>
 

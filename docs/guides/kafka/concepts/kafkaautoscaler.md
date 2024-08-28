@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is KafkaAutoscaler
 
-`KafkaAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling [Kafka](https://www.mongodb.com/) compute resources and storage of database components in a Kubernetes native way.
+`KafkaAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling [Kafka](https://kafka.apache.org/) compute resources and storage of database components in a Kubernetes native way.
 
 ## KafkaAutoscaler CRD Specifications
 
