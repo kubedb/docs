@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MemcachedOpsRequest
+metadata:
+  name: memcached-mc
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: memcd-quickstart
+  verticalScaling:
+    memcached:
+      resources:
+        requests:
+          memory: "400Mi"
+          cpu: "500m"
+        limits:
+          memory: "400Mi"
+          cpu: "500m"

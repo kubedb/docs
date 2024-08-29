@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MemcachedOpsRequest
+metadata:
+  name: memcd-horizontal-up
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: memcd-quickstart
+  horizontalScaling:
+    replicas: 5
+    

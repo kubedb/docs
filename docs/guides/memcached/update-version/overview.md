@@ -49,10 +49,10 @@ The updating process consists of the following steps:
 
 8. After successfully updating the `PetSets` and their `Pods` images, the `KubeDB` Enterprise operator updates the image of the `Memcached` object to reflect the updated state of the database.
 
-10. After successfully updating of `Memcached`object, the `KubeDB` Enterprise operator resumes the `Memcached` object so that the `KubeDB` Community operator can resume its usual operations.
+9. After successfully updating of `Memcached`object, the `KubeDB` Enterprise operator resumes the `Memcached` object so that the `KubeDB` Community operator can resume its usual operations.
 
 In the next doc, we are going to show a step-by-step guide on updating of a Memcached database using update operation.
 
 ## Next Steps
 
-- Learn how to Update Version of [Memcached](/docs/guides/Memcached/update-version/memcached.md)
+- Learn how to Update Version of [Memcached](/docs/guides/memcached/update-version/memcached.md).
