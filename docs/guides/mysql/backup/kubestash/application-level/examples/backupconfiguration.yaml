@@ -1,0 +1,37 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: sample-mysql-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: MySQL
+    namespace: demo
+    name: sample-mysql
+  backends:
+    - name: gcs-backend
+      storageRef:
+        namespace: demo
+        name: gcs-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: frequent-backup
+      scheduler:
+        schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: gcs-mysql-repo
+          backend: gcs-backend
+          directory: /mysql
+          encryptionSecret:
+            name: encrypt-secret
+            namespace: demo
+      addon:
+        name: mysql-addon
+        tasks:
+          - name: manifest-backup
+          - name: logical-backup

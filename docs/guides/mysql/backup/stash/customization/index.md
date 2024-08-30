@@ -3,9 +3,9 @@ title: MySQL Backup Customization | Stash
 description: Customizing MySQL Backup and Restore process with Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-backup-customization
+    identifier: guides-mysql-backup-customization-stashv1
     name: Customizing Backup & Restore Process
-    parent: guides-mysql-backup
+    parent: guides-mysql-backup-stashv1
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides

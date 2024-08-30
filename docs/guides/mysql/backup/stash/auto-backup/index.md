@@ -3,9 +3,9 @@ title: MySQL Auto-Backup | Stash
 description: Backup MySQL using Stash Auto-Backup
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-backup-auto-backup
+    identifier: guides-mysql-backup-auto-backup-stashv1
     name: Auto-Backup
-    parent: guides-mysql-backup
+    parent: guides-mysql-backup-stashv1
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -22,7 +22,7 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
-- If you are not familiar with how Stash backup and restore MySQL databases, please check the following guide [here](/docs/guides/mysql/backup/overview/index.md).
+- If you are not familiar with how Stash backup and restore MySQL databases, please check the following guide [here](/docs/guides/mysql/backup/stash/overview/index.md).
 - If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/overview/).
 - If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/database/).
 
@@ -97,7 +97,7 @@ Notice the `prefix` field of `backend` section. We have used some variables in f
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/auto-backup/examples/backupblueprint.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/stash/auto-backup/examples/backupblueprint.yaml
 backupblueprint.stash.appscode.com/mysql-backup-template created
 ```
 
@@ -153,7 +153,7 @@ Notice the `annotations` section. We are pointing to the `BackupBlueprint` that 
 Let's create the above MySQL CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/auto-backup/examples/sample-mysql.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/stash/auto-backup/examples/sample-mysql.yaml
 mysql.kubedb.com/sample-mysql created
 ```
 
@@ -287,7 +287,7 @@ app-sample-mysql-1643879707   BackupConfiguration   app-sample-mysql   Running  
 Once the backup has been completed successfully, you should see the backed up data has been stored in the bucket at the directory pointed by the `prefix` field of the `Repository`.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mysql/backup/auto-backup/images/sample-mysql.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mysql/backup/stash/auto-backup/images/sample-mysql.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -339,7 +339,7 @@ Notice the `annotations` section. This time, we have passed a schedule via `stas
 Let's create the above MySQL CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/auto-backup/examples/sample-mysql-2.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/stash/auto-backup/examples/sample-mysql-2.yaml
 mysql.kubedb.com/sample-mysql-2 created
 ```
 
@@ -476,7 +476,7 @@ demo-2      app-sample-mysql-2-1643880964   BackupConfiguration   app-sample-mys
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mysql/backup/auto-backup/images/sample-mysql-2.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mysql/backup/stash/auto-backup/images/sample-mysql-2.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -528,7 +528,7 @@ Notice the `annotations` section. This time, we have passed an argument via `par
 Let's create the above MySQL CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/auto-backup/examples/sample-mysql-3.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/stash/auto-backup/examples/sample-mysql-3.yaml
 mysql.kubedb.com/sample-mysql-3 created
 ```
 
@@ -666,7 +666,7 @@ demo-3      app-sample-mysql-3-1643883304   BackupConfiguration   app-sample-mys
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mysql/backup/auto-backup/images/sample-mysql-3.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mysql/backup/stash/auto-backup/images/sample-mysql-3.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -675,7 +675,7 @@ Once the backup has been completed successfully, you should see that Stash has c
 To cleanup the resources crated by this tutorial, run the following commands,
 
 ```bash
-❯ kubectl delete -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/auto-backup/examples/
+❯ kubectl delete -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/stash/auto-backup/examples/
 backupblueprint.stash.appscode.com "mysql-backup-template" deleted
 mysql.kubedb.com "sample-mysql-2" deleted
 mysql.kubedb.com "sample-mysql-3" deleted
