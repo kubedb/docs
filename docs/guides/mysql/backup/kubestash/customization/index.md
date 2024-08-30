@@ -281,6 +281,7 @@ spec:
 
 KubeStash also uses `mysql` during the restore process. In this section, we are going to show how you can pass arguments to the restore process, restore a specific snapshot, run restore job as a specific user, etc.
 
+
 ### Passing arguments to the restore process
 
 Similar to the backup process, you can pass arguments to the restore process through the `args` params under `addon.tasks[*].params` section. 
