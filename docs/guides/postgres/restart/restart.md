@@ -229,7 +229,7 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/postgres/backup/overview/index.md) PostgreSQL database using Stash.
+- Learn about [backup and restore](/docs/guides/postgres/backup/kubestash/overview/index.md) PostgreSQL database using Stash.
 - Learn about initializing [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
 - Learn about [custom PostgresVersions](/docs/guides/postgres/custom-versions/setup.md).
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)

@@ -4,20 +4,14 @@ metadata:
   name: ha-postgres
   namespace: demo
 spec:
-  arbiter:
-    resources:
-      limits:
-        memory: 256Mi
-      requests:
-        cpu: 200m
-        memory: 256Mi
-        storage: 1Gi
-  replicas: 2
+  version: "16.1"
+  replicas: 3
   storageType: Durable
   storage:
+    storageClassName: "topolvm-provisioner"
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  version: "16.1"
+  deletionPolicy: WipeOut
