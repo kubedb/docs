@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pgops-reconfigure-apply-config
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: ha-postgres
+  configuration:   
+    applyConfig:
+      user.conf: |
+        max_connections = 230
+        shared_buffers = 512MB
