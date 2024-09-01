@@ -41,10 +41,7 @@ Let's install KubeDB with operator monitoring enabled.
 $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
-  --set kubedb-provisioner.monitoring.enabled=true \
-  --set kubedb-provisioner.monitoring.agent=prometheus.io/builtin \
-  --set kubedb-provisioner.monitoring.prometheus.namespace=monitoring \
-  --set kubedb-provisioner.monitoring.serviceMonitor.labels.release=prometheus
+  --set global.monitoring.agent=prometheus.io/builtin
 ```
 
 **YAML (with Helm 3):**
@@ -53,10 +50,8 @@ $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
 $ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
-  --set kubedb-provisioner.monitoring.enabled=true \
-  --set kubedb-provisioner.monitoring.agent=prometheus.io/builtin \
-  --set kubedb-provisioner.monitoring.prometheus.namespace=monitoring \
-  --set kubedb-provisioner.monitoring.serviceMonitor.labels.release=prometheus | kubectl apply -f -
+  --no-hooks \
+  --set global.monitoring.agent=prometheus.io/builtin | kubectl apply -f -
 ```
 
 This will add necessary annotations to `kubedb` service created in `kubedb` namespace. Prometheus server will scrape metrics using those annotations. Let's check which annotations are added to the service,
