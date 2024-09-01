@@ -41,11 +41,8 @@ Let's install KubeDB operator with monitoring enabled.
 $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
-  --no-hooks \
-  --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/operator \
-  --set monitoring.prometheus.namespace=monitoring \
-  --set monitoring.serviceMonitor.labels.release=prometheus
+  --set global.monitoring.agent=prometheus.io/operator \
+  --set global.monitoring.serviceMonitor.labels.release=kube-prometheus-stack
 ```
 
 **YAML (with Helm 3):**
@@ -55,10 +52,8 @@ $ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --no-hooks \
-  --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/operator \
-  --set monitoring.prometheus.namespace=monitoring \
-  --set monitoring.serviceMonitor.labels.release=prometheus | kubectl apply -f -
+  --set global.monitoring.agent=prometheus.io/operator \
+  --set global.monitoring.serviceMonitor.labels.release=kube-prometheus-stack | kubectl apply -f -
 ```
 
 This will create a `ServiceMonitor` crd with name `kubedb-servicemonitor` in `monitoring` namespace for monitoring endpoints of `kubedb` service. This `ServiceMonitor` will have label `release: prometheus` as we have provided it by `--servicemonitor-label` flag. This label will be used by Prometheus crd to select this `ServiceMonitor`.
