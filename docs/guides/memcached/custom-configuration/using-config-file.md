@@ -45,7 +45,7 @@ At first, you have to create a config file named `memcached.conf` with your desi
 
 In this tutorial, we will configure [max_connections](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L672) and [limit_maxbytes](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L720) via secret.
 
-First, create a secret with custom configuration file:
+Create a secret with custom configuration file:
 ```yaml
 apiVersion: v1
 stringData:
