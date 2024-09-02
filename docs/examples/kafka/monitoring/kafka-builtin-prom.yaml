@@ -1,16 +1,10 @@
 apiVersion: kubedb.com/v1alpha2
 kind: Kafka
 metadata:
-  name: kafka
+  name: kafka-builtin-prom
   namespace: demo
 spec:
-  enableSSL: true
-  tls:
-    issuerRef:
-      apiGroup: cert-manager.io
-      name: kafka-ca-issuer
-      kind: Issuer
-  replicas: 3
+  replicas: 2
   version: 3.6.1
   storage:
     accessModes:
@@ -19,8 +13,9 @@ spec:
       requests:
         storage: 1Gi
     storageClassName: standard
+  storageType: Durable
   monitor:
-    agent: prometheus.io/operator
+    agent: prometheus.io/builtin
     prometheus:
       exporter:
         port: 56790
@@ -28,5 +23,4 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  storageType: Durable
   deletionPolicy: WipeOut

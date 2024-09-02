@@ -2,9 +2,9 @@
 title: ConnectCluster Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: kf-kafka-quickstart-connectcluster
-    name: ConnectCluster
-    parent: kf-quickstart-kafka
+    identifier: kf-connectcluster-guides-quickstart
+    name: Overview
+    parent: kf-connectcluster-guides
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -128,7 +128,7 @@ Here,
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete ConnectCluster CR. Deletion policy `WipeOut` will delete the worker pods, secret when the ConnectCluster CR is deleted.
 
 ## N.B:
-1. If replicas are set to 1, the ConnectCluster will run in standalone mode, you can't scale replica after provision the cluster. 
+1. If replicas are set to 1, the ConnectCluster will run in standalone mode, you can't scale replica after provision the cluster.
 2. If replicas are set to more than 1, the ConnectCluster will run in distributed mode.
 3. If you want to run the ConnectCluster in distributed mode with 1 replica, you must set the `CONNECT_CLUSTER_MODE` environment variable to `distributed` in the pod template.
 ```yaml
@@ -146,7 +146,7 @@ Before create ConnectCluster, you have to deploy a `Kafka` cluster first. To dep
 Let's create the ConnectCluster CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/kafka/quickstart/connectcluster/yamls/connectcluster.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/kafka/quickstart/connectcluster/yamls/connectcluster-quickstart.yaml
 connectcluster.kafka.kubedb.com/connectcluster-quickstart created
 ```
 
@@ -392,7 +392,7 @@ $ cat config.properties
   value.converter.schemas.enable=false
 ```
 
-Here, 
+Here,
 1. A MongoDB instance is already running. You can use your own MongoDB instance. To run mongodb instance, follow the [MongoDB Quickstart](/docs/guides/mongodb/quickstart/quickstart.md) guide.
 2. Update `connection.uri` with your MongoDB URI. Example: `mongodb://<username>:<password@<host>:<port>/`.
 3. Update `database` and `collection` as per your MongoDB database and collection name. We are using `mongodb` and `source` as database and collection name respectively.
