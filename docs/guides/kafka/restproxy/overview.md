@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: kf-rest-proxy-guides-overview
     name: Overview
-    parent: kf-schema-registry-guides
+    parent: kf-rest-proxy-guides
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

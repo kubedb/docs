@@ -3,7 +3,7 @@ title: KafkaOpsRequests CRD
 menu:
   docs_{{ .version }}:
     identifier: kf-opsrequest-concepts
-    name: Kafka
+    name: KafkaOpsRequest
     parent: kf-concepts-kafka
     weight: 10
 menu_name: docs_{{ .version }}
