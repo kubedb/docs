@@ -145,6 +145,7 @@ Now, we will apply the secret with custom configuration.
 ```bash
 $ kubectl create -f new-configuration
 secret/new-configuration created
+```
 
 #### Create MemcachedOpsRequest
 
@@ -304,7 +305,7 @@ END
 
 As we can see from the configuration of running memcached, the value of `maxclients` has been updated to `2000`.
 
-As we can see from the configuration of running memcached, the value of `maxclients` has been changed from `500` to `2000`. So the reconfiguration of the database is successful.
+As we can see from the configuration of running memcached, the value of `maxclients` has been changed from `500` to `2000`. So, the reconfiguration of the database is successful.
 
 
 ### Reconfigure using apply config
@@ -333,79 +334,90 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `sample-redis` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `memcd-quickstart` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.configuration.applyConfig` specifies the new configuration that will be merged in the existing secret.
 
-Let's create the `RedisOpsRequest` CR we have shown above,
+Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure/rdops-apply-reconfig.yaml
-redisopsrequest.ops.kubedb.com/rdops-apply-reconfig created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/ops-request-reconfigure.yaml
+memcachedopsrequest.ops.kubedb.com/memcd-reconfig created
 ```
 
 #### Verify the new configuration is working 
 
 If everything goes well, `KubeDB` Ops-manager operator will merge this new config with the existing configuration.
 
-Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
+Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcachedOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
-Every 2.0s: kubectl get redisopsrequest -n demo
-NAME                               TYPE          STATUS       AGE
-rdops-apply-reconfig              Reconfigure   Successful   38s
+$ watch kubectl get memcachedopsrequest -n demo
+Every 2.0s: kubectl get memcachedopsrequest -n demo
+NAME                   TYPE          STATUS       AGE
+memcd-apply-reconfig   Reconfigure   Successful   38s
 ```
 
-We can see from the above output that the `RedisOpsRequest` has succeeded. If we describe the `RedisOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
+We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcahcedOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe redisopsrequest -n demo rdops-apply-reconfig
-Name:         rdops-apply-reconfig
+$ kubectl describe memcachedopsrequest -n demo memcd-apply-reconfig
+Name:         memcd-apply-reconfig
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
-Kind:         RedisOpsRequest
+Kind:         MemcachedOpsRequest
 Metadata:
-  Creation Timestamp:  2024-02-02T09:42:33Z
+  Creation Timestamp:  2024-09-03T06:02:41Z
   Generation:          1
-  Resource Version:    3550
-  UID:                 fceacc94-df88-42a1-8991-f77056f33a75
+  Resource Version:    178039
+  UID:                 d1f90151-abeb-4035-87f4-e2bc89c35b89
 Spec:
   Apply:  IfReady
   Configuration:
-    Apply Config:  maxclients 3000
+    Apply Config:
+      memcached.conf:  --conn-limit=3000
+
   Database Ref:
-    Name:  sample-redis
+    Name:  memcd-quickstart
   Type:    Reconfigure
 Status:
   Conditions:
-    Last Transition Time:  2024-02-02T09:42:33Z
-    Message:               Redis ops request is reconfiguring the cluster
+    Last Transition Time:  2024-09-03T06:02:41Z
+    Message:               Memcached ops request is reconfiguring the cluster
     Observed Generation:   1
     Reason:                Reconfigure
     Status:                True
     Type:                  Reconfigure
-    Last Transition Time:  2024-02-02T09:42:36Z
-    Message:               reconfiguring new secret
-    Observed Generation:   1
-    Reason:                patchedSecret
-    Status:                True
-    Type:                  patchedSecret
-    Last Transition Time:  2024-02-02T09:42:36Z
-    Message:               reconfiguring redis
+    Last Transition Time:  2024-09-03T06:02:44Z
+    Message:               reconfiguring memcached
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2024-02-02T09:42:46Z
+    Last Transition Time:  2024-09-03T06:02:49Z
+    Message:               evict pod; ConditionStatus:True; PodName:memcd-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--memcd-quickstart-0
+    Last Transition Time:  2024-09-03T06:02:49Z
+    Message:               is pod ready; ConditionStatus:False
+    Observed Generation:   1
+    Status:                False
+    Type:                  IsPodReady
+    Last Transition Time:  2024-09-03T06:02:54Z
+    Message:               is pod ready; ConditionStatus:True; PodName:memcd-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  IsPodReady--memcd-quickstart-0
+    Last Transition Time:  2024-09-03T06:02:54Z
     Message:               Restarted pods after reconfiguration
     Observed Generation:   1
     Reason:                RestartPods
     Status:                True
     Type:                  RestartPods
-    Last Transition Time:  2024-02-02T09:42:46Z
+    Last Transition Time:  2024-09-03T06:02:54Z
     Message:               Successfully completed the modification process.
     Observed Generation:   1
     Reason:                Successful
@@ -414,31 +426,47 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason          Age   From                         Message
-  ----    ------          ----  ----                         -------
-  Normal  PauseDatabase   27s   KubeDB Ops-manager Operator  Pausing Redis demo/sample-redis
-  Normal  RestartPods     14s   KubeDB Ops-manager Operator  Restarted pods after reconfiguration
-  Normal  ResumeDatabase  14s   KubeDB Ops-manager Operator  Resuming Redis demo/sample-redis
-  Normal  ResumeDatabase  14s   KubeDB Ops-manager Operator  Successfully resumed Redis demo/sample-redis
-  Normal  Successful      14s   KubeDB Ops-manager Operator  Successfully Reconfigured Database
+  Type     Reason            Age   From                         Message
+  ----     ------            ----  ----                         -------
+  Normal   PauseDatabase     26s   KubeDB Ops-manager Operator  Pausing Memcached demo/memcd-quickstart
+  Normal   RestartPods       13s   KubeDB Ops-manager Operator  Restarted pods after reconfiguration
+  Normal   ResumeDatabase    13s   KubeDB Ops-manager Operator  Resuming Memcached demo/memcd-quickstart
+  Normal   ResumeDatabase    13s   KubeDB Ops-manager Operator  Successfully resumed Memcached demo/memcd-quickstart
+  Normal   Successful        13s   KubeDB Ops-manager Operator  Successfully Reconfigured Database
+
 ```
 
-Now let's connect to a redis instance and run a redis internal command to check the new configuration we have provided.
+Now let's check the new configuration we have provided.
+
+We will connect to `memcd-quickstart-0` pod from local-machine using port-frowarding.
 
 ```bash
-$ kubectl exec -n demo  sample-redis-0  -- redis-cli config get maxclients
-maxclients
-3000
+$ kubectl port-forward -n demo memcd-quickstart-0 11211
+Forwarding from 127.0.0.1:11211 -> 11211
+Forwarding from [::1]:11211 -> 11211
 ```
 
-As we can see from the configuration of running redis, the value of `maxclients` has been changed from `2000` to `3000`. So the reconfiguration of the database using the `applyConfig` field is successful.
+Now, connect to the memcached server from a different terminal through `telnet`.
 
+```bash
+$ telnet 127.0.0.1 11211
+Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '^]'.
+stats
+...
+STAT max_connections 3000
+...
+END
+```
+
+As we can see from the configuration of running memcached, the value of `maxclients` has been changed from `2000` to `3000`. So, the reconfiguration of the database using the `applyConfig` field is successful.
 
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete rd -n demo sample-redis
-kubectl delete redisopsrequest -n demo rdops-reconfigure rdops-apply-reconfig
+kubectl delete mc -n demo memcd-quickstart
+kubectl delete memcachedopsrequest -n demo memcd-reconfig memcd-apply-reconfig
 ```
