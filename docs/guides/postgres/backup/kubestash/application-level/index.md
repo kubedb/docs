@@ -497,6 +497,7 @@ gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725449400   gcs-postgr
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
+> - `kubedb.com/db-version: <db-version>`
 > - `kubestash.com/app-ref-kind: <target-kind>`
 > - `kubestash.com/app-ref-name: <target-name>`
 > - `kubestash.com/app-ref-namespace: <target-namespace>`
@@ -519,6 +520,7 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
+    kubedb.com/db-version: "16.1"
     kubestash.com/app-ref-kind: Postgres
     kubestash.com/app-ref-name: sample-postgres
     kubestash.com/app-ref-namespace: demo
@@ -682,6 +684,7 @@ sample-postgres   16.1      Ready    9m46s
 
 The output confirms that the `PostgreSQL` database has been successfully created with the same configuration as it had at the time of backup.
 
+
 #### Verify Restored Data:
 
 In this section, we are going to verify whether the desired data has been restored successfully. We are going to connect to the database server and check whether the database and the table we created earlier in the original database are restored.
@@ -739,15 +742,6 @@ demo=# \d
 --------+---------+-------+----------
  public | company | table | postgres
 (1 row)
-
-# Verify that the sample data has been restored 
-demo=# SELECT * FROM COMPANY;
-    name     | employee 
--------------+----------
- TechCorp    |      100
- InnovateInc |      150
- AlphaTech   |      200
-(3 rows)
 
 # disconnect from the database
 demo=# \q
