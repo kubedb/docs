@@ -5,7 +5,7 @@ menu:
     identifier: kf-catalog-concepts
     name: KafkaVersion
     parent: kf-concepts-kafka
-    weight: 25
+    weight: 45
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

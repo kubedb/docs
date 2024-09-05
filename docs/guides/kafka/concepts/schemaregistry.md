@@ -5,7 +5,7 @@ menu:
     identifier: kf-schemaregistry-concepts
     name: SchemaRegistry
     parent: kf-concepts-kafka
-    weight: 15
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

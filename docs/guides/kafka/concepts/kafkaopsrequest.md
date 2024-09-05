@@ -5,7 +5,7 @@ menu:
     identifier: kf-opsrequest-concepts
     name: KafkaOpsRequest
     parent: kf-concepts-kafka
-    weight: 10
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

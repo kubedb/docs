@@ -5,7 +5,7 @@ menu:
     identifier: kf-restproxy-concepts
     name: RestProxy
     parent: kf-concepts-kafka
-    weight: 15
+    weight: 35
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

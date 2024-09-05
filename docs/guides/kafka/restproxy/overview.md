@@ -54,7 +54,7 @@ NAME           VERSION   DISTRIBUTION   REGISTRY_IMAGE                          
 3.15.0         3.15.0    Aiven          ghcr.io/aiven-open/karapace:3.15.0                              3d
 ```
 
-> **Note**: Currently Schema  is supported only for Apicurio distribution. Use distribution `Apicurio` to create Schema Registry.
+> **Note**: Currently RestProxy is supported only for Aiven distribution. Use version with distribution `Aiven` to create Kafka Rest Proxy.
 
 Notice the `DEPRECATED` column. Here, `true` means that this SchemaRegistryVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated KafkaVersion. You can also use the short from `ksrversion` to check available SchemaRegistryVersion.
 
@@ -402,7 +402,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 ## Next Steps
 
 - [Quickstart Kafka](/docs/guides/kafka/quickstart/kafka/index.md) with KubeDB Operator.
-- [Quickstart ConnectCluster](/docs/guides/kafka/quickstart/connectcluster/index.md) with KubeDB Operator.
+- [Quickstart ConnectCluster](/docs/guides/kafka/connectcluster/overview.md) with KubeDB Operator.
 - Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [ConnectCluster object](/docs/guides/kafka/concepts/connectcluster.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

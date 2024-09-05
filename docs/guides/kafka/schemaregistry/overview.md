@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# ConnectCluster QuickStart
+# SchemaRegistry QuickStart
 
 This tutorial will show you how to use KubeDB to run a [Schema Registry](https://www.apicur.io/registry/).
 
@@ -54,7 +54,7 @@ NAME           VERSION   DISTRIBUTION   REGISTRY_IMAGE                          
 3.15.0         3.15.0    Aiven          ghcr.io/aiven-open/karapace:3.15.0                              3d
 ```
 
-> **Note**: Currently Schema Registry is supported only for Apicurio distribution. Use distribution `Apicurio` to create Schema Registry.
+> **Note**: Currently Schema Registry is supported only for Apicurio distribution. Use version with distribution `Apicurio` to create Schema Registry.
 
 Notice the `DEPRECATED` column. Here, `true` means that this SchemaRegistryVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated KafkaVersion. You can also use the short from `ksrversion` to check available SchemaRegistryVersion.
 
@@ -88,8 +88,7 @@ Here,
 - `spec.kafkaRef` specifies the Kafka instance that the SchemaRegistry will store its schema. Here, the SchemaRegistry will store schema to the Kafka instance named `kafka-quickstart` in the `demo` namespace. It is an appbinding reference of the Kafka instance.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete SchemaRegistry CR. Deletion policy `WipeOut` will delete all the instances, secret when the SchemaRegistry CR is deleted.
 
-## N.B:
-1. If `spec.kafkaRef` is not provided, the SchemaRegistry will run in memory mode. SchemaRegistry will store schema to the memory.
+> **Note**: If `spec.kafkaRef` is not provided, the SchemaRegistry will run `inMmemory` mode. SchemaRegistry will store schema to its memory.
 
 Before create SchemaRegistry, you have to deploy a `Kafka` cluster first. To deploy kafka cluster, follow the [Kafka Quickstart](/docs/guides/kafka/quickstart/kafka/index.md) guide. Let's assume `kafka-quickstart` is already deployed using KubeDB.
 Let's create the SchemaRegistry CR that is shown above:
@@ -302,6 +301,8 @@ $ curl localhost:8080/apis/registry/v2/groups/quickstart-group/artifacts | jq
 }
 ```
 
+> **Note**: You can also use Schema Registry with Confluent 7 compatible REST APIs. To use confluent compatible REST APIs, you have to add `apis/ccompat/v7` after url address.(e.g. `localhost:8081/subjects` -> `localhost:8080/apis/ccompat/v7/subjects`)
+
 ### Accessing Schema Registry(UI)
 
 You can also use the Schema Registry UI to interact with the Schema Registry. The Schema Registry UI is available at port `8080` of the Schema Registry service.
@@ -313,9 +314,6 @@ You will see the following screen:
 <p align="center"> <img src="/docs/images/kafka/schemaregistry/schemaregistry-ui-apicurio.png"> </p>
 
 From the UI, you can create, update, delete, and view the schema. Also add compatibility level, view the schema history, etc.
-
-## Use Schema Registry with Kafka
-
 
 
 ## Cleaning up
@@ -345,7 +343,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 ## Next Steps
 
 - [Quickstart Kafka](/docs/guides/kafka/quickstart/kafka/index.md) with KubeDB Operator.
-- [Quickstart ConnectCluster](/docs/guides/kafka/quickstart/connectcluster/index.md) with KubeDB Operator.
+- [Quickstart ConnectCluster](/docs/guides/kafka/connectcluster/overview.md) with KubeDB Operator.
 - Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [ConnectCluster object](/docs/guides/kafka/concepts/connectcluster.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
