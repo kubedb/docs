@@ -90,4 +90,4 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 
 - Learn about Kafka CRD [here](/docs/guides/kafka/concepts/kafka.md).
 - Learn about SchemaRegistry CRD [here](/docs/guides/kafka/concepts/schemaregistry.md).
-- Deploy your first ConnectCluster with KubeDB by following the guide [here](/docs/guides/kafka/quickstart/connectcluster/index.md).
+- Deploy your first ConnectCluster with KubeDB by following the guide [here](/docs/guides/kafka/connectcluster/overview.md).

@@ -39,7 +39,7 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [examples/kafka/schemaregistry/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/schemaregistry) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Schema Registry. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/quickstart/connectcluster/index.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Schema Registry. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/schemaregistry/overview.md#tips-for-testing).
 
 ## Find Available SchemaRegistry Versions
 

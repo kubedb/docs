@@ -39,7 +39,7 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [guides/kafka/quickstart/connectcluster/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/kafka/quickstart/connectcluster/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka Connect Cluster. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/quickstart/connectcluster/index.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka Connect Cluster. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/connectcluster/overview.md#tips-for-testing).
 
 ## Find Available ConnectCluster Versions
 
@@ -336,7 +336,7 @@ Events:                    <none>
 On deployment of a ConnectCluster CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret -n demo -l 'app.kubernetes.io/instance=connectcluster-quickstart'
+$ kubectl get all,petset,secret -n demo -l 'app.kubernetes.io/instance=connectcluster-quickstart'
 NAME                              READY   STATUS    RESTARTS   AGE
 pod/connectcluster-quickstart-0   1/1     Running   0          3m50s
 pod/connectcluster-quickstart-1   1/1     Running   0          3m7s
@@ -346,8 +346,8 @@ NAME                                     TYPE        CLUSTER-IP      EXTERNAL-IP
 service/connectcluster-quickstart        ClusterIP   10.128.221.44   <none>        8083/TCP   3m55s
 service/connectcluster-quickstart-pods   ClusterIP   None            <none>        8083/TCP   3m55s
 
-NAME                                         READY   AGE
-petset.apps/connectcluster-quickstart   3/3     3m50s
+NAME                                                     READY   AGE
+petset.apps.k8s.appscode.com/connectcluster-quickstart   3/3     3m50s
 
 NAME                                                           TYPE                              VERSION   AGE
 appbinding.appcatalog.appscode.com/connectcluster-quickstart   kafka.kubedb.com/connectcluster   3.6.1     3m50s
