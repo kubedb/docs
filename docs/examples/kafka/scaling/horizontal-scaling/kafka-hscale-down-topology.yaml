@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+  name: kfops-hscale-down-topology
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: kafka-prod
+  horizontalScaling:
+    topology:
+      broker: 2
+      controller: 2

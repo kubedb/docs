@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+  name: kf-volume-exp-topology
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: kafka-prod
+  volumeExpansion:
+    broker: 3Gi
+    controller: 2Gi
+    mode: Online

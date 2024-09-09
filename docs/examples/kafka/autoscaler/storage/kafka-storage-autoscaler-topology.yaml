@@ -1,0 +1,19 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: KafkaAutoscaler
+metadata:
+  name: kf-storage-autoscaler-topology
+  namespace: demo
+spec:
+  databaseRef:
+    name: kafka-prod
+  storage:
+    broker:
+      expansionMode: "Online"
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 100
+    controller:
+      expansionMode: "Online"
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 100

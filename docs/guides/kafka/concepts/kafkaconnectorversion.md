@@ -5,7 +5,7 @@ menu:
     identifier: kf-kafkaconnectorversion-concepts
     name: KafkaConnectorVersion
     parent: kf-concepts-kafka
-    weight: 30
+    weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -88,4 +88,4 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 
 - Learn about Kafka CRD [here](/docs/guides/kafka/concepts/kafka.md).
 - Learn about ConnectCluster CRD [here](/docs/guides/kafka/concepts/connectcluster.md).
-- Deploy your first ConnectCluster with KubeDB by following the guide [here](/docs/guides/kafka/quickstart/overview/connectcluster/index.md).
+- Deploy your first ConnectCluster with KubeDB by following the guide [here](/docs/guides/kafka/connectcluster/overview.md).

@@ -141,22 +141,21 @@ Hence, the cluster is ready to use.
 Let's check the k8s resources created by the operator on the deployment of Kafka CRO:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=kafka-prod'
+$ kubectl get all,petset,secret,pvc -n demo -l 'app.kubernetes.io/instance=kafka-prod'
 NAME                          READY   STATUS    RESTARTS        AGE
 pod/kafka-prod-broker-0       1/1     Running   0               4m10s
 pod/kafka-prod-broker-1       1/1     Running   0               4m4s
 pod/kafka-prod-broker-2       1/1     Running   0               3m57s
 pod/kafka-prod-controller-0   1/1     Running   0               4m8s
-pod/kafka-prod-controller-1   1/1     Running   2 (3m35s ago)   4m
+pod/kafka-prod-controller-1   1/1     Running   0               4m
 pod/kafka-prod-controller-2   1/1     Running   0               3m53s
 
-NAME                            TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)              AGE
-service/kafka-prod-broker       ClusterIP   None         <none>        9092/TCP,29092/TCP   4m14s
-service/kafka-prod-controller   ClusterIP   None         <none>        9093/TCP             4m14s
+NAME                      TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                       AGE
+service/kafka-prod-pods   ClusterIP   None         <none>        9092/TCP,9093/TCP,29092/TCP   4m14s
 
 NAME                                     READY   AGE
-petset.apps/kafka-prod-broker       3/3     4m10s
-petset.apps/kafka-prod-controller   3/3     4m8s
+petset.apps.k8s.appscode.com/kafka-prod-broker       3/3     4m10s
+petset.apps.k8s.appscode.com/kafka-prod-controller   3/3     4m8s
 
 NAME                                            TYPE               VERSION   AGE
 appbinding.appcatalog.appscode.com/kafka-prod   kubedb.com/kafka   3.6.1     4m8s
@@ -202,25 +201,28 @@ ssl.truststore.password=***********
 Now, we have to use a bootstrap server to perform operations in a kafka broker. For this demo, we are going to use the http endpoint of the headless service `kafka-prod-broker` as bootstrap server for publishing & consuming messages to kafka brokers. These endpoints are pointing to all the kafka broker pods. We will set an environment variable for the `clientauth.properties` filepath as well. At first, describe the service to get the http endpoints.
 
 ```bash
-$ kubectl describe svc -n demo kafka-prod-broker
-Name:              kafka-prod-broker
+$ kubectl describe svc -n demo kafka-prod-pods
+Name:              kafka-prod-pods
 Namespace:         demo
 Labels:            app.kubernetes.io/component=database
                    app.kubernetes.io/instance=kafka-prod
                    app.kubernetes.io/managed-by=kubedb.com
                    app.kubernetes.io/name=kafkas.kubedb.com
 Annotations:       <none>
-Selector:          app.kubernetes.io/instance=kafka-prod,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,kubedb.com/role=broker
+Selector:          app.kubernetes.io/instance=kafka-prod,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com
 Type:              ClusterIP
 IP Family Policy:  SingleStack
 IP Families:       IPv4
 IP:                None
 IPs:               None
-Port:              http  9092/TCP
-TargetPort:        http/TCP
+Port:              broker  9092/TCP
+TargetPort:        broker/TCP
 Endpoints:         10.244.0.33:9092,10.244.0.37:9092,10.244.0.41:9092
-Port:              internal  29092/TCP
-TargetPort:        internal/TCP
+Port:              controller  9093/TCP
+TargetPort:        controller/TCP
+Endpoints:         10.244.0.16:9093,10.244.0.20:9093,10.244.0.24:9093
+Port:              local  29092/TCP
+TargetPort:        local/TCP
 Endpoints:         10.244.0.33:29092,10.244.0.37:29092,10.244.0.41:29092
 Session Affinity:  None
 Events:            <none>
@@ -229,7 +231,7 @@ Events:            <none>
 Use the `http endpoints` and `clientauth.properties` file to set environment variables. These environment variables will be useful for handling console command operations easily.
 
 ```bash
-root@kafka-prod-broker-0:~# export SERVER="10.244.0.100:9092,10.244.0.104:9092,10.244.0.108:9092"
+root@kafka-prod-broker-0:~# export SERVER=" 10.244.0.33:9092,10.244.0.37:9092,10.244.0.41:9092"
 root@kafka-prod-broker-0:~# export CLIENTAUTHCONFIG="$HOME/config/clientauth.properties"
 ```
 
@@ -243,17 +245,17 @@ LeaderEpoch:            15
 HighWatermark:          1820
 MaxFollowerLag:         0
 MaxFollowerLagTimeMs:   159
-CurrentVoters:          [0,1,2]
-CurrentObservers:       [3,4,5]
+CurrentVoters:          [1000,1001,1002]
+CurrentObservers:       [0,1,2]
 ```
 
 It will show you important metadata information like clusterID, current leader ID, broker IDs which are participating in leader election voting and IDs of those brokers who are observers. It is important to mention that each broker is assigned a numeric ID which is called its broker ID. The ID is assigned sequentially with respect to the host pod name. In this case, The pods assigned broker IDs are as follows:
 
 | Pods                | Broker ID | 
 |---------------------|:---------:|
-| kafka-prod-broker-0 |     3     |
-| kafka-prod-broker-1 |     4     |
-| kafka-prod-broker-2 |     5     |
+| kafka-prod-broker-0 |     0     |
+| kafka-prod-broker-1 |     1     |
+| kafka-prod-broker-2 |     2     |
 
 Let's create a topic named `sample` with 1 partitions and a replication factor of 1. Describe the topic once it's created. You will see the leader ID for each partition and their replica IDs along with in-sync-replicas(ISR).
 
@@ -264,12 +266,12 @@ Created topic sample.
 
 root@kafka-prod-broker-0:~# kafka-topics.sh --command-config $CLIENTAUTHCONFIG --describe --topic sample --bootstrap-server localhost:9092
 Topic: sample	TopicId: mqlupmBhQj6OQxxG9m51CA	PartitionCount: 1	ReplicationFactor: 1	Configs: segment.bytes=1073741824
-	Topic: sample	Partition: 0	Leader: 4	Replicas: 4	Isr: 4
+	Topic: sample	Partition: 0	Leader: 1	Replicas: 1	Isr: 1
 ```
 
 Now, we are going to start a producer and a consumer for topic `sample` using console. Let's use this current terminal for producing messages and open a new terminal for consuming messages. Let's set the environment variables for bootstrap server and the configuration file in consumer terminal also.
 
-From the topic description we can see that the leader partition for partition 0 is 4 that is `kafka-prod-broker-1`. If we produce messages to `kafka-prod-broker-1` broker(brokerID=4) it will store those messages in partition 0. Let's produce messages in the producer terminal and consume them from the consumer terminal.
+From the topic description we can see that the leader partition for partition 0 is 1 that is `kafka-prod-broker-1`. If we produce messages to `kafka-prod-broker-1` broker(brokerID=1) it will store those messages in partition 0. Let's produce messages in the producer terminal and consume them from the consumer terminal.
 
 ```bash
 root@kafka-prod-broker-1:~# kafka-console-producer.sh --producer.config $CLIENTAUTHCONFIG  --topic sample --request-required-acks all --bootstrap-server localhost:9092
@@ -289,7 +291,6 @@ I hope it's received by console consumer
 ```
 
 Notice that, messages are coming to the consumer as you continue sending messages via producer. So, we have created a kafka topic and used kafka console producer and consumer to test message publishing and consuming successfully.
-
 
 ## Cleaning Up
 

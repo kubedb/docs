@@ -80,8 +80,8 @@ KubeDB supports The following Kafka versions. Supported version are applicable f
 
 
 ## User Guide 
-- [Quickstart Kafka](/docs/guides/kafka/quickstart/overview/kafka/index.md) with KubeDB Operator.
-- [Quickstart ConnectCluster](/docs/guides/kafka/quickstart/overview/connectcluster/index.md) with KubeDB Operator.
+- [Quickstart Kafka](/docs/guides/kafka/quickstart/kafka/index.md) with KubeDB Operator.
+- [Quickstart ConnectCluster](/docs/guides/kafka/connectcluster/overview.md) with KubeDB Operator.
 - Kafka Clustering supported by KubeDB
   - [Combined Clustering](/docs/guides/kafka/clustering/combined-cluster/index.md)
   - [Topology Clustering](/docs/guides/kafka/clustering/topology-cluster/index.md)

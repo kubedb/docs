@@ -1,0 +1,14 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: KafkaAutoscaler
+metadata:
+  name: kf-storage-autoscaler-combined
+  namespace: demo
+spec:
+  databaseRef:
+    name: kafka-dev
+  storage:
+    node:
+      expansionMode: "Online"
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 50

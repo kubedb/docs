@@ -5,7 +5,7 @@ menu:
     identifier: kf-connectcluster-concepts
     name: ConnectCluster
     parent: kf-concepts-kafka
-    weight: 15
+    weight: 25
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
