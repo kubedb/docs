@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+  name: kfops-reconfigure-combined
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: kafka-dev
+  configuration:
+    configSecret:
+      name: new-kf-combined-custom-config
+  timeout: 5m
+  apply: IfReady

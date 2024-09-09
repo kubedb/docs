@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1
+kind: Kafka
+metadata:
+  name: kafka-dev
+  namespace: demo
+spec:
+  replicas: 2
+  version: 3.6.1
+  configSecret:
+    name: kf-combined-custom-config
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
+  storageType: Durable
+  deletionPolicy: WipeOut

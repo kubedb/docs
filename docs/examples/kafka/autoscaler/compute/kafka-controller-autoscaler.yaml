@@ -1,0 +1,24 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: KafkaAutoscaler
+metadata:
+  name: kf-controller-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: kafka-prod
+  opsRequestOptions:
+    timeout: 5m
+    apply: IfReady
+  compute:
+    controller:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 600m
+        memory: 1.5Gi
+      maxAllowed:
+        cpu: 1
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"

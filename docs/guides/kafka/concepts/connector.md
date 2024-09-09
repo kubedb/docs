@@ -5,7 +5,7 @@ menu:
     identifier: kf-connector-concepts
     name: Connector
     parent: kf-concepts-kafka
-    weight: 20
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -70,8 +70,8 @@ Deletion policy `WipeOut` will delete the connector from the ConnectCluster when
 
 ## Next Steps
 
-- Learn how to use KubeDB to run a Apache Kafka cluster [here](/docs/guides/kafka/quickstart/overview/kafka/index.md).
-- Learn how to use KubeDB to run a Apache Kafka Connect cluster [here](/docs/guides/kafka/quickstart/overview/connectcluster/index.md).
+- Learn how to use KubeDB to run Apache Kafka cluster [here](/docs/guides/kafka/quickstart/kafka/index.md).
+- Learn how to use KubeDB to run Apache Kafka Connect cluster [here](/docs/guides/kafka/connectcluster/overview.md).
 - Detail concepts of [KafkaConnectorVersion object](/docs/guides/kafka/concepts/kafkaconnectorversion.md).
 - Learn to use KubeDB managed Kafka objects using [CLIs](/docs/guides/kafka/cli/cli.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

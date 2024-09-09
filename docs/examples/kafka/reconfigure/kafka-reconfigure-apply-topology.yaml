@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+  name: kfops-reconfigure-apply-topology
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: kafka-prod
+  configuration:
+    applyConfig:
+      broker.properties: |-
+        log.retention.hours=150
+      controller.properties: |-
+        controller.quorum.election.timeout.ms=4000
+        controller.quorum.fetch.timeout.ms=5000
+  timeout: 5m
+  apply: IfReady

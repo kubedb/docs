@@ -23,7 +23,7 @@ spec:
     agent: prometheus.io/operator
     prometheus:
       exporter:
-        port: 9091
+        port: 56790
       serviceMonitor:
         labels:
           release: prometheus
