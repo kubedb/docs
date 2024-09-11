@@ -324,7 +324,7 @@ At first, let's check if the Prometheus pod is in `Running` state.
 ```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                          READY   STATUS    RESTARTS   AGE
-prometheus-d64b668fb-4jq99   1/1     Running   0          77s
+prometheus-d64b668fb-4jq99    1/1     Running   0          77s
 ```
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-d64b668fb-4jq99` pod,
