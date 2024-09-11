@@ -8,7 +8,7 @@ menu:
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
----
+---[cluster.md](cluster.md)
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
