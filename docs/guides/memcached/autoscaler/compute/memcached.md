@@ -166,7 +166,7 @@ Here,
 - `spec.compute.memcached.maxAllowed` specifies the maximum allowed resources for the database.
 - `spec.compute.memcached.controlledResources` specifies the resources that are controlled by the autoscaler.
 - `spec.compute.memcahced.containerControlledValues` specifies which resource values should be controlled. The default is "RequestsAndLimits".
-- `spec.opsRequestOptions` contains the options to pass to the created OpsRequest. It has 2 fields. Know more about them here : [timeout](/docs/guides/memcached/concepts/memcached-opsrequest.md#spectimeout), [apply](/docs/guides/memcached/concepts/memcachedopsrequest.md#specapply).
+- `spec.opsRequestOptions` contains the options to pass to the created OpsRequest. It has 2 fields. Know more about them here : [timeout](/docs/guides/memcached/concepts/memcached-opsrequest.md#spectimeout), [apply](/docs/guides/memcached/concepts/memcached-opsrequest.md#specapply).
 
 Let's create the `MemcachedAutoscaler` CR we have shown above,
 

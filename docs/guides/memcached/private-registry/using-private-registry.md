@@ -18,7 +18,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 ## Before You Begin
 
-- Read [concept of Memcached Version Catalog](/docs/guides/memcached/concepts/catalog.md) to learn detail concepts of `MemcachedVersion` object.
+- Read [concept of Memcached Version Catalog](/docs/guides/memcached/concepts/memcached-version.md) to learn detail concepts of `MemcachedVersion` object.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
