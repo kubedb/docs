@@ -1,5 +1,5 @@
 ---
-title: Vertical Scaling Standalone Redis
+title: Vertical Scaling Memcached
 menu:
   docs_{{ .version }}:
     identifier: rd-vertical-scaling-standalone

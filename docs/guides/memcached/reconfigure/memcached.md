@@ -84,7 +84,7 @@ spec:
 Let's create the `Memcached` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/sample-redis-config.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/sample-memcached-config.yaml
 memcached.kubedb.com/memcd-quickstart created
 ```
 
@@ -192,7 +192,7 @@ NAME                          TYPE          STATUS       AGE
 memcd-reconfig                Reconfigure   Successful   1m
 ```
 
-We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `RedisOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
+We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
 $ kubectl describe memcachedopsrequest -n demo memcd-reconfig
@@ -312,7 +312,7 @@ As we can see from the configuration of running memcached, the value of `maxclie
 
 Now we will reconfigure this database again to set `maxclients` to `3000`. This time we won't use a new secret. We will use the `applyConfig` field of the `MemcachedOpsRequest`. This will merge the new config in the existing secret.
 
-#### Create RedisOpsRequest
+#### Create MemcachedOpsRequest
 
 Now, we will use the new configuration in the `data` field in the `MemcahcedOpsRequest` CR. The `MemcachedOpsRequest` yaml is given below,
 

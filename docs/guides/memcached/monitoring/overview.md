@@ -44,7 +44,7 @@ In order to enable monitoring for a database, you have to configure `spec.monito
 
 ## Sample Configuration
 
-A sample YAML for Redis crd with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
+A sample YAML for Memcached crd with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -83,7 +83,7 @@ spec:
             cpu: 250m
 ```
 
-Assume that above Redis is configured to use basic authentication. So, exporter image also need to provide password to collect metrics. We have provided it through `spec.monitor.args` field.
+Assume that above Memcached is configured to use basic authentication. So, exporter image also need to provide password to collect metrics. We have provided it through `spec.monitor.args` field.
 
 Here, we have specified that we are going to monitor this server using Prometheus operator through `spec.monitor.agent: prometheus.io/operator`. KubeDB will create a `ServiceMonitor` crd in `monitoring` namespace and this `ServiceMonitor` will have `release: prometheus` label.
 

@@ -18,7 +18,7 @@ section_menu_id: guides
 
 `MemcachedAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling Memcached compute resources in a Kubernetes native way.
 
-## RedisAutoscaler CRD Specifications
+## MemcachedAutoscaler CRD Specifications
 
 Like any official Kubernetes resource, a `MemcachedAutoscaler` has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.
 
