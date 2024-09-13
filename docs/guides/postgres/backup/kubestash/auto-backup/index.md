@@ -17,14 +17,13 @@ KubeStash can automatically be configured to backup any `PostgreSQL` databases i
 
 In this tutorial, we are going to show how you can configure a backup blueprint for `PostgreSQL` databases in your cluster and backup them with a few annotations.
 
-
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using `Minikube` or `Kind`.
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how KubeStash backup and restore PostgreSQL databases, please check the following guide [here](/docs/guides/postgres/backup/kubestash/overview/index.md).
+- If you are not familiar with how KubeStash backup and restore `PostgreSQL` databases, please check the following guide [here](/docs/guides/postgres/backup/kubestash/overview/index.md).
 
 You should be familiar with the following `KubeStash` concepts:
 
@@ -44,7 +43,6 @@ namespace/demo created
 ```
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/auto-backup/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/auto-backup/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
-
 
 ### Prepare Backend
 
@@ -162,7 +160,6 @@ spec:
       from: All
   backupConfigurationTemplate:
     deletionPolicy: OnDelete
-    # ============== Blueprint for Backends of BackupConfiguration  =================
     backends:
       - name: gcs-backend
         storageRef:
@@ -171,7 +168,6 @@ spec:
         retentionPolicy:
           name: demo-retention
           namespace: demo
-    # ============== Blueprint for Sessions of BackupConfiguration  =================
     sessions:
       - name: frequent-backup
         sessionHistoryLimit: 3
@@ -204,7 +200,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 backupblueprint.core.kubestash.com/postgres-default-backup-blueprint created
 ```
 
-Now, we are ready to backup our `PostgreSQL` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
+Now, we are ready to backup our `PostgreSQL` databases using few annotations.
 
 **Create Database**
 
@@ -395,7 +391,6 @@ default-blueprint-appbinding-samgres-frequent-backup-1725533628   default-bluepr
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
-> - `kubedb.com/db-version: <db-version>`
 > - `kubestash.com/app-ref-kind: <target-kind>`
 > - `kubestash.com/app-ref-name: <target-name>`
 > - `kubestash.com/app-ref-namespace: <target-namespace>`
@@ -418,11 +413,12 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: "16.1"
     kubestash.com/app-ref-kind: Postgres
     kubestash.com/app-ref-name: sample-postgres
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: default-blueprint
+  annotations:
+    kubedb.com/db-version: "16.1"
   name: default-blueprint-appbinding-samgres-frequent-backup-1725533628
   namespace: demo
   ownerReferences:
@@ -479,7 +475,7 @@ status:
   totalComponents: 1
 ```
 
-> KubeStash uses the `pg_dump` command to take backups of target PostgreSQL databases. Therefore, the component name for `logical backups` is set as `dump`.
+> KubeStash uses a logical backup approach to take backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`. Do the same for auto-backup, application backup and customize backup if necessary.
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `blueprint/default-blueprint/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/default-blueprint/snapshots` directory.
 
@@ -560,7 +556,6 @@ backupblueprint.core.kubestash.com/postgres-customize-backup-blueprint created
 ```
 
 Now, we are ready to backup our `PostgreSQL` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
-
 
 **Create Database**
 
@@ -736,7 +731,6 @@ appbinding-sample-postgres-frequent-backup-1725597000     BackupConfiguration   
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
-
 **Verify Backup:**
 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `customize-blueprint` has been updated by the following command,
@@ -841,7 +835,7 @@ status:
 ```
 
 
-> KubeStash uses the `pg_dump` command to take backups of target PostgreSQL databases. Therefore, the component name for `logical backups` is set as `dump`.
+> KubeStash uses a logical backup approach to take backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`. Do the same for auto-backup, application backup and customize backup if necessary.
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `blueprint/demo/sample-postgres-2/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/demo/sample-postgres-2/snapshots` directory.
 

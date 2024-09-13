@@ -263,6 +263,19 @@ demo=# \d
  public | company | table | postgres
 (1 row)
 
+# insert multiple rows of data into the table
+demo=# INSERT INTO COMPANY (NAME, EMPLOYEE) VALUES ('TechCorp', 100), ('InnovateInc', 150), ('AlphaTech', 200);
+INSERT 0 3
+
+# verify the data insertion
+demo=# SELECT * FROM COMPANY;
+    name     | employee 
+-------------+----------
+ TechCorp    |      100
+ InnovateInc |      150
+ AlphaTech   |      200
+(3 rows)
+
 # quit from the database
 demo=# \q
 
@@ -484,7 +497,6 @@ gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725449400   gcs-postgr
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
-> - `kubedb.com/db-version: <db-version>`
 > - `kubestash.com/app-ref-kind: <target-kind>`
 > - `kubestash.com/app-ref-name: <target-name>`
 > - `kubestash.com/app-ref-namespace: <target-namespace>`
@@ -507,12 +519,13 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: "16.1"
     kubestash.com/app-ref-kind: Postgres
     kubestash.com/app-ref-name: sample-postgres
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: gcs-postgres-repo
-  name: gcs-postgres-repo-sample-postgreckup-frequent-backup-1725449400
+  annotations:
+    kubedb.com/db-version: "16.1"
+  name: gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725449400
   namespace: demo
   ownerReferences:
   - apiVersion: storage.kubestash.com/v1alpha1
@@ -568,12 +581,11 @@ status:
   totalComponents: 1
 ```
 
-> KubeStash uses the `pg_dump` command to take backups of target PostgreSQL databases. Therefore, the component name for `logical backups` is set as `dump`.
+> KubeStash uses a logical backup approach to take backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`. Do the same for auto-backup, application backup and customize backup if necessary.
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `demo/popstgres/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/postgres/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
-
 
 ## Restore
 
@@ -619,7 +631,7 @@ If you check the database status, you will see it is stuck in **`Provisioning`**
 
 ```bash
 $ kubectl get postgres -n demo restored-postgres
-NAME              VERSION   STATUS         AGE
+NAME                VERSION   STATUS         AGE
 restored-postgres   8.2.0     Provisioning   61s
 ```
 
@@ -662,7 +674,7 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f **https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/logical/examples/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/logical/examples/restoresession.yaml
 restoresession.core.kubestash.com/sample-postgres-restore created
 ```
 
@@ -734,6 +746,15 @@ demo=# \d
  public | company | table | postgres
 (1 row)
 
+# Verify that the sample data has been restored 
+demo=# SELECT * FROM COMPANY;
+    name     | employee 
+-------------+----------
+ TechCorp    |      100
+ InnovateInc |      150
+ AlphaTech   |      200
+(3 rows)
+
 # disconnect from the database
 demo=# \q
 
@@ -743,7 +764,6 @@ demo=# \q
 
 So, from the above output, we can see the `demo` database we had created in the original database `sample-postgres` has been restored in the `restored-postgres` database.
 
-
 ## Cleanup
 
 To cleanup the Kubernetes resources created by this tutorial, run:
@@ -751,10 +771,10 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl delete backupconfigurations.core.kubestash.com  -n demo sample-postgres-backup
 kubectl delete restoresessions.core.kubestash.com -n demo restore-sample-postgres
+kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
 kubectl delete backupstorage -n demo gcs-storage
 kubectl delete secret -n demo gcs-secret
 kubectl delete secret -n demo encrypt-secret
-kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
 kubectl delete postgres -n demo restored-postgres
 kubectl delete postgres -n demo sample-postgres
 ```

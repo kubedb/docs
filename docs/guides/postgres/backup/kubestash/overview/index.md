@@ -91,7 +91,7 @@ The restore process consists of the following steps:
 
 7. Then, the `Job` downloads the backed up data from the backend and injects into the desired database. KubeStash pipes the downloaded data to the respective database tool to inject into the database. Hence, restore `Job` does not require a large volume to download entire backup data inside it.
 
-8. Finally, when the restore process is completed, the `Job` updates the `status.components[dump]` field of the `RestoreSession` with restore information of the target database.
+8. Finally, when the restore process is completed, the `Job` updates the `status.components[*]` field of the `RestoreSession` with restore information of the target database.
 
 ## Next Steps
 

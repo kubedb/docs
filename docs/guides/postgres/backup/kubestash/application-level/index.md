@@ -259,6 +259,19 @@ demo=# \d
  public | company | table | postgres
 (1 row)
 
+# insert multiple rows of data into the table
+demo=# INSERT INTO COMPANY (NAME, EMPLOYEE) VALUES ('TechCorp', 100), ('InnovateInc', 150), ('AlphaTech', 200);
+INSERT 0 3
+
+# verify the data insertion
+demo=# SELECT * FROM COMPANY;
+    name     | employee 
+-------------+----------
+ TechCorp    |      100
+ InnovateInc |      150
+ AlphaTech   |      200
+(3 rows)
+
 # quit from the database
 demo=# \q
 
@@ -485,7 +498,6 @@ gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725449400   gcs-postgr
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
-> - `kubedb.com/db-version: <db-version>`
 > - `kubestash.com/app-ref-kind: <target-kind>`
 > - `kubestash.com/app-ref-name: <target-name>`
 > - `kubestash.com/app-ref-namespace: <target-namespace>`
@@ -508,12 +520,13 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: "16.1"
     kubestash.com/app-ref-kind: Postgres
     kubestash.com/app-ref-name: sample-postgres
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: gcs-postgres-repo
-  name: gcs-postgres-repo-sample-postgreckup-frequent-backup-1725449400
+  annotations:
+    kubedb.com/db-version: "16.1"
+  name: gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725449400
   namespace: demo
   ownerReferences:
   - apiVersion: storage.kubestash.com/v1alpha1
@@ -581,7 +594,7 @@ status:
   totalComponents: 2
 ```
 
-> KubeStash uses the `pg_dump` command to take backups of target PostgreSQL databases. Therefore, the component name for `logical backups` is set as `dump`.
+> KubeStash uses a logical backup approach to take backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`. Do the same for auto-backup, application backup and customize backup if necessary.
 
 > KubeStash set component name as `manifest` for the `manifest backup` of PostgreSQL databases.
 
@@ -728,6 +741,15 @@ demo=# \d
 --------+---------+-------+----------
  public | company | table | postgres
 (1 row)
+
+# Verify that the sample data has been restored 
+demo=# SELECT * FROM COMPANY;
+    name     | employee 
+-------------+----------
+ TechCorp    |      100
+ InnovateInc |      150
+ AlphaTech   |      200
+(3 rows)
 
 # disconnect from the database
 demo=# \q
