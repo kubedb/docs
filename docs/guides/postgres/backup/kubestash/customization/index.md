@@ -154,8 +154,8 @@ spec:
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
-        - name: s3-postgres-repo
-          backend: s3-backend
+        - name: gcs-postgres-repo-2
+          backend: gcs-backend
           directory: /postgres-copy
           encryptionSecret:
             name: encrypt-secret

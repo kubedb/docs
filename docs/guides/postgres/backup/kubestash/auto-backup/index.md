@@ -17,7 +17,6 @@ KubeStash can automatically be configured to backup any `PostgreSQL` databases i
 
 In this tutorial, we are going to show how you can configure a backup blueprint for `PostgreSQL` databases in your cluster and backup them with a few annotations.
 
-
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using `Minikube` or `Kind`.

@@ -676,7 +676,7 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/logical/examples/restoresession.yaml
+$ kubectl apply -f **https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/logical/examples/restoresession.yaml
 restoresession.core.kubestash.com/sample-postgres-restore created
 ```
 
@@ -774,10 +774,10 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl delete backupconfigurations.core.kubestash.com  -n demo sample-postgres-backup
 kubectl delete restoresessions.core.kubestash.com -n demo restore-sample-postgres
-kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
 kubectl delete backupstorage -n demo gcs-storage
 kubectl delete secret -n demo gcs-secret
 kubectl delete secret -n demo encrypt-secret
+kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
 kubectl delete postgres -n demo restored-postgres
 kubectl delete postgres -n demo sample-postgres
 ```
