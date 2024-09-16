@@ -36,7 +36,7 @@ Stash supports taking logical backup of Redis databases using [redis-dump-go](ht
 The following diagram shows how Stash takes logical backup of a Redis database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Redis Backup Overview" src="/docs/guides/redis/backup/overview/images/redis-logical-backup.svg">
+  <img alt="Redis Backup Overview" src="/docs/guides/redis/backup/stash/overviewerview/images/redis-logical-backup.svg">
   <figcaption align="center">Fig: Redis Logical Backup Overview</figcaption>
 </figure>
 
@@ -71,7 +71,7 @@ The backup process consists of the following steps:
 The following diagram shows how Stash restores a Redis database from a logical backup. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Database Restore Overview" src="/docs/guides/redis/backup/overview/images/redis-logical-restore.svg">
+  <img alt="Database Restore Overview" src="/docs/guides/redis/backup/stash/overviewerview/images/redis-logical-restore.svg">
   <figcaption align="center">Fig: Redis Logical Restore Process Overview</figcaption>
 </figure>
 
@@ -93,4 +93,4 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Backup your Redis database using Stash following the guide from [here](/docs/guides/redis/backup/standalone/index.md).
+- Backup your Redis database using Stash following the guide from [here](/docs/guides/redis/backup/stash/standalone/index.md).
