@@ -141,6 +141,13 @@ spec:
       retentionPolicy:
         name: demo-retention
         namespace: demo
+    - name: s3-backend
+      storageRef:
+        namespace: demo
+        name: s3-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
   sessions:
     - name: frequent-backup
       scheduler:
@@ -154,8 +161,8 @@ spec:
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
-        - name: gcs-postgres-repo-2
-          backend: gcs-backend
+        - name: s3-postgres-repo
+          backend: s3-backend
           directory: /postgres-copy
           encryptionSecret:
             name: encrypt-secret
