@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RabbitMQOpsRequest
+metadata:
+  name: reconfigure-apply
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: rm-cluster
+  configuration:
+    applyConfig:
+      rabbitmq.conf: |
+        default_vhost = /newvhost
+  timeout: 5m
+  apply: IfReady
