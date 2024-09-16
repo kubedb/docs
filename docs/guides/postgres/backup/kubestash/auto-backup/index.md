@@ -82,7 +82,7 @@ spec:
     allowedNamespaces:
       from: All
   default: true
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete
 ```
 
 Let's create the BackupStorage we have shown above,
@@ -359,7 +359,6 @@ status:
 
 Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStash automatically resolved those info from the `BackupBluePrint` and created above `BackupConfiguration`.
 
-
 **Verify BackupSession:**
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
@@ -475,12 +474,11 @@ status:
   totalComponents: 1
 ```
 
-> KubeStash uses a logical backup approach to take backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`. Do the same for auto-backup, application backup and customize backup if necessary.
+> KubeStash uses `pg_dump` or `pg_dumpall` to perform backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`.
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `blueprint/default-blueprint/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/default-blueprint/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
-
 
 ## Auto-backup with custom configurations
 
@@ -504,7 +502,6 @@ spec:
       from: All
   backupConfigurationTemplate:
     deletionPolicy: OnDelete
-    # ============== Blueprint for Backends of BackupConfiguration  =================
     backends:
       - name: gcs-backend
         storageRef:
@@ -513,7 +510,6 @@ spec:
         retentionPolicy:
           name: demo-retention
           namespace: demo
-    # ============== Blueprint for Sessions of BackupConfiguration  =================
     sessions:
       - name: frequent-backup
         sessionHistoryLimit: 3
@@ -834,8 +830,7 @@ status:
   totalComponents: 1
 ```
 
-
-> KubeStash uses a logical backup approach to take backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`. Do the same for auto-backup, application backup and customize backup if necessary.
+> KubeStash uses `pg_dump` or `pg_dumpall` to perform backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`.
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `blueprint/demo/sample-postgres-2/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/demo/sample-postgres-2/snapshots` directory.
 

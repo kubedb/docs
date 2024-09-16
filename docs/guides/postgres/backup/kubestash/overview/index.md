@@ -38,9 +38,9 @@ The backup process consists of the following steps:
 
 2. Then, she creates a `BackupStorage` custom resource that specifies the backend information, along with the `Secret` containing the credentials needed to access the backend.
 
-3. KubeStash operator watches for `BackupStorage` custom resources. When it finds a `BackupStorage` object, it initializes the `BackupStorage` by uploading the `metadata.yaml` file into the target storage.
+3. KubeStash operator watches for `BackupStorage` custom resources. When it finds a `BackupStorage` object, it initializes the `BackupStorage` by uploading the `metadata.yaml` file to the specified backend.
 
-4. Then, she creates a `BackupConfiguration` custom resource that specifies the targeted the KubeDB managed `PostgreSQL` database, the `Addon` info with a specified task, etc. It also provides information about one or more repositories, each indicating a path and a `BackupStorage` for storing the backed-up data.
+4. Next, she creates a `BackupConfiguration` custom resource that specifies the target database, addon information (including backup tasks), backup schedules, storage backends for storing the backup data, and other additional settings.
 
 5. KubeStash operator watches for `BackupConfiguration` objects.
 
@@ -50,7 +50,7 @@ The backup process consists of the following steps:
 
 8. Then, it creates a `CronJob` for each session with the schedule specified in `BackupConfiguration` to trigger backup periodically.
 
-9. KubeStash operator triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are triggered by the `CronJob` according to the specified schedule.
+9. KubeStash operator triggers an instant backup as soon as the `BackupConfiguration` is ready. Backups are otherwise triggered by the `CronJob` based on the specified schedule.
 
 10. KubeStash operator watches for `BackupSession` custom resources.
 
@@ -60,7 +60,7 @@ The backup process consists of the following steps:
 
 13. Then, it creates the `Job` to backup the targeted `PostgreSQL` database.
 
-14. The backup `Job` reads necessary information (e.g. auth secret, port)  to connect with the database from the `AppBinding` crd. It also reads backend information and access credentials from BackupStorage crd, Storage Secret and Repository path respectively.
+14. The backup `Job` reads necessary information (e.g. auth secret, port)  to connect with the database from the `AppBinding` CR. It also reads backend information and access credentials from `BackupStorage` CR, Storage Secret and `Repository` path respectively.
 
 15. Then, the `Job` dumps the targeted `PostgreSQL` database and uploads the output to the backend. KubeStash pipes the output of dump command to uploading process. Hence, backup `Job` does not require a large volume to hold the entire dump output.
 
@@ -79,7 +79,7 @@ The restore process consists of the following steps:
 
 1. At first, a user creates a `PostgreSQL` database where the data will be restored or the user can use the same `PostgreSQL` database.
 
-2. Then, she creates a `RestoreSession` custom resource that specifies the target `PostgreSQL` database where the backed-up data will be restored. the `Repository` object that points to a `BackupStorage` that holds backend information, and the target `Snapshot`, which will be restored. It also specifies the `Addon` info with task to use to restore.
+2. Then, she creates a `RestoreSession` custom resource that specifies the target database where the backed-up data will be restored, addon information (including restore tasks), the target snapshot to be restored, the Repository containing that snapshot, and other additional settings.
 
 3. KubeStash operator watches for `RestoreSession` custom resources.
 
@@ -87,7 +87,7 @@ The restore process consists of the following steps:
 
 5. Then, it creates the `Job` to restore the target.
 
-6. The `Job` reads necessary information to connect with the database from respective `AppBinding` crd. It also reads backend information and access credentials from `Repository` crd and storage `Secret` respectively.
+6. The `Job` reads necessary information to connect with the database from respective `AppBinding` CR. It also reads backend information and access credentials from `Repository` CR and storage `Secret` respectively.
 
 7. Then, the `Job` downloads the backed up data from the backend and injects into the desired database. KubeStash pipes the downloaded data to the respective database tool to inject into the database. Hence, restore `Job` does not require a large volume to download entire backup data inside it.
 

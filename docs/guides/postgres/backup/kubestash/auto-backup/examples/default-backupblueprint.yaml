@@ -9,7 +9,6 @@ spec:
       from: All
   backupConfigurationTemplate:
     deletionPolicy: OnDelete
-    # ============== Blueprint for Backends of BackupConfiguration  =================
     backends:
       - name: gcs-backend
         storageRef:
@@ -18,7 +17,6 @@ spec:
         retentionPolicy:
           name: demo-retention
           namespace: demo
-    # ============== Blueprint for Sessions of BackupConfiguration  =================
     sessions:
       - name: frequent-backup
         sessionHistoryLimit: 3

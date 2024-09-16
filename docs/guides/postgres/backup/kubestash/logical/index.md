@@ -323,7 +323,7 @@ spec:
     allowedNamespaces:
       from: All
   default: true
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete
 ```
 
 Let's create the BackupStorage we have shown above,
@@ -483,9 +483,9 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-postgres-backup` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo sample-postgres-backup
+$ kubectl get repository -n demo gcs-postgres-repo
 NAME                       INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
-sample-postgres-backup     true        1                806 B   Ready   8m27s                    9m18s
+gcs-postgres-repo          true        1                806 B   Ready   8m27s                    9m18s
 ```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
@@ -581,7 +581,7 @@ status:
   totalComponents: 1
 ```
 
-> KubeStash uses a logical backup approach to take backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`. Do the same for auto-backup, application backup and customize backup if necessary.
+> KubeStash uses `pg_dump` or `pg_dumpall` to perform backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`.
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `demo/popstgres/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/postgres/snapshots` directory.
 
