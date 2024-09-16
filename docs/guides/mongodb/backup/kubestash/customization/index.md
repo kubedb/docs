@@ -208,9 +208,7 @@ demo        s3-repo-mg-frequent-1702291682   s3-repo      frequent   2023-12-11T
 demo        s3-repo-mg-frequent-1702291685   s3-repo      frequent   2023-12-11T10:49:10Z   Delete            Succeeded                         82m
 ```
 
->You can also filter the snapshots as shown in the guide [here](https://stash.run/docs/latest/concepts/crds/snapshot/#working-with-snapshot).
-
-The below example shows how you can pass a specific snapshot id through the `snapshots` filed of `rules` section.
+The below example shows how you can pass a specific snapshot id through the `snapshots` filed of `spec.dataSource` section.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1

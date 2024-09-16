@@ -47,7 +47,7 @@ namespace/demo created
 
 So we can also take backup any MongoDB database of any namespace just by adding few annotations to our MongoDB CRD. Then, KubeStash will automatically create a `BackupConfiguration` according to the template to backup the database.
 
-We are going to store our backed up data into a S3 bucket. At first, we need to create a secret with S3 credentials then we need to create a `BackupStorage` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](https://stash.run/docs/latest/guides/backends/overview/).
+We are going to store our backed up data into a S3 bucket. At first, we need to create a secret with S3 credentials then we need to create a `BackupStorage` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
 
 ### Create Storage Secret:
 
@@ -181,7 +181,7 @@ Let's create the `BackupBlueprint` we have shown above,
 backupblueprint.core.kubestash.com/sample-blueprint created
 ```
 
-Now, we are ready to backup our MongoDB databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://stash.run/docs/latest/guides/auto-backup/database/#available-auto-backup-annotations-for-database).
+Now, we are ready to backup our `MongoDB` databases using few annotations.
 
 ### Create Database
 
