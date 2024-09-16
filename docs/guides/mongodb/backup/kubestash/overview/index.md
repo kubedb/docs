@@ -7,11 +7,12 @@ menu:
     parent: guides-mongodb-backup-stashv2
     weight: 10
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeStash Enterprise Edition] to try this feature. You can use KubeDB Enterprise license to install KubeStash Enterprise edition. Database backup with KubeStash is already included in the KubeDB Enterprise license. So, you don't need a separate license for KubeStash." >}}
+{{< notice type="warning" message="Please install [KubeStash](https://kubestash.com/docs/latest/setup/install/kubestash/) to try this feature. Database backup with KubeStash is already included in the KubeDB license. So, you don't need a separate license for KubeStash." >}}
 
 # MongoDB Backup & Restore Overview
 
@@ -77,7 +78,7 @@ For MongoDB ReplicaSet cluster, KubeStash takes backup from one of the secondary
 4. Unlock the secondary replica.
 
 <figure align="center">
- <img alt="MongoDB ReplicaSet Cluster Backup Overview" src="/docs/guides/mongodb/backup/stash/overview/images/replicaset_backup.svg">
+ <img alt="MongoDB ReplicaSet Cluster Backup Overview" src="/docs/guides/mongodb/backup/kubestash/overview/images/replicaset_backup.svg">
   <figcaption align="center">Fig: MongoDB ReplicaSet Cluster Backup</figcaption>
 </figure>
 
@@ -95,7 +96,7 @@ For MongoDB sharded cluster, KubeStash takes backup of the individual shards as 
 8. Enable balancer.
 
 <figure align="center">
- <img alt="MongoDB Sharded Cluster Backup Overview" src="/docs/guides/mongodb/backup/stash/overview/images/sharded_backup.svg">
+ <img alt="MongoDB Sharded Cluster Backup Overview" src="/docs/guides/mongodb/backup/kubestash/overview/images/sharded_backup.svg">
   <figcaption align="center">Fig: MongoDB Sharded Cluster Backup</figcaption>
 </figure>
 
@@ -104,17 +105,17 @@ For MongoDB sharded cluster, KubeStash takes backup of the individual shards as 
 The following diagram shows how KubeStash restores backed up data into a MongoDB database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
- <img alt="Database Restore Overview" src="/docs/guides/mongodb/backup/stash/overview/images/restore_overview.svg">
+ <img alt="Database Restore Overview" src="/docs/guides/mongodb/backup/kubestash/overview/images/restore_overview.svg">
   <figcaption align="center">Fig: MongoDB Restore Process Overview</figcaption>
 </figure>
 
 The restore process consists of the following steps:
 
-1. At first, a user creates a `RestoreSession` crd targeting the `AppBinding` of the desired database where the backed up data will be restored. It also specifies the `Repository` crd which holds the backend information and the `Task` to use to restore the target.
+1. At first, a user creates a `RestoreSession` crd that specifies the target database where the backed-up data will be restored, addon information (including restore tasks), the target snapshot to be restored, the Repository containing that snapshot, and other additional settings.
 
 2. KubeStash operator watches for `RestoreSession` object.
 
-3. Once it finds a `RestoreSession` object, it resolves the respective `Task` and `Function` and prepares a Job definition to restore.
+3. When it finds a `RestoreSession` custom resource, it resolves the respective `Addon` and `Function` and prepares a restore Job definition.
 
 4. Then, it creates the Job to restore the target.
 
@@ -133,7 +134,7 @@ This section will show you restore process works for different MongoDB configura
 For a standalone MongoDB database, the restore job downloads the backed up data from the backend and pipe the downloaded data to `mongorestore` command which inserts the data into the desired MongoDB database.
 
 <figure align="center">
- <img alt="Standalone MongoDB Restore Overview" src="/docs/guides/mongodb/backup/stash/overview/images/standalone_restore.svg">
+ <img alt="Standalone MongoDB Restore Overview" src="/docs/guides/mongodb/backup/kubestash/overview/images/standalone_restore.svg">
   <figcaption align="center">Fig: Standalone MongoDB Restore</figcaption>
 </figure>
 
@@ -142,7 +143,7 @@ For a standalone MongoDB database, the restore job downloads the backed up data 
 For MongoDB ReplicaSet cluster, KubeStash identifies the primary replica and restore into it.
 
 <figure align="center">
- <img alt="MongoDB ReplicaSet Cluster Restore Overview" src="/docs/guides/mongodb/backup/stash/overview/images/replicaset_restore.svg">
+ <img alt="MongoDB ReplicaSet Cluster Restore Overview" src="/docs/guides/mongodb/backup/kubestash/overview/images/replicaset_restore.svg">
   <figcaption align="center">Fig: MongoDB ReplicaSet Cluster Restore</figcaption>
 </figure>
 
@@ -151,14 +152,14 @@ For MongoDB ReplicaSet cluster, KubeStash identifies the primary replica and res
 For MongoDB sharded cluster, KubeStash identifies the primary replica of each shard as well as the config server and restore respective backed up data into them.
 
 <figure align="center">
- <img alt="MongoDB Sharded Cluster Restore" src="/docs/guides/mongodb/backup/stash/overview/images/sharded_restore.svg">
+ <img alt="MongoDB Sharded Cluster Restore" src="/docs/guides/mongodb/backup/kubestash/overview/images/sharded_restore.svg">
   <figcaption align="center">Fig: MongoDB Sharded Cluster Restore</figcaption>
 </figure>
 
 ## Next Steps
 
-- Backup a standalone MongoDB databases using KubeStash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/standalone/_index.md).
-- Backup a MongoDB Replicaset cluster using Stash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/replicaset/_index.md).
-- Backup a sharded MongoDB cluster using KubeStash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/sharding/_index.md).
+- Backup a standalone MongoDB databases using KubeStash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/standalone/index.md).
+- Backup a MongoDB Replicaset cluster using KubeStash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/replicaset/index.md).
+- Backup a sharded MongoDB cluster using KubeStash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/sharding/index.md).
 
 

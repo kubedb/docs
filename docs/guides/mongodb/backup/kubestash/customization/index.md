@@ -21,7 +21,7 @@ In this section, we are going to show you how to customize the backup process. H
 
 ### Passing arguments to the backup process
 
-KubeStash MongoDB addon uses [mongoump](https://docs.mongodb.com/database-tools/mongodump/) for backup. You can pass arguments to the `mongodump` through `args` param under `spec.sessions.addon.task.params` section.
+KubeStash MongoDB addon uses [mongoump](https://docs.mongodb.com/database-tools/mongodump/) for backup. You can pass arguments to the `mongodump` through `args` param under `spec.sessions.addon.tasks[0].params` section.
 
 The below example shows how you can pass the `--db testdb` to take backup for a specific mongodb databases named `testdb`.
 
@@ -44,18 +44,20 @@ spec:
         name: s3-storage
       retentionPolicy:
         name: backup-rp
-        namespace: demo        
+        namespace: demo
   sessions:
     - name: frequent
       scheduler:
         schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
       repositories:
         - name: s3-repo
           backend: s3-backend
           directory: /mongodb
           encryptionSecret:
-           name: encry-secret
-           namespace: demo
+            name: encry-secret
+            namespace: demo
       addon:
         name: mongodb-addon
         tasks:
@@ -68,7 +70,7 @@ spec:
 
 ### Running backup job as a specific user
 
-If your cluster requires running the backup job as a specific user, you can provide `securityContext` under `spec.sessions.addon.tasks.jobTemplate.spec` section. The below example shows how you can run the backup job as the root user.
+If your cluster requires running the backup job as a specific user, you can provide `securityContext` under `spec.sessions.addon.tasks[0].jobTemplate.spec` section. The below example shows how you can run the backup job as the root user.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -89,32 +91,34 @@ spec:
         name: s3-storage
       retentionPolicy:
         name: backup-rp
-        namespace: demo        
+        namespace: demo
   sessions:
     - name: frequent
       scheduler:
+        jobTemplate:
+          backoffLimit: 1
         schedule: "*/5 * * * *"
       repositories:
         - name: s3-repo
           backend: s3-backend
           directory: /mongodb
           encryptionSecret:
-           name: encry-secret
-           namespace: demo
+            name: encry-secret
+            namespace: demo
       addon:
         name: mongodb-addon
         tasks:
           - name: LogicalBackup
-          jobTemplate:
-            spec: 
-              securityContext: 
-                runAsUser: 0
-                runAsGroup: 0          
+        jobTemplate:
+          spec:
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 0     
 ```
 
 ### Specifying Memory/CPU limit/request for the backup job
 
-If you want to specify the Memory/CPU limit/request for your backup job, you can specify `resources` field under `spec.sessions.addon.tasks.containerRuntimeSettings` section.
+If you want to specify the Memory/CPU limit/request for your backup job, you can specify `resources` field under `spec.sessions.addon.containerRuntimeSettings` section.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -135,30 +139,32 @@ spec:
         name: s3-storage
       retentionPolicy:
         name: backup-rp
-        namespace: demo        
+        namespace: demo
   sessions:
     - name: frequent
       scheduler:
+        jobTemplate:
+          backoffLimit: 1
         schedule: "*/3 * * * *"
       repositories:
         - name: s3-repo
           backend: s3-backend
           directory: /mongodb
           encryptionSecret:
-           name: encry-secret
-           namespace: demo
+            name: encry-secret
+            namespace: demo
       addon:
         name: mongodb-addon
         tasks:
           - name: LogicalBackup
-          containerRuntimeSettings:
-            resources:
-              requests:
-                cpu: "200m"
-                memory: "1Gi"
-              limits:
-                cpu: "200m"
-                memory: "1Gi"
+        containerRuntimeSettings:
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "1Gi"
+            limits:
+              cpu: "200m"
+              memory: "1Gi"
 ```
 
 ## Customizing Restore Process
@@ -167,7 +173,7 @@ KubeStash also uses `mongorestore` during the restore process. In this section, 
 
 ### Passing arguments to the restore process
 
-Similar to the backup process, you can pass arguments to the restore process through the `args` params under `spec.addon.task.params` section. This example will restore data from database `testdb`.
+Similar to the backup process, you can pass arguments to the restore process through the `args` params under `spec.addon.tasks[0].params` section. This example will restore data from database `testdb`.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -206,9 +212,7 @@ demo        s3-repo-mg-frequent-1702291682   s3-repo      frequent   2023-12-11T
 demo        s3-repo-mg-frequent-1702291685   s3-repo      frequent   2023-12-11T10:49:10Z   Delete            Succeeded                         82m
 ```
 
->You can also filter the snapshots as shown in the guide [here](https://stash.run/docs/latest/concepts/crds/snapshot/#working-with-snapshot).
-
-The below example shows how you can pass a specific snapshot id through the `snapshots` filed of `rules` section.
+The below example shows how you can pass a specific snapshot id through the `snapshots` filed of `spec.dataSource` section.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -256,22 +260,22 @@ spec:
     snapshot: latest
     repository: s3-repo
     encryptionSecret:
-      name: encry-secret 
+      name: encry-secret
       namespace: demo
   addon:
     name: mongodb-addon
     tasks:
       - name: LogicalBackupRestoress
-      jobTemplate:
-        spec: 
-          securityContext: 
-            runAsUser: 0
-            runAsGroup: 0   
+    jobTemplate:
+      spec:
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0 
 ```
 
 ### Specifying Memory/CPU limit/request for the restore job
 
-Similar to the backup process, you can also provide `resources` field under the `spec.addon.tasks.containerRuntimeSettings` section to limit the Memory/CPU for your restore job.
+Similar to the backup process, you can also provide `resources` field under the `spec.addon.containerRuntimeSettings` section to limit the Memory/CPU for your restore job.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -295,14 +299,14 @@ spec:
     name: mongodb-addon
     tasks:
       - name: LogicalBackupRestoress
-      containerRuntimeSettings:
-        resources:
-          requests:
-            cpu: "200m"
-            memory: "1Gi"
-          limits:
-            cpu: "200m"
-            memory: "1Gi"
+    containerRuntimeSettings:
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "1Gi"
+        limits:
+          cpu: "200m"
+          memory: "1Gi"
 ```
 
 ## Cleanup

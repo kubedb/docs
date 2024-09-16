@@ -34,11 +34,11 @@ spec:
         name: mongodb-addon
         tasks:
           - name: LogicalBackup
-          containerRuntimeSettings:
-            resources:
-              requests:
-                cpu: "200m"
-                memory: "1Gi"
-              limits:
-                cpu: "200m"
-                memory: "1Gi"
+        containerRuntimeSettings:
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "1Gi"
+            limits:
+              cpu: "200m"
+              memory: "1Gi"

@@ -19,21 +19,20 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 
 ## Before You Begin
 
-- At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
-- Install KubeStash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
-- Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
-- If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/stash/overview/index.md).
-- If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/overview/).
-- If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/database/).
+- At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using `Minikube` or `Kind`.
+- Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
+- Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
+- If you are not familiar with how KubeStash backup and restore `MongoDB` databases, please check the following guide [here](/docs/guides/mongodb/backup/kubestash/overview/index.md).
 
 You should be familiar with the following `KubeStash` concepts:
 
-- [BackupBlueprint](https://stash.run/docs/latest/concepts/crds/backupblueprint/)
-- [BackupConfiguration](https://stash.run/docs/latest/concepts/crds/backupconfiguration/)
-- [BackupSession](https://stash.run/docs/latest/concepts/crds/backupsession/)
-- [Repository](https://stash.run/docs/latest/concepts/crds/repository/)
-- [Function](https://stash.run/docs/latest/concepts/crds/function/)
-- [Task](https://stash.run/docs/latest/concepts/crds/task/)
+- [BackupBlueprint](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/)
+- [BackupConfiguration](https://kubestash.com/docs/latest/concepts/crds/backupconfiguration/)
+- [BackupSession](https://kubestash.com/docs/latest/concepts/crds/backupsession/)
+- [BackupStorage](https://kubestash.com/docs/latest/concepts/crds/backupstorage/)
+- [Function](https://kubestash.com/docs/latest/concepts/crds/function/)
+- [Addon](https://kubestash.com/docs/latest/concepts/crds/addon/)
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create `demo` namespace if you haven't created yet.
 
@@ -48,7 +47,7 @@ namespace/demo created
 
 So we can also take backup any MongoDB database of any namespace just by adding few annotations to our MongoDB CRD. Then, KubeStash will automatically create a `BackupConfiguration` according to the template to backup the database.
 
-We are going to store our backed up data into a S3 bucket. At first, we need to create a secret with S3 credentials then we need to create a `BackupStorage` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](https://stash.run/docs/latest/guides/backends/overview/).
+We are going to store our backed up data into a S3 bucket. At first, we need to create a secret with S3 credentials then we need to create a `BackupStorage` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
 
 ### Create Storage Secret:
 
@@ -81,7 +80,7 @@ spec:
       bucket: kubestash-testing
       region: us-east-1
       prefix: demo
-      secret: s3-secret
+      secretName: s3-secret
   usagePolicy:
     allowedNamespaces:
       from: All
@@ -147,28 +146,30 @@ spec:
   backupConfigurationTemplate:
     deletionPolicy: OnDelete
     backends:
-    - name: s3-backend
-      storageRef:
-        namespace: ${storageNamespace}
-        name: ${storageName}
-      retentionPolicy:
-        name: backup-rp
-        namespace: demo        
+      - name: s3-backend
+        storageRef:
+          namespace: ${storageNamespace}
+          name: ${storageName}
+        retentionPolicy:
+          name: backup-rp
+          namespace: demo
     sessions:
-    - name: frequent
-      scheduler:
-        schedule: ${scheduleTime}
-      repositories:
-        - name: ${repoName}
-          backend: s3-backend
-          directory: ${backupPath}
-          encryptionSecret:
-           name: encry-secret
-           namespace: demo
-      addon:
-        name: mongodb-addon
-        tasks:
-          - name: LogicalBackup
+      - name: frequent
+        scheduler:
+          jobTemplate:
+            backoffLimit: 1
+          schedule: ${scheduleTime}
+        repositories:
+          - name: ${repoName}
+            backend: s3-backend
+            directory: ${backupPath}
+            encryptionSecret:
+              name: encry-secret
+              namespace: demo
+        addon:
+          name: mongodb-addon
+          tasks:
+            - name: LogicalBackup
 ```
 
 Here, we define a template for `BackupConfiguration`. Notice the `backends` and `sessions` fields of `backupConfigurationTemplate` section. We have used some variables in form of `${VARIABLE_NAME}`. KubeStash will automatically resolve those variables from the database annotations information to make `BackupConfiguration` according to that databases need.
@@ -180,7 +181,7 @@ Let's create the `BackupBlueprint` we have shown above,
 backupblueprint.core.kubestash.com/sample-blueprint created
 ```
 
-Now, we are ready to backup our MongoDB databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://stash.run/docs/latest/guides/auto-backup/database/#available-auto-backup-annotations-for-database).
+Now, we are ready to backup our `MongoDB` databases using few annotations.
 
 ### Create Database
 
