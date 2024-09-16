@@ -34,8 +34,8 @@ spec:
         name: mongodb-addon
         tasks:
           - name: LogicalBackup
-          jobTemplate:
-            spec: 
-              securityContext: 
-                runAsUser: 0
-                runAsGroup: 0          
+        jobTemplate:
+          spec:
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 0

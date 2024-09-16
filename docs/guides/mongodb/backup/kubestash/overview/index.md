@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeStash Enterprise Edition] to try this feature. You can use KubeDB Enterprise license to install KubeStash Enterprise edition. Database backup with KubeStash is already included in the KubeDB Enterprise license. So, you don't need a separate license for KubeStash." >}}
+{{< notice type="warning" message="Please install [KubeStash](https://kubestash.com/docs/latest/setup/install/kubestash/) to try this feature. Database backup with KubeStash is already included in the KubeDB license. So, you don't need a separate license for KubeStash." >}}
 
 # MongoDB Backup & Restore Overview
 
@@ -111,11 +111,11 @@ The following diagram shows how KubeStash restores backed up data into a MongoDB
 
 The restore process consists of the following steps:
 
-1. At first, a user creates a `RestoreSession` crd targeting the `AppBinding` of the desired database where the backed up data will be restored. It also specifies the `Repository` crd which holds the backend information and the `Task` to use to restore the target.
+1. At first, a user creates a `RestoreSession` crd that specifies the target database where the backed-up data will be restored, addon information (including restore tasks), the target snapshot to be restored, the Repository containing that snapshot, and other additional settings.
 
 2. KubeStash operator watches for `RestoreSession` object.
 
-3. Once it finds a `RestoreSession` object, it resolves the respective `Task` and `Function` and prepares a Job definition to restore.
+3. When it finds a `RestoreSession` custom resource, it resolves the respective `Addon` and `Function` and prepares a restore Job definition.
 
 4. Then, it creates the Job to restore the target.
 
