@@ -19,8 +19,8 @@ spec:
     name: mongodb-addon
     tasks:
       - name: LogicalBackupRestoress
-        jobTemplate:
-          spec: 
-            securityContext: 
-              runAsUser: 0
-              runAsGroup: 0 
+      jobTemplate:
+        spec:
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
