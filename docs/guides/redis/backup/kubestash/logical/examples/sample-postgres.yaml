@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1
+kind: Redis
+metadata:
+  name: sample-redis
+  namespace: demo
+spec:
+  version: "16.1"
+  replicas: 3
+  standbyMode: Hot
+  streamingMode: Synchronous
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
