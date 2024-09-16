@@ -44,18 +44,20 @@ spec:
         name: s3-storage
       retentionPolicy:
         name: backup-rp
-        namespace: demo        
+        namespace: demo
   sessions:
     - name: frequent
       scheduler:
         schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
       repositories:
         - name: s3-repo
           backend: s3-backend
           directory: /mongodb
           encryptionSecret:
-           name: encry-secret
-           namespace: demo
+            name: encry-secret
+            namespace: demo
       addon:
         name: mongodb-addon
         tasks:

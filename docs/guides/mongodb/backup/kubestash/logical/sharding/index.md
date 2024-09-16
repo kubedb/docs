@@ -21,7 +21,7 @@ KubeStash v0.1.0+ supports backup and restoration of MongoDB databases. This gui
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install KubeStash Enterprise in your cluster following the steps [here(link needed)]().
 - Install KubeStash `kubectl` plugin following the steps [here(link needed)]().
-- If you are not familiar with how KubeStash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/kubestash/overview/_index.md).
+- If you are not familiar with how KubeStash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/kubestash/overview/index.md).
 
 You have to be familiar with following custom resources:
 
@@ -210,7 +210,7 @@ spec:
       bucket: kubestash-testing
       region: us-east-1
       prefix: demo-sharding
-      secret: s3-secret
+      secretName: s3-secret
   usagePolicy:
     allowedNamespaces:
       from: All
@@ -291,18 +291,20 @@ spec:
         name: s3-storage-sharding
       retentionPolicy:
         name: backup-rp
-        namespace: demo        
+        namespace: demo
   sessions:
     - name: frequent
       scheduler:
+        jobTemplate:
+          backoffLimit: 1
         schedule: "*/3 * * * *"
       repositories:
         - name: s3-repo
           backend: s3-backend
           directory: /sharding
           encryptionSecret:
-           name: encry-secret
-           namespace: demo
+            name: encry-secret
+            namespace: demo
       addon:
         name: mongodb-addon
         tasks:

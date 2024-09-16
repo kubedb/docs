@@ -158,8 +158,8 @@ For MongoDB sharded cluster, KubeStash identifies the primary replica of each sh
 
 ## Next Steps
 
-- Backup a standalone MongoDB databases using KubeStash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/standalone/_index.md).
-- Backup a MongoDB Replicaset cluster using Stash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/replicaset/_index.md).
-- Backup a sharded MongoDB cluster using KubeStash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/sharding/_index.md).
+- Backup a standalone MongoDB databases using KubeStash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/standalone/index.md).
+- Backup a MongoDB Replicaset cluster using Stash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/replicaset/index.md).
+- Backup a sharded MongoDB cluster using KubeStash following the guide from [here](/docs/guides/mongodb/backup/kubestash/logical/sharding/index.md).
 
 
