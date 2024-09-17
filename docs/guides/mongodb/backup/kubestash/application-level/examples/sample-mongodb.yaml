@@ -9,7 +9,6 @@ spec:
     name: "replicaset"
   replicas: 3
   storageType: Durable
-  terminationPolicy: WipeOut
   storage:
     accessModes:
       - ReadWriteOnce

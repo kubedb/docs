@@ -231,7 +231,9 @@ stringData:
 
 
 # Deploy MongoDB
-So far we are ready with setup for continuously archive MongoDB, We deploy a MongoDB referring the MongoDB archiver object
+So far we are ready with setup for continuously archive MongoDB, We deploy a MongoDB referring the MongoDB archiver object.
+> KubeDB has supports for KubeDB managed Replicaset and Sharded MongoDB PITR support. It doesn't have support for standalone MongoDB. 
+> Bellow is the example for a Replicaset MongoDB. Process for Sharded MongoDB is exactly same.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -368,8 +370,8 @@ rs:PRIMARY> db.dropDatabase()
 
 ```
 
-Time time `1702457742` is unix timestamp. This is `Wed Dec 13 2023 08:55:42 GMT+0000` in human readable format.
-We can't restore from a full backup since at this point no full backup was perform. so we can choose a specific time in (just before this timestamp, for example `08:55:30`) which time we want to restore.
+Time `1702457742` is unix timestamp. This is `Wed Dec 13 2023 08:55:42 GMT+0000` in human-readable format.
+We can't restore from a full backup since at this point no full backup was performed. so we can choose a specific time in (just before this timestamp, for example `08:55:30`) which time we want to restore.
 
 ### Restore MongoDB
 ```yaml

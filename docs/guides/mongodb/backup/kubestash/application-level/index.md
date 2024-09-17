@@ -70,7 +70,6 @@ spec:
     name: "replicaset"
   replicas: 3
   storageType: Durable
-  terminationPolicy: WipeOut
   storage:
     accessModes:
       - ReadWriteOnce
@@ -573,7 +572,7 @@ metadata:
 spec:
   manifestOptions:
     restoreNamespace: dev
-    mongodb:
+    mongoDB:
       db: true
   dataSource:
     repository: s3-mongodb-repo

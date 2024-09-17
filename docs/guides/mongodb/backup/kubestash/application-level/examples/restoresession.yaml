@@ -6,7 +6,7 @@ metadata:
 spec:
   manifestOptions:
     restoreNamespace: dev
-    mongodb:
+    mongoDB:
       db: true
   dataSource:
     repository: s3-mongodb-repo
