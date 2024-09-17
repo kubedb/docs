@@ -2,9 +2,9 @@
 title: AppBinding CRD
 menu:
   docs_{{ .version }}:
-    identifier: dr-appbinding-concepts
+    identifier: guides-druid-concepts-appbinding
     name: AppBinding
-    parent: dr-concepts-druid
+    parent: guides-druid-concepts
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

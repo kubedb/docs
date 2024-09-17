@@ -1,0 +1,45 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: sample-druid-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Druid
+    namespace: demo
+    name: sample-druid
+  backends:
+    - name: gcs-backend
+      storageRef:
+        namespace: demo
+        name: gcs-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: frequent-backup
+      scheduler:
+        schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: gcs-druid-repo
+          backend: gcs-backend
+          directory: /druid
+          encryptionSecret:
+            name: encrypt-secret
+            namespace: demo
+      addon:
+        name: druid-addon
+        jobTemplate:
+          spec:
+            resources:
+              requests:
+                cpu: "200m"
+                memory: "1Gi"
+              limits:
+                cpu: "200m"
+                memory: "1Gi"
+        tasks:
+          - name: mysql-metadata-storage-backup
