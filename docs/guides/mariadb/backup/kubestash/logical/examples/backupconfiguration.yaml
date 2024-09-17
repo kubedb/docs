@@ -1,0 +1,36 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: sample-mariadb-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: MariaDB
+    namespace: demo
+    name: sample-mariadb
+  backends:
+    - name: gcs-backend
+      storageRef:
+        namespace: demo
+        name: gcs-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: frequent-backup
+      scheduler:
+        schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: gcs-mariadb-repo
+          backend: gcs-backend
+          directory: /mariadb
+          encryptionSecret:
+            name: encrypt-secret
+            namespace: demo
+      addon:
+        name: mariadb-addon
+        tasks:
+          - name: logical-backup
