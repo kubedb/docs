@@ -66,17 +66,7 @@ An `AppBinding` object has the following fields in the `spec` section:
 
 #### spec.type
 
-`spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to. Stash uses this field to resolve the values of `TARGET_APP_TYPE`, `TARGET_APP_GROUP` and `TARGET_APP_RESOURCE` variables of [BackupBlueprint](https://appscode.com/products/stash/latest/concepts/crds/backupblueprint/) object.
-
-This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `postgres` resource under `kubedb.com` group.
-
-Here, the variables are parsed as follows:
-
-|       Variable        |                                                               Usage                                                               |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `TARGET_APP_GROUP`    | Represents the application group where the respective app belongs (i.e: `kubedb.com`).                                            |
-| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents (i.e: `postgres`).                           |
-| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` (i.e: `kubedb.com/postgres`). |
+`spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to.
 
 #### spec.secret
 
@@ -84,33 +74,15 @@ Here, the variables are parsed as follows:
 
 This secret must contain the following keys:
 
-PostgreSQL :
-
 | Key                 | Usage                                               |
 | ------------------- | --------------------------------------------------- |
-| `POSTGRES_USER`     | Username of the target database.                    |
-| `POSTGRES_PASSWORD` | Password for the user specified by `POSTGRES_USER`. |
+| `Username`     | Username of the target Memcached database.                    |
+| `Password` | Password for the user specified by `Username`. |
 
-MySQL :
 
-| Key        | Usage                                          |
-| ---------- | ---------------------------------------------- |
-| `username` | Username of the target database.               |
-| `password` | Password for the user specified by `username`. |
+#### spec.appRef
+appRef refers to the underlying application. It has 4 fields named `apiGroup`, `kind`, `name` & `namespace`.
 
-MongoDB :
-
-| Key        | Usage                                          |
-| ---------- | ---------------------------------------------- |
-| `username` | Username of the target database.               |
-| `password` | Password for the user specified by `username`. |
-
-Elasticsearch:
-
-|       Key        |          Usage          |
-| ---------------- | ----------------------- |
-| `ADMIN_USERNAME` | Admin username          |
-| `ADMIN_PASSWORD` | Password for admin user |
 
 #### spec.clientConfig
 

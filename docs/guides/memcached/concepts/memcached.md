@@ -92,7 +92,8 @@ KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are 
 `spec.version` is a required field specifying the name of the [MemcachedVersion](/docs/guides/memcached/concepts/memcached-version.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MemcachedVersion` crds,
 
 - `1.5.22`
-- `1.6.22`, `1.6.29`
+- `1.6.22`
+- `1.6.29`
 
 ### spec.monitor
 
@@ -253,7 +254,7 @@ Following table show what KubeDB does when you delete Memcached crd for differen
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
 | 2. Delete PetSet          |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 3. Delete Services               |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 4. Delete Secrets                 |    &#10007;    | &#10007; | &#1000; | &#10003; |
+| 4. Delete Secrets                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
 

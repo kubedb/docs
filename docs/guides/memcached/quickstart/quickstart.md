@@ -382,7 +382,7 @@ Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/mem
 
 When [DeletionPolicy](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy) is set to `Halt` and you delete the memcached object, the KubeDB operator will delete the PetSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy).
 
-You can also keep the redis object and halt the database to resume it again later. If you halt the database, the KubeDB operator will delete the petsets and services but will keep the redis object, pvcs, secrets and backup (snapshots).
+You can also keep the memcached object and halt the database to resume it again later. If you halt the database, the KubeDB operator will delete the petsets and services but will keep the memcached object, pvcs, secrets and backup (snapshots).
 
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 

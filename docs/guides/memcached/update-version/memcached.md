@@ -1,5 +1,5 @@
 ---
-title: Updating Memcached Standalone
+title: Updating Memcached Database
 menu:
   docs_{{ .version }}:
     identifier: mc-update-version
@@ -38,7 +38,7 @@ namespace/demo created
 
 ### Prepare Memcached Database
 
-Now, we are going to deploy a `Memcached` standalone database with version `1.6.22`.
+Now, we are going to deploy a `Memcached` database with version `1.6.22`.
 
 ### Deploy Memcached:
 
@@ -161,6 +161,6 @@ memcached.kubedb.com/memcd-quickstart patched
 $ kubectl delete -n demo Memcached memcd-quickstart
 memcached.kubedb.com "memcd-quickstart" deleted
 
-$ kubectl delete -n demo Memcachedopsrequest update-standalone
+$ kubectl delete -n demo memcachedopsrequest update-standalone
 memcachedopsrequest.ops.kubedb.com "update-memcd" deleted
 ```
