@@ -16,7 +16,7 @@ section_menu_id: guides
 
 # Redis Backup & Restore Overview
 
-KubeDB also uses [KubeStash](https://kubestash.com) to backup and restore databases. KubeStash by AppsCode is a cloud native data backup and recovery solution for Kubernetes workloads and databases. KubeStash utilizes [restic](https://github.com/restic/restic) to securely backup stateful applications to any cloud or on-prem storage backends (for example, S3, GCS, Azure Blob storage, Minio, NetApp, Dell EMC etc.).
+KubeDB uses [KubeStash](https://kubestash.com) to backup and restore databases. KubeStash by AppsCode is a cloud native data backup and recovery solution for Kubernetes workloads and databases. KubeStash utilizes [restic](https://github.com/restic/restic) to securely backup stateful applications to any cloud or on-prem storage backends (for example, S3, GCS, Azure Blob storage, Minio, NetApp, Dell EMC etc.).
 
 <figure align="center">
   <img alt="KubeDB + KubeStash" src="/docs/guides/redis/backup/kubestash/overview/images/kubedb_plus_kubestash.svg">
@@ -36,11 +36,11 @@ The backup process consists of the following steps:
 
 1. At first, a user creates a `Secret`. This secret holds the credentials to access the backend where the backed up data will be stored.
 
-2. Then, she creates a `BackupStorage` custom resource that specifies the backend information, along with the `Secret` containing the credentials needed to access the backend.
+2. Then, he creates a `BackupStorage` custom resource that specifies the backend information, along with the `Secret` containing the credentials needed to access the backend.
 
 3. KubeStash operator watches for `BackupStorage` custom resources. When it finds a `BackupStorage` object, it initializes the `BackupStorage` by uploading the `metadata.yaml` file into the target storage.
 
-4. Then, she creates a `BackupConfiguration` custom resource that specifies the targeted the KubeDB managed `Redis` database, the `Addon` info with a specified task, etc. It also provides information about one or more repositories, each indicating a path and a `BackupStorage` for storing the backed-up data.
+4. Then, he creates a `BackupConfiguration` custom resource that specifies the targeted the KubeDB managed `Redis` database, the `Addon` info with a specified task, etc. It also provides information about one or more repositories, each indicating a path and a `BackupStorage` for storing the backed-up data.
 
 5. KubeStash operator watches for `BackupConfiguration` objects.
 
@@ -79,7 +79,7 @@ The restore process consists of the following steps:
 
 1. At first, a user creates a `Redis` database where the data will be restored or the user can use the same `Redis` database.
 
-2. Then, she creates a `RestoreSession` custom resource that specifies the target `Redis` database where the backed-up data will be restored. the `Repository` object that points to a `BackupStorage` that holds backend information, and the target `Snapshot`, which will be restored. It also specifies the `Addon` info with task to use to restore.
+2. Then, he creates a `RestoreSession` custom resource that specifies the target `Redis` database where the backed-up data will be restored. the `Repository` object that points to a `BackupStorage` that holds backend information, and the target `Snapshot`, which will be restored. It also specifies the `Addon` info with task to use to restore.
 
 3. KubeStash operator watches for `RestoreSession` custom resources.
 
