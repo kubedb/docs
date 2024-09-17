@@ -1,0 +1,34 @@
+apiVersion: kubedb.com/v1
+kind: MariaDB
+metadata:
+  name: restore-mariadb
+  namespace: demo
+spec:
+  init:
+    archiver:
+      encryptionSecret:
+        name: encrypt-secret
+        namespace: demo
+      fullDBRepository:
+        name: mariadb-full
+        namespace: demo
+      recoveryTimestamp: "2025-09-17T05:28:26Z"
+  version: "11.1.3"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  deletionPolicy: WipeOut
+  podTemplate:
+    spec:
+      containers:
+        - name: mariadb
+          args:
+            - "--log-bin"
+            - "--log-slave-updates"
+            - "--wsrep-gtid-mode=ON"
