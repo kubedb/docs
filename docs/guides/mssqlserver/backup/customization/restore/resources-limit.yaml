@@ -1,0 +1,29 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: sample-mssqlserver-restore
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: MSSQLServer
+    namespace: demo
+    name: restored-mssqlserver
+  dataSource:
+    repository: gcs-mssqlserver-repo
+    snapshot: latest
+  addon:
+    name: mssqlserver-addon
+    jobTemplate:
+      spec:
+        securityContext:
+          runAsUser: 0
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "1Gi"
+          limits:
+            cpu: "200m"
+            memory: "1Gi"
+    tasks:
+      - name: logical-backup-restore
