@@ -1,14 +1,14 @@
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-redis-backup
+  name: redis-cluster-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Redis
     namespace: demo
-    name: sample-redis
+    name: redis-cluster
   backends:
     - name: gcs-backend
       storageRef:

@@ -1,14 +1,14 @@
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: sample-redis-restore
+  name: redis-cluster-restore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Redis
     namespace: demo
-    name: restored-redis
+    name: restored-redis-cluster
   dataSource:
     repository: gcs-redis-repo
     snapshot: latest

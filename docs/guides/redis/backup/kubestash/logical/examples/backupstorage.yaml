@@ -7,11 +7,10 @@ spec:
   storage:
     provider: gcs
     gcs:
-      bucket: kubestash-qa
+      bucket: neaj-demo
       prefix: demo
       secretName: gcs-secret
   usagePolicy:
     allowedNamespaces:
       from: All
-  default: true
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete
