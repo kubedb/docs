@@ -2,9 +2,9 @@
 title: Vertical Scaling Memcached
 menu:
   docs_{{ .version }}:
-    identifier: rd-vertical-scaling-standalone
+    identifier: mc-vertical-scaling
     name: Standalone
-    parent: rd-vertical-scaling
+    parent: mc-vertical-scaling
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -108,7 +108,7 @@ We are now ready to apply the `MemcachedOpsRequest` CR to update the resources o
 
 ### Vertical Scaling
 
-Here, we are going to update the resources of the standalone database to meet the desired resources after scaling.
+Here, we are going to update the resources of the database to meet the desired resources after scaling.
 
 #### Create MemcahedOpsRequest
 

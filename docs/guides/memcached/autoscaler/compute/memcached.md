@@ -296,7 +296,7 @@ mcops-mc-autoscaler-compute-p1usdl   VerticalScaling   Successful   1m
 
 We can see from the above output that the `memcachedOpsRequest` has succeeded. 
 
-Now, we are going to verify from the Pod, and the Memcached yaml whether the resources of the standalone database has updated to meet up the desired state, Let's check,
+Now, we are going to verify from the Pod, and the Memcached yaml whether the resources of the database has updated to meet up the desired state, Let's check,
 
 ```bash
 $ kubectl get pod -n demo mc-autoscaler-compute-0 -o json | jq '.spec.containers[].resources'
