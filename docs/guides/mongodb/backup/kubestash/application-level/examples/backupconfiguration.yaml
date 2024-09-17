@@ -1,0 +1,37 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: sample-mongodb-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: MongoDB
+    namespace: demo
+    name: sample-mongodb
+  backends:
+    - name: s3-backend
+      storageRef:
+        namespace: demo
+        name: s3-storage
+      retentionPolicy:
+        name: backup-rp
+        namespace: demo
+  sessions:
+    - name: frequent-backup
+      scheduler:
+        schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: s3-mongodb-repo
+          backend: s3-backend
+          directory: /mongodb
+          encryptionSecret:
+            name: encry-secret
+            namespace: demo
+      addon:
+        name: mongodb-addon
+        tasks:
+          - name: manifest-backup
+          - name: logical-backup
