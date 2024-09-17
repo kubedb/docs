@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mc-horizontal-scaling
     name: Memcached
-    parent: mc-horizontal-scaling
+    parent: horizontal-scaling
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

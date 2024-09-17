@@ -2,7 +2,7 @@
 title: Autoscaling
 menu:
   docs_{{ .version }}:
-    identifier: mc-auto-scaling
+    identifier: auto-scaling
     name: Autoscaling
     parent: mc-memcached-guides
     weight: 47

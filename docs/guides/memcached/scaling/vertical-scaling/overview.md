@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mc-vertical-scaling-overview
     name: Overview
-    parent: mc-vertical-scaling
+    parent: vertical-scaling
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -2,7 +2,7 @@
 title: Scaling Memcached
 menu:
   docs_{{ .version }}:
-    identifier: mc-scaling
+    identifier: scaling
     name: Scaling
     parent: mc-memcached-guides
     weight: 43

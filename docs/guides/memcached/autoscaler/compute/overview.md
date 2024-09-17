@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mc-auto-scaling-overview
     name: Overview
-    parent: mc-compute-auto-scaling
+    parent: compute-auto-scaling
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

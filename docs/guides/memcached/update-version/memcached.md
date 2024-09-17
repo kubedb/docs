@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mc-update-version
     name: Memcached
-    parent: mc-update-version
+    parent: update-version
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -2,7 +2,7 @@
 title: UpdateVersion Memcached
 menu:
   docs_{{ .version }}:
-    identifier: mc-update-version
+    identifier: update-version
     name: UpdateVersion
     parent: mc-memcached-guides
     weight: 42

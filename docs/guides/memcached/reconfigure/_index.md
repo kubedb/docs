@@ -2,7 +2,7 @@
 title: Reconfigure
 menu:
   docs_{{ .version }}:
-    identifier: mc-reconfigure
+    identifier: reconfigure
     name: Reconfigure
     parent: mc-memcached-guides
     weight: 46

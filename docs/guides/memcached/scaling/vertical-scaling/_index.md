@@ -2,9 +2,9 @@
 title: Vertical Scaling
 menu:
   docs_{{ .version }}:
-    identifier: mc-vertical-scaling
+    identifier: vertical-scaling
     name: Vertical Scaling
-    parent: mc-scaling
+    parent: scaling
     weight: 20
 menu_name: docs_{{ .version }}
 ---
