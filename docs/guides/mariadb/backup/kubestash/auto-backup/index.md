@@ -46,7 +46,7 @@ namespace/demo created
 
 ### Prepare Backend
 
-We are going to store our backed up data into a `GCS` bucket. We have to create a `Secret` with necessary credentials and a `BackupStorage` CR to use this backend. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
+We are going to store our backup data into a `GCS` bucket. We have to create a `Secret` with necessary credentials and a `BackupStorage` CR to use this backend. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
 
 **Create Secret:**
 
@@ -366,7 +366,7 @@ $ kubectl get backupsession -n demo -w
 NAME                                                    INVOKER-TYPE          INVOKER-NAME                 PHASE       DURATION   AGE
 appbinding-sample-mariadb-frequent-backup-1726637655    BackupConfiguration   appbinding-sample-mariadb   Succeeded   2m11s      3m15s
 ```
-We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
+We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backup data has been stored in the backend.
 
 **Verify Backup:**
 
@@ -394,7 +394,7 @@ default-blueprint-appbinding-samiadb-frequent-backup-1726637655   default-bluepr
 >
 > These labels can be used to watch only the `Snapshot`s related to our target Database or `Repository`.
 
-If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
+If we check the YAML of the `Snapshot`, we can find the information about the backup components of the Database.
 
 ```bash
 $ kubectl get snapshot.storage.kubestash.com -n demo default-blueprint-appbinding-samgres-frequent-backup-1725533628 -oyaml
@@ -472,7 +472,7 @@ status:
 
 > KubeStash uses `mariadb-dump` to perform backups of target `MariaDB` databases. Therefore, the component name for logical backups is set as `dump`.
 
-Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `blueprint/default-blueprint/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/default-blueprint/snapshots` directory.
+Now, if we navigate to the GCS bucket, we will see the backup data stored in the `blueprint/default-blueprint/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/default-blueprint/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
@@ -717,7 +717,7 @@ NAME                                                      INVOKER-TYPE          
 appbinding-sample-mariadb-2-frequent-backup-1726640601    BackupConfiguration   appbinding-sample-mariadb-2   Succeeded   2m6s       10m
 ```
 
-We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
+We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backup data has been stored in the backend.
 
 **Verify Backup:**
 
@@ -746,7 +746,7 @@ customize-blueprint-appbinding-sdb-2-frequent-backup-1726640601   customize-blue
 >
 > These labels can be used to watch only the `Snapshot`s related to our target Database or `Repository`.
 
-If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
+If we check the YAML of the `Snapshot`, we can find the information about the backup components of the Database.
 
 ```bash
 $ kubectl get snapshot.storage.kubestash.com -n demo customize-blueprint-appbinding-sql-2-frequent-backup-1725597000 -oyaml
@@ -824,7 +824,7 @@ status:
 
 > KubeStash uses `mariadb-dump` to perform backups of target `MariaDB` databases. Therefore, the component name for logical backups is set as `dump`.
 
-Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `blueprint/demo/sample-mariadb-2/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/demo/sample-mariadb-2/snapshots` directory.
+Now, if we navigate to the GCS bucket, we will see the backup data stored in the `blueprint/demo/sample-mariadb-2/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/demo/sample-mariadb-2/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 

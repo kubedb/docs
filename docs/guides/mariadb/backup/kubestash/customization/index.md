@@ -277,8 +277,9 @@ spec:
 
 ### Passing arguments to the restore process
 
-You can pass any supported `psql` arguments to the restore process using the `args` field within the `addon.tasks[*].params` section. This example demonstrates how to specify a database `testdb` to connect to during the restore process.
+Similar to the backup process, you can pass arguments to the restore process through the args params under addon.tasks[*].params section.
 
+This example will restore data from database testdb only.
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession

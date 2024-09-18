@@ -13,7 +13,7 @@ section_menu_id: guides
 
 # Backup and Restore MariaDB database using KubeStash
 
-KubeStash allows you to backup and restore `MariaDB` databases. It supports backups for `MariaDB` instances running in Standalone,  and HA cluster configurations. KubeStash makes managing your `MariaDB` backups and restorations more straightforward and efficient.
+KubeStash allows you to backup and restore `MariaDB` databases. It supports backups for `MariaDB` instances running in Standalone,  and Galera cluster configurations. KubeStash makes managing your `MariaDB` backups and restorations more straightforward and efficient.
 
 This guide will give you an overview how you can take backup and restore your `MariaDB` databases using `Kubestash`.
 
@@ -106,8 +106,8 @@ sample-mariadb-auth           kubernetes.io/basic-auth   2      5m49s
 
 $ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mariadb
 NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
-sample-mariadb            ClusterIP   10.128.7.155   <none>        3306/TCP   6m28s
-sample-mariadb-pods       ClusterIP   None           <none>        3306/TCP   6m28s     5432/TCP                     5m55s
+sample-mariadb            ClusterIP   10.128.7.155   <none>        3306/TCP                     6m28s
+sample-mariadb-pods       ClusterIP   None           <none>        3306/TCP                     6m28s     
 ```
 
 Here, we have to use service `sample-mariadb` and secret `sample-mariadb-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/mariadb/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
@@ -248,7 +248,7 @@ Now, we are ready to backup the database.
 
 ### Prepare Backend
 
-We are going to store our backed up data into a `GCS` bucket. We have to create a `Secret` with necessary credentials and a `BackupStorage` CR to use this backend. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
+We are going to store our backup data into a `GCS` bucket. We have to create a `Secret` with necessary credentials and a `BackupStorage` CR to use this backend. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
 
 **Create Secret:**
 
@@ -438,7 +438,7 @@ NAME                                                INVOKER-TYPE          INVOKE
 sample-mariadb-backup-frequent-backup-1725449400    BackupConfiguration   sample-mariadb-backup     Succeeded              7m22s
 ```
 
-We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
+We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backup data has been stored in the backend.
 
 **Verify Backup:**
 
@@ -466,7 +466,7 @@ gcs-mariadb-repo-sample-mariadb-ckup-frequent-backup-1726569774       gcs-mariad
 >
 > These labels can be used to watch only the `Snapshot`s related to our target Database or `Repository`.
 
-If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
+If we check the YAML of the `Snapshot`, we can find the information about the backup components of the Database.
 
 ```bash
 $ kubectl get snapshot.storage.kubestash.com -n demo gcs-mariadb-repo-sample-mariadb-ckup-frequent-backup-1726569774 -oyaml
@@ -544,7 +544,7 @@ status:
 
 > KubeStash uses `mariadb-dump` to perform backups of target `MariaDB` databases. Therefore, the component name for logical backups is set as `dump`.
 
-Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `demo/popstgres/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/mariadb/snapshots` directory.
+Now, if we navigate to the GCS bucket, we will see the backup data stored in the `demo/mariadb/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/mariadb/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
@@ -598,7 +598,7 @@ restored-mariadb    11.1.3    Provisioning   110s
 
 Now, we need to create a `RestoreSession` CR pointing to targeted `MariaDB` database.
 
-Below, is the contents of YAML file of the `RestoreSession` object that we are going to create to restore backed up data into the newly created `MariaDB` database named `restored-mariadb`.
+Below, is the contents of YAML file of the `RestoreSession` object that we are going to create to restore backup data into the newly created `MariaDB` database named `restored-mariadb`.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -627,7 +627,7 @@ spec:
 Here,
 
 - `.spec.target` refers to the newly created `restored-mariadb` MariaDB object to where we want to restore backup data.
-- `.spec.dataSource.repository` specifies the Repository object that holds the backed up data.
+- `.spec.dataSource.repository` specifies the Repository object that holds the backup data.
 - `.spec.dataSource.snapshot` specifies to restore from latest `Snapshot`.
 
 Let's create the RestoreSession CRD object we have shown above,
@@ -641,7 +641,6 @@ Once, you have created the `RestoreSession` object, KubeStash will create restor
 
 ```bash
 $ watch kubectl get restoresession -n demo
-Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Aug 21 10:44:05 2024
 NAME                      REPOSITORY          FAILURE-POLICY   PHASE       DURATION   AGE
 sample-mariadb-restore   gcs-mariadb-repo                    Succeeded   7s         116s
 ```

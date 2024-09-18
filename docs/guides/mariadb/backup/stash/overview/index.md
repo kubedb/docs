@@ -2,9 +2,9 @@
 title: Backup & Restore MariaDB Using Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-backup-overview-stash
+    identifier: guides-mariadb-backup-overview-stashv1
     name: Overview
-    parent: guides-mariadb-backup-stash
+    parent: guides-mariadb-backup-stashv1
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

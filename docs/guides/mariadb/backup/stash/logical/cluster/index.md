@@ -3,9 +3,9 @@ title: Backup KubeDB managed MariaDB Cluster using Stash | Stash
 description: Backup KubeDB managed clustered MariaDB using Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-backup-logical-clustered
+    identifier: guides-mariadb-backup-logical-clustered-stashv1
     name: Clustered MariaDB
-    parent: guides-mariadb-backup-logical
+    parent: guides-mariadb-backup-logical-stashv1
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -3,9 +3,9 @@ title: Backup KubeDB managed stanadlone MariaDB using Stash | Stash
 description: Backup KubeDB managed stanadlone MariaDB using Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-backup-logical-standalone
+    identifier: guides-mariadb-backup-logical-standalone-stashv1
     name: Standalone MariaDB
-    parent: guides-mariadb-backup-logical
+    parent: guides-mariadb-backup-logical-stashv1
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -46,7 +46,7 @@ namespace/demo created
 
 ## Backup MariaDB
 
-KubeStash supports backups for `MariaDB` instances across different configurations, including Standalone and HA Cluster setups. In this demonstration, we'll focus on a `MariaDB` database using HA cluster configuration. The backup and restore process is similar for Standalone configuration.
+KubeStash supports backups for `MariaDB` instances across different configurations, including Standalone and Galera Cluster setups. In this demonstration, we'll focus on a `MariaDB` database using Galera cluster configuration. The backup and restore process is similar for Standalone configuration.
 
 This section will demonstrate how to take application-level backup of a `MariaDB` database. Here, we are going to deploy a `MariaDB` database using KubeDB. Then, we are going to back up the database at the application level to a `GCS` bucket. Finally, we will restore the entire `MariaDB` database.
 
@@ -248,7 +248,7 @@ Now, we are ready to backup the database.
 
 ### Prepare Backend
 
-We are going to store our backed up data into a `GCS` bucket. We have to create a `Secret` with necessary credentials and a `BackupStorage` CR to use this backend. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
+We are going to store our backup data into a `GCS` bucket. We have to create a `Secret` with necessary credentials and a `BackupStorage` CR to use this backend. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
 
 **Create Secret:**
 
@@ -441,7 +441,7 @@ NAME                                                INVOKER-TYPE          INVOKE
 sample-mariadb-backup-frequent-backup-1726651003   BackupConfiguration   sample-mariadb-backup    Succeeded              7m22s
 ```
 
-We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
+We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backup data has been stored in the backend.
 
 **Verify Backup:**
 
@@ -469,7 +469,7 @@ gcs-mariadb-repo-sample-mariadb-ckup-frequent-backup-1726651003       gcs-mariad
 >
 > These labels can be used to watch only the `Snapshot`s related to our target Database or `Repository`.
 
-If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
+If we check the YAML of the `Snapshot`, we can find the information about the backup components of the Database.
 
 ```bash
 $ kubectl get snapshots -n demo gcs-mariadb-repo-sample-mariadb-backup-frequent-backup-1725449400 -oyaml
@@ -561,7 +561,7 @@ status:
 
 > KubeStash set component name as `manifest` for the `manifest backup` of MariaDB databases.
 
-Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `demo/mariadb/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/mariadb/snapshots` directory.
+Now, if we navigate to the GCS bucket, we will see the backup data stored in the `demo/mariadb/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/mariadb/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
@@ -611,7 +611,7 @@ spec:
 Here,
 
 - `.spec.manifestOptions.mariadb.db` specifies whether to restore the DB manifest or not.
-- `.spec.dataSource.repository` specifies the Repository object that holds the backed up data.
+- `.spec.dataSource.repository` specifies the Repository object that holds the backup data.
 - `.spec.dataSource.snapshot` specifies to restore from latest `Snapshot`.
 - `.spec.addon.tasks[*]` specifies that both the `manifest-restore` and `logical-backup-restore` tasks.
 
