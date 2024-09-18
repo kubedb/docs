@@ -1,11 +1,11 @@
 ---
-title: PostgreSQL Backup Customization | KubeStash
-description: Customizing PostgreSQL Backup and Restore process with KubeStash
+title: MariaDB Backup Customization | KubeStash
+description: Customizing MariaDB Backup and Restore process with KubeStash
 menu:
   docs_{{ .version }}:
-    identifier: guides-pg-backup-customization-stashv2
+    identifier: guides-mariadb-backup-customization-stashv2
     name: Customizing Backup & Restore Process
-    parent: guides-pg-backup-stashv2
+    parent: guides-mariadb-backup-stashv2
     weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -21,22 +21,21 @@ In this section, we are going to show you how to customize the backup process. H
 
 ### Passing arguments to the backup process
 
-KubeStash PostgreSQL addon uses the [pg_dumpall](https://www.postgresql.org/docs/current/app-pg-dumpall.html) command by default for backups. However, you can change the dump command to [pg_dump](https://www.postgresql.org/docs/current/app-pgdump.html) by setting the `backupCmd` parameter under the `addon.tasks[*].params` section. You can pass supported options for either `pg_dumpall` or `pg_dump` through the `args` parameter in the same section.
-
-The below example shows how you can pass the `--clean` to include SQL commands to clean (drop) databases before recreating them.
+KubeStash MariaDB addon uses the [mariadb-dump](https://mariadb.com/kb/en/mariadb-dump/) command by default for backups.
+The below example shows how you can pass the `--flush-logs` to flush the MariaDB server log files before starting the dump.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-postgres-backup
+  name: sample-mariadb-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: sample-postgres
+    name: sample-mariadb
   backends:
     - name: gcs-backend
       storageRef:
@@ -52,39 +51,37 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-postgres-repo
+        - name: gcs-mariadb-repo
           backend: gcs-backend
-          directory: /postgres
+          directory: /mariadb
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: postgres-addon
+        name: mariadb-addon
         tasks:
           - name: logical-backup
             params:
-              args: --clean
+              args: --flush-logs
 ```
 
 
 ### Passing a target database to the backup process
 
-KubeStash PostgreSQL addon uses the [pg_dumpall](https://www.postgresql.org/docs/current/app-pg-dumpall.html) command by default for backups. If you want to back up a single database, you’ll need to switch the command to [pg_dump](https://www.postgresql.org/docs/current/app-pgdump.html). You can do this by setting `backupCmd` to `pg_dump` under the `addon.tasks[*].params` section and specifying the database name using the `args` parameter in the same section.
-
-The below example shows how you can set `pg_dump` and pass target database name during backup. 
+The below example shows how you can pass target database name during backup. 
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-postgres-backup
+  name: sample-mariadb-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: sample-postgres
+    name: sample-mariadb
   backends:
     - name: gcs-backend
       storageRef:
@@ -100,19 +97,18 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-postgres-repo
+        - name: gcs-mariadb-repo
           backend: gcs-backend
-          directory: /postgres
+          directory: /mariadb
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: postgres-addon
+        name: mariadb-addon
         tasks:
           - name: logical-backup
             params:
-              backupCmd: pg_dump
-              args: testdb
+              args: --databases testdb
 ```
 
 > **WARNING**: Make sure that your provided database has been created before taking backup.
@@ -125,14 +121,14 @@ You can configure multiple backends within a single `backupConfiguration`. To ba
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-postgres-backup
+  name: sample-mariadb-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: sample-postgres
+    name: sample-mariadb
   backends:
     - name: gcs-backend
       storageRef:
@@ -155,20 +151,20 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-postgres-repo
+        - name: gcs-mariadb-repo
           backend: gcs-backend
-          directory: /postgres
+          directory: /mariadb
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
-        - name: s3-postgres-repo
+        - name: s3-mariadb-repo
           backend: s3-backend
-          directory: /postgres-copy
+          directory: /mariadb-copy
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: postgres-addon
+        name: mariadb-addon
         tasks:
           - name: logical-backup
 ```
@@ -181,14 +177,14 @@ If your cluster requires running the backup job as a specific user, you can prov
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-postgres-backup
+  name: sample-mariadb-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: sample-postgres
+    name: sample-mariadb
   backends:
     - name: gcs-backend
       storageRef:
@@ -204,14 +200,14 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-postgres-repo
+        - name: gcs-mariadb-repo
           backend: gcs-backend
-          directory: /postgres
+          directory: /mariadb
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: postgres-addon
+        name: mariadb-addon
         jobTemplate:
           spec:
             securityContext:
@@ -229,14 +225,14 @@ If you want to specify the Memory/CPU limit/request for your backup job, you can
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-postgres-backup
+  name: sample-mariadb-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: sample-postgres
+    name: sample-mariadb
   backends:
     - name: gcs-backend
       storageRef:
@@ -252,14 +248,14 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-postgres-repo
+        - name: gcs-mariadb-repo
           backend: gcs-backend
-          directory: /postgres
+          directory: /mariadb
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: postgres-addon
+        name: mariadb-addon
         jobTemplate:
           spec:
             resources:
@@ -277,7 +273,7 @@ spec:
 
 ## Customizing Restore Process
 
-`KubeStash` uses [psql](https://www.postgresql.org/docs/current/app-psql.html) during the restore process. In this section, we are going to show how you can pass arguments to the restore process, restore a specific snapshot, run restore job as a specific user, etc.
+`KubeStash` uses [mariadb-dump](https://mariadb.com/kb/en/mariadb-dump/) during the restore process. In this section, we are going to show how you can pass arguments to the restore process, restore a specific snapshot, run restore job as a specific user, etc.
 
 ### Passing arguments to the restore process
 
@@ -287,26 +283,26 @@ You can pass any supported `psql` arguments to the restore process using the `ar
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: sample-postgres-restore
+  name: sample-mariadb-restore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: restored-postgres
+    name: restored-mariadb
   dataSource:
-    repository: gcs-postgres-repo
+    repository: gcs-mariadb-repo
     snapshot: latest
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: postgres-addon
+    name: mariadb-addon
     tasks:
       - name: logical-backup-restore
         params:
-          args: --dbname=testdb
+          args: testdb
 ```
 
 ### Restore specific snapshot
@@ -314,12 +310,12 @@ spec:
 You can also restore a specific snapshot. At first, list the available snapshot as bellow,
 
 ```bash
-$ kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=gcs-postgres-repo
+$ kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=gcs-mariadb-repo
 NAME                                                                    REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725257849   gcs-postgres-repo   frequent-backup   2024-09-02T06:18:01Z      Delete            Succeeded   15m
-gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725258000   gcs-postgres-repo   frequent-backup   2024-09-02T06:20:00Z      Delete            Succeeded   13m
-gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725258300   gcs-postgres-repo   frequent-backup   2024-09-02T06:25:00Z      Delete            Succeeded   8m34s
-gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725258600   gcs-postgres-repo   frequent-backup   2024-09-02T06:30:00Z      Delete            Succeeded   3m34s
+gcs-mariadb-repo-sample-mariadb-backup-frequent-backup-1725257849   gcs-mariadb-repo   frequent-backup   2024-09-02T06:18:01Z      Delete            Succeeded   15m
+gcs-mariadb-repo-sample-mariadb-backup-frequent-backup-1725258000   gcs-mariadb-repo   frequent-backup   2024-09-02T06:20:00Z      Delete            Succeeded   13m
+gcs-mariadb-repo-sample-mariadb-backup-frequent-backup-1725258300   gcs-mariadb-repo   frequent-backup   2024-09-02T06:25:00Z      Delete            Succeeded   8m34s
+gcs-mariadb-repo-sample-mariadb-backup-frequent-backup-1725258600   gcs-mariadb-repo   frequent-backup   2024-09-02T06:30:00Z      Delete            Succeeded   3m34s
 ```
 
 The below example shows how you can pass a specific snapshot name in `.spec.dataSource` section.
@@ -328,22 +324,22 @@ The below example shows how you can pass a specific snapshot name in `.spec.data
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: sample-postgres-restore
+  name: sample-mariadb-restore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: restored-postgres
+    name: restored-mariadb
   dataSource:
-    repository: gcs-postgres-repo
-    snapshot: gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725258000
+    repository: gcs-mariadb-repo
+    snapshot: gcs-mariadb-repo-sample-mariadb-backup-frequent-backup-1725258000
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: postgres-addon
+    name: mariadb-addon
     tasks:
       - name: logical-backup-restore
 ```
@@ -356,22 +352,22 @@ Similar to the backup process under the `addon.jobTemplate.spec.` you can provid
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: sample-postgres-restore
+  name: sample-mariadb-restore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: restored-postgres
+    name: restored-mariadb
   dataSource:
-    repository: gcs-postgres-repo
+    repository: gcs-mariadb-repo
     snapshot: latest
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: postgres-addon
+    name: mariadb-addon
     jobTemplate:
       spec:
         securityContext:
@@ -389,22 +385,22 @@ Similar to the backup process, you can also provide `resources` field under the 
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: sample-postgres-restore
+  name: sample-mariadb-restore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: restored-postgres
+    name: restored-mariadb
   dataSource:
-    repository: gcs-postgres-repo
+    repository: gcs-mariadb-repo
     snapshot: latest
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: postgres-addon
+    name: mariadb-addon
     jobTemplate:
       spec:
         resources:

@@ -2,9 +2,9 @@
 title: Backup & Restore MariaDB Using Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-backup-overview
+    identifier: guides-mariadb-backup-overview-stash
     name: Overview
-    parent: guides-mariadb-backup
+    parent: guides-mariadb-backup-stash
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -36,7 +36,7 @@ Stash supports taking [logical backup](https://mariadb.com/kb/en/backup-and-rest
 The following diagram shows how Stash takes logical backup of a MariaDB database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="MariaDB Backup Overview" src="/docs/guides/mariadb/backup/overview/images/mariadb-logical-backup.svg">
+  <img alt="MariaDB Backup Overview" src="/docs/guides/mariadb/backup/stash/overview/images/mariadb-logical-backup.svg">
   <figcaption align="center">Fig: MariaDB Logical Backup Overview</figcaption>
 </figure>
 
@@ -71,7 +71,7 @@ The backup process consists of the following steps:
 The following diagram shows how Stash restores a MariaDB database from a logical backup. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Database Restore Overview" src="/docs/guides/mariadb/backup/overview/images/mariadb-logical-restore.svg">
+  <img alt="Database Restore Overview" src="/docs/guides/mariadb/backup/stash/overview/images/mariadb-logical-restore.svg">
   <figcaption align="center">Fig: MariaDB Logical Restore Process Overview</figcaption>
 </figure>
 
@@ -93,7 +93,7 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Backup a standalone MariaDB databases using Stash following the guide from [here](/docs/guides/mariadb/backup/logical/standalone/index.md).
-- Backup a MariaDB cluster using Stash following the guide from [here](/docs/guides/mariadb/backup/logical/cluster/index.md).
-- Configure a generic backup template for all the MariaDB databases of your cluster using Stash Auto-backup by following the guide from [here](/docs/guides/mariadb/backup/auto-backup/index.md).
-- Customize the backup & restore process for your cluster by following the guides from [here](/docs/guides/mariadb/backup/customization/index.md).
+- Backup a standalone MariaDB databases using Stash following the guide from [here](/docs/guides/mariadb/backup/stash/logical/standalone/index.md).
+- Backup a MariaDB cluster using Stash following the guide from [here](/docs/guides/mariadb/backup/stash/logical/cluster/index.md).
+- Configure a generic backup template for all the MariaDB databases of your cluster using Stash Auto-backup by following the guide from [here](/docs/guides/mariadb/backup/stash/auto-backup/index.md).
+- Customize the backup & restore process for your cluster by following the guides from [here](/docs/guides/mariadb/backup/stash/customization/index.md).

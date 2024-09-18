@@ -3,9 +3,9 @@ title: MariaDB Auto-Backup | Stash
 description: Backup MariaDB using Stash Auto-Backup
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-backup-auto-backup
+    identifier: guides-mariadb-backup-auto-backup-stash
     name: Auto-Backup
-    parent: guides-mariadb-backup
+    parent: guides-mariadb-backup-stash
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -22,7 +22,7 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
-- If you are not familiar with how Stash backup and restore MariaDB databases, please check the following guide [here](/docs/guides/mariadb/backup/overview/index.md).
+- If you are not familiar with how Stash backup and restore MariaDB databases, please check the following guide [here](/docs/guides/mariadb/backup/stash/overview/index.md).
 - If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/overview/).
 - If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/database/).
 
@@ -264,7 +264,7 @@ app-sample-mariadb-1614230701   BackupConfiguration   app-sample-mariadb   Runni
 Once the backup has been completed successfully, you should see the backed up data has been stored in the bucket at the directory pointed by the `prefix` field of the `Repository`.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/auto-backup/images/sample-mariadb.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/stash/auto-backup/images/sample-mariadb.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -445,7 +445,7 @@ app-sample-mariadb-2-1614233880   BackupConfiguration   app-sample-mariadb-2   R
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/auto-backup/images/sample-mariadb-2.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/stash/auto-backup/images/sample-mariadb-2.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -620,7 +620,7 @@ app-sample-mariadb-3-1614254708   BackupConfiguration   app-sample-mariadb-3   R
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/auto-backup/images/sample-mariadb-3.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/stash/auto-backup/images/sample-mariadb-3.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 

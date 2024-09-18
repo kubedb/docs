@@ -1,21 +1,21 @@
 ---
-title: Application Level Backup & Restore PostgreSQL | KubeStash
+title: Application Level Backup & Restore MariaDB | KubeStash
 description: Application Level Backup and Restore using KubeStash
 menu:
   docs_{{ .version }}:
     identifier: guides-application-level-backup-stashv2
     name: Application Level Backup
-    parent: guides-pg-backup-stashv2
+    parent: guides-mariadb-backup-stashv2
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Application Level Backup and Restore PostgreSQL database using KubeStash
+# Application Level Backup and Restore MariaDB database using KubeStash
 
-KubeStash offers application-level backup and restore functionality for `PostgreSQL` databases. It captures both manifest and data backups of any `PostgreSQL` database in a single snapshot. During the restore process, KubeStash first applies the `PostgreSQL` manifest to the cluster and then restores the data into it.
+KubeStash offers application-level backup and restore functionality for `MariaDB` databases. It captures both manifest and data backups of any `MariaDB` database in a single snapshot. During the restore process, KubeStash first applies the `MariaDB` manifest to the cluster and then restores the data into it.
 
-This guide will give you an overview how you can take application-level backup and restore your `PostgreSQL` databases using `Kubestash`.
+This guide will give you an overview how you can take application-level backup and restore your `MariaDB` databases using `Kubestash`.
 
 ## Before You Begin
 
@@ -23,7 +23,7 @@ This guide will give you an overview how you can take application-level backup a
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how KubeStash backup and restore PostgreSQL databases, please check the following guide [here](/docs/guides/postgres/backup/kubestash/overview/index.md).
+- If you are not familiar with how KubeStash backup and restore MariaDB databases, please check the following guide [here](/docs/guides/mariadb/backup/kubestash/overview/index.md).
 
 You should be familiar with the following `KubeStash` concepts:
 
@@ -42,33 +42,31 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/application-level/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/mariadb/backup/kubestash/application-level/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-## Backup PostgreSQL
+## Backup MariaDB
 
-KubeStash supports backups for `PostgreSQL` instances across different configurations, including Standalone and HA Cluster setups. In this demonstration, we'll focus on a `PostgreSQL` database using HA cluster configuration. The backup and restore process is similar for Standalone configuration.
+KubeStash supports backups for `MariaDB` instances across different configurations, including Standalone and HA Cluster setups. In this demonstration, we'll focus on a `MariaDB` database using HA cluster configuration. The backup and restore process is similar for Standalone configuration.
 
-This section will demonstrate how to take application-level backup of a `PostgreSQL` database. Here, we are going to deploy a `PostgreSQL` database using KubeDB. Then, we are going to back up the database at the application level to a `GCS` bucket. Finally, we will restore the entire `PostgreSQL` database.
+This section will demonstrate how to take application-level backup of a `MariaDB` database. Here, we are going to deploy a `MariaDB` database using KubeDB. Then, we are going to back up the database at the application level to a `GCS` bucket. Finally, we will restore the entire `MariaDB` database.
 
-### Deploy Sample PostgreSQL Database
+### Deploy Sample MariaDB Database
 
-Let's deploy a sample `PostgreSQL` database and insert some data into it.
+Let's deploy a sample `MariaDB` database and insert some data into it.
 
-**Create PostgreSQL CR:**
+**Create MariaDB CR:**
 
-Below is the YAML of a sample `PostgreSQL` CR that we are going to create for this tutorial:
+Below is the YAML of a sample `MariaDB` CR that we are going to create for this tutorial:
 
 ```yaml
 apiVersion: kubedb.com/v1
-kind: Postgres
+kind: MariaDB
 metadata:
-  name: sample-postgres
+  name: sample-mariadb
   namespace: demo
 spec:
-  version: "16.1"
+  version: 11.1.3
   replicas: 3
-  standbyMode: Hot
-  streamingMode: Synchronous
   storageType: Durable
   storage:
     accessModes:
@@ -79,21 +77,21 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Create the above `PostgreSQL` CR,
+Create the above `MariaDB` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/application-level/examples/sample-postgres.yaml
-postgres.kubedb.com/sample-postgres created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/application-level/examples/sample-mariadb.yaml
+mariadb.kubedb.com/sample-mariadb created
 ```
 
-KubeDB will deploy a `PostgreSQL` database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
+KubeDB will deploy a `MariaDB` database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get pg -n demo sample-postgres
+$ kubectl get md -n demo sample-mariadb
 NAME              VERSION   STATUS   AGE
-sample-postgres   16.1      Ready    5m1s
+sample-mariadb    11.1.3    Ready    5m1s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
@@ -101,16 +99,15 @@ The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Servic
 ```bash
 $ kubectl get secret -n demo 
 NAME                          TYPE                       DATA   AGE
-sample-postgres-auth          kubernetes.io/basic-auth   2      5m20s
+sample-mariadb-auth           kubernetes.io/basic-auth   2      5m49s
 
-$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-postgres
-NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
-sample-postgres           ClusterIP   10.96.23.177   <none>        5432/TCP,2379/TCP            5m55s
-sample-postgres-pods      ClusterIP   None           <none>        5432/TCP,2380/TCP,2379/TCP   5m55s
-sample-postgres-standby   ClusterIP   10.96.26.118   <none>        5432/TCP                     5m55s
+$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mariadb
+NAME                  TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)         AGE
+sample-mariadb        ClusterIP   10.128.92.155   <none>        3306/TCP        62s
+sample-mariadb-pods   ClusterIP   None            <none>        3306/TCP        62s
 ```
 
-Here, we have to use service `sample-postgres` and secret `sample-postgres-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/postgres/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
+Here, we have to use service `sample-mariadb` and secret `sample-mariadb-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/mariadb/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
 
 
 **Verify AppBinding:**
@@ -119,67 +116,74 @@ Verify that the `AppBinding` has been created successfully using the following c
 
 ```bash
 $ kubectl get appbindings -n demo
-NAME                       TYPE                  VERSION   AGE
-sample-postgres            kubedb.com/postgres   16.1      9m30s
+NAME                      TYPE                  VERSION   AGE
+sample-mariadb            kubedb.com/mariadb    11.1.3    6m14s
 ```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo sample-postgres -o yaml
+$ kubectl get appbindings -n demo sample-mariadb -o yaml
 ```
 
 ```yaml
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
+apiVersion: v1
+items:
+  - apiVersion: appcatalog.appscode.com/v1alpha1
+    kind: AppBinding
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/last-applied-configuration: |
+          {"apiVersion":"kubedb.com/v1","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"storageType":"Durable","version":"11.1.3"}}
+      creationTimestamp: "2024-09-18T08:31:32Z"
+      generation: 1
+      labels:
+        app.kubernetes.io/component: database
+        app.kubernetes.io/instance: sample-mariadb
+        app.kubernetes.io/managed-by: kubedb.com
+        app.kubernetes.io/name: mariadbs.kubedb.com
+      name: sample-mariadb
+      namespace: demo
+      ownerReferences:
+        - apiVersion: kubedb.com/v1
+          blockOwnerDeletion: true
+          controller: true
+          kind: MariaDB
+          name: sample-mariadb
+          uid: 35400a0b-97b1-4437-a3b9-416678b71adf
+      resourceVersion: "1728063"
+      uid: 8ebec467-32d5-416a-975a-67e890a4efe6
+    spec:
+      appRef:
+        apiGroup: kubedb.com
+        kind: MariaDB
+        name: sample-mariadb
+        namespace: demo
+      clientConfig:
+        service:
+          name: sample-mariadb
+          port: 3306
+          scheme: tcp
+        url: tcp(sample-mariadb.demo.svc:3306)/
+      parameters:
+        address: gcomm://sample-mariadb-0.sample-mariadb-pods.demo,sample-mariadb-1.sample-mariadb-pods.demo,sample-mariadb-2.sample-mariadb-pods.demo
+        apiVersion: config.kubedb.com/v1alpha1
+        group: sample-mariadb
+        kind: GaleraArbitratorConfiguration
+        sstMethod: xtrabackup-v2
+        stash:
+          addon:
+            backupTask:
+              name: mariadb-backup-10.5.8
+            restoreTask:
+              name: mariadb-restore-10.5.8
+      secret:
+        name: sample-mariadb-auth
+      type: kubedb.com/mariadb
+      version: 11.1.3
+kind: List
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"Postgres","metadata":{"annotations":{},"name":"sample-postgres","namespace":"demo"},"spec":{"deletionPolicy":"DoNotTerminate","replicas":3,"standbyMode":"Hot","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"storageType":"Durable","streamingMode":"Synchronous","version":"16.1"}}
-  creationTimestamp: "2024-09-04T10:07:04Z"
-  generation: 1
-  labels:
-    app.kubernetes.io/component: database
-    app.kubernetes.io/instance: sample-postgres
-    app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: postgreses.kubedb.com
-  name: sample-postgres
-  namespace: demo
-  ownerReferences:
-  - apiVersion: kubedb.com/v1
-    blockOwnerDeletion: true
-    controller: true
-    kind: Postgres
-    name: sample-postgres
-    uid: 0810a96c-a2b6-4e8a-a70a-51753660450c
-  resourceVersion: "245972"
-  uid: 73bdba85-c932-464b-93a8-7f1ba8dfff1b
-spec:
-  appRef:
-    apiGroup: kubedb.com
-    kind: Postgres
-    name: sample-postgres
-    namespace: demo
-  clientConfig:
-    service:
-      name: sample-postgres
-      path: /
-      port: 5432
-      query: sslmode=disable
-      scheme: postgresql
-  parameters:
-    apiVersion: appcatalog.appscode.com/v1alpha1
-    kind: StashAddon
-    stash:
-      addon:
-        backupTask:
-          name: postgres-backup-16.1
-        restoreTask:
-          name: postgres-restore-16.1
-  secret:
-    name: sample-postgres-auth
-  type: kubedb.com/postgres
-  version: "16.1"
+  resourceVersion: ""
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -195,88 +199,49 @@ Here,
 Now, we are going to exec into one of the database pod and create some sample data. At first, find out the database `Pod` using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-postgres" 
-NAME                READY   STATUS    RESTARTS   AGE
-sample-postgres-0   2/2     Running   0          16m
-sample-postgres-1   2/2     Running   0          13m
-sample-postgres-2   2/2     Running   0          13m
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mariadb" 
+NAME               READY   STATUS    RESTARTS   AGE
+sample-mariadb-0   2/2     Running   0          8m4s
+sample-mariadb-1   2/2     Running   0          8m3s
+sample-mariadb-2   2/2     Running   0          8m3s
 ```
 
 Now, let’s exec into the pod and create a table,
 
 ```bash
-$ kubectl exec -it -n demo sample-postgres-0 -- sh
+$ kubectl exec -it -n demo  mariadb-0 -- bash
 
-# login as "postgres" superuser.
-/ $ psql -U postgres
-psql (16.1)
-Type "help" for help.
+bash-4.4$ mariadb -uroot -p$MYSQL_ROOT_PASSWORD
 
-# list available databases
-postgres=# \l
-                                                        List of databases
-     Name      |  Owner   | Encoding | Locale Provider |  Collate   |   Ctype    | ICU Locale | ICU Rules |   Access privileges   
----------------+----------+----------+-----------------+------------+------------+------------+-----------+-----------------------
- kubedb_system | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | 
- postgres      | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | 
- template0     | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | =c/postgres          +
-               |          |          |                 |            |            |            |           | postgres=CTc/postgres
- template1     | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | =c/postgres          +
-               |          |          |                 |            |            |            |           | postgres=CTc/postgres
-(4 rows)
+MariaDB> create database hello;
 
-# create a database named "demo"
-postgres=# create database demo;
-CREATE DATABASE
+MariaDB> use hello;
 
-# verify that the "demo" database has been created
-postgres=# \l
-                                                        List of databases
-     Name      |  Owner   | Encoding | Locale Provider |  Collate   |   Ctype    | ICU Locale | ICU Rules |   Access privileges   
----------------+----------+----------+-----------------+------------+------------+------------+-----------+-----------------------
- demo          | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | 
- kubedb_system | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | 
- postgres      | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | 
- template0     | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | =c/postgres          +
-               |          |          |                 |            |            |            |           | postgres=CTc/postgres
- template1     | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | =c/postgres          +
-               |          |          |                 |            |            |            |           | postgres=CTc/postgres
-(5 rows)
+MariaDB [hello]> CREATE TABLE `demo_table`(
+    ->     `id` BIGINT(20) NOT NULL,
+    ->     `name` VARCHAR(255) DEFAULT NULL,
+    ->     PRIMARY KEY (`id`)
+    -> );
 
-# connect to the "demo" database
-postgres=# \c demo
-You are now connected to database "demo" as user "postgres".
-
-# create a sample table
-demo=# CREATE TABLE COMPANY( NAME TEXT NOT NULL, EMPLOYEE INT NOT NULL);
-CREATE TABLE
-
-# verify that the table has been created
-demo=# \d
-          List of relations
- Schema |  Name   | Type  |  Owner   
---------+---------+-------+----------
- public | company | table | postgres
-(1 row)
-
-# insert multiple rows of data into the table
-demo=# INSERT INTO COMPANY (NAME, EMPLOYEE) VALUES ('TechCorp', 100), ('InnovateInc', 150), ('AlphaTech', 200);
-INSERT 0 3
-
-# verify the data insertion
-demo=# SELECT * FROM COMPANY;
-    name     | employee 
--------------+----------
- TechCorp    |      100
- InnovateInc |      150
- AlphaTech   |      200
-(3 rows)
-
-# quit from the database
-demo=# \q
-
-# exit from the pod
-/ $ exit
+MariaDB [hello]> INSERT INTO `demo_table` (`id`, `name`)
+    -> VALUES
+    ->     (1, 'John'),
+    ->     (2, 'Jane'),
+    ->     (3, 'Bob'),
+    ->     (4, 'Alice'),
+    ->     (5, 'Charlie'),
+    ->     (6, 'Diana'),
+    ->     (7, 'Eve'),
+    ->     (8, 'Frank'),
+    ->     (9, 'Grace'),
+    ->     (10, 'Henry');
+    
+MariaDB [hello]> select count(*) from demo_table;
++----------+
+| count(*) |
++----------+
+|       10 |
++----------+
 ```
 
 Now, we are ready to backup the database.
@@ -325,7 +290,7 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/logical/examples/backupstorage.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/backupstorage.yaml
 backupstorage.storage.kubestash.com/gcs-storage created
 ```
 
@@ -358,13 +323,13 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/logical/examples/retentionpolicy.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/retentionpolicy.yaml
 retentionpolicy.storage.kubestash.com/demo-retention created
 ```
 
 ### Backup
 
-We have to create a `BackupConfiguration` targeting respective `sample-postgres` PostgreSQL database. Then, KubeStash will create a `CronJob` for each session to take periodic backup of that database.
+We have to create a `BackupConfiguration` targeting respective `sample-mariadb` MariaDB database. Then, KubeStash will create a `CronJob` for each session to take periodic backup of that database.
 
 At first, we need to create a secret with a Restic password for backup data encryption.
 
@@ -381,20 +346,20 @@ secret "encrypt-secret" created
 
 **Create BackupConfiguration:**
 
-Below is the YAML for `BackupConfiguration` CR to take application-level backup of the `sample-postgres` database that we have deployed earlier,
+Below is the YAML for `BackupConfiguration` CR to take application-level backup of the `sample-mariadb` database that we have deployed earlier,
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-postgres-backup
+  name: sample-mariadb-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: sample-postgres
+    name: sample-mariadb
   backends:
     - name: gcs-backend
       storageRef:
@@ -410,28 +375,28 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-postgres-repo
+        - name: gcs-mariadb-repo
           backend: gcs-backend
-          directory: /postgres
+          directory: /mariadb
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: postgres-addon
+        name: mariadb-addon
         tasks:
           - name: manifest-backup
           - name: logical-backup
 ```
 
 - `.spec.sessions[*].schedule` specifies that we want to backup at `5 minutes` interval.
-- `.spec.target` refers to the targeted `sample-postgres` PostgreSQL database that we created earlier.
+- `.spec.target` refers to the targeted `sample-mariadb` MariaDB database that we created earlier.
 - `.spec.sessions[*].addon.tasks[*].name[*]` specifies that both the `manifest-backup` and `logical-backup` tasks will be executed.
 
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/kubestash/application-level/examples/backupconfiguration.yaml
-backupconfiguration.core.kubestash.com/sample-postgres-backup created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/kubestash/application-level/examples/backupconfiguration.yaml
+backupconfiguration.core.kubestash.com/sample-mariadb-backup created
 ```
 
 **Verify Backup Setup Successful**
@@ -441,7 +406,7 @@ If everything goes well, the phase of the `BackupConfiguration` should be `Ready
 ```bash
 $ kubectl get backupconfiguration -n demo
 NAME                     PHASE   PAUSED   AGE
-sample-postgres-backup   Ready            2m50s
+sample-mariadb-backup   Ready            2m50s
 ```
 
 Additionally, we can verify that the `Repository` specified in the `BackupConfiguration` has been created using the following command,
@@ -449,10 +414,10 @@ Additionally, we can verify that the `Repository` specified in the `BackupConfig
 ```bash
 $ kubectl get repo -n demo
 NAME                  INTEGRITY   SNAPSHOT-COUNT   SIZE     PHASE   LAST-SUCCESSFUL-BACKUP   AGE
-gcs-postgres-repo                 0                0 B      Ready                            3m
+gcs-mariadb-repo                 0                0 B      Ready                            3m
 ```
 
-KubeStash keeps the backup for `Repository` YAMLs. If we navigate to the GCS bucket, we will see the `Repository` YAML stored in the `demo/postgres` directory.
+KubeStash keeps the backup for `Repository` YAMLs. If we navigate to the GCS bucket, we will see the `Repository` YAML stored in the `demo/mariadb` directory.
 
 **Verify CronJob:**
 
@@ -463,7 +428,7 @@ Verify that the `CronJob` has been created using the following command,
 ```bash
 $ kubectl get cronjob -n demo
 NAME                                             SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
-trigger-sample-postgres-backup-frequent-backup   */5 * * * *             0        2m45s           3m25s
+trigger-sample-mariadb-backup-frequent-backup   */5 * * * *             0        2m45s           3m25s
 ```
 
 **Verify BackupSession:**
@@ -473,27 +438,27 @@ KubeStash triggers an instant backup as soon as the `BackupConfiguration` is rea
 ```bash
 $ kubectl get backupsession -n demo -w
 NAME                                                INVOKER-TYPE          INVOKER-NAME              PHASE       DURATION   AGE
-sample-postgres-backup-frequent-backup-1725449400   BackupConfiguration   sample-postgres-backup    Succeeded              7m22s
+sample-mariadb-backup-frequent-backup-1726651003   BackupConfiguration   sample-mariadb-backup    Succeeded              7m22s
 ```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
 **Verify Backup:**
 
-Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-postgres-backup` has been updated by the following command,
+Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-mariadb-backup` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo sample-postgres-backup
+$ kubectl get repository -n demo gcs-mariadb-repo
 NAME                       INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
-sample-postgres-backup     true        1                806 B   Ready   8m27s                    9m18s
+gcs-mariadb-repo           true        1                806 B   Ready   8m27s                    9m18s
 ```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=gcs-postgres-repo
+$ kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=gcs-mariadb-repo
 NAME                                                                  REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725449400   gcs-postgres-repo   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
+gcs-mariadb-repo-sample-mariadb-ckup-frequent-backup-1726651003       gcs-mariadb-repo   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
@@ -507,97 +472,96 @@ gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725449400   gcs-postgr
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725449400 -oyaml
+$ kubectl get snapshots -n demo gcs-mariadb-repo-sample-mariadb-backup-frequent-backup-1725449400 -oyaml
 ```
 
 ```yaml
 apiVersion: storage.kubestash.com/v1alpha1
 kind: Snapshot
 metadata:
-  creationTimestamp: "2024-09-05T09:08:03Z"
+  creationTimestamp: "2024-09-18T09:16:53Z"
   finalizers:
-  - kubestash.com/cleanup
+    - kubestash.com/cleanup
   generation: 1
   labels:
-    kubestash.com/app-ref-kind: Postgres
-    kubestash.com/app-ref-name: sample-postgres
+    kubedb.com/db-version: 11.1.3
+    kubestash.com/app-ref-kind: MariaDB
+    kubestash.com/app-ref-name: sample-mariadb
     kubestash.com/app-ref-namespace: demo
-    kubestash.com/repo-name: gcs-postgres-repo
-  annotations:
-    kubedb.com/db-version: "16.1"
-  name: gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725449400
+    kubestash.com/repo-name: gcs-mariadb-repo
+  name: gcs-mariadb-repo-sample-mariadb-ckup-frequent-backup-1726651003
   namespace: demo
   ownerReferences:
-  - apiVersion: storage.kubestash.com/v1alpha1
-    blockOwnerDeletion: true
-    controller: true
-    kind: Repository
-    name: gcs-postgres-repo
-    uid: fa9086e5-285a-4b4a-9096-072bf7dbe2f7
-  resourceVersion: "289843"
-  uid: 43f17a3f-4ac7-443c-a139-151f2e5bf462
+    - apiVersion: storage.kubestash.com/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Repository
+      name: gcs-mariadb-repo
+      uid: 82a72ef1-1071-49df-b44f-d1f395017262
+  resourceVersion: "1734435"
+  uid: b96499b6-f882-43e8-ba2a-badb54f96bb8
 spec:
   appRef:
     apiGroup: kubedb.com
-    kind: Postgres
-    name: sample-postgres
+    kind: MariaDB
+    name: sample-mariadb
     namespace: demo
-  backupSession: sample-postgres-backup-frequent-backup-1725527283
+  backupSession: sample-mariadb-backup-frequent-backup-1726651003
   deletionPolicy: Delete
-  repository: gcs-postgres-repo
+  repository: gcs-mariadb-repo
   session: frequent-backup
-  snapshotID: 01J70Q1NT6FW11YBBARRFJ6SYB
+  snapshotID: 01J826Q68983K50JRZV2AX1QZF
   type: FullBackup
   version: v1
 status:
   components:
     dump:
       driver: Restic
-      duration: 6.684476865s
+      duration: 2.291630733s
       integrity: true
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-      - hostPath: dumpfile.sql
-        id: 4b820700710f9f7b6a8d5b052367b51875e68dcd9052c749a686506db6a66374
-        size: 3.345 KiB
-        uploaded: 3.634 KiB
-      size: 1.135 KiB
+        - hostPath: dumpfile.sql
+          id: 6a9b3e0ccd380f93ff414157156f4ac9d144fa15c5c3adeea2faa09cf44fb175
+          size: 3.139 KiB
+          uploaded: 3.431 KiB
+      size: 1.277 KiB
     manifest:
       driver: Restic
-      duration: 7.477728298s
+      duration: 2.613551084s
       integrity: true
       path: repository/v1/frequent-backup/manifest
       phase: Succeeded
       resticStats:
-      - hostPath: /kubestash-tmp/manifest
-        id: 9da4d1b7df6dd946e15a8a0d2a2a3c14776351e27926156770530ca03f6f8002
-        size: 3.064 KiB
-        uploaded: 1.443 KiB
-      size: 2.972 KiB
+        - hostPath: /kubestash-tmp/manifest
+          id: 47d89d4149cd59bfc8e701b8171a864d0259486820c477a9c2b3a8c0d80de237
+          size: 2.507 KiB
+          uploaded: 3.939 KiB
+      size: 1.913 KiB
   conditions:
-  - lastTransitionTime: "2024-09-05T09:08:03Z"
-    message: Recent snapshot list updated successfully
-    reason: SuccessfullyUpdatedRecentSnapshotList
-    status: "True"
-    type: RecentSnapshotListUpdated
-  - lastTransitionTime: "2024-09-05T09:08:49Z"
-    message: Metadata uploaded to backend successfully
-    reason: SuccessfullyUploadedSnapshotMetadata
-    status: "True"
-    type: SnapshotMetadataUploaded
+    - lastTransitionTime: "2024-09-18T09:16:53Z"
+      message: Recent snapshot list updated successfully
+      reason: SuccessfullyUpdatedRecentSnapshotList
+      status: "True"
+      type: RecentSnapshotListUpdated
+    - lastTransitionTime: "2024-09-18T09:17:18Z"
+      message: Metadata uploaded to backend successfully
+      reason: SuccessfullyUploadedSnapshotMetadata
+      status: "True"
+      type: SnapshotMetadataUploaded
   integrity: true
   phase: Succeeded
-  size: 4.106 KiB
-  snapshotTime: "2024-09-05T09:08:03Z"
+  size: 3.188 KiB
+  snapshotTime: "2024-09-18T09:16:53Z"
   totalComponents: 2
 ```
 
-> KubeStash uses `pg_dump` or `pg_dumpall` to perform backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`.
+> KubeStash uses `mariadb-dump` to perform backups of target `MariaDB` databases. Therefore, the component name for logical backups is set as `dump`.
 
-> KubeStash set component name as `manifest` for the `manifest backup` of PostgreSQL databases.
+> KubeStash set component name as `manifest` for the `manifest backup` of MariaDB databases.
 
-Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `demo/popstgres/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/postgres/snapshots` directory.
+Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `demo/mariadb/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/mariadb/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
@@ -624,21 +588,21 @@ Below, is the contents of YAML file of the `RestoreSession` CR that we are going
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: restore-sample-postgres
+  name: restore-sample-mariadb
   namespace: demo
 spec:
   manifestOptions:
     restoreNamespace: dev
-    postgres:
+    mariaDB:
       db: true
   dataSource:
-    repository: gcs-postgres-repo
+    repository: gcs-mariadb-repo
     snapshot: latest
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: postgres-addon
+    name: mariadb-addon
     tasks:
       - name: logical-backup-restore
       - name: manifest-restore
@@ -646,7 +610,7 @@ spec:
 
 Here,
 
-- `.spec.manifestOptions.postgres.db` specifies whether to restore the DB manifest or not.
+- `.spec.manifestOptions.mariadb.db` specifies whether to restore the DB manifest or not.
 - `.spec.dataSource.repository` specifies the Repository object that holds the backed up data.
 - `.spec.dataSource.snapshot` specifies to restore from latest `Snapshot`.
 - `.spec.addon.tasks[*]` specifies that both the `manifest-restore` and `logical-backup-restore` tasks.
@@ -654,8 +618,8 @@ Here,
 Let's create the RestoreSession CR object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/application-level/examples/restoresession.yaml
-restoresession.core.kubestash.com/restore-sample-postgres created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/application-level/examples/restoresession.yaml
+restoresession.core.kubestash.com/restore-sample-mariadb created
 ```
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
@@ -664,23 +628,23 @@ Once, you have created the `RestoreSession` object, KubeStash will create restor
 $ watch kubectl get restoresession -n demo
 Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Aug 21 10:44:05 2024
 NAME                      REPOSITORY            FAILURE-POLICY   PHASE       DURATION   AGE
-restore-sample-postgres   gcs-postgres-repo                      Succeeded   3s         53s
+restore-sample-mariadb   gcs-mariadb-repo                      Succeeded   3s         53s
 ```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
 
-#### Verify Restored PostgreSQL Manifest:
+#### Verify Restored MariaDB Manifest:
 
-In this section, we will verify whether the desired `PostgreSQL` database manifest has been successfully applied to the cluster.
+In this section, we will verify whether the desired `MariaDB` database manifest has been successfully applied to the cluster.
 
 ```bash
-$ kubectl get postgres -n dev 
+$ kubectl get mariadb -n dev 
 NAME              VERSION   STATUS   AGE
-sample-postgres   16.1      Ready    9m46s
+sample-mariadb    11.1.3    Ready    5m18s
 ```
 
-The output confirms that the `PostgreSQL` database has been successfully created with the same configuration as it had at the time of backup.
+The output confirms that the `MariaDB` database has been successfully created with the same configuration as it had at the time of backup.
 
 
 #### Verify Restored Data:
@@ -690,86 +654,51 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into **`Ready`** state by the following command,
 
 ```bash
-$ kubectl get postgres -n dev sample-postgres
+$ kubectl get mariadb -n dev sample-mariadb
 NAME              VERSION   STATUS   AGE
-sample-postgres   16.1      Ready    9m46s
+sample-mariadb    11.1.3    Ready    5m18s
 ```
 
 Now, find out the database `Pod` by the following command,
 
 ```bash
-$ kubectl get pods -n dev --selector="app.kubernetes.io/instance=sample-postgres"
+$ kubectl get pods -n dev --selector="app.kubernetes.io/instance=sample-mariadb"
 NAME                READY   STATUS    RESTARTS   AGE
-sample-postgres-0   2/2     Running   0          12m
-sample-postgres-1   2/2     Running   0          12m
-sample-postgres-2   2/2     Running   0          12m
+sample-mariadb-0   2/2     Running   0          12m
+sample-mariadb-1   2/2     Running   0          12m
+sample-mariadb-2   2/2     Running   0          12m
 ```
 
 
 Now, lets exec one of the Pod and verify restored data.
 
 ```bash
-$ kubectl exec -it -n dev sample-postgres-0 -- /bin/sh
-# login as "postgres" superuser.
-/ # psql -U postgres
-psql (11.11)
-Type "help" for help.
+$ kubectl exec -it -n dev sample-mariadb-0 -- bash
+mysql@restored-mariadb-0:/$ mariadb -uroot -p$MYSQL_ROOT_PASSWORD
 
-# verify that the "demo" database has been restored
-postgres=# \l
-                                                        List of databases
-     Name      |  Owner   | Encoding | Locale Provider |  Collate   |   Ctype    | ICU Locale | ICU Rules |   Access privileges   
----------------+----------+----------+-----------------+------------+------------+------------+-----------+-----------------------
- demo          | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | 
- kubedb_system | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | 
- postgres      | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | 
- template0     | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | =c/postgres          +
-               |          |          |                 |            |            |            |           | postgres=CTc/postgres
- template1     | postgres | UTF8     | libc            | en_US.utf8 | en_US.utf8 |            |           | =c/postgres          +
-               |          |          |                 |            |            |            |           | postgres=CTc/postgres
-(5 rows)
+MariaDB> use hello;
 
-# connect to the "demo" database
-postgres=# \c demo
-You are now connected to database "demo" as user "postgres".
-
-# verify that the sample table has been restored
-demo=# \d
-          List of relations
- Schema |  Name   | Type  |  Owner   
---------+---------+-------+----------
- public | company | table | postgres
-(1 row)
-
-# Verify that the sample data has been restored 
-demo=# SELECT * FROM COMPANY;
-    name     | employee 
--------------+----------
- TechCorp    |      100
- InnovateInc |      150
- AlphaTech   |      200
-(3 rows)
-
-# disconnect from the database
-demo=# \q
-
-# exit from the pod
-/ # exit
+MariaDB [hello]> select count(*) from demo_table;
++----------+
+| count(*) |
++----------+
+|       10 |
++----------+
 ```
 
-So, from the above output, we can see the `demo` database we had created in the original database `sample-postgres` has been restored successfully.
+So, from the above output, we can see the `hello` database we had created in the original database `sample-mariadb` has been restored successfully.
 
 ## Cleanup
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete backupconfigurations.core.kubestash.com  -n demo sample-postgres-backup
+kubectl delete backupconfigurations.core.kubestash.com  -n demo sample-mariadb-backup
 kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
-kubectl delete restoresessions.core.kubestash.com -n demo restore-sample-postgres
+kubectl delete restoresessions.core.kubestash.com -n demo restore-sample-mariadb
 kubectl delete backupstorage -n demo gcs-storage
 kubectl delete secret -n demo gcs-secret
 kubectl delete secret -n demo encrypt-secret
-kubectl delete postgres -n demo sample-postgres
-kubectl delete postgres -n dev sample-postgres
+kubectl delete mariadb -n demo sample-mariadb
+kubectl delete mariadb -n dev sample-mariadb
 ```

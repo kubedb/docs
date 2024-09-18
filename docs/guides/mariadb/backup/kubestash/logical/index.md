@@ -3,9 +3,9 @@ title: Backup & Restore MariaDB | KubeStash
 description: Backup ans Restore MariaDB database using KubeStash
 menu:
   docs_{{ .version }}:
-    identifier: guides-pg-logical-backup-stashv2
+    identifier: guides-mariadb-logical-backup-stashv2
     name: Logical Backup
-    parent: guides-pg-backup-stashv2
+    parent: guides-mariadb-backup-stashv2
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -92,7 +92,7 @@ KubeDB will deploy a `MariaDB` database according to the above specification. It
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get pg -n demo sample-mariadb
+$ kubectl get md -n demo sample-mariadb
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/sample-mariadb   11.1.3    Ready    5m4s
 ```
@@ -110,7 +110,7 @@ sample-mariadb            ClusterIP   10.128.7.155   <none>        3306/TCP   6m
 sample-mariadb-pods       ClusterIP   None           <none>        3306/TCP   6m28s     5432/TCP                     5m55s
 ```
 
-Here, we have to use service `sample-mariadb` and secret `sample-mariadb-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/mariadb/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
+Here, we have to use service `sample-mariadb` and secret `sample-mariadb-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/mariadb/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
 
 
 **Verify AppBinding:**

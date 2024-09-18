@@ -21,7 +21,7 @@ Stash `v0.11.8+` supports backup and restoration of MariaDB databases. This guid
 - Install KubeDB operator in your cluster from [here](https://kubedb.com/docs/latest/setup).
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
 - Install Stash `kubectl` plugin following the steps [here](https://stash.run/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how Stash backup and restore MariaDB databases, please check the following guide [here](/docs/guides/mariadb/backup/overview/index.md).
+- If you are not familiar with how Stash backup and restore MariaDB databases, please check the following guide [here](/docs/guides/mariadb/backup/stash/overview/index.md).
 
 You have to be familiar with following custom resources:
 
@@ -367,7 +367,7 @@ gcs-repo   true        1.327 MiB   1                60s                      8m
 
 Now, if we navigate to the GCS bucket, we will see the backed up data has been stored in `demo/mariadb/sample-mariadb` directory as specified by `.spec.backend.gcs.prefix` field of the `Repository` object.
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/logical/cluster/images/sample-mariadb-backup.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/stash/logical/cluster/images/sample-mariadb-backup.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 

@@ -1,14 +1,14 @@
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-postgres-backup
+  name: sample-mariadb-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: sample-postgres
+    name: sample-mariadb
   backends:
     - name: gcs-backend
       storageRef:
@@ -24,14 +24,14 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-postgres-repo
+        - name: gcs-mariadb-repo
           backend: gcs-backend
-          directory: /postgres
+          directory: /mariadb
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: postgres-addon
+        name: mariadb-addon
         tasks:
           - name: manifest-backup
           - name: logical-backup

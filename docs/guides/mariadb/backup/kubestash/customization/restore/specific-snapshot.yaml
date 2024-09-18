@@ -1,21 +1,21 @@
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: sample-postgres-restore
+  name: sample-mariadb-restore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: Postgres
+    kind: MariaDB
     namespace: demo
-    name: restored-postgres
+    name: restored-mariadb
   dataSource:
-    repository: gcs-postgres-repo
-    snapshot: gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725258000
+    repository: gcs-mariadb-repo
+    snapshot: gcs-mariadb-repo-sample-mariadb-backup-frequent-backup-1725258000
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: postgres-addon
+    name: mariadb-addon
     tasks:
       - name: logical-backup-restore

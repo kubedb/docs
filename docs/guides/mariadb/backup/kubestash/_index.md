@@ -1,5 +1,5 @@
 ---
-title: Backup & Restore PostgreSQL | KubeStash
+title: Backup & Restore MariaDB | KubeStash
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-backup-stashv2

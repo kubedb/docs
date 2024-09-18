@@ -1,21 +1,21 @@
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: restore-sample-postgres
+  name: restore-sample-mariadb
   namespace: demo
 spec:
   manifestOptions:
     restoreNamespace: dev
-    postgres:
+    mariaDB:
       db: true
   dataSource:
-    repository: gcs-postgres-repo
+    repository: gcs-mariadb-repo
     snapshot: latest
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: postgres-addon
+    name: mariadb-addon
     tasks:
       - name: logical-backup-restore
       - name: manifest-restore

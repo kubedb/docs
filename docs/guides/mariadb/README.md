@@ -47,5 +47,5 @@ aliases:
 - Use [Custom RBAC](/docs/guides/mariadb/custom-rbac/using-custom-rbac).
 - Use [private Docker registry](/docs/guides/mariadb/private-registry/quickstart) to deploy MySQL with KubeDB.
 - Initialize [MariaDB with Script](/docs/guides/mariadb/initialization/using-script).
-- Backup and Restore [MariaDB](/docs/guides/mariadb/backup/overview).
+- Backup and Restore [MariaDB](/docs/guides/mariadb/backup/stash/overview).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
