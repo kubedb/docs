@@ -334,7 +334,7 @@ Now, you can view the collected metrics and create a graph from homepage of this
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
 ```bash
-kubectl delete -n demo mg/builtin-prom-mgo
+kubectl delete -n demo rm/builtin-prom-rm
 
 kubectl delete -n monitoring deployment.apps/prometheus
 

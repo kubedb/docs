@@ -172,7 +172,7 @@ rabbitmq.kubedb.com/prom-rm created
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get mg -n demo prom-rm
+$ kubectl get rm -n demo prom-rm
 NAME              VERSION    STATUS    AGE
 prom-rm           3.13.2     Ready     34s
 ```

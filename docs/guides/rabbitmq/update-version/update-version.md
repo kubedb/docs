@@ -42,7 +42,7 @@ Now, we are going to deploy a `RabbitMQ` cluster with version `3.12.12`.
 
 ### Deploy RabbitMQ
 
-In this section, we are going to deploy a RabbitMQ replicaset database. Then, in the next section we will update the version of the database using `RabbitMQOpsRequest` CRD. Below is the YAML of the `RabbitMQ` CR that we are going to create,
+In this section, we are going to deploy a RabbitMQ cluster. Then, in the next section we will update the version of the database using `RabbitMQOpsRequest` CRD. Below is the YAML of the `RabbitMQ` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -66,7 +66,7 @@ spec:
 Let's create the `RabbitMQ` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/RabbitMQ/update-version/rm-replicaset.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/RabbitMQ/update-version/rm-cluster.yaml
 rabbitmq.kubedb.com/rm-cluster created
 ```
 
@@ -82,11 +82,11 @@ We are now ready to apply the `RabbitMQOpsRequest` CR to update this database.
 
 ### update RabbitMQ Version
 
-Here, we are going to update `RabbitMQ` replicaset from `3.12.12` to `3.13.2`.
+Here, we are going to update `RabbitMQ` cluster from `3.12.12` to `3.13.2`.
 
 #### Create RabbitMQOpsRequest:
 
-In order to update the version of the replicaset database, we have to create a `RabbitMQOpsRequest` CR with your desired version that is supported by `KubeDB`. Below is the YAML of the `RabbitMQOpsRequest` CR that we are going to create,
+In order to update the version of the cluster, we have to create a `RabbitMQOpsRequest` CR with your desired version that is supported by `KubeDB`. Below is the YAML of the `RabbitMQOpsRequest` CR that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -106,7 +106,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing operation on `mg-replicaset` RabbitMQ database.
+- `spec.databaseRef.name` specifies that we are performing operation on `rm-cluster` RabbitMQ database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
 - `spec.updateVersion.targetVersion` specifies the expected version of the database `3.13.2`.
 - Have a look [here](/docs/guides/rabbitmq/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
@@ -114,8 +114,8 @@ Here,
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/update-version/rmops-update-replicaset .yaml
-rabbitmqopsrequest.ops.kubedb.com/rmops-replicaset-update created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/update-version/rmops-cluster-update .yaml
+rabbitmqopsrequest.ops.kubedb.com/rmops-cluster-update created
 ```
 
 #### Verify RabbitMQ version updated successfully
@@ -128,14 +128,14 @@ Let's wait for `RabbitMQOpsRequest` to be `Successful`.  Run the following comma
 $ kubectl get rabbitmqopsrequest -n demo
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME                      TYPE            STATUS       AGE
-rmops-replicaset-update   UpdateVersion   Successful   84s
+rmops-cluster-update      UpdateVersion   Successful   84s
 ```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed to update the database version.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo rmops-replicaset-update
-Name:         rmops-replicaset-update
+$ kubectl describe rabbitmqopsrequest -n demo rmops-cluster-update
+Name:         rmops-cluster-update
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -185,7 +185,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Database Ref:
-    Name:  rm-replicaset
+    Name:  rm-cluster
   Readiness Criteria:
     Objects Count Diff Percentage:  10
     Oplog Max Lag Seconds:          20
@@ -224,36 +224,36 @@ Status:
 Events:
   Type    Reason                 Age    From                         Message
   ----    ------                 ----   ----                         -------
-  Normal  PauseDatabase          2m27s  KubeDB Ops-manager Operator  Pausing RabbitMQ demo/mg-replicaset
-  Normal  PauseDatabase          2m27s  KubeDB Ops-manager Operator  Successfully paused RabbitMQ demo/mg-replicaset
+  Normal  PauseDatabase          2m27s  KubeDB Ops-manager Operator  Pausing RabbitMQ demo/rm-cluster
+  Normal  PauseDatabase          2m27s  KubeDB Ops-manager Operator  Successfully paused RabbitMQ demo/rm-cluster
   Normal  Updating               2m27s  KubeDB Ops-manager Operator  Updating StatefulSets
   Normal  Updating               2m8s   KubeDB Ops-manager Operator  Successfully Updated StatefulSets
   Normal  UpdateStandaloneImage  38s    KubeDB Ops-manager Operator  Successfully Updated Standalone Image
-  Normal  ResumeDatabase         38s    KubeDB Ops-manager Operator  Resuming RabbitMQ demo/mg-replicaset
-  Normal  ResumeDatabase         38s    KubeDB Ops-manager Operator  Successfully resumed RabbitMQ demo/mg-replicaset
+  Normal  ResumeDatabase         38s    KubeDB Ops-manager Operator  Resuming RabbitMQ demo/rm-cluster
+  Normal  ResumeDatabase         38s    KubeDB Ops-manager Operator  Successfully resumed RabbitMQ demo/rm-cluster
   Normal  Successful             38s    KubeDB Ops-manager Operator  Successfully Updated Database
 ```
 
 Now, we are going to verify whether the `RabbitMQ` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get rm -n demo rm-replicaset -o=jsonpath='{.spec.version}{"\n"}'
+$ kubectl get rm -n demo rm-cluster -o=jsonpath='{.spec.version}{"\n"}'
 3.13.2
 
-$ kubectl get petset -n demo rm-replicaset -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo rm-cluster -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 ghcr.io/appscode-images/rabbitmq:3.13.2-management-alpine
 
-$ kubectl get pods -n demo rm-replicaset-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+$ kubectl get pods -n demo rm-cluster-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ghcr.io/appscode-images/rabbitmq:3.13.2-management-alpine
 ```
 
-You can see from above, our `RabbitMQ` replicaset database has been updated with the new version. So, the updateVersion process is successfully completed.
+You can see from above, our `RabbitMQ` cluster has been updated with the new version. So, the updateVersion process is successfully completed.
 
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete rm -n demo rm-replicaset
-kubectl delete rabbitmqopsrequest -n demo rmops-replicaset-update
+kubectl delete rm -n demo rm-cluster
+kubectl delete rabbitmqopsrequest -n demo rmops-update-cluster
 ```

@@ -38,7 +38,7 @@ The Auto Scaling process consists of the following steps:
 
 - Each StatefulSet creates a Persistent Volume according to the Volume Claim Template provided in the statefulset configuration.
 
-4. Then, in order to set up storage autoscaling of the various components (ie. ReplicaSet, Shard, ConfigServer etc.) of the `RabbitMQ` database the user creates a `RabbitMQAutoscaler` CRO with desired configuration.
+4. Then, in order to set up storage autoscaling of the `RabbitMQ` cluster, the user creates a `RabbitMQAutoscaler` CRO with desired configuration.
 
 5. `KubeDB` Autoscaler operator watches the `RabbitMQAutoscaler` CRO.
 

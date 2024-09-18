@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: rm-tls-describe
     name: rabbitmq-tls
-    parent: mg-tls
+    parent: rm-tls
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

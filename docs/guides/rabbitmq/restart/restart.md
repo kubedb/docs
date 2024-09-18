@@ -82,7 +82,7 @@ spec:
 - `spec.databaseRef` holds the name of the RabbitMQ database.  The db should be available in the same namespace as the opsRequest
 - The meaning of `spec.timeout` & `spec.apply` fields will be found [here](/docs/guides/rabbitmq/concepts/opsrequest.md#spectimeout)
 
-> Note: The method of restarting the standalone & sharded db is exactly same as above. All you need, is to specify the corresponding RabbitMQ name in `spec.databaseRef.name` section.
+> Note: The method of restarting the standalone & clustered rabbitmq is exactly same as above. All you need, is to specify the corresponding RabbitMQ name in `spec.databaseRef.name` section.
 
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
@@ -91,14 +91,14 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 rabbitmqopsrequest.ops.kubedb.com/restart created
 ```
 
-Now the Ops-manager operator will first restart the general secondary pods, then serially the arbiters, the hidden nodes, & lastly will restart the Primary of the database.
+Now the Ops-manager operator will restrart the pods sequetially by their cardinal suffix.
 
 ```shell
-$ kubectl get mgops -n demo
+$ kubectl get rabbitmqopsrequest -n demo
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   10m
 
-$ kubectl get mgops -n demo -oyaml restart
+$ kubectl get rabbitmqopsrequest -n demo -oyaml restart
 apiVersion: ops.kubedb.com/v1alpha1
 kind: RabbitMQOpsRequest
 metadata:
@@ -114,10 +114,7 @@ metadata:
 spec:
   apply: Always
   databaseRef:
-    name: mongo
-  readinessCriteria:
-    objectsCountDiffPercentage: 15
-    oplogMaxLagSeconds: 10
+    name: rm
   timeout: 3m
   type: Restart
 status:

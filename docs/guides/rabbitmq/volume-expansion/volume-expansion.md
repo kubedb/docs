@@ -88,8 +88,8 @@ RabbitMQ.kubedb.com/rm-standalone created
 Now, wait until `rm-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
-NAME            VERSION    STATUS    AGE
+$ kubectl get rm -n demo
+NAME            VERSION     STATUS    AGE
 rm-standalone   3.13.2      Ready     2m53s
 ```
 
@@ -133,7 +133,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing volume expansion operation on `mg-standalone` database.
+- `spec.databaseRef.name` specifies that we are performing volume expansion operation on `rm-standalone` database.
 - `spec.type` specifies that we are performing `VolumeExpansion` on our database.
 - `spec.volumeExpansion.standalone` specifies the desired volume size.
 - `spec.volumeExpansion.mode` specifies the desired volume expansion mode(`Online` or `Offline`).

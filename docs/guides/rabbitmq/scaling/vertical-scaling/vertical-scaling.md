@@ -76,7 +76,7 @@ rabbitmq.kubedb.com/rm-standalone created
 Now, wait until `mg-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+$ kubectl get rm -n demo
 NAME            VERSION    STATUS    AGE
 rm-standalone   3.13.2      Ready     5m56s
 ```
@@ -153,10 +153,10 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `RabbitMQOpsRequest` to be `Successful`.  Run the following command to watch `RabbitMQOpsRequest` CR,
 
 ```bash
-$ kubectl get RabbitMQopsrequest -n demo
-Every 2.0s: kubectl get RabbitMQopsrequest -n demo
-NAME                     TYPE              STATUS       AGE
-mops-vscale-standalone   VerticalScaling   Successful   108s
+$ kubectl get rabbitmqopsrequest -n demo
+Every 2.0s: kubectl get rabbitmqopsrequest -n demo
+NAME                      TYPE              STATUS       AGE
+rmops-vscale-standalone   VerticalScaling   Successful   108s
 ```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed to scale the database.
