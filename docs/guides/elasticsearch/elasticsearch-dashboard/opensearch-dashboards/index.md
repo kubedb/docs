@@ -557,7 +557,7 @@ $ kubectl delete namespace demo
 
 ## Next Steps
 
-- Learn about [taking backup](/docs/guides/elasticsearch/backup/overview/index.md) of Elasticsearch database using Stash.
+- Learn about [taking backup](/docs/guides/elasticsearch/backup/stash/overview/index.md) of Elasticsearch database using Stash.
 - Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
