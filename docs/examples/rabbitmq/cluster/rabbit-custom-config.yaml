@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1alpha2
+kind: RabbitMQ
+metadata:
+  name: rm-cluster
+  namespace: demo
+spec:
+  version: "3.13.2"
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  configSecret:
+    name: rabbit-custom-config

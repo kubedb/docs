@@ -2,9 +2,9 @@
 title: RabbitMQ Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: rm-quickstart-quickstart
+    identifier: rm-quickstart-description
     name: Overview
-    parent: rm-quickstart-rabbitmq
+    parent: rm-quickstart
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -64,7 +64,7 @@ metadata:
   name: rm-quickstart
   namespace: demo
 spec:
-  version: "3.12.12"
+  version: "3.13.2"
   replicas: 3
   storage:
     accessModes:
@@ -99,15 +99,15 @@ rabbitmq.kubedb.com/rm-quickstart created
 Here,
 
 - `.spec.replica` is used to provide the number of required replicas or, peers for intended rabbitmq cluster. 
-- `spec.version` is the name of the RabbitMQVersion CRD where the docker images are specified. In this tutorial, a RabbitMQ `3.12.12` database is going to be created.
+- `spec.version` is the name of the RabbitMQVersion CRD where the docker images are specified. In this tutorial, a RabbitMQ `3.13.2` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for RabbitMQ database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create RabbitMQ database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `RabbitMQ` CRD or which resources KubeDB should keep or delete when you delete `RabbitMQ` CRD. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy)
+  - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `RabbitMQ` CRD or which resources KubeDB should keep or delete when you delete `RabbitMQ` CRD. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/rabbitmq/concepts/rabbitmq.md#specdeletionpolicy)
 - `.spec.podTemplate` is used to provide specific pod specifications or container specification. You can override default resources, securityContext etc.  set for rabbitmq container. Find details [here](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec)
 - `spec.serviceTemplates` is used to provide template for the services created by KubeDB operator for RabbitMQ database. This will allow you to set the type and other properties of the services.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in `storage.resources.requests` field. Don't specify limits here. PVC does not get resized automatically.
 
-KubeDB operator watches for `RabbitMQ` objects using Kubernetes api. When a `RabbitMQ` object is created, KubeDB provisioner operator will create new PetSet (aka PetSet 2.0), Service (Primary) with the matching RabbitMQ object name and Required secrets for cluster communication and authentication if not present. KubeDB operator will also create an AppBinding resource and governing service for PetSets, if one is not already present. `AppBinding` is a Kubernetes `CustomResourceDefinition`(CRD) which points to an application using either its URL (usually for a non-Kubernetes resident service instance) or a Kubernetes service object (if self-hosted in a Kubernetes cluster), some optional parameters and a credential secret.
+KubeDB operator watches for `RabbitMQ` objects using Kubernetes API. When a `RabbitMQ` object is created, KubeDB provisioner operator will create new PetSet (aka StatefulSet 2.0), Services with the matching RabbitMQ object name and Required secrets for cluster communication and authentication if not present. The services will include a primary service for Client communication with AMQP,MQTT,STOMP or WebSocket, a governing service for inter-node cluster governance, a dashboard service for connecting to management UI and interact with http endpointsm and a stats service to provide metrics endpoint if enabled. KubeDB operator will also create an AppBinding resource. `AppBinding` is a Kubernetes `CustomResourceDefinition`(CRD) which points to an application using either its URL (usually for a non-Kubernetes resident service instance) or a Kubernetes service object (if self-hosted in a Kubernetes cluster), some optional parameters and a credential secret.
 
 ```bash
 $ kubectl get petset -n demo
@@ -127,13 +127,14 @@ pvc-c94bd3d0-8fa7-4794-9221-8295bc3e7b38   1Gi        RWO            Delete     
 pvc-ddfd1987-c8b2-4c72-90ad-a8361ed4de56   1Gi        RWO            Delete           Bound    demo/rm-quickstart-data-rm-quickstart-2       standard       <unset>                          6m52s
 
 $ kubectl get service -n demo
-NAME                 TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                          AGE
-rm-quickstart        LoadBalancer   10.96.120.188   <pending>     15672:30802/TCP,5672:32684/TCP   8m49s
-rm-quickstart-pods   ClusterIP      None            <none>        4369/TCP,25672/TCP               8m49s
+NAME                      TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                                                                         AGE
+rm-quickstart             LoadBalancer   10.128.221.60   172.232.241.73   5672:31803/TCP,1883:31938/TCP,61613:31884/TCP,15675:32567/TCP,15674:32599/TCP   8m59s
+rm-quickstart-dashboard   ClusterIP      10.128.240.53   <none>           15672/TCP                                                                       8m58s
+rm-quickstart-pods        ClusterIP      None            <none>           4369/TCP,25672/TCP                                                              8m59s
 
 $ kubectl get appbinding -n demo
 NAME            TYPE                  VERSION   AGE
-rm-quickstart   kubedb.com/rabbitmq   3.12.12   23h
+rm-quickstart   kubedb.com/rabbitmq   3.13.2    23h
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `RabbitMQ` object:
@@ -147,117 +148,120 @@ kind: RabbitMQ
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"RabbitMQ","metadata":{"annotations":{},"name":"rm-quickstart","namespace":"demo"},"spec":{"podTemplate":{"spec":{"containers":[{"name":"rabbitmq","resources":{"limits":{"cpu":"2","memory":"2Gi"},"requests":{"cpu":"0.5","memory":"1Gi"}}}]}},"replicas":3,"serviceTemplates":[{"alias":"primary","spec":{"type":"LoadBalancer"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"3.12.12"}}
-  creationTimestamp: "2024-05-07T10:25:35Z"
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"RabbitMQ","metadata":{"annotations":{},"name":"rm-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"rabbitmq","resources":{"limits":{"cpu":2,"memory":"2Gi"},"requests":{"cpu":0.5,"memory":"1Gi"}}}]}},"replicas":3,"serviceTemplates":[{"alias":"primary","spec":{"type":"LoadBalancer"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"},"storageType":"Durable","version":"3.13.2"}}
+  creationTimestamp: "2024-09-10T09:23:57Z"
   finalizers:
-    - kubedb.com/rabbitmq
+  - kubedb.com/rabbitmq
   generation: 3
   name: rm-quickstart
   namespace: demo
-  resourceVersion: "390056"
-  uid: 37dd5c9f-2df3-492e-a828-309abf580cc6
+  resourceVersion: "58864"
+  uid: f3a948e4-b5c3-4327-b65e-b170fd744e89
 spec:
   authSecret:
     name: rm-quickstart-admin-cred
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3
-    periodSeconds: 20
+    periodSeconds: 10
     timeoutSeconds: 10
   podTemplate:
     controller: {}
     metadata: {}
     spec:
       containers:
-        - name: rabbitmq
-          resources:
-            limits:
-              cpu: "2"
-              memory: 2Gi
-            requests:
-              cpu: 500m
-              memory: 1Gi
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            runAsUser: 999
-            seccompProfile:
-              type: RuntimeDefault
+      - name: rabbitmq
+        resources:
+          limits:
+            cpu: "2"
+            memory: 2Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 999
+          seccompProfile:
+            type: RuntimeDefault
       initContainers:
-        - name: rabbitmq-init
-          resources: {}
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            runAsUser: 999
-            seccompProfile:
-              type: RuntimeDefault
+      - name: rabbitmq-init
+        resources: {}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 999
+          seccompProfile:
+            type: RuntimeDefault
+      podPlacementPolicy:
+        name: default
       securityContext:
         fsGroup: 999
   replicas: 3
   serviceTemplates:
-    - alias: primary
-      metadata: {}
-      spec:
-        type: LoadBalancer
+  - alias: primary
+    metadata: {}
+    spec:
+      type: LoadBalancer
   storage:
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  deletionPolicy: WipeOut
-  version: 3.12.12
+  version: 3.13.2
 status:
   conditions:
-    - lastTransitionTime: "2024-05-07T10:25:36Z"
-      message: 'The KubeDB operator has started the provisioning of Rabbitmq: demo/rm-quickstart'
-      observedGeneration: 2
-      reason: DatabaseProvisioningStartedSuccessfully
-      status: "True"
-      type: ProvisioningStarted
-    - lastTransitionTime: "2024-05-07T10:35:34Z"
-      message: All desired replicas are ready.
-      reason: AllReplicasReady
-      status: "True"
-      type: ReplicaReady
-    - lastTransitionTime: "2024-05-07T10:33:20Z"
-      message: 'The Rabbitmq: demo/rm-quickstart is accepting client requests'
-      observedGeneration: 3
-      reason: DatabaseAcceptingConnectionRequest
-      status: "True"
-      type: AcceptingConnection
-    - lastTransitionTime: "2024-05-07T10:26:20Z"
-      message: Ready for publishing messages
-      observedGeneration: 3
-      reason: Successfully publishing messages
-      status: "True"
-      type: DatabaseWriteAccess
-    - lastTransitionTime: "2024-05-07T10:33:20Z"
-      message: 'The Rabbitmq: demo/rm-quickstart is ready.'
-      observedGeneration: 3
-      reason: ReadinessCheckSucceeded
-      status: "True"
-      type: Ready
-    - lastTransitionTime: "2024-05-07T10:26:24Z"
-      message: 'The Rabbitmq: demo/rm-quickstart is successfully provisioned.'
-      observedGeneration: 3
-      reason: DatabaseSuccessfullyProvisioned
-      status: "True"
-      type: Provisioned
-    - lastTransitionTime: "2024-05-07T10:26:40Z"
-      message: Ready for Consuming messages
-      observedGeneration: 3
-      reason: Successfully Consuming messages
-      status: "True"
-      type: DatabaseReadAccess
+  - lastTransitionTime: "2024-09-10T09:23:57Z"
+    message: 'The KubeDB operator has started the provisioning of Rabbitmq: demo/rm-quickstart'
+    observedGeneration: 2
+    reason: DatabaseProvisioningStartedSuccessfully
+    status: "True"
+    type: ProvisioningStarted
+  - lastTransitionTime: "2024-09-10T09:32:52Z"
+    message: All replicas are ready
+    observedGeneration: 3
+    reason: AllReplicasReady
+    status: "True"
+    type: ReplicaReady
+  - lastTransitionTime: "2024-09-10T09:25:46Z"
+    message: 'The Rabbitmq: demo/rm-quickstart is accepting client requests'
+    observedGeneration: 3
+    reason: DatabaseAcceptingConnectionRequest
+    status: "True"
+    type: AcceptingConnection
+  - lastTransitionTime: "2024-09-10T09:25:46Z"
+    message: Ready for publishing messages
+    observedGeneration: 3
+    reason: Successfully publishing messages
+    status: "True"
+    type: DatabaseWriteAccess
+  - lastTransitionTime: "2024-09-10T09:25:46Z"
+    message: 'The Rabbitmq: demo/rm-quickstart is ready.'
+    observedGeneration: 3
+    reason: ReadinessCheckSucceeded
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2024-09-10T09:25:47Z"
+    message: 'The Rabbitmq: demo/rm-quickstart is successfully provisioned.'
+    observedGeneration: 3
+    reason: DatabaseSuccessfullyProvisioned
+    status: "True"
+    type: Provisioned
+  - lastTransitionTime: "2024-09-10T09:25:56Z"
+    message: Ready for Consuming messages
+    observedGeneration: 3
+    reason: Successfully Consuming messages
+    status: "True"
+    type: DatabaseReadAccess
   phase: Ready
 ```
 
@@ -278,7 +282,7 @@ password
 We can check client connectivity using an opensource load-testing tool called `perf-test`. It runs producers and consumers to continuously publish and consume messages in RabbitMQ cluster. Here's how to run it on kubernetes using the credentials and the address for operator generated primary service.
 
 ```bash
-kubectl run perf-test --image=pivotalrabbitmq/perf-test -- --uri "amqp://admin:password@rm-quickstart.demo.svc:5672"
+kubectl run perf-test --image=pivotalrabbitmq/perf-test -- --uri "amqp://admin:password@rm-quickstart.demo.svc:5672/"
 ```
 
 You can check the log for this pod which shows publish and consume rates of messages in RabbitMQ. 
@@ -301,10 +305,10 @@ id: test-104606-706, time 9.000 s, sent: 29706 msg/s, received: 31375 msg/s, min
 id: test-104606-706, time 10.000 s, sent: 15903 msg/s, received: 26711 msg/s, min/median/75th/95th/99th consumer latency: 1569546/1884700/1992762/2096417/2136613 µs
 ```
 
-You can also connect with the RabbitMQ Management UI. It can be accessed through Primary service's 15672 Port or from a localhost port if the port is forwarded. 
+You can also connect with the RabbitMQ Management UI. It can be accessed through Dashboard service's 15672 Port or from a localhost port if the port is forwarded. 
 
 ```bash
-$ kubectl port-forward -n demo svc/rm-quickstart 15672
+$ kubectl port-forward -n demo svc/rm-quickstart-dashboard 15672
 Forwarding from 127.0.0.1:15672 -> 15672
 Forwarding from [::1]:15672 -> 15672
 ```
@@ -381,7 +385,7 @@ Now, run the following command to get all RabbitMQ resources in `demo` namespace
 ```bash
 $ kubectl get petset,svc,secret,pvc -n demo
 NAME                              TYPE                       DATA   AGE
-secret/rm-quickstart-root-cred   kubernetes.io/basic-auth   2      17m
+secret/rm-quickstart-admin-cred   kubernetes.io/basic-auth   2      17m
 ```
 
 From the above output, you can see that all RabbitMQ resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`.
