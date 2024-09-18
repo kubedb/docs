@@ -1,0 +1,19 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: s3-store
+  namespace: demo
+spec:
+  storage:
+    provider: s3
+    s3:
+      endpoint: us-east-1.linodeobjects.com
+      bucket: esbackup
+      region: us-east-1
+      prefix: elastic
+      secretName: s3-secret
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  default: true
+  deletionPolicy: Delete
