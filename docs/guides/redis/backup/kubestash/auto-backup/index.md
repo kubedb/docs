@@ -75,14 +75,14 @@ spec:
   storage:
     provider: gcs
     gcs:
-      bucket: kubestash-qa
+      bucket: neaj-demo
       prefix: blueprint
       secretName: gcs-secret
   usagePolicy:
     allowedNamespaces:
       from: All
   default: true
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete
 ```
 
 Let's create the BackupStorage we have shown above,
@@ -212,24 +212,22 @@ Below is the YAML of the `Redis` object that we are going to create,
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
-  name: sample-redis
+  name: redis-standalone
   namespace: demo
   annotations:
     blueprint.kubestash.com/name: redis-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "16.1"
-  replicas: 3
-  standbyMode: Hot
-  streamingMode: Synchronous
+  version: 7.4.0
   storageType: Durable
   storage:
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete
 ```
 
 Here,
@@ -240,8 +238,8 @@ Here,
 Let's create the `Redis` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/kubestash/auto-backup/examples/sample-redis.yaml
-redis.kubedb.com/sample-redis created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/kubestash/auto-backup/examples/redis-standalone.yaml
+redis.kubedb.com/redis-standalone created
 ```
 
 **Verify BackupConfiguration**
@@ -251,20 +249,20 @@ If everything goes well, KubeStash should create a `BackupConfiguration` for our
 ```bash
 $ kubectl get backupconfiguration -n demo
 NAME                         PHASE   PAUSED   AGE
-appbinding-sample-redis   Ready            2m50m
+appbinding-redis-standalone   Ready            2m50m
 ```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-redis  -o yaml
+$ kubectl get backupconfiguration -n demo appbinding-redis-standalone  -o yaml
 ```
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  creationTimestamp: "2024-09-05T10:53:48Z"
+  creationTimestamp: "2024-09-18T12:15:07Z"
   finalizers:
     - kubestash.com/cleanup
   generation: 1
@@ -272,10 +270,10 @@ metadata:
     app.kubernetes.io/managed-by: kubestash.com
     kubestash.com/invoker-name: redis-default-backup-blueprint
     kubestash.com/invoker-namespace: demo
-  name: appbinding-sample-redis
+  name: appbinding-redis-standalone
   namespace: demo
-  resourceVersion: "298502"
-  uid: b6537c60-051f-4348-9ca4-c28f3880dbc1
+  resourceVersion: "1176493"
+  uid: b7a37776-4a9b-4aaa-9e1d-15e7d6a83d56
 spec:
   backends:
     - name: gcs-backend
@@ -311,7 +309,7 @@ spec:
   target:
     apiGroup: kubedb.com
     kind: Redis
-    name: sample-redis
+    name: redis-standalone
     namespace: demo
 status:
   backends:
@@ -328,7 +326,7 @@ status:
           name: gcs-storage
           namespace: demo
   conditions:
-    - lastTransitionTime: "2024-09-05T10:53:48Z"
+    - lastTransitionTime: "2024-09-18T12:15:07Z"
       message: Validation has been passed successfully.
       reason: ResourceValidationPassed
       status: "True"
@@ -343,12 +341,12 @@ status:
       phase: Ready
   sessions:
     - conditions:
-        - lastTransitionTime: "2024-09-05T10:53:59Z"
+        - lastTransitionTime: "2024-09-18T12:15:37Z"
           message: Scheduler has been ensured successfully.
           reason: SchedulerEnsured
           status: "True"
           type: SchedulerEnsured
-        - lastTransitionTime: "2024-09-05T10:53:59Z"
+        - lastTransitionTime: "2024-09-18T12:15:38Z"
           message: Initial backup has been triggered successfully.
           reason: SuccessfullyTriggeredInitialBackup
           status: "True"
@@ -357,8 +355,7 @@ status:
   targetFound: true
 ```
 
-Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStash automatically resolved those info from the `BackupBluePrint` and created above `BackupConfiguration`.
-
+Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStash automatically resolved those info from the `BackupBluePrint` and created the above `BackupConfiguration`.
 
 **Verify BackupSession:**
 
@@ -366,20 +363,20 @@ KubeStash triggers an instant backup as soon as the `BackupConfiguration` is rea
 
 ```bash
 $ kubectl get backupsession -n demo -w
-NAME                                                    INVOKER-TYPE          INVOKER-NAME                 PHASE       DURATION   AGE
-appbinding-sample-redis-frequent-backup-1725533628   BackupConfiguration   appbinding-sample-redis   Succeeded   23s        6m40s
+NAME                                                     INVOKER-TYPE          INVOKER-NAME                  PHASE       DURATION   AGE
+appbinding-redis-standalone-frequent-backup-1726661707   BackupConfiguration   appbinding-redis-standalone   Succeeded   2m26s      9m56s
 ```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
 **Verify Backup:**
 
-Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-redis-backup` has been updated by the following command,
+Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `redis-standalone-backup` has been updated by the following command,
 
 ```bash
 $ kubectl get repository -n demo default-blueprint
 NAME                INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
-default-blueprint   true        3                1.559 KiB   Ready   80s                      7m32s
+default-blueprint   true        1                1.111 KiB   Ready   3m7s                     13m
 ```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
@@ -387,7 +384,7 @@ At this moment we have one `Snapshot`. Run the following command to check the re
 ```bash
 $ kubectl get snapshots -n demo -l=kubestash.com/repo-name=default-blueprint
 NAME                                                              REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-default-blueprint-appbinding-samgres-frequent-backup-1725533628   default-blueprint   frequent-backup   2024-09-05T10:53:59Z   Delete            Succeeded   7m48s
+  default-blueprint-appbinding-redlone-frequent-backup-1726661707   default-blueprint   frequent-backup   2024-09-18T12:15:38Z   Delete            Succeeded   14m
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
@@ -401,25 +398,24 @@ default-blueprint-appbinding-samgres-frequent-backup-1725533628   default-bluepr
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo default-blueprint-appbinding-samgres-frequent-backup-1725533628 -oyaml
+$ kubectl get snapshots -n demo default-blueprint-appbinding-redlone-frequent-backup-1726661707 -oyaml
 ```
 
 ```yaml
 apiVersion: storage.kubestash.com/v1alpha1
 kind: Snapshot
 metadata:
-  creationTimestamp: "2024-09-05T10:53:59Z"
+  creationTimestamp: "2024-09-18T12:15:38Z"
   finalizers:
     - kubestash.com/cleanup
   generation: 1
   labels:
+    kubedb.com/db-version: 7.4.0
     kubestash.com/app-ref-kind: Redis
-    kubestash.com/app-ref-name: sample-redis
+    kubestash.com/app-ref-name: redis-standalone
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: default-blueprint
-  annotations:
-    kubedb.com/db-version: "16.1"
-  name: default-blueprint-appbinding-samgres-frequent-backup-1725533628
+  name: default-blueprint-appbinding-redlone-frequent-backup-1726661707
   namespace: demo
   ownerReferences:
     - apiVersion: storage.kubestash.com/v1alpha1
@@ -427,60 +423,59 @@ metadata:
       controller: true
       kind: Repository
       name: default-blueprint
-      uid: 1125a82f-2bd8-4029-aae6-078ff5413383
-  resourceVersion: "298559"
-  uid: c179b758-6ba4-4a32-81f1-fa41ba3dc527
+      uid: 4d4085d1-f51d-48b2-95cb-f0e0503bb456
+  resourceVersion: "1176748"
+  uid: 8b3e77f2-3771-497e-a92c-e43031f84031
 spec:
   appRef:
     apiGroup: kubedb.com
     kind: Redis
-    name: sample-redis
+    name: redis-standalone
     namespace: demo
-  backupSession: appbinding-sample-redis-frequent-backup-1725533628
+  backupSession: appbinding-redis-standalone-frequent-backup-1726661707
   deletionPolicy: Delete
   repository: default-blueprint
   session: frequent-backup
-  snapshotID: 01J70X3MGSYT4TJK77R8YXEV3T
+  snapshotID: 01J82GYFH8RTZ2GNJT2R9FQFHA
   type: FullBackup
   version: v1
 status:
   components:
     dump:
       driver: Restic
-      duration: 5.952466363s
+      duration: 29.616729384s
       integrity: true
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: a30f8ec138e24cbdbcce088a73e5b9d73a58750c38793ef05ff7d570148ddd2c
-          size: 3.345 KiB
-          uploaded: 3.637 KiB
-      size: 1.132 KiB
+        - hostPath: dumpfile.resp
+          id: afce1d29a21d2b05a2aadfb5bdd08f0d5b7c2b2e70fc1d5d77843ebbbef258c1
+          size: 184 B
+          uploaded: 483 B
+      size: 381 B
   conditions:
-    - lastTransitionTime: "2024-09-05T10:53:59Z"
+    - lastTransitionTime: "2024-09-18T12:15:38Z"
       message: Recent snapshot list updated successfully
       reason: SuccessfullyUpdatedRecentSnapshotList
       status: "True"
       type: RecentSnapshotListUpdated
-    - lastTransitionTime: "2024-09-05T10:54:20Z"
+    - lastTransitionTime: "2024-09-18T12:17:59Z"
       message: Metadata uploaded to backend successfully
       reason: SuccessfullyUploadedSnapshotMetadata
       status: "True"
       type: SnapshotMetadataUploaded
   integrity: true
   phase: Succeeded
-  size: 1.132 KiB
-  snapshotTime: "2024-09-05T10:53:59Z"
+  size: 381 B
+  snapshotTime: "2024-09-18T12:15:38Z"
   totalComponents: 1
 ```
 
-> KubeStash uses a logical backup approach to take backups of target `Redis` databases. Therefore, the component name for logical backups is set as `dump`. Do the same for auto-backup, application backup and customize backup if necessary.
+> KubeStash uses [redis-dump-go](https://github.com/yannh/redis-dump-go) to perform backups of target `Redis` databases. Therefore, the component name for logical backups is set as `dump`.
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `blueprint/default-blueprint/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/default-blueprint/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
-
 
 ## Auto-backup with custom configurations
 
@@ -504,7 +499,6 @@ spec:
       from: All
   backupConfigurationTemplate:
     deletionPolicy: OnDelete
-    # ============== Blueprint for Backends of BackupConfiguration  =================
     backends:
       - name: gcs-backend
         storageRef:
@@ -513,7 +507,6 @@ spec:
         retentionPolicy:
           name: demo-retention
           namespace: demo
-    # ============== Blueprint for Sessions of BackupConfiguration  =================
     sessions:
       - name: frequent-backup
         sessionHistoryLimit: 3
@@ -532,9 +525,6 @@ spec:
           name: redis-addon
           tasks:
             - name: logical-backup
-              params:
-                backupCmd: rd_dump
-                args: ${targetedDatabase}
 ```
 
 Note that we have used some variables (format: `${<variable name>}`) in different fields. KubeStash will substitute these variables with values from the respective target’s annotations. You’re free to use any variables you like.
@@ -546,7 +536,6 @@ Here,
     - `.schedule` defines `${schedule}` variable, which determines the time interval for the backup.
     - `.repositories[*].name` defines the `${repoName}` variable, which specifies the name of the backup `Repository`.
     - `.repositories[*].directory` defines two variables, `${namespace}` and `${targetName}`, which are used to determine the path where the backup will be stored.
-    - `.addon.tasks[*].params.args` defines `${targetedDatabase}` variable, which identifies a single database to backup.
 
 Let's create the `BackupBlueprint` we have shown above,
 
@@ -567,7 +556,7 @@ Below is the YAML of the `Redis` object that we are going to create,
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
-  name: sample-redis-2
+  name: redis-standalone-2
   namespace: demo
   annotations:
     blueprint.kubestash.com/name: redis-customize-backup-blueprint
@@ -575,53 +564,50 @@ metadata:
     variables.kubestash.com/schedule: "*/10 * * * *"
     variables.kubestash.com/repoName: customize-blueprint
     variables.kubestash.com/namespace: demo
-    variables.kubestash.com/targetName: sample-redis-2
-    variables.kubestash.com/targetedDatabase: redis
+    variables.kubestash.com/targetName: redis-standalone-2
 spec:
-  version: "16.1"
-  replicas: 3
-  standbyMode: Hot
-  streamingMode: Synchronous
+  version: 7.4.0
   storageType: Durable
   storage:
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete
 ```
 
-Notice the `metadata.annotations` field, where we have defined the annotations related to the automatic backup configuration. Specifically, we've set the `BackupBlueprint` name as `redis-customize-backup-blueprint` and the namespace as `demo`. We have also provided values for the blueprint template variables, such as the backup `schedule`, `repositoryName`, `namespace`, `targetName`, and `targetedDatabase`. These annotations will be used to create a `BackupConfiguration` for this `postgreSQL` database.
+Notice the `metadata.annotations` field, where we have defined the annotations related to the automatic backup configuration. Specifically, we've set the `BackupBlueprint` name as `redis-customize-backup-blueprint` and the namespace as `demo`. We have also provided values for the blueprint template variables, such as the backup `schedule`, `repositoryName`, `namespace`, and `targetName`. These annotations will be used to create a `BackupConfiguration` for this `Redis` database.
 
 Let's create the `Redis` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/kubestash/auto-backup/examples/sample-redis-2.yaml
-redis.kubedb.com/sample-redis-2 created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/kubestash/auto-backup/examples/redis-standalone-2.yaml
+redis.kubedb.com/redis-standalone-2 created
 ```
 
 **Verify BackupConfiguration**
 
-If everything goes well, KubeStash should create a `BackupConfiguration` for our Redis in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
+If everything goes well, KubeStash should create a `BackupConfiguration` for our `Redis` in `demo` namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
 
 ```bash
 $ kubectl get backupconfiguration -n demo
-NAME                           PHASE   PAUSED      AGE
-appbinding-sample-redis-2   Ready               2m50m
+NAME                            PHASE   PAUSED   AGE
+appbinding-redis-standalone-2   Ready            61s
 ```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-redis-2  -o yaml
+$ kubectl get backupconfiguration -n demo appbinding-redis-standalone-2  -o yaml
 ```
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  creationTimestamp: "2024-09-05T12:39:37Z"
+  creationTimestamp: "2024-09-18T13:04:15Z"
   finalizers:
     - kubestash.com/cleanup
   generation: 1
@@ -629,10 +615,10 @@ metadata:
     app.kubernetes.io/managed-by: kubestash.com
     kubestash.com/invoker-name: redis-customize-backup-blueprint
     kubestash.com/invoker-namespace: demo
-  name: appbinding-sample-redis-2
+  name: appbinding-redis-standalone-2
   namespace: demo
-  resourceVersion: "309511"
-  uid: b4091166-2813-4183-acda-e2c80eaedbb5
+  resourceVersion: "1181988"
+  uid: 83f7a345-6e1b-41e3-8b6d-520e4a1852e5
 spec:
   backends:
     - name: gcs-backend
@@ -647,13 +633,10 @@ spec:
         name: redis-addon
         tasks:
           - name: logical-backup
-            params:
-              args: redis
-              backupCmd: rd_dump
       name: frequent-backup
       repositories:
         - backend: gcs-backend
-          directory: demo/sample-redis-2
+          directory: demo/redis-standalone-2
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
@@ -671,7 +654,7 @@ spec:
   target:
     apiGroup: kubedb.com
     kind: Redis
-    name: sample-redis-2
+    name: redis-standalone-2
     namespace: demo
 status:
   backends:
@@ -688,7 +671,7 @@ status:
           name: gcs-storage
           namespace: demo
   conditions:
-    - lastTransitionTime: "2024-09-05T12:39:37Z"
+    - lastTransitionTime: "2024-09-18T13:04:15Z"
       message: Validation has been passed successfully.
       reason: ResourceValidationPassed
       status: "True"
@@ -703,12 +686,12 @@ status:
       phase: Ready
   sessions:
     - conditions:
-        - lastTransitionTime: "2024-09-05T12:39:37Z"
+        - lastTransitionTime: "2024-09-18T13:04:35Z"
           message: Scheduler has been ensured successfully.
           reason: SchedulerEnsured
           status: "True"
           type: SchedulerEnsured
-        - lastTransitionTime: "2024-09-05T12:39:37Z"
+        - lastTransitionTime: "2024-09-18T13:04:35Z"
           message: Initial backup has been triggered successfully.
           reason: SuccessfullyTriggeredInitialBackup
           status: "True"
@@ -725,8 +708,8 @@ KubeStash triggers an instant backup as soon as the `BackupConfiguration` is rea
 
 ```bash
 $ kubectl get backupsession -n demo -w
-NAME                                                      INVOKER-TYPE          INVOKER-NAME                   PHASE       DURATION   AGE
-appbinding-sample-redis-frequent-backup-1725597000     BackupConfiguration   appbinding-sample-redis     Succeeded   58s        112s
+NAME                                                       INVOKER-TYPE          INVOKER-NAME                    PHASE       DURATION   AGE
+appbinding-redis-standalone-2-frequent-backup-1726664655   BackupConfiguration   appbinding-redis-standalone-2   Succeeded   2m33s      4m16s
 ```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
@@ -737,8 +720,8 @@ Once a backup is complete, KubeStash will update the respective `Repository` CR 
 
 ```bash
 $ kubectl get repository -n demo customize-blueprint
-NAME                         INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
-customize-blueprint          true        1                806 B   Ready   8m27s                    9m18s
+NAME                  INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
+customize-blueprint   true        1                380 B   Ready   5m44s                    6m4s
 ```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
@@ -746,7 +729,7 @@ At this moment we have one `Snapshot`. Run the following command to check the re
 ```bash
 $ kubectl get snapshots -n demo -l=kubestash.com/repo-name=customize-blueprint
 NAME                                                              REPOSITORY            SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-customize-blueprint-appbinding-ses-2-frequent-backup-1725597000   customize-blueprint   frequent-backup   2024-09-06T04:30:00Z   Delete            Succeeded   6m19s
+customize-blueprint-appbinding-rne-2-frequent-backup-1726664655   customize-blueprint   frequent-backup   2024-09-18T13:04:35Z   Delete            Succeeded   6m7s
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
@@ -761,24 +744,24 @@ customize-blueprint-appbinding-ses-2-frequent-backup-1725597000   customize-blue
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo customize-blueprint-appbinding-sql-2-frequent-backup-1725597000 -oyaml
+$ kubectl get snapshots -n demo customize-blueprint-appbinding-rne-2-frequent-backup-1726664655 -oyaml
 ```
 
 ```yaml
 apiVersion: storage.kubestash.com/v1alpha1
 kind: Snapshot
 metadata:
-  creationTimestamp: "2024-09-06T04:30:00Z"
+  creationTimestamp: "2024-09-18T13:04:35Z"
   finalizers:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: "16.1"
+    kubedb.com/db-version: 7.4.0
     kubestash.com/app-ref-kind: Redis
-    kubestash.com/app-ref-name: sample-redis-2
+    kubestash.com/app-ref-name: redis-standalone-2
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: customize-blueprint
-  name: customize-blueprint-appbinding-ses-2-frequent-backup-1725597000
+  name: customize-blueprint-appbinding-rne-2-frequent-backup-1726664655
   namespace: demo
   ownerReferences:
     - apiVersion: storage.kubestash.com/v1alpha1
@@ -786,58 +769,57 @@ metadata:
       controller: true
       kind: Repository
       name: customize-blueprint
-      uid: 5d4618c5-c28a-456a-9854-f6447161d3d1
-  resourceVersion: "315624"
-  uid: 7e02a18c-c8a7-40be-bd22-e7312678d6f7
+      uid: c107da60-af66-4ad6-83cc-d80053a11de3
+  resourceVersion: "1182349"
+  uid: 93b20b59-abce-41a5-88da-f2ce6e98713d
 spec:
   appRef:
     apiGroup: kubedb.com
     kind: Redis
-    name: sample-redis-2
+    name: redis-standalone-2
     namespace: demo
-  backupSession: appbinding-sample-redis-2-frequent-backup-1725597000
+  backupSession: appbinding-redis-standalone-2-frequent-backup-1726664655
   deletionPolicy: Delete
   repository: customize-blueprint
   session: frequent-backup
-  snapshotID: 01J72SH8XPEHB6SYNXFE00V5PB
+  snapshotID: 01J82KR4C7ZER9ZM0W52TVBEET
   type: FullBackup
   version: v1
 status:
   components:
     dump:
       driver: Restic
-      duration: 7.060169632s
+      duration: 29.378445351s
       integrity: true
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: 74d82943e0d676321e989edb503f5e2d6fe5cf4f4be72d386e492ec533358c26
-          size: 1.220 KiB
-          uploaded: 296 B
-      size: 1.873 KiB
+        - hostPath: dumpfile.resp
+          id: 73cf596a525bcdb439e87812045e7a25c6bd82574513351ab434793c134fc817
+          size: 184 B
+          uploaded: 483 B
+      size: 380 B
   conditions:
-    - lastTransitionTime: "2024-09-06T04:30:00Z"
+    - lastTransitionTime: "2024-09-18T13:04:35Z"
       message: Recent snapshot list updated successfully
       reason: SuccessfullyUpdatedRecentSnapshotList
       status: "True"
       type: RecentSnapshotListUpdated
-    - lastTransitionTime: "2024-09-06T04:30:38Z"
+    - lastTransitionTime: "2024-09-18T13:07:06Z"
       message: Metadata uploaded to backend successfully
       reason: SuccessfullyUploadedSnapshotMetadata
       status: "True"
       type: SnapshotMetadataUploaded
   integrity: true
   phase: Succeeded
-  size: 1.872 KiB
-  snapshotTime: "2024-09-06T04:30:00Z"
+  size: 380 B
+  snapshotTime: "2024-09-18T13:04:35Z"
   totalComponents: 1
 ```
 
+> KubeStash uses [redis-dump-go](https://github.com/yannh/redis-dump-go) to perform backups of target `Redis` databases. Therefore, the component name for logical backups is set as `dump`.
 
-> KubeStash uses a logical backup approach to take backups of target `Redis` databases. Therefore, the component name for logical backups is set as `dump`. Do the same for auto-backup, application backup and customize backup if necessary.
-
-Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `blueprint/demo/sample-redis-2/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/demo/sample-redis-2/snapshots` directory.
+Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `blueprint/demo/redis-standalone-2/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/demo/redis-standalone-2/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
@@ -852,6 +834,6 @@ kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
 kubectl delete backupstorage -n demo gcs-storage
 kubectl delete secret -n demo gcs-secret
 kubectl delete secret -n demo encrypt-secret
-kubectl delete redis -n demo sample-redis
-kubectl delete redis -n demo sample-redis-2
+kubectl delete redis -n demo redis-standalone
+kubectl delete redis -n demo redis-standalone-2
 ```

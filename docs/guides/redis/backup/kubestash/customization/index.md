@@ -1,6 +1,6 @@
 ---
-title: Redis Backup Customization | KubeStash
-description: Customizing Redis Backup and Restore process with KubeStash
+title: PostgreSQL Backup Customization | KubeStash
+description: Customizing PostgreSQL Backup and Restore process with KubeStash
 menu:
   docs_{{ .version }}:
     identifier: guides-rd-backup-customization-stashv2
@@ -21,7 +21,7 @@ In this section, we are going to show you how to customize the backup process. H
 
 ### Passing arguments to the backup process
 
-KubeStash Redis addon uses the [rd_dumpall](https://www.redisql.org/docs/current/app-rd-dumpall.html) command by default for backups. However, you can change the dump command to [rd_dump](https://www.redisql.org/docs/current/app-rddump.html) by setting the `backupCmd` parameter under the `addon.tasks[*].params` section. You can pass supported options for either `rd_dumpall` or `rd_dump` through the `args` parameter in the same section.
+KubeStash PostgreSQL addon uses the [rd_dumpall](https://www.redisql.org/docs/current/app-rd-dumpall.html) command by default for backups. However, you can change the dump command to [rd_dump](https://www.redisql.org/docs/current/app-rddump.html) by setting the `backupCmd` parameter under the `addon.tasks[*].params` section. You can pass supported options for either `rd_dumpall` or `rd_dump` through the `args` parameter in the same section.
 
 The below example shows how you can pass the `--clean` to include SQL commands to clean (drop) databases before recreating them.
 
@@ -69,7 +69,7 @@ spec:
 
 ### Passing a target database to the backup process
 
-KubeStash Redis addon uses the [rd_dumpall](https://www.redisql.org/docs/current/app-rd-dumpall.html) command by default for backups. For a single database backup, you need to rewrite the dump command. You can do this by setting `backupCmd` to [rd_dump](https://www.redisql.org/docs/current/app-rddump.html) under the `addon.tasks[*].params` section and specifying the database name using the `args` parameter in the same section.
+KubeStash PostgreSQL addon uses the [rd_dumpall](https://www.redisql.org/docs/current/app-rd-dumpall.html) command by default for backups. If you want to back up a single database, you’ll need to switch the command to [rd_dump](https://www.redisql.org/docs/current/app-rddump.html). You can do this by setting `backupCmd` to `rd_dump` under the `addon.tasks[*].params` section and specifying the database name using the `args` parameter in the same section.
 
 The below example shows how you can set `rd_dump` and pass target database name during backup. 
 
@@ -117,9 +117,9 @@ spec:
 
 > **WARNING**: Make sure that your provided database has been created before taking backup.
 
-### Using multiple repositories
+### Using multiple backends
 
-You can configure multiple repositories for the same backend. For example, if you want to back up the `/redis` directory using the `gcs-redis-repo` repository, you can also back up another directory, such as `/redis-copy`, by using a different repository, like `gcs-redis-repo-2`.
+You can configure multiple backends within a single `backupConfiguration`. To back up the same data to different backends, such as S3 and GCS, declare each backend in the `.spe.backends` section. Then, reference these backends in the `.spec.sessions[*].repositories` section.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -141,6 +141,13 @@ spec:
       retentionPolicy:
         name: demo-retention
         namespace: demo
+    - name: s3-backend
+      storageRef:
+        namespace: demo
+        name: s3-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
   sessions:
     - name: frequent-backup
       scheduler:
@@ -154,8 +161,8 @@ spec:
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
-        - name: gcs-redis-repo-2
-          backend: gcs-backend
+        - name: s3-redis-repo
+          backend: s3-backend
           directory: /redis-copy
           encryptionSecret:
             name: encrypt-secret

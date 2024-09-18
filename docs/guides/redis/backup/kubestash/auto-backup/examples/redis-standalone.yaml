@@ -1,21 +1,19 @@
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
-  name: sample-redis
+  name: redis-standalone
   namespace: demo
   annotations:
     blueprint.kubestash.com/name: redis-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "16.1"
-  replicas: 3
-  standbyMode: Hot
-  streamingMode: Synchronous
+  version: 7.4.0
   storageType: Durable
   storage:
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete

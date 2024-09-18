@@ -1,5 +1,5 @@
 ---
-title: Application Level Backup & Restore Redis | KubeStash
+title: Application Level Backup & Restore PostgreSQL | KubeStash
 description: Application Level Backup and Restore using KubeStash
 menu:
   docs_{{ .version }}:
@@ -11,11 +11,11 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Application Level Backup and Restore Redis database using KubeStash
+# Application Level Backup and Restore PostgreSQL database using KubeStash
 
-KubeStash offers application-level backup and restore functionality for `Redis` databases. It captures both manifest and data backups of any `Redis` database in a single snapshot. During the restore process, KubeStash first applies the `Redis` manifest to the cluster and then restores the data into it.
+KubeStash offers application-level backup and restore functionality for `PostgreSQL` databases. It captures both manifest and data backups of any `PostgreSQL` database in a single snapshot. During the restore process, KubeStash first applies the `PostgreSQL` manifest to the cluster and then restores the data into it.
 
-This guide will give you an overview how you can take application-level backup and restore your `Redis` databases using `Kubestash`.
+This guide will give you an overview how you can take application-level backup and restore your `PostgreSQL` databases using `Kubestash`.
 
 ## Before You Begin
 
@@ -23,7 +23,7 @@ This guide will give you an overview how you can take application-level backup a
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how KubeStash backup and restore Redis databases, please check the following guide [here](/docs/guides/redis/backup/kubestash/overview/index.md).
+- If you are not familiar with how KubeStash backup and restore PostgreSQL databases, please check the following guide [here](/docs/guides/redis/backup/kubestash/overview/index.md).
 
 You should be familiar with the following `KubeStash` concepts:
 
@@ -44,19 +44,19 @@ namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/redis/backup/kubestash/application-level/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/kubestash/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-## Backup Redis
+## Backup PostgreSQL
 
-KubeStash supports backups for `Redis` instances across different configurations, including Standalone and HA Cluster setups. In this demonstration, we'll focus on a `Redis` database using HA cluster configuration. The backup and restore process is similar for Standalone configuration.
+KubeStash supports backups for `PostgreSQL` instances across different configurations, including Standalone and HA Cluster setups. In this demonstration, we'll focus on a `PostgreSQL` database using HA cluster configuration. The backup and restore process is similar for Standalone configuration.
 
-This section will demonstrate how to take application-level backup of a `Redis` database. Here, we are going to deploy a `Redis` database using KubeDB. Then, we are going to back up the database at the application level to a `GCS` bucket. Finally, we will restore the entire `Redis` database.
+This section will demonstrate how to take application-level backup of a `PostgreSQL` database. Here, we are going to deploy a `PostgreSQL` database using KubeDB. Then, we are going to back up the database at the application level to a `GCS` bucket. Finally, we will restore the entire `PostgreSQL` database.
 
-### Deploy Sample Redis Database
+### Deploy Sample PostgreSQL Database
 
-Let's deploy a sample `Redis` database and insert some data into it.
+Let's deploy a sample `PostgreSQL` database and insert some data into it.
 
-**Create Redis CR:**
+**Create PostgreSQL CR:**
 
-Below is the YAML of a sample `Redis` CR that we are going to create for this tutorial:
+Below is the YAML of a sample `PostgreSQL` CR that we are going to create for this tutorial:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -79,14 +79,14 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Create the above `Redis` CR,
+Create the above `PostgreSQL` CR,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/kubestash/application-level/examples/sample-redis.yaml
 redis.kubedb.com/sample-redis created
 ```
 
-KubeDB will deploy a `Redis` database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
+KubeDB will deploy a `PostgreSQL` database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
 
 Let's check if the database is ready to use,
 
@@ -319,7 +319,7 @@ spec:
     allowedNamespaces:
       from: All
   default: true
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete
 ```
 
 Let's create the BackupStorage we have shown above,
@@ -364,7 +364,7 @@ retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
-We have to create a `BackupConfiguration` targeting respective `sample-redis` Redis database. Then, KubeStash will create a `CronJob` for each session to take periodic backup of that database.
+We have to create a `BackupConfiguration` targeting respective `sample-redis` PostgreSQL database. Then, KubeStash will create a `CronJob` for each session to take periodic backup of that database.
 
 At first, we need to create a secret with a Restic password for backup data encryption.
 
@@ -424,9 +424,8 @@ spec:
 ```
 
 - `.spec.sessions[*].schedule` specifies that we want to backup at `5 minutes` interval.
-- `.spec.target` refers to the targeted `sample-redis` Redis database that we created earlier.
-- `.spec.sessions[*].addon.tasks[*].name[*]` specifies that both the `manifest-backup` and `logical-backup` will be taken together.
-
+- `.spec.target` refers to the targeted `sample-redis` PostgreSQL database that we created earlier.
+- `.spec.sessions[*].addon.tasks[*].name[*]` specifies that both the `manifest-backup` and `logical-backup` tasks will be executed.
 
 Let's create the `BackupConfiguration` CR that we have shown above,
 
@@ -484,9 +483,9 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-redis-backup` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo sample-redis-backup
+$ kubectl get repository -n demo gcs-redis-repo
 NAME                       INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
-sample-redis-backup     true        1                806 B   Ready   8m27s                    9m18s
+gcs-redis-repo          true        1                806 B   Ready   8m27s                    9m18s
 ```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
@@ -594,9 +593,9 @@ status:
   totalComponents: 2
 ```
 
-> KubeStash uses a logical backup approach to take backups of target `Redis` databases. Therefore, the component name for logical backups is set as `dump`. Do the same for auto-backup, application backup and customize backup if necessary.
+> KubeStash uses `rd_dump` or `rd_dumpall` to perform backups of target `PostgreSQL` databases. Therefore, the component name for logical backups is set as `dump`.
 
-> KubeStash set component name as `manifest` for the `manifest backup` of Redis databases.
+> KubeStash set component name as `manifest` for the `manifest backup` of PostgreSQL databases.
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `demo/popstgres/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/redis/snapshots` directory.
 
@@ -671,9 +670,9 @@ restore-sample-redis   gcs-redis-repo                      Succeeded   3s       
 The `Succeeded` phase means that the restore process has been completed successfully.
 
 
-#### Verify Restored Redis Manifest:
+#### Verify Restored PostgreSQL Manifest:
 
-In this section, we will verify whether the desired `Redis` database manifest has been successfully applied to the cluster.
+In this section, we will verify whether the desired `PostgreSQL` database manifest has been successfully applied to the cluster.
 
 ```bash
 $ kubectl get redis -n dev 
@@ -681,7 +680,7 @@ NAME              VERSION   STATUS   AGE
 sample-redis   16.1      Ready    9m46s
 ```
 
-The output confirms that the `Redis` database has been successfully created with the same configuration as it had at the time of backup.
+The output confirms that the `PostgreSQL` database has been successfully created with the same configuration as it had at the time of backup.
 
 
 #### Verify Restored Data:
