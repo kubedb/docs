@@ -4,6 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mc-auto-scaling
     name: Memcached Autoscaling
+    parent: compute-auto-scaling
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
