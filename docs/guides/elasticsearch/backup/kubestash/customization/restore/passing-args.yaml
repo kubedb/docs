@@ -1,0 +1,23 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: es-quickstart-restore
+  namespace: demo
+spec:
+  target:
+    name: es-quickstart
+    namespace: demo
+    apiGroup: kubedb.com
+    kind: Elasticsearch
+  dataSource:
+    snapshot: latest
+    repository: s3-elasticsearch-repo
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: elasticsearch-addon
+    tasks:
+      - name: logical-backup-restore
+        params:
+          args: --ignoreType=template,settings

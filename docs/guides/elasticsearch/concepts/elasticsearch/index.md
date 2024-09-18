@@ -615,7 +615,7 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 ### spec.init
 
-`spec.init` is an `optional` section that can be used to initialize a newly created Elasticsearch cluster from prior snapshots, taken by [Stash](/docs/guides/elasticsearch/backup/overview/index.md).
+`spec.init` is an `optional` section that can be used to initialize a newly created Elasticsearch cluster from prior snapshots, taken by [Stash](/docs/guides/elasticsearch/backup/stash/overview/index.md).
 
 ```yaml
 spec:
@@ -625,7 +625,7 @@ spec:
 
 When the `waitForInitialRestore` is set to true, the Elasticsearch instance will be stack in the `Provisioning` state until the initial backup is completed. On completion of the very first restore operation, the Elasticsearch instance will go to the `Ready` state.
 
-For detailed tutorial on how to initialize Elasticsearch from Stash backup, please visit [here](/docs/guides/elasticsearch/backup/overview/index.md).
+For detailed tutorial on how to initialize Elasticsearch from Stash backup, please visit [here](/docs/guides/elasticsearch/backup/stash/overview/index.md).
 
 ### spec.monitor
 
