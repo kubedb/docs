@@ -4,7 +4,7 @@ metadata:
   name: coreos-prom-memcd
   namespace: demo
 spec:
-  replicas: 3
+  replicas: 1
   version: "1.6.22"
   deletionPolicy: WipeOut
   podTemplate:

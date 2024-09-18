@@ -117,7 +117,7 @@ If you want to update your Memcacheds version, you have to
 >You can only update between Memcached versions. KubeDB does not support downgrade for Memcached.
 
 ### spec.horizontalScaling
-If you want to scale-up or scale-down your Memcached, you have to specify `spec.horizontalScaling section. This field consists of the following sub-field:
+If you want to scale-up or scale-down your Memcached, you have to specify `spec.horizontalScaling` section. This field consists of the following sub-field:
 
 
 - `spec.horizontalScaling.replicas` indicates the desired number of replicas for your Memcahced instance after scaling. For example, if your cluster currently has 4 replicas, and you want to add additional 2 replicas then you have to specify 6 in spec.horizontalScaling.replicas field. Similarly, if you want to remove one replicas, you have to specify 3 in spec.horizontalScaling.replicas field.

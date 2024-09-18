@@ -10,13 +10,25 @@ spec:
   podTemplate:
     spec:
       containers:
-        - name: memcached
-          resources:
-            limits:
-              cpu: 500m
-              memory: 128Mi
-            requests:
-              cpu: 250m
-              memory: 64Mi
+      - name: memcached
+        resources:
+          limits:
+            cpu: 500m
+            memory: 256Mi
+          requests:
+            cpu: 500m
+            memory: 256Mi
   monitor:
-    agent: prometheus.io/builtin
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+      exporter:
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 200m
+          limits:
+            memory: 512Mi
+            cpu: 250m

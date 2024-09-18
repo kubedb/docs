@@ -90,12 +90,12 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 memcached.kubedb.com/builtin-prom-memcd created
 ```
 
-Now, wait for the database to go into `Running` state.
+Now, wait for the database to go into `Ready` state.
 
 ```bash
 $ kubectl get mc -n demo builtin-prom-memcd
 NAME                 VERSION    STATUS    AGE
-builtin-prom-memcd   1.6.22     Running   10s
+builtin-prom-memcd   1.6.22     Ready     30s
 ```
 
 KubeDB will create a separate stats service with name `{Memcached crd name}-stats` for monitoring purpose.
@@ -131,7 +131,6 @@ TargetPort:        metrics/TCP
 Endpoints:         10.244.0.186:56790
 Session Affinity:  None
 Events:            <none>
-
 ```
 
 You can see that the service contains following annotations.
