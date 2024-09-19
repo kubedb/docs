@@ -23,7 +23,7 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how KubeStash backup and restore `Elasticsearch` databases, please check the following guide [here](/docs/guides/postgres/backup/kubestash/overview/index.md).
+- If you are not familiar with how KubeStash backup and restore `Elasticsearch` databases, please check the following guide [here](/docs/guides/elasticsearch/backup/kubestash/overview/index.md).
 
 You should be familiar with the following `KubeStash` concepts:
 
@@ -42,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/auto-backup/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/auto-backup/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/elasticsearch/backup/kubestash/auto-backup/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ### Prepare Backend
 
@@ -191,13 +191,13 @@ spec:
 
 Here,
 
-- `.spec.backupConfigurationTemplate.backends[*].storageRef` refers our earlier created `gcs-storage` backupStorage.
+- `.spec.backupConfigurationTemplate.backends[*].storageRef` refers our earlier created `s3-storage` backupStorage.
 - `.spec.backupConfigurationTemplate.sessions[*].schedule` specifies that we want to backup the database at `5 minutes` interval.
 
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/auto-backup/examples/default-backupblueprint.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/default-backupblueprint.yaml
 backupblueprint.core.kubestash.com/es-quickstart-backup-blueprint created
 ```
 
@@ -235,14 +235,14 @@ spec:
 
 Here,
 
-- `.spec.annotations.blueprint.kubestash.com/name: postgres-default-backup-blueprint` specifies the name of the `BackupBlueprint` that will use in backup.
+- `.spec.annotations.blueprint.kubestash.com/name: es-quickstart-backup-blueprint` specifies the name of the `BackupBlueprint` that will use in backup.
 - `.spec.annotations.blueprint.kubestash.com/namespace: demo` specifies the name of the `namespace` where the `BackupBlueprint` resides.
 
 Let's create the `Elasticsearch` we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/sample-es.yaml
-postgres.kubedb.com/es-quickstart created
+elasticsearch.kubedb.com/es-quickstart created
 ```
 
 **Verify BackupConfiguration**
@@ -252,7 +252,7 @@ If everything goes well, KubeStash should create a `BackupConfiguration` for our
 ```bash
 $ kubectl get backupconfiguration -n demo
 NAME                         PHASE   PAUSED   AGE
-appbinding-sample-postgres   Ready            2m50m
+appbinding-es-quickstart     Ready            2m50m
 ```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
@@ -471,7 +471,7 @@ status:
 
 > KubeStash uses `multielasticdump` to perform backups of target `Elasticsearch` databases. Therefore, the component name for logical backups is set as `dump`.
 
-Now, if we navigate to the S3 bucket, we will see the backed up data stored in the `elastic/es/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `elastic/es/snapshots` directory.
+Now, if we navigate to the S3 bucket, we will see the backed up data stored in the `elastic/es/default/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `elastic/es/defaultsnapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
@@ -540,8 +540,8 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/auto-backup/examples/customize-backupblueprint.yaml
-backupblueprint.core.kubestash.com/postgres-customize-backup-blueprint created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/custom-backup-blueprint.yaml
+backupblueprint.core.kubestash.com/es-quickstart-custom-backup-blueprint created
 ```
 
 Now, we are ready to backup our `Elasticsearch` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
@@ -580,12 +580,12 @@ spec:
   deletionPolicy: Delete
 ```
 
-Notice the `metadata.annotations` field, where we have defined the annotations related to the automatic backup configuration. Specifically, we've set the `BackupBlueprint` name as `postgres-customize-backup-blueprint` and the namespace as `demo`. We have also provided values for the blueprint template variables, such as the backup `schedule`, `repositoryName`, `namespace`, `targetName`, and `targetedDatabase`. These annotations will be used to create a `BackupConfiguration` for this `Elasticsearch` database.
+Notice the `metadata.annotations` field, where we have defined the annotations related to the automatic backup configuration. Specifically, we've set the `BackupBlueprint` name as `es-quickstart-custom-backup-blueprint` and the namespace as `demo`. We have also provided values for the blueprint template variables, such as the backup `schedule`, `repositoryName`, `namespace`, `targetName`, and `targetedDatabase`. These annotations will be used to create a `BackupConfiguration` for this `Elasticsearch` database.
 
 Let's create the `Elasticsearch` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/auto-backup/examples/sample-es-2.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/sample-es-2.yaml
 elasticsearch.kubedb.com/es-quickstart-2 created
 ```
 
@@ -816,7 +816,7 @@ status:
 
 > KubeStash uses `multielasticdump` to perform backups of target `Elasticsearch` databases. Therefore, the component name for logical backups is set as `dump`.
 
-Now, if we navigate to the S3 bucket, we will see the backed up data stored in the `elastic/es/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/demo/sample-postgres-2/snapshots` directory.
+Now, if we navigate to the S3 bucket, we will see the backed up data stored in the `elastic/es/custom/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `elastic/es/custom/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
@@ -831,6 +831,6 @@ kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
 kubectl delete backupstorage -n demo s3-storage
 kubectl delete secret -n demo s3-secret
 kubectl delete secret -n demo encrypt-secret
-kubectl delete postgres -n demo es-quickstart
-kubectl delete postgres -n demo es-quickstart-2
+kubectl delete es -n demo es-quickstart
+kubectl delete es -n demo es-quickstart-2
 ```

@@ -23,7 +23,7 @@ This guide will give you an overview how you can take application-level backup a
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how KubeStash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/postgres/backup/kubestash/overview/index.md).
+- If you are not familiar with how KubeStash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/elasticsearch/backup/kubestash/overview/index.md).
 
 You should be familiar with the following `KubeStash` concepts:
 
@@ -42,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/application-level/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/elasticsearch/backup/kubestash/application-level/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Backup Elasticsearch
 
@@ -136,7 +136,7 @@ es-quickstart     kubedb.com/elasticsearch   8.15.0    3h6m
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo sample-postgres -o yaml
+$ kubectl get appbindings -n demo es-quickstart -o yaml
 ```
 
 ```yaml
@@ -386,7 +386,7 @@ secret "encrypt-secret" created
 
 **Create BackupConfiguration:**
 
-Below is the YAML for `BackupConfiguration` CR to take application-level backup of the `sample-postgres` database that we have deployed earlier,
+Below is the YAML for `BackupConfiguration` CR to take application-level backup of the `es-quickstart` database that we have deployed earlier,
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -428,14 +428,14 @@ spec:
 ```
 
 - `.spec.sessions[*].schedule` specifies that we want to backup at `5 minutes` interval.
-- `.spec.target` refers to the targeted `sample-postgres` Elasticsearch database that we created earlier.
+- `.spec.target` refers to the targeted `es-quickstart` Elasticsearch database that we created earlier.
 - `.spec.sessions[*].addon.tasks[*].name[*]` specifies that the `logical-backup` tasks will be executed.
 
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/kubestash/application-level/examples/backupconfiguration.yaml
-backupconfiguration.core.kubestash.com/sample-postgres-backup created
+backupconfiguration.core.kubestash.com/es-quickstart-backup created
 ```
 
 **Verify Backup Setup Successful**
@@ -484,7 +484,7 @@ We can see from the above output that the backup session has succeeded. Now, we 
 
 **Verify Backup:**
 
-Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-postgres-backup` has been updated by the following command,
+Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `es-quickstart-backup` has been updated by the following command,
 
 ```bash
 $ kubectl get repository -n demo
@@ -583,7 +583,7 @@ status:
 
 > KubeStash uses `multielasticdump` to perform backups of target `Elasticsearch` databases. Therefore, the component name for logical backups is set as `dump`.
 
-Now, if we navigate to the S3 bucket, we will see the backed up data stored in the `elastic/es/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/postgres/snapshots` directory.
+Now, if we navigate to the S3 bucket, we will see the backed up data stored in the `elastic/es/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `/elastic/es/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
@@ -610,7 +610,7 @@ Below, is the contents of YAML file of the `RestoreSession` CR that we are going
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: es-quickstart-restore
+  name: es-dev-restore
   namespace: demo
 spec:
   target:
@@ -632,7 +632,6 @@ spec:
 
 Here,
 
-- `.spec.manifestOptions.postgres.db` specifies whether to restore the DB manifest or not.
 - `.spec.dataSource.repository` specifies the Repository object that holds the backed up data.
 - `.spec.dataSource.snapshot` specifies to restore from latest `Snapshot`.
 - `.spec.addon.tasks[*]` specifies that both the `manifest-restore` and `logical-backup-restore` tasks.
@@ -641,7 +640,7 @@ Let's create the RestoreSession CR object we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/application-level/examples/restoresession.yaml
-restoresession.core.kubestash.com/restore-sample-postgres created
+restoresession.core.kubestash.com/es-dev-restore created
 ```
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
@@ -662,7 +661,7 @@ In this section, we will verify whether the desired `Elasticsearch` database man
 ```bash
 $ kubectl get es -n dev
 NAME            VERSION        STATUS   AGE
-es-quickstart   xpack-8.15.0   Ready    6m14s
+es-dev   xpack-8.15.0   Ready    6m14s
 ```
 
 The output confirms that the `Elasticsearch` database has been successfully created with the same configuration as it had at the time of backup.

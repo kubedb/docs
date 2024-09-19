@@ -24,7 +24,7 @@ This guide will give you an overview how you can take backup and restore your `E
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how KubeStash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/postgres/backup/kubestash/overview/index.md).
+- If you are not familiar with how KubeStash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/elasticsearch/backup/kubestash/overview/index.md).
 
 You should be familiar with the following `KubeStash` concepts:
 
@@ -43,7 +43,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/logical/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/elasticsearch/backup/kubestash/logical/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 
 ## Backup Elasticsearch
@@ -585,7 +585,7 @@ status:
 
 > KubeStash uses `multielasticdump` to perform backups of target `Elasticsearch` databases. Therefore, the component name for logical backups is set as `dump`.
 
-Now, if we navigate to the S3 bucket, we will see the backed up data stored in the `elastic/es/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/postgres/snapshots` directory.
+Now, if we navigate to the S3 bucket, we will see the backed up data stored in the `elastic/es/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `elastic/es/snapshots` directory.
 
 > Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
@@ -637,7 +637,7 @@ es-cluster         8.15.0    Provisioning   61s
 
 Now, we need to create a `RestoreSession` CR pointing to targeted `Elasticsearch` database.
 
-Below, is the contents of YAML file of the `RestoreSession` object that we are going to create to restore backed up data into the newly created `Elasticsearch` database named `restored-postgres`.
+Below, is the contents of YAML file of the `RestoreSession` object that we are going to create to restore backed up data into the newly created `Elasticsearch` database named `es-cluster`.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -760,6 +760,6 @@ kubectl delete restoresessions.core.kubestash.com -n demo es-cluster-restore
 kubectl delete backupstorage -n demo s3-storage
 kubectl delete secret -n demo s3-secret
 kubectl delete secret -n demo encrypt-secret
-kubectl delete postgres -n demo es-quickstart
-kubectl delete postgres -n dev es-cluster
+kubectl delete es -n demo es-quickstart
+kubectl delete es -n dev es-cluster
 ```
