@@ -192,7 +192,7 @@ app-es-demo                                                                5s
 
 Now, let's check the YAML of the `Repository`.
 
-```yaml
+```bash
 ❯ kubectl get repository -n demo app-es-demo -o yaml
 apiVersion: stash.appscode.com/v1alpha1
 kind: Repository
@@ -221,7 +221,7 @@ app-es-demo   elasticsearch-backup-7.3.2   */5 * * * *            Ready   12s
 
 Now, let's check the YAML of the `BackupConfiguration`.
 
-```yaml
+```bash
 ❯ kubectl get backupconfiguration -n demo app-es-demo -o yaml
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration

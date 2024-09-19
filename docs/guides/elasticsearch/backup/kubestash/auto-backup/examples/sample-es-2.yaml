@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1
+kind: Elasticsearch
+metadata:
+  name: es-quickstart-2
+  namespace: demo
+  annotations:
+    blueprint.kubestash.com/name: es-quickstart-backup-blueprint
+    blueprint.kubestash.com/namespace: demo
+    variables.kubestash.com/schedule: "*/5 * * * *"
+    variables.kubestash.com/repoName: s3-elasticsearch-repo
+    variables.kubestash.com/namespace: demo
+    variables.kubestash.com/args: --ignoreType=template,settings
+spec:
+  version: xpack-8.15.0
+  enableSSL: true
+  replicas: 2
+  storageType: Durable
+  storage:
+    storageClassName: standard
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: Delete
