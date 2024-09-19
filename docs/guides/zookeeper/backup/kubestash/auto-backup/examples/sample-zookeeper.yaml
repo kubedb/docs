@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ZooKeeper
+metadata:
+  name: sample-zookeeper
+  namespace: demo
+  annotations:
+    blueprint.kubestash.com/name: zookeeper-default-backup-blueprint
+    blueprint.kubestash.com/namespace: demo
+spec:
+  version: "3.8.3"
+  adminServerPort: 8080
+  replicas: 3
+  storage:
+    resources:
+      requests:
+        storage: "1Gi"
+    accessModes:
+      - ReadWriteOnce
+  deletionPolicy: "WipeOut"
