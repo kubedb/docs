@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-es-backup-kubedb
     name: Scheduled Backup
-    parent: guides-es-backup
+    parent: guides-es-backup-stashv1
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

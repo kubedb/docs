@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-es-backup-overview
     name: Overview
-    parent: guides-es-backup
+    parent: guides-es-backup-stashv1
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

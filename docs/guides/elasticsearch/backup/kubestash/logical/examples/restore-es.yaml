@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
-  name: es-restore
+  name: es-cluster
   namespace: demo
 spec:
   version: xpack-8.15.0

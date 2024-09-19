@@ -1,11 +1,11 @@
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: es-quickstart-restore
+  name: es-cluster-restore
   namespace: demo
 spec:
   target:
-    name: restore-es
+    name: es-cluster
     namespace: demo
     apiGroup: kubedb.com
     kind: Elasticsearch

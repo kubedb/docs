@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-es-auto-backup-stashv2
     name: Auto-Backup
-    parent: guides-pg-backup-stashv2
+    parent: guides-es-backup-stashv2
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-es-backup-customization
     name: Customizing Backup & Restore Process
-    parent: guides-es-backup
+    parent: guides-es-backup-stashv1
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
