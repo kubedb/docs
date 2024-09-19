@@ -448,7 +448,7 @@ persistentvolumeclaim/datadir-mg-alone-0   Bound    pvc-a1a873a6-4f6d-42eb-a38f-
 
 ## Resume Halted Database
 
-Now, to resume the database, i.e. to get the same database setup back again, you have to set the the `spec.halted` as false. You can use the below command.
+Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
 $ kubectl patch -n demo mg/mg-alone -p '{"spec":{"halted":false}}' --type="merge"

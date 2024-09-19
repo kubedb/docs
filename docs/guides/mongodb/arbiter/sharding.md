@@ -112,7 +112,7 @@ Here,
     - `configSecret` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used.
     - `podTemplate` is an optional configuration for pods.
 - `spec.keyFileSecret` (optional) is a secret name that contains keyfile (a random string)against `key.txt` key. Each mongod instances in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the replicaset. Only mongod instances with the correct keyfile can join the replica set. _User can provide the `keyFileSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `keyFileSecret`._ If `keyFileSecret` is not given, KubeDB operator will generate a `keyFileSecret` itself.
-- `spec.arbiter` denotes arbiter spec of the deployed MongoDB CRD. There are two fields under it : configSecret & podTemplate. `spec.arbiter.configSecret` is an optional field to provide custom configuration file for database (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used. `spec.arbiter.podTemplate` holds the arbiter-podSpec. `null` value of it, instructs kubedb operator to use  the default arbiter podTemplate.
+- `spec.arbiter` denotes arbiter spec of the deployed MongoDB CRD. There are two fields under it : configSecret & podTemplate. `spec.arbiter.configSecret` is an optional field to provide custom configuration file for database (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used. `spec.arbiter.podTemplate` holds the arbiter-podSpec. `null` value of it, instructs kubedb operator to use the default arbiter podTemplate.
 
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create some new PetSets : 1 for mongos, 1 for configServer, and 1 for each of the shard & arbiter. It creates a primary Service with the matching MongoDB object name. KubeDB operator will also create governing services for PetSets with the name `<mongodb-name>-<node-type>-pods`.
 
@@ -957,7 +957,7 @@ From the above output, you can see that MongoDB object, PVCs, Secret are still t
 
 ## Resume Halted Database
 
-Now, to resume the database, i.e. to get the same database setup back again, you have to set the the `spec.halted` as false. You can use the below command.
+Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
 $ kubectl patch -n demo mg/mongo-sh-arb -p '{"spec":{"halted":false}}' --type="merge"

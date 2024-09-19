@@ -245,7 +245,7 @@ mysql.kubedb.com/mysql-init-script created
 
 Here,
 
-- `spec.init.script` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabatically. In this tutorial, a sample .sql script from the git repository `https://github.com/kubedb/mysql-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes) instead of `ConfigMap`.  The \*.sql, \*sql.gz and/or \*.sh sripts that are stored inside the root folder will be executed alphabatically. The scripts inside child folders will be skipped.
+- `spec.init.script` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabetically. In this tutorial, a sample .sql script from the git repository `https://github.com/kubedb/mysql-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes) instead of `ConfigMap`.  The \*.sql, \*sql.gz and/or \*.sh sripts that are stored inside the root folder will be executed alphabetically. The scripts inside child folders will be skipped.
 
 KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present. No MySQL specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
 
@@ -463,7 +463,7 @@ status:
 KubeDB operator has created a new Secret called `mysql-init-script-auth` *(format: {mysql-object-name}-auth)* for storing the password for MySQL superuser. This secret contains a `username` key which contains the *username* for MySQL superuser and a `password` key which contains the *password* for MySQL superuser.
 If you want to use an existing secret please specify that when creating the MySQL object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`.
 
-Now, you can connect to this database from the phpMyAdmin dashboard using the database pod IP and and `mysql` user password.
+Now, you can connect to this database from the phpMyAdmin dashboard using the database pod IP and `mysql` user password.
 
 ```bash
 $ kubectl get pods mysql-init-script-0 -n demo -o yaml | grep IP

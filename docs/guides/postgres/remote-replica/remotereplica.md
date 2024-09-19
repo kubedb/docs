@@ -37,7 +37,7 @@ It's useful to use remote replica to scale of read-intensive workloads, can be a
 
 ## Deploy PostgreSQL server
 
-The following is an example `PostgreSQL` object which creates a PostgreSQL cluster instance.we will create a tls secure instance since were planing to replicated across cluster
+The following is an example `PostgreSQL` object which creates a PostgreSQL cluster instance. We will create a tls secure instance since we are planning to replicate across cluster
 
 Lets start with creating a secret first to access to database and we will deploy a tls secured instance since were replication across cluster
 
@@ -61,7 +61,7 @@ kubectl create secret tls pg-ca \
 secret/pg-ca created
 ```
 
-Now, we are going to create an `Issuer` using the `pg-ca` secret that hols the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
+Now, we are going to create an `Issuer` using the `pg-ca` secret that holds the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -159,7 +159,7 @@ pg-singapore      15.3      Ready    22h
 ```
 
 # Exposing to outside world
-For Now we will expose our postgresql with ingress with to outside world
+For now we will expose our postgresql with ingress with to outside world
 ```bash
 $ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 $ helm upgrade -i ingress-nginx ingress-nginx/ingress-nginx  \
@@ -198,7 +198,7 @@ pg-singapore      nginx   pg-singapore.something.org      172.104.37.147   80   
 ```
 
 # Prepare for Remote Replica
-We wil use the [kubedb_plugin](/docs/setup/README.md) for generating configuration for remote replica. It will create the appbinding and and necessary secrets to connect with source server
+We wil use the [kubedb_plugin](/docs/setup/README.md) for generating configuration for remote replica. It will create the appbinding and necessary secrets to connect with source server
 ```bash
 $ kubectl dba remote-config postgres -n demo pg-singapore -uremote -ppass -d 172.104.37.147 -y
 home/mehedi/go/src/kubedb.dev/yamls/postgres/pg-singapore-remote-config.yaml

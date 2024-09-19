@@ -43,7 +43,7 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 
 ## Custom RBAC for PostgreSQL
 
-At first, let's create a `Service Acoount` in `demo` namespace.
+At first, let's create a `Service Account` in `demo` namespace.
 
 ```bash
 $ kubectl create serviceaccount -n demo my-custom-serviceaccount
@@ -123,7 +123,7 @@ rules:
   - use
 ```
 
-Please note that resourceNames `quick-postgres` and `quick-postgres-leader-lock` are unique to `quick-postgres` PostgreSQL instance. Another database `quick-postgres-2`, for exmaple, will require these resourceNames to be `quick-postgres-2`, and `quick-postgres-2-leader-lock`.
+Please note that resourceNames `quick-postgres` and `quick-postgres-leader-lock` are unique to `quick-postgres` PostgreSQL instance. Another database `quick-postgres-2`, for example, will require these resourceNames to be `quick-postgres-2`, and `quick-postgres-2-leader-lock`.
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
