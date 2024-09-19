@@ -282,7 +282,7 @@ Let's watch the `Memcachedopsrequest` in the demo namespace to see if any `Memca
 $ watch kubectl get memcachedopsrequest -n demo
 Every 2.0s: kubectl get memcachedopsrequest -n demo
 NAME                                 TYPE              STATUS       AGE
-mcops-mc-autoscaler-compute-p1usdl   VerticalScaling   Progressing   1m
+mcops-mc-autoscaler-compute-p1usdl   VerticalScaling   Progressing  10s
 ```
 
 Let's wait for the ops request to become successful.
