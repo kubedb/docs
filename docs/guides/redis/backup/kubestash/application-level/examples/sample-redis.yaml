@@ -4,15 +4,13 @@ metadata:
   name: sample-redis
   namespace: demo
 spec:
-  version: "16.1"
-  replicas: 3
-  standbyMode: Hot
-  streamingMode: Synchronous
+  version: 7.4.0
   storageType: Durable
   storage:
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete
