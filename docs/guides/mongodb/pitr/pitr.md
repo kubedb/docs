@@ -263,7 +263,7 @@ spec:
 
 ```
 
-The `archiver: "true"` label is important here. Because that's how we are specifying that continous archiving will be done in this db.
+The `archiver: "true"` label is important here. Because that's how we are specifying that continuous archiving will be done in this db.
 
 
 ```bash
@@ -344,7 +344,7 @@ rs:PRIMARY>
 > At this point We have a document in our newly created collection `songs` on database `pink_floyd`
 ## Point-in-time Recovery
 Point-In-Time Recovery allows you to restore a MongoDB database to a specific point in time using the archived transaction logs. This is particularly useful in scenarios where you need to recover to a state just before a specific error or data corruption occurred.
-Let's say accidentally our dba drops the the table tab_1 and we want to restore.
+Let's say accidentally our dba drops the table tab_1 and we want to restore.
 ```bash
 ```bash
 
