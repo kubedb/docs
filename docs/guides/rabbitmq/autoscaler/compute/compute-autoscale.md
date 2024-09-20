@@ -3,8 +3,8 @@ title: RabbitMQ Compute Resource Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: rm-autoscaling-compute-description
-    name: rabbitmq-compute
-    parent: rm-autoscaling
+    name: Autoscale Compute Resources
+    parent: rm-autoscaling-compute
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides

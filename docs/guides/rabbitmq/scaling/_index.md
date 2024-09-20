@@ -5,6 +5,6 @@ menu:
     identifier: rm-scaling
     name: Scaling
     parent: rm-guides
-    weight: 43
+    weight: 60
 menu_name: docs_{{ .version }}
 ---

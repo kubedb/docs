@@ -3,7 +3,7 @@ title: Horizontal Scaling RabbitMQ
 menu:
   docs_{{ .version }}:
     identifier: rm-horizontal-scaling-ops
-    name: rabbitmq-horizontal-scaling
+    name: Scale Horizontally
     parent: rm-horizontal-scaling
     weight: 20
 menu_name: docs_{{ .version }}

@@ -5,6 +5,6 @@ menu:
     identifier: rm-restart
     name: Restart
     parent: rm-guides
-    weight: 46
+    weight: 100
 menu_name: docs_{{ .version }}
 ---
