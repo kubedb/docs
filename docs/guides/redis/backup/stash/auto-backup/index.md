@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: rd-auto-backup-kubedb
     name: Auto-Backup
-    parent: rd-guides-redis-backup
+    parent: guides-rd-backup-stashv1
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides

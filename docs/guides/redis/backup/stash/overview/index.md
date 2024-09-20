@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: rd-backup-overview
     name: Overview
-    parent: rd-guides-redis-backup
+    parent: guides-rd-backup-stashv1
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

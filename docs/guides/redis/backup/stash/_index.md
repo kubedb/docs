@@ -1,10 +1,10 @@
 ---
-title: Backup and Restore Redis
+title: Backup & Restore Redis | Stash
 menu:
   docs_{{ .version }}:
-    identifier: rd-guides-redis-backup
-    name: Backup
-    parent: rd-redis-guides
-    weight: 50
+    identifier: guides-rd-backup-stashv1
+    name: Stash
+    parent: rd-guides-redis-backup
+    weight: 10
 menu_name: docs_{{ .version }}
 ---

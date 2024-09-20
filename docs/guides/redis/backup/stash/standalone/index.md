@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: rd-backup-standalone
     name: Standalone
-    parent: rd-guides-redis-backup
+    parent: guides-rd-backup-stashv1
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
