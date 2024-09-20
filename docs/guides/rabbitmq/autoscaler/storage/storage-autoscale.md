@@ -3,7 +3,7 @@ title: RabbitMQ Storage Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: rm-autoscaling-storage-description
-    name: Autoscaling Storage
+    name: Autoscale Storage
     parent: rm-autoscaling-storage
     weight: 20
 menu_name: docs_{{ .version }}
