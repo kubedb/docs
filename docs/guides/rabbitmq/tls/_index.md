@@ -5,6 +5,6 @@ menu:
     identifier: rm-tls
     name: TLS/SSL Encryption
     parent: rm-guides
-    weight: 45
+    weight: 80
 menu_name: docs_{{ .version }}
 ---

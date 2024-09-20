@@ -3,7 +3,7 @@ title: Reconfigure RabbitMQ Cluster
 menu:
   docs_{{ .version }}:
     identifier: rm-reconfigure-cluster
-    name: reconfigure-cluster
+    name: Reconfigure Configurations
     parent: rm-reconfigure
     weight: 20
 menu_name: docs_{{ .version }}

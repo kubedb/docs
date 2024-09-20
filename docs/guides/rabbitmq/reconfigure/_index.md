@@ -5,6 +5,6 @@ menu:
     identifier: rm-reconfigure
     name: Reconfigure
     parent: rm-guides
-    weight: 46
+    weight: 80
 menu_name: docs_{{ .version }}
 ---

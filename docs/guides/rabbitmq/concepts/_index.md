@@ -5,6 +5,6 @@ menu:
     identifier: rm-concepts-guides
     name: Concepts
     parent: rm-guides
-    weight: 20
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

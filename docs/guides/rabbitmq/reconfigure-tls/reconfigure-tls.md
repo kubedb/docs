@@ -3,7 +3,7 @@ title: Reconfigure RabbitMQ TLS/SSL Encryption
 menu:
   docs_{{ .version }}:
     identifier: rm-reconfigure-tls-ops
-    name: Reconfigure RabbitMQ TLS/SSL Encryption
+    name: Reconfigure TLS/SSL Encryption
     parent: rm-reconfigure-tls
     weight: 10
 menu_name: docs_{{ .version }}

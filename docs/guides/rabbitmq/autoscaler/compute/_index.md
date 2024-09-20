@@ -5,6 +5,6 @@ menu:
     identifier: rm-autoscaling-compute
     name: Compute Autoscaling
     parent: rm-autoscaling
-    weight: 46
+    weight: 91
 menu_name: docs_{{ .version }}
 ---

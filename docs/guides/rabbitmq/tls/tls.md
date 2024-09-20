@@ -3,7 +3,7 @@ title: RabbitMQ TLS/SSL Encryption
 menu:
   docs_{{ .version }}:
     identifier: rm-tls-describe
-    name: rabbitmq-tls
+    name: Configure TLS
     parent: rm-tls
     weight: 20
 menu_name: docs_{{ .version }}

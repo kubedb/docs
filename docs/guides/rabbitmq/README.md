@@ -2,9 +2,9 @@
 title: RabbitMQ
 menu:
   docs_{{ .version }}:
-    identifier: guides-rabbitmq-readme
+    identifier: rm-guides-readme
     name: RabbitMQ
-    parent: guides-rabbitmq
+    parent: rm-guides
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

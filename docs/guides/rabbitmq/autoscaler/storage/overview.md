@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: rm-autoscaling-storage-overview
     name: Overview
-    parent: rm-autoscaling
+    parent: rm-autoscaling-storage
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

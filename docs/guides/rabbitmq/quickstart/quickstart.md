@@ -3,7 +3,7 @@ title: RabbitMQ Quickstart
 menu:
   docs_{{ .version }}:
     identifier: rm-quickstart-description
-    name: Overview
+    name: RabbitMQ
     parent: rm-quickstart
     weight: 15
 menu_name: docs_{{ .version }}

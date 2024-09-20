@@ -5,6 +5,6 @@ menu:
     identifier: rm-volume-expansion
     name: Volume Expansion
     parent: rm-guides
-    weight: 44
+    weight: 70
 menu_name: docs_{{ .version }}
 ---

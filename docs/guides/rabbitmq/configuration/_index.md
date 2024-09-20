@@ -5,6 +5,6 @@ menu:
     identifier: rm-configuration
     name: Custom Configuration
     parent: rm-guides
-    weight: 30
+    weight: 40
 menu_name: docs_{{ .version }}
 ---
