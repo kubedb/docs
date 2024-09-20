@@ -35,4 +35,4 @@ spec:
         tasks:
           - name: logical-backup
             params:
-              args: --clean
+              args: "-db 1"

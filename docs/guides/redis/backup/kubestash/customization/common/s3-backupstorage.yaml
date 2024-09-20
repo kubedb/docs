@@ -7,11 +7,11 @@ spec:
   storage:
     provider: s3
     s3:
-      bucket: kubestash
-      region: us-east-1
-      endpoint: us-east-1.linodeobjects.com
+      bucket: neaj-new
+      region: ap-south-1
+      endpoint: ap-south-1.linodeobjects.com
       secretName: s3-secret
-      prefix: sunny
+      prefix: backup
   usagePolicy:
     allowedNamespaces:
       from: All

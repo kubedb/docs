@@ -20,4 +20,4 @@ spec:
     tasks:
       - name: logical-backup-restore
         params:
-          args: --dbname=testdb
+          args: "--pipe-timeout 300"
