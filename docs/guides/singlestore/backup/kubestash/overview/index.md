@@ -36,11 +36,11 @@ The backup process consists of the following steps:
 
 1. At first, a user creates a `Secret`. This secret holds the credentials to access the backend where the backed up data will be stored.
 
-2. Then, she creates a `BackupStorage` custom resource that specifies the backend information, along with the `Secret` containing the credentials needed to access the backend.
+2. Then, the user creates a `BackupStorage` custom resource that specifies the backend information, along with the `Secret` containing the credentials needed to access the backend.
 
 3. KubeStash operator watches for `BackupStorage` custom resources. When it finds a `BackupStorage` object, it initializes the `BackupStorage` by uploading the `metadata.yaml` file to the specified backend.
 
-4. Next, she creates a `BackupConfiguration` custom resource that specifies the target database, addon information (including backup tasks), backup schedules, storage backends for storing the backup data, and other additional settings.
+4. Next, user creates a `BackupConfiguration` custom resource that specifies the target database, addon information (including backup tasks), backup schedules, storage backends for storing the backup data, and other additional settings.
 
 5. KubeStash operator watches for `BackupConfiguration` objects.
 
@@ -48,11 +48,11 @@ The backup process consists of the following steps:
 
 7. KubeStash operator watches for `Repository` custom resources. When it finds the `Repository` object, it Initializes `Repository` by uploading `repository.yaml` file into the `spec.sessions[*].repositories[*].directory` path specified in `BackupConfiguration`.
 
-8. Then, it creates a `CronJob` for each session with the schedule specified in `BackupConfiguration` to trigger backup periodically.
+8. The Operator creates a `CronJob` for each session with the schedule specified in the corresponding `BackupConfiguration` to trigger backup periodically.
 
 9. KubeStash operator triggers an instant backup as soon as the `BackupConfiguration` is ready. Backups are otherwise triggered by the `CronJob` based on the specified schedule.
 
-10. KubeStash operator watches for `BackupSession` custom resources.
+10. KubeStash operator watches also for `BackupSession` custom resources.
 
 11. When it finds a `BackupSession` object, it creates a `Snapshot` custom resource for each `Repository` specified in the `BackupConfiguration`.
 
@@ -79,7 +79,7 @@ The restore process consists of the following steps:
 
 1. At first, a user creates a `SingleStore` database where the data will be restored or the user can use the same `SingleStore` database.
 
-2. Then, she creates a `RestoreSession` custom resource that specifies the target database where the backed-up data will be restored, addon information (including restore tasks), the target snapshot to be restored, the Repository containing that snapshot, and other additional settings.
+2. Then, user creates a `RestoreSession` custom resource that specifies the target database where the backed-up data will be restored, addon information (including restore tasks), the target snapshot to be restored, the Repository containing that snapshot, and other additional settings.
 
 3. KubeStash operator watches for `RestoreSession` custom resources.
 

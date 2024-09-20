@@ -1,14 +1,14 @@
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-mysql-backup
+  name: sample-singlestore-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: MySQL
+    kind: Singlestore
     namespace: demo
-    name: sample-mysql
+    name: sample-singlestore
   backends:
     - name: gcs-backend
       storageRef:
@@ -24,14 +24,14 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-mysql-repo
+        - name: gcs-singlestore-repo
           backend: gcs-backend
-          directory: /mysql
+          directory: /singlestore
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: mysql-addon
+        name: singlestore-addon
         tasks:
           - name: manifest-backup
           - name: logical-backup
