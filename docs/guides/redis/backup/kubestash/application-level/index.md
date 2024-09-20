@@ -549,8 +549,8 @@ metadata:
 spec:
   manifestOptions:
     restoreNamespace: dev
-    redis:
-      db: true
+#    redis:
+#      db: true
   dataSource:
     repository: gcs-redis-repo
     snapshot: latest
@@ -561,7 +561,7 @@ spec:
     name: redis-addon
     tasks:
       - name: logical-backup-restore
-      - name: manifest-restore
+#      - name: manifest-restore
 ```
 
 Here,

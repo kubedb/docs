@@ -280,7 +280,7 @@ app-sample-redis-1-1627567808   BackupConfiguration   app-sample-redis-1   Succe
 Once the backup has been completed successfully, you should see the backed up data has been stored in the bucket at the directory pointed by the `prefix` field of the `Repository`.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/redis/backup/stash/auto-backupbackup/images/sample-redis-1.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/redis/backup/stash/auto-backup/images/sample-redis-1.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -462,7 +462,7 @@ app-sample-redis-2-1627568283   BackupConfiguration   app-sample-redis-2   Succe
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/redis/backup/stash/auto-backupbackup/images/sample-redis-2.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/redis/backup/stash/auto-backup/images/sample-redis-2.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -643,7 +643,7 @@ app-sample-redis-3-1627568709   BackupConfiguration   app-sample-redis-3   Succe
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/redis/backup/stash/auto-backupbackup/images/sample-redis-3.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/redis/backup/stash/auto-backup/images/sample-redis-3.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
