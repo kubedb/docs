@@ -23,7 +23,7 @@ This guide will give you how you can take backup and restore your `SingleStore` 
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how KubeStash backup and restore MySQL databases, please check the following guide [here](/docs/guides/mysql/backup/kubestash/overview/index.md).
+- If you are not familiar with how KubeStash backup and restore SingleStore databases, please check the following guide [here](/docs/guides/singlestore/backup/kubestash/overview/index.md).
 
 You should be familiar with the following `KubeStash` concepts: 
 
@@ -42,11 +42,11 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/backup/kubestash/logical/examples](docs/guides/mysql/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/singlestore/backup/kubestash/logical/examples](docs/guides/singlestore/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Backup SingleStore
 
-KubeStash supports backups for `MySQL` instances across different configurations, including Standalone, and Cluster setups. In this demonstration, we'll focus on a `SingleStore` database using Clustering mode. The backup and restore process is similar for Standalone and Cluster configurations as well.
+KubeStash supports backups for `SingleStore` instances across different configurations, including Standalone, and Cluster setups. In this demonstration, we'll focus on a `SingleStore` database using Clustering mode. The backup and restore process is similar for Standalone and Cluster configurations as well.
 
 This section will demonstrate how to backup a `SingleStore` database. Here, we are going to deploy a `SingleStore` database using KubeDB. Then, we are going to backup this database into a `GCS` bucket. Finally, we are going to restore the backup up data into another `SingleStore` database.
 
@@ -146,7 +146,7 @@ KubeDB will deploy a SingleStore database according to the above specification. 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get mysqls.kubedb.com -n demo
+$ kubectl get singlestores.kubedb.com -n demo
 NAME           VERSION   STATUS    AGE
 sdb-sample      8.7.10   Ready     4m22s
 ```
@@ -269,7 +269,7 @@ kubectl get secret -n demo  sdb-sample-root-cred -o jsonpath='{.data.password}'|
 xEJv73q3w_m1~H.G⏎ 
 ```
 
-Now, Lets exec into the any aggregator `Pod` to enter into `memsql` shell and create a database and a table,
+Now, Lets exec into the any aggregator `Pod` to enter into `mysql` shell and create a database and a table,
 
 ```bash
 $ kubectl exec -it -n demo sdb-sample-aggregator-0 -- singlestore --user=root --password=xEJv73q3w_m1~H.G
@@ -378,7 +378,7 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/backupstorage.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/backupstorage.yaml
 backupstorage.storage.kubestash.com/gcs-storage created
 ```
 
@@ -411,7 +411,7 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/retentionpolicy.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/retentionpolicy.yaml
 retentionpolicy.storage.kubestash.com/demo-retention created
 ```
 
@@ -525,7 +525,7 @@ KubeStash triggers an instant backup as soon as the `BackupConfiguration` is rea
 $ kubectl get backupsession -n demo -w
 
 NAME                                             INVOKER-TYPE          INVOKER-NAME           PHASE       DURATION   AGE
-sample-sdb-backup-frequent-backup-1724065200   BackupConfiguration   sample-mysql-backup    Succeeded              7m22s
+sample-sdb-backup-frequent-backup-1724065200   BackupConfiguration   sdb-sample-backup    Succeeded              7m22s
 ```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
@@ -618,7 +618,7 @@ status:
   ...
 ```
 
-> KubeStash uses the `mysqldump` command to take backups of target MySQL databases. Therefore, the component name for logical backups is set as `dump`.
+> KubeStash uses the `mysqldump` command to take backups of target SingleStore databases. Therefore, the component name for logical backups is set as `dump`.
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `demo/singlestore/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/dep/snapshots` directory.
 
@@ -630,98 +630,130 @@ In this section, we are going to restore the database from the backup we have ta
 
 #### Deploy Restored Database:
 
-Now, we have to deploy the restored database similarly as we have deployed the original `sample-mysql` database. However, this time there will be the following differences:
+Now, we have to deploy the restored database similarly as we have deployed the original `sdb-sample` database. However, this time there will be the following differences:
 
 - We are going to specify `.spec.init.waitForInitialRestore` field that tells KubeDB to wait for first restore to complete before marking this database is ready to use.
 
-Below is the YAML for `MySQL` CRD we are going deploy to initialize from backup,
+Below is the YAML for `SingleStore` CRD we are going deploy to initialize from backup,
 
 ```yaml
-apiVersion: kubedb.com/v1
-kind: MySQL
+apiVersion: kubedb.com/v1alpha2
+kind: Singlestore
 metadata:
-  name: restored-mysql
+  name: restored-singlestore
   namespace: demo
 spec:
+  version: "8.7.10"
   init:
     waitForInitialRestore: true
-  version: "8.2.0"
-  replicas: 3
   topology:
-    mode: GroupReplication
+    aggregator:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+          - name: singlestore
+            resources:
+              limits:
+                memory: "2Gi"
+                cpu: "600m"
+              requests:
+                memory: "2Gi"
+                cpu: "600m"
+      storage:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    leaf:
+      replicas: 3
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "600m"
+                requests:
+                  memory: "2Gi"
+                  cpu: "600m"                      
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  licenseSecret:
+    name: license-secret
   storageType: Durable
-  storage:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 50Mi
   deletionPolicy: WipeOut
 ```
 
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/restored-mysql.yaml
-mysql.kubedb.com/restored-mysql created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/restored-singlestore.yaml
+singlestore.kubedb.com/restored-singlestore created
 ```
 
 If you check the database status, you will see it is stuck in `Provisioning` state.
 
 ```bash
-$ kubectl get my -n demo restored-mysql
-NAME             VERSION   STATUS         AGE
-restored-mysql   8.2.0     Provisioning   61s
+$ kubectl get singlestore -n demo restored-singlestore
+NAME                   VERSION     STATUS         AGE
+restored-singlestore   8.7.10     Provisioning    61s
 ```
 
 #### Create RestoreSession:
 
-Now, we need to create a RestoreSession CRD pointing to targeted `MySQL` database.
+Now, we need to create a RestoreSession CRD pointing to targeted `SingleStore` database.
 
-Below, is the contents of YAML file of the `RestoreSession` object that we are going to create to restore backed up data into the newly created database provisioned by MySQL object named `restored-mysql`.
+Below, is the contents of YAML file of the `RestoreSession` object that we are going to create to restore backed up data into the newly created database provisioned by SingleStore object named `restored-singlestore`.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: restore-sample-mysql
+  name: restore-sample-singlestore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: MySQL
+    kind: Singlestore
     namespace: demo
-    name: restored-mysql
+    name: restored-singlestore
   dataSource:
-    repository: gcs-mysql-repo
+    repository: gcs-singlestore-repo
     snapshot: latest
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: mysql-addon
+    name: singlestore-addon
     tasks:
       - name: logical-backup-restore
 ```
 
 Here,
 
-- `.spec.target` refers to the newly created `restored-mysql` MySQL object to where we want to restore backup data.
+- `.spec.target` refers to the newly created `restored-singlestore` SingleStore object to where we want to restore backup data.
 - `.spec.dataSource.repository` specifies the Repository object that holds the backed up data.
 - `.spec.dataSource.snapshot` specifies to restore from latest `Snapshot`.
 
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/restoresession.yaml
-restoresession.core.kubestash.com/sample-mysql-restore created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/restoresession.yaml
+restoresession.core.kubestash.com/sample-singlestore-restore created
 ```
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
 $ watch kubectl get restoresession -n demo
-Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Aug 21 10:44:05 2024
+Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Sep 20 10:44:05 2024
 
 NAME             REPOSITORY        FAILURE-POLICY   PHASE       DURATION   AGE
 sample-restore   gcs-demo-repo                      Succeeded   3s         53s
@@ -737,40 +769,44 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into `Ready` state by the following command,
 
 ```bash
-$ kubectl get my -n demo restored-mysql
-NAME             VERSION   STATUS  AGE
-restored-mysql   8.2.0     Ready   34m
+$ kubectl get singlestore -n demo restored-singlestore
+NAME                   VERSION   STATUS  AGE
+restored-singlestore   8.7.10     Ready   34m
 ```
 
 Now, find out the database `Pod` by the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-mysql"
-NAME               READY   STATUS    RESTARTS   AGE
-restored-mysql-0   1/1     Running   0          39m
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-singlestore"
+NAME                                READY   STATUS    RESTARTS   AGE
+restored-singlestore-aggregator-0   2/2     Running   0          34m
+restored-singlestore-aggregator-1   2/2     Running   0          34m
+restored-singlestore-leaf-0         2/2     Running   0          34m
+restored-singlestore-leaf-1         2/2     Running   0          34m
+restored-singlestore-leaf-2         2/2     Running   0          34m
 ```
 
-And then copy the user name and password of the `root` user to access into `mysql` shell.
+And then copy the user name and password of the `root` user to access into `memsql` shell.
 
 ```bash
-$ kubectl get secret -n demo  restored-mysql-auth -o jsonpath='{.data.username}'| base64 -d
-root
+$ kubectl get secret -n demo  restored-singlestore-root-cred -o jsonpath='{.data.username}'| base64 -d
+root⏎           
 
-$ kubectl get secret -n demo  restored-mysql-auth -o jsonpath='{.data.password}'| base64 -d
-QMm1hi0T*7QFz_yh
+kubectl get secret -n demo  restored-singlestore-root-cred -o jsonpath='{.data.password}'| base64 -d
+QMm1hi0T*7QFz_yh⏎ 
 ```
 
-Now, let's exec into the Pod to enter into `mysql` shell and verify restored data,
+Now, Lets exec into the any aggregator `Pod` to enter into `mysql` shell and create a database and a table,
 
 ```bash
-$ kubectl exec -it -n demo restored-mysql-0 -- mysql --user=root --password='QMm1hi0T*7QFz_yh'
-Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
-mysql: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo restored-singlestore-aggregator-0 -- singlestore --user=root --password=QMm1hi0T*7QFz_yh
+Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
+singlestore-client: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 243
-Server version: 8.2.0 MySQL Community Server - GPL
+Your MySQL connection id is 300070
+Server version: 5.7.32 SingleStoreDB source distribution (compatible; MySQL Enterprise & MySQL Commercial)
 
-Copyright (c) 2000, 2023, Oracle and/or its affiliates.
+Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 
 Oracle is a registered trademark of Oracle Corporation and/or its
 affiliates. Other names may be trademarks of their respective
@@ -778,19 +814,22 @@ owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-mysql> SHOW DATABASES;
+singlestore> show databases;
 +--------------------+
 | Database           |
 +--------------------+
+| cluster            |
+| demo               |
+| det                |
 | information_schema |
-| mysql              |
-| performance_schema |
+| memsql             |
 | playground         |
-| sys                |
+| singlestore_health |
+| test               |
 +--------------------+
-5 rows in set (0.00 sec)
+8 rows in set (0.00 sec)
 
-mysql> SHOW TABLES IN playground;
+singlestore> SHOW TABLES IN playground;
 +----------------------+
 | Tables_in_playground |
 +----------------------+
@@ -798,16 +837,17 @@ mysql> SHOW TABLES IN playground;
 +----------------------+
 1 row in set (0.00 sec)
 
-mysql> SELECT * FROM playground.equipment;
+singlestore> SELECT * FROM playground.equipment;
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
-1 row in set (0.00 sec)
+1 row in set (0.14 sec)
 
-mysql> exit
+singlestore> exit
 Bye
+
 ```
 
 So, from the above output, we can see that the `playground` database and the `equipment` table we have created earlier in the original database and now, they are restored successfully.
@@ -817,12 +857,12 @@ So, from the above output, we can see that the `playground` database and the `eq
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete backupconfigurations.core.kubestash.com  -n demo sample-mysql-backup
-kubectl delete restoresessions.core.kubestash.com -n demo restore-sample-mysql
+kubectl delete backupconfigurations.core.kubestash.com  -n demo sample-sdb-backup
+kubectl delete restoresessions.core.kubestash.com -n demo sample-restore
 kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
 kubectl delete backupstorage -n demo gcs-storage
 kubectl delete secret -n demo gcs-secret
 kubectl delete secret -n demo encrypt-secret
-kubectl delete my -n demo restored-mysql
-kubectl delete my -n demo sample-mysql
+kubectl delete my -n demo restored-singlestore
+kubectl delete my -n demo sdb-sample
 ```
