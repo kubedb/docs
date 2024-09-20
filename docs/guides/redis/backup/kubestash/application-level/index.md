@@ -597,7 +597,7 @@ In this section, we will verify whether the desired `Redis` database manifest ha
 ```bash
 $ kubectl get redis -n dev 
 NAME              VERSION   STATUS   AGE
-sample-redis   16.1      Ready    9m46s
+sample-redis      7.4.0     Ready    9m46s
 ```
 
 The output confirms that the `Redis` database has been successfully created with the same configuration as it had at the time of backup.
