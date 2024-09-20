@@ -5,6 +5,6 @@ menu:
     identifier: rm-reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: rm-guides
-    weight: 46
+    weight: 90
 menu_name: docs_{{ .version }}
 ---

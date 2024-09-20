@@ -5,6 +5,6 @@ menu:
     identifier: rm-update-version
     name: Update Version
     parent: rm-guides
-    weight: 42
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

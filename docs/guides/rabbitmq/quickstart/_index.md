@@ -5,6 +5,6 @@ menu:
     identifier: rm-quickstart
     name: Quickstart
     parent: rm-guides
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 ---
