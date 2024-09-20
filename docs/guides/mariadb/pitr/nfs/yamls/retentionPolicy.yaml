@@ -6,6 +6,6 @@ metadata:
 spec:
   maxRetentionPeriod: "30d"
   successfulSnapshots:
-    last: 100
+    last: 2
   failedSnapshots:
     last: 2

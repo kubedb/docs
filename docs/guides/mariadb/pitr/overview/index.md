@@ -32,13 +32,14 @@ To keep things isolated, this tutorial uses a separate namespace called `demo` t
 $ kubectl create ns demo
 namespace/demo created
 ```
-> Note: The yaml files used in this tutorial are stored in [docs/guides/mariadb/remote-replica/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/remote-replica/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/guides/mariadb/pitr/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/remote-replica/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## continuous archiving
 Continuous archiving involves making regular copies (or "archives") of the MariaDB transaction log files.To ensure continuous archiving to a remote location we need prepare `BackupStorage`,`RetentionPolicy`,`MariaDBArchiver` for the KubeDB Managed MariaDB Databases.
 
 ### BackupStorage
 BackupStorage is a CR provided by KubeStash that can manage storage from various providers like GCS, S3, and more.
+We are going to store our backup data into a `S3` bucket. We have to create a `Secret` with necessary credentials and a `BackupStorage` CR to use this backend. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
 
 ```yaml
 apiVersion: storage.kubestash.com/v1alpha1
@@ -103,7 +104,7 @@ spec:
     last: 2
 ```
 ```bash
-$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pitr/yamls/retention-policy.yaml 
+$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pitr/overview/yamls/retention-policy.yaml 
 retentionpolicy.storage.kubestash.com/mariadb-retention-policy created
 ```
 
@@ -170,9 +171,9 @@ stringData:
 ```
 
 ```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pirt/yamls/mariadbarchiver.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pitr/overview/yamls/mariadbarchiver.yaml
  mariadbarchiver.archiver.kubedb.com/mariadbarchiver-sample created
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pirt/yamls/encryptionSecret.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pitr/overview/yamls/encryptionSecret.yaml
 ```
 
 ## Ensure volumeSnapshotClass
@@ -256,9 +257,9 @@ retention-policy-mariadb-backup-manifest-backup-17265497038pvjd   0/1     Comple
 
 `mariadb-sidekick` is responsible for uploading binlog files
 
-`mariadb-backup-config-full-backup-1703680982-vqf7c` are the pod of volumes levels backups for MariaDB.
+`mariadb-backup-full-backup-1726549703-bjk9w ` are the pod of volumes levels backups for MariaDB.
 
-`mariadb-backup-config-manifest-1703680982-62x97` are the pod of the manifest backup related to MariaDB object
+`mariadb-backup-manifest-backup-1726549703-fx9kx` are the pod of the manifest backup related to MariaDB object
 
 ### validate BackupConfiguration and VolumeSnapshots
 
@@ -331,7 +332,7 @@ MariaDB [hello]> select count(*) from demo_table;
 
 ## Point-in-time Recovery
 Point-In-Time Recovery allows you to restore a MariaDB database to a specific point in time using the archived transaction logs. This is particularly useful in scenarios where you need to recover to a state just before a specific error or data corruption occurred.
-Let's say accidentally our dba drops the the table tab_1 and we want to restore.
+Let's say accidentally our dba drops the the table demo_table and we want to restore.
 
 ```bash
 $ kubectl exec -it -n demo  mariadb-0 -- bash
