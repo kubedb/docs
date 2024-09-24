@@ -571,9 +571,9 @@ metadata:
   namespace: demo
 spec:
   manifestOptions:
-    restoreNamespace: dev
     mongoDB:
       db: true
+      restoreNamespace: dev
   dataSource:
     repository: s3-mongodb-repo
     snapshot: latest
