@@ -109,7 +109,7 @@ secret/encry-secret created
 
 `RetentionPolicy` specifies how the old Snapshots should be cleaned up. This is a namespaced CRD. However, we can refer it from other namespaces as long as it is permitted via `.spec.usagePolicy`. Below is the YAML of the `RetentionPolicy` called `backup-rp`
 
-```console
+```yaml
 apiVersion: storage.kubestash.com/v1alpha1
 kind: RetentionPolicy
 metadata:
