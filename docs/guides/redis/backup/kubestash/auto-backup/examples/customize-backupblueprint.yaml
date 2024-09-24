@@ -1,0 +1,37 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupBlueprint
+metadata:
+  name: redis-customize-backup-blueprint
+  namespace: demo
+spec:
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  backupConfigurationTemplate:
+    deletionPolicy: OnDelete
+    backends:
+      - name: gcs-backend
+        storageRef:
+          namespace: demo
+          name: gcs-storage
+        retentionPolicy:
+          name: demo-retention
+          namespace: demo
+    sessions:
+      - name: frequent-backup
+        sessionHistoryLimit: 3
+        scheduler:
+          schedule: ${schedule}
+          jobTemplate:
+            backoffLimit: 1
+        repositories:
+          - name: ${repoName}
+            backend: gcs-backend
+            directory: ${namespace}/${targetName}
+            encryptionSecret:
+              name: encrypt-secret
+              namespace: demo
+        addon:
+          name: redis-addon
+          tasks:
+            - name: logical-backup

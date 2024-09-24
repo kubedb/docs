@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: rd-backup-customization-kubedb
     name: Customizing Backup & Restore Process
-    parent: rd-guides-redis-backup
+    parent: guides-rd-backup-stashv1
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides

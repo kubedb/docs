@@ -428,7 +428,7 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- [Backup and Restore](/docs/guides/redis/backup/overview/index.md) Redis databases using Stash.
+- [Backup and Restore](/docs/guides/redis/backup/kubestash/overview/index.md) Redis databases using KubeStash.
 - Initialize [Redis with Script](/docs/guides/redis/initialization/using-script.md).
 - Monitor your Redis database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
 - Monitor your Redis database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
