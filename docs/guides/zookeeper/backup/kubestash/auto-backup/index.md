@@ -373,12 +373,12 @@ We can see from the above output that the backup session has succeeded. Now, we 
 
 **Verify Backup:**
 
-Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-zookeeper-backup` has been updated by the following command,
+Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `default-blueprint` has been updated by the following command,
 
 ```bash
 $ kubectl get repository -n demo default-blueprint
 NAME                INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
-default-blueprint   true        3                1.559 KiB   Ready   80s                      7m32s
+default-blueprint   true        1                1.559 KiB   Ready   80s                      7m32s
 ```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.

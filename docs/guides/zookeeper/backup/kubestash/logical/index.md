@@ -13,7 +13,7 @@ section_menu_id: guides
 
 # Backup and Restore ZooKeeper using KubeStash
 
-KubeStash allows you to backup and restore `ZooKeeper`. It supports backups for `ZooKeeper` instances running in Standalone,  and HA cluster configurations. KubeStash makes managing your `ZooKeeper` backups and restorations more straightforward and efficient.
+KubeStash allows you to backup and restore `ZooKeeper`. KubeStash makes managing your `ZooKeeper` backups and restorations more straightforward and efficient.
 
 This guide will give you an overview how you can take backup and restore your `ZooKeeper` using `Kubestash`.
 
@@ -48,7 +48,7 @@ namespace/demo created
 
 ## Backup ZooKeeper
 
-KubeStash supports backups for `ZooKeeper` instances across different configurations, including Standalone and HA Cluster setups. In this demonstration, we'll focus on a `ZooKeeper` using HA cluster configuration. The backup and restore process is similar for Standalone configuration.
+KubeStash supports backups for `ZooKeeper` instances across different configurations, including Standalone and ZooKeeper Ensemble setups. In this demonstration, we'll focus on a `ZooKeeper` using ZooKeeper Ensemble configuration. The backup and restore process is similar for Standalone configuration.
 
 This section will demonstrate how to backup a `ZooKeeper`. Here, we are going to deploy a `ZooKeeper` using KubeDB. Then, we are going to backup this into a `s3` bucket. Finally, we are going to restore the backup up data into another `ZooKeeper`.
 

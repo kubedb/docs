@@ -36,11 +36,11 @@ The backup process consists of the following steps:
 
 1. At first, a user creates a `Secret`. This secret holds the credentials to access the backend where the backed up data will be stored.
 
-2. Then, she creates a `BackupStorage` custom resource that specifies the backend information, along with the `Secret` containing the credentials needed to access the backend.
+2. Then, he creates a `BackupStorage` custom resource that specifies the backend information, along with the `Secret` containing the credentials needed to access the backend.
 
 3. KubeStash operator watches for `BackupStorage` custom resources. When it finds a `BackupStorage` object, it initializes the `BackupStorage` by uploading the `metadata.yaml` file to the specified backend.
 
-4. Next, she creates a `BackupConfiguration` custom resource that specifies the target database, addon information (including backup tasks), backup schedules, storage backends for storing the backup data, and other additional settings.
+4. Next, he creates a `BackupConfiguration` custom resource that specifies the target database, addon information (including backup tasks), backup schedules, storage backends for storing the backup data, and other additional settings.
 
 5. KubeStash operator watches for `BackupConfiguration` objects.
 
@@ -79,7 +79,7 @@ The restore process consists of the following steps:
 
 1. At first, a user creates a `ZooKeeper` database where the data will be restored or the user can use the same `ZooKeeper` database.
 
-2. Then, she creates a `RestoreSession` custom resource that specifies the target database where the backed-up data will be restored, addon information (including restore tasks), the target snapshot to be restored, the Repository containing that snapshot, and other additional settings.
+2. Then, he creates a `RestoreSession` custom resource that specifies the target database where the backed-up data will be restored, addon information (including restore tasks), the target snapshot to be restored, the Repository containing that snapshot, and other additional settings.
 
 3. KubeStash operator watches for `RestoreSession` custom resources.
 
