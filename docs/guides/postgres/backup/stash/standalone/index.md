@@ -3,9 +3,9 @@ title: PostgreSQL | Stash
 description: Backup and restore standalone PostgreSQL database using Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-pg-backup-standalone
+    identifier: guides-pg-backup-standalone-stashv1
     name: Standalone PostgreSQL
-    parent: guides-pg-backup
+    parent: guides-pg-backup-stashv1
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -22,7 +22,7 @@ Stash 0.9.0+ supports backup and restoration of PostgreSQL databases. This guide
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
 - Install Stash `kubectl` plugin following the steps [here](https://stash.run/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how Stash backup and restore PostgreSQL databases, please check the following guide [here](/docs/guides/postgres/backup/overview/index.md):
+- If you are not familiar with how Stash backup and restore PostgreSQL databases, please check the following guide [here](/docs/guides/postgres/backup/stash/overview/index.md):
 
 You have to be familiar with following custom resources:
 
@@ -73,7 +73,7 @@ spec:
 Create the above `Postgres` crd,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/postgres.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/postgres.yaml
 postgres.kubedb.com/sample-postgres created
 ```
 
@@ -275,7 +275,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/repository.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/repository.yaml
 repository.stash.appscode.com/gcs-repo created
 ```
 
@@ -320,7 +320,7 @@ Here,
 Let's create the `BackupConfiguration` object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/backupconfiguration.yaml
 backupconfiguration.stash.appscode.com/sample-postgres-backup created
 ```
 
@@ -374,7 +374,7 @@ gcs-repo   true        1.770 KiB   1                2m                       4m1
 Now, if we navigate to the GCS bucket, we are going to see backed up data has been stored in `demo/postgres/sample-postgres` directory as specified by `spec.backend.gcs.prefix` field of Repository crd.
 
 <figure align="center">
- <img alt="Backup data in GCS Bucket" src="/docs/guides/postgres/backup/standalone/images/sample-postgres-backup.png">
+ <img alt="Backup data in GCS Bucket" src="/docs/guides/postgres/backup/stash/standalone/images/sample-postgres-backup.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -443,7 +443,7 @@ Notice the `init` section. Here, we have specified `waitForInitialRestore: true`
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/restored-postgres.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/restored-postgres.yaml
 postgres.kubedb.com/restored-postgres created
 ```
 
@@ -512,7 +512,7 @@ Here,
 Let's create the `RestoreSession` crd we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/restoresession.yaml
 restoresession.stash.appscode.com/sample-postgres-restore created
 ```
 

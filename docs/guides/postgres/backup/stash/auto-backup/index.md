@@ -3,9 +3,9 @@ title: PostgreSQL | Stash
 description: Stash auto-backup for PostgreSQL database
 menu:
   docs_{{ .version }}:
-    identifier: guides-pg-backup-auto-backup
+    identifier: guides-pg-backup-auto-backup-stashv1
     name: Auto-Backup
-    parent: guides-pg-backup
+    parent: guides-pg-backup-stashv1
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -22,7 +22,7 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
-- If you are not familiar with how Stash backup and restore PostgreSQL databases, please check the following guide [here](/docs/guides/postgres/backup/overview/index.md).
+- If you are not familiar with how Stash backup and restore PostgreSQL databases, please check the following guide [here](/docs/guides/postgres/backup/stash/overview/index.md).
 - If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/overview/).
 - If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/database/).
 
@@ -99,7 +99,7 @@ Notice the `prefix` field of `backend` section. We have used some variables in f
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/auto-backup/examples/backupblueprint.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/auto-backup/examples/backupblueprint.yaml
 backupblueprint.stash.appscode.com/postgres-backup-template created
 ```
 
@@ -154,7 +154,7 @@ Notice the `annotations` section. We are pointing to the `BackupBlueprint` that 
 Let's create the above Postgres CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/auto-backup/examples/sample-pg-1.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/auto-backup/examples/sample-pg-1.yaml
 postgres.kubedb.com/sample-postgres-1 created
 ```
 
@@ -272,7 +272,7 @@ app-sample-postgres-1-1614073215   BackupConfiguration   app-sample-postgres-1  
 Once the backup has been completed successfully, you should see the backed-up data has been stored in the bucket at the directory pointed by the `prefix` field of the `Repository`.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/postgres/backup/auto-backup/images/sample-postgres-1.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/postgres/backup/stash/auto-backup/images/sample-postgres-1.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -323,7 +323,7 @@ Notice the `annotations` section. This time, we have passed a schedule via `stas
 Let's create the above Postgres CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/auto-backup/examples/sample-pg-2.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/auto-backup/examples/sample-pg-2.yaml
 postgres.kubedb.com/sample-postgres-2 created
 ```
 
@@ -442,7 +442,7 @@ app-sample-postgres-2-1614073502   BackupConfiguration   app-sample-postgres-2  
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed-up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/postgres/backup/auto-backup/images/sample-postgres-2.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/postgres/backup/stash/auto-backup/images/sample-postgres-2.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -493,7 +493,7 @@ Notice the `annotations` section. This time, we have passed an argument via `par
 Let's create the above Postgres CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/auto-backup/examples/sample-pg-3.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/auto-backup/examples/sample-pg-3.yaml
 postgres.kubedb.com/sample-postgres-3 created
 ```
 
@@ -616,7 +616,7 @@ app-sample-postgres-3-1614073808   BackupConfiguration   app-sample-postgres-3  
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed-up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/postgres/backup/auto-backup/images/sample-postgres-3.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/postgres/backup/stash/auto-backup/images/sample-postgres-3.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -625,7 +625,7 @@ Once the backup has been completed successfully, you should see that Stash has c
 To cleanup the resources crated by this tutorial, run the following commands,
 
 ```bash
-❯ kubectl delete -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/auto-backup/examples/
+❯ kubectl delete -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/auto-backup/examples/
 backupblueprint.stash.appscode.com "postgres-backup-template" deleted
 postgres.kubedb.com "sample-postgres-1" deleted
 postgres.kubedb.com "sample-postgres-2" deleted
