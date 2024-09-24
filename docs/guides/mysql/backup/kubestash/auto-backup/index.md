@@ -130,7 +130,7 @@ Let's create a secret called `encrypt-secret` with the Restic password,
 ```bash
 $ echo -n 'changeit' > RESTIC_PASSWORD
 $ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD \
+    --from-file=./RESTIC_PASSWORD
 secret "encrypt-secret" created
 ```
 
@@ -329,7 +329,7 @@ Once a backup is complete, KubeStash will update the respective `Repository` CR 
 
 ```bash
 $ kubectl get repository -n demo default-blueprint
-NAME                    INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
+NAME                       INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 default-blueprint          true        1                806 B   Ready   8m27s                    9m18s
 ```
 

@@ -355,7 +355,7 @@ Let's create a secret called `encrypt-secret` with the Restic password,
 ```bash
 $ echo -n 'changeit' > RESTIC_PASSWORD
 $ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD \
+    --from-file=./RESTIC_PASSWORD
 secret "encrypt-secret" created
 ```
 
@@ -474,9 +474,9 @@ gcs-mysql-repo          true        1                806 B   Ready   8m27s      
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=gcs-demo-repo
+$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=gcs-mysql-repo
 NAME                                                            REPOSITORY            SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-gcs-mysql-repo-sample-mysql-backup-frequent-backup-1725359100   sample-mysql-backup   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
+gcs-mysql-repo-sample-mysql-backup-frequent-backup-1725359100   gcs-mysql-repo        frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
@@ -610,9 +610,9 @@ metadata:
   namespace: demo
 spec:
   manifestOptions:
-    restoreNamespace: dev
     mySQL:
       db: true
+      restoreNamespace: dev
   dataSource:
     repository: gcs-mysql-repo
     snapshot: latest

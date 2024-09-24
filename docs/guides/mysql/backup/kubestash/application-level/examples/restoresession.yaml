@@ -5,9 +5,9 @@ metadata:
   namespace: demo
 spec:
   manifestOptions:
-    restoreNamespace: dev
     mySQL:
       db: true
+      restoreNamespace: dev
   dataSource:
     repository: gcs-mysql-repo
     snapshot: latest
