@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1
+kind: Redis
+metadata:
+  name: redis-standalone-2
+  namespace: demo
+  annotations:
+    blueprint.kubestash.com/name: redis-customize-backup-blueprint
+    blueprint.kubestash.com/namespace: demo
+    variables.kubestash.com/schedule: "*/10 * * * *"
+    variables.kubestash.com/repoName: customize-blueprint
+    variables.kubestash.com/namespace: demo
+    variables.kubestash.com/targetName: redis-standalone-2
+spec:
+  version: 7.4.0
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: Delete
