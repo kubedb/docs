@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1
+kind: MongoDB
+metadata:
+  name: sample-mongodb
+  namespace: demo
+spec:
+  version: "4.4.26"
+  replicaSet:
+    name: "replicaset"
+  replicas: 3
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
