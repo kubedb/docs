@@ -375,7 +375,7 @@ Let's create a secret called `encrypt-secret` with the Restic password,
 ```bash
 $ echo -n 'changeit' > RESTIC_PASSWORD
 $ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD \
+    --from-file=./RESTIC_PASSWORD
 secret "encrypt-secret" created
 ```
 
@@ -628,8 +628,8 @@ metadata:
   namespace: demo
 spec:
   manifestOptions:
-    restoreNamespace: dev
     postgres:
+      restoreNamespace: dev
       db: true
   dataSource:
     repository: gcs-postgres-repo
@@ -681,7 +681,6 @@ sample-postgres   16.1      Ready    9m46s
 ```
 
 The output confirms that the `PostgreSQL` database has been successfully created with the same configuration as it had at the time of backup.
-
 
 #### Verify Restored Data:
 

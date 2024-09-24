@@ -379,7 +379,7 @@ Let's create a secret called `encrypt-secret` with the Restic password,
 ```bash
 $ echo -n 'changeit' > RESTIC_PASSWORD
 $ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD \
+    --from-file=./RESTIC_PASSWORD 
 secret "encrypt-secret" created
 ```
 
