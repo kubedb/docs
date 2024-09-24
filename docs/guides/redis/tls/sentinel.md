@@ -281,6 +281,6 @@ clusterissuer.cert-manager.io "redis-ca-issuer" deleted
 ## Next Steps
 
 - Detail concepts of [Redis object](/docs/guides/redis/concepts/redis.md).
-- [Backup and Restore](/docs/guides/redis/backup/stash/overview/index.md) Redis databases using Stash. .
+- [Backup and Restore](/docs/guides/redis/backup/kubestash/overview/index.md) Redis databases using KubeStash. .
 - Monitor your Redis database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
 - Monitor your Redis database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
