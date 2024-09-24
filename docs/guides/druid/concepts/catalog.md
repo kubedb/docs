@@ -2,9 +2,9 @@
 title: DruidVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: dr-catalog-concepts
+    identifier: guides-druid-concepts-catalog
     name: DruidVersion
-    parent: dr-concepts-druid
+    parent: guides-druid-concepts
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides

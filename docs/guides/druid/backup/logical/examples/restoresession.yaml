@@ -1,0 +1,21 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: restore-sample-druid
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Druid
+    name: restored-druid
+    namespace: demo
+  dataSource:
+    snapshot: latest
+    repository: gcs-druid-repo
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: druid-addon
+    tasks:
+      - name: mysql-metadata-storage-restore

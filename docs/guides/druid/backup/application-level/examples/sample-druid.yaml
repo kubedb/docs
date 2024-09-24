@@ -1,0 +1,15 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Druid
+metadata:
+  name: sample-druid
+  namespace: demo
+spec:
+  version: 30.0.0
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
+  topology:
+    routers:
+      replicas: 1
+  deletionPolicy: WipeOut

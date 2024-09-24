@@ -2,9 +2,9 @@
 title: Druid Concepts
 menu:
   docs_{{ .version }}:
-    identifier: dr-concepts-druid
+    identifier: guides-druid-concepts
     name: Concepts
-    parent: dr-druid-guides
+    parent: guides-druid
     weight: 20
 menu_name: docs_{{ .version }}
 ---

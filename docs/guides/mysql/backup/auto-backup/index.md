@@ -153,7 +153,7 @@ Notice the `annotations` section. We are pointing to the `BackupBlueprint` that 
 Let's create the above MySQL CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/auto-backup/examples/sample-mysql.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/auto-backup/examples/sample-druid.yaml
 mysql.kubedb.com/sample-mysql created
 ```
 
