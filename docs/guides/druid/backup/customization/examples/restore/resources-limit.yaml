@@ -1,0 +1,30 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: restore-sample-druid
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Druid
+    namespace: demo
+    name: restored-druid
+  dataSource:
+    repository: gcs-druid-repo
+    snapshot: latest
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: druid-addon
+    jobTemplate:
+      spec:
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "1Gi"
+          limits:
+            cpu: "200m"
+            memory: "1Gi"
+    tasks:
+      - name: mysql-metadata-storage-backup

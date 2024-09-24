@@ -2,9 +2,9 @@
 title: Druid CRD
 menu:
   docs_{{ .version }}:
-    identifier: dr-druid-concepts
+    identifier: guides-druid-concepts-druid
     name: Druid
-    parent: dr-concepts-druid
+    parent: guides-druid-concepts
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
