@@ -1,0 +1,26 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: sample-postgres-2
+  namespace: demo
+  annotations:
+    blueprint.kubestash.com/name: postgres-customize-backup-blueprint
+    blueprint.kubestash.com/namespace: demo
+    variables.kubestash.com/schedule: "*/10 * * * *"
+    variables.kubestash.com/repoName: customize-blueprint
+    variables.kubestash.com/namespace: demo
+    variables.kubestash.com/targetName: sample-postgres-2
+    variables.kubestash.com/targetedDatabase: postgres
+spec:
+  version: "16.1"
+  replicas: 3
+  standbyMode: Hot
+  streamingMode: Synchronous
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut

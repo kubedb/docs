@@ -3,9 +3,9 @@ title: PostgreSQL  Backup Customization | Stash
 description: Customizing PostgreSQL  Backup and Restore process with Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-pg-backup-customization
+    identifier: guides-pg-backup-customization-stashv1
     name: Customizing Backup & Restore Process
-    parent: guides-pg-backup
+    parent: guides-pg-backup-stashv1
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides

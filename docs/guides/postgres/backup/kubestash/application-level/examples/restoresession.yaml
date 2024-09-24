@@ -1,21 +1,21 @@
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: restore-sample-redis
+  name: restore-sample-postgres
   namespace: demo
 spec:
-#  manifestOptions:
-#    restoreNamespace: dev
-#    redis:
-#      db: true
+  manifestOptions:
+    postgres:
+      db: true
+      restoreNamespace: dev
   dataSource:
-    repository: gcs-redis-repo
+    repository: gcs-postgres-repo
     snapshot: latest
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: redis-addon
+    name: postgres-addon
     tasks:
       - name: logical-backup-restore
-#      - name: manifest-restore
+      - name: manifest-restore

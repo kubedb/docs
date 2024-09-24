@@ -547,8 +547,8 @@ metadata:
   name: restore-sample-redis
   namespace: demo
 spec:
-  manifestOptions:
-    restoreNamespace: dev
+#  manifestOptions:
+#    restoreNamespace: dev
 #    redis:
 #      db: true
   dataSource:

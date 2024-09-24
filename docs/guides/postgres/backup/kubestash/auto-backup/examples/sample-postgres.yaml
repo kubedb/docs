@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: sample-postgres
+  namespace: demo
+  annotations:
+    blueprint.kubestash.com/name: postgres-default-backup-blueprint
+    blueprint.kubestash.com/namespace: demo
+spec:
+  version: "16.1"
+  replicas: 3
+  standbyMode: Hot
+  streamingMode: Synchronous
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut

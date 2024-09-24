@@ -352,7 +352,7 @@ $ kubectl delete ns monitoring
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/postgres/backup/overview/index.md) PostgreSQL databases using Stash.
+- Learn about [backup and restore](/docs/guides/postgres/backup/stash/overview/index.md) PostgreSQL databases using Stash.
 - Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy PostgreSQL with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -2,9 +2,9 @@
 title: Backup & Restore PostgreSQL Using Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-pg-backup-overview
+    identifier: guides-pg-backup-overview-stashv1
     name: Overview
-    parent: guides-pg-backup
+    parent: guides-pg-backup-stashv1
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -28,7 +28,7 @@ KubeDB uses [Stash](https://stash.run) to backup and restore databases. Stash by
 The following diagram shows how Stash takes backup of a PostgreSQL database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="PostgreSQL Backup Overview" src="/docs/guides/postgres/backup/overview/images/backup_overview.svg">
+  <img alt="PostgreSQL Backup Overview" src="/docs/guides/postgres/backup/stash/overview/images/backup_overview.svg">
   <figcaption align="center">Fig: PostgreSQL Backup Overview</figcaption>
 </figure>
 
@@ -63,7 +63,7 @@ The backup process consists of the following steps:
 The following diagram shows how Stash restores backed up data into a PostgreSQL database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Database Restore Overview" src="/docs/guides/postgres/backup/overview/images/restore_overview.svg">
+  <img alt="Database Restore Overview" src="/docs/guides/postgres/backup/stash/overview/images/restore_overview.svg">
   <figcaption align="center">Fig: PostgreSQL Restore Process Overview</figcaption>
 </figure>
 
@@ -85,5 +85,5 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Backup a standalone PostgreSQL database using Stash following the guide from [here](/docs/guides/postgres/backup/standalone/index.md).
-- Configure a generic backup template for all the PostgreSQL databases of your cluster using Stash Auto-backup by following the guide from [here](/docs/guides/postgres/backup/auto-backup/index.md).
+- Backup a standalone PostgreSQL database using Stash following the guide from [here](/docs/guides/postgres/backup/stash/standalone/index.md).
+- Configure a generic backup template for all the PostgreSQL databases of your cluster using Stash Auto-backup by following the guide from [here](/docs/guides/postgres/backup/stash/auto-backup/index.md).
