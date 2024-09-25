@@ -1,0 +1,37 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupBlueprint
+metadata:
+  name: zookeeper-customize-backup-blueprint
+  namespace: demo
+spec:
+  usagePolicy:
+    allowedNamespaces:
+      from: Same
+  backupConfigurationTemplate:
+    deletionPolicy: OnDelete
+    backends:
+      - name: s3-backend
+        storageRef:
+          namespace: demo
+          name: s3-storage
+        retentionPolicy:
+          name: demo-retention
+          namespace: demo
+    sessions:
+      - name: frequent-backup
+        sessionHistoryLimit: 3
+        scheduler:
+          schedule: ${schedule}
+          jobTemplate:
+            backoffLimit: 1
+        repositories:
+          - name: ${repoName}
+            backend: s3-backend
+            directory: ${namespace}/${targetName}
+            encryptionSecret:
+              name: encrypt-secret
+              namespace: demo
+        addon:
+          name: zookeeper-addon
+          tasks:
+            - name: logical-backup
