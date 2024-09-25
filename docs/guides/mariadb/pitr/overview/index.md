@@ -452,7 +452,6 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/mariadb/backup/stash/overview/index.md) MariaDB database using Stash.
 - Learn about [backup and restore](/docs/guides/mariadb/backup/kubestash/overview/index.md) MariaDB database using KubeStash.
 - Learn about initializing [MariaDB with Script](/docs/guides/mariadb/initialization/using-script/index.md).
 - Want to setup MariaDB cluster? Check how to [configure Highly Available MariaDB Cluster](/docs/guides/mariadb/clustering/galera-cluster/index.md)
