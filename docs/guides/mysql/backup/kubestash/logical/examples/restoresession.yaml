@@ -1,0 +1,21 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: restore-sample-mysql
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: MySQL
+    namespace: demo
+    name: restored-mysql
+  dataSource:
+    repository: gcs-mysql-repo
+    snapshot: latest
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: mysql-addon
+    tasks:
+      - name: logical-backup-restore

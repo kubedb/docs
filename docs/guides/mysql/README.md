@@ -45,7 +45,7 @@ aliases:
 ## User Guide
 
 - [Quickstart MySQL](/docs/guides/mysql/quickstart/index.md) with KubeDB Operator.
-- [Backup & Restore](/docs/guides/mysql/backup/overview/index.md) MySQL databases using Stash.
+- [Backup & Restore](/docs/guides/mysql/backup/stash/overview/index.md) MySQL databases using Stash.
 - Initialize [MySQL with Script](/docs/guides/mysql/initialization/index.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).

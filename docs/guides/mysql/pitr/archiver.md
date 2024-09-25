@@ -446,7 +446,7 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/mysql/backup/overview/index.md) MySQL database using Stash.
+- Learn about [backup and restore](/docs/guides/mysql/backup/stash/overview/index.md) MySQL database using Stash.
 - Learn about initializing [MySQL with Script](/docs/guides/mysql/initialization/script_source.md).
 - Learn about [custom MySQLVersions](/docs/guides/mysql/custom-versions/setup.md).
 - Want to setup MySQL cluster? Check how to [configure Highly Available MySQL Cluster](/docs/guides/mysql/clustering/ha_cluster.md)

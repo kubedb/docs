@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: sample-mysql-2
+  namespace: demo
+  annotations:
+    blueprint.kubestash.com/name: mysql-customize-backup-blueprint
+    blueprint.kubestash.com/namespace: demo
+    variables.kubestash.com/schedule: "*/10 * * * *"
+    variables.kubestash.com/repoName: customize-blueprint
+    variables.kubestash.com/namespace: demo
+    variables.kubestash.com/targetName: sample-mysql-2
+    variables.kubestash.com/targetedDatabases: mysql
+spec:
+  version: "8.2.0"
+  replicas: 1
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Mi
+  terminationPolicy: WipeOut

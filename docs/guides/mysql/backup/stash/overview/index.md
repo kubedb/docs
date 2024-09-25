@@ -2,9 +2,9 @@
 title: Backup & Restore MySQL Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-backup-overview
+    identifier: guides-mysql-backup-overview-stashv1
     name: Overview
-    parent: guides-mysql-backup
+    parent: guides-mysql-backup-stashv1
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -28,7 +28,7 @@ KubeDB uses [Stash](https://stash.run) to backup and restore databases. Stash by
 The following diagram shows how Stash takes backup of a MySQL database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="MySQL Backup Overview" src="/docs/guides/mysql/backup/overview/images/backup_overview.svg">
+  <img alt="MySQL Backup Overview" src="/docs/guides/mysql/backup/stash/overview/images/backup_overview.svg">
   <figcaption align="center">Fig: MySQL Backup Overview</figcaption>
 </figure>
 
@@ -63,7 +63,7 @@ The backup process consists of the following steps:
 The following diagram shows how Stash restores backed up data into a MySQL database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Database Restore Overview" src="/docs/guides/mysql/backup/overview/images/restore_overview.svg">
+  <img alt="Database Restore Overview" src="/docs/guides/mysql/backup/stash/overview/images/restore_overview.svg">
   <figcaption align="center">Fig: MySQL Restore Process Overview</figcaption>
 </figure>
 
@@ -85,4 +85,4 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Backup a standalone MySQL server using Stash by following the guides from [here](/docs/guides/mysql/backup/standalone/index.md).
+- Backup a standalone MySQL server using Stash by following the guides from [here](/docs/guides/mysql/backup/stash/standalonedalone/index.md).

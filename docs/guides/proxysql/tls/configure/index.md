@@ -64,7 +64,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples/sample-druid.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples/sample-mysql.yaml
 mysql.kubedb.com/mysql-server created 
 ```
 
