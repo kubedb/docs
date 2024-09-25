@@ -13,7 +13,7 @@ section_menu_id: guides
 
 # Backup and Restore Elasticsearch database using KubeStash
 
-KubeStash allows you to backup and restore `Elasticsearch` databases. It supports backups for `Elasticsearch` instances running in Standalone,  and HA cluster configurations. KubeStash makes managing your `Elasticsearch` backups and restorations more straightforward and efficient.
+[KubeStash](https://kubestash.com)  allows you to backup and restore `Elasticsearch` databases. It supports backups for `Elasticsearch` instances running in Standalone,  and HA cluster configurations. KubeStash makes managing your `Elasticsearch` backups and restorations more straightforward and efficient.
 
 This guide will give you an overview how you can take backup and restore your `Elasticsearch` databases using `Kubestash`.
 

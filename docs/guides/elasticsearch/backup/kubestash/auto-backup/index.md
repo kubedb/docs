@@ -13,7 +13,7 @@ section_menu_id: guides
 
 # Backup Elasticsearch using KubeStash Auto-Backup
 
-KubeStash can automatically be configured to backup any `Elasticsearch` databases in your cluster. KubeStash enables cluster administrators to deploy backup `blueprints` ahead of time so database owners can easily backup any `Elasticsearch` database with a few annotations.
+[KubeStash](https://kubestash.com)  can automatically be configured to backup any `Elasticsearch` databases in your cluster. KubeStash enables cluster administrators to deploy backup `blueprints` ahead of time so database owners can easily backup any `Elasticsearch` database with a few annotations.
 
 In this tutorial, we are going to show how you can configure a backup blueprint for `Elasticsearch` databases in your cluster and backup them with a few annotations.
 

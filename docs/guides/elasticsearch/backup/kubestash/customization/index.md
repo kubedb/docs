@@ -4,7 +4,7 @@ description: Customizing Elasticsearch Backup and Restore process with KubeStash
 menu:
   docs_{{ .version }}:
     identifier: guides-es-backup-customization-stashv2
-    name: Customizing Backup & Restore Process
+    name: Customization
     parent: guides-es-backup-stashv2
     weight: 50
 menu_name: docs_{{ .version }}
@@ -13,7 +13,7 @@ section_menu_id: guides
 
 # Customizing Backup and Restore Process
 
-KubeStash provides rich customization supports for the backup and restore process to meet the requirements of various cluster configurations. This guide will show you some examples of these customizations.
+[KubeStash](https://kubestash.com)  provides rich customization supports for the backup and restore process to meet the requirements of various cluster configurations. This guide will show you some examples of these customizations.
 
 ## Customizing Backup Process
 
