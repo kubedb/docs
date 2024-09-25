@@ -296,7 +296,7 @@ $ kubectl delete namespace demo
 ## Next Steps
 
 - Deploy [simple dedicated topology cluster](/docs/guides/elasticsearch/clustering/topology-cluster/simple-dedicated-cluster/index.md)
-- Learn about [taking backup](/docs/guides/elasticsearch/backup/overview/index.md) of Elasticsearch database using Stash.
+- Learn about [taking backup](/docs/guides/elasticsearch/backup/stash/overview/index.md) of Elasticsearch database using Stash.
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).

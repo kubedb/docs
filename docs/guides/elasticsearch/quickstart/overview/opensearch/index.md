@@ -594,7 +594,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 ## Next Steps
 
-- Learn about [backup & restore](/docs/guides/elasticsearch/backup/overview/index.md) OpenSearch database using Stash.
+- Learn about [backup & restore](/docs/guides/elasticsearch/backup/stash/overview/index.md) OpenSearch database using Stash.
 - [Quickstart OpenSearch-Dashboards](/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/index.md) with KubeDB Operator.
 - Monitor your OpenSearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your OpenSearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).

@@ -101,7 +101,7 @@ KubeDB supports `Elasticsearch` provided by Elastic with `xpack` auth plugin. `O
 - [Quickstart Kibana](/docs/guides/elasticsearch/elasticsearch-dashboard/kibana/index.md) with KubeDB Operator.
 - [Quickstart OpenSearch-Dashboards](/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/index.md) with KubeDB Operator.
 - [Elasticsearch Clustering](/docs/guides/elasticsearch/clustering/combined-cluster/index.md) supported by KubeDB
-- [Backup & Restore Elasticsearch](/docs/guides/elasticsearch/backup/overview/index.md) database using Stash.
+- [Backup & Restore Elasticsearch](/docs/guides/elasticsearch/backup/stash/overview/index.md) database using Stash.
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.

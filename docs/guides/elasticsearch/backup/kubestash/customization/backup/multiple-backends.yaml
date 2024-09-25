@@ -1,0 +1,49 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: es-quickstart-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Elasticsearch
+    namespace: demo
+    name: es-quickstart
+  backends:
+    - name: s3-backend
+      storageRef:
+        namespace: demo
+        name: s3-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+    - name: gcs-backend
+      storageRef:
+        namespace: demo
+        name: gcs-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: frequent-backup
+      scheduler:
+        schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: s3-elasticsearch-repo
+          backend: s3-backend
+          directory: /es
+          encryptionSecret:
+            name: encrypt-secret
+            namespace: demo
+        - name: gcs-elasticsearch-repo
+          backend: gcs-backend
+          directory: /es
+          encryptionSecret:
+            name: encrypt-secret
+            namespace: demo
+      addon:
+        name: elasticsearch-addon
+        tasks:
+          - name: logical-backup
