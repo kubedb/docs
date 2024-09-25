@@ -50,7 +50,3 @@ The updating process consists of the following steps:
 10. After successfully updating of `Memcached`object, the `KubeDB` Enterprise operator resumes the `Memcached` object so that the `KubeDB` Community operator can resume its usual operations.
 
 In the next doc, we are going to show a step-by-step guide on updating of a Memcached database using update operation.
-
-## Next Steps
-
-- Learn how to vertically scale [Memcached](/docs/guides/memcached/scaling/vertical-scaling/vertical-scaling)

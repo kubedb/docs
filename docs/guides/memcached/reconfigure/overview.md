@@ -52,7 +52,3 @@ The Reconfiguring Memcached process consists of the following steps:
 9. After the successful reconfiguring of the `Memcached` components, the `KubeDB` Ops-manager operator resumes the `Memcached` object so that the `KubeDB` Provisioner  operator resumes its usual operations.
 
 In the next docs, we are going to show a step by step guide on reconfiguring Memcached database components using `MemcachedOpsRequest` CRD.
-
-## Next Steps
-
-- Learn how to reconfigure [Memcached](/docs/guides/memcached/reconfigure/reconfigure).
