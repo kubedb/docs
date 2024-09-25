@@ -1,0 +1,41 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: sample-zookeeper-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: ZooKeeper
+    namespace: demo
+    name: sample-zookeeper
+  backends:
+    - name: s3-backend
+      storageRef:
+        namespace: demo
+        name: s3-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: frequent-backup
+      scheduler:
+        schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: s3-zookeeper-repo
+          backend: s3-backend
+          directory: /zookeeper
+          encryptionSecret:
+            name: encrypt-secret
+            namespace: demo
+      addon:
+        name: zookeeper-addon
+        jobTemplate:
+          spec:
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 0
+        tasks:
+          - name: logical-backup
