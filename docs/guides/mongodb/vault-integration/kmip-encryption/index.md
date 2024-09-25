@@ -1,11 +1,11 @@
 ---
-title: Vault Integration
+title: Encryption with Vault KMIP
 menu:
   docs_{{ .version }}:
-    identifier: guides-mongodb-vault-integration-kmip
-    name: Vault Integration
-    parent: guides-mongodb-vault-integration
-    weight: 60
+    identifier: guides-mongodb-integration-with-vault-kmip
+    name: Encryption with Vault KMIP
+    parent: guides-mongodb-integration-with-vault
+    weight: 20
 menu_name: docs_{{ .version }}
 ---
 
@@ -35,7 +35,7 @@ For this demo we will use [Hashicorp Cloud Provider(HCP)](https://portal.cloud.h
 
 So First we created a `Vault Plus` cluster in HCP. Then we need to configure Vault KMIP according to [this](https://developer.hashicorp.com/vault/tutorials/adp/kmip-engine?variants=vault-deploy%3Ahcp) documentation step by step.
 
-```console
+```bash
 $ export VAULT_ADDR=<Public_Cluster_URL>
 $ export VAULT_TOKEN=<Generated_Vault_Token>
 $ export VAULT_NAMESPACE=admin
@@ -72,7 +72,7 @@ We will use this `client.pem` and `vault-ca.pem` files to configure KMIP in Mong
 
 Now we need to make a `mongod.conf` file to use it as configuration folder for our `MongoDB`.
 
-```console
+```bash
 $ cat mongod.conf
 security:
   enableEncryption: true
@@ -86,13 +86,13 @@ Here `/etc/certs/client.pem` and `/etc/certs/ca.pem` will be mounted by secret i
 
 Now, create the secret with this configuration file.
 
-```console
+```bash
 $ kubectl create secret generic -n demo mg-configuration --from-file=./mongod.conf
 secret/mg-configuration created
 ```
 
 Verify the secret has the configuration file.
-```console
+```bash
 $ kubectl get secret -n demo mg-configuration -o yaml
 apiVersion: v1
 data:
@@ -119,7 +119,7 @@ security:
 ### Create MongoDB
 
 Before creating `MongoDB`, we need to create a secret with `client.pem` and `vault-ca.pem` to use as volume for our `MongoDB`
-```console
+```bash
 $ kubectl create secret generic vault-tls-secret -n demo \
         --from-file=client.pem=client.pem \
         --from-file=ca.pem=vault-ca.pem
@@ -177,7 +177,7 @@ Now, we will check if the database has started with the custom configuration we 
 
 To make sure that this `mg-kmip` MongoDB is KMIP encrypted, we can check the log of this `mg-kmip-0` pod
 
-```console
+```bash
 kubectl logs -f --all-containers -n demo mg-kmip-0
 ```
 We should see these logs which confirm that this `MongoDB` is setup with KMIP
