@@ -13,4 +13,3 @@ stringData:
   druid.s3.enablePathStyleAccess: "true"
   druid.s3.endpoint.signingRegion: "us-east-1"
   druid.s3.endpoint.url: "http://myminio-hl.demo.svc.cluster.local:9000/"
-

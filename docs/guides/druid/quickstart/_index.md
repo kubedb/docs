@@ -2,9 +2,9 @@
 title: Druid Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: dr-quickstart-druid
+    identifier: guides-druid-quickstart
     name: Quickstart
-    parent: dr-druid-guides
+    parent: guides-druid
     weight: 15
 menu_name: docs_{{ .version }}
 ---
