@@ -3,7 +3,7 @@ title: Reconfigure Memcached Database
 menu:
   docs_{{ .version }}:
     identifier: mc-reconfigure
-    name: Memcached
+    name: Reconfigure
     parent: reconfigure
     weight: 20
 menu_name: docs_{{ .version }}

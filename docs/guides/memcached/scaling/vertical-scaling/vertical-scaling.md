@@ -3,7 +3,7 @@ title: Vertical Scaling Memcached
 menu:
   docs_{{ .version }}:
     identifier: mc-vertical-scaling
-    name: Memcached
+    name: Vertical Scaling
     parent: vertical-scaling
     weight: 20
 menu_name: docs_{{ .version }}
