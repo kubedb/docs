@@ -29,40 +29,35 @@ Like any official Kubernetes resource, an `AppBinding` has `TypeMeta`, `ObjectMe
 An `AppBinding` object created by `KubeDB` for PostgreSQL database is shown below,
 
 ```yaml
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  name: quick-postgres
-  namespace: demo
-  labels:
-    app.kubernetes.io/component: database
-    app.kubernetes.io/instance: quick-postgres
-    app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: postgres
-    app.kubernetes.io/version: "10.2"-v2
-    app.kubernetes.io/name: postgreses.kubedb.com
-    app.kubernetes.io/instance: quick-postgres
-spec:
-  type: kubedb.com/postgres
-  secret:
-    name: quick-postgres-auth
-  clientConfig:
-    service:
-      name: quick-postgres
-      path: /
-      port: 5432
-      query: sslmode=disable
-      scheme: postgresql
-  secretTransforms:
-    - renameKey:
-        from: POSTGRES_USER
-        to: username
-    - renameKey:
-        from: POSTGRES_PASSWORD
-        to: password
-  version: "10.2"
+  apiVersion: appcatalog.appscode.com/v1alpha1
+  kind: AppBinding
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"appcatalog.appscode.com/v1alpha1","kind":"AppBinding","metadata":{"annotations":{},"name":"memcached-appbinding","namespace":"demo"},"spec":{"appRef":{"apiGroup":"kubedb.com","kind":"Memcached","name":"mc1","namespace":"demo"},"clientConfig":{"service":{"name":"memcached","namespace":"demo","port":11211,"scheme":"tcp"}},"secret":{"name":"memcached-auth"},"type":"kubedb.com/memcached","version":"1.6.22"}}
+    creationTimestamp: "2024-08-26T09:51:57Z"
+    generation: 1
+    name: memcached-appbinding
+    namespace: demo
+    resourceVersion: "4172425"
+    uid: 01a902e2-3de6-45de-85a3-4f115b334625
+  spec:
+    appRef:
+      apiGroup: kubedb.com
+      kind: Memcached
+      name: mc1
+      namespace: demo
+    clientConfig:
+      service:
+        name: memcached
+        namespace: demo
+        port: 11211
+        scheme: tcp
+    secret:
+      name: memcached-auth
+    type: kubedb.com/memcached
+    version: 1.6.22
 ```
-
 Here, we are going to describe the sections of an `AppBinding` crd.
 
 ### AppBinding `Spec`
@@ -71,17 +66,7 @@ An `AppBinding` object has the following fields in the `spec` section:
 
 #### spec.type
 
-`spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to. Stash uses this field to resolve the values of `TARGET_APP_TYPE`, `TARGET_APP_GROUP` and `TARGET_APP_RESOURCE` variables of [BackupBlueprint](https://appscode.com/products/stash/latest/concepts/crds/backupblueprint/) object.
-
-This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `postgres` resource under `kubedb.com` group.
-
-Here, the variables are parsed as follows:
-
-|       Variable        |                                                               Usage                                                               |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `TARGET_APP_GROUP`    | Represents the application group where the respective app belongs (i.e: `kubedb.com`).                                            |
-| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents (i.e: `postgres`).                           |
-| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` (i.e: `kubedb.com/postgres`). |
+`spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to.
 
 #### spec.secret
 
@@ -89,33 +74,15 @@ Here, the variables are parsed as follows:
 
 This secret must contain the following keys:
 
-PostgreSQL :
-
 | Key                 | Usage                                               |
 | ------------------- | --------------------------------------------------- |
-| `POSTGRES_USER`     | Username of the target database.                    |
-| `POSTGRES_PASSWORD` | Password for the user specified by `POSTGRES_USER`. |
+| `Username`     | Username of the target Memcached database.                    |
+| `Password` | Password for the user specified by `Username`. |
 
-MySQL :
 
-| Key        | Usage                                          |
-| ---------- | ---------------------------------------------- |
-| `username` | Username of the target database.               |
-| `password` | Password for the user specified by `username`. |
+#### spec.appRef
+appRef refers to the underlying application. It has 4 fields named `apiGroup`, `kind`, `name` & `namespace`.
 
-MongoDB :
-
-| Key        | Usage                                          |
-| ---------- | ---------------------------------------------- |
-| `username` | Username of the target database.               |
-| `password` | Password for the user specified by `username`. |
-
-Elasticsearch:
-
-|       Key        |          Usage          |
-| ---------------- | ----------------------- |
-| `ADMIN_USERNAME` | Admin username          |
-| `ADMIN_PASSWORD` | Password for admin user |
 
 #### spec.clientConfig
 

@@ -29,8 +29,8 @@ metadata:
   name: mc1
   namespace: demo
 spec:
-  replicas: 3
-  version: 1.5.22
+  replicas: 1
+  version: 1.6.22
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -89,9 +89,11 @@ KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are 
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [MemcachedVersion](/docs/guides/memcached/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MemcachedVersion` resources,
+`spec.version` is a required field specifying the name of the [MemcachedVersion](/docs/guides/memcached/concepts/memcached-version.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MemcachedVersion` crds,
 
-- `1.5.4`, `1.6.22`, `1.5`, `1.5-v1`
+- `1.5.22`
+- `1.6.22`
+- `1.6.29`
 
 ### spec.monitor
 
@@ -102,11 +104,11 @@ Memcached managed by KubeDB can be monitored with builtin-Prometheus and Prometh
 
 ### spec.configSecret
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Memcached. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/memcached/configuration/using-config-file.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for Memcached. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/memcached/custom-configuration/using-config-file.md).
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the Deployment created for Memcached server.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the Petset created for Memcached server.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -119,6 +121,8 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - volumes
   - podPlacementPolicy
   - initContainers
+  - containers
+  - podPlacementPolicy
   - imagePullSecrets
   - nodeSelector
   - affinity
@@ -133,7 +137,6 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - lifecycle
 
 Uses of some field of `spec.podTemplate` is described below,
-
 
 You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go#L26C1-L279C1).
 Uses of some field of `spec.podTemplate` is described below,
@@ -194,13 +197,13 @@ At least one of the following was changed:
 
 #### spec.podTemplate.spec.serviceAccountName
 
-  `serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
+`serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
 
-  If this field is left empty, the KubeDB operator will create a service account name matching Memcached crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
+If this field is left empty, the KubeDB operator will create a service account name matching Memcached crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
 
-  If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
-  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/memcached/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
+If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/memcached/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
 
 #### spec.podTemplate.spec.resources
 
@@ -211,6 +214,11 @@ At least one of the following was changed:
 You can also provide a template for the services created by KubeDB operator for Memcached server through `spec.serviceTemplate`. This will allow you to set the type and other properties of the services.
 
 KubeDB allows following fields to set in `spec.serviceTemplate`:
+
+- `alias` represents the identifier of the service. It has the following possible value:
+  - `primary` is used for the primary service identification.
+  - `standby` is used for the secondary service identification.
+  - `stats` is used for the exporter service identification.
 
 - metadata:
   - annotations
@@ -225,7 +233,8 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
   - healthCheckNodePort
   - sessionAffinityConfig
 
-See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in details.
+
 
 ### spec.deletionPolicy
 
@@ -243,11 +252,23 @@ Following table show what KubeDB does when you delete Memcached crd for differen
 | Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Create Dormant Database          |    &#10007;    | &#10003; | &#10007; | &#10007; |
-| 3. Delete PetSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 4. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 2. Delete PetSet          |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 3. Delete Services               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 4. Delete Secrets                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy by default.
+If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
+
+### spec.halted
+Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
+
+## spec.helathChecker
+It defines the attributes for the health checker.
+- spec.healthChecker.periodSeconds specifies how often to perform the health check.
+- spec.healthChecker.timeoutSeconds specifies the number of seconds after which the probe times out.
+- spec.healthChecker.failureThreshold specifies minimum consecutive failures for the healthChecker to be considered failed.
+- spec.healthChecker.disableWriteCheck specifies whether to disable the writeCheck or not.
+
+Know details about KubeDB Health checking from this blog post.
 
 ## Next Steps
 

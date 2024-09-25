@@ -22,6 +22,8 @@ section_menu_id: guides
 
 - To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/memcached/monitoring/overview.md).
 
+- We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack).
+
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
   ```bash
@@ -31,10 +33,6 @@ section_menu_id: guides
   $ kubectl create ns demo
   namespace/demo created
   ```
-
-- We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
-
-- If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,8 +44,9 @@ At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
 $ kubectl get prometheus --all-namespaces
-NAMESPACE    NAME         AGE
-monitoring   prometheus   18m
+NAMESPACE    NAME                                    VERSION   DESIRED   READY   RECONCILED   AVAILABLE   AGE
+monitoring   prometheus-kube-prometheus-prometheus   v2.54.1   1         1       True         True        3m
+
 ```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
@@ -55,31 +54,111 @@ monitoring   prometheus   18m
 Now, let's view the YAML of the available Prometheus server `prometheus` in `monitoring` namespace.
 
 ```yaml
-$ kubectl get prometheus -n monitoring prometheus -o yaml
+$ kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
   annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"monitoring"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorSelector":{"matchLabels":{"release":"prometheus"}}}}
-  creationTimestamp: 2019-01-03T13:41:51Z
+    meta.helm.sh/release-name: prometheus
+    meta.helm.sh/release-namespace: monitoring
+  creationTimestamp: "2024-09-17T13:24:28Z"
   generation: 1
   labels:
-    prometheus: prometheus
-  name: prometheus
+    app: kube-prometheus-stack-prometheus
+    app.kubernetes.io/instance: prometheus
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: kube-prometheus-stack
+    app.kubernetes.io/version: 62.7.0
+    chart: kube-prometheus-stack-62.7.0
+    heritage: Helm
+    release: prometheus
+  name: prometheus-kube-prometheus-prometheus
   namespace: monitoring
-  resourceVersion: "44402"
-  selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/prometheuses/prometheus
-  uid: 5324ad98-0f5d-11e9-b230-080027f306f3
+  resourceVersion: "396596"
+  uid: ee3cb256-1f08-4bd4-966a-2050822affbf
 spec:
+  alerting:
+    alertmanagers:
+    - apiVersion: v2
+      name: prometheus-kube-prometheus-alertmanager
+      namespace: monitoring
+      pathPrefix: /
+      port: http-web
+  automountServiceAccountToken: true
+  enableAdminAPI: false
+  evaluationInterval: 30s
+  externalUrl: http://prometheus-kube-prometheus-prometheus.monitoring:9090
+  hostNetwork: false
+  image: quay.io/prometheus/prometheus:v2.54.1
+  listenLocal: false
+  logFormat: logfmt
+  logLevel: info
+  paused: false
+  podMonitorNamespaceSelector: {}
+  podMonitorSelector:
+    matchLabels:
+      release: prometheus
+  portName: http-web
+  probeNamespaceSelector: {}
+  probeSelector:
+    matchLabels:
+      release: prometheus
   replicas: 1
-  resources:
-    requests:
-      memory: 400Mi
-  serviceAccountName: prometheus
+  retention: 10d
+  routePrefix: /
+  ruleNamespaceSelector: {}
+  ruleSelector:
+    matchLabels:
+      release: prometheus
+  scrapeConfigNamespaceSelector: {}
+  scrapeConfigSelector:
+    matchLabels:
+      release: prometheus
+  scrapeInterval: 30s
+  securityContext:
+    fsGroup: 2000
+    runAsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  serviceAccountName: prometheus-kube-prometheus-prometheus
+  serviceMonitorNamespaceSelector: {}
   serviceMonitorSelector:
     matchLabels:
       release: prometheus
+  shards: 1
+  tsdb:
+    outOfOrderTimeWindow: 0s
+  version: v2.54.1
+  walCompression: true
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2024-09-17T13:24:45Z"
+    message: ""
+    observedGeneration: 1
+    reason: ""
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2024-09-17T13:24:45Z"
+    message: ""
+    observedGeneration: 1
+    reason: ""
+    status: "True"
+    type: Reconciled
+  paused: false
+  replicas: 1
+  selector: app.kubernetes.io/instance=prometheus-kube-prometheus-prometheus,app.kubernetes.io/managed-by=prometheus-operator,app.kubernetes.io/name=prometheus,operator.prometheus.io/name=prometheus-kube-prometheus-prometheus,prometheus=prometheus-kube-prometheus-prometheus
+  shardStatuses:
+  - availableReplicas: 1
+    replicas: 1
+    shardID: "0"
+    unavailableReplicas: 0
+    updatedReplicas: 1
+  shards: 1
+  unavailableReplicas: 0
+  updatedReplicas: 1
 ```
 
 Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of Memcached crd.
@@ -92,10 +171,10 @@ At first, let's deploy an Memcached server with monitoring enabled. Below is the
 apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
-  name: coreos-prom-memcd
+  name: memcached
   namespace: demo
 spec:
-  replicas: 3
+  replicas: 1
   version: "1.6.22"
   deletionPolicy: WipeOut
   podTemplate:
@@ -130,102 +209,120 @@ Here,
 Let's create the Memcached object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/monitoring/coreos-prom-memcd.yaml
-memcached.kubedb.com/coreos-prom-memcd created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/monitoring/memcached.yaml
+memcached.kubedb.com/memcached created
 ```
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get mc -n demo coreos-prom-memcd
-NAME                VERSION    STATUS    AGE
-coreos-prom-memcd   1.6.22   Running   19s
+$ kubectl get mc -n demo memcached
+NAME        VERSION   STATUS   AGE
+memcached   1.6.22    Ready    2m
 ```
 
 KubeDB will create a separate stats service with name `{Memcached crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-memcd"
-NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-coreos-prom-memcd         ClusterIP   10.100.207.76   <none>        11211/TCP   41s
-coreos-prom-memcd-stats   ClusterIP   10.97.230.149   <none>        56790/TCP   38s
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=memcached"
+NAME              TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)     AGE
+memcached         ClusterIP   10.96.91.51   <none>        11211/TCP   3m9s
+memcached-pods    ClusterIP   None          <none>        11211/TCP   3m9s
+memcached-stats   ClusterIP   10.96.50.21   <none>        56790/TCP   3m9s
 ```
 
-Here, `coreos-prom-memcd-stats` service has been created for monitoring purpose.
+Here, `memcached-stats` service has been created for monitoring purpose.
 
 Let's describe this stats service.
 
 ```yaml
-$ kubectl describe svc -n demo coreos-prom-memcd-stats
-Name:              coreos-prom-memcd-stats
+$ kubectl describe svc -n demo memcached-stats
+Name:              memcached-stats
 Namespace:         demo
-Labels:            app.kubernetes.io/name=memcacheds.kubedb.com
-                   app.kubernetes.io/instance=coreos-prom-memcd
+Labels:            app.kubernetes.io/component=database
+                   app.kubernetes.io/instance=memcached
+                   app.kubernetes.io/managed-by=kubedb.com
+                   app.kubernetes.io/name=memcacheds.kubedb.com
+                   kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          app.kubernetes.io/name=memcacheds.kubedb.com,app.kubernetes.io/instance=coreos-prom-memcd
+Selector:          app.kubernetes.io/instance=memcached,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=memcacheds.kubedb.com
 Type:              ClusterIP
-IP:                10.97.230.149
-Port:              prom-http  56790/TCP
-TargetPort:        prom-http/TCP
-Endpoints:         172.17.0.7:56790,172.17.0.8:56790,172.17.0.9:56790
+IP Family Policy:  SingleStack
+IP Families:       IPv4
+IP:                10.96.50.21
+IPs:               10.96.50.21
+Port:              metrics  56790/TCP
+TargetPort:        metrics/TCP
+Endpoints:         10.244.0.7:56790
 Session Affinity:  None
 Events:            <none>
 ```
 
 Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these information to target its endpoints.
 
-KubeDB will also create a `ServiceMonitor` crd in `monitoring` namespace that select the endpoints of `coreos-prom-memcd-stats` service. Verify that the `ServiceMonitor` crd has been created.
+KubeDB will also create a `ServiceMonitor` crd in `monitoring` namespace that select the endpoints of `memcached-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
-$ kubectl get servicemonitor -n monitoring
-NAME                            AGE
-kubedb-demo-coreos-prom-memcd   1m
+$ kubectl get servicemonitor -n demo
+NAME              AGE
+memcached-stats   5m
 ```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of Memcached crd.
 
 ```yaml
-$ kubectl get servicemonitor -n monitoring kubedb-demo-coreos-prom-memcd -o yaml
+$ kubectl get servicemonitor -n demo memcached-stats -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  creationTimestamp: 2019-01-03T15:13:46Z
+  creationTimestamp: "2024-09-17T13:32:15Z"
   generation: 1
   labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: memcached
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: memcacheds.kubedb.com
     release: prometheus
-    monitoring.appscode.com/service: coreos-prom-memcd-stats.demo
-  name: kubedb-demo-coreos-prom-memcd
-  namespace: monitoring
-  resourceVersion: "51236"
-  selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/servicemonitors/kubedb-demo-coreos-prom-memcd
-  uid: 2aa57b5a-0f6a-11e9-b230-080027f306f3
+  name: memcached-stats
+  namespace: demo
+  ownerReferences:
+  - apiVersion: v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Service
+    name: memcached-stats
+    uid: 6c05bc95-c26c-4b0b-988f-2ecc58e983bf
+  resourceVersion: "397210"
+  uid: b14633ab-338d-43a6-87bc-2ab77d761cf4
 spec:
   endpoints:
   - honorLabels: true
-    interval: 10s
     path: /metrics
-    port: prom-http
+    port: metrics
   namespaceSelector:
     matchNames:
     - demo
   selector:
     matchLabels:
+      app.kubernetes.io/component: database
+      app.kubernetes.io/instance: memcached
+      app.kubernetes.io/managed-by: kubedb.com
       app.kubernetes.io/name: memcacheds.kubedb.com
-      app.kubernetes.io/instance: coreos-prom-memcd
+      kubedb.com/role: stats
 ```
 
 Notice that the `ServiceMonitor` has label `release: prometheus` that we had specified in Memcached crd.
 
-Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `coreos-prom-memcd-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
+Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `memcached-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
 
 ## Verify Monitoring Metrics
 
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app=prometheus
-NAME                      READY   STATUS    RESTARTS   AGE
-prometheus-prometheus-0   3/3     Running   1          63m
+$ kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+NAME                                                 READY   STATUS    RESTARTS   AGE
+prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   0          16m
 ```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
@@ -233,12 +330,12 @@ Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-prometheus-0 9090
+$ kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `coreos-prom-memcd-stats` service as one of the targets.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `memcached-stats` service as one of the targets.
 
 <p align="center">
   <img alt="Prometheus Target" src="/docs/images/memcached/monitoring/mc-coreos-prom-target.png" style="padding:10px">
@@ -252,7 +349,7 @@ To cleanup the Kubernetes resources created by this tutorial, run following comm
 
 ```bash
 # cleanup database
-kubectl delete -n demo mc/coreos-prom-memcd
+kubectl delete -n demo mc/memcached
 
 # cleanup prometheus resources
 kubectl delete -n monitoring prometheus prometheus

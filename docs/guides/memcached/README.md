@@ -17,18 +17,32 @@ aliases:
 
 ## Supported Memcached Features
 
-| Features                     | Availability |
-| ---------------------------- | :----------: |
-| Clustering                   |   &#10007;   |
-| Persistent Volume            |   &#10007;   |
-| Instant Backup               |   &#10007;   |
-| Scheduled Backup             |   &#10007;   |
-| Initialize using Snapshot    |   &#10007;   |
-| Initialize using Script      |   &#10007;   |
-| Custom Configuration         |   &#10003;   |
-| Using Custom docker image    |   &#10003;   |
-| Builtin Prometheus Discovery |   &#10003;   |
-| Using Prometheus operator    |   &#10003;   |
+| Features                               | Availability |
+| ------------------------------------   | :----------: |
+| Clustering                             |   &#10007;   |
+| Persistent Volume                      |   &#10007;   |
+| Instant Backup                         |   &#10007;   |
+| Scheduled Backup                       |   &#10007;   |
+| Initialize using Snapshot              |   &#10007;   |
+| Initialize using Script                |   &#10007;   |
+| Multiple Memcached Versions         |   &#10003;   |
+| Custom Configuration                   |   &#10003;   |
+| Externally manageable Auth Secret	     |   &#10007;   |
+| Reconfigurable Health Checker		     |   &#10003;   |
+| Using Custom docker image              |   &#10003;   |
+| Builtin Prometheus Discovery           |   &#10003;   |
+| Using Prometheus operator              |   &#10003;   |
+| Automated Version Update               |   &#10003;   |
+| Automated Vertical Scaling             |   &#10003;   |
+| Automated Horizontal Scaling           |   &#10003;   |
+| Automated db-configure Reconfiguration |   &#10003;   |
+| TLS: Add, Remove, Update, Rotate ( Cert Manager )	|&#10007;|
+| Automated Volume Expansion	           |   &#10007;   |
+| Autoscaling (Vertically)               |   &#10003;   |
+| Grafana Dashboard               |   &#10003;   |
+| Alert Dashboard	               |   &#10007;   |
+
+
 
 ## Life Cycle of a Memcached Object
 
