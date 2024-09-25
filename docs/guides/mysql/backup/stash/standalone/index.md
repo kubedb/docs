@@ -3,9 +3,9 @@ title: Backup & Restore MySQL | Stash
 description: Backup standalone MySQL database using Stash
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-backup-standalone
+    identifier: guides-mysql-backup-standalone-stashv1
     name: Standalone MySQL
-    parent: guides-mysql-backup
+    parent: guides-mysql-backup-stashv1
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -21,7 +21,7 @@ Stash 0.9.0+ supports backup and restoration of MySQL databases. This guide will
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
 - Install Stash `kubectl` plugin following the steps [here](https://stash.run/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how Stash backup and restore MySQL databases, please check the following guide [here](/docs/guides/mysql/backup/overview/index.md).
+- If you are not familiar with how Stash backup and restore MySQL databases, please check the following guide [here](/docs/guides/mysql/backup/stash/overview/index.md).
 
 You have to be familiar with following custom resources:
 
@@ -72,7 +72,7 @@ spec:
 Create the above `MySQL` CRD,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/standalone/examples/sample-druid.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/stash/standalone/examples/sample-mysql.yaml
 mysql.kubedb.com/sample-mysql created
 ```
 
@@ -295,7 +295,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/standalone/examples/repository.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/stash/standalone/examples/repository.yaml
 repository.stash.appscode.com/gcs-repo created
 ```
 
@@ -338,7 +338,7 @@ Here,
 Let's create the `BackupConfiguration` CRD we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/standalone/examples/backupconfiguration.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/stash/standalone/examples/backupconfiguration.yaml
 backupconfiguration.stash.appscode.com/sample-mysql-backup created
 ```
 
@@ -394,7 +394,7 @@ gcs-repo   true        6.815 MiB   1                3m39s                    30m
 Now, if we navigate to the GCS bucket, we will see the backed up data has been stored in `demo/mysql/sample-mysql` directory as specified by `.spec.backend.gcs.prefix` field of Repository CRD.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mysql/backup/standalone/images/sample-mysql-backup.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mysql/backup/stash/standalone/images/sample-mysql-backup.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -462,7 +462,7 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/standalone/examples/restored-druid.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/stash/standalone/examples/restored-mysql.yaml
 mysql.kubedb.com/restored-mysql created
 ```
 
@@ -515,7 +515,7 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/standalone/examples/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/stash/standalone/examples/restoresession.yaml
 restoresession.stash.appscode.com/sample-mysql-restore created
 ```
 

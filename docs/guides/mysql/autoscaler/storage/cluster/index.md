@@ -87,7 +87,7 @@ spec:
 Let's create the `MySQL` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/autoscaler/storage/cluster/examples/sample-druid.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/autoscaler/storage/cluster/examples/sample-mysql.yaml
 mysql.kubedb.com/sample-mysql created
 ```
 
