@@ -1,0 +1,21 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: sample-zookeeper-restore
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: ZooKeeper
+    namespace: demo
+    name: restored-zookeeper
+  dataSource:
+    repository: s3-zookeeper-repo
+    snapshot: latest
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: zookeeper-addon
+    tasks:
+      - name: logical-backup-restore
