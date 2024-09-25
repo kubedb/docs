@@ -41,12 +41,14 @@ spec:
     name: es-cluster
   podTemplate:
     spec:
-     resources:
-        limits:
-          memory: 1.5Gi
-        requests:
-          cpu: 500m
-          memory: 1.5Gi
+      containers:
+      - name: elasticsearch
+        resources:
+          limits:
+            memory: 1.5Gi
+          requests:
+            cpu: 500m
+            memory: 1.5Gi
   serviceTemplates:
     - alias: primary
       spec:
@@ -56,7 +58,7 @@ spec:
     certificates:
       - alias: database-client
         secretName: es-cluster-client-cert
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 

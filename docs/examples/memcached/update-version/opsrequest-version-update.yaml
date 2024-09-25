@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MemcachedOpsRequest
+metadata:
+  name: update-memcd
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: memcd-quickstart
+  updateVersion:
+    targetVersion: 1.6.29

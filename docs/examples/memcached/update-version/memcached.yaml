@@ -1,13 +1,11 @@
 apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
-  name: custom-memcached
+  name: memcd-quickstart
   namespace: demo
 spec:
   replicas: 1
   version: "1.6.22"
-  configSecret:
-    name: mc-custom-config
   podTemplate:
     spec:
       containers:
@@ -19,3 +17,4 @@ spec:
             requests:
               cpu: 250m
               memory: 64Mi
+  deletionPolicy: WipeOut

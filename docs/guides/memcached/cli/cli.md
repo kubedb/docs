@@ -47,10 +47,10 @@ cat memcached-demo.yaml | kubectl create -f -
 ```bash
 $ kubectl get memcached
 NAME             VERSION    STATUS    AGE
-memcached-demo   1.6.22   Running   40s
-memcached-dev    1.6.22   Running   40s
-memcached-prod   1.6.22   Running   40s
-memcached-qa     1.6.22   Running   40s
+memcached-demo   1.6.22     Running   40s
+memcached-dev    1.6.22     Running   40s
+memcached-prod   1.6.22     Running   40s
+memcached-qa     1.6.22     Running   40s
 ```
 
 To get YAML of an object, use `--output=yaml` flag.
@@ -85,7 +85,7 @@ spec:
         requests:
           cpu: 250m
           memory: 64Mi
-  replicas: 3
+  replicas: 1
   deletionPolicy: Halt
   version: 1.6.22
 status:
@@ -103,11 +103,11 @@ To list all KubeDB objects, use following command:
 
 ```bash
 $ kubectl get all -o wide
-NAME                    VERSION     STATUS   AGE
-mc/memcached-demo       1.6.22    Running  3h
-mc/memcached-dev        1.6.22    Running  3h
-mc/memcached-prod       1.6.22    Running  3h
-mc/memcached-qa         1.6.22    Running  3h
+NAME                    VERSION     STATUS    AGE
+mc/memcached-demo       1.6.22      Running   3h
+mc/memcached-dev        1.6.22      Running   3h
+mc/memcached-prod       1.6.22      Running   3h
+mc/memcached-qa         1.6.22      Running   3h
 ```
 
 Flag `--output=wide` is used to print additional information.
@@ -122,7 +122,7 @@ You can print labels with objects. The following command will list all Memcached
 ```bash
 $ kubectl get mc --show-labels
 NAME             VERSION    STATUS    AGE       LABELS
-memcached-demo   1.6.22   Running   2m        kubedb=cli-demo
+memcached-demo   1.6.22     Running   2m        kubedb=cli-demo
 ```
 
 To print only object name, run the following command:
@@ -146,7 +146,7 @@ Namespace:          default
 CreationTimestamp:  Thu, 04 Oct 2018 11:58:57 +0600
 Labels:             kubedb=cli-demo
 Annotations:        <none>
-Replicas:           3  total
+Replicas:           1  total
 Status:             Running
 
 Deployment:
@@ -156,8 +156,8 @@ Deployment:
                         app.kubernetes.io/name=memcacheds.kubedb.com
                         app.kubernetes.io/instance=memcached-demo
   Annotations:          deployment.kubernetes.io/revision=1
-  Replicas:           3 desired | 3 updated | 3 total | 3 available | 0 unavailable
-  Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
+  Replicas:           1 desired | 1 updated | 1 total | 1 available | 0 unavailable
+  Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:
   Name:         memcached-demo
@@ -185,7 +185,7 @@ Events:
 
 `kubectl dba describe` command provides following basic information about a Memcached server.
 
-- Deployment
+- Petset
 - Service
 - Monitoring system (If available)
 
@@ -239,7 +239,7 @@ Various fields of a KubeDB object can't be edited using `edit` command. The foll
 
 - apiVersion
 - kind
-- metadata.name
+- metadata.name 
 - metadata.namespace
 - status
 
@@ -295,4 +295,5 @@ $ kubectl delete memcached <name>
 ## Next Steps
 
 - Learn how to use KubeDB to run a Memcached server [here](/docs/guides/memcached/README.md).
+- Learn how to use custom configuration in Memcached with KubeDB [here](/docs/guides/memcached/custom-configuration/using-config-file.md)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

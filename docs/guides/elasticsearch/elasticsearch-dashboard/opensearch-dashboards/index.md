@@ -417,7 +417,7 @@ spec:
   enableSSL: true
   databaseRef:
     name: os-cluster
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 > Note: OpenSearch Database and OpenSearch dashboard should have to be deployed in the same namespace. In this tutorial, we use `demo` namespace for both cases.
 
