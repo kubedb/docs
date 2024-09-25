@@ -3,7 +3,7 @@ title: Horizontal Scaling Memcached
 menu:
   docs_{{ .version }}:
     identifier: mc-horizontal-scaling
-    name: Memcached
+    name: Vertical Scaling
     parent: horizontal-scaling
     weight: 20
 menu_name: docs_{{ .version }}

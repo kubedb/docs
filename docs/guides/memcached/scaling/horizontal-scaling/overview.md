@@ -55,4 +55,4 @@ In the next doc, we are going to show a step-by-step guide on updating of a Memc
 
 ## Next Steps
 
-- Learn how to horizontally scale [Memcached](/docs/guides/memcached/scaling/horizontal-scaling/memcached.md)
+- Learn how to horizontally scale [Memcached](/docs/guides/memcached/scaling/horizontal-scaling/horizontal-scaling)

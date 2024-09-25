@@ -3,7 +3,7 @@ title: Memcached Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: mc-auto-scaling
-    name: Memcached Autoscaling
+    name: Compute Autoscaler
     parent: compute-auto-scaling
     weight: 15
 menu_name: docs_{{ .version }}

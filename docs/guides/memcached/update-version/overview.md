@@ -55,4 +55,4 @@ In the next doc, we are going to show a step-by-step guide on updating of a Memc
 
 ## Next Steps
 
-- Learn how to Update Version of [Memcached](/docs/guides/memcached/update-version/memcached.md).
+- Learn how to Update Version of [Memcached](/docs/guides/memcached/update-version/update-version).

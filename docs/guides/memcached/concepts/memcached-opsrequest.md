@@ -18,13 +18,13 @@ section_menu_id: guides
 
 `MemcachedOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for Memcached administrative operations like database version updating, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
 
-## MemcachedAutoscaler CRD Specifications
+## MemcachedOpsRequest CRD Specifications
 
 Like any official Kubernetes resource, a `MemcachedOpsRequest` has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.
 
 Here, some sample `MemcachedOpsRequest` CRs for different administrative operations is given below.
 
-Sample MemcachedOpsRequest for updating database:
+Sample MemcachedOpsRequest for updating database version:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1

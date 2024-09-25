@@ -53,4 +53,4 @@ In the next doc, we are going to show a step-by-step guide on updating of a Memc
 
 ## Next Steps
 
-- Learn how to vertically scale [Memcached](/docs/guides/memcached/scaling/vertical-scaling/memcached.md)
+- Learn how to vertically scale [Memcached](/docs/guides/memcached/scaling/vertical-scaling/vertical-scaling)

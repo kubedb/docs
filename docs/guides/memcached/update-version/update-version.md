@@ -3,7 +3,7 @@ title: Updating Memcached Database
 menu:
   docs_{{ .version }}:
     identifier: mc-update-version
-    name: Memcached
+    name: Update Version
     parent: update-version
     weight: 20
 menu_name: docs_{{ .version }}

@@ -55,4 +55,4 @@ In the next docs, we are going to show a step by step guide on reconfiguring Mem
 
 ## Next Steps
 
-- Learn how to reconfigure [Memcached](/docs/guides/memcached/reconfigure/memcached.md).
+- Learn how to reconfigure [Memcached](/docs/guides/memcached/reconfigure/reconfigure).
