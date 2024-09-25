@@ -72,7 +72,7 @@ spec:
 Create the above `MySQL` CRD,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/standalone/examples/sample-mysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/standalone/examples/sample-druid.yaml
 mysql.kubedb.com/sample-mysql created
 ```
 
@@ -462,7 +462,7 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/standalone/examples/restored-mysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/standalone/examples/restored-druid.yaml
 mysql.kubedb.com/restored-mysql created
 ```
 

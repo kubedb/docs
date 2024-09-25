@@ -2,7 +2,7 @@
 title: Druid
 menu:
   docs_{{ .version }}:
-    identifier: dr-druid-guides
+    identifier: guides-druid
     name: Druid
     parent: guides
     weight: 10
