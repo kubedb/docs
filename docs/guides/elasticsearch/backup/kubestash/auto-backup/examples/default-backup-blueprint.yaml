@@ -1,0 +1,36 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupBlueprint
+metadata:
+  name: es-quickstart-backup-blueprint
+  namespace: demo
+spec:
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  backupConfigurationTemplate:
+    deletionPolicy: OnDelete
+    backends:
+      - name: s3-backend
+        storageRef:
+          namespace: demo
+          name: s3-storage
+        retentionPolicy:
+          name: demo-retention
+          namespace: demo
+    sessions:
+      - name: frequent-backup
+        scheduler:
+          schedule: "*/5 * * * *"
+          jobTemplate:
+            backoffLimit: 1
+        repositories:
+          - name: s3-elasticsearch-repo
+            backend: s3-backend
+            directory: /es/default
+            encryptionSecret:
+              name: encrypt-secret
+              namespace: demo
+        addon:
+          name: elasticsearch-addon
+          tasks:
+            - name: logical-backup

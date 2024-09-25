@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-es-backup-auto-backup
     name: Auto-Backup
-    parent: guides-es-backup
+    parent: guides-es-backup-stashv1
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -22,7 +22,7 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
-- If you are not familiar with how Stash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/elasticsearch/backup/overview/index.md).
+- If you are not familiar with how Stash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/elasticsearch/backup/stash/overview/index.md).
 - If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/overview/).
 - If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/auto-backup/database/).
 
@@ -192,7 +192,7 @@ app-es-demo                                                                5s
 
 Now, let's check the YAML of the `Repository`.
 
-```yaml
+```bash
 ❯ kubectl get repository -n demo app-es-demo -o yaml
 apiVersion: stash.appscode.com/v1alpha1
 kind: Repository
@@ -221,7 +221,7 @@ app-es-demo   elasticsearch-backup-7.3.2   */5 * * * *            Ready   12s
 
 Now, let's check the YAML of the `BackupConfiguration`.
 
-```yaml
+```bash
 ❯ kubectl get backupconfiguration -n demo app-es-demo -o yaml
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration
@@ -300,7 +300,7 @@ app-es-demo-1613130605   BackupConfiguration   app-es-demo    Succeeded   46s
 Once the backup has been completed successfully, you should see the backed up data has been stored in the bucket at the directory pointed by the `prefix` field of the `Repository`.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/elasticsearch/backup/auto-backup/images/es-demo.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/elasticsearch/backup/stash/auto-backup/images/es-demo.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -479,7 +479,7 @@ app-es-demo-2-1613132831   BackupConfiguration   app-es-demo-2   Succeeded   41s
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/elasticsearch/backup/auto-backup/images/es-demo-2.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/elasticsearch/backup/stash/auto-backup/images/es-demo-2.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -662,7 +662,7 @@ app-es-demo-3-1613133604   BackupConfiguration   app-es-demo-3   Succeeded   48s
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/elasticsearch/backup/auto-backup/images/es-demo-3.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/elasticsearch/backup/stash/auto-backup/images/es-demo-3.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 

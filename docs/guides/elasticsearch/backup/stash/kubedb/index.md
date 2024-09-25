@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-es-backup-kubedb
     name: Scheduled Backup
-    parent: guides-es-backup
+    parent: guides-es-backup-stashv1
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -21,7 +21,7 @@ Stash 0.9.0+ supports backup and restoration of Elasticsearch clusters. This gui
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/stash/).
 - Install Stash `kubectl` plugin following the steps [here](https://stash.run/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how Stash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/elasticsearch/backup/overview/index.md).
+- If you are not familiar with how Stash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/elasticsearch/backup/stash/overview/index.md).
 
 You have to be familiar with following custom resources:
 
@@ -508,7 +508,7 @@ gcs-repo   true        3.801 KiB   1                64s                      3m4
 Now, if we navigate to the GCS bucket, we will see the backed up data has been stored in `demo/sample-es` directory as specified by the `.spec.backend.gcs.prefix` field of the `Repository` object.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/elasticsearch/backup/kubedb/images/sample-es-backup.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/elasticsearch/backup/stash/kubedb/images/sample-es-backup.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 

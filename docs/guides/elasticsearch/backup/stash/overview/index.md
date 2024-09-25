@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-es-backup-overview
     name: Overview
-    parent: guides-es-backup
+    parent: guides-es-backup-stashv1
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -28,7 +28,7 @@ KubeDB uses [Stash](https://stash.run) to backup and restore databases. Stash by
 The following diagram shows how Stash takes a backup of an Elasticsearch database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
- <img alt="Elasticsearch Backup Overview" src="/docs/guides/elasticsearch/backup/overview/images/backup_overview.svg">
+ <img alt="Elasticsearch Backup Overview" src="/docs/guides/elasticsearch/backup/stash/overview/images/backup_overview.svg">
   <figcaption align="center">Fig: Elasticsearch Backup Overview</figcaption>
 </figure>
 
@@ -63,7 +63,7 @@ The backup process consists of the following steps:
 The following diagram shows how Stash restores backed up data into an Elasticsearch database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
- <img alt="Database Restore Overview" src="/docs/guides/elasticsearch/backup/overview/images/restore_overview.svg">
+ <img alt="Database Restore Overview" src="/docs/guides/elasticsearch/backup/stash/overview/images/restore_overview.svg">
   <figcaption align="center">Fig: Elasticsearch Restore Process</figcaption>
 </figure>
 
@@ -85,6 +85,6 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Backup your Elasticsearch databases using Stash following the guide from [here](/docs/guides/elasticsearch/backup/kubedb/index.md).
-- Configure a generic backup template for all the Elasticsearch databases of your cluster using Stash Auto-backup by following the guide from [here](/docs/guides/elasticsearch/backup/auto-backup/index.md).
-- Customize the backup & restore process for your cluster by following the guides from [here](/docs/guides/elasticsearch/backup/customization/index.md).
+- Backup your Elasticsearch databases using Stash following the guide from [here](/docs/guides/elasticsearch/backup/stash/kubedb/index.md).
+- Configure a generic backup template for all the Elasticsearch databases of your cluster using Stash Auto-backup by following the guide from [here](/docs/guides/elasticsearch/backup/stash/auto-backup/index.md).
+- Customize the backup & restore process for your cluster by following the guides from [here](/docs/guides/elasticsearch/backup/stash/customization/index.md).
