@@ -429,7 +429,7 @@ spec:
   enableSSL: true
   databaseRef:
     name: es-cluster
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 > Note: Elasticsearch Database and Elasticsearch dashboard should have to be deployed in the same namespace. In this tutorial, we use demo namespace for both cases.
 
