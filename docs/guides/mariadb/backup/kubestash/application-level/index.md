@@ -592,9 +592,9 @@ metadata:
   namespace: demo
 spec:
   manifestOptions:
-    restoreNamespace: dev
     mariaDB:
       db: true
+      restoreNamespace: dev
   dataSource:
     repository: gcs-mariadb-repo
     snapshot: latest
