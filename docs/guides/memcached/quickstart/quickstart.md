@@ -322,6 +322,7 @@ status:
   phase: Ready
 
 ```
+## Connect with Memcached database
 
 Now, you can connect to this database using `telnet`.
 Here, we will connect to Memcached server from local-machine through port-forwarding.
@@ -365,62 +366,68 @@ END
 quit
 ```
 
-## DoNotTerminate Property
+## Database DeletionPolicy
 
-When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
+This field is used to regulate the deletion process of the related resources when `Memcached` object is deleted. User can set the value of this field according to their needs. The available options and their use case scenario is described below:
+
+**DoNotTerminate:**
+
+When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
 $ kubectl delete mc memcd-quickstart -n demo
 Error from server (Forbidden): admission webhook "memcachedwebhook.validators.kubedb.com" denied the request: memcached demo/memcd-quickstart is can't terminated. To delete, change spec.deletionPolicy
 ```
+Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy).
 
-Now, run `kubectl edit mc memcd-quickstart -n demo` to set `spec.deletionPolicy` to `Halt`. Then you will be able to delete/halt the database. 
+**Delete:**
 
-Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy)
+If you want to delete the existing database but want to keep `secrets` then you might want to set the `Memcached` object `deletionPolicy` to `Delete`. In this setting, `PetSet` and `Services` will be deleted. 
 
-## Halt Database
+When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy) is set to `Delete` and the MySQL object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `secret` intact.
 
-When [DeletionPolicy](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy) is set to `Halt` and you delete the memcached object, the KubeDB operator will delete the PetSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy).
-
-You can also keep the memcached object and halt the database to resume it again later. If you halt the database, the KubeDB operator will delete the petsets and services but will keep the memcached object, pvcs, secrets and backup (snapshots).
-
-To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
+Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
-$ kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
-memcached.kubedb.com/memcd-quickstart patched
+$ kubectl delete -n demo mc/memcd-quickstart
+memcached.kubedb.com "memcd-quickstart" deleted
 ```
 
-Then, you have to set the `spec.halted` as true to set the database in a `Halted` state. You can use the below command.
+Now, run the following command to get all memcached resources in `demo` namespaces,
 
 ```bash
-$ kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"halted":true}}' --type="merge"
-memcached.kubedb.com/memcd-quickstart patched
+$ kubectl get sts,svc,secret,pvc -n demo
+NAME                      TYPE     DATA   AGE
+auth-secret               Opaque   1      3h
+mc-configuration          Opaque   1      3h
 ```
 
-After that, kubedb will delete the petsets and services, and you can see the database Phase as `Halted`. You can see the bellow command.
+From the above output, you can see that all memcached resources(`PetSet`, `Service` etc.) are deleted except `Secret`.
+
+>If you don't set the `deletionPolicy` then the kubeDB set the DeletionPolicy to `Delete` by-default.
+
+**WipeOut:**
+
+You can totally delete the `Memcached` database and relevant resources without any tracking by setting `deletionPolicy` to `WipeOut`. KubeDB operator will delete all relevant resources of this `Memcached` database (i.e, `PetSet`, `Secrets`, `Services`) when the `deletionPolicy` is set to `WipeOut`.
+
+Suppose, we have a database with `deletionPolicy` set to `WipeOut`. Now, are going to delete the database using the following command:
+
+```yaml
+$ kubectl delete -n demo mc/memcd-quickstart
+memcached.kubedb.com "memcd-quickstart" deleted
+```
+
+Now, run the following command to get all memcached resources in `demo` namespaces,
 
 ```bash
-$ kubectl get memcached -n demo
-NAME               VERSION   STATUS   AGE
-memcd-quickstart   1.6.22    Halted   91s
+$ kubectl get sts,svc,secret -n demo
+No resources found in demo namespace.
 ```
 
-## Resume Halted Memcached
-Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
+From the above output, you can see that all memcached resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `Delete`.
 
-```bash
-$ kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"halted":false}}' --type="merge"
-memcached.kubedb.com/memcd-quickstart patched
-```
+>Be careful when you set the `deletionPolicy` to `Delete`. Because there is no option to trace the database resources if once deleted the database.
 
-When the database is resumed successfully, you can see the database Status is set to `Ready`.
-
-```bash
-$ kc get memcached -n demo
-NAME               VERSION   STATUS   AGE
-memcd-quickstart   1.6.22    Ready    30m
-```
 
 ## Cleaning up
 
