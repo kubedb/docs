@@ -39,6 +39,7 @@ kubectl-dba monitor dashboard
   * kafka
   * mariadb
   * mongodb
+  * mssql
   * mysql
   * perconaxtradb
   * pgpool
