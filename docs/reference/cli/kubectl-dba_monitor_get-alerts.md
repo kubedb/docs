@@ -37,6 +37,7 @@ kubectl-dba monitor get-alerts
   * kafka
   * mariadb
   * mongodb
+  * mssql
   * mysql
   * perconaxtradb
   * pgpool
