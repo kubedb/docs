@@ -24,6 +24,7 @@ kubedb-operator operator [flags]
 
 ```
       --burst int                           The maximum burst for throttle (default 1000000)
+      --enable-network-policy               Controls the network policy creation
       --health-probe-bind-address string    The address the probe endpoint binds to. (default ":8081")
   -h, --help                                help for operator
       --image-pull-secrets strings          Name of image pull secret
