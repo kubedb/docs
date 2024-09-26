@@ -35,4 +35,6 @@ spec:
         tasks:
           - name: manifest-backup
           - name: mysql-metadata-storage-backup
-
+        jobTemplate:
+          spec:
+            serviceAccountName: cluster-resource-reader

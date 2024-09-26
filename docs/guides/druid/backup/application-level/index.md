@@ -6,7 +6,7 @@ menu:
     identifier: guides-druid-backup-application-level
     name: Application Level Backup
     parent: guides-druid-backup
-    weight: 20
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -42,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/druid/backup/application-level/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/druid/backup/application-level/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Backup Druid
 
@@ -50,12 +50,10 @@ KubeStash supports backups for `Druid` instances for various Cluster setups. In 
 
 This section will demonstrate how to take application-level backup of a `Druid` database. Here, we are going to deploy a `Druid` database using KubeDB. Then, we are going to back up the database at the application level to a `GCS` bucket. Finally, we will restore the entire `Druid` database.
 
-### Deploy Sample Druid Database
+## Deploy Sample Druid Database
 
-## Get External Dependencies Ready
 
-### Deep Storage
-
+**Create External Dependency (Deep Storage)**
 One of the external dependency of Druid is deep storage where the segments are stored. It is a storage mechanism that Apache Druid does not provide. **Amazon S3**, **Google Cloud Storage**, or **Azure Blob Storage**, **S3-compatible storage** (like **Minio**), or **HDFS** are generally convenient options for deep storage.
 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
@@ -277,29 +275,29 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 After providing the credentials correctly, you should be able to access the web console like shown below.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/logical/images/druid-ui-1.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-1.png">
 </p>
 
 Now select the `Load Data` option and then select `Batch - classic` from the drop-down menu.
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/logical/images/druid-ui-2.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-2.png">
 </p>
 
 Select `Example data` and click `Load example` to insert the example `Wikipedia Edits` datasource.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/logical/images/druid-ui-3.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-3.png">
 </p>
 
 After clicking `Next` multiple times, click `Submit`
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/logical/images/druid-ui-4.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-4.png">
 </p>
 
 Within a minute status of the ingestion task should become `SUCCESS`
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/logical/images/druid-ui-5.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-5.png">
 </p>
 
 Now, we are ready to backup the database.
@@ -450,9 +448,10 @@ spec:
 - `.spec.target` refers to the targeted `sample-druid` Druid database that we created earlier.
 - `.spec.sessions[*].addon.tasks[*].name[*]` specifies that both the `manifest-backup` and `mysql-metadata-storage-backup` tasks will be executed.
 
-> Note: To create `BackupConfiguration` for druid with `PostgreSQL` as metadata storage update the `spec.sessions[*].addon.tasks.name` from `mysql-metadata-storage-backup` to `postgres-metadata-storage-restore`
-> Note: When we backup a `Druid`, KubeStash operator will also take backup of the dependency of the `MySQL` and `ZooKeeper` cluster as well.
-> Note: When we backup a `Druid` where `spec.metadatastorage.externallyManaged` is false then KubeStash operator will also take backup of
+> **Note**: 
+> - To create `BackupConfiguration` for druid with `PostgreSQL` as metadata storage update the `spec.sessions[*].addon.tasks.name` from `mysql-metadata-storage-backup` to `postgres-metadata-storage-restore`
+> - When we backup a `Druid`, KubeStash operator will also take backup of the dependency of the `MySQL` and `ZooKeeper` cluster as well.
+> - When we backup a `Druid` where `spec.metadatastorage.externallyManaged` is false then KubeStash operator will also take backup of
 
 Let's create the `BackupConfiguration` CR that we have shown above,
 
@@ -526,7 +525,7 @@ NAME                                                            REPOSITORY      
 gcs-druid-repo-sample-druid-backup-frequent-backup-1726830540   gcs-druid-repo        frequent-backup   2024-09-20T11:09:00Z   Delete            Succeeded   3m13s
 ```
 
-> Note: KubeStash creates a `Snapshot` with the following labels:
+> **Note**: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
 > - `kubestash.com/app-ref-name: <target-name>`
 > - `kubestash.com/app-ref-namespace: <target-namespace>`
@@ -628,7 +627,7 @@ status:
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `demo/druid/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/dep/snapshots` directory.
 
-> Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
+> **Note**: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
 ## Restore
 
@@ -678,9 +677,10 @@ Here,
 - `.spec.dataSource.snapshot` specifies to restore from latest `Snapshot`.
 - `.spec.addon.tasks[*]` specifies that both the `manifest-restore` and `logical-backup-restore` tasks.
 
-> Note: When we restore a `Druid` with `spec.metadataStorage.externallyManaged` set to `false` (which is `false` by default), then KubeStash operator will also restore the metadataStorage automatically.
-> Note: Similarly, if `spec.zooKeeper.externallyManaged` is `false` (which is also `false` by default) then KubeStash operator will also restore the zookeeper instance automatically.
-> Note: For externally managed metadata storage and zookeeper however, user needs to specify it in `spec.manifestOptions.mySQL`/`spec.manifestOptions.postgres`/`spec.manifestOptions.zooKeeper` to restore those. 
+> **Note**:
+> - When we restore a `Druid` with `spec.metadataStorage.externallyManaged` set to `false` (which is `false` by default), then KubeStash operator will also restore the metadataStorage automatically.
+> - Similarly, if `spec.zooKeeper.externallyManaged` is `false` (which is also `false` by default) then KubeStash operator will also restore the zookeeper instance automatically.
+> - For externally managed metadata storage and zookeeper however, user needs to specify it in `spec.manifestOptions.mySQL`/`spec.manifestOptions.postgres`/`spec.manifestOptions.zooKeeper` to restore those. 
 
 Let's create the RestoreSession CRD object we have shown above,
 
@@ -731,7 +731,7 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into `Ready` state by the following command,
 
 ```bash
-$ kubectl get druid -n demo restored-druid
+$ kubectl get druid -n dev restored-druid
 NAME             VERSION   STATUS  AGE
 restored-druid   30.0.0    Ready   34m
 ```
@@ -740,7 +740,7 @@ Now, let's verify if our datasource `wikipedia` exists or not. For that, first f
 
 Now access the [web console](https://druid.apache.org/docs/latest/operations/web-console) of Druid database from any browser by port-forwarding the routers. Let’s port-forward the port `8888` to local machine:
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=restored-druid"
+$ kubectl get svc -n dev --selector="app.kubernetes.io/instance=restored-druid"
 NAME                          TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                 AGE
 restored-druid-brokers        ClusterIP   10.128.74.54     <none>        8082/TCP                                                10m
 restored-druid-coordinators   ClusterIP   10.128.30.124    <none>        8081/TCP                                                10m
@@ -748,7 +748,7 @@ restored-druid-pods           ClusterIP   None             <none>        8081/TC
 restored-druid-routers        ClusterIP   10.128.228.193   <none>        8888/TCP                                                10m
 ```
 ```bash
-kubectl port-forward -n demo svc/restored-druid-routers 8888
+kubectl port-forward -n dev svc/restored-druid-routers 8888
 Forwarding from 127.0.0.1:8888 -> 8888
 Forwarding from [::1]:8888 -> 8888
 ```
@@ -758,19 +758,19 @@ Then hit the `http://localhost:8888` from any browser, and you will be prompted 
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo restored-druid-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n dev restored-druid-admin-cred -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo restored-druid-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n dev restored-druid-admin-cred -o jsonpath='{.data.password}' | base64 -d
   DqG5E63NtklAkxqC
   ```
 After providing the credentials correctly, you should be able to access the web console like shown below. Now if you go to the `Datasources` section, you will see that our ingested datasource `wikipedia` exists in the list.
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/logical/images/druid-ui-6.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-6.png">
 </p>
 
 So, from the above screenshot, we can see that the `wikipedia` datasource we have ingested earlier in the original database and now, it is restored successfully.

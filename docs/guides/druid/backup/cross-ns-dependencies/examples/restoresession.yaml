@@ -1,0 +1,23 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: restore-sample-druid
+  namespace: demo
+spec:
+  manifestOptions:
+    druid:
+      dbName: restored-druid
+  dataSource:
+    repository: gcs-druid-repo
+    snapshot: latest
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: druid-addon
+    tasks:
+      - name: mysql-metadata-storage-restore
+      - name: manifest-restore
+    jobTemplate:
+      spec:
+        serviceAccountName: cluster-resource-reader
