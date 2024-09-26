@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: ha-postgres
+  namespace: demo
+spec:
+  version: "16.1"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "topolvm-provisioner"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut

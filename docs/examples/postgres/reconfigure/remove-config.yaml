@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: remove-config
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: ha-postgres
+  configuration:
+    removeCustomConfig: true

@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: rotate-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: ha-postgres
+  tls:
+    rotateCertificates: true

@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: ha-postgres
+  timeout: 3m
+  apply: Always

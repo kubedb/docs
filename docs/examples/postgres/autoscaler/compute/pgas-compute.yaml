@@ -1,0 +1,24 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: PostgresAutoscaler
+metadata:
+  name: pg-as-compute
+  namespace: demo
+spec:
+  databaseRef:
+    name: ha-postgres
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
+  compute:
+    postgres:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 250m
+        memory: 1Gi
+      maxAllowed:
+        cpu: 1
+        memory: 1Gi
+      containerControlledValues: "RequestsAndLimits"
+      controlledResources: ["cpu", "memory"]

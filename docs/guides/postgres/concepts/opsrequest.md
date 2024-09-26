@@ -170,6 +170,14 @@ Here, when you specify the resource request for `Postgres` container, the schedu
 
 >You can increase/decrease resources for both `postgres` container and `exporter` container on a single `PostgresOpsRequest` CR.
 
+#### spec.timeout
+
+Timeout for each step of the ops request in second. If a step doesn't finish within the specified timeout, the ops request will result in failure.
+
+#### spec.apply
+
+Apply is to control the execution of OpsRequest depending on the database state.
+
 ### PostgresOpsRequest `Status`
 
 `.status` describes the current state and progress of the `PostgresOpsRequest` operation. It has the following fields:

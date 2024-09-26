@@ -1,0 +1,8 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: pg-new-issuer
+  namespace: demo
+spec:
+  ca:
+    secretName: postgres-new-ca

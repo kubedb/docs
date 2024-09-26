@@ -1,0 +1,14 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: PostgresAutoscaler
+metadata:
+  name: pg-as-st
+  namespace: demo
+spec:
+  databaseRef:
+    name: ha-postgres
+  storage:
+    postgres:
+      trigger: "On"
+      usageThreshold: 20
+      scalingThreshold: 20
+      expansionMode: "Online"
