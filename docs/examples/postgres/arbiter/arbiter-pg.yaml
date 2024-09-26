@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: ha-postgres
+  namespace: demo
+spec:
+  arbiter:
+    resources:
+      limits:
+        memory: 256Mi
+      requests:
+        cpu: 200m
+        memory: 256Mi
+        storage: 1Gi
+  replicas: 2
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  version: "16.1"
