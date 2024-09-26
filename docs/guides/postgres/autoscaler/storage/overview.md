@@ -40,17 +40,17 @@ The Auto Scaling process consists of the following steps:
 
 3. When the operator finds a `Postgres` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
-- Each PetSet creates a Persistent Volume according to the Volume Claim Template provided in the petset configuration.
+4. Each PetSet creates a Persistent Volume according to the Volume Claim Template provided in the petset configuration.
 
-4. Then, in order to set up storage autoscaling of the `Postgres` database the user creates a `PostgresAutoscaler` CRO with desired configuration.
+5. Then, in order to set up storage autoscaling of the `Postgres` database the user creates a `PostgresAutoscaler` CRO with desired configuration.
 
-5. `KubeDB` Autoscaler operator watches the `PostgresAutoscaler` CRO.
+6. `KubeDB` Autoscaler operator watches the `PostgresAutoscaler` CRO.
 
-6. `KubeDB` Autoscaler operator continuously watches persistent volumes of the databases to check if it exceeds the specified usage threshold.
-- If the usage exceeds the specified usage threshold, then `KubeDB` Autoscaler operator creates a `PostgresOpsRequest` to expand the storage of the database. 
+7. `KubeDB` Autoscaler operator continuously watches persistent volumes of the databases to check if it exceeds the specified usage threshold.
+8. If the usage exceeds the specified usage threshold, then `KubeDB` Autoscaler operator creates a `PostgresOpsRequest` to expand the storage of the database. 
    
-7. `KubeDB` Ops-manager operator watches the `PostgresOpsRequest` CRO.
+9. `KubeDB` Ops-manager operator watches the `PostgresOpsRequest` CRO.
 
-8. Then the `KubeDB` Ops-manager operator will expand the storage of the database component as specified on the `PostgresOpsRequest` CRO.
+10. Then the `KubeDB` Ops-manager operator will expand the storage of the database component as specified on the `PostgresOpsRequest` CRO.
 
 In the next docs, we are going to show a step by step guide on Autoscaling storage of various Postgres database components using `PostgresAutoscaler` CRD.

@@ -20,7 +20,7 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install [`cert-manger`](https://cert-manager.io/docs/installation/) v1.0.0 or later to your cluster to manage your SSL/TLS certificates.
+- Install `cert-manger` v1.0.0 or later to your cluster to manage your SSL/TLS certificates from [here](https://cert-manager.io/docs/installation/).
 
 - Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
@@ -549,7 +549,7 @@ Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/change-issuer.yaml
-postgresopsrequest.ops.kubedb.com/mops-change-issuer created
+postgresopsrequest.ops.kubedb.com/change-issuer created
 ```
 
 #### Verify Issuer is changed successfully

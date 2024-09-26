@@ -238,7 +238,7 @@ Here,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure/apply-config.yaml
-postgresopsrequest.ops.kubedb.com/apply-config created
+postgresopsrequest.ops.kubedb.com/pgops-reconfigure-apply-config created
 ```
 
 
@@ -249,8 +249,8 @@ If everything goes well, `KubeDB` Enterprise operator will update the `configSec
 Let's wait for `PostgresOpsRequest` to be `Successful`.  Run the following command to watch `PostgresOpsRequest` CR,
 
 ```bash
-$ kubectl get postgresopsrequest apply-config -n demo
-NAME                             TYPE          STATUS       AGE
+$ kubectl get postgresopsrequest pgops-reconfigure-apply-config -n demo
+NAME            TYPE          STATUS       AGE
 apply-config   Reconfigure   Successful   4m59s
 ```
 We can see this ops request was successful.
@@ -299,7 +299,7 @@ Lets create an `PostgresOpsRequest` having `spec.configuration.removeCustomConfi
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PostgresOpsRequest
 metadata:
-  name: mdops-reconfigure-remove
+  name: remove-config
   namespace: demo
 spec:
   type: Reconfigure
@@ -311,7 +311,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `mdops-reconfigure-remove` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `remove-config` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.configuration.removeCustomConfig` is a bool field that should be `true` when you want to remove existing custom configuration.
 
@@ -319,7 +319,7 @@ Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure/remove-config.yaml
-postgresopsrequest.ops.kubedb.com/mdops-reconfigure-remove created
+postgresopsrequest.ops.kubedb.com/remove-config created
 ```
 
 #### Verify the new configuration is working
@@ -369,3 +369,13 @@ $ kubectl delete postgres -n demo ha-postgres
 $ kubectl delete postgresopsrequest -n demo pgops-reconfigure-apply-config pgops-reconfigure-config remove-config
 $ kubectl delete ns demo
 ```
+
+## Next Steps
+
+- Detail concepts of [Postgres object](/docs/guides/postgres/concepts/postgres.md).
+- Monitor your Postgres database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
+- Monitor your Postgres database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
+- Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy Postgres with KubeDB.
+- Use [kubedb cli](/docs/guides/postgres/cli/cli.md) to manage databases like kubectl for Kubernetes.
+- Detail concepts of [Postgres object](/docs/guides/postgres/concepts/postgres.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

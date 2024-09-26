@@ -93,7 +93,7 @@ Now, wait until `ha-postgres` has status `Ready`. i.e,
 ```bash
 $ kubectl get postgres -n demo
 NAME             VERSION   STATUS   AGE
-ha-postgres   16.1    Ready    3m46s
+ha-postgres        16.1    Ready    3m46s
 ```
 
 Let's check volume size from petset, and from the persistent volume,
@@ -227,8 +227,8 @@ pgops-ha-postgres-xojkua   VolumeExpansion   Successful   97s
 We can see from the above output that the `PostgresOpsRequest` has succeeded. If we describe the `PostgresOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe postgresopsrequest -n demo mops-ha-postgres-xojkua
-Name:         mops-ha-postgres-xojkua
+$ kubectl describe postgresopsrequest -n demo pgops-ha-postgres-xojkua
+Name:         pgops-ha-postgres-xojkua
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
               app.kubernetes.io/instance=ha-postgres
