@@ -37,6 +37,7 @@ kubectl-dba monitor check-connection
   * kafka
   * mariadb
   * mongodb
+  * mssql
   * mysql
   * perconaxtradb
   * pgpool
