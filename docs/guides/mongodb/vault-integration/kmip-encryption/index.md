@@ -7,6 +7,7 @@ menu:
     parent: guides-mongodb-integration-with-vault
     weight: 20
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
 
 # Encrypt data in KubeDB MongoDB with Hashicorp Vault KMIP Secret Engine.
