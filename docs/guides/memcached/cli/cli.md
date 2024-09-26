@@ -86,7 +86,7 @@ spec:
           cpu: 250m
           memory: 64Mi
   replicas: 1
-  deletionPolicy: Halt
+  deletionPolicy: WipeOut
   version: 1.6.22
 status:
   observedGeneration: 1$7916315637361465932
@@ -115,7 +115,6 @@ Flag `--output=wide` is used to print additional information.
 List command supports short names for each object types. You can use it like `kubectl get <short-name>`. Below are the short name for KubeDB objects:
 
 - Memcached: `mc`
-- DormantDatabase: `drmn`
 
 You can print labels with objects. The following command will list all Memcached with their corresponding labels.
 
@@ -248,8 +247,6 @@ If Deployment exists for a Memcached server, following fields can't be modified 
 - spec.nodeSelector
 - spec.podTemplate.spec.nodeSelector
 - spec.podTemplate.spec.env
-
-For DormantDatabase, `spec.origin` can't be edited using `kubectl edit`
 
 ### How to Delete Objects
 

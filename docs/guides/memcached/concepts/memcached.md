@@ -78,7 +78,7 @@ spec:
       ports:
       - name:  http
         port:  9200
-  deletionPolicy: Halt
+  deletionPolicy: Delete
 ```
 
 ### spec.replicas
@@ -241,7 +241,6 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 `deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Memcached` crd or which resources KubeDB should keep or delete when you delete `Memcached` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
-- Halt
 - Delete (`Default`)
 - WipeOut
 
@@ -249,17 +248,14 @@ When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validation
 
 Following table show what KubeDB does when you delete Memcached crd for different termination policies,
 
-| Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
-| ----------------------------------- | :------------: | :------: | :------: | :------: |
-| 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Delete PetSet          |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 3. Delete Services               |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 4. Delete Secrets                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| Behavior                   |  DoNotTerminate |  Delete  | WipeOut  |
+| ---------------------------| :------------:  | :------: | :------: |
+| 1. Block Delete operation  |    &#10003;     | &#10007; | &#10007; |
+| 2. Delete PetSet           |    &#10007;     | &#10003; | &#10003; |
+| 3. Delete Services         |    &#10007;     | &#10003; | &#10003; |
+| 4. Delete Secrets          |    &#10007;     | &#10007; | &#10003; |
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
-
-### spec.halted
-Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
 
 ## spec.helathChecker
 It defines the attributes for the health checker.
