@@ -1,0 +1,24 @@
+apiVersion: kubedb.com/v1
+kind: MariaDB
+metadata:
+  name: sample-mariadb-2
+  namespace: demo
+  annotations:
+    blueprint.kubestash.com/name: mariadb-customize-backup-blueprint
+    blueprint.kubestash.com/namespace: demo
+    variables.kubestash.com/schedule: "*/10 * * * *"
+    variables.kubestash.com/repoName: customize-blueprint
+    variables.kubestash.com/namespace: demo
+    variables.kubestash.com/targetName: sample-mariadb-2
+    variables.kubestash.com/targetedDatabase: mysql
+spec:
+  version: 11.1.3
+  replicas: 3
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut

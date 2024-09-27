@@ -1,0 +1,19 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: s3-storage
+  namespace: demo
+spec:
+  storage:
+    provider: s3
+    s3:
+      bucket: test-archiver
+      endpoint: https://us-east-1.linodeobjects.com
+      region: us-east-1
+      prefix: mariadb-test
+      secretName: s3-secret
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  default: true
+  deletionPolicy: WipeOut

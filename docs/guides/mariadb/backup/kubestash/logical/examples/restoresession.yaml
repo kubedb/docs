@@ -1,0 +1,23 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: sample-mariadb-restore
+  namespace: demo
+spec:
+  target:
+    name: restored-mariadb
+    namespace: demo
+    apiGroup: kubedb.com
+    kind: MariaDB
+  dataSource:
+    snapshot: latest
+    repository: gcs-mariadb-repo
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+    components:
+      - dump
+  addon:
+    name: mariadb-addon
+    tasks:
+      - name: logical-backup-restore
