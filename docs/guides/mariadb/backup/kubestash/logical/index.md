@@ -481,11 +481,12 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 11.1.3
     kubestash.com/app-ref-kind: MariaDB
     kubestash.com/app-ref-name: sample-mariadb
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: gcs-mariadb-repo
+  annotations:
+    kubedb.com/db-version: 11.1.3
   name: gcs-mariadb-repo-sample-mariadb-ckup-frequent-backup-1726569774
   namespace: demo
   ownerReferences:

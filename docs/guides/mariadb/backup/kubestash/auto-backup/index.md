@@ -409,11 +409,12 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 11.1.3
     kubestash.com/app-ref-kind: MariaDB
     kubestash.com/app-ref-name: sample-mariadb
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: default-blueprint
+  annotations:
+    kubedb.com/db-version: 11.1.3
   name: default-blueprint-appbinding-samiadb-frequent-backup-1726637655
   namespace: demo
   ownerReferences:
@@ -761,11 +762,12 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 11.1.3
     kubestash.com/app-ref-kind: MariaDB
     kubestash.com/app-ref-name: sample-mariadb-2
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: customize-blueprint
+  annotations:
+    kubedb.com/db-version: 11.1.3
   name: customize-blueprint-appbinding-sdb-2-frequent-backup-1726640601
   namespace: demo
   ownerReferences:
