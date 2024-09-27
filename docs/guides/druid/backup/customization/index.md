@@ -6,7 +6,7 @@ menu:
     identifier: guides-druid-backup-customization
     name: Customizing Backup & Restore Process
     parent: guides-druid-backup
-    weight: 20
+    weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
