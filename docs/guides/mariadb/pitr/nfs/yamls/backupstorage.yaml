@@ -1,0 +1,22 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: local-storage
+  namespace: demo
+spec:
+  storage:
+    provider: local
+    local:
+      mountPath: /md/walg
+      persistentVolumeClaim:
+        claimName: nfs-pvc
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  default: false
+  deletionPolicy: WipeOut
+  runtimeSettings:
+    pod:
+      securityContext:
+        fsGroup: 999
+        runAsUser: 999
