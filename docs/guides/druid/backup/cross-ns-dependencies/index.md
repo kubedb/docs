@@ -1,21 +1,23 @@
 ---
-title: Application Level Backup & Restore Druid | KubeStash
-description: Application Level Backup and Restore using KubeStash
+title: Cross-Namespace Dependencies Backup & Restore Druid | KubeStash
+description: Druid Backup and Restore for Cross Namespace Dependencies using KubeStash
 menu:
   docs_{{ .version }}:
-    identifier: guides-druid-backup-application-level
-    name: Application Level Backup
+    identifier: guides-druid-backup-cross-ns-dependencies
+    name: Cross-Namespace Dependencies Backup
     parent: guides-druid-backup
-    weight: 40
+    weight: 60
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Application Level Backup and Restore Druid database using KubeStash
+# Druid Backup and Restore for Cross Namespace Dependencies using KubeStash
 
-[KubeStash](https://kubestash.com) offers application-level backup and restore functionality for `Druid` databases. It captures both manifest and logical data backups of any `Druid` database in a single snapshot. During the restore process, KubeStash first applies the `Druid` manifest to the cluster and then restores the data into it.
+[KubeStash](https://kubestash.com) offers backup and restore functionality for `Druid` with dependencies in different namespaces. 
 
-This guide will give you how you can take application-level backup and restore your `Druid` databases using `Kubestash`.
+This guide will give you how you can take [Application Level Backup](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/application-level/) and restore your `Druid` databases, with dependencies in different namespaces in using `Kubestash`. In application level backup both manifest and logical data backups of any `Druid` database are captured in a single snapshot. During the restore process, KubeStash first applies the `Druid` manifest to the cluster and then restores the data into it.
+
+> **Note:** You can also apply the same updates in your `BackupConfiguration` and `RestoreSession` resources for other types of backup such as [Logical Backup](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/) or [Auto Backup](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/)
 
 ## Before You Begin
 
@@ -35,14 +37,18 @@ You should be familiar with the following `KubeStash` concepts:
 - [Function](https://kubestash.com/docs/latest/concepts/crds/function/)
 - [Task](https://kubestash.com/docs/latest/concepts/crds/addon/#task-specification)
 
-To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
+To keep everything isolated, we are going to use a separate namespace called `demo`, `dev` and `dev1` throughout this tutorial.
 
 ```bash
 $ kubectl create ns demo
 namespace/demo created
+$ kubectl create ns dev
+namespace/dev created
+$ kubectl create ns dev1
+namespace/dev1 created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/druid/backup/application-level/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/druid/backup/application-level/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/cross-ns-dependencies/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Backup Druid
 
@@ -116,6 +122,12 @@ metadata:
   namespace: demo
 spec:
   version: 30.0.0
+  zookeeperRef:
+    name: zk-dev
+    namespace: dev
+  metadataStorage:
+    name: my-dev1
+    namespace: dev1
   deepStorage:
     type: s3
     configSecret:
@@ -128,7 +140,9 @@ spec:
 
 Here,
 - `.spec.topology` specifies about the clustering configuration of Druid.
-- `.Spec.topology.routers` specifies that 1 replica of routers node will get provisioned alongside the essential nodes.
+- `.spec.topology.routers` specifies that 1 replica of routers node will get provisioned alongside the essential nodes.
+- `.spec.metadataStoage` specifies the `name` and `namespace` of the `MySQL` that the `KubeDB` operator will deploy as metadata storage alongside `Druid`.
+- `.spec.zookeeperRef` specifies the `name` and `namespace` of the `ZooKeeper` that the `KubeDB` operator will deploy alongside `Druid`.
 
 Create the above `Druid` CR,
 
@@ -168,12 +182,13 @@ Here, we have to use service `sample-druid-routers` and secret `sample-druid-adm
 **Verify Internal Dependencies:**
 
 ```bash
-kubectl get mysql,zk -n demo
-NAME                                           VERSION   STATUS   AGE
-mysql.kubedb.com/sample-druid-mysql-metadata   8.0.35    Ready    6m31s
+$ kubectl get mysql -n dev1
+NAME                           VERSION   STATUS   AGE
+mysql.kubedb.com/my-dev1       8.0.35    Ready    6m31s
 
-NAME                                   TYPE                  VERSION   STATUS   AGE
-zookeeper.kubedb.com/sample-druid-zk   kubedb.com/v1alpha2   3.7.2     Ready    6m31s
+$ kubectl get zk -n dev
+NAME                            TYPE                  VERSION   STATUS   AGE
+zookeeper.kubedb.com/zk-dev     kubedb.com/v1alpha2   3.7.2     Ready    6m31s
 ```
 We can see that KubeDB has deployed a `MySQL` and a `ZooKeeper` instance as [External dependencies](https://druid.apache.org/docs/latest/design/architecture/#external-dependencies) of the `Druid` cluster.
 
@@ -182,14 +197,20 @@ We can see that KubeDB has deployed a `MySQL` and a `ZooKeeper` instance as [Ext
 Verify that the `AppBinding` has been created successfully using the following command,
 
 ```bash
-$ kubectl get appbindings -n demo
-NAME                          TYPE                   VERSION   AGE
-sample-druid                  kubedb.com/druid       30.0.0    4m7s
-sample-druid-mysql-metadata   kubedb.com/mysql       8.0.35    6m31s
-sample-druid-zk               kubedb.com/zookeeper   3.7.2     6m34s
+$ kubectl get appbindings -n demo 
+NAME           TYPE                   VERSION   AGE
+sample-druid   kubedb.com/druid       30.0.0    4m7s
+
+$ kubectl get appbindings -n dev1 
+NAME           TYPE                   VERSION   AGE
+my-dev1        kubedb.com/mysql       8.0.35    6m31s
+
+$ kubectl get appbindings -n dev
+NAME           TYPE                   VERSION   AGE
+zk-dev         kubedb.com/zookeeper   3.7.2     6m34s
 ```
 
-Here `sample-druid` is the `AppBinding` of Druid, while `sample-druid-mysql-metadata` and `sample-druid-zk` are the `AppBinding` of `MySQL` and `ZooKeeper` instances that `KubeDB` has deployed as the [External dependencies](https://druid.apache.org/docs/latest/design/architecture/#external-dependencies) of `Druid`
+Here `sample-druid` is the `AppBinding` of Druid, while `my-dev1` and `zk-dev` are the `AppBinding` of `MySQL` and `ZooKeeper` instances that `KubeDB` has deployed as the [External dependencies](https://druid.apache.org/docs/latest/design/architecture/#external-dependencies) of `Druid`
 
 Let's check the YAML of the `AppBinding` of druid,
 
@@ -276,29 +297,29 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 After providing the credentials correctly, you should be able to access the web console like shown below.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-1.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/cross-ns-dependencies/images/druid-ui-1.png">
 </p>
 
 Now select the `Load Data` option and then select `Batch - classic` from the drop-down menu.
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-2.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/cross-ns-dependencies/images/druid-ui-2.png">
 </p>
 
 Select `Example data` and click `Load example` to insert the example `Wikipedia Edits` datasource.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-3.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/cross-ns-dependencies/images/druid-ui-3.png">
 </p>
 
 After clicking `Next` multiple times, click `Submit`
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-4.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/cross-ns-dependencies/images/druid-ui-4.png">
 </p>
 
 Within a minute status of the ingestion task should become `SUCCESS`
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-5.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/cross-ns-dependencies/images/druid-ui-5.png">
 </p>
 
 Now, we are ready to backup the database.
@@ -401,6 +422,75 @@ $ kubectl create secret generic -n demo encrypt-secret \
 secret "encrypt-secret" created
 ```
 
+**Create RBAC**
+
+To take backup of the Druid Database alongside with its dependencies, KubeStash creates a backup `Job`. Consequently, if the dependencies are in different namespaces, then this `Job` requires `read`, `list`, `watch` and `create` permission for some of the cluster resources. This includes resources for the dependencies (`MySQL`, `ZooKeeper` and `PostgreSQL`) as well as `Appbinding`, `Secrets` and `Configmaps`. By default, KubeStash does not grant such cluster-wide permissions. We have to provide the necessary permissions manually.
+
+Here, is the YAML of the `ServiceAccount`, `ClusterRole`, and `RoleBinding` that we are going to use for granting the necessary permissions. We will create two `RoleBinding` in both `dev` and `dev1` because we are going to deploy `ZooKeeper` in `dev` and `MySQL` in `dev1` namespace.
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-resource-reader
+  namespace: demo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-resource-reader
+rules:
+  - apiGroups: ["kubedb.com"]
+    resources: ["zookeepers", "mysqls", "postgreses"]
+    verbs: ["get", "list", "watch", "create"]
+  - apiGroups: ["appcatalog.appscode.com"]
+    resources: ["appbindings"]
+    verbs: ["get", "list", "watch", "create"]
+  - apiGroups: [""]
+    resources: ["secrets", "configmaps"]
+    verbs: ["get", "list", "watch", "create"]
+---
+# RoleBinding for the dev namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cluster-resource-reader
+  namespace: dev
+subjects:
+  - kind: ServiceAccount
+    name: cluster-resource-reader
+    namespace: demo
+roleRef:
+  kind: ClusterRole
+  name: cluster-resource-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+# RoleBinding for the dev1 namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cluster-resource-reader
+  namespace: dev1
+subjects:
+  - kind: ServiceAccount
+    name: cluster-resource-reader
+    namespace: demo
+roleRef:
+  kind: ClusterRole
+  name: cluster-resource-reader
+  apiGroup: rbac.authorization.k8s.io
+```
+
+Let’s create the RBAC resources we have shown above,
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/cross-ns-dependencies/examples/rbac.yaml
+serviceaccount/cluster-resource-reader created
+clusterrole.rbac.authorization.k8s.io/cluster-resource-reader created
+rolebinding.rbac.authorization.k8s.io/cluster-resource-reader created
+rolebinding.rbac.authorization.k8s.io/cluster-resource-reader created
+```
+
 **Create BackupConfiguration:**
 
 Below is the YAML for `BackupConfiguration` CR to take application-level backup of the `sample-druid` database that we have deployed earlier,
@@ -443,16 +533,19 @@ spec:
         tasks:
           - name: manifest-backup
           - name: mysql-metadata-storage-backup
+        jobTemplate:
+          spec:
+            serviceAccountName: cluster-resource-reader
 ```
 
 - `.spec.sessions[*].schedule` specifies that we want to backup at `5 minutes` interval.
 - `.spec.target` refers to the targeted `sample-druid` Druid database that we created earlier.
 - `.spec.sessions[*].addon.tasks[*].name[*]` specifies that both the `manifest-backup` and `mysql-metadata-storage-backup` tasks will be executed.
+- `spec.sessions[*].addon.jobTemplate.spec.serviceAccountName` specifies the `ServiceAccount` name that we have created earlier with sufficient permission in `dev` and `dev1` namespace.
 
 > **Note**: 
-> - To create `BackupConfiguration` for druid with `PostgreSQL` as metadata storage update the `spec.sessions[*].addon.tasks.name` from `mysql-metadata-storage-backup` to `postgres-metadata-storage-restore`
+> - To create `BackupConfiguration` for druid with `PostgreSQL` as metadata storage update the `spec.sessions[*].addon.tasks.name` from `mysql-metadata-storage-backup` to `postgres-metadata-storage-restore`.
 > - When we backup a `Druid`, KubeStash operator will also take backup of the dependency of the `MySQL` and `ZooKeeper` cluster as well.
-> - When we backup a `Druid` where `spec.metadatastorage.externallyManaged` is false then KubeStash operator will also take backup of
 
 Let's create the `BackupConfiguration` CR that we have shown above,
 
@@ -630,16 +723,18 @@ Now, if we navigate to the GCS bucket, we will see the backed up data stored in 
 
 > **Note**: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
+**Delete Druid**
+
+Now, we are going to delete the `Druid` cluster that we have deployed and took backup earlier.
+```bash
+$ kubectl delete druid -n demo sample-druid
+druid.kubedb.com "sample-druid" deleted
+```
+The dependencies of druid with name `zk-dev` and `my-dev1` will also be deleted from their respective namespaces.
+
 ## Restore
 
-
-In this section, we are going to restore the entire database from the backup that we have taken in the previous section. For this tutorial, we will restore the database in a separate namespace called `dev`.
-Now, create the namespace by running the following command:
-
-```bash
-$ kubectl create ns dev
-namespace/dev created
-```
+In this section, we are going to restore the entire database from the backup that we have taken in the previous section. For this tutorial, we will restore the database in the same namespaces that they were in before.
 
 #### Create RestoreSession:
 
@@ -656,7 +751,6 @@ metadata:
 spec:
   manifestOptions:
     druid:
-      restoreNamespace: dev
       db: true
   dataSource:
     repository: gcs-druid-repo
@@ -669,6 +763,9 @@ spec:
     tasks:
       - name: mysql-metadata-storage-restore
       - name: manifest-restore
+    jobTemplate:
+      spec:
+        serviceAccountName: cluster-resource-reader
 ```
 
 Here,
@@ -677,10 +774,11 @@ Here,
 - `.spec.dataSource.repository` specifies the Repository object that holds the backed up data.
 - `.spec.dataSource.snapshot` specifies to restore from latest `Snapshot`.
 - `.spec.addon.tasks[*]` specifies that both the `manifest-restore` and `logical-backup-restore` tasks.
+- `spec.sessions[*].addon.jobTemplate.spec.serviceAccountName` specifies the `ServiceAccount` name that we have created earlier with sufficient permission in `dev` and `dev1` namespace.
 
-> **Note**:
-> - When we restore a `Druid` with `spec.metadataStorage.externallyManaged` set to `false` (which is `false` by default), then KubeStash operator will also restore the metadataStorage automatically.
-> - Similarly, if `spec.zooKeeper.externallyManaged` is `false` (which is also `false` by default) then KubeStash operator will also restore the zookeeper instance automatically.
+> **Note**: 
+> - When we restore a `Druid` with `spec.metadataStorage.externallyManaged` set to `false` (which is `false` by default), then KubeStash operator will also restore the metadataStorage automatically. 
+> - Similarly, if `spec.zooKeeper.externallyManaged` is `false` (which is also `false` by default) then KubeStash operator will also restore the zookeeper instance automatically. 
 > - For externally managed metadata storage and zookeeper however, user needs to specify it in `spec.manifestOptions.mySQL`/`spec.manifestOptions.postgres`/`spec.manifestOptions.zooKeeper` to restore those. 
 
 Let's create the RestoreSession CRD object we have shown above,
@@ -706,21 +804,22 @@ The `Succeeded` phase means that the restore process has been completed successf
 In this section, we will verify whether the desired `Druid` database manifest has been successfully applied to the cluster.
 
 ```bash
-$ kubectl get druids.kubedb.com -n dev
+$ kubectl get druids.kubedb.com -n demo
 NAME           VERSION   STATUS   AGE
-restored-druid   30.0.0    Ready    39m
+restored-druid   30.0.0  Ready    6m26s
 ```
 
 The output confirms that the `Druid` database has been successfully created with the same configuration as it had at the time of backup.
 
 Verify the dependencies have been restored: 
 ```bash
-$ kubectl get mysql,zk -n dev
-NAME                                           VERSION   STATUS   AGE
-mysql.kubedb.com/restored-druid-mysql-metadata   8.0.35    Ready    2m52s
+$ $ kubectl get mysql -n dev1
+NAME                           VERSION   STATUS   AGE
+mysql.kubedb.com/my-dev1       8.0.35    Ready    6m30s
 
-NAME                                   TYPE                  VERSION   STATUS   AGE
-zookeeper.kubedb.com/restored-druid-zk   kubedb.com/v1alpha2   3.7.2     Ready    2m42s
+$ kubectl get zk -n dev
+NAME                            TYPE                  VERSION   STATUS   AGE
+zookeeper.kubedb.com/zk-dev     kubedb.com/v1alpha2   3.7.2     Ready    6m30s
 ```
 
 The output confirms that the `MySQL` and `ZooKeper` databases have been successfully created with the same configuration as it had at the time of backup.
@@ -732,7 +831,7 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into `Ready` state by the following command,
 
 ```bash
-$ kubectl get druid -n dev restored-druid
+$ kubectl get druid -n demo restored-druid
 NAME             VERSION   STATUS  AGE
 restored-druid   30.0.0    Ready   34m
 ```
@@ -741,7 +840,7 @@ Now, let's verify if our datasource `wikipedia` exists or not. For that, first f
 
 Now access the [web console](https://druid.apache.org/docs/latest/operations/web-console) of Druid database from any browser by port-forwarding the routers. Let’s port-forward the port `8888` to local machine:
 ```bash
-$ kubectl get svc -n dev --selector="app.kubernetes.io/instance=restored-druid"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=restored-druid"
 NAME                          TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                 AGE
 restored-druid-brokers        ClusterIP   10.128.74.54     <none>        8082/TCP                                                10m
 restored-druid-coordinators   ClusterIP   10.128.30.124    <none>        8081/TCP                                                10m
@@ -749,7 +848,7 @@ restored-druid-pods           ClusterIP   None             <none>        8081/TC
 restored-druid-routers        ClusterIP   10.128.228.193   <none>        8888/TCP                                                10m
 ```
 ```bash
-kubectl port-forward -n dev svc/restored-druid-routers 8888
+kubectl port-forward -n demo svc/restored-druid-routers 8888
 Forwarding from 127.0.0.1:8888 -> 8888
 Forwarding from [::1]:8888 -> 8888
 ```
@@ -759,19 +858,19 @@ Then hit the `http://localhost:8888` from any browser, and you will be prompted 
 - Username:
 
   ```bash
-  $ kubectl get secret -n dev restored-druid-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo restored-druid-admin-cred -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n dev restored-druid-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo restored-druid-admin-cred -o jsonpath='{.data.password}' | base64 -d
   DqG5E63NtklAkxqC
   ```
 After providing the credentials correctly, you should be able to access the web console like shown below. Now if you go to the `Datasources` section, you will see that our ingested datasource `wikipedia` exists in the list.
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/backup/application-level/images/druid-ui-6.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/backup/cross-ns-dependencies/images/druid-ui-6.png">
 </p>
 
 So, from the above screenshot, we can see that the `wikipedia` datasource we have ingested earlier in the original database and now, it is restored successfully.

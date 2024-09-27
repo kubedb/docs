@@ -50,11 +50,10 @@ KubeStash supports backups for `Druid` instances with both type of metadata stor
 
 This section will demonstrate how to backup a `Druid` database. Here, we are going to deploy a `Druid` database using KubeDB. Then, we are going to backup this database into a `GCS` bucket. Finally, we are going to restore the backup up data into another `Druid` database.
 
-### Deploy Sample Druid Database
+## Deploy Sample Druid Database
 
-## Get External Dependencies Ready
 
-### Deep Storage
+**Create External Dependency (Deep Storage):**
 
 One of the external dependency of Druid is deep storage where the segments are stored. It is a storage mechanism that Apache Druid does not provide. **Amazon S3**, **Google Cloud Storage**, or **Azure Blob Storage**, **S3-compatible storage** (like **Minio**), or **HDFS** are generally convenient options for deep storage.
 
@@ -428,7 +427,7 @@ spec:
 - `.spec.sessions[*].schedule` specifies that we want to backup the database at `5 minutes` interval.
 - `.spec.target` refers to the targeted `sample-druid` Druid database that we created earlier.
 
-> Note: To create `BackupConfiguration` for druid with `PostgreSQL` as metadata storage just update `spec.sessions[*].addon.tasks.name` to `pg-metadata-storage-backup`
+> **Note**: To create `BackupConfiguration` for druid with `PostgreSQL` as metadata storage just update `spec.sessions[*].addon.tasks.name` to `pg-metadata-storage-backup`
 
 Let's create the `BackupConfiguration` CR that we have shown above,
 
@@ -500,7 +499,7 @@ NAME                                                            REPOSITORY      
 gcs-druid-repo-sample-druid-backup-frequent-backup-1726656835   gcs-druid-repo   frequent-backup   2024-09-18T10:54:07Z   Delete            Succeeded   11m
 ```
 
-> Note: KubeStash creates a `Snapshot` with the following labels:
+> **Note**: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
 > - `kubestash.com/app-ref-name: <target-name>`
 > - `kubestash.com/app-ref-namespace: <target-namespace>`
@@ -526,11 +525,12 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 30.0.0
     kubestash.com/app-ref-kind: Druid
     kubestash.com/app-ref-name: sample-druid
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: gcs-druid-repo
+  annotations:
+    kubedb.com/db-version: 30.0.0
   name: gcs-druid-repo-sample-druid-backup-frequent-backup-1726656835
   namespace: demo
   ownerReferences:
@@ -576,7 +576,7 @@ status:
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `demo/druid/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `demo/dep/snapshots` directory.
 
-> Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
+> **Note**: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
 ## Restore
 
@@ -661,7 +661,7 @@ Here,
 - `.spec.dataSource.repository` specifies the Repository object that holds the backed up data.
 - `.spec.dataSource.snapshot` specifies to restore from latest `Snapshot`.
 
-> Note: To create `RestoreSession` for druid with `PostgreSQL` as metadata storage just update `spec.addon.tasks.name` to `postgres-metadata-storage-restore`
+> **Note**: To create `RestoreSession` for druid with `PostgreSQL` as metadata storage just update `spec.addon.tasks.name` to `postgres-metadata-storage-restore`
 
 Let's create the RestoreSession CRD object we have shown above,
 

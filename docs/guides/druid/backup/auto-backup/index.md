@@ -6,7 +6,7 @@ menu:
     identifier: guides-druid-backup-auto-backup
     name: Auto Backup
     parent: guides-druid-backup
-    weight: 20
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -198,11 +198,10 @@ backupblueprint.core.kubestash.com/druid-default-backup-blueprint created
 
 Now, we are ready to backup our `Druid` databases using few annotations.
 
-### Deploy Sample Druid Database
+## Deploy Sample Druid Database
 
-## Get External Dependencies Ready
 
-### Deep Storage
+**Create External Dependency (Deep Storage):**
 
 One of the external dependency of Druid is deep storage where the segments are stored. It is a storage mechanism that Apache Druid does not provide. **Amazon S3**, **Google Cloud Storage**, or **Azure Blob Storage**, **S3-compatible storage** (like **Minio**), or **HDFS** are generally convenient options for deep storage.
 
@@ -411,8 +410,7 @@ default-blueprint-appbinding-samruid-frequent-backup-1726742101   default-bluepr
 default-blueprint-appbinding-samruid-frequent-backup-1726742400   default-blueprint   frequent-backup   2024-09-19T10:40:00Z   Delete            Succeeded   2m50s
 ```
 
-> Note: KubeStash creates a `Snapshot` with the following labels:
-> - `kubedb.com/db-version: <db-version>`
+> **Note**: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
 > - `kubestash.com/app-ref-name: <target-name>`
 > - `kubestash.com/app-ref-namespace: <target-namespace>`
@@ -435,11 +433,12 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 30.0.0
     kubestash.com/app-ref-kind: Druid
     kubestash.com/app-ref-name: sample-druid
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: default-blueprint
+  annotations:
+    kubedb.com/db-version: 30.0.0
   name: default-blueprint-appbinding-samruid-frequent-backup-1726741846
   namespace: demo
   ownerReferences:
@@ -484,7 +483,7 @@ status:
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `/blueprint/default-blueprint/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/default-blueprintrepository/snapshots` directory.
 
-> Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
+> **Note**: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
 ## Auto-backup with custom configurations
 
@@ -551,7 +550,7 @@ Here,
   - `.repositories[*].directory` defines two variables, `${namespace}` and `${targetName}`, which are used to determine the path where the backup will be stored. 
   - `.addon.tasks[*]databases` defines `${targetedDatabases}` variable, which identifies list of databases to backup.
 
-> Note: To create `BackupBlueprint` for druid with `PostgreSQL` as metadata storage just update `spec.sessions[*].addon.tasks.name` to `postgres-metadata-storage-restore`
+> **Note**: To create `BackupBlueprint` for druid with `PostgreSQL` as metadata storage just update `spec.sessions[*].addon.tasks.name` to `postgres-metadata-storage-restore`
 
 Let's create the `BackupBlueprint` we have shown above,
 
@@ -727,8 +726,7 @@ NAME                                                              REPOSITORY    
 customize-blueprint-appbinding-sid-2-frequent-backup-1726743656   customize-blueprint   frequent-backup   2024-09-19T11:01:06Z   Delete            Succeeded   2m56s
 ```
 
-> Note: KubeStash creates a `Snapshot` with the following labels:
-> - `kubedb.com/db-version: <db-version>`
+> **Note**: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
 > - `kubestash.com/app-ref-name: <target-name>`
 > - `kubestash.com/app-ref-namespace: <target-namespace>`
@@ -751,11 +749,12 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 30.0.0
     kubestash.com/app-ref-kind: Druid
     kubestash.com/app-ref-name: sample-druid-2
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: customize-blueprint
+  annotations:
+    kubedb.com/db-version: 30.0.0
   name: customize-blueprint-appbinding-sid-2-frequent-backup-1726743656
   namespace: demo
   ownerReferences:
@@ -800,7 +799,7 @@ status:
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `/blueprint/custom-blueprint/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/custom-blueprint/snapshots` directory.
 
-> Note: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
+> **Note**: KubeStash stores all dumped data encrypted in the backup directory, meaning it remains unreadable until decrypted.
 
 ## Cleanup
 
