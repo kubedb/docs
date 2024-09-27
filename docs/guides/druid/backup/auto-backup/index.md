@@ -201,7 +201,8 @@ Now, we are ready to backup our `Druid` databases using few annotations.
 ## Deploy Sample Druid Database
 
 
-**Create External Dependency (Deep Storage)**
+**Create External Dependency (Deep Storage):**
+
 One of the external dependency of Druid is deep storage where the segments are stored. It is a storage mechanism that Apache Druid does not provide. **Amazon S3**, **Google Cloud Storage**, or **Azure Blob Storage**, **S3-compatible storage** (like **Minio**), or **HDFS** are generally convenient options for deep storage.
 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
