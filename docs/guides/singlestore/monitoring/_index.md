@@ -1,5 +1,5 @@
 ---
-title: Monitoring SingleStore
+title: SingleStore Monitoring
 menu:
   docs_{{ .version }}:
     identifier: guides-sdb-monitoring
