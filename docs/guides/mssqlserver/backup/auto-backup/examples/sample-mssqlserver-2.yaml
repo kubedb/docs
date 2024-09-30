@@ -1,0 +1,42 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MSSQLServer
+metadata:
+  name: sample-mssqlserver-2
+  namespace: demo
+  annotations:
+    blueprint.kubestash.com/name: mssqlserver-customize-backup-blueprint
+    blueprint.kubestash.com/namespace: demo
+    variables.kubestash.com/schedule: "*/10 * * * *"
+    variables.kubestash.com/repoName: customize-blueprint
+    variables.kubestash.com/namespace: demo
+    variables.kubestash.com/targetName: sample-mssqlserver-2
+    variables.kubestash.com/targetedDatabase: agdb1
+spec:
+  version: "2022-cu12"
+  replicas: 3
+  topology:
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
+  internalAuth:
+    endpointCert:
+      issuerRef:
+        apiGroup: cert-manager.io
+        name: mssqlserver-ca-issuer
+        kind: Issuer
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: cert-manager.io
+    clientTLS: false
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
