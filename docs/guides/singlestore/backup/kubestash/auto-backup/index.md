@@ -1,21 +1,21 @@
 ---
-title: MySQL Auto-Backup | KubeStash
-description: Backup MySQL using KubeStash Auto-Backup
+title: SingleStore Auto-Backup | KubeStash
+description: Backup SingleStore using KubeStash Auto-Backup
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-backup-auto-backup-stashv2
+    identifier: guides-sdb-backup-auto-backup-stashv2
     name: Auto-Backup
-    parent: guides-mysql-backup-stashv2
+    parent: guides-sdb-backup-stashv2
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Backup MySQL using KubeStash Auto-Backup
+# Backup SingleStore using KubeStash Auto-Backup
 
-KubeStash can automatically be configured to backup any `MySQL` databases in your cluster. KubeStash enables cluster administrators to deploy backup `blueprints` ahead of time so database owners can easily backup any `MySQL` database with a few annotations.
+KubeStash can automatically be configured to backup any `SingleStore` databases in your cluster. KubeStash enables cluster administrators to deploy backup `blueprints` ahead of time so database owners can easily backup any `SingleStore` database with a few annotations.
 
-In this tutorial, we are going to show how you can configure a backup blueprint for `MySQL` databases in your cluster and backup them with a few annotations.
+In this tutorial, we are going to show how you can configure a backup blueprint for `SingleStore` databases in your cluster and backup them with a few annotations.
 
 ## Before You Begin
 
@@ -23,7 +23,7 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how KubeStash backup and restore MySQL databases, please check the following guide [here](/docs/guides/mysql/backup/kubestash/overview/index.md).
+- If you are not familiar with how KubeStash backup and restore SingleStore databases, please check the following guide [here](/docs/guides/singlestore/backup/kubestash/overview/index.md).
 
 You should be familiar with the following `KubeStash` concepts:
 
@@ -86,7 +86,7 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/backupstorage.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/auto-backup/examples/backupstorage.yaml
 backupstorage.storage.kubestash.com/gcs-storage created
 ```
 
@@ -117,7 +117,7 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/retentionpolicy.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/auto-backup/examples/retentionpolicy.yaml
 retentionpolicy.storage.kubestash.com/demo-retention created
 ```
 
@@ -130,13 +130,13 @@ Let's create a secret called `encrypt-secret` with the Restic password,
 ```bash
 $ echo -n 'changeit' > RESTIC_PASSWORD
 $ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD
+    --from-file=./RESTIC_PASSWORD 
 secret "encrypt-secret" created
 ```
 
 ## Auto-backup with default configurations
 
-In this section, we are going to backup a `MySQL` database of `demo` namespace. We are going to use the default configurations which will be specified in the `Backup Blueprint` CR.
+In this section, we are going to backup a `SingleStore` database of `demo` namespace. We are going to use the default configurations which will be specified in the `Backup Blueprint` CR.
 
 **Prepare Backup Blueprint**
 
@@ -148,7 +148,7 @@ Now, we have to create a `BackupBlueprint` CR with a blueprint for `BackupConfig
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupBlueprint
 metadata:
-  name: mysql-default-backup-blueprint
+  name: singlestore-default-backup-blueprint
   namespace: demo
 spec:
   usagePolicy:
@@ -179,7 +179,7 @@ spec:
               name: encrypt-secret
               namespace: demo
         addon:
-          name: mysql-addon
+          name: singlestore-addon
           tasks:
             - name: logical-backup
 ```
@@ -192,65 +192,109 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/default-backupblueprint.yaml
-backupblueprint.core.kubestash.com/mysql-default-backup-blueprint created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/auto-backup/examples/default-backupblueprint.yaml
+backupblueprint.core.kubestash.com/singlestore-default-backup-blueprint created
 ```
 
-Now, we are ready to backup our `MySQL` databases using few annotations.
+Now, we are ready to backup our `SingleStore` databases using few annotations.
+
+**Create SingleStore License Secret**
+
+We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
+
+```bash
+$ kubectl create secret generic -n demo license-secret \
+                --from-literal=username=license \
+                --from-literal=password='your-license-set-here'
+secret/license-secret created
+```
 
 **Create Database**
 
-Now, we are going to create an `MySQL` CR in demo namespace. Below is the YAML of the MySQL object that we are going to create,
+Now, we are going to create an `SingleStore` CR in demo namespace. Below is the YAML of the SingleStore object that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: MySQL
+kind: Singlestore
 metadata:
-  name: sample-mysql
+  name: sample-singlestore
   namespace: demo
   annotations:
-    blueprint.kubestash.com/name: mysql-default-backup-blueprint
+    blueprint.kubestash.com/name: singlestore-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "8.2.0"
-  replicas: 1
+  version: "8.7.10"
+  topology:
+    aggregator:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+          - name: singlestore
+            resources:
+              limits:
+                memory: "2Gi"
+                cpu: "600m"
+              requests:
+                memory: "2Gi"
+                cpu: "600m"
+      storage:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    leaf:
+      replicas: 3
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "600m"
+                requests:
+                  memory: "2Gi"
+                  cpu: "600m"                      
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  licenseSecret:
+    name: license-secret
   storageType: Durable
-  storage:
-    storageClassName: "standard"
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 50Mi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Here,
 
-- `.spec.annotations.blueprint.kubestash.com/name: mysql-default-backup-blueprint` specifies the name of the `BackupBlueprint` that will use in backup.
+- `.spec.annotations.blueprint.kubestash.com/name: singlestore-default-backup-blueprint` specifies the name of the `BackupBlueprint` that will use in backup.
 - `.spec.annotations.blueprint.kubestash.com/namespace: demo` specifies the name of the `namespace` where the `BackupBlueprint` resides.
 
-Let's create the `MySQL` we have shown above,
+Let's create the `SingleStore` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/sample-mysql.yaml
-mysql.kubedb.com/sample-mysql created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/auto-backup/examples/sample-singlestore.yaml
+singlestore.kubedb.com/sample-singlestore created
 ```
 
 **Verify BackupConfiguration**
 
-If everything goes well, KubeStash should create a `BackupConfiguration` for our MySQL in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
+If everything is set up correctly, KubeStash will create a `BackupConfiguration` for our SingleStore instance in the demo namespace. The phase of this `BackupConfiguration` should be Ready. You can verify the `BackupConfiguration` object by running the following command,
 
 ```bash
 $ kubectl get backupconfiguration -n demo
-NAME                      PHASE   PAUSED   AGE
-appbinding-sample-mysql   Ready            2m50m
+NAME                            PHASE   PAUSED   AGE
+appbinding-sample-singlestore   Ready            2m50m
 ```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-mysql  -o yaml
+$ kubectl get backupconfiguration -n demo appbinding-sample-singlestore  -o yaml
 ```
 
 ```yaml
@@ -263,9 +307,9 @@ metadata:
   generation: 1
   labels:
     app.kubernetes.io/managed-by: kubestash.com
-    kubestash.com/invoker-name: mysql-default-backup-blueprint
+    kubestash.com/invoker-name: singlestore-default-backup-blueprint
     kubestash.com/invoker-namespace: demo
-  name: appbinding-sample-mysql
+  name: appbinding-sample-singlestore
   namespace: demo
   resourceVersion: "113911"
   uid: eef4c853-4df6-4b5e-b462-977c9b2188c0
@@ -280,7 +324,7 @@ spec:
       namespace: demo
   sessions:
   - addon:
-      name: mysql-addon
+      name: singlestore-addon
       tasks:
       - name: logical-backup
     name: frequent-backup
@@ -303,8 +347,8 @@ spec:
     sessionHistoryLimit: 3
   target:
     apiGroup: kubedb.com
-    kind: MySQL
-    name: sample-mysql
+    kind: Singlestore
+    name: sample-singlestore
     namespace: demo
 ```
 
@@ -317,8 +361,8 @@ KubeStash triggers an instant backup as soon as the `BackupConfiguration` is rea
 ```bash
 $ kubectl get backupsession -n demo -w
 
-NAME                                                 INVOKER-TYPE          INVOKER-NAME               PHASE       DURATION   AGE
-appbinding-sample-mysql-frequent-backup-1724236500   BackupConfiguration   appbinding-sample-mysql    Succeeded              7m22s
+NAME                                                           INVOKER-TYPE          INVOKER-NAME                   PHASE       DURATION     AGE
+appbinding-sample-singlestore-frequent-backup-1724236500   BackupConfiguration   appbinding-sample-singlestore    Succeeded                 7m22s
 ```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
@@ -338,7 +382,7 @@ At this moment we have one `Snapshot`. Run the following command to check the re
 ```bash
 $ kubectl get snapshots -n demo -l=kubestash.com/repo-name=default-blueprint
 NAME                                                                 REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-default-blueprint-appbinding-sampleysql-frequent-backup-1724236500   default-blueprint   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
+default-blueprint-appbinding-sample-singlestore-frequent-backup-1724236500   default-blueprint   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
@@ -353,7 +397,7 @@ default-blueprint-appbinding-sampleysql-frequent-backup-1724236500   default-blu
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo default-blueprint-appbinding-sampleysql-frequent-backup-1724236500 -oyaml
+$ kubectl get snapshots -n demo default-blueprint-appbinding-sample-singlestore-frequent-backup-1724236500 -oyaml
 ```
 
 ```yaml
@@ -365,12 +409,12 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.2.0
-    kubestash.com/app-ref-kind: MySQL
-    kubestash.com/app-ref-name: sample-mysql
+    kubedb.com/db-version: 8.7.10
+    kubestash.com/app-ref-kind: Singlestore
+    kubestash.com/app-ref-name: sample-singlestore
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: default-blueprint
-  name: default-blueprint-appbinding-sampleysql-frequent-backup-1724236500
+  name: default-blueprint-appbinding-sample-singlestore-frequent-backup-1724236500
   namespace: demo
   ownerReferences:
     - apiVersion: storage.kubestash.com/v1alpha1
@@ -384,10 +428,10 @@ metadata:
 spec:
   appRef:
     apiGroup: kubedb.com
-    kind: MySQL
-    name: sample-mysql
+    kind: Singlestore
+    name: sample-singlestore
     namespace: demo
-  backupSession: appbinding-sample-mysql-frequent-backup-1724236500
+  backupSession: appbinding-sample-singlestore-frequent-backup-1724236500
   deletionPolicy: Delete
   repository: default-blueprint
   session: frequent-backup
@@ -415,7 +459,7 @@ status:
   totalComponents: 1
 ```
 
-> KubeStash uses the `mysqldump` command to take backups of target MySQL databases. Therefore, the component name for `logical backups` is set as `dump`.
+> KubeStash uses the `mysqldump` command to take backups of target SingleStore databases. Therefore, the component name for `logical backups` is set as `dump`.
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `/blueprint/default-blueprint/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/default-blueprintrepository/snapshots` directory.
 
@@ -423,7 +467,7 @@ Now, if we navigate to the GCS bucket, we will see the backed up data stored in 
 
 ## Auto-backup with custom configurations
 
-In this section, we are going to backup a `MySQL` database of `demo` namespace. We are going to use the custom configurations which will be specified in the `BackupBlueprint` CR.
+In this section, we are going to backup a `SingleStore` database of `demo` namespace. We are going to use the custom configurations which will be specified in the `BackupBlueprint` CR.
 
 **Prepare Backup Blueprint**
 
@@ -435,7 +479,7 @@ Now, we have to create a `BackupBlueprint` CR with a blueprint for `BackupConfig
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupBlueprint
 metadata:
-  name: mysql-customize-backup-blueprint
+  name: singlestore-customize-backup-blueprint
   namespace: demo
 spec:
   usagePolicy:
@@ -468,7 +512,7 @@ spec:
               name: encrypt-secret
               namespace: demo
         addon:
-          name: mysql-addon
+          name: singlestore-addon
           tasks:
             - name: logical-backup
               params:
@@ -489,67 +533,99 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/customize-backupblueprint.yaml
-backupblueprint.core.kubestash.com/mysql-customize-backup-blueprint created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/auto-backup/examples/customize-backupblueprint.yaml
+backupblueprint.core.kubestash.com/singlestore-customize-backup-blueprint created
 ```
 
-Now, we are ready to backup our `MySQL` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
+Now, we are ready to backup our `SingleStore` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
 
 **Create Database**
 
-Now, we are going to create an `MySQL` CR in demo namespace. Below is the YAML of the MySQL object that we are going to create,
+Now, we are going to create an `SingleStore` CR in demo namespace. Below is the YAML of the SingleStore object that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: MySQL
+kind: Singlestore
 metadata:
-  name: sample-mysql-2
+  name: sample-singlestore-2
   namespace: demo
   annotations:
-    blueprint.kubestash.com/name: mysql-customize-backup-blueprint
+    blueprint.kubestash.com/name: singlestore-customize-backup-blueprint
     blueprint.kubestash.com/namespace: demo
     variables.kubestash.com/schedule: "*/10 * * * *"
     variables.kubestash.com/repoName: customize-blueprint
     variables.kubestash.com/namespace: demo
-    variables.kubestash.com/targetName: sample-mysql-2
-    variables.kubestash.com/targetedDatabases: mysql
+    variables.kubestash.com/targetName: sample-singlestore-2
 spec:
-  version: "8.2.0"
-  replicas: 1
+  version: "8.7.10"
+  topology:
+    aggregator:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+          - name: singlestore
+            resources:
+              limits:
+                memory: "2Gi"
+                cpu: "600m"
+              requests:
+                memory: "2Gi"
+                cpu: "600m"
+      storage:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    leaf:
+      replicas: 3
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "600m"
+                requests:
+                  memory: "2Gi"
+                  cpu: "600m"                      
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  licenseSecret:
+    name: license-secret
   storageType: Durable
-  storage:
-    storageClassName: "standard"
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 50Mi
-  terminationPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
-Notice the `metadata.annotations` field, where we have defined the annotations related to the automatic backup configuration. Specifically, we've set the `BackupBlueprint` name as `mysql-customize-backup-blueprint` and the namespace as `demo`. We have also provided values for the blueprint template variables, such as the backup `schedule`, `repositoryName`, `namespace`, `targetName`, and `targetedDatabases`. These annotations will be used to create a `BackupConfiguration` for this `MySQL` database.
+Notice the `metadata.annotations` field, where we have defined the annotations related to the automatic backup configuration. Specifically, we've set the `BackupBlueprint` name as `singlestore-customize-backup-blueprint` and the namespace as `demo`. We have also provided values for the blueprint template variables, such as the backup `schedule`, `repositoryName`, `namespace`, and `targetName`. These annotations will be used to create a `BackupConfiguration` for this `SingleStore` database.
 
-Let's create the `MySQL` we have shown above,
+Let's create the `SingleStore` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/sample-mysql-2.yaml
-mysql.kubedb.com/sample-mysql-2 created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/auto-backup/examples/sample-singlestore-2.yaml
+singlestore.kubedb.com/sample-singlestore-2 created
 ```
 
 **Verify BackupConfiguration**
 
-If everything goes well, KubeStash should create a `BackupConfiguration` for our MySQL in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
+If everything goes well, KubeStash should create a `BackupConfiguration` for our SingleStore in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
 
 ```bash
 $ kubectl get backupconfiguration -n demo
-NAME                        PHASE   PAUSED   AGE
-appbinding-sample-mysql-2   Ready            2m50m
+NAME                              PHASE   PAUSED   AGE
+appbinding-sample-singlestore-2   Ready            2m50m
 ```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-mysql-2  -o yaml
+$ kubectl get backupconfiguration -n demo appbinding-sample-singlestore-2  -o yaml
 ```
 
 ```yaml
@@ -562,9 +638,9 @@ metadata:
   generation: 1
   labels:
     app.kubernetes.io/managed-by: kubestash.com
-    kubestash.com/invoker-name: mysql-customize-backup-blueprint
+    kubestash.com/invoker-name: singlestore-customize-backup-blueprint
     kubestash.com/invoker-namespace: demo
-  name: appbinding-sample-mysql-2
+  name: appbinding-sample-singlestore-2
   namespace: demo
   resourceVersion: "129124"
   uid: eb42b736-c9c9-4280-8379-bbb581790185
@@ -579,15 +655,13 @@ spec:
         namespace: demo
   sessions:
     - addon:
-        name: mysql-addon
+        name: singlestore-addon
         tasks:
           - name: logical-backup
-            params:
-              databases: mysql
       name: frequent-backup
       repositories:
         - backend: gcs-backend
-          directory: demo/sample-mysql-2
+          directory: demo/sample-singlestore-2
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
@@ -604,8 +678,8 @@ spec:
       sessionHistoryLimit: 3
   target:
     apiGroup: kubedb.com
-    kind: MySQL
-    name: sample-mysql-2
+    kind: Singlestore
+    name: sample-singlestore-2
     namespace: demo
 ```
 
@@ -619,7 +693,7 @@ KubeStash triggers an instant backup as soon as the `BackupConfiguration` is rea
 $ kubectl get backupsession -n demo -w
 
 NAME                                                   INVOKER-TYPE          INVOKER-NAME                 PHASE       DURATION   AGE
-appbinding-sample-mysql-2-frequent-backup-1725007200   BackupConfiguration   appbinding-sample-mysql-2    Succeeded              7m22s
+appbinding-sample-singlestore-2-frequent-backup-1725007200   BackupConfiguration   appbinding-sample-singlestore-2    Succeeded              7m22s
 ```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
@@ -639,7 +713,7 @@ At this moment we have one `Snapshot`. Run the following command to check the re
 ```bash
 $ kubectl get snapshots -n demo -l=kubestash.com/repo-name=customize-blueprint
 NAME                                                               REPOSITORY            SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-customize-blueprint-appbinding-sql-2-frequent-backup-1725007200    customize-blueprint   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
+customize-blueprint-appbinding-sample-singlestore-2-frequent-backup-1725007200    customize-blueprint   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
@@ -654,7 +728,7 @@ customize-blueprint-appbinding-sql-2-frequent-backup-1725007200    customize-blu
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo customize-blueprint-appbinding-sql-2-frequent-backup-1725007200 -oyaml
+$ kubectl get snapshots -n demo customize-blueprint-appbinding-sample-singlestore-2-frequent-backup-1725007200 -oyaml
 ```
 
 ```yaml
@@ -666,12 +740,12 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.2.0
-    kubestash.com/app-ref-kind: MySQL
-    kubestash.com/app-ref-name: sample-mysql
+    kubedb.com/db-version: 8.7.10
+    kubestash.com/app-ref-kind: Singlestore
+    kubestash.com/app-ref-name: sample-singlestore
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: customize-blueprint
-  name: customize-blueprint-appbinding-sql-2-frequent-backup-1725007200
+  name: customize-blueprint-appbinding-sample-singlestore-2-frequent-backup-1725007200
   namespace: demo
   ownerReferences:
     - apiVersion: storage.kubestash.com/v1alpha1
@@ -685,10 +759,10 @@ metadata:
 spec:
   appRef:
     apiGroup: kubedb.com
-    kind: MySQL
-    name: sample-mysql-2
+    kind: Singlestore
+    name: sample-singlestore-2
     namespace: demo
-  backupSession: appbinding-sample-mysql-2-frequent-backup-1725007200
+  backupSession: appbinding-sample-singlestore-2-frequent-backup-1725007200
   deletionPolicy: Delete
   repository: customize-blueprint
   session: frequent-backup
@@ -716,7 +790,7 @@ status:
   totalComponents: 1
 ```
 
-> KubeStash uses the `mysqldump` command to take backups of target MySQL databases. Therefore, the component name for `logical backups` is set as `dump`.
+> KubeStash uses the `mysqldump` command to take backups of target SingleStore databases. Therefore, the component name for `logical backups` is set as `dump`.
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `/blueprint/custom-blueprint/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/custom-blueprint/snapshots` directory.
 
@@ -727,12 +801,12 @@ Now, if we navigate to the GCS bucket, we will see the backed up data stored in 
 To cleanup the resources crated by this tutorial, run the following commands,
 
 ```bash
-kubectl delete backupblueprints.core.kubestash.com  -n demo mysql-default-backup-blueprint
-kubectl delete backupblueprints.core.kubestash.com  -n demo mysql-customize-backup-blueprint
+kubectl delete backupblueprints.core.kubestash.com  -n demo singlestore-default-backup-blueprint
+kubectl delete backupblueprints.core.kubestash.com  -n demo singlestore-customize-backup-blueprint
 kubectl delete backupstorage -n demo gcs-storage
 kubectl delete secret -n demo gcs-secret
 kubectl delete secret -n demo encrypt-secret
 kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
-kubectl delete my -n demo sample-mysql
-kubectl delete my -n demo sample-mysql-2
+kubectl delete my -n demo sample-singlestore
+kubectl delete my -n demo sample-singlestore-2
 ```

@@ -1,0 +1,57 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Singlestore
+metadata:
+  name: sample-singlestore-2
+  namespace: demo
+  annotations:
+    blueprint.kubestash.com/name: singlestore-customize-backup-blueprint
+    blueprint.kubestash.com/namespace: demo
+    variables.kubestash.com/schedule: "*/10 * * * *"
+    variables.kubestash.com/repoName: customize-blueprint
+    variables.kubestash.com/namespace: demo
+    variables.kubestash.com/targetName: sample-singlestore-2
+spec:
+  version: "8.7.10"
+  topology:
+    aggregator:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+          - name: singlestore
+            resources:
+              limits:
+                memory: "2Gi"
+                cpu: "600m"
+              requests:
+                memory: "2Gi"
+                cpu: "600m"
+      storage:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    leaf:
+      replicas: 3
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "600m"
+                requests:
+                  memory: "2Gi"
+                  cpu: "600m"                      
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  licenseSecret:
+    name: license-secret
+  storageType: Durable
+  deletionPolicy: WipeOut

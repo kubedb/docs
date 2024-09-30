@@ -44,6 +44,7 @@ namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/auto-backup/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/auto-backup/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
+
 ### Prepare Backend
 
 We are going to store our backed up data into a `GCS` bucket. We have to create a `Secret` with necessary credentials and a `BackupStorage` CR to use this backend. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
@@ -160,6 +161,7 @@ spec:
       from: All
   backupConfigurationTemplate:
     deletionPolicy: OnDelete
+    # ============== Blueprint for Backends of BackupConfiguration  =================
     backends:
       - name: gcs-backend
         storageRef:
@@ -168,6 +170,7 @@ spec:
         retentionPolicy:
           name: demo-retention
           namespace: demo
+    # ============== Blueprint for Sessions of BackupConfiguration  =================
     sessions:
       - name: frequent-backup
         sessionHistoryLimit: 3
@@ -390,6 +393,7 @@ default-blueprint-appbinding-samgres-frequent-backup-1725533628   default-bluepr
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
+> - `kubedb.com/db-version: <db-version>`
 > - `kubestash.com/app-ref-kind: <target-kind>`
 > - `kubestash.com/app-ref-name: <target-name>`
 > - `kubestash.com/app-ref-namespace: <target-namespace>`
@@ -552,6 +556,7 @@ backupblueprint.core.kubestash.com/postgres-customize-backup-blueprint created
 ```
 
 Now, we are ready to backup our `PostgreSQL` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
+
 
 **Create Database**
 
@@ -726,6 +731,7 @@ appbinding-sample-postgres-frequent-backup-1725597000     BackupConfiguration   
 ```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
+
 
 **Verify Backup:**
 
