@@ -279,35 +279,6 @@ spec:
 
 `KubeStash` uses [psql](https://www.postgresql.org/docs/current/app-psql.html) during the restore process. In this section, we are going to show how you can pass arguments to the restore process, restore a specific snapshot, run restore job as a specific user, etc.
 
-### Passing arguments to the restore process
-
-You can pass any supported `psql` arguments to the restore process using the `args` field within the `addon.tasks[*].params` section. This example demonstrates how to specify a database `testdb` to connect to during the restore process.
-
-```yaml
-apiVersion: core.kubestash.com/v1alpha1
-kind: RestoreSession
-metadata:
-  name: sample-postgres-restore
-  namespace: demo
-spec:
-  target:
-    apiGroup: kubedb.com
-    kind: Postgres
-    namespace: demo
-    name: restored-postgres
-  dataSource:
-    repository: gcs-postgres-repo
-    snapshot: latest
-    encryptionSecret:
-      name: encrypt-secret
-      namespace: demo
-  addon:
-    name: postgres-addon
-    tasks:
-      - name: logical-backup-restore
-        params:
-          args: --dbname=testdb
-```
 
 ### Restore specific snapshot
 
@@ -347,6 +318,7 @@ spec:
     tasks:
       - name: logical-backup-restore
 ```
+
 
 ### Running restore job as a specific user
 

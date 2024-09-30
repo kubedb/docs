@@ -1,0 +1,20 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: restore-sample-singlestore
+  namespace: demo
+spec:
+  manifestOptions:
+    singlestore:
+      restoreNamespace: dev
+  dataSource:
+    repository: gcs-singlestore-repo
+    snapshot: latest
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: singlestore-addon
+    tasks:
+      - name: logical-backup-restore
+      - name: manifest-restore

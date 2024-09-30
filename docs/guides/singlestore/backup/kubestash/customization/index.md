@@ -1,11 +1,11 @@
 ---
-title: MySQL Backup Customization | KubeStash
-description: Customizing MySQL Backup and Restore process with KubeStash
+title: SingleStore Backup Customization | KubeStash
+description: Customizing SingleStore Backup and Restore process with KubeStash
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-backup-customization-stashv2
+    identifier: guides-sdb-backup-customization-stashv2
     name: Customizing Backup & Restore Process
-    parent: guides-mysql-backup-stashv2
+    parent: guides-sdb-backup-stashv2
     weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -21,7 +21,7 @@ In this section, we are going to show you how to customize the backup process. H
 
 ### Passing targeted databases to the backup process
 
-KubeStash MySQL addon uses the [mysqldump](https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html) for backup. Addon has implemented a `databases` params which indicates your targeted backup databases. 
+KubeStash SingleStore addon uses the [mysqldump](https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html) for backup. Addon has implemented a `databases` params which indicates your targeted backup databases. 
 
 The below example shows how you can pass the `--databases` option during backup. 
 
@@ -29,15 +29,14 @@ The below example shows how you can pass the `--databases` option during backup.
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-mysql-backup
+  name: sample-singlestore-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: MySQL
+    kind: Singlestore
     namespace: demo
-    name: sample-mysql
-  backends:
+    name: sample-singlestore
     - name: gcs-backend
       storageRef:
         namespace: demo
@@ -52,14 +51,14 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-mysql-repo
+        - name: gcs-singlestore-repo
           backend: gcs-backend
-          directory: /mysql
+          directory: /singlestore
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: mysql-addon
+        name: singlestore-addon
         tasks:
           - name: logical-backup
             params:
@@ -69,26 +68,26 @@ spec:
 > **WARNING**: Make sure that your provides databases has been created before taking backup.
 
 Here,
-- `addon.tasks[*].databases` options indicates targeted databases. By default `myaql-addon` add `--alll-databases` options during backup. If you want to backup all databases keep the `databases` params empty.  
+- `addon.tasks[*].databases` options indicates targeted databases. By default `singlestore-addon` add `--all-databases` options during backup. If you want to backup all databases keep the `databases` params empty.  
 
 ### Passing arguments to the backup process
 
-KubeStash MySQL addon uses [mysqldump](https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html) for backup. You can pass arguments to the `mysqldump` supported options through `args` param under `addon.tasks[*].params` section.   
+KubeStash SingleStore addon uses [mysqldump](https://dev.mysql.com/doc/refman/8.0/en/mysqldump.html) for backup. You can pass arguments to the `mysqldump` supported options through `args` param under `addon.tasks[*].params` section.   
 
 The below example shows how you can pass the `--set-gtid-purged=OFF` options during backup.
 
-```yaml
+```yaml 
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-mysql-backup
+  name: sample-singlestore-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: MySQL
+    kind: Singlestore
     namespace: demo
-    name: sample-mysql
+    name: sample-singlestore
   backends:
     - name: gcs-backend
       storageRef:
@@ -104,20 +103,19 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-mysql-repo
+        - name: gcs-singlestore-repo
           backend: gcs-backend
-          directory: /mysql
+          directory: /singlestore
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: mysql-addon
+        name: singlestore-addon
         tasks:
           - name: logical-backup
             params:
               args: --set-gtid-purged=OFF
 ```
-
 
 ### Using multiple backends
 
@@ -127,14 +125,14 @@ You can configure multiple backends within a single `backupConfiguration`. To ba
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-mysql-backup
+  name: sample-singlestore-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: MySQL
+    kind: Singlestore
     namespace: demo
-    name: sample-mysql
+    name: sample-singlestore
   backends:
     - name: gcs-backend
       storageRef:
@@ -157,20 +155,20 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-mysql-repo
+        - name: gcs-singlestore-repo
           backend: gcs-backend
-          directory: /mysql
+          directory: /singlestore
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
-        - name: s3-mysql-repo
+        - name: s3-singlestore-repo
           backend: s3-backend
-          directory: /mysql-copy
+          directory: /singlestore-copy
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: mysql-addon
+        name: singlestore-addon
         tasks:
           - name: logical-backup
 ```
@@ -183,14 +181,14 @@ If your cluster requires running the backup job as a specific user, you can prov
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-mysql-backup
+  name: sample-singlestore-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: MySQL
+    kind: Singlestore
     namespace: demo
-    name: sample-mysql
+    name: sample-singlestore
   backends:
     - name: gcs-backend
       storageRef:
@@ -206,14 +204,14 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-mysql-repo
+        - name: gcs-singlestore-repo
           backend: gcs-backend
-          directory: /mysql
+          directory: /singlestore
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: mysql-addon
+        name: singlestore-addon
         jobTemplate:
           spec:
             securityContext:
@@ -231,14 +229,14 @@ If you want to specify the Memory/CPU limit/request for your backup job, you can
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-mysql-backup
+  name: sample-singlestore-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: MySQL
+    kind: Singlestore
     namespace: demo
-    name: sample-mysql
+    name: sample-singlestore
   backends:
     - name: gcs-backend
       storageRef:
@@ -254,14 +252,14 @@ spec:
         jobTemplate:
           backoffLimit: 1
       repositories:
-        - name: gcs-mysql-repo
+        - name: gcs-singlestore-repo
           backend: gcs-backend
-          directory: /mysql
+          directory: /singlestore
           encryptionSecret:
             name: encrypt-secret
             namespace: demo
       addon:
-        name: mysql-addon
+        name: singlestore-addon
         jobTemplate:
           spec:
             resources:
@@ -279,7 +277,7 @@ spec:
 
 ## Customizing Restore Process
 
-KubeStash also uses `mysql` during the restore process. In this section, we are going to show how you can pass arguments to the restore process, restore a specific snapshot, run restore job as a specific user, etc.
+KubeStash also uses `singlestore` during the restore process. In this section, we are going to show how you can pass arguments to the restore process, restore a specific snapshot, run restore job as a specific user, etc.
 
 
 ### Passing arguments to the restore process
@@ -290,43 +288,28 @@ This example will restore data from database `testdb` only.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
-kind: BackupConfiguration
+kind: RestoreSession
 metadata:
-  name: sample-mysql-backup
+  name: restore-sample-singlestore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: MySQL
+    kind: Singlestore
     namespace: demo
-    name: sample-mysql
-  backends:
-    - name: gcs-backend
-      storageRef:
-        namespace: demo
-        name: gcs-storage
-      retentionPolicy:
-        name: demo-retention
-        namespace: demo
-  sessions:
-    - name: frequent-backup
-      scheduler:
-        schedule: "*/5 * * * *"
-        jobTemplate:
-          backoffLimit: 1
-      repositories:
-        - name: gcs-mysql-repo
-          backend: gcs-backend
-          directory: /mysql
-          encryptionSecret:
-            name: encrypt-secret
-            namespace: demo
-      addon:
-        name: mysql-addon
-        tasks:
-          - name: logical-backup
-            params:
-              args: --one-database=testdb
+    name: restored-singlestore
+  dataSource:
+    repository: gcs-singlestore-repo
+    snapshot: latest
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: singlestore-addon
+    tasks:
+      - name: logical-backup-restore
+        params:
+          args: --one-database=testdb
 ```
 
 ### Restore specific snapshot
@@ -334,12 +317,12 @@ spec:
 You can also restore a specific snapshot. At first, list the available snapshot as bellow,
 
 ```bash
-➤ kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=gcs-mysql-repo
+➤ kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=gcs-singlestore-repo
 NAME                                                            REPOSITORY       SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-gcs-mysql-repo-sample-mysql-backup-frequent-backup-1725257849   gcs-mysql-repo   frequent-backup   2024-09-02T06:18:01Z   Delete            Succeeded   15m
-gcs-mysql-repo-sample-mysql-backup-frequent-backup-1725258000   gcs-mysql-repo   frequent-backup   2024-09-02T06:20:00Z   Delete            Succeeded   13m
-gcs-mysql-repo-sample-mysql-backup-frequent-backup-1725258300   gcs-mysql-repo   frequent-backup   2024-09-02T06:25:00Z   Delete            Succeeded   8m34s
-gcs-mysql-repo-sample-mysql-backup-frequent-backup-1725258600   gcs-mysql-repo   frequent-backup   2024-09-02T06:30:00Z   Delete            Succeeded   3m34s
+gcs-singlestore-repo-sample-singlestore-backup-frequent-backup-1725257849   gcs-singlestore-repo   frequent-backup   2024-09-02T06:18:01Z   Delete            Succeeded   15m
+gcs-singlestore-repo-sample-singlestore-backup-frequent-backup-1725258000   gcs-singlestore-repo   frequent-backup   2024-09-02T06:20:00Z   Delete            Succeeded   13m
+gcs-singlestore-repo-sample-singlestore-backup-frequent-backup-1725258300   gcs-singlestore-repo   frequent-backup   2024-09-02T06:25:00Z   Delete            Succeeded   8m34s
+gcs-singlestore-repo-sample-singlestore-backup-frequent-backup-1725258600   gcs-singlestore-repo   frequent-backup   2024-09-02T06:30:00Z   Delete            Succeeded   3m34s
 ```
 
 The below example shows how you can pass a specific snapshot name in `.dataSource` section.
@@ -348,26 +331,25 @@ The below example shows how you can pass a specific snapshot name in `.dataSourc
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: restore-sample-mysql
+  name: restore-sample-singlestore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: MySQL
+    kind: Singlestore
     namespace: demo
-    name: restored-mysql
+    name: restored-singlestore
   dataSource:
-    repository: gcs-mysql-repo
-    snapshot: gcs-mysql-repo-sample-mysql-backup-frequent-backup-1725257849
+    repository: gcs-singlestore-repo
+    snapshot: gcs-singlestore-repo-sample-singlestore-backup-frequent-backup-1725257849
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: mysql-addon
+    name: singlestore-addon
     tasks:
       - name: logical-backup-restore
-        params:
-          args: --one-database=testdb
+
 ```
 
 
@@ -379,22 +361,22 @@ Similar to the backup process under the `addon.jobTemplate.spec.` you can provid
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: restore-sample-mysql
+  name: restore-sample-singlestore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: MySQL
+    kind: Singlestore
     namespace: demo
-    name: restored-mysql
+    name: restored-singlestore
   dataSource:
-    repository: gcs-mysql-repo
+    repository: gcs-singlestore-repo
     snapshot: latest
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: mysql-addon
+    name: singlestore-addon
     jobTemplate:
       spec:
         securityContext:
@@ -402,6 +384,7 @@ spec:
           runAsGroup: 0
     tasks:
       - name: logical-backup-restore
+
 ```
 
 ### Specifying Memory/CPU limit/request for the restore job
@@ -412,22 +395,22 @@ Similar to the backup process, you can also provide `resources` field under the 
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: restore-sample-mysql
+  name: restore-sample-singlestore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
-    kind: MySQL
+    kind: Singlestore
     namespace: demo
-    name: restored-mysql
+    name: restored-singlestore
   dataSource:
-    repository: gcs-mysql-repo
+    repository: gcs-singlestore-repo
     snapshot: latest
     encryptionSecret:
       name: encrypt-secret
       namespace: demo
   addon:
-    name: mysql-addon
+    name: singlestore-addon
     jobTemplate:
       spec:
         resources:
