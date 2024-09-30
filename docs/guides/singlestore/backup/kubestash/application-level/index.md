@@ -42,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/singlestore/backup/kubestash/application-level/examples](docs/guides/singlestore/backup/kubestash/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/singlestore/backup/kubestash/application-level/examples](/docs/guides/singlestore/backup/kubestash/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Backup SingleStore
 
@@ -165,7 +165,7 @@ sample-singlestore-pods   ClusterIP   None             <none>        3306/TCP   
 
 ```
 
-Here, we have to use service `sample-singlestore` and secret `sample-singlestore-root-cred` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/singlestore/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
+Here, we have to use service `sample-singlestore` and secret `sample-singlestore-root-cred` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/mysql/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
 
 **Verify AppBinding:**
 
@@ -683,9 +683,8 @@ metadata:
   namespace: demo
 spec:
   manifestOptions:
-    restoreNamespace: dev
     singlestore:
-      db: true
+        restoreNamespace: dev
   dataSource:
     repository: gcs-singlestore-repo
     snapshot: latest

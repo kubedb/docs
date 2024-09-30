@@ -630,9 +630,8 @@ metadata:
   namespace: demo
 spec:
   manifestOptions:
-    restoreNamespace: dev
     postgres:
-      db: true
+      restoreNamespace: dev
   dataSource:
     repository: gcs-postgres-repo
     snapshot: latest
