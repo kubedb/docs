@@ -1,10 +1,10 @@
 ---
-title: Pgpool CRD
+title: FerretDB CRD
 menu:
   docs_{{ .version }}:
-    identifier: pp-pgpool-concepts
-    name: Pgpool
-    parent: pp-concepts-pgpool
+    identifier: fr-ferretdb-concepts
+    name: FerretDB
+    parent: fr-concepts-ferretdb
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,41 +12,44 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Pgpool
+# FerretDB
 
-## What is Pgpool
+## What is FerretDB
 
-`Pgpool` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Pgpool](https://pgpool.net/) in a Kubernetes native way. You only need to describe the desired configuration in a `Pgpool`object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`FerretDB` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [FerretDB](https://www.ferretdb.com/) in a Kubernetes native way. You only need to describe the desired configuration in a `FerretDB`object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
-## Pgpool Spec
+## FerretDB Spec
 
-As with all other Kubernetes objects, a Pgpool needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example Pgpool object.
+As with all other Kubernetes objects, a FerretDB needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example FerretDB object.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: Pgpool
+kind: FerretDB
 metadata:
-  name: pgpool
-  namespace: pool
+  name: ferretdb
+  namespace: demo
 spec:
-  version: "4.5.0"
+  version: "1.23.0"
   replicas: 1
   healthChecker:
     failureThreshold: 3
     periodSeconds: 20
     timeoutSeconds: 10
   authSecret:
-    name: pgpool-auth
+    name: ferretdb-auth
     externallyManaged: false
-  postgresRef:
-    name: ha-postgres
-    namespace: demo
-  sslMode: verify-ca
-  clientAuthMode: cert
+  backend:
+    postgresRef:
+      name: ha-postgres
+      namespace: demo
+    version: "13.13"
+    linkedDB: "ferretdb"
+    externallyManaged: false
+  sslMode: requireSSL
   tls:
     issuerRef:
       apiGroup: cert-manager.io
-      name: pgpool-ca-issuer
+      name: ferretdb-ca-issuer
       kind: Issuer
     certificates:
       - alias: server
@@ -64,61 +67,39 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  configSecret:
-    name: pgpool-config
-  initConfig:
-    pgpoolConfig:
-      log_statement : on
-      log_per_node_statement : on
-      sr_check_period : 0
-      health_check_period : 0
-      backend_clustering_mode : 'streaming_replication'
-      num_init_children : 5
-      max_pool : 75
-      child_life_time : 300
-      child_max_connections : 0
-      connection_life_time : 0
-      client_idle_limit : 0
-      connection_cache : on
-      load_balance_mode : on
-      ssl : on
-      failover_on_backend_error : off
-      log_min_messages : warning
-      statement_level_load_balance: on
-      memory_cache_enabled: on
   deletionPolicy: WipeOut
-  syncUsers: true
   podTemplate:
     spec:
       containers:
-        - name: pgpool
+        - name: ferretdb
           resources:
             limits:
-              memory: 2Gi
+              memory: 1Gi
             requests:
               cpu: 200m
               memory: 256Mi
   serviceTemplates:
     - alias: primary
       spec:
-        type: LoadBalancer
+        type: ClusterIP
         ports:
           - name: http
             port: 9999
 ```
+
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [PgpoolVersion](/docs/guides/pgpool/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PgpoolVersion` resources,
+`spec.version` is a required field specifying the name of the [FerretDBVersion](/docs/guides/ferretdb/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `FerretDBVersion` resources,
 
-- `4.4.5`, `4.5.0`
+- `1.18.0`, `1.23.0`
 
 ### spec.replicas
 
-`spec.replicas` the number of members in pgpool replicaset. `Minimum` allowed replicas is `1` and `maximum` is `9`.
+`spec.replicas` the number of members in ferretdb replicaset.
 
 KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
 
-## spec.healthChecker
+### spec.healthChecker
 It defines the attributes for the health checker.
 - `spec.healthChecker.periodSeconds` specifies how often to perform the health check.
 - `spec.healthChecker.timeoutSeconds` specifies the number of seconds after which the probe times out.
@@ -127,17 +108,18 @@ It defines the attributes for the health checker.
 
 ### spec.authSecret
 
-`spec.authSecret` is an optional field that points to a Secret used to hold credentials for `pgpool` `pcp` user. If not set, KubeDB operator creates a new Secret `{pgpool-object-name}-auth` for storing the password for `pgpool` pcp user for each Pgpool object.
+`spec.authSecret` is an optional field that points to a Secret used to hold credentials for `ferretdb`. If not set, KubeDB operator creates a new Secret `{ferretdb-object-name}-auth` for storing the password for `ferretdb` user for each FerretDB object.
+As FerretDB use backend's authentication mechanisms till now, this secret is basically a copy of backend postgres.
 
 We can use this field in 3 mode.
-1. Using an external secret. In this case, You need to create an auth secret first with required fields, then specify the secret name when creating the Pgpool object using `spec.authSecret.name` & set `spec.authSecret.externallyManaged` to true.
+1. Using an external secret. In this case, You need to create an auth secret first with required fields, then specify the secret name when creating the FerretDB object using `spec.authSecret.name` & set `spec.authSecret.externallyManaged` to true.
 ```yaml
 authSecret:
   name: <your-created-auth-secret-name>
   externallyManaged: true
 ```
 
-2. Specifying the secret name only. In this case, You need to specify the secret name when creating the Pgpool object using `spec.authSecret.name`. `externallyManaged` is by default false.
+2. Specifying the secret name only. In this case, You need to specify the secret name when creating the FerretDB object using `spec.authSecret.name`. `externallyManaged` is by default false.
 ```yaml
 authSecret:
   name: <intended-auth-secret-name>
@@ -145,15 +127,15 @@ authSecret:
 
 3. Let KubeDB do everything for you. In this case, no work for you.
 
-AuthSecret contains a `user` key and a `password` key which contains the `username` and `password` respectively for `pgpool` pcp user.
+AuthSecret contains a `user` key and a `password` key which contains the `username` and `password` respectively for `ferretdb` user.
 
 Example:
 
 ```bash
-$ kubectl create secret generic pgpool-auth -n demo \
+$ kubectl create secret generic ferretdb-auth -n demo \
 --from-literal=username=jhon \
 --from-literal=password=O9xE1mZZDAdBTbrV
-secret "pgpool-auth" created
+secret "ferretdb-auth" created
 ```
 
 ```yaml
@@ -163,45 +145,32 @@ data:
   username: "jhon"
 kind: Secret
 metadata:
-  name: pgpool-auth
+  name: ferretdb-auth
   namespace: demo
 type: Opaque
 ```
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
-### spec.postgresRef
+### spec.backend
 
-`spec.postgresRef` is a required field that points to the `appbinding` associated with the backend postgres. If the postgres is KubeDB managed an appbinding will be created automatically upon creating the postgres. If the postgres is not KubeDB managed then you need to create an appbinding yourself. `spec.postgresRef` takes the name (`spec.postgresRef.Name`) of the appbinding and the namespace (`spec.postgresRef.Namespace`) where the appbinding is created.
+- `spec.backend.externallyManaged` represents how the backend will be managed. If its false, KubeDB will automatically create a KubeDB managed postgres. Otherwise you need refer a [AppBinding](/docs/guides/ferretdb/concepts/appbinding.md) name and namespace which represents information for external Postgres.
+- `spec.backend.postgresRef` is a required field that points to the `appbinding` associated with the backend postgres. If the postgres is KubeDB managed an [AppBinding](/docs/guides/ferretdb/concepts/appbinding.md) will be created automatically upon creating the postgres. If the postgres is not KubeDB managed then you need to create an appbinding yourself. `spec.backend.postgresRef` takes the name (`spec.backend.postgresRef.Name`) of the appbinding and the namespace (`spec.backend.postgresRef.Namespace`) where the appbinding is created.
+- `spec.backend.version` represents the version of backend postgres
+- `spec.backend.linkedDB` represents in which database of backend postgres will be used by FerretDB to store data
 
 ### spec.sslMode
 
-Enables TLS/SSL or mixed TLS/SSL used for all network connections. The value of `sslMode` field can be one of the following:
+Enables TLS/SSL or mixed TLS/SSL used for all network connections. The value of [`sslMode`](https://docs.ferretdb.io/security/tls-connections/) field can be one of the following:
 
-|     Value     | Description                                                                                                                                                                   |
-|:-------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  `disabled`   | The server does not use TLS/SSL.                                                                                                                                              |
-|   `require`   | The server uses and accepts only TLS/SSL encrypted connections.                                                                                                               |
-|  `verify-ca`  | The server uses and accepts only TLS/SSL encrypted connections and client want to be sure that client connect to a server that client trust.                                  |
-| `verify-full` | The server uses and accepts only TLS/SSL encrypted connections and client want to be sure that client connect to a server client trust, and that it's the one client specify. |
-
-The specified ssl mode will be used by health checker and exporter of Pgpool.
-
-### spec.clientAuthMode
-
-The value of `clientAuthMode` field can be one of the following:
-
-|     Value     | Description                                                                                                                                                                   |
-|:-------------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|    `scram`    | The server uses scram-sha-256 authentication method to authenticate the users.                                                                                                |
-|     `md5`     | The server uses md5 authentication method to authenticate the users.                                                                                                          |
-|    `cert`     | The server uses tls certificates to authenticate the users and for this `sslMode` must not be disabled                                                                        |
-
-The  `pool_hba.conf` of Pgpool will have the configuration based on the specified clientAuthMode.
+|    Value     | Description                                                                                                                    |
+| :----------: | :----------------------------------------------------------------------------------------------------------------------------- |
+|  `disabled`  | The server does not use TLS/SSL.                                                                                               |
+| `requireSSL` | The server uses and accepts only TLS/SSL encrypted connections.                                                                |
 
 ### spec.tls
 
-`spec.tls` specifies the TLS/SSL configurations for the MongoDB. KubeDB uses [cert-manager](https://cert-manager.io/) v1 api to provision and manage TLS certificates.
+`spec.tls` specifies the TLS/SSL configurations for the FerretDB. KubeDB uses [cert-manager](https://cert-manager.io/) v1 api to provision and manage TLS certificates.
 
 The following fields are configurable in the `spec.tls` section:
 
@@ -240,36 +209,18 @@ The following fields are configurable in the `spec.tls` section:
 
 ### spec.monitor
 
-Pgpool managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
+FerretDB managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
 
-- [Monitor Pgpool with builtin Prometheus](/docs/guides/pgpool/monitoring/using-builtin-prometheus.md)
-- [Monitor Pgpool with Prometheus operator](/docs/guides/pgpool/monitoring/using-prometheus-operator.md)
-
-### spec.configSecret
-
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Pgpool. You can provide the custom configuration in a secret, then you can specify the secret name `spec.configSecret.name`.
-
-> Please note that, the secret key needs to be `pgpool.conf`.
-
-To learn more about how to use a custom configuration file see [here](/docs/guides/pgpool/configuration/using-config-file.md).
-
-NB. If `spec.configSecret` is set, then `spec.initConfig` needs to be empty.
-
-### spec.initConfig
-
-`spec.initConfig` is an optional field that allows users to provide custom configuration for Pgpool while initializing.
-
-To learn more about how to use init configuration see [here](/docs/guides/pgpool/configuration/using-init-config.md).
-
-NB. If `spec.initConfig` is set, then `spec.configSecret` needs to be empty.
+- [Monitor FerretDB with builtin Prometheus](/docs/guides/ferretdb/monitoring/using-builtin-prometheus.md)
+- [Monitor FerretDB with Prometheus operator](/docs/guides/ferretdb/monitoring/using-prometheus-operator.md)
 
 ### spec.deletionPolicy
 
 `deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Pgpool` CR or which resources KubeDB should keep or delete when you delete `Pgpool` CR. KubeDB provides following four deletion policies:
 
 - DoNotTerminate
-- Delete (`Default`)
-- WipeOut
+- Delete
+- WipeOut (`Default`)
 
 When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
@@ -283,36 +234,6 @@ Following table show what KubeDB does when you delete Pgpool CR for different de
 | 4. Delete Secrets         |    &#10007;    |   &#10007;   | &#10003; |
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` deletion policy by default.
-
-### spec.syncUsers
-
-`spec.syncUsers` is an optional field by default its value is false. If it is true, you can provide a secret with username and password as key and with some desired labels to sync PostgreSQL users to Pgpool in runtime.
-
-The contains a `user` key and a `password` key which contains the `username` and `password` respectively.
-
-Example:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  labels:
-    app.kubernetes.io/instance: ha-postgres
-    app.kubernetes.io/name: postgreses.kubedb.com
-  name: pg-user
-  namespace: demo
-stringData:
-  password: "12345"
-  username: "alice"
-```
-- `app.kubernetes.io/instance` should be same as`appbinding name mentioned in .spec.postgresRef.name`.
-- `app.kubernetes.io/name` should be `postgreses.kubedb.com`.
-- `namespace` should be same as `namespace mentioned in .spec.postgresRef.namespace`.
-
-In every `10 seconds` KubeDB operator will sync all the users to Pgpool. 
-
-Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
-
 
 ### spec.podTemplate
 
@@ -332,12 +253,16 @@ KubeDB accept following fields to set in `spec.podTemplate:`
     - containers
     - imagePullSecrets
     - nodeSelector
+    - affinity
     - serviceAccountName
     - schedulerName
     - tolerations
     - priorityClassName
     - priority
     - securityContext
+    - livenessProbe
+    - readinessProbe
+    - lifecycle
 
 You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/39bf8b2/api/v2/types.go#L44-L279). Uses of some field of `spec.podTemplate` is described below,
 
