@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mirror-checkpoint-config
+  namespace: demo
+stringData:
+  config.properties: |
+    connector.class=org.apache.kafka.connect.mirror.MirrorCheckpointConnector
+    source.cluster.alias=source
+    source.cluster.bootstrap.servers=source-kafka-pods.demo.svc:9092
+    source.cluster.security.protocol=SASL_PLAINTEXT
+    source.cluster.sasl.mechanism=PLAIN
+    source.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="R8BiT0S6pZ~MfBrF";
+    target.cluster.alias=target
+    target.cluster.bootstrap.servers=target-kafka-pods.demo.svc:9092
+    target.cluster.security.protocol=SASL_PLAINTEXT
+    target.cluster.sasl.mechanism=PLAIN
+    target.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="UVu1dpWcML2QZW5d";
+    sync.group.offsets.enabled=true
+    refresh.groups.interval.seconds=10
+    emit.checkpoints.interval.seconds=10
+    sync.group.offsets.interval.seconds=10
+    checkpoints.topic.replication.factor=-1
+    key.converter=org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter=org.apache.kafka.connect.converters.ByteArrayConverter
+    replication.policy.class=org.apache.kafka.connect.mirror.IdentityReplicationPolicy
+---
+apiVersion: kafka.kubedb.com/v1alpha1
+kind: Connector
+metadata:
+  name: mirror-checkpoint-connector
+  namespace: demo
+spec:
+  connectClusterRef:
+    name: mirror-connect
+    namespace: demo
+  configSecret:
+    name: mirror-checkpoint-config
+  deletionPolicy: WipeOut
