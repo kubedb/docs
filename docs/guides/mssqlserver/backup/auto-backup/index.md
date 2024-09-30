@@ -1,6 +1,6 @@
 ---
-title: MSSQLServer Auto-Backup | KubeStash
-description: Backup MSSQLServer using KubeStash Auto-Backup
+title: Microsoft SQL Server Auto-Backup | KubeStash
+description: Backup Microsoft SQL Server using KubeStash Auto-Backup
 menu:
   docs_{{ .version }}:
     identifier: guides-mssqlserver-auto-backup
@@ -11,11 +11,11 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Backup MSSQLServer using KubeStash Auto-Backup
+# Backup Microsoft SQL Server using KubeStash Auto-Backup
 
-KubeStash can automatically be configured to backup any `MSSQLServer` databases in your cluster. KubeStash enables cluster administrators to deploy backup `blueprints` ahead of time so database owners can easily backup any `MSSQLServer` database with a few annotations.
+KubeStash can automatically be configured to backup any `Microsoft SQL Server` databases in your cluster. KubeStash enables cluster administrators to deploy backup `blueprints` ahead of time so database owners can easily backup any `Microsoft SQL Server` database with a few annotations.
 
-In this tutorial, we are going to show how you can configure a backup blueprint for `MSSQLServer` databases in your cluster and backup them with a few annotations.
+In this tutorial, we are going to show how you can configure a backup blueprint for `Microsoft SQL Server` databases in your cluster and backup them with a few annotations.
 
 ## Before You Begin
 
@@ -23,7 +23,7 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how KubeStash backup and restore `MSSQLServer` databases, please check the following guide [here](/docs/guides/mssqlserver/backup/overview/index.md).
+- If you are not familiar with how KubeStash backup and restore `Microsoft SQL Server` databases, please check the following guide [here](/docs/guides/mssqlserver/backup/overview/index.md).
 
 You should be familiar with the following `KubeStash` concepts:
 
@@ -128,11 +128,11 @@ retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Prepare Issuer/ClusterIssuer
 
-By default, a KubeDB-managed `MSSQLServer` instance run with TLS disabled. However, the `.spec.tls` field is mandatory and will be used during backup and restore operations.
+By default, a KubeDB-managed `Microsoft SQL Server` instance run with TLS disabled. However, the `.spec.tls` field is mandatory and will be used during backup and restore operations.
 
 **Create Issuer/ClusterIssuer:**
 
-Now, we are going to create an example `Issuer` that will be used throughout the duration of this tutorial. Alternatively, you can follow this [cert-manager](https://cert-manager.io/docs/configuration/ca/) tutorial to create your own `Issuer`.
+Now, we are going to create an example `Issuer` CR that will be used throughout the duration of this tutorial. Alternatively, you can follow this [cert-manager](https://cert-manager.io/docs/configuration/ca/) tutorial to create your own `Issuer` CR.
 
 By following the below steps, we are going to create our desired issuer,
 
@@ -171,7 +171,7 @@ issuer.cert-manager.io/mssqlserver-ca-issuer.yaml created
 
 ## Auto-backup with default configurations
 
-In this section, we are going to backup a `MSSQLServer` database of `demo` namespace. We are going to use the default configurations which will be specified in the `BackupBlueprint` CR.
+In this section, we are going to backup a `Microsoft SQL Server` database of `demo` namespace. We are going to use the default configurations which will be specified in the `BackupBlueprint` CR.
 
 **Prepare Backup Blueprint**
 
@@ -232,7 +232,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 backupblueprint.core.kubestash.com/mssqlserver-default-backup-blueprint created
 ```
 
-Now, we are ready to backup our `MSSQLServer` databases using few annotations.
+Now, we are ready to backup our `Microsoft SQL Server` databases using few annotations.
 
 **Create Database**
 
@@ -513,7 +513,7 @@ Now, if we navigate to the GCS bucket, we will see the backed up data stored in 
 
 ## Auto-backup with custom configurations
 
-In this section, we are going to backup a `MSSQLServer` database of `demo` namespace. We are going to use the custom configurations which will be specified in the `BackupBlueprint` CR.
+In this section, we are going to backup a `Microsoft SQL Server` database of `demo` namespace. We are going to use the custom configurations which will be specified in the `BackupBlueprint` CR.
 
 **Prepare Backup Blueprint**
 
@@ -585,11 +585,11 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 backupblueprint.core.kubestash.com/mssqlserver-customize-backup-blueprint created
 ```
 
-Now, we are ready to backup our `MSSQLServer` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
+Now, we are ready to backup our `Microsoft SQL Server` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
 
 **Create Database**
 
-Now, we are going to create an `MSSQLServer` CR in demo namespace. Below is the YAML of the `MSSQLServer` object that we are going to create,
+We will now deploy an SQL Server Availability Group cluster by creating an `MSSQLServer` CR in the demo namespace. Below is the YAML configuration for the `MSSQLServer` object we are about to create:
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -638,7 +638,7 @@ spec:
 
 Notice the `metadata.annotations` field, where we have defined the annotations related to the automatic backup configuration. Specifically, we've set the `BackupBlueprint` name as `mssqlserver-customize-backup-blueprint` and the namespace as `demo`. We have also provided values for the blueprint template variables, such as the backup `schedule`, `repositoryName`, `namespace`, `targetName`, and `targetedDatabase`. These annotations will be used to create a `BackupConfiguration` for this `MSSQLServer` database.
 
-Let's create the `MSSQLServer` we have shown above,
+Let's create the `MSSQLServer` object  we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/sample-mssqlserver-2.yaml
@@ -884,7 +884,6 @@ status:
 ```
 
 Now, if we navigate to the GCS bucket, we will see the backed up data stored in the `blueprint/demo/sample-mssqlserver-2/repository/v1/frequent-backup/dump` directory. KubeStash also keeps the backup for `Snapshot` YAMLs, which can be found in the `blueprint/demo/sample-mssqlserver-2/snapshots` directory.
-
 
 ## Cleanup
 

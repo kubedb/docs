@@ -1,6 +1,6 @@
 ---
 title: MSSQLServer Backup Customization | KubeStash
-description: Customizing MSSQLServer Backup and Restore process with KubeStash
+description: Customizing Microsoft SQL Server Backup and Restore process with KubeStash
 menu:
   docs_{{ .version }}:
     identifier: guides-msssqlserver-backup-customization

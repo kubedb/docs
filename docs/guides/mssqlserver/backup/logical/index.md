@@ -1,6 +1,6 @@
 ---
-title: Backup & Restore MSSQLServer | KubeStash
-description: Backup and Restore MSSQLServer database using KubeStash
+title: Backup & Restore Microsoft SQL Server | KubeStash
+description: Backup and Restore Microsoft SQL Server database using KubeStash
 menu:
   docs_{{ .version }}:
     identifier: guides-mssqlserver-logical-backup
@@ -11,11 +11,11 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Backup and Restore MSSQLServer database using KubeStash
+# Backup and Restore Microsoft SQL Server database using KubeStash
 
-KubeStash allows you to backup and restore `MSSQLServer` databases. It supports backups for `MSSQLServer` instances running in Standalone, and Availability Group configurations. KubeStash makes managing your `MSSQLServer` backups and restorations more straightforward and efficient.
+KubeStash allows you to backup and restore `Microsoft SQL Server` databases. It supports backups for `Microsoft SQL Server` instances running in Standalone, and Availability Group configurations. KubeStash makes managing your `Microsoft SQL Server` backups and restorations more straightforward and efficient.
 
-This guide will give you an overview how you can take backup and restore your `MSSQLServer` databases using `Kubestash`.
+This guide will give you an overview how you can take backup and restore your `Microsoft SQL Server` databases using `Kubestash`.
 
 ## Before You Begin
 
@@ -23,7 +23,7 @@ This guide will give you an overview how you can take backup and restore your `M
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- If you are not familiar with how KubeStash backup and restore MSSQLServer databases, please check the following guide [here](/docs/guides/mssqlserver/backup/overview/index.md).
+- If you are not familiar with how KubeStash backup and restore Microsoft SQL Server databases, please check the following guide [here](/docs/guides/mssqlserver/backup/overview/index.md).
 
 You should be familiar with the following `KubeStash` concepts:
 
@@ -44,19 +44,19 @@ namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mssqlserver/backup/logical/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-## Backup MSSQLServer
+## Backup Microsoft SQL Server
 
-KubeStash supports backups for `MSSQLServer` instances across different configurations, including Standalone and  Availability Group setups. In this demonstration, we'll focus on a `MSSQLServer` database using Standalone configuration. The backup and restore process is similar for Availability Group configuration.
+KubeStash supports backups for `Microsoft SQL Server` instances across different configurations, including Standalone and  Availability Group setups. In this demonstration, we'll focus on a `Microsoft SQL Server` database using Standalone configuration. The backup and restore process is similar for Availability Group configuration.
 
-This section will demonstrate how to backup a `MSSQLServer` database. Here, we are going to deploy a `MSSQLServer` database using KubeDB. Then, we are going to backup this database into a `GCS` bucket. Finally, we are going to restore the backup up data into another `MSSQLServer` database.
+This section will demonstrate how to backup a `Microsoft SQL Server` database. Here, we are going to deploy a `Microsoft SQL Server` database using KubeDB. Then, we are going to backup this database into a `GCS` bucket. Finally, we are going to restore the backup up data into another `Microsoft SQL Server` database.
 
-### Deploy Sample MSSQLServer Database
+### Deploy Sample Microsoft SQL Server Database
 
-By default, a KubeDB-managed `MSSQLServer` instance run with TLS disabled. However, the `.spec.tls` field is mandatory and will be used during backup and restore operations.
+By default, a KubeDB-managed `Microsoft SQL Server` instance run with TLS disabled. However, the `.spec.tls` field is mandatory and will be used during backup and restore operations.
 
 **Create Issuer/ClusterIssuer:**
 
-Now, we are going to create an example `Issuer` that will be used throughout the duration of this tutorial. Alternatively, you can follow this [cert-manager](https://cert-manager.io/docs/configuration/ca/) tutorial to create your own `Issuer`. 
+Now, we are going to create an example `Issuer` CR that will be used throughout the duration of this tutorial. Alternatively, you can follow this [cert-manager](https://cert-manager.io/docs/configuration/ca/) tutorial to create your own `Issuer`. 
 
 By following the below steps, we are going to create our desired issuer,
 
@@ -73,7 +73,7 @@ $ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespa
 secret/mssqlserver-ca created
 ```
 
-Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
+Now, we are going to create an `Issuer` CR using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -128,7 +128,7 @@ Create the above `MSSQLServer` CR,
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/sample-mssqlserver.yaml
 mssqlserver.kubedb.com/sample-mssqlserver created
 ```
-KubeDB will deploy a `MSSQLServer` database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
+KubeDB will deploy a `Microsoft SQL Server` database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
 
 Let's check if the database is ready to use,
 
@@ -137,7 +137,6 @@ $ kubectl get mssqlserver -n demo sample-mssqlserver
 NAME                 VERSION     STATUS   AGE
 sample-mssqlserver   2022-cu12   Ready    3m27
 ```
-
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
 
@@ -249,7 +248,7 @@ kkvAFfl8sIxRO2i3⏎
 Now, Lets exec into the `Pod` to enter into `mssqlserver` shell and create a database and a table,
 
 ```bash
-$ kubectl exec -it -n demo sample-mssqlserver-0  -- /opt/mssql-tools/bin/sqlcmd -S sample-mssqlserver -U sa -P "kkvAFfl8sIxRO2i3"
+$ kubectl exec -it -n demo sample-mssqlserver-0 -c mssql -- /opt/mssql-tools/bin/sqlcmd -S sample-mssqlserver -U sa -P "kkvAFfl8sIxRO2i3"
 # list available databases
 1> SELECT name from sys.databases;
 2> GO
@@ -390,9 +389,9 @@ retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
-We have to create a `BackupConfiguration` targeting respective `sample-mssqlserver` MSSQLServer database. Then, KubeStash will create a `CronJob` for each session to take periodic backup of that database.
+We have to create a `BackupConfiguration` targeting respective `sample-mssqlserver` Microsoft SQL Server database. Then, KubeStash will create a `CronJob` for each session to take periodic backup of that database.
 
-Below is the YAML for `BackupConfiguration` CR to backup the `sample-mssqlserver` database that we have deployed earlier,
+Below is the YAML for `BackupConfiguration` CR to backup the `sample-mssqlserver` Microsoft SQL Server database that we have deployed earlier,
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -435,9 +434,9 @@ spec:
 ```
 
 - `.spec.sessions[*].schedule` specifies that we want to backup the database at `5 minutes` interval.
-- `.spec.target` refers to the targeted `sample-mssqlserver` MSSQLServer database that we created earlier.
+- `.spec.target` refers to the targeted `sample-mssqlserver` Microsoft SQL Server database that we created earlier.
 
-> KubeStash utilizes [Wal-G](https://wal-g.readthedocs.io/SQLServer/) to perform logical backups of `MSSQLServer` databases. Since Wal-G operates with `root` user privileges, it’s necessary to configure our backup job to run as a `root` user by specifying `runAsUser: 0` in the `spec.sessions[*].addon.jobTemplate.spec.securityContext` section.
+> KubeStash utilizes [Wal-G](https://wal-g.readthedocs.io/SQLServer/) to perform logical backups of `Microsoft SQL Server` databases. Since Wal-G operates with `root` user privileges, it’s necessary to configure our backup job to run as a `root` user by specifying `runAsUser: 0` in the `spec.sessions[*].addon.jobTemplate.spec.securityContext` section.
 
 Let's create the `BackupConfiguration` CR that we have shown above,
 
@@ -492,7 +491,7 @@ We can see from the above output that the backup session has succeeded. Now, we 
 
 **Verify Backup:**
 
-Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-mssqlserver-backup` has been updated by the following command,
+Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `gcs-mssqlserver-repo` has been updated by the following command,
 
 ```bash
 $ kubectl get repository -n demo gcs-mssqlserver-repo
@@ -646,9 +645,9 @@ restored-mssqlserver   2022-cu12   Provisioning    7m37
 
 #### Create RestoreSession:
 
-Now, we need to create a `RestoreSession` CR pointing to targeted `MSSQLServer` database.
+Now, we need to create a `RestoreSession` CR pointing to targeted `Microsoft SQL Server` database.
 
-Below, is the contents of YAML file of the `RestoreSession` object that we are going to create to restore backed up data into the newly created `MSSQLServer` database named `restored-mssqlserver`.
+Below, is the contents of YAML file of the `RestoreSession` object that we are going to create to restore backed up data into the newly created `Microsoft SQL Server` database named `restored-mssqlserver`.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -677,11 +676,11 @@ spec:
 
 Here,
 
-- `.spec.target` refers to the newly created `restored-mssqlserver` MSSQLServer object to where we want to restore backup data.
+- `.spec.target` refers to the newly created `restored-mssqlserver` Microsoft SQL Server object to where we want to restore backup data.
 - `.spec.dataSource.repository` specifies the Repository object that holds the backed up data.
 - `.spec.dataSource.snapshot` specifies to restore from latest `Snapshot`.
 
-> KubeStash utilizes [Wal-G](https://wal-g.readthedocs.io/SQLServer/) to perform logical restores of `MSSQLServer` databases. Since Wal-G operates with `root` user privileges, it’s necessary to configure our restore job to run as a `root` user by specifying `runAsUser: 0` in the `.spe.addon.jobTemplate.spec.securityContext` section.
+> KubeStash utilizes [Wal-G](https://wal-g.readthedocs.io/SQLServer/) to perform logical restores of `Microsoft SQL Server` databases. Since Wal-G operates with `root` user privileges, it’s necessary to configure our restore job to run as a `root` user by specifying `runAsUser: 0` in the `.spe.addon.jobTemplate.spec.securityContext` section.
 
 Let's create the RestoreSession CRD object we have shown above,
 
@@ -734,8 +733,7 @@ Ag9qi8zQiFew0xHo⏎
 Now, Lets exec into the `Pod` to enter into `mssqlserver` shell and verify restored data,
 
 ```bash
-$ kubectl exec -it -n demo restored-mssqlserver-0  -- /opt/mssql-tools/bin/sqlcmd -S restored-mssqlserver -U sa -P "Ag9qi8zQiFew0xHo"
-Defaulted container "mssql" out of: mssql, mssql-init (init)
+$ kubectl exec -it -n demo restored-mssqlserver-0 -c mssql -- /opt/mssql-tools/bin/sqlcmd -S restored-mssqlserver -U sa -P "Ag9qi8zQiFew0xHo"
 1> SELECT name from sys.databases;
 2> GO
 name                                                                                                                            

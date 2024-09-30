@@ -1,5 +1,5 @@
 ---
-title: Backup & Restore MSSQLServer Using KubeStash
+title: Backup & Restore Microsoft SQL Server Using KubeStash
 menu:
   docs_{{ .version }}:
     identifier: guides-mssqlserver-backup-overview
@@ -14,7 +14,7 @@ section_menu_id: guides
 
 {{< notice type="warning" message="Please install [KubeStash](https://kubestash.com/docs/latest/setup/install/kubestash/) to try this feature. Database backup with KubeStash is already included in the KubeDB license. So, you don't need a separate license for KubeStash." >}}
 
-# MSSQLServer Backup & Restore Overview
+# Microsoft SQL Server Backup & Restore Overview
 
 KubeDB also uses [KubeStash](https://kubestash.com) to backup and restore databases. KubeStash by AppsCode is a cloud native data backup and recovery solution for Kubernetes workloads and databases. KubeStash utilizes [restic](https://github.com/restic/restic) to securely backup stateful applications to any cloud or on-prem storage backends (for example, S3, GCS, Azure Blob storage, Minio, NetApp, Dell EMC etc.).
 
@@ -25,11 +25,11 @@ KubeDB also uses [KubeStash](https://kubestash.com) to backup and restore databa
 
 ## How Backup Works
 
-The following diagram shows how KubeStash takes backup of a `MSSQLServer` database. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeStash takes backup of a `Microsoft SQL Server` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="MSSQLServer Backup Overview" src="/docs/guides/mssqlserver/backup/overview/images/backup_overview.svg">
-  <figcaption align="center">Fig: MSSQLServer Backup Overview</figcaption>
+  <img alt="Microsoft SQL Server Backup Overview" src="/docs/guides/mssqlserver/backup/overview/images/backup_overview.svg">
+  <figcaption align="center">Fig: Microsoft SQL Server Backup Overview</figcaption>
 </figure>
 
 
@@ -59,26 +59,26 @@ The backup process consists of the following steps:
 
 12. Then it resolves the respective `Addon` and `Function` and prepares backup `Job` definition.
 
-13. Then, it creates the `Job` to backup the targeted `PostgreSQL` database.
+13. Then, it creates the `Job` to backup the targeted `Microsoft SQL Server` database.
 
 14. The backup `Job` reads necessary information (e.g. auth secret, port)  to connect with the database from the `AppBinding` CR. It also reads backend information and access credentials from `BackupStorage` CR, Storage Secret and `Repository` path respectively.
 
-15. Then, the `Job` dumps the targeted `PostgreSQL` database and uploads the output to the backend. KubeStash pipes the output of dump command to uploading process. Hence, backup `Job` does not require a large volume to hold the entire dump output.
+15. Then, the `Job` dumps the targeted `Microsoft SQL Server` database and uploads the output to the backend. KubeStash pipes the output of dump command to uploading process. Hence, backup `Job` does not require a large volume to hold the entire dump output.
 
-16. After the backup process is completed, the backup `Job` updates the `status.components[dump]` field of the `Snapshot` resources with backup information of the target `PostgreSQL` database.
+16. After the backup process is completed, the backup `Job` updates the `status.components[dump]` field of the `Snapshot` resources with backup information of the target `Microsoft SQL Server` database.
 
 ## How Restore Process Works
 
-The following diagram shows how KubeStash restores backed up data into a `PostgreSQL` database. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeStash restores backed up data into a `Microsoft SQL Server` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Database Restore Overview" src="/docs/guides/mssqlserver/backup/overview/images/restore_overview.svg">
-  <figcaption align="center">Fig: PostgreSQL Restore Process Overview</figcaption>
+  <figcaption align="center">Fig: Microsoft SQL Server Restore Process Overview</figcaption>
 </figure>
 
 The restore process consists of the following steps:
 
-1. At first, a user creates a `PostgreSQL` database where the data will be restored or the user can use the same `PostgreSQL` database.
+1. At first, a user creates a `Microsoft SQL Server` database where the data will be restored or the user can use the same `Microsoft SQL Server` database.
 
 2. Then, she creates a `RestoreSession` custom resource that specifies the target database where the backed-up data will be restored, addon information (including restore tasks), the target snapshot to be restored, the Repository containing that snapshot, and other additional settings.
 
@@ -96,4 +96,4 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Backup a `PostgreSQL` database using KubeStash by the following guides from [here](/docs/guides/mssqlserver/backup/logical/index.md).
+- Backup a `Microsoft SQL Server` database using KubeStash by the following guides from [here](/docs/guides/mssqlserver/backup/logical/index.md).

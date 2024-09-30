@@ -1,5 +1,5 @@
 ---
-title: Backup & Restore MSSQLServer
+title: Backup & Restore Microsoft SQL Server
 menu:
   docs_{{ .version }}:
     identifier: guides-mssqlserver-backup
