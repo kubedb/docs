@@ -1,0 +1,17 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: gcs-storage
+  namespace: demo
+spec:
+  storage:
+    provider: gcs
+    gcs:
+      bucket: kubestash-qa
+      prefix: demo
+      secretName: gcs-secret
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  default: true
+  deletionPolicy: Delete

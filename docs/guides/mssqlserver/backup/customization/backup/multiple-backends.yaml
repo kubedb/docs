@@ -1,0 +1,53 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: sample-mssqlserver-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: MSSQLServer
+    namespace: demo
+    name: sample-mssqlserver
+  backends:
+    - name: gcs-backend
+      storageRef:
+        namespace: demo
+        name: gcs-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+    - name: s3-backend
+      storageRef:
+        namespace: demo
+        name: s3-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: frequent-backup
+      scheduler:
+        schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: gcs-mssqlserver-repo
+          backend: gcs-backend
+          directory: /mssqlserver
+          encryptionSecret:
+            name: encrypt-secret
+            namespace: demo
+        - name: s3-mssqlserver-repo
+          backend: s3-backend
+          directory: /mssqlserver-copy
+          encryptionSecret:
+            name: encrypt-secret
+            namespace: demo
+      addon:
+        name: mssqlserver-addon
+        jobTemplate:
+          spec:
+            securityContext:
+              runAsUser: 0
+        tasks:
+          - name: logical-backup
