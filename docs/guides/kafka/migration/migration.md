@@ -2,8 +2,8 @@
 title: Kafka Migration Guide
 menu:
   docs_{{ .version }}:
-    identifier: kf--monitoring-guide
-    name: Builtin Prometheus
+    identifier: kf-migration-guide
+    name: Kafka Migration
     parent: kf-migration-kafka
     weight: 20
 menu_name: docs_{{ .version }}
@@ -558,6 +558,8 @@ mirror-heartbeat-connector          kafka.kubedb.com/v1alpha1   mirror-connect  
 mirror-source-connector             kafka.kubedb.com/v1alpha1   mirror-connect    Running   20s
 ```
 
+> **Note:** We have used `replication.policy.class=org.apache.kafka.connect.mirror.IdentityReplicationPolicy` in the `MirrorSource` and `MirrorCheckpoint` to replicate topics exactly same name as source cluster. You can use `replication.policy.class=org.apache.kafka.connect.mirror.DefaultReplicationPolicy` to replicate topics with adding specific suffix.
+
 #### Configuration tables for MirrorSource, MirrorCheckpoint, and MirrorHeartbeat
 | **Property**                              | **Description**                                                                                     | **Default**                                                | **sourceConnector** | **checkpointConnector** | **heartbeatConnector** |
 |-------------------------------------------|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------|---------------------|-------------------------|------------------------|
@@ -653,8 +655,8 @@ Topic `foo` and `bar` has created and replicated to the target cluster.
 Consumer group `foo-consumer` and `bar-consumer` are also translated using the `MirrorCheckpoint` connector.
 
 <figure align="center">
-  <img alt="Translated consumer-group from target cluster" src="/docs/images/kafka/migration/translated-cg.png">
-<figcaption align="center">Fig: Translated consumer-group from target cluster</figcaption>
+  <img alt="Translated consumer-group to target cluster" src="/docs/images/kafka/migration/translated-cg.png">
+<figcaption align="center">Fig: Translated consumer-group to target cluster</figcaption>
 </figure>
 
 Also, monitor the migration process using prometheus and grafana.
