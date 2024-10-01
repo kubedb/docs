@@ -30,8 +30,8 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Singl
 
 - You should be familiar with the following `KubeDB` concepts:
     - [SingleStore](/docs/guides/singlestore/concepts/singlestore.md)
-    - [SingleStoreAutoscaler](/docs/guides/singlestore/concepts/singlestoreautoscaler.md)
-    - [SingleStoreOpsRequest](/docs/guides/singlestore/concepts/singlestoreopsrequest.md)
+    - [SingleStoreAutoscaler](/docs/guides/singlestore/concepts/autoscaler.md)
+    - [SingleStoreOpsRequest](/docs/guides/singlestore/concepts/opsrequest.md)
     - [Storage Autoscaling Overview](/docs/guides/singlestore/autoscaler/storage/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -471,6 +471,6 @@ kubectl delete sdb -n demo sdb-sample
 
 - Detail concepts of [SingleStore object](/docs/guides/singlestore/concepts/singlestore.md).
 - Different SingleStore clustering modes [here](/docs/guides/singlestore/clustering/_index.md).
-- Monitor your SingleStore database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/singlestore/monitoring/using-prometheus-operator.md).
-- Monitor your SingleStore database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/singlestore/monitoring/using-builtin-prometheus.md)
+- Monitor your SingleStore database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/singlestore/monitoring/prometheus-operator/index.md).
+- Monitor your SingleStore database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/singlestore/monitoring/builtin-prometheus/index.md)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
