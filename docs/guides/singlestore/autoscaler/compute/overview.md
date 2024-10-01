@@ -28,7 +28,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `SingleStore` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Compute Auto Scaling process of SingleStore" src="/docs/images/singlestore/compute-process.svc">
+  <img alt="Compute Auto Scaling process of SingleStore" src="/docs/images/singlestore/compute-process.svg">
 <figcaption align="center">Fig: Compute Auto Scaling process of SingleStore</figcaption>
 </figure>
 

@@ -8,7 +8,7 @@ menu:
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
----[cluster.md](cluster.md)
+---
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
@@ -20,8 +20,8 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 
 - You should be familiar with the following `KubeDB` concepts:
     - [SingleStore](/docs/guides/singlestore/concepts/singlestore.md)
-    - [SingleStoreAutoscaler](/docs/guides/singlestore/concepts/singlestoreautoscaler.md)
-    - [SingleStoreOpsRequest](/docs/guides/singlestore/concepts/singlestoreopsrequest.md)
+    - [SingleStoreAutoscaler](/docs/guides/singlestore/concepts/autoscaler.md)
+    - [SingleStoreOpsRequest](/docs/guides/singlestore/concepts/opsrequest.md)
 
 ## How Storage Autoscaling Works
 
