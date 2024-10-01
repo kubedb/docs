@@ -65,6 +65,26 @@ We are using KubeDB Kafka for both source and target Kafka clusters. We are goin
 
 At first, we need to create a source Kafka cluster. We are going to use the following YAML file to create a Kafka cluster in the `demo` namespace.
 
+Before creating the Kafka cluster, we need to create a secret with the source Kafka cluster's authentication information.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: source-kafka-auth
+  namespace: demo
+stringData:
+    password: source-pass
+    username: admin
+```
+
+Create the secret using the following command:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/source-kafka-auth.yaml
+secret/source-kafka-auth created
+```
+
 ```yaml
 apiVersion: kubedb.com/v1
 kind: Kafka
@@ -72,6 +92,8 @@ metadata:
   name: source-kafka
   namespace: demo
 spec:
+  authSecret:
+    name: source-kafka-auth
   replicas: 2
   version: 3.6.1
   storage:
@@ -221,6 +243,26 @@ So, we have one producer and two consumers running in the source Kafka cluster.
 
 Now, we are going to create a target Kafka cluster with monitoring enabled. We are going to use the following YAML file to create a Kafka cluster in the `demo` namespace.
 
+Before creating the target Kafka cluster, we need to create a secret with the target Kafka cluster's authentication information.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: target-kafka-auth
+  namespace: demo
+stringData:
+    password: target-pass
+    username: admin
+```
+
+Create the secret using the following command:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/target-kafka-auth.yaml
+secret/target-kafka-auth created
+```
+
 ```yaml
 apiVersion: kubedb.com/v1
 kind: Kafka
@@ -228,6 +270,8 @@ metadata:
   name: target-kafka
   namespace: demo
 spec:
+  authSecret:
+    name: target-kafka-auth
   version: 3.6.1
   topology:
     broker:
@@ -282,6 +326,26 @@ target-kafka   3.6.1     Ready          2m
 
 Now, create a `ConnectCluster` with monitoring enabled to migrate from the source Kafka cluster to the target Kafka cluster using mirror-maker-2.
 
+Before creating the Connect cluster, we need to create a secret with the connect cluster's authentication information.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mirror-connect-auth
+  namespace: demo
+stringData:
+    password: mirror-pass
+    username: connect
+```
+
+Create the secret using the following command:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-connect-auth.yaml
+secret/mirror-connect-auth created
+```
+
 ```yaml
 apiVersion: kafka.kubedb.com/v1alpha1
 kind: ConnectCluster
@@ -289,6 +353,8 @@ metadata:
   name: mirror-connect
   namespace: demo
 spec:
+  authSecret:
+    name: mirror-connect-auth
   version: 3.6.1
   replicas: 3
   kafkaRef:
@@ -343,12 +409,12 @@ stringData:
     source.cluster.bootstrap.servers=source-kafka-pods.demo.svc:9092
     source.cluster.security.protocol=SASL_PLAINTEXT
     source.cluster.sasl.mechanism=PLAIN
-    source.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="R8BiT0S6pZ~MfBrF";
+    source.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="source-pass";
     target.cluster.alias=target
     target.cluster.bootstrap.servers=target-kafka-pods.demo.svc:9092
     target.cluster.security.protocol=SASL_PLAINTEXT
     target.cluster.sasl.mechanism=PLAIN
-    target.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="UVu1dpWcML2QZW5d";
+    target.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="target-pass";
     offset.lag.max=100
     replication.factor=-1
     sync.topic.acls.enabled=false
@@ -398,12 +464,12 @@ stringData:
     source.cluster.bootstrap.servers=source-kafka-pods.demo.svc:9092
     source.cluster.security.protocol=SASL_PLAINTEXT
     source.cluster.sasl.mechanism=PLAIN
-    source.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="R8BiT0S6pZ~MfBrF";
+    source.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="source-pass";
     target.cluster.alias=target
     target.cluster.bootstrap.servers=target-kafka-pods.demo.svc:9092
     target.cluster.security.protocol=SASL_PLAINTEXT
     target.cluster.sasl.mechanism=PLAIN
-    target.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="UVu1dpWcML2QZW5d";
+    target.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="target-pass";
     sync.group.offsets.enabled=true
     refresh.groups.interval.seconds=10
     emit.checkpoints.interval.seconds=10
@@ -452,12 +518,12 @@ stringData:
     source.cluster.bootstrap.servers=source-kafka-pods.demo.svc:9092
     source.cluster.security.protocol=SASL_PLAINTEXT
     source.cluster.sasl.mechanism=PLAIN
-    source.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="R8BiT0S6pZ~MfBrF";
+    source.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="source-pass";
     target.cluster.alias=target
     target.cluster.bootstrap.servers=target-kafka-pods.demo.svc:9092
     target.cluster.security.protocol=SASL_PLAINTEXT
     target.cluster.sasl.mechanism=PLAIN
-    target.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="UVu1dpWcML2QZW5d";
+    target.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="target-pass";
     heartbeats.topic.replication.factor=-1
     key.converter=org.apache.kafka.connect.converters.ByteArrayConverter
     value.converter=org.apache.kafka.connect.converters.ByteArrayConverter
@@ -536,18 +602,18 @@ yamlApplicationConfig:
         properties:
           sasl.mechanism: PLAIN
           security.protocol: SASL_PLAINTEXT
-          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="UVu1dpWcML2QZW5d";
+          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="target-pass";
         kafkaConnect:
           - name: mirror-connect
             address: http://mirror-connect.demo.svc.cluster.local:8083
             username: connect
-            password: connect-secret
+            password: mirror-pass
       - name: source-kafka
         bootstrapServers: "source-kafka-pods.demo.svc.cluster.local:9092"
         properties:
           sasl.mechanism: PLAIN
           security.protocol: SASL_PLAINTEXT
-          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="R8BiT0S6pZ~MfBrF";
+          sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="source-pass";
 ```
 
 Now, install Kafbat using the following command:
