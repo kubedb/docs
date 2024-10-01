@@ -1,10 +1,10 @@
 ---
-title: SingleStore
+title: Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: sdb-auto-scaling
-    name: SingleStore
+    name: Autoscaling
     parent: guides-singlestore
-    weight: 10
+    weight: 46
 menu_name: docs_{{ .version }}
 ---

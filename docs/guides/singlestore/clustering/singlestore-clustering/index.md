@@ -1,9 +1,9 @@
 ---
-title: SingleStore Cluster Guide
+title: Cluster Guide
 menu:
   docs_{{ .version }}:
     identifier: guides-sdb-clustering
-    name: SingleStore Cluster Guide
+    name: Cluster Guide
     parent: sdb-clustering
     weight: 20
 menu_name: docs_{{ .version }}

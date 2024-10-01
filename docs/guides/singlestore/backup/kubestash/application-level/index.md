@@ -3,7 +3,7 @@ title: Application Level Backup & Restore SingleStore | KubeStash
 description: Application Level Backup and Restore using KubeStash
 menu:
   docs_{{ .version }}:
-    identifier: guides-application-level-backup-stashv2
+    identifier: guides-sdb-application-level-backup-stashv2
     name: Application Level Backup
     parent: guides-sdb-backup-stashv2
     weight: 40

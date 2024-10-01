@@ -532,7 +532,7 @@ kubectl delete ns demo
 
 - Detail concepts of [SingleStore object](/docs/guides/singlestore/concepts/singlestore.md).
 - Different SingleStore clustering modes [here](/docs/guides/singlestore/clustering/_index.md).
-- Monitor your singlestore database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/singlestore/monitoring/using-prometheus-operator.md).
-- Monitor your singlestore database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/singlestore/monitoring/using-builtin-prometheus.md).
+- Monitor your singlestore database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/singlestore/monitoring/prometheus-operator/index.md).
+- Monitor your singlestore database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/singlestore/monitoring/builtin-prometheus/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
