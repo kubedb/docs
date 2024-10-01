@@ -1,0 +1,52 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Singlestore
+metadata:
+  name: sample-sdb
+  namespace: demo
+spec:
+  version: "8.7.10"
+  topology:
+    aggregator:
+      replicas: 1
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "0.6"
+                requests:
+                  memory: "2Gi"
+                  cpu: "0.6"
+      storage:
+        storageClassName: "standard"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    leaf:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "0.6"
+                requests:
+                  memory: "2Gi"
+                  cpu: "0.6"
+      storage:
+        storageClassName: "standard"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  licenseSecret:
+    name: license-secret
+  storageType: Durable
+  deletionPolicy: WipeOut
