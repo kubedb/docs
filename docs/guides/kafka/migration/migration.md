@@ -59,6 +59,11 @@ Migration of Kafka cluster is always a challenging task. Kafka is a distributed 
 
 We are using KubeDB Kafka for both source and target Kafka clusters. We are going to migrate the data from the source Kafka cluster to the target Kafka cluster. You can follow the following steps to migrate your kafka cluster to KubeDB.
 
+<figure align="center">
+  <img alt="Kafka Migration Process" src="/docs/images/kafka/migration/migration.png">
+<figcaption align="center">Fig: Kafka Migration Process</figcaption>
+</figure>
+
 ### Step 1: Create Source Kafka Cluster
 
 > **Note:** If you already have a source Kafka cluster, you can skip this step.
@@ -324,7 +329,7 @@ target-kafka   3.6.1     Provisioning   111s
 target-kafka   3.6.1     Ready          2m
 ```
 
-Now, create a `ConnectCluster` with monitoring enabled to migrate from the source Kafka cluster to the target Kafka cluster using mirror-maker-2.
+Now, create a `ConnectCluster` with monitoring enabled to migrate from the source Kafka cluster to the target Kafka cluster using `mirror-maker-2`.
 
 Before creating the Connect cluster, we need to create a secret with the connect cluster's authentication information.
 
@@ -439,6 +444,16 @@ spec:
   deletionPolicy: WipeOut
 ```
 
+here,
+- Properties with prefix `source.cluster` are the source Kafka cluster's authentication information.
+- Properties with prefix `target.cluster` are the target Kafka cluster's authentication information.
+- `replication.policy.class=org.apache.kafka.connect.mirror.IdentityReplicationPolicy` is used to replicate topics exactly the same name as the source cluster.
+- `topics.exclude` is used to exclude internal topics from replication.
+- `offset.lag.max=100` is used to set the maximum allowable (out-of-sync) offset lag before a remote partition is synchronized.
+- `replication.factor=-1` is used to set default replication factor for new topics in the target cluster.
+- `sync.topic.acls.enabled=false` is used to disable synchronization of ACLs from the source cluster.
+- `sync.topic.configs.enabled=true` is used to enable synchronization of topic configuration from the source cluster.
+
 Create the `MirrorSource` connector using the following command:
 
 ```bash
@@ -493,6 +508,14 @@ spec:
   deletionPolicy: WipeOut
 ```
 
+here,
+- Properties with prefix `source.cluster` are the source Kafka cluster's authentication information.
+- Properties with prefix `target.cluster` are the target Kafka cluster's authentication information.
+- `sync.group.offsets.enabled=true` is used to enable synchronization of consumer group offsets to the target cluster `__consumer_offsets` topic.
+- `refresh.groups.interval.seconds=10` is used to set the frequency of consumer group refresh.
+- `emit.checkpoints.interval.seconds=10` is used to set the frequency of consumer offset translation.
+- `sync.group.offsets.interval.seconds=10` is used to set the frequency of consumer group offset synchronization.
+
 Create the `MirrorCheckpoint` connector using the following command:
 
 ```bash
@@ -503,7 +526,7 @@ connector.kafka.kubedb.com/mirror-checkpoint-connector created
 
 ### Step 6: Create MirrorHeartbeat
 
-Create a `MirrorHeartbeat` connector.
+Create a `MirrorHeartbeat` connector. Heartbeat Connector enables the monitoring of the health of a MirrorMaker 2 instance.
 
 ```yaml
 apiVersion: v1
@@ -542,6 +565,10 @@ spec:
   deletionPolicy: WipeOut
 ```
 
+here,
+- Properties with prefix `source.cluster` are the source Kafka cluster's authentication information.
+- Properties with prefix `target.cluster` are the target Kafka cluster's authentication information.
+
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-heartbeat.yaml
 secret/mirror-hearbeat-config created
@@ -558,8 +585,6 @@ mirror-heartbeat-connector          kafka.kubedb.com/v1alpha1   mirror-connect  
 mirror-source-connector             kafka.kubedb.com/v1alpha1   mirror-connect    Running   20s
 ```
 
-> **Note:** We have used `replication.policy.class=org.apache.kafka.connect.mirror.IdentityReplicationPolicy` in the `MirrorSource` and `MirrorCheckpoint` to replicate topics exactly same name as source cluster. You can use `replication.policy.class=org.apache.kafka.connect.mirror.DefaultReplicationPolicy` to replicate topics with adding specific suffix.
-
 #### Configuration tables for MirrorSource, MirrorCheckpoint, and MirrorHeartbeat
 | **Property**                              | **Description**                                                                                     | **Default**                                                | **sourceConnector** | **checkpointConnector** | **heartbeatConnector** |
 |-------------------------------------------|-----------------------------------------------------------------------------------------------------|------------------------------------------------------------|---------------------|-------------------------|------------------------|
@@ -567,7 +592,7 @@ mirror-source-connector             kafka.kubedb.com/v1alpha1   mirror-connect  
 | **replication.policy.class**              | Policy to define the remote topic naming convention.                                                | `org.apache.kafka.connect.mirror.DefaultReplicationPolicy` | &#10003;            | &#10003;                | &#10003;               |
 | **consumer.poll.timeout.ms**              | Timeout when polling the source cluster.                                                            | `1000` (1 second).                                         | &#10003;            | &#10003;                | &#10003;               |
 | **offset-syncs.topic.location**           | The location of the `offset-syncs` topic, which can be the `source` or `target` cluster.            | `source`                                                   | &#10003;            | &#10003;                |                        |
-| **topic.filter.class**                    | Topic filter to select the topics to replicate.                                                     | `org.apache.kafka.connect.mirror.DefaultTopicFilter`.      | &#10003;            | &#10003;                |                        |
+| **topic.filter.class**                    | Topic filter to select the topics to replicate.                                                     | `org.apache.kafka.connect.mirror.DefaultTopicFilter`       | &#10003;            | &#10003;                |                        |
 | **config.property.filter.class**          | Topic filter to select the topic configuration properties to replicate.                             |                                                            | &#10003;            | &#10003;                |                        |
 | **config.properties.exclude**             | Topic configuration properties that should not be replicated.(comma separated and regular exp)      |                                                            | &#10003;            |                         |                        |
 | **offset.lag.max**                        | Maximum allowable (out-of-sync) offset lag before a remote partition is synchronized.               | `100`                                                      | &#10003;            |                         |                        |
@@ -687,7 +712,7 @@ There are two main metrics to notice:
 <figcaption align="center">Fig: Mirror-source connector replication latency(ms)</figcaption>
 </figure>
 
-> **Note:** You can also use add more tasks to the `MirrorSource` connector to replicate faster using the `tasks.max` property.
+> **Note:** You can also add more tasks to the `MirrorSource` connector to replicate faster using the `tasks.max` property.
 > 
 There are several metrics that track errors or retries. These metrics help identify issues like failed data transfers or connection problems, allowing you to spot potential errors in the migration.
 These Prometheus metrics include:
@@ -700,6 +725,8 @@ These Prometheus metrics include:
 
 4. kafka_connect_task_error_total_records_skipped
 
+Also, you can monitor the whole cluster using [prometheus](/docs/guides/kafka/monitoring/using-prometheus-operator.md) and grafana.
+
 ### Step 8: Move Producer and Consumer to Target Kafka Cluster
 
 We are monitoring the migration process using the Kafbat UI and prometheus. When we find the replication lag is minimum, we can move the producer and consumer to the target Kafka cluster.
@@ -707,11 +734,11 @@ We are monitoring the migration process using the Kafbat UI and prometheus. When
 There are two ways you can move producer and consumer applications.
 - **Move producer before consumer**: This method works well for migrating data with MirrorMaker 2, but it does have some limitations. Since the producer is moved first, consumers are still reading from the old cluster. Once they finish processing all the data from the old cluster, they may experience a delay in receiving new data. However, by setting a lower value for the offset.lag.max property in the MirrorSource connector, you can reduce the chances of reading duplicate messages.
 
-  To manage this effectively, you first stop the producer applications, ensuring all data are migrated to the target cluster. Once done, you redirect the producers to the new cluster. Monitor the performance of the new cluster with the producer application, and if everything works as expected, you can then stop the consumers in the old cluster and start them in the new one.
+    To manage this effectively, you first stop the producer applications, ensuring all data are migrated to the target cluster. Once done, you redirect the producers to the new cluster. Monitor the performance of the new cluster with the producer application, and if everything works as expected, you can then stop the consumers in the old cluster and start them in the new one.
 
 - **Move consumer before producer**: This approach is beneficial in case any issues arise with the new Kafka cluster. Since the producer applications continue writing to the old cluster, you can revert back with minimal effort and without worrying about data loss. However, special care must be taken when translating consumer group offsets to avoid reprocessing duplicate messages.
 
-  To manage this effectively, you first stop the consumer applications, ensuring the offsets are correctly aligned and translated to the target cluster. Once done, you redirect the consumers to the new cluster. Monitor the performance of the new cluster with the consumer application, and if everything works as expected, you can then stop the producers in the old cluster and start them in the new one.
+    To manage this effectively, you first stop the consumer applications, ensuring the offsets are correctly aligned and translated to the target cluster. Once done, you redirect the consumers to the new cluster. Monitor the performance of the new cluster with the consumer application, and if everything works as expected, you can then stop the producers in the old cluster and start them in the new one.
 
 > **Note:** During migration, If consumer-groups are not fully synced before the start of consumers to new cluster, you have to manually reset the target cluster consumer group offset to the current offset of the source cluster using the `kafka-consumer-groups.sh` script or any other tools. Otherwise, you may face reading duplicate messages.
 
@@ -754,7 +781,7 @@ Now, stop the consumer (Terminal 2 and Terminal 3) in the source Kafka cluster. 
 <figcaption align="center">Fig: Consumer-group synced with source cluster</figcaption>
 </figure>
 
-Now, exec into one of the broker pods (Terminal 2 and 3) in the target Kafka cluster and run the consumer.
+Now, exec into one of the broker pods (Terminal 2 and 3) in the target Kafka cluster and run the consumer script to consume messages from the target Kafka cluster.
 
 **Terminal 2:**
 ```bash
