@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Kafka Migration Guide
 
-This guide will help you to migrate your existing Kafka cluster to KubeDB.
+Suppose you are running kafka cluster on-prem or on any other cloud provider and want to migrate to KubeDB. This guide will help you to migrate your existing Kafka cluster to KubeDB Kafka. Also, you can migrate your KubeDB Kafka cluster to another KubeDB Kafka cluster.
 
 ## Before You Begin
 
