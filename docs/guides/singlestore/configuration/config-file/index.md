@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Using Custom Configuration File
 
-KubeDB supports providing custom configuration for SingleStore. This tutorial will show you how to use KubeDB to run a MySQL database with custom configuration.
+KubeDB supports providing custom configuration for SingleStore. This tutorial will show you how to use KubeDB to run a SingleStore database with custom configuration.
 
 ## Before You Begin
 
@@ -37,195 +37,211 @@ KubeDB supports providing custom configuration for SingleStore. This tutorial wi
 
 ## Overview
 
-MySQL allows to configure database via configuration file. The default configuration for MySQL can be found in `/etc/mysql/my.cnf` file. When MySQL starts, it will look for custom configuration file in `/etc/mysql/conf.d` directory. If configuration file exist, MySQL instance will use combined startup setting from both `/etc/mysql/my.cnf` and `*.cnf` files in `/etc/mysql/conf.d` directory. This custom configuration will overwrite the existing default one. To know more about configuring MySQL see [here](https://dev.mysql.com/doc/refman/8.0/en/server-configuration.html).
+SingleStore allows to configure database via configuration file. The default configuration for SingleStore can be found in `/var/lib/memsql/instance/memsql.cnf` file. When SingleStore starts, it will look for custom configuration file in `/etc/memsql/conf.d` directory. If configuration file exist, SingleStore instance will use combined startup setting from both `/var/lib/memsql/instance/memsql.cnf` and `*.cnf` files in `/etc/memsql/conf.d` directory. This custom configuration will overwrite the existing default one. To know more about configuring SingleStore see [here](https://docs.singlestore.com/db/v8.7/reference/configuration-reference/cluster-config-files/singlestore-server-config-files/).
 
-At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSecret` section while creating MySQL crd. KubeDB will mount this volume into `/etc/mysql/conf.d` directory of the database pod.
+At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You need to specify this volume in the `spec.configSecret` section when creating the SingleStore CRD for `Standalone` mode. Additionally, you can modify your `aggregator` and `leaf` nodes separately by providing separate configSecrets, or use the same one in the `spec.topology.aggregator.spec.configSecret` and `spec.topology.leaf.spec.configSecret` sections when creating the SingleStore CRD for `Cluster` mode. KubeDB will mount this volume into `/etc/memsql/conf.d` directory of the database pod.
 
-In this tutorial, we will configure [max_connections](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_max_connections) and [read_buffer_size](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_read_buffer_size) via a custom config file. We will use configMap as volume source.
+In this tutorial, we will configure [max_connections](https://docs.singlestore.com/db/v8.7/reference/configuration-reference/engine-variables/list-of-engine-variables/#in-depth-variable-definitions) and [read_buffer_size](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_read_buffer_size) via a custom config file. We will use configMap as volume source.
+
+## Create SingleStore License Secret
+
+We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
+
+```bash
+$ kubectl create secret generic -n demo license-secret \
+                --from-literal=username=license \
+                --from-literal=password='your-license-set-here'
+secret/license-secret created
+```
 
 ## Custom Configuration
 
-At first, let's create `my-config.cnf` file setting `max_connections` and `read_buffer_size` parameters.
+At first, let's create `sdb-config.cnf` file setting `max_connections` and `read_buffer_size` parameters.
 
 ```bash
-cat <<EOF > my-config.cnf
-[mysqld]
-max_connections = 200
+cat <<EOF > sdb-config.cnf
+[server]
+max_connections = 250
 read_buffer_size = 1048576
 EOF
 
-$ cat my-config.cnf
-[mysqld]
-max_connections = 200
-read_buffer_size = 1048576
+$ cat sdb-config.cnf
+[server]
+max_connections = 250
+read_buffer_size = 122880
 ```
-
-Here, `read_buffer_size` is set to 1MB in bytes.
 
 Now, create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo my-configuration --from-file=./my-config.cnf
-configmap/my-configuration created
+$ kubectl create secret generic -n demo sdb-configuration --from-file=./sdb-config.cnf
+configmap/sdb-configuration created
 ```
 
 Verify the secret has the configuration file.
 
 ```yaml
-$ kubectl get secret -n demo my-configuration -o yaml
+$ kubectl get secret -n demo sdb-configuration -o yaml
 apiVersion: v1
 data:
-  my-config.cnf: W215c3FsZF0KbWF4X2Nvbm5lY3Rpb25zID0gMjAwCnJlYWRfYnVmZmVyX3NpemUgPSAxMDQ4NTc2Cg==
+  sdb-config.cnf: W3NlcnZlcl0KbWF4X2Nvbm5lY3Rpb25zID0gMjUwCnJlYWRfYnVmZmVyX3NpemUgPSAxMjI4ODAK
 kind: Secret
 metadata:
-  creationTimestamp: "2022-06-28T13:20:42Z"
-  name: my-configuration
+  creationTimestamp: "2024-10-02T12:54:35Z"
+  name: sdb-configuration
   namespace: demo
-  resourceVersion: "1601408"
-  uid: 82e1a722-d80f-448e-89b5-c64de81ed262
+  resourceVersion: "99627"
+  uid: c2621d8e-ebca-4300-af05-0180512ce031
 type: Opaque
 
+
 ```
 
-Now, create MySQL crd specifying `spec.configSecret` field.
+Now, create SingleStore crd specifying `spec.topology.aggregator.spec,configSecret` and `spec.topology.leaf.spec,configSecret` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/configuration/config-file/yamls/mysql-custom.yaml
-mysql.kubedb.com/custom-mysql created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/configuration/config-file/yamls/sdb-custom.yaml
+singlestore.kubedb.com/custom-sdb created
 ```
 
-Below is the YAML for the MySQL crd we just created.
+Below is the YAML for the SingleStore crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1
-kind: MySQL
+apiVersion: kubedb.com/v1alpha2
+kind: Singlestore
 metadata:
-  name: custom-mysql
+  name: custom-sdb
   namespace: demo
 spec:
-  version: "8.0.35"
-  configSecret:
-    name: my-configuration
-  storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
+  version: "8.7.10"
+  topology:
+    aggregator:
+      replicas: 2
+      configSecret:
+        name: sdb-configuration
+      podTemplate:
+        spec:
+          containers:
+          - name: singlestore
+            resources:
+              limits:
+                memory: "2Gi"
+                cpu: "600m"
+              requests:
+                memory: "2Gi"
+                cpu: "600m"
+      storage:
+        storageClassName: "standard"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    leaf:
+      replicas: 2
+      configSecret:
+        name: sdb-configuration
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "600m"
+                requests:
+                  memory: "2Gi"
+                  cpu: "600m"                      
+      storage:
+        storageClassName: "standard"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  licenseSecret:
+    name: license-secret
+  storageType: Durable
+  deletionPolicy: WipeOut
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `custom-mysql-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc.
 
 Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo
-NAME             READY     STATUS    RESTARTS   AGE
-custom-mysql-0   1/1       Running   0          44s
+NAME                      READY   STATUS    RESTARTS   AGE
+custom-sdb-aggregator-0   2/2     Running   0          94s
+custom-sdb-aggregator-1   2/2     Running   0          88s
+custom-sdb-leaf-0         2/2     Running   0          91s
+custom-sdb-leaf-1         2/2     Running   0          86s
+
+$ kubectl get sdb -n demo
+NAME         TYPE                  VERSION   STATUS   AGE
+custom-sdb   kubedb.com/v1alpha2   8.7.10    Ready    4m29s
+
 ```
 
-Check the pod's log to see if the database is ready
-
-```bash
-$ kubectl logs -f -n demo custom-mysql-0
-2022-06-28 13:22:10+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.0.35-1debian10 started.
-2022-06-28 13:22:10+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
-....
-
-2022-06-28 13:22:20+00:00 [Note] [Entrypoint]: Database files initialized
-2022-06-28 13:22:20+00:00 [Note] [Entrypoint]: Starting temporary server
-2022-06-28T13:22:20.233556Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.35) starting as process 92
-2022-06-28T13:22:20.252075Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
-2022-06-28T13:22:20.543772Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
-...
-2022-06-28 13:22:22+00:00 [Note] [Entrypoint]: Stopping temporary server
-2022-06-28T13:22:22.354537Z 10 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.0.35).
-2022-06-28T13:22:24.495121Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.35)  MySQL Community Server - GPL.
-2022-06-28 13:22:25+00:00 [Note] [Entrypoint]: Temporary server stopped
-
-2022-06-28 13:22:25+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
-
-....
-2022-06-28T13:22:26.064259Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
-2022-06-28T13:22:26.076352Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock
-2022-06-28T13:22:26.076407Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.35'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
-
-....
-```
-
-Once we see `[Note] /usr/sbin/mysqld: ready for connections.` in the log, the database is ready.
+We can see the database is in ready phase so it can accept conncetion.
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
-First, deploy [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/) to connect with the MySQL database we have just created.
+> Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
 ```bash
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/configuration/config-file/yamls/phpmyadmin.yaml
-deployment.extensions/myadmin created
-service/myadmin created
+# Connceting to the database
+$ kubectl exec -it -n demo custom-sdb-aggregator-0 -- bash
+Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
+[memsql@custom-sdb-aggregator-0 /]$ memsql -uroot -p$ROOT_PASSWORD
+singlestore-client: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 208
+Server version: 5.7.32 SingleStoreDB source distribution (compatible; MySQL Enterprise & MySQL Commercial)
+
+Copyright (c) 2000, 2022, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+# value of `max_conncetions` is same as provided 
+singlestore> show variables like 'max_connections';
++-----------------+-------+
+| Variable_name   | Value |
++-----------------+-------+
+| max_connections | 250   |
++-----------------+-------+
+1 row in set (0.00 sec)
+
+# value of `read_buffer_size` is same as provided
+singlestore> show variables like 'read_buffer_size';
++------------------+--------+
+| Variable_name    | Value  |
++------------------+--------+
+| read_buffer_size | 122880 |
++------------------+--------+
+1 row in set (0.00 sec)
+
+singlestore> exit
+Bye
+
 ```
-
-Then, open your browser and go to the following URL: _http://{node-ip}:{myadmin-svc-nodeport}_. For kind cluster, you can get this URL by running the following command:
-
-```bash
-$ kubectl get svc -n demo myadmin -o json | jq '.spec.ports[].nodePort'
-30942
-
-$ kubectl get node -o json | jq '.items[].status.addresses[].address'
-"172.18.0.3"
-"kind-control-plane"
-"172.18.0.4"
-"kind-worker"
-"172.18.0.2"
-"kind-worker2"
-
-# expected url will be:
-url: http://172.18.0.4:30942
-```
-
-Now, let's connect to the database from the phpMyAdmin dashboard using the database pod IP and MySQL user password.
-
-```bash
-$ kubectl get pods custom-mysql-0 -n demo -o yaml | grep IP
-  hostIP: 10.0.2.15
-  podIP: 172.17.0.6
-
-$ kubectl get secrets -n demo custom-mysql-auth -o jsonpath='{.data.\user}' | base64 -d
-root
-
-$ kubectl get secrets -n demo custom-mysql-auth -o jsonpath='{.data.\password}' | base64 -d
-MLO5_fPVKcqPiEu9
-```
-
-Once, you have connected to the database with phpMyAdmin go to **Variables** tab and search for `max_connections` and `read_buffer_size`. Here are some screenshot showing those configured variables.
-![max_connections](/docs/images/mysql/max_connection.png)
-
-![read_buffer_size](/docs/images/mysql/read_buffer_size.png)
-
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo my/custom-mysql -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo my/custom-mysql
-
-kubectl delete deployment -n demo myadmin
-kubectl delete service -n demo myadmin
-
+kubectl patch -n demo my/custom-sdb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo my/custom-sdb
 kubectl delete ns demo
 ```
 
 If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
-
-- [Quickstart MySQL](/docs/guides/mysql/quickstart/index.md) with KubeDB Operator.
-- Initialize [MySQL with Script](/docs/guides/mysql/initialization/index.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).
-- Use [private Docker registry](/docs/guides/mysql/private-registry/index.md) to deploy MySQL with KubeDB.
-- Use [kubedb cli](/docs/guides/mysql/cli/index.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
+- [Quickstart SingleStore](/docs/guides/singlestore/quickstart/quickstart.md) with KubeDB Operator.
+- Detail concepts of [singlestore object](/docs/guides/singlestore/concepts/singlestore.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
