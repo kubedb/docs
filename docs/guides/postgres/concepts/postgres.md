@@ -158,7 +158,7 @@ To learn more about how to setup a HA PostgreSQL cluster in KubeDB, please visit
 
 ### spec.streamingMode
 
-`spec.streamingMode` is an optional field that specifies the streaming mode (_Synchronous / Asynchronous_) of the standby replicas. KubeDB currently supports only **Asynchronous** streaming mode.
+`spec.streamingMode` is an optional field that specifies the streaming mode (_Synchronous / Asynchronous_) of the standby replicas.
 
 ### spec.leaderElection
 
