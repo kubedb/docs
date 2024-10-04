@@ -1,0 +1,39 @@
+apiVersion: kubedb.com/v1
+kind: Kafka
+metadata:
+  name: target-kafka
+  namespace: demo
+spec:
+  authSecret:
+    name: target-kafka-auth
+  version: 3.6.1
+  topology:
+    broker:
+      replicas: 2
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+    controller:
+      replicas: 2
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+  monitor:
+   agent: prometheus.io/operator
+   prometheus:
+     exporter:
+       port: 56790
+     serviceMonitor:
+       labels:
+         release: prometheus
+       interval: 10s
+  storageType: Durable
+  deletionPolicy: WipeOut

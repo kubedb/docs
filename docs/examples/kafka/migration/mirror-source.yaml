@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mirror-source-config
+  namespace: demo
+stringData:
+  config.properties: |
+    tasks.max=2
+    connector.class=org.apache.kafka.connect.mirror.MirrorSourceConnector
+    source.cluster.alias=source
+    source.cluster.bootstrap.servers=source-kafka-pods.demo.svc:9092
+    source.cluster.security.protocol=SASL_PLAINTEXT
+    source.cluster.sasl.mechanism=PLAIN
+    source.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="source-pass";
+    target.cluster.alias=target
+    target.cluster.bootstrap.servers=target-kafka-pods.demo.svc:9092
+    target.cluster.security.protocol=SASL_PLAINTEXT
+    target.cluster.sasl.mechanism=PLAIN
+    target.cluster.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="admin" password="target-pass";
+    offset.lag.max=100
+    replication.factor=-1
+    sync.topic.acls.enabled=false
+    sync.topic.configs.enabled=true
+    offset-syncs.topic.replication.factor=-1
+    key.converter=org.apache.kafka.connect.converters.ByteArrayConverter
+    value.converter=org.apache.kafka.connect.converters.ByteArrayConverter
+    replication.policy.class=org.apache.kafka.connect.mirror.IdentityReplicationPolicy
+    topics.exclude=.*[\-\.]internal,.*\.replica,__consumer_offsets,_internal_connectors.*,_schemas,kafka-health
+---
+apiVersion: kafka.kubedb.com/v1alpha1
+kind: Connector
+metadata:
+  name: mirror-source-connector
+  namespace: demo
+spec:
+  connectClusterRef:
+    name: mirror-connect
+    namespace: demo
+  configSecret:
+    name: mirror-source-config
+  deletionPolicy: WipeOut
