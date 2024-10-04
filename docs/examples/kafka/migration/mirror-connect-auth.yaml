@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mirror-connect-auth
+  namespace: demo
+stringData:
+  password: mirror-pass
+  username: connect

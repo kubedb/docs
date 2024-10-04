@@ -3,7 +3,7 @@ title: ConnectCluster Quickstart
 menu:
   docs_{{ .version }}:
     identifier: kf-connectcluster-guides-quickstart
-    name: Overview
+    name: Quickstart
     parent: kf-connectcluster-guides
     weight: 5
 menu_name: docs_{{ .version }}
@@ -39,7 +39,7 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [guides/kafka/quickstart/connectcluster/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/kafka/quickstart/connectcluster/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka Connect Cluster. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/connectcluster/overview.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka Connect Cluster. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/connectcluster/quickstart.md#tips-for-testing).
 
 ## Find Available ConnectCluster Versions
 
@@ -515,7 +515,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 ## Next Steps
 
 - [Quickstart Kafka](/docs/guides/kafka/quickstart/kafka/index.md) with KubeDB Operator.
-- [Quickstart ConnectCluster](/docs/guides/kafka/connectcluster/overview.md) with KubeDB Operator.
+- [Quickstart ConnectCluster](/docs/guides/kafka/connectcluster/quickstart.md) with KubeDB Operator.
 - Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [ConnectCluster object](/docs/guides/kafka/concepts/connectcluster.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

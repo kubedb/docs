@@ -1,0 +1,23 @@
+apiVersion: kafka.kubedb.com/v1alpha1
+kind: ConnectCluster
+metadata:
+  name: mirror-connect
+  namespace: demo
+spec:
+  authSecret:
+    name: mirror-connect-auth
+  version: 3.6.1
+  replicas: 3
+  kafkaRef:
+    name: target-kafka
+    namespace: demo
+  monitor:
+   agent: prometheus.io/operator
+   prometheus:
+     exporter:
+       port: 56790
+     serviceMonitor:
+       labels:
+         release: prometheus
+       interval: 10s
+  deletionPolicy: WipeOut
