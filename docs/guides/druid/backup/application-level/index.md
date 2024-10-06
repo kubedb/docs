@@ -240,7 +240,7 @@ spec:
   version: 30.0.0
 ```
 
-KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
+KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to be set in AppBinding's `.spec` section.
 
 - `.spec.clientConfig.service.name` specifies the name of the Service that connects to the database.
 - `.spec.secret` specifies the name of the Secret that holds necessary credentials to access the database.

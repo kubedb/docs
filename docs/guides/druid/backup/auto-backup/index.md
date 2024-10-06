@@ -186,7 +186,7 @@ spec:
 
 Here,
 
-- `.spec.backupConfigurationTemplate.backends[*].storageRef` refers our earlier created `gcs-storage` backupStorage.
+- `.spec.backupConfigurationTemplate.backends[*].storageRef` refers to our earlier created `gcs-storage` backupStorage.
 - `.spec.backupConfigurationTemplate.sessions[*].schedule` specifies that we want to backup the database at `5 minutes` interval.
 
 Let's create the `BackupBlueprint` we have shown above,
@@ -196,7 +196,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 backupblueprint.core.kubestash.com/druid-default-backup-blueprint created
 ```
 
-Now, we are ready to backup our `Druid` databases using few annotations.
+Now, we are ready to backup our `Druid` databases using a few annotations.
 
 ## Deploy Sample Druid Database
 
