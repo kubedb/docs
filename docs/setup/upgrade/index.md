@@ -24,7 +24,7 @@ In order to upgrade from KubeDB `v2021.xx.xx` to `{{< param "info.version" >}}`,
 
 #### 1. Update KubeDB Catalog CRDs
 
-Helm [does not upgrade the CRDs](https://github.com/helm/helm/issues/6581) bundled in a Helm chart if the CRDs already exist. So, to upgrde the KubeDB catalog CRD, please run the command below:
+Helm [does not upgrade the CRDs](https://github.com/helm/helm/issues/6581) bundled in a Helm chart if the CRDs already exist. So, to upgrade the KubeDB catalog CRD, please run the command below:
 
 ```bash
 kubectl apply -f https://github.com/kubedb/installer/raw/{{< param "info.version" >}}/crds/kubedb-catalog-crds.yaml
