@@ -13,13 +13,13 @@ section_menu_id: guides
 
 # Reconfigure SingleStore Cluster Database
 
-This guide will show you how to use `KubeDB` Enterprise operator to reconfigure a MySQL Cluster.
+This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure a SingleStore Cluster.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
 - [SingleStore](/docs/guides/singlestore/concepts/singlestore.md)
@@ -130,7 +130,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Let's create the `MySQL` CR we have shown above,
+Let's create the `SingleStore` CR we have shown above,
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure/reconfigure-steps/yamls/custom-sdb.yaml
@@ -199,7 +199,7 @@ Bye
 
 ```
 
-As we can see from the configuration of ready mysql, the value of `max_connections` has been set to `250` and `read_buffer_size` has been set to `122880`.
+As we can see from the configuration of ready singlestore, the value of `max_connections` has been set to `250` and `read_buffer_size` has been set to `122880`.
 
 ### Reconfigure using new config secret
 
@@ -230,134 +230,132 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `sample-mysql` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `custom-sdb` database.
 - `spec.type` specifies that we are performing `Configuration` on our database.
-- `spec.aggregator.configSecret.name` specifies the name of the new secret for aggregator nodes. You can also specifies `spec.leaf.configSecret.name` the name of the new secret for leaf nodes.
+- `spec.configuration.aggregator.applyConfig` is a map where key supports 1 values, namely `sdb-apply.cnf` for aggregator nodes. You can also specifies `spec.configuration.leaf.applyConfig` which is a map where key supports 1 values, namely `sdb-apply.cnf` for leaf nodes.
 
 Let's create the `SinglestoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/reconfigure-using-secret.yaml
-mysqlopsrequest.ops.kubedb.com/myops-reconfigure-config created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure-steps/yamls/reconfigure-using-applyConfig.yaml
+singlestoreopsrequest.ops.kubedb.com/sdbops-reconfigure-config created
 ```
 
 #### Verify the new configuration is working
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MySQL` object.
+If everything goes well, `KubeDB` Ops-manager operator will update the `configSecret` of `SingleStore` object.
 
-Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MySQLOpsRequest` CR,
+Let's wait for `SinglestoreOpsRequest` to be `Successful`.  Run the following command to watch `SinglestoreOpsRequest` CR,
 
 ```bash
-$ kubectl get mysqlopsrequest --all-namespaces
-NAMESPACE   NAME                       TYPE          STATUS       AGE
-demo        myops-reconfigure-config   Reconfigure   Successful   3m8s
+$ kubectl get singlestoreopsrequest --all-namespaces
+NAMESPACE   NAME                        TYPE            STATUS       AGE
+demo        sdbops-reconfigure-config   Configuration   Successful   10m
+
 ```
 
-We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
+We can see from the above output that the `SinglestoreOpsRequest` has succeeded. If we describe the `SinglestoreOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe mysqlopsrequest -n demo myops-reconfigure-config
-Name:         myops-reconfigure-config
+$ kubectl describe singlestoreopsrequest -n demo sdbops-reconfigure-config
+Name:         sdbops-reconfigure-config
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
-Kind:         MySQLOpsRequest
+Kind:         SinglestoreOpsRequest
 Metadata:
-  Creation Timestamp:  2022-11-23T09:09:20Z
+  Creation Timestamp:  2024-10-04T10:18:22Z
   Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:apply:
-        f:configuration:
-          .:
-          f:configSecret:
-        f:databaseRef:
-        f:type:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2022-11-23T09:09:20Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-ops-manager
-    Operation:       Update
-    Subresource:     status
-    Time:            2022-11-23T09:09:20Z
-  Resource Version:  786443
-  UID:               253ff2e3-0647-4926-bfb9-ef44b3b8a31d
+  Resource Version:    2114236
+  UID:                 56b37f6d-d8be-49c7-a588-9740863edd2a
 Spec:
   Apply:  IfReady
   Configuration:
-    Config Secret:
-      Name:  new-my-configuration
+    Aggregator:
+      Apply Config:
+        sdb-apply.cnf:  max_connections = 550
   Database Ref:
-    Name:  sample-mysql
-  Type:    Reconfigure
+    Name:  custom-sdb
+  Type:    Configuration
 Status:
   Conditions:
-    Last Transition Time:  2022-11-23T09:09:20Z
-    Message:               Controller has started to Progress the MySQLOpsRequest: demo/myops-reconfigure-config
+    Last Transition Time:  2024-10-04T10:18:22Z
+    Message:               Singlestore ops-request has started to expand volume of singlestore nodes.
     Observed Generation:   1
-    Reason:                OpsRequestProgressingStarted
+    Reason:                Configuration
     Status:                True
-    Type:                  Progressing
-    Last Transition Time:  2022-11-23T09:13:10Z
-    Message:               Successfully reconfigured MySQL pod for MySQLOpsRequest: demo/myops-reconfigure-config 
+    Type:                  Configuration
+    Last Transition Time:  2024-10-04T10:18:28Z
+    Message:               Successfully paused database
     Observed Generation:   1
-    Reason:                SuccessfullyDBReconfigured
+    Reason:                DatabasePauseSucceeded
     Status:                True
-    Type:                  Reconfigure
-    Last Transition Time:  2022-11-23T09:13:10Z
-    Message:               Controller has successfully reconfigure the MySQL demo/myops-reconfigure-config
+    Type:                  DatabasePauseSucceeded
+    Last Transition Time:  2024-10-04T10:18:28Z
+    Message:               Successfully updated PetSets Resources
     Observed Generation:   1
-    Reason:                OpsRequestProcessedSuccessfully
+    Reason:                UpdatePetSets
+    Status:                True
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-10-04T10:19:53Z
+    Message:               Successfully Restarted Pods With Resources
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-10-04T10:18:33Z
+    Message:               get pod; ConditionStatus:True; PodName:custom-sdb-aggregator-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--custom-sdb-aggregator-0
+    Last Transition Time:  2024-10-04T10:18:33Z
+    Message:               evict pod; ConditionStatus:True; PodName:custom-sdb-aggregator-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--custom-sdb-aggregator-0
+    Last Transition Time:  2024-10-04T10:19:08Z
+    Message:               check pod ready; ConditionStatus:True; PodName:custom-sdb-aggregator-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodReady--custom-sdb-aggregator-0
+    Last Transition Time:  2024-10-04T10:19:13Z
+    Message:               get pod; ConditionStatus:True; PodName:custom-sdb-aggregator-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--custom-sdb-aggregator-1
+    Last Transition Time:  2024-10-04T10:19:13Z
+    Message:               evict pod; ConditionStatus:True; PodName:custom-sdb-aggregator-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--custom-sdb-aggregator-1
+    Last Transition Time:  2024-10-04T10:19:48Z
+    Message:               check pod ready; ConditionStatus:True; PodName:custom-sdb-aggregator-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodReady--custom-sdb-aggregator-1
+    Last Transition Time:  2024-10-04T10:19:53Z
+    Message:               Successfully completed the reconfiguring for Singlestore
+    Observed Generation:   1
+    Reason:                Successful
     Status:                True
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-Events:
-  Type    Reason      Age   From                        Message
-  ----    ------      ----  ----                        -------
-  Normal  Starting    30m   KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/myops-reconfigure-config
-  Normal  Starting    30m   KubeDB Enterprise Operator  Pausing MySQL databse: demo/sample-mysql
-  Normal  Successful  30m   KubeDB Enterprise Operator  Successfully paused MySQL database: demo/sample-mysql for MySQLOpsRequest: myops-reconfigure-config
-  Normal  Starting    30m   KubeDB Enterprise Operator  Restarting Pod: sample-mysql-1/demo
-  Normal  Starting    29m   KubeDB Enterprise Operator  Restarting Pod: sample-mysql-2/demo
-  Normal  Starting    28m   KubeDB Enterprise Operator  Restarting Pod: sample-mysql-0/demo
-  Normal  Successful  27m   KubeDB Enterprise Operator  Successfully reconfigured MySQL pod for MySQLOpsRequest: demo/myops-reconfigure-config
-  Normal  Starting    27m   KubeDB Enterprise Operator  Reconfiguring MySQL
-  Normal  Successful  27m   KubeDB Enterprise Operator  Successfully reconfigure the MySQL object
-  Normal  Starting    27m   KubeDB Enterprise Operator  Resuming MySQL database: demo/sample-mysql
-  Normal  Successful  27m   KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/sample-mysql
-  Normal  Successful  27m   KubeDB Enterprise Operator  Controller has Successfully reconfigure the of MySQL: demo/sample-mysql
+Events:                    <none>
 
 ```
 
-Now let's connect to a mysql instance and run a mysql internal command to check the new configuration we have provided.
+Now let's connect to a singlestore instance and run a memsql internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-mysql-0 -- bash
-
-bash-4.4# mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-
-mysql: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo custom-sdb-aggregator-0 -- bash
+Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
+[memsql@custom-sdb-aggregator-0 /]$ memsql -uroot -p$ROOT_PASSWORD
+singlestore-client: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 279
-Server version: 8.0.35 MySQL Community Server - GPL
+Your MySQL connection id is 626
+Server version: 5.7.32 SingleStoreDB source distribution (compatible; MySQL Enterprise & MySQL Commercial)
 
 Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 
@@ -367,86 +365,80 @@ owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-mysql> 
-mysql> 
-mysql> show variables like 'max_connections';
+singlestore> show variables like 'max_connections';
 +-----------------+-------+
 | Variable_name   | Value |
 +-----------------+-------+
-| max_connections | 250   |
+| max_connections | 550   |
 +-----------------+-------+
 1 row in set (0.00 sec)
 
-mysql> show variables like 'read_buffer_size';
-+------------------+--------+
-| Variable_name    | Value  |
-+------------------+--------+
-| read_buffer_size | 122880 |
-+------------------+--------+
-1 row in set (0.00 sec)
+singlestore> exit
+Bye
 
-mysql> 
 
 ```
 
-As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and and the `read_buffer_size` has been changed `1048576` to `122880`. So the reconfiguration of the database is successful.
+As we can see from the configuration has changed, the value of `max_connections` has been changed from `250` to `550`. So the reconfiguration of the database is successful.
 
 ### Remove Custom Configuration
 
-We can also remove exisiting custom config using `MySQLOpsRequest`. Provide `true` to field `spec.configuration.removeCustomConfig` and make an Ops Request to remove existing custom configuration.
+We can also remove exisiting custom config using `SinglestoreOpsRequest`. Provide `true` to field `spec.configuration.aggregator.removeCustomConfig` and make an Ops Request to remove existing custom configuration.
 
-#### Create MySQLOpsRequest
+#### Create SingleStoreOpsRequest
 
-Lets create an `MySQLOpsRequest` having `spec.configuration.removeCustomConfig` is equal `true`,
+Lets create an `SinglestoreOpsRequest` having `spec.configuration.aggregator.removeCustomConfig` is equal `true`,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
-kind: MySQLOpsRequest
+kind: SinglestoreOpsRequest
 metadata:
-  name: myops-reconfigure-remove
+  name: sdbops-reconfigure-remove
   namespace: demo
 spec:
-  type: Reconfigure
+  type: Configuration
   databaseRef:
-    name: sample-mysql
-  configuration:   
-    removeCustomConfig: true
+    name: custom-sdb
+  configuration:
+    aggregator:  
+      removeCustomConfig: true
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `myops-reconfigure-remove` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `custom-sdb` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.removeCustomConfig` is a bool field that should be `true` when you want to remove existing custom configuration.
+- `spec.configuration.aggregator.removeCustomConfig` is a bool field that should be `true` when you want to remove existing custom configuration.
 
-Let's create the `MySQLOpsRequest` CR we have shown above,
+Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/yamls/reconfigure-steps/reconfigure-remove.yaml
-mysqlopsrequest.ops.kubedb.com/mdops-reconfigure-remove created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure/yamls/reconfigure-steps/reconfigure-remove.yaml
+singlestoreopsrequest.ops.kubedb.com/sdbops-reconfigure-remove created
 ```
 
 #### Verify the new configuration is working
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MySQL` object.
+If everything goes well, `KubeDB` Ops-manager operator will update the `configSecret` of `SingleStore` object.
 
-Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
+Let's wait for `SingleStoreOpsRequest` to be `Successful`.  Run the following command to watch `SingleStoreOpsRequest` CR,
 
 ```bash
-$ kubectl get mysqlopsrequest --all-namespaces
-NAMESPACE   NAME                       TYPE          STATUS       AGE
-demo        mdops-reconfigure-remove   Reconfigure   Successful   2m1s
+$ kubectl get singlestoreopsrequest -n demo
+NAME                        TYPE             STATUS       AGE
+sdbops-reconfigure-remove   Configuration    Successful  5m31s
 ```
 
-Now let's connect to a mysql instance and run a mysql internal command to check the new configuration we have provided.
+Now let's connect to a singlestore instance and run a singlestore internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-mysql-0 -- bash
-bash-4.4# mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-mysql: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo custom-sdb-aggregator-0 -- bash
+Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
+[memsql@custom-sdb-aggregator-0 /]$ memsql -uroot -p$ROOT_PASSWORD
+singlestore-client: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 279
-Server version: 8.0.35 MySQL Community Server - GPL
+Your MySQL connection id is 166
+Server version: 5.7.32 SingleStoreDB source distribution (compatible; MySQL Enterprise & MySQL Commercial)
 
 Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 
@@ -456,36 +448,30 @@ owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-mysql> 
-mysql> 
-mysql> show variables like 'max_connections';
+singlestore> 
+singlestore> 
+singlestore> show variables like 'max_connections';
 +-----------------+-------+
 | Variable_name   | Value |
 +-----------------+-------+
-| max_connections | 151   |
+| max_connections | 100000|
 +-----------------+-------+
 1 row in set (0.00 sec)
 
-mysql> show variables like 'read_buffer_size';
-+------------------+--------+
-| Variable_name    | Value  |
-+------------------+--------+
-| read_buffer_size | 131072 |
-+------------------+--------+
-1 row in set (0.00 sec)
+singlestore> exit
+Bye
 
-mysql> 
 
 ```
 
-As we can see from the configuration has changed to its default value. So removal of existing custom configuration using `MySQLOpsRequest` is successful.
+As we can see from the configuration has changed to its default value. So removal of existing custom configuration using `SingleStoreOpsRequest` is successful.
 
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mysql -n demo sample-mysql
-$ kubectl delete mysqlopsrequest -n demo myops-reconfigure-config  mdops-reconfigure-remove
+$ kubectl delete singlestore -n demo custom-sdb
+$ kubectl delete singlestoreopsrequest -n demo sdbops-reconfigure-config  sdbops-reconfigure-remove
 $ kubectl delete ns demo
 ```
