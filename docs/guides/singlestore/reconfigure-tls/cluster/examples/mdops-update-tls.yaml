@@ -1,0 +1,17 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MariaDBOpsRequest
+metadata:
+  name: mdops-update-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: sample-mariadb
+  tls:
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+        - kubedb:server
+      emailAddresses:
+      - "kubedb@appscode.com"

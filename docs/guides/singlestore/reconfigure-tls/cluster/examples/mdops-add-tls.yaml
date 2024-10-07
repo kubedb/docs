@@ -1,0 +1,24 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MariaDBOpsRequest
+metadata:
+  name: mdops-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: sample-mariadb
+  tls:
+    requireSSL: true
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: md-issuer
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
