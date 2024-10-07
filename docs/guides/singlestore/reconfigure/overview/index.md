@@ -20,7 +20,7 @@ This guide will give an overview on how KubeDB Ops Manager reconfigures `SingleS
 
 - You should be familiar with the following `KubeDB` concepts:
   - [SingleStore](/docs/guides/singlestore/concepts/)
-  - [SingleStoreOpsRequest](/docs/guides/singlstore/concepts/opsrequest.md)
+  - [SingleStoreOpsRequest](/docs/guides/singlestore/concepts/opsrequest.md)
 
 ## How Reconfiguring SingleStore Process Works
 
