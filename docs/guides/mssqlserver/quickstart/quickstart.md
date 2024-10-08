@@ -327,7 +327,7 @@ sa
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.\password}' | base64 -d
 axgXHj4oRIVQ1ocK
 ```
-We can exec into the pod `mysql-quickstart-0` using the following command:
+We can exec into the pod `mssqlserver-quickstart-0` using the following command:
 ```bash
 kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
 mssql@mssqlserver-quickstart-0:/$
