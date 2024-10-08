@@ -18,8 +18,6 @@ This tutorial will show you how to use KubeDB to run a Standalone SQL Server dat
 
 ## Before You Begin
 
-Before proceeding:
-
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
 - Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md). Make sure install with helm command including `--set global.featureGates.MSSQLServer=true` to ensure MSSQLServer CRD installation.
@@ -326,7 +324,7 @@ sa
 $ kubectl get secret -n demo mssqlserver-standalone-auth -o jsonpath='{.data.\password}' | base64 -d
 axgXHj4oRIVQ1ocK
 ```
-We can exec into the pod `mysql-standalone-0` using the following command:
+We can exec into the pod `mssqlserver-standalone-0` using the following command:
 ```bash
 kubectl exec -it -n demo mssqlserver-standalone-0 -c mssql -- bash
 mssql@mssqlserver-standalone-0:/$

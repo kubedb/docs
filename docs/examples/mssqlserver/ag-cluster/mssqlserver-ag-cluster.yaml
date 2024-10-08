@@ -1,0 +1,35 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MSSQLServer
+metadata:
+  name: mssqlserver-ag-cluster
+  namespace: demo
+spec:
+  version: "2022-cu12"
+  replicas: 3
+  topology:
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
+  internalAuth:
+    endpointCert:
+      issuerRef:
+        apiGroup: cert-manager.io
+        name: mssqlserver-ca-issuer
+        kind: Issuer
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
