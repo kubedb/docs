@@ -2,9 +2,9 @@
 title: MSSQLServer CRD
 menu:
   docs_{{ .version }}:
-    identifier: pg-mssqlserver-concepts
+    identifier: ms-mssqlserver-concepts
     name: MSSQLServer
-    parent: pg-concepts-mssqlserver
+    parent: ms-concepts-mssqlserver
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -52,7 +52,7 @@ spec:
   init:
     script:
       configMap:
-        name: pg-init-script
+        name: ms-init-script
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -61,7 +61,7 @@ spec:
           app: kubedb
         interval: 10s
   configSecret:
-    name: pg-custom-config
+    name: ms-custom-config
   podTemplate:
     metadata:
       annotations:
@@ -80,7 +80,7 @@ spec:
       - name: mssqlserver
         env:
         - name: POSTGRES_DB
-          value: pgdb
+          value: msdb
         resources:
           requests:
             memory: "64Mi"
@@ -115,7 +115,7 @@ spec:
 `spec.version` is a required field that specifies the name of the [MSSQLServerVersion](/docs/guides/mssqlserver/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MSSQLServerVersion` resources,
 
 ```bash
-$ kubectl get pgversion
+$ kubectl get msversion
 NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
 10.2       10.2      kubedb/mssqlserver:10.2       true         44m
 10.2-v1    10.2      kubedb/mssqlserver:10.2-v2    true         44m
@@ -244,7 +244,7 @@ spec:
   init:
     script:
       configMap:
-        name: pg-init-script
+        name: ms-init-script
 ```
 
 In the above example, MSSQLServer will execute provided script once the database is running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mssqlserver/initialization/script_source.md).

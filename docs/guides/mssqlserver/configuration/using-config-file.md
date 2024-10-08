@@ -2,9 +2,9 @@
 title: Run PostgreSQL with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: pg-using-config-file-configuration
+    identifier: ms-using-config-file-configuration
     name: Config File
-    parent: pg-configuration
+    parent: ms-configuration
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -54,14 +54,14 @@ shared_buffers=256MB
 Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/configuration/user.conf)"
-secret/pg-configuration created
+$ kubectl create secret generic -n demo ms-configuration --from-literal=user.conf="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/configuration/user.conf)"
+secret /ms-configuration created
 ```
 
 Verify the Secret has the configuration file.
 
 ```yaml
-$ kubectl get secret -n demo pg-configuration -o yaml
+$ kubectl get secret -n demo ms-configuration -o yaml
 apiVersion: v1
 stringData:
   user.conf: |-
@@ -70,17 +70,17 @@ stringData:
 kind: Secret
 metadata:
   creationTimestamp: "2019-02-07T12:08:26Z"
-  name: pg-configuration
+  name: ms-configuration
   namespace: demo
   resourceVersion: "44214"
-  selfLink: /api/v1/namespaces/demo/secrets/pg-configuration
+  selfLink: /api/v1/namespaces/demo/secrets /ms-configuration
   uid: 131b321f-2ad1-11e9-9d44-080027154f61
 ```
 
 Now, create MSSQLServer crd specifying `spec.configSecret` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/configuration/pg-configuration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/configuration /ms-configuration.yaml
 mssqlserver.kubedb.com/custom-mssqlserver created
 ```
 
@@ -95,7 +95,7 @@ metadata:
 spec:
   version: "13.13"
   configSecret:
-    name: pg-configuration
+    name: ms-configuration
   storage:
     storageClassName: "standard"
     accessModes:
@@ -136,7 +136,7 @@ Running as Primary
 sh: locale: not found
 
 WARNING: enabling "trust" authentication for local connections
-You can change this by editing pg_hba.conf or using the option -A, or
+You can change this by editing ms_hba.conf or using the option -A, or
 --auth-local and --auth-host, the next time you run initdb.
 ALTER ROLE
 /scripts/primary/start.sh: ignoring /var/initdb/*
@@ -179,11 +179,11 @@ mssqlserver=# \q
 
 ```
 
-You can also connect to this database from pgAdmin and use following SQL query to check these configuration.
+You can also connect to this database from msAdmin and use following SQL query to check these configuration.
 
 ```sql
 SELECT name,setting
-FROM pg_settings
+FROM ms_settings
 WHERE name='max_connections' OR name='shared_buffers';
 ```
 
@@ -192,10 +192,10 @@ WHERE name='max_connections' OR name='shared_buffers';
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo pg/custom-mssqlserver -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo pg/custom-mssqlserver
+kubectl patch -n demo ms/custom-mssqlserver -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo ms/custom-mssqlserver
 
-kubectl delete -n demo secret pg-configuration
+kubectl delete -n demo secret ms-configuration
 kubectl delete ns demo
 ```
 

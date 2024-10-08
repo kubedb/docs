@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-mssqlserver-concepts-opsrequest
     name: MSSQLServerOpsRequest
-    parent: pg-concepts-mssqlserver
+    parent: ms-concepts-mssqlserver
     weight: 25
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -30,11 +30,11 @@ Sample `MSSQLServerOpsRequest` for updating database:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MSSQLServerOpsRequest
 metadata:
-  name: pg-ops-update
+  name: ms-ops-update
   namespace: demo
 spec:
   databaseRef:
-    name: pg-group
+    name: ms-group
   type: UpdateVersion
   updateVersion:
     targetVersion: 8.0.35
@@ -60,7 +60,7 @@ metadata:
   namespace: demo
 spec:
   databaseRef:
-    name: pg-group
+    name: ms-group
   type: HorizontalScaling  
   horizontalScaling:
     replicas: 3
@@ -86,7 +86,7 @@ metadata:
   namespace: demo
 spec:
   databaseRef:
-    name: pg-group
+    name: ms-group
   type: VerticalScaling  
   verticalScaling:
     mssqlserver:

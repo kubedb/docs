@@ -2,9 +2,9 @@
 title: MSSQLServerVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: pg-catalog-concepts
+    identifier: ms-catalog-concepts
     name: MSSQLServerVersion
-    parent: pg-concepts-mssqlserver
+    parent: ms-concepts-mssqlserver
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -33,7 +33,7 @@ metadata:
   name: "13.13"
 spec:
   coordinator:
-    image: kubedb/pg-coordinator:v0.1.0
+    image: kubedb /ms-coordinator:v0.1.0
   db:
     image: mssqlserver:13.2-alpine
   distribution: PostgreSQL
