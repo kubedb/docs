@@ -1,11 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
-kind: MariaDBOpsRequest
+kind: SinglestoreOpsRequest
 metadata:
-  name: mdops-rotate-tls
+  name: sdbops-rotate-tls
   namespace: demo
 spec:
   type: ReconfigureTLS
   databaseRef:
-    name: sample-mariadb
+    name: sample-sdb
   tls:
     rotateCertificates: true
