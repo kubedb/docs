@@ -2,9 +2,9 @@
 title: Run PostgreSQL with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: pg-configuration
+    identifier: ms-configuration
     name: Custom Configuration
-    parent: pg-mssqlserver-guides
+    parent: ms-mssqlserver-guides
     weight: 30
 menu_name: docs_{{ .version }}
 ---

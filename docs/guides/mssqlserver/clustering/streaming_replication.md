@@ -2,9 +2,9 @@
 title: Using MSSQLServer Streaming Replication
 menu:
   docs_{{ .version }}:
-    identifier: pg-streaming-replication-clustering
+    identifier: ms-streaming-replication-clustering
     name: Streaming Replication
-    parent: pg-clustering-mssqlserver
+    parent: ms-clustering-mssqlserver
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -79,13 +79,13 @@ wal_keep_segments = 32
 
 Here,
 
-- _wal_keep_segments_ specifies the minimum number of past log file segments kept in the pg_xlog directory.
+- _wal_keep_segments_ specifies the minimum number of past log file segments kept in the ms_xlog directory.
 
 And followings are in `recovery.conf` for *standby* server
 
 ```bash
 standby_mode = on
-trigger_file = '/tmp/pg-failover-trigger'
+trigger_file = '/tmp /ms-failover-trigger'
 recovery_target_timeline = 'latest'
 primary_conninfo = 'application_name=$HOSTNAME host=$PRIMARY_HOST'
 ```
@@ -140,7 +140,7 @@ Here,
 
 >These *standby* servers are asynchronous *warm standby* server. That means, you can only connect to *primary* sever.
 
-Now connect to this *primary* server Pod `ha-mssqlserver-0` using pgAdmin installed in [quickstart](/docs/guides/mssqlserver/quickstart/quickstart.md#before-you-begin) tutorial.
+Now connect to this *primary* server Pod `ha-mssqlserver-0` using msAdmin installed in [quickstart](/docs/guides/mssqlserver/quickstart/quickstart.md#before-you-begin) tutorial.
 
 **Connection information:**
 
@@ -163,10 +163,10 @@ Now connect to this *primary* server Pod `ha-mssqlserver-0` using pgAdmin instal
   MHRrOcuyddfh3YpU
   ```
 
-You can check `pg_stat_replication` information to know who is currently streaming from *primary*.
+You can check  `ms_stat_replication` information to know who is currently streaming from *primary*.
 
 ```bash
-mssqlserver=# select * from pg_stat_replication;
+mssqlserver=# select * from ms_stat_replication;
 ```
 
  pid | usesysid | usename  | application_name | client_addr | client_port |         backend_start         |   state   | sent_location | write_location | flush_location | replay_location | sync_priority | sync_state
@@ -181,7 +181,7 @@ Here, both `ha-mssqlserver-1` and `ha-mssqlserver-2` are streaming asynchronousl
 Get the mssqlserver CRD at this point.
 
 ```yaml
-$ kubectl get pg -n demo   ha-mssqlserver -o yaml
+$ kubectl get ms -n demo   ha-mssqlserver -o yaml
 apiVersion: kubedb.com/v1
 kind: MSSQLServer
 metadata:
@@ -254,10 +254,10 @@ Here,
 - Pod `ha-mssqlserver-1` is now serving as *primary* server
 - Pod `ha-mssqlserver-0` and `ha-mssqlserver-2` both are serving as *standby* server
 
-And result from `pg_stat_replication`
+And result from  `ms_stat_replication`
 
 ```bash
-mssqlserver=# select * from pg_stat_replication;
+mssqlserver=# select * from ms_stat_replication;
 ```
 
  pid | usesysid | usename  | application_name | client_addr | client_port |         backend_start         |   state   | sent_location | write_location | flush_location | replay_location | sync_priority | sync_state
@@ -342,7 +342,7 @@ Here,
 
 That means, you can connect to both *primary* and *standby* sever. But these *hot standby* servers only accept read-only queries.
 
-Now connect to one of our *hot standby* servers Pod `hot-mssqlserver-2` using pgAdmin installed in [quickstart](/docs/guides/mssqlserver/quickstart/quickstart.md#before-you-begin) tutorial.
+Now connect to one of our *hot standby* servers Pod `hot-mssqlserver-2` using msAdmin installed in [quickstart](/docs/guides/mssqlserver/quickstart/quickstart.md#before-you-begin) tutorial.
 
 **Connection information:**
 
@@ -375,8 +375,8 @@ ERROR:  cannot execute CREATE DATABASE in a read-only transaction
 Failed to execute write operation. But it can execute following read query
 
 ```bash
-mssqlserver=# select pg_last_xlog_receive_location();
- pg_last_xlog_receive_location
+mssqlserver=# select ms_last_xlog_receive_location();
+ ms_last_xlog_receive_location
 -------------------------------
  0/7000220
 ```
@@ -388,8 +388,8 @@ So, you can see here that you can connect to *hot standby* and it only accepts r
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo pg/ha-mssqlserver pg/hot-mssqlserver -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo pg/ha-mssqlserver pg/hot-mssqlserver
+$ kubectl patch -n demo ms/ha-mssqlserver ms/hot-mssqlserver -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete -n demo ms/ha-mssqlserver ms/hot-mssqlserver
 
 $ kubectl delete ns demo
 ```

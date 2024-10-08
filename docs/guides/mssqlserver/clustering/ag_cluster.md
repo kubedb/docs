@@ -2,9 +2,9 @@
 title: Setup HA MSSQLServer Cluster
 menu:
   docs_{{ .version }}:
-    identifier: pg-ha-cluster-clustering
+    identifier: ms-ha-cluster-clustering
     name: HA Setup
-    parent: pg-clustering-mssqlserver
+    parent: ms-clustering-mssqlserver
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
