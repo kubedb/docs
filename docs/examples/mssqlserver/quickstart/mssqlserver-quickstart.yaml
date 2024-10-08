@@ -9,7 +9,7 @@ spec:
   storageType: Durable
   tls:
     issuerRef:
-      name: mssqlserver-issuer
+      name: mssqlserver-ca-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
     clientTLS: false

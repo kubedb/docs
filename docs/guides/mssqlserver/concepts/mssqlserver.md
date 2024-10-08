@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is MSSQLServer
 
-`MSSQLServer` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [PostgreSQL](https://www.mssqlserverql.org/) in a Kubernetes native way. You only need to describe the desired database configuration in a MSSQLServer object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`MSSQLServer` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [MSSQLServer](https://www.mssqlserverql.org/) in a Kubernetes native way. You only need to describe the desired database configuration in a MSSQLServer object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## MSSQLServer Spec
 
@@ -150,7 +150,7 @@ NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
 
 `spec.replicas` specifies the total number of primary and standby nodes in MSSQLServer database cluster configuration. One pod is selected as Primary and others act as standby replicas. KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
 
-To learn more about how to setup a HA PostgreSQL cluster in KubeDB, please visit [here](/docs/guides/mssqlserver/clustering/ha_cluster.md).
+To learn more about how to setup a HA MSSQLServer cluster in KubeDB, please visit [here](/docs/guides/mssqlserver/clustering/ha_cluster.md).
 
 ### spec.standbyMode
 
@@ -220,18 +220,18 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 ### spec.init
 
-`spec.init` is an optional section that can be used to initialize a newly created MSSQLServer database. PostgreSQL databases can be initialized from these three ways:
+`spec.init` is an optional section that can be used to initialize a newly created MSSQLServer database. MSSQLServer databases can be initialized from these three ways:
 
 1. Initialize from Script
 2. Initialize from Snapshot
 
 #### Initialize via Script
 
-To initialize a PostgreSQL database using a script (shell script, db migrator, etc.), set the `spec.init.script` section when creating a MSSQLServer object. `script` must have the following information:
+To initialize a MSSQLServer database using a script (shell script, db migrator, etc.), set the `spec.init.script` section when creating a MSSQLServer object. `script` must have the following information:
 
 - [VolumeSource](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes): Where your script is loaded from.
 
-Below is an example showing how a script from a configMap can be used to initialize a PostgreSQL database.
+Below is an example showing how a script from a configMap can be used to initialize a MSSQLServer database.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -251,14 +251,14 @@ In the above example, MSSQLServer will execute provided script once the database
 
 ### spec.monitor
 
-PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
+MSSQLServer managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
 
-- [Monitor PostgreSQL with builtin Prometheus](/docs/guides/mssqlserver/monitoring/using-builtin-prometheus.md)
-- [Monitor PostgreSQL with Prometheus operator](/docs/guides/mssqlserver/monitoring/using-prometheus-operator.md)
+- [Monitor MSSQLServer with builtin Prometheus](/docs/guides/mssqlserver/monitoring/using-builtin-prometheus.md)
+- [Monitor MSSQLServer with Prometheus operator](/docs/guides/mssqlserver/monitoring/using-prometheus-operator.md)
 
 ### spec.configSecret
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for PostgreSQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mssqlserver/configuration/using-config-file.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for MSSQLServer. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mssqlserver/configuration/using-config-file.md).
 
 ### spec.podTemplate
 
@@ -444,5 +444,5 @@ If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy
 
 ## Next Steps
 
-- Learn how to use KubeDB to run a PostgreSQL database [here](/docs/guides/mssqlserver/README.md).
+- Learn how to use KubeDB to run a MSSQLServer database [here](/docs/guides/mssqlserver/README.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

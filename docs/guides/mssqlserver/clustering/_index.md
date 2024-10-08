@@ -1,5 +1,5 @@
 ---
-title: PostgreSQL Clustering
+title: MSSQLServer Clustering
 menu:
   docs_{{ .version }}:
     identifier: ms-clustering-mssqlserver

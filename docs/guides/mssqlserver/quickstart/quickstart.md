@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: ms-quickstart-quickstart
     name: Overview
-    parent: ms-quickstart-mssqlserver
+    parent: ms-quickstart
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -20,13 +20,13 @@ This tutorial will show you how to use KubeDB to run a Microsoft SQL Server data
   <img alt="lifecycle"  src="/docs/guides/mssqlserver/images/mssqlserver-lifecycle.png">
 </p>
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mssqlserver/quickstart/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/quickstart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
-
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md)  and make sure install with helm command including `--set global.featureGates.MSSQLServer=true` to ensure MSSQLServer crd installation.
+- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md)  and make sure install with helm command including `--set global.featureGates.MSSQLServer=true` to ensure MSSQLServer CRD installation.
+- To configure TLS/SSL in `MSSQLServer`, `KubeDB` uses `cert-manager` to issue certificates. So first you have to make sure that the cluster has `cert-manager` installed. To install `cert-manager` in your cluster following steps [here](https://cert-manager.io/docs/installation/kubernetes/).
+
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
@@ -45,18 +45,63 @@ This tutorial will show you how to use KubeDB to run a Microsoft SQL Server data
 
 ## Find Available Microsoft SQL Server Versions
 
-When you have installed KubeDB, it has created `MSSQLServerVersion` crd for all supported Microsoft SQL Server versions. Check it by using the `kubectl get mssqlserverversions`. You can also use `msversion` shorthand instead of `mssqlserverversions`.
+When you have installed KubeDB, it has created `MSSQLServerVersion` CR for all supported Microsoft SQL Server versions. Check it by using the `kubectl get mssqlserverversions`. You can also use `msversion` shorthand instead of `mssqlserverversions`.
 
 ```bash
-$ kubectl get mssqlserverversions
+$ kubectl get msversion
 NAME        VERSION   DB_IMAGE                                                DEPRECATED   AGE
-2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                2d3h
-
+2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                17h
+2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                17h
 ```
 
-## Create Microsoft SQL Server database
 
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mssqlserver/quickstart/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/quickstart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+
+
+
+## Deploy Microsoft SQL Server database
+
+As pre-requisite, at first, we are going to create an Issuer/ClusterIssuer. This Issuer/ClusterIssuer is used to create certificates. Then we are going to deploy a SQL Server.
+
+### Create Issuer/ClusterIssuer
+
+Now, we are going to create an example `Issuer` that will be used throughout the duration of this tutorial. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`. By following the below steps, we are going to create our desired issuer,
+
+- Start off by generating our ca-certificates using openssl,
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=MSSQLServer/O=kubedb"
+```
+- 
+- Create a secret using the certificate files we have just generated,
+```bash
+$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
+secret/mssqlserver-ca created
+```
+Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+ name: mssqlserver-ca-issuer
+ namespace: demo
+spec:
+ ca:
+   secretName: mssqlserver-ca
+```
+
+Let’s create the `Issuer` CR we have shown above,
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/quickstart/mssqlserver-ca-issuer.yaml
+issuer.cert-manager.io/mssqlserver-ca-issuer created
+```
+
+
+### Deploy Standalone Microsoft SQL Server database
 KubeDB implements a `MSSQLServer` CRD to define the specification of a Microsoft SQL Server database. Below is the `MSSQLServer` object created in this tutorial.
+
+Here, our issuer `mssqlserver-ca-issuer` is ready to deploy a `MSSQLServer`. Below is the YAML of SQL Server that we are going to create,
+
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -70,7 +115,7 @@ spec:
   storageType: Durable
   tls:
     issuerRef:
-      name: mssqlserver-issuer
+      name: mssqlserver-ca-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
     clientTLS: false
@@ -136,18 +181,20 @@ kind: MSSQLServer
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"storageType":"Durable","tls":{"clientTLS":false,"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-issuer"}},"version":"2022-cu12"}}
-  creationTimestamp: "2024-06-25T06:12:57Z"
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","tls":{"clientTLS":false,"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}},"version":"2022-cu12"}}
+  creationTimestamp: "2024-10-08T08:42:49Z"
   finalizers:
     - kubedb.com
   generation: 2
   name: mssqlserver-quickstart
   namespace: demo
-  resourceVersion: "60663"
-  uid: e0fbca5f-b699-489b-a218-4c5b35025394
+  resourceVersion: "225923"
+  uid: e5c9292b-f3a3-4dbf-95c8-1b544096e1d4
 spec:
   authSecret:
     name: mssqlserver-quickstart-auth
+  coordinator:
+    resources: {}
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 1
@@ -161,10 +208,10 @@ spec:
         - name: mssql
           resources:
             limits:
-              memory: 1536Mi
+              memory: 4Gi
             requests:
               cpu: 500m
-              memory: 1536Mi
+              memory: 4Gi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -228,35 +275,35 @@ spec:
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
-      name: mssqlserver-issuer
+      name: mssqlserver-ca-issuer
   version: 2022-cu12
 status:
   conditions:
-    - lastTransitionTime: "2024-06-25T06:12:57Z"
+    - lastTransitionTime: "2024-10-08T08:42:50Z"
       message: 'The KubeDB operator has started the provisioning of MSSQL: demo/mssqlserver-quickstart'
-      observedGeneration: 1
+      observedGeneration: 2
       reason: DatabaseProvisioningStartedSuccessfully
       status: "True"
       type: ProvisioningStarted
-    - lastTransitionTime: "2024-06-25T06:15:02Z"
-      message: All replicas are ready for MSSQL demo/mssqlserver-quickstart
+    - lastTransitionTime: "2024-10-08T08:43:50Z"
+      message: All replicas are ready for MSSQLServer demo/mssqlserver-quickstart
       observedGeneration: 2
       reason: AllReplicasReady
       status: "True"
       type: ReplicaReady
-    - lastTransitionTime: "2024-06-25T06:15:13Z"
+    - lastTransitionTime: "2024-10-08T08:44:31Z"
       message: database demo/mssqlserver-quickstart is accepting connection
       observedGeneration: 2
       reason: AcceptingConnection
       status: "True"
       type: AcceptingConnection
-    - lastTransitionTime: "2024-06-25T06:15:13Z"
+    - lastTransitionTime: "2024-10-08T08:44:31Z"
       message: database demo/mssqlserver-quickstart is ready
       observedGeneration: 2
       reason: AllReplicasReady
       status: "True"
       type: Ready
-    - lastTransitionTime: "2024-06-25T06:16:04Z"
+    - lastTransitionTime: "2024-10-08T08:44:50Z"
       message: 'The MSSQL: demo/mssqlserver-quickstart is successfully provisioned.'
       observedGeneration: 2
       reason: DatabaseSuccessfullyProvisioned
@@ -282,13 +329,11 @@ axgXHj4oRIVQ1ocK
 ```
 We can exec into the pod `mysql-quickstart-0` using the following command:
 ```bash
-kubectl exec -it -n demo mssqlserver-quickstart-0 -- bash
-Defaulted container "mssql" out of: mssql, mssql-init (init)
+kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
 mssql@mssqlserver-quickstart-0:/$
 ```
 
-We can connect to the database using *sqlcmd* utility, the ODBC-based sqlcmd, available with SQL Server or the Microsoft Command Line Utilities, and part of the mssql-tools package on Linux.
-To determine the version you have installed, run the following statement at the command line:
+You can connect to the database using the `sqlcmd` utility, which comes with the mssql-tools package on Linux. To check the installed version of sqlcmd, run the following command:
 ```bash
 mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd "-?"
 Microsoft (R) SQL Server Command Line Tool
@@ -329,18 +374,16 @@ Now, connect to the database using username and password
 mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "axgXHj4oRIVQ1ocK"
 1> select name from sys.databases
 2> go
-name                                                                                                                            
---------------------------------------------------------------------------------------------------------------------------------
+name                                                  
+----------------------------------------------------------------------------------
 master                                                                                                                          
 tempdb                                                                                                                          
 model                                                                                                                           
-msdb                                                                                                                            
+msdb                                                                                                                       
 kubedb_system                                                                                                                   
 
 (5 rows affected)
 1> 
-
-
 ```
 
 
@@ -353,47 +396,47 @@ $ kubectl get appbinding -n demo -oyaml
 ```yaml
 apiVersion: v1
 items:
-- apiVersion: appcatalog.appscode.com/v1alpha1
-  kind: AppBinding
-  metadata:
-    annotations:
-      kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-quickstart","namespace":"demo"},"spec":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"Delete","version":"2022-cu12"}}
-    creationTimestamp: "2024-05-08T06:43:45Z"
-    generation: 1
-    labels:
-      app.kubernetes.io/component: database
-      app.kubernetes.io/instance: mssqlserver-quickstart
-      app.kubernetes.io/managed-by: kubedb.com
-      app.kubernetes.io/name: mssqlservers.kubedb.com
-    name: mssqlserver-quickstart
-    namespace: demo
-    ownerReferences:
-    - apiVersion: kubedb.com/v1alpha2
-      blockOwnerDeletion: true
-      controller: true
-      kind: MSSQLServer
-      name: mssqlserver-quickstart
-      uid: 39836735-3f08-466e-ae2f-eb483c11028d
-    resourceVersion: "351872"
-    uid: da0f5c83-c490-4056-b23f-c911570a8072
-  spec:
-    appRef:
-      apiGroup: kubedb.com
-      kind: MSSQLServer
+  - apiVersion: appcatalog.appscode.com/v1alpha1
+    kind: AppBinding
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/last-applied-configuration: |
+          {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","tls":{"clientTLS":false,"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}},"version":"2022-cu12"}}
+      creationTimestamp: "2024-10-08T08:43:21Z"
+      generation: 1
+      labels:
+        app.kubernetes.io/component: database
+        app.kubernetes.io/instance: mssqlserver-quickstart
+        app.kubernetes.io/managed-by: kubedb.com
+        app.kubernetes.io/name: mssqlservers.kubedb.com
       name: mssqlserver-quickstart
       namespace: demo
-    clientConfig:
-      service:
+      ownerReferences:
+        - apiVersion: kubedb.com/v1alpha2
+          blockOwnerDeletion: true
+          controller: true
+          kind: MSSQLServer
+          name: mssqlserver-quickstart
+          uid: e5c9292b-f3a3-4dbf-95c8-1b544096e1d4
+      resourceVersion: "225711"
+      uid: 4d111a65-cf3d-4a74-a77e-24f2dee690df
+    spec:
+      appRef:
+        apiGroup: kubedb.com
+        kind: MSSQLServer
         name: mssqlserver-quickstart
-        path: /
-        port: 1433
-        scheme: tcp
-      url: tcp(mssqlserver-quickstart.demo.svc:1433)/
-    secret:
-      name: mssqlserver-quickstart-auth
-    type: kubedb.com/mssqlserver
-    version: "2022"
+        namespace: demo
+      clientConfig:
+        service:
+          name: mssqlserver-quickstart
+          path: /
+          port: 1433
+          scheme: tcp
+        url: tcp(mssqlserver-quickstart.demo.svc:1433)/
+      secret:
+        name: mssqlserver-quickstart-auth
+      type: kubedb.com/mssqlserver
+      version: "2022"
 kind: List
 metadata:
   resourceVersion: ""
@@ -412,19 +455,22 @@ This field is used to regulate the deletion process of the related resources whe
 When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
+$ kubectl patch -n demo ms mssqlserver-quickstart -p '{"spec":{"deletionPolicy":"DoNotTerminate"}}' --type="merge"
+mssqlserver.kubedb.com/mssqlserver-quickstart patched
+
 $ kubectl delete ms -n demo mssqlserver-quickstart
 The MSSQLServer "mssqlserver-quickstart" is invalid: spec.deletionPolicy: Invalid value: "mssqlserver-quickstart": Can not delete as deletionPolicy is set to "DoNotTerminate"
 ```
 
 Now, run `kubectl patch -n demo ms mssqlserver-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"` to set `spec.deletionPolicy` to `Halt` (which deletes the mssqlserver object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
-Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy).
+Learn details of all `DeletionPolicy` [here](/docs/guides/mssqlserver/concepts/mssqlserver.md#specdeletionpolicy).
 
 **Halt:**
 
 Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MSSQLServer` object `deletionPolicy` to `Halt`.
 
-When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy) is set to `halt` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `deletionPolicy` to `halt` in existing database using `patch` command for testing.
+When the [DeletionPolicy](/docs/guides/mssqlserver/concepts/mssqlserver.md#specdeletionpolicy) is set to `halt` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `deletionPolicy` to `halt` in existing database using `patch` command for testing.
 
 At first, run `kubectl patch -n demo ms mssqlserver-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"`. Then delete the mssqlserver object,
 
@@ -436,42 +482,48 @@ mssqlserver.kubedb.com "mssqlserver-quickstart" deleted
 Now, run the following command to get mssqlserver resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo 
-NAME                                 TYPE                       DATA   AGE
-secret/mssqlserver-quickstart-auth   kubernetes.io/basic-auth   2      56m
+$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+NAME                                        TYPE                       DATA   AGE
+secret/mssqlserver-ca                       kubernetes.io/tls          2      40m
+secret/mssqlserver-quickstart-auth          kubernetes.io/basic-auth   2      30m
+secret/mssqlserver-quickstart-client-cert   kubernetes.io/tls          3      30m
+secret/mssqlserver-quickstart-config        Opaque                     1      30m
+secret/mssqlserver-quickstart-server-cert   kubernetes.io/tls          3      30m
 
 NAME                                                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-mssqlserver-quickstart-0   Bound    pvc-0e6a361e-9195-4d6b-8042-e90ec98d8288   1Gi        RWO            standard       4m17s
-
+persistentvolumeclaim/data-mssqlserver-quickstart-0   Bound    pvc-656e3bd1-65da-441c-851f-2ae076f8ebbd   1Gi        RWO            standard       29m
 ```
 
-From the above output, you can see that all mssqlserver resources(`PetSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mssqlserver again using these resources.
-
->You can also set the `deletionPolicy` to `Halt`(deprecated). It's behavior same as `halt` and right now `halt` is replaced by `Halt`.
+From the above output, you can see that all mssqlserver resources(`MSSQLServer`, `PetSet`, `Pod`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mssqlserver again using these resources.
 
 **Delete:**
 
 If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `MSSQLServer` object `deletionPolicy` to `Delete`. In this setting, `PetSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
 
-When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy) is set to `Delete` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
+When the [DeletionPolicy](/docs/guides/mssqlserver/concepts/mssqlserver.md#specdeletionpolicy) is set to `Delete` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
 
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
+$ kubectl patch -n demo ms mssqlserver-quickstart -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
+mssqlserver.kubedb.com/mssqlserver-quickstart patched
 $ kubectl delete ms -n demo mssqlserver-quickstart 
 mssqlserver.kubedb.com "mssqlserver-quickstart" deleted
 ```
 
-Now, run the following command to get all mssql resources in `demo` namespaces,
+Now, run the following command to get all mssqlserver resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
-NAME                                 TYPE                       DATA   AGE
-secret/mssqlserver-quickstart-auth   kubernetes.io/basic-auth   2      58m
-
+$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+NAME                                        TYPE                       DATA   AGE
+secret/mssqlserver-ca                       kubernetes.io/tls          2      49m
+secret/mssqlserver-quickstart-auth          kubernetes.io/basic-auth   2      39m
+secret/mssqlserver-quickstart-client-cert   kubernetes.io/tls          3      39m
+secret/mssqlserver-quickstart-config        Opaque                     1      39m
+secret/mssqlserver-quickstart-server-cert   kubernetes.io/tls          3      39m
 ```
 
-From the above output, you can see that all mssqlserver resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mssqlserver using `snapshots`(if previously taken) and `secret`.
+From the above output, you can see that all mssqlserver resources(`MSSQLServer`, `PetSet`, `Pod`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mssqlserver using `snapshots`(if previously taken) and `Secrets`.
 
 >If you don't set the deletionPolicy then the kubeDB set the DeletionPolicy to Delete by-default.
 
@@ -479,9 +531,12 @@ From the above output, you can see that all mssqlserver resources(`PetSet`, `Ser
 
 You can totally delete the `MSSQLServer` database and relevant resources without any tracking by setting `deletionPolicy` to `WipeOut`. KubeDB operator will delete all relevant resources of this `MSSQLServer` database (i.e, `PVCs`, `Secrets`, `Snapshots`) when the `deletionPolicy` is set to `WipeOut`.
 
-Suppose, we have a database with `deletionPolicy` set to `WipeOut`. Now, are going to delete the database using the following command:
+Let's set `deletionPolicy` set to `WipeOut` and delete the database using the following command:
 
 ```yaml
+$ kubectl patch -n demo ms mssqlserver-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+mssqlserver.kubedb.com/mssqlserver-quickstart patched
+
 $ kubectl delete ms -n demo mssqlserver-quickstart
 mssqlserver.kubedb.com "mssqlserver-quickstart" deleted
 ```
@@ -489,8 +544,9 @@ mssqlserver.kubedb.com "mssqlserver-quickstart" deleted
 Now, run the following command to get all mssqlserver resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
-No resources found in demo namespace.
+$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+NAME                       TYPE                DATA   AGE
+secret/mssqlserver-ca      kubernetes.io/tls   2      53m
 ```
 
 From the above output, you can see that all mssqlserver resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `WipeOut`.
@@ -503,9 +559,9 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl patch -n demo mssqlserver/mssqlserver-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete mssqlserver -n demo mssqlserver-quickstart 
-
-
+kubectl delete mssqlserver -n demo mssqlserver-quickstart
+kubectl delete issuer -n demo mssqlserver-ca-issuer
+kubectl delete secret -n demo mssqlserver-ca
 kubectl delete ns demo
 ```
 
@@ -514,10 +570,14 @@ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular MSSQLServer crd when you delete the crd. For more details about deletion policy, please visit [here](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy).
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular MSSQLServer crd when you delete the crd. For more details about deletion policy, please visit [here](/docs/guides/mssqlserver/concepts/mssqlserver.md#specdeletionpolicy).
 
 ## Next Steps
 
+- Learn about [backup and restore](/docs/guides/mssqlserver/backup/overview/index.md) SQL Server using KubeStash.
+- Want to set up SQL Server Availability Group clusters? Check how to [Configure SQL Server Availability Gruop Cluster](/docs/guides/mssqlserver/clustering/ag_cluster.md)
+- Detail concepts of [MSSQLServer object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
 
 

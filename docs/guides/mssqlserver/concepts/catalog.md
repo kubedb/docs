@@ -16,9 +16,9 @@ section_menu_id: guides
 
 ## What is MSSQLServerVersion
 
-`MSSQLServerVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [PostgreSQL](https://www.mssqlserverql.org/) database deployed with KubeDB in a Kubernetes native way.
+`MSSQLServerVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [MSSQLServer](https://www.mssqlserverql.org/) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, a `MSSQLServerVersion` custom resource will be created automatically for every supported PostgreSQL versions. You have to specify the name of `MSSQLServerVersion` crd in `spec.version` field of [MSSQLServer](/docs/guides/mssqlserver/concepts/mssqlserver.md) crd. Then, KubeDB will use the docker images specified in the `MSSQLServerVersion` crd to create your expected database.
+When you install KubeDB, a `MSSQLServerVersion` custom resource will be created automatically for every supported MSSQLServer versions. You have to specify the name of `MSSQLServerVersion` crd in `spec.version` field of [MSSQLServer](/docs/guides/mssqlserver/concepts/mssqlserver.md) crd. Then, KubeDB will use the docker images specified in the `MSSQLServerVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database. For more details about how to use custom image with MSSQLServer in KubeDB, please visit [here](/docs/guides/mssqlserver/custom-versions/setup.md).
 
@@ -36,7 +36,7 @@ spec:
     image: kubedb /ms-coordinator:v0.1.0
   db:
     image: mssqlserver:13.2-alpine
-  distribution: PostgreSQL
+  distribution: MSSQLServer
   exporter:
     image: prometheuscommunity/mssqlserver-exporter:v0.9.0
   initContainer:
@@ -57,13 +57,13 @@ spec:
 `metadata.name` is a required field that specifies the name of the `MSSQLServerVersion` crd. You have to specify this name in `spec.version` field of [MSSQLServer](/docs/guides/mssqlserver/concepts/mssqlserver.md) crd.
 
 We follow this convention for naming MSSQLServerVersion crd:
-- Name format: `{Original PostgreSQL image version}-{modification tag}`
+- Name format: `{Original MSSQLServer image version}-{modification tag}`
 
-We modify original PostgreSQL docker image to support additional features like WAL archiving, clustering etc. and re-tag the image with v1, v2 etc. modification tag. An image with higher modification tag will have more features than the images with lower modification tag. Hence, it is recommended to use MSSQLServerVersion crd with highest modification tag to take advantage of the latest features.
+We modify original MSSQLServer docker image to support additional features like WAL archiving, clustering etc. and re-tag the image with v1, v2 etc. modification tag. An image with higher modification tag will have more features than the images with lower modification tag. Hence, it is recommended to use MSSQLServerVersion crd with highest modification tag to take advantage of the latest features.
 
 ### spec.version
 
-`spec.version` is a required field that specifies the original version of PostgreSQL database that has been used to build the docker image specified in `spec.db.image` field.
+`spec.version` is a required field that specifies the original version of MSSQLServer database that has been used to build the docker image specified in `spec.db.image` field.
 
 ### spec.deprecated
 
@@ -73,7 +73,7 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 ### spec.db.image
 
-`spec.db.image` is a required field that specifies the docker image which will be used to create Petset by KubeDB operator to create expected PostgreSQL database.
+`spec.db.image` is a required field that specifies the docker image which will be used to create Petset by KubeDB operator to create expected MSSQLServer database.
 
 ### spec.exporter.image
 
@@ -99,4 +99,4 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 ## Next Steps
 
 - Learn about MSSQLServer crd [here](/docs/guides/mssqlserver/concepts/mssqlserver.md).
-- Deploy your first PostgreSQL database with KubeDB by following the guide [here](/docs/guides/mssqlserver/quickstart/quickstart.md).
+- Deploy your first MSSQLServer database with KubeDB by following the guide [here](/docs/guides/mssqlserver/quickstart/quickstart.md).
