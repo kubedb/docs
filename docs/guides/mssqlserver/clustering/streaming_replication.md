@@ -32,9 +32,9 @@ namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mssqlserver](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## Create PostgreSQL with Streaming replication
+## Create MSSQLServer with Streaming replication
 
-The example below demonstrates KubeDB PostgreSQL for Streaming Replication
+The example below demonstrates KubeDB MSSQLServer for Streaming Replication
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -57,7 +57,7 @@ spec:
 
 In this examples:
 
-- This `MSSQLServer` object creates three PostgreSQL servers, indicated by the **`replicas`** field.
+- This `MSSQLServer` object creates three MSSQLServer servers, indicated by the **`replicas`** field.
 - One server will be *primary* and two others will be *warm standby* servers, default of **`spec.standbyMode`**
 
 ### What is Streaming Replication
@@ -102,7 +102,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mssqlserver.kubedb.com/ha-mssqlserver created
 ```
 
-KubeDB operator creates three Pod as PostgreSQL server.
+KubeDB operator creates three Pod as MSSQLServer server.
 
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-mssqlserver" --show-labels
@@ -301,7 +301,7 @@ spec:
 
 In this examples:
 
-- This `MSSQLServer` object creates three PostgreSQL servers, indicated by the **`replicas`** field.
+- This `MSSQLServer` object creates three MSSQLServer servers, indicated by the **`replicas`** field.
 - One server will be *primary* and two others will be *hot standby* servers, as instructed by **`spec.standbyMode`**
 
 ### `hot standby` setup
@@ -323,7 +323,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mssqlserver "hot-mssqlserver" created
 ```
 
-KubeDB operator creates three Pod as PostgreSQL server.
+KubeDB operator creates three Pod as MSSQLServer server.
 
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hot-mssqlserver" --show-labels
@@ -396,6 +396,6 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/mssqlserver/monitoring/using-builtin-prometheus.md).
-- Monitor your PostgreSQL database with KubeDB using [Prometheus operator](/docs/guides/mssqlserver/monitoring/using-prometheus-operator.md).
+- Monitor your MSSQLServer database with KubeDB using [built-in Prometheus](/docs/guides/mssqlserver/monitoring/using-builtin-prometheus.md).
+- Monitor your MSSQLServer database with KubeDB using [Prometheus operator](/docs/guides/mssqlserver/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -26,7 +26,7 @@ KubeDB uses [Stash](https://appscode.com/products/stash/) to perform backup/reco
 
 Like any official Kubernetes resource, an `AppBinding` has `TypeMeta`, `ObjectMeta` and `Spec` sections. However, unlike other Kubernetes resources, it does not have a `Status` section.
 
-An `AppBinding` object created by `KubeDB` for PostgreSQL database is shown below,
+An `AppBinding` object created by `KubeDB` for MSSQLServer database is shown below,
 
 ```yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
@@ -89,7 +89,7 @@ Here, the variables are parsed as follows:
 
 This secret must contain the following keys:
 
-PostgreSQL :
+MSSQLServer :
 
 | Key                 | Usage                                               |
 | ------------------- | --------------------------------------------------- |

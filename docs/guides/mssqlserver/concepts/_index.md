@@ -1,5 +1,5 @@
 ---
-title: PostgreSQL Concepts
+title: MSSQLServer Concepts
 menu:
   docs_{{ .version }}:
     identifier: ms-concepts-mssqlserver
