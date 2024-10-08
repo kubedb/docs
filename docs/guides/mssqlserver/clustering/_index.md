@@ -2,9 +2,9 @@
 title: MSSQLServer Clustering
 menu:
   docs_{{ .version }}:
-    identifier: ms-clustering-mssqlserver
+    identifier: ms-clustering
     name: Clustering
-    parent: ms-mssqlserver-guides
+    parent: guides-mssqlserver
     weight: 25
 menu_name: docs_{{ .version }}
 ---

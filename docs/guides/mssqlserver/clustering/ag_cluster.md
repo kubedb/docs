@@ -1,10 +1,10 @@
 ---
-title: Setup HA MSSQLServer Cluster
+title: SQL Server Availability Group Cluster Guide
 menu:
   docs_{{ .version }}:
-    identifier: ms-ha-cluster-clustering
-    name: HA Setup
-    parent: ms-clustering-mssqlserver
+    identifier: ms-clustering-availability-group
+    name: Availability Group (HA) Cluster
+    parent: ms-clustering
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Configuring Highly Available MSSQLServer Cluster
+# Configuring SQL Server Availability Group Cluster
 
-In MSSQLServer, multiple servers can work together to serve high availability and load balancing. These servers will be either in *Master* or *Standby* mode.
+In SQL Server, multiple servers can work together to serve high availability and load balancing. These servers will be either in *Master* or *Standby* mode.
 
 In *master* mode, server that can modify data. In *standby* mode, the server continuously applies WAL received from the master server. The standby server can read WAL from a WAL archive (see restore_command) or directly from the master over a TCP connection (streaming replication).
 

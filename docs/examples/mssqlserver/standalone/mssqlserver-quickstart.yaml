@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MSSQLServer
+metadata:
+  name: mssqlserver-standalone
+  namespace: demo
+spec:
+  version: "2022-cu12"
+  replicas: 1
+  storageType: Durable
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
