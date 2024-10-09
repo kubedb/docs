@@ -75,7 +75,7 @@ spec:
   storage:
     provider: gcs
     gcs:
-      bucket: neaj-demo
+      bucket: kubestash-qa
       prefix: blueprint
       secretName: gcs-secret
   usagePolicy:
