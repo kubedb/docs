@@ -2,9 +2,9 @@
 title: MSSQLServer CRD
 menu:
   docs_{{ .version }}:
-    identifier: ms-mssqlserver-concepts
+    identifier: ms-concepts-mssqlserver
     name: MSSQLServer
-    parent: ms-concepts-mssqlserver
+    parent: ms-concepts
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -16,52 +16,51 @@ section_menu_id: guides
 
 ## What is MSSQLServer
 
-`MSSQLServer` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [MSSQLServer](https://www.mssqlserverql.org/) in a Kubernetes native way. You only need to describe the desired database configuration in a MSSQLServer object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`MSSQLServer` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Microsoft SQL Server](https://learn.microsoft.com/en-us/sql/sql-server/) in a Kubernetes native way. You only need to describe the desired database configuration in a MSSQLServer object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## MSSQLServer Spec
 
 As with all other Kubernetes objects, a MSSQLServer needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section.
 
-Below is an example MSSQLServer object.
+Below is an example `MSSQLServer` object.
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
-  name: p1
+  name: mssqlserver
   namespace: demo
 spec:
-  version: "13.13"
-  replicas: 2
-  standbyMode: Hot
-  streamingMode: Asynchronous
-  leaderElection:
-    leaseDurationSeconds: 15
-    renewDeadlineSeconds: 10
-    retryPeriodSeconds: 2
   authSecret:
-    name: p1-auth
-  storageType: "Durable"
-  storage:
-    storageClassName: standard
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  init:
-    script:
-      configMap:
-        name: ms-init-script
-  monitor:
-    agent: prometheus.io/operator
-    prometheus:
-      serviceMonitor:
-        labels:
-          app: kubedb
-        interval: 10s
+    name: mssqlserver-auth
   configSecret:
-    name: ms-custom-config
+    name: mssqlserver-custom-config
+  topology:
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
+    mode: AvailabilityGroup
+  internalAuth:
+    endpointCert:
+      certificates:
+        - alias: endpoint
+          secretName: mssqlserver-endpoint-cert
+          subject:
+            organizationalUnits:
+              - endpoint
+            organizations:
+              - kubedb
+      issuerRef:
+        apiGroup: cert-manager.io
+        kind: Issuer
+        name: mssqlserver-ca-issuer
+  leaderElection:
+    electionTick: 10
+    heartbeatTick: 1
+    period: 300ms
+    transferLeadershipInterval: 1s
+    transferLeadershipTimeout: 1m0s
   podTemplate:
     metadata:
       annotations:
@@ -74,40 +73,129 @@ spec:
       schedulerName: my-scheduler
       nodeSelector:
         disktype: ssd
-      imagePullSecrets:
-      - name: myregistrykey
       containers:
-      - name: mssqlserver
-        env:
-        - name: POSTGRES_DB
-          value: msdb
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "250m"
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
+        - name: mssql
+          resources:
+            limits:
+              memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 4Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - NET_BIND_SERVICE
+              drop:
+                - ALL
+            runAsGroup: 10001
+            runAsNonRoot: true
+            runAsUser: 10001
+            seccompProfile:
+              type: RuntimeDefault
+        - name: mssql-coordinator
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsGroup: 10001
+            runAsNonRoot: true
+            runAsUser: 10001
+            seccompProfile:
+              type: RuntimeDefault
+      initContainers:
+        - name: mssql-init
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsGroup: 10001
+            runAsNonRoot: true
+            runAsUser: 10001
+            seccompProfile:
+              type: RuntimeDefault
+      podPlacementPolicy:
+        name: default
+      securityContext:
+        fsGroup: 10001
+  replicas: 3
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
+  storageType: Durable
   serviceTemplates:
-  - alias: primary
-    metadata:
-      annotations:
-        passMe: ToService
-    spec:
-      type: NodePort
-      ports:
-      - name:  http
-        port:  5432
-  - alias: standby
-    metadata:
-      annotations:
-        passMe: ToReplicaService
-    spec:
-      type: NodePort
-      ports:
-      - name:  http
-        port:  5432
-  deletionPolicy: "Halt"
+    - alias: primary
+      metadata:
+        annotations:
+          passMe: ToService
+      spec:
+        type: LoadBalancer
+    - alias: secondary
+      metadata:
+        annotations:
+          passMe: ToReplicaService
+      spec:
+        type: NodePort
+        ports:
+          - name:  http
+            port:  1433
+  tls:
+    certificates:
+      - alias: server
+        secretName: mssqlserver-server-cert
+        subject:
+          organizationalUnits:
+            - server
+          organizations:
+            - kubedb
+        emailAddresses:
+          - dev@appscode.com
+      - alias: client
+        secretName: mssqlserver-client-cert
+        subject:
+          organizationalUnits:
+            - client
+          organizations:
+            - kubedb
+        emailAddresses:
+          - abc@appscode.com
+    clientTLS: true
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: mssqlserver-ca-issuer
+  healthChecker:
+    periodSeconds: 15
+    timeoutSeconds: 10
+    failureThreshold: 2
+    disableWriteCheck: false
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+  version: 2022-cu12
+  deletionPolicy: Halt
 ```
 
 ### spec.version
@@ -116,73 +204,48 @@ spec:
 
 ```bash
 $ kubectl get msversion
-NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
-10.2       10.2      kubedb/mssqlserver:10.2       true         44m
-10.2-v1    10.2      kubedb/mssqlserver:10.2-v2    true         44m
-10.2-v2    10.2      kubedb/mssqlserver:10.2-v3                 44m
-10.2-v3    10.2      kubedb/mssqlserver:10.2-v4                 44m
-10.2-v4    10.2      kubedb/mssqlserver:10.2-v5                 44m
-10.2-v5    10.2      kubedb/mssqlserver:10.2-v6                 44m
-10.6       10.6      kubedb/mssqlserver:10.6                    44m
-10.6-v1    10.6      kubedb/mssqlserver:10.6-v1                 44m
-10.6-v2    10.6      kubedb/mssqlserver:10.6-v2                 44m
-10.6-v3    10.6      kubedb/mssqlserver:10.6-v3                 44m
-11.1       11.1      kubedb/mssqlserver:11.1                    44m
-11.1-v1    11.1      kubedb/mssqlserver:11.1-v1                 44m
-11.1-v2    11.1      kubedb/mssqlserver:11.1-v2                 44m
-11.1-v3    11.1      kubedb/mssqlserver:11.1-v3                 44m
-11.2       11.2      kubedb/mssqlserver:11.2                    44m
-11.2-v1    11.2      kubedb/mssqlserver:11.2-v1                 44m
-9.6        9.6       kubedb/mssqlserver:9.6        true         44m
-9.6-v1     9.6       kubedb/mssqlserver:9.6-v2     true         44m
-9.6-v2     9.6       kubedb/mssqlserver:9.6-v3                  44m
-9.6-v3     9.6       kubedb/mssqlserver:9.6-v4                  44m
-9.6-v4     9.6       kubedb/mssqlserver:9.6-v5                  44m
-9.6-v5     9.6       kubedb/mssqlserver:9.6-v6                  44m
-9.6.7      9.6.7     kubedb/mssqlserver:9.6.7      true         44m
-9.6.7-v1   9.6.7     kubedb/mssqlserver:9.6.7-v2   true         44m
-9.6.7-v2   9.6.7     kubedb/mssqlserver:9.6.7-v3                44m
-9.6.7-v3   9.6.7     kubedb/mssqlserver:9.6.7-v4                44m
-9.6.7-v4   9.6.7     kubedb/mssqlserver:9.6.7-v5                44m
-9.6.7-v5   9.6.7     kubedb/mssqlserver:9.6.7-v6                44m
+NAME        VERSION   DB_IMAGE                                                DEPRECATED   AGE
+2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                2d
+2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                2d
 ```
 ### spec.replicas
 
-`spec.replicas` specifies the total number of primary and standby nodes in MSSQLServer database cluster configuration. One pod is selected as Primary and others act as standby replicas. KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
+`spec.replicas` specifies the total number of primary and secondary nodes in SQL Server Availability Group cluster configuration. One pod is selected as Primary and others act as secondary replicas. KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
 
-To learn more about how to setup a HA MSSQLServer cluster in KubeDB, please visit [here](/docs/guides/mssqlserver/clustering/ha_cluster.md).
-
-### spec.standbyMode
-
-`spec.standby` is an optional field that specifies the standby mode (_Warm / Hot_) to use for standby replicas. In **hot standby** mode, standby replicas can accept connection and run read-only queries. In **warm standby** mode, standby replicas can't accept connection and only used for replication purpose.
-
-### spec.streamingMode
-
-`spec.streamingMode` is an optional field that specifies the streaming mode (_Synchronous / Asynchronous_) of the standby replicas. KubeDB currently supports only **Asynchronous** streaming mode.
+To learn more about how to setup a SQL Server Availability Group cluster (HA configuration) in KubeDB, please visit [here](/docs/guides/mssqlserver/clustering/ag_cluster.md).
 
 ### spec.leaderElection
 
-There are three fields under MSSQLServer CRD's `spec.leaderElection`. These values defines how fast the leader election can happen.
+There are three fields under MSSQLServer CRD's `spec.leaderElection`. These values define how fast the leader election can happen.
 
 - `leaseDurationSeconds`: This is the duration in seconds that non-leader candidates will wait to force acquire leadership. This is measured against time of last observed ack. Default 15 sec.
 - `renewDeadlineSeconds`: This is the duration in seconds that the acting master will retry refreshing leadership before giving up. Normally, LeaseDuration \* 2 / 3. Default 10 sec.
 - `retryPeriodSeconds`: This is the duration in seconds the LeaderElector clients should wait between tries of actions. Normally, LeaseDuration / 3. Default 2 sec.
 
-If the Cluster machine is powerful, user can reduce the times. But, Do not make it so little, in that case MSSQLServer will restarts very often.
+If the Cluster machine is powerful, user can reduce the times. But, Do not make it so little, in that case MSSQLServer will restart very often.
+
+
+
+
+WORK FROM HERE. TEST EVERYTHING...................... 
+
+
+
+
 
 ### spec.authSecret
 
 `spec.authSecret` is an optional field that points to a Secret used to hold credentials for `mssqlserver` database. If not set, KubeDB operator creates a new Secret with name `{mssqlserver-name}-auth` that hold _username_ and _password_ for `mssqlserver` database.
 
-If you want to use an existing or custom secret, please specify that when creating the MSSQLServer object using `spec.authSecret.name`. This Secret should contain superuser _username_ as `POSTGRES_USER` key and superuser _password_ as `POSTGRES_PASSWORD` key. Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version >= 0.13.0).
+If you want to use an existing or custom secret, please specify that when creating the MSSQLServer object using `spec.authSecret.name`. This Secret should contain superuser _username_ as `username` key and superuser _password_ as `password` key. Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator.
 
 Example:
 
 ```bash
-$ kubectl create secret generic p1-auth -n demo \
+$ kubectl create secret generic mssqlserver-auth -n demo \
 --from-literal=POSTGRES_USER=not@user \
 --from-literal=POSTGRES_PASSWORD=not@secret
-secret "p1-auth" created
+secret "mssqlserver-auth" created
 ```
 
 ```bash
@@ -340,7 +403,7 @@ At least one of the following was changed:
     kind
     name
     namespace
-    spec.standby
+    spec.secondary
     spec.streaming
     spec.authSecret
     spec.storageType
