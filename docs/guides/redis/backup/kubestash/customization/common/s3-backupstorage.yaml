@@ -7,7 +7,7 @@ spec:
   storage:
     provider: s3
     s3:
-      bucket: neaj-new
+      bucket: kubestash-qa
       region: ap-south-1
       endpoint: ap-south-1.linodeobjects.com
       secretName: s3-secret
