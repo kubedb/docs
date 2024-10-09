@@ -442,8 +442,9 @@ usage: sqlcmd            [-U login id]          [-P password]
 ```
 
 
-Now, connect to the database using username and password
+Now, connect to the database using username and password, check the name of the created availability group, replicas of the availability group and see if databases are added to the availability group.
 ```bash
+$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
 mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
 1> select name from sys.databases
 2> go
@@ -458,16 +459,186 @@ agdb2
 kubedb_system                                                                                                                   
 
 (5 rows affected)
+1> SELECT name FROM sys.availability_groups
+2> go
+name                                                                                                                            
+----------------------------------------------------------------------------
+mssqlserveragcluster                                                                                                            
+
+(1 rows affected)
+1> select replica_server_name from sys.availability_replicas;
+2> go
+replica_server_name                                                                                                                                                                                                                                             
+-------------------------------------------------------------------------------------------
+mssqlserver-ag-cluster-0                                                                                                                                                                                                                                        
+mssqlserver-ag-cluster-1                                                                                                                                                                                                                                        
+mssqlserver-ag-cluster-2      
+(3 rows affected)
+1> select database_name	from sys.availability_databases_cluster;
+2> go
+database_name                                                                                                                   
+------------------------------------------------------------------------------------------
+agdb1                                                                                                                           
+agdb2                                                                                                                           
+
+(2 rows affected)
+
+```
+
+
+Now, to check the redundancy and data availability in secondary members. Let's insert some data into the primary database of sql server availability group and see if data replication is working fine. First we have to determine the primary replica, as data writes are only permitted on the primary node.
+
+
+```bash
+$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+mssqlserver-ag-cluster-0	primary
+mssqlserver-ag-cluster-1	secondary
+mssqlserver-ag-cluster-2	secondary
+```
+
+From the output above, we can see that mssqlserver-ag-cluster-0 is the primary node. To insert data, log into the primary MSSQLServer pod. Use the following command,
+
+```bash
+$ kubectl exec -it mssqlserver-ag-cluster-0 -c mssql -n demo -- bash
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+1> SELECT database_name FROM sys.availability_databases_cluster
+2> go
+database_name                                                                                                                   
+----------------------------------------------------------------------------------------------
+agdb1                                                                                                                           
+agdb2                                                                                                                           
+
+(2 rows affected)
+1> use agdb1
+2> go
+Changed database context to 'agdb1'.
+1> CREATE TABLE Data (ID INT, NAME NVARCHAR(255), AGE INT);
+2> go
+1> INSERT INTO Data(ID, Name, Age) VALUES (1, 'John Doe', 25), (2, 'Jane Smith', 30);                                                                                              
+2> go
+(2 rows affected)
+1> Select * from data
+2> go
+ID    NAME                             AGE                                  
+--------------------------------------------------------
+1     John Doe                         25                                                                
+2     Jane Smith                       30
+
+(2 rows affected)
+1> 
+```
+Now, Let's verify that the data inserted into the primary node has been replicated to the secondary nodes.
+### Access the inserted data from secondaries
+Access the secondary node (Node 2) to verify that the data is present.
+
+```bash
+$ kubectl exec -it mssqlserver-ag-cluster-1 -c mssql -n demo -- bash
+mssql@mssqlserver-ag-cluster-1:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+1> SELECT database_name FROM sys.availability_databases_cluster
+2> go
+database_name                                                                                                                   
+-------------------------------------------------
+agdb1                                                                                                                           
+agdb2                                                                                                                           
+
+(2 rows affected)
+1> use agdb1
+2> go
+Changed database context to 'agdb1'.
+1> select * from data
+2> go
+ID    NAME                             AGE                                  
+--------------------------------------------------------
+1     John Doe                         25                                                                
+2     Jane Smith                       30
+
+(2 rows affected)
 1> 
 ```
 
 
-################################## NOW WE WILL 
-- SEE IF AG DATABASES ARE CONFIGURED PROPERLY, AND ADDED TO AG USING QUERY. 
-- SEE THE POD ROLE USING QUERY AND POD LABEL 
-- INSERT DATA INTO PRIMARY POD AND SEE IF DATA REPLICATES PROPERLY 
-- PERFORM A FAIL OVER MAYBE USING OTHER DATABASES CLUSTER GUIDE DOC
-- THANKS FINISHED. 
+Now access the secondary node (Node 3) to verify that the data is present.
+```bash
+$ kubectl exec -it mssqlserver-ag-cluster-2 -c mssql -n demo -- bash
+mssql@mssqlserver-ag-cluster-2:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+1> SELECT database_name FROM sys.availability_databases_cluster
+2> go
+database_name                                                                                                                   
+-------------------------------------------------
+agdb1                                                                                                                           
+agdb2                                                                                                                           
+
+(2 rows affected)
+1> use agdb1
+2> go
+Changed database context to 'agdb1'.
+1> select * from data
+2> go
+ID    NAME                             AGE                                  
+--------------------------------------------------------
+1     John Doe                         25                                                                
+2     Jane Smith                       30
+
+(2 rows affected)
+1> 
+```
+
+
+## Automatic Failover
+To test automatic failover, we will force the primary member to restart. As the primary member (pod) becomes unavailable, the rest of the members will elect a primary member by election.
+
+```bash
+$ kubectl get pods -n demo 
+NAME                       READY   STATUS    RESTARTS   AGE
+mssqlserver-ag-cluster-0   2/2     Running   0          129m
+mssqlserver-ag-cluster-1   2/2     Running   0          129m
+mssqlserver-ag-cluster-2   2/2     Running   0          129m
+neaj@neaj-desktop:~/g/s/k/mssqlserver|master✓
+$ kubectl delete pod -n demo mssqlserver-ag-cluster-0 
+pod "mssqlserver-ag-cluster-0" deleted
+neaj@neaj-desktop:~/g/s/k/mssqlserver|master✓
+$ kubectl get pods -n demo
+NAME                       READY   STATUS    RESTARTS   AGE
+mssqlserver-ag-cluster-0   2/2     Running   0          7s
+mssqlserver-ag-cluster-1   2/2     Running   0          130m
+mssqlserver-ag-cluster-2   2/2     Running   0          130m
+```
+
+
+Now find the new primary pod by running this command. 
+```bash
+$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+mssqlserver-ag-cluster-0	
+mssqlserver-ag-cluster-1	primary
+mssqlserver-ag-cluster-2	secondary
+```
+
+We can see that, the primary node is now is `mssqlserver-ag-cluster-1`. The old primary pod `mssqlserver-ag-cluster-0` role is still pending. It will be set when old primary joins with the new primary as secondary.  
+Lets exec into this new primary and see the availability replica role.
+```bash
+$ kubectl exec -it mssqlserver-ag-cluster-1 -c mssql -n demo -- bash
+mssql@mssqlserver-ag-cluster-1:/$ opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+1> SELECT ar.replica_server_name, ars.role_desc
+2> FROM sys.dm_hadr_availability_replica_states ars
+3> INNER JOIN sys.availability_replicas ar ON ars.replica_id = ar.replica_id;
+4> go
+replica_server_name                                                                                                                                                                                                                                              role_desc                                                   
+-------------------------------------------------------------------------------------------------------
+mssqlserver-ag-cluster-0                                                                                                                                                                                                                                         SECONDARY                                                   
+mssqlserver-ag-cluster-1                                                                                                                                                                                                                                         PRIMARY                                                     
+mssqlserver-ag-cluster-2                                                                                                                                                                                                                                         SECONDARY                                                   
+
+(3 rows affected)
+
+```
+
+We can see that new primary is `mssqlserver-ag-cluster-1` and the old primary `mssqlserver-ag-cluster-0` joined the availability group cluster as secondary. MSSQLServer status is `Ready` now. We can see the updated pod labels. 
+```bash
+$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+mssqlserver-ag-cluster-0	secondary
+mssqlserver-ag-cluster-1	primary
+mssqlserver-ag-cluster-2	secondary
+````
 
 
 Run the following command to see the created appbinding object:
