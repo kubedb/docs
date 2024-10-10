@@ -225,14 +225,6 @@ There are three fields under MSSQLServer CRD's `spec.leaderElection`. These valu
 If the Cluster machine is powerful, user can reduce the times. But, Do not make it so little, in that case MSSQLServer will restart very often.
 
 
-
-
-WORK FROM HERE. TEST EVERYTHING...................... 
-
-
-
-
-
 ### spec.authSecret
 
 `spec.authSecret` is an optional field that points to a Secret used to hold credentials for `mssqlserver` database. If not set, KubeDB operator creates a new Secret with name `{mssqlserver-name}-auth` that hold _username_ and _password_ for `mssqlserver` database.
@@ -243,25 +235,24 @@ Example:
 
 ```bash
 $ kubectl create secret generic mssqlserver-auth -n demo \
---from-literal=POSTGRES_USER=not@user \
---from-literal=POSTGRES_PASSWORD=not@secret
-secret "mssqlserver-auth" created
+             --from-literal=username='sa' \
+             --from-literal=password='Pa55w0rd!'
+secret/mssqlserver-auth created
 ```
 
 ```bash
-$ kubectl get secret -n demo p1-auth -o yaml
+$ kubectl get secret -n demo  mssqlserver-auth -oyaml
 apiVersion: v1
 data:
-  POSTGRES_PASSWORD: bm90QHNlY3JldA==
-  POSTGRES_USER: bm90QHVzZXI=
+  password: UGE1NXcwcmQh
+  username: c2E=
 kind: Secret
 metadata:
-  creationTimestamp: 2018-09-03T11:25:39Z
-  name: p1-auth
+  creationTimestamp: "2024-10-10T06:47:06Z"
+  name: mssqlserver-auth
   namespace: demo
-  resourceVersion: "1677"
-  selfLink: /api/v1/namespaces/demo/secrets/p1-auth
-  uid: 15b3e8a1-af6c-11e8-996d-0800270d7bae
+  resourceVersion: "315403"
+  uid: dafcce02-b6a2-4e65-bdd1-db6b9b6d4913
 type: Opaque
 ```
 
@@ -283,34 +274,10 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 ### spec.init
 
-`spec.init` is an optional section that can be used to initialize a newly created MSSQLServer database. MSSQLServer databases can be initialized from these three ways:
+`spec.init` is an optional section that can be used to initialize a newly created MSSQLServer database. MSSQLServer databases can be initialized from these two ways:
 
 1. Initialize from Script
 2. Initialize from Snapshot
-
-#### Initialize via Script
-
-To initialize a MSSQLServer database using a script (shell script, db migrator, etc.), set the `spec.init.script` section when creating a MSSQLServer object. `script` must have the following information:
-
-- [VolumeSource](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes): Where your script is loaded from.
-
-Below is an example showing how a script from a configMap can be used to initialize a MSSQLServer database.
-
-```yaml
-apiVersion: kubedb.com/v1
-kind: MSSQLServer
-metadata:
-  name: mssqlserver-db
-  namespace: demo
-spec:
-  version: "13.13"
-  init:
-    script:
-      configMap:
-        name: ms-init-script
-```
-
-In the above example, MSSQLServer will execute provided script once the database is running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mssqlserver/initialization/script_source.md).
 
 ### spec.monitor
 
@@ -325,7 +292,7 @@ MSSQLServer managed by KubeDB can be monitored with builtin-Prometheus and Prome
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for MSSQLServer database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for MSSQLServer.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -367,11 +334,9 @@ The `spec.podTemplate.spec.volumes` is an optional field. This can be used to pr
 `spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
 
 
-
-
 #### spec.podTemplate.spec.containers
 
-The `spec.podTemplate.spec.containers` can be used to provide the list containers and their configurations for to the database pod. some of the fields are described below,
+The `spec.podTemplate.spec.containers` can be used to provide the list of containers and their configurations for to the database pod. some of the fields are described below,
 
 ##### spec.podTemplate.spec.containers[].name
 The `spec.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
@@ -381,36 +346,17 @@ The `spec.podTemplate.spec.containers[].name` field used to specify the name of 
 
 ##### spec.podTemplate.spec.containers[].env
 
-`spec.podTemplate.spec.containers[].env` is an optional field that specifies the environment variables to pass to the MSSQLServer docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/_/mssqlserver/).
+`spec.podTemplate.spec.containers[].env` is an optional field that specifies the environment variables to pass to the MSSQLServer docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/r/microsoft/mssql-server).
 
-Note that, the KubeDB operator does not allow `POSTGRES_USER` and `POSTGRES_PASSWORD` environment variable to set in `spec.podTemplate.spec.env`. If you want to set the superuser _username_ and _password_, please use `spec.authSecret` instead described earlier.
+Note that, the KubeDB operator does not allow `MSSQL_SA_USERNAME` and `MSSQL_SA_PASSWORD` environment variable to set in `spec.podTemplate.spec.env`. If you want to set the superuser _username_ and _password_, please use `spec.authSecret` instead described earlier.
 
-If you try to set `POSTGRES_USER` or `POSTGRES_PASSWORD` environment variable in MSSQLServer crd, KubeDB operator will reject the request with following error,
-
-```ini
-Error from server (Forbidden): error when creating "./mssqlserver.yaml": admission webhook "mssqlserver.validators.kubedb.com" denied the request: environment variable POSTGRES_PASSWORD is forbidden to use in MSSQLServer spec
-```
-
-Also, note that KubeDB does not allow to update the environment variables as updating them does not have any effect once the database is created. If you try to update environment variables, KubeDB operator will reject the request with following error,
+If you try to set `MSSQL_SA_USERNAME` or `MSSQL_SA_PASSWORD` environment variable in MSSQLServer CR, KubeDB operator will reject the request with following error,
 
 ```ini
-Error from server (BadRequest): error when applying patch:
-...
-for: "./mssqlserver.yaml": admission webhook "mssqlserver.validators.kubedb.com" denied the request: precondition failed for:
-...
-At least one of the following was changed:
-    apiVersion
-    kind
-    name
-    namespace
-    spec.secondary
-    spec.streaming
-    spec.authSecret
-    spec.storageType
-    spec.storage
-    spec.podTemplate.spec.nodeSelector
-    spec.init
+The MSSQLServer "mssqlserver" is invalid: spec.podTemplate: Invalid value: "mssqlserver": environment variable MSSQL_SA_PASSWORD is forbidden to use in MSSQLServer spec
 ```
+
+Also, note that KubeDB does not allow to update the environment variables as updating them does not have any effect once the database is created.
 
 ##### spec.podTemplate.spec.containers[].resources
 
@@ -418,17 +364,14 @@ At least one of the following was changed:
 
 #### spec.podTemplate.spec.serviceAccountName
 
-`serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
+`serviceAccountName` is an optional field supported by KubeDB Operator that can be used to specify a custom service account to fine tune role based access control.
 
-If this field is left empty, the KubeDB operator will create a service account name matching MSSQLServer crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
+If this field is left empty, the KubeDB operator will create a service account name matching MSSQLServer CR name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
 
 If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
 If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mssqlserver/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
 
-#### spec.podTemplate.spec.imagePullSecrets
-
-`spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker image if you are using a private docker registry. For more details on how to use private docker registry, please visit [here](/docs/guides/mssqlserver/private-registry/using-private-registry.md).
 
 #### spec.podTemplate.spec.nodeSelector
 
@@ -436,15 +379,19 @@ If a service account name is given, and there's an existing service account by t
 
 ### spec.serviceTemplate
 
-KubeDB creates two different services for each MSSQLServer instance. One of them is a master service named `<mssqlserver-name>` and points to the MSSQLServer `Primary` pod/node. Another one is a replica service named `<mssqlserver-name>-replicas` and points to MSSQLServer `replica` pods/nodes.
+KubeDB creates two different services for each MSSQLServer instance. One of them is a primary service named `<mssqlserver-name>` and points to the MSSQLServer `Primary` pod/node. Another one is a secondary service named `<mssqlserver-name>-secondary` and points to MSSQLServer `secondary` replica pods/nodes.
 
-These `master` and `replica` services can be customized using [spec.serviceTemplate](#spec.servicetemplate) and [spec.replicaServiceTemplate](#specreplicaservicetemplate) respectively.
+These `primary` and `secondary` services can be customized using [spec.serviceTemplate](#spec.servicetemplate).
 
-You can provide template for the `master` service using `spec.serviceTemplate`. This will allow you to set the type and other properties of the service. If `spec.serviceTemplate` is not provided, KubeDB will create a `master` service of type `ClusterIP` with minimal settings.
+You can provide template for the services using `spec.serviceTemplate`. This will allow you to set the type and other properties of the service. If `spec.serviceTemplate` is not provided, KubeDB will create a `primary` service of type `ClusterIP` with minimal settings.
 
-KubeDB allows following fields to set in `spec.serviceTemplate`:
-
+KubeDB allows following fields to set in `spec.serviceTemplates`:
+- `alias` represents the identifier of the service. It has the following possible value:
+  - `primary` is used for the primary service identification.
+  - `secondary` is used for the secondary service identification.
+  - `stats` is used for the exporter service identification.
 - metadata:
+  - labels
   - annotations
 - spec:
   - type
@@ -457,27 +404,17 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
   - healthCheckNodePort
   - sessionAffinityConfig
 
-See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.21.1/api/v1/types.go#L237) to understand these fields in detail.
 
-### spec.replicaServiceTemplate
+## spec.healthChecker
+It defines the attributes for the health checker.
+- `spec.healthChecker.periodSeconds` specifies how often to perform the health check.
+- `spec.healthChecker.timeoutSeconds` specifies the number of seconds after which the probe times out.
+- `spec.healthChecker.failureThreshold` specifies minimum consecutive failures for the healthChecker to be considered failed.
+- `spec.healthChecker.disableWriteCheck` specifies whether to disable the writeCheck or not.
 
-You can provide template for the `replica` service using `spec.replicaServiceTemplate`. If `spec.replicaServiceTemplate` is not provided, KubeDB will create a `replica` service of type `ClusterIP` with minimal settings.
+Know details about KubeDB Health checking from this [blog post](https://appscode.com/blog/post/kubedb-health-checker/).
 
-The fileds of `spec.replicaServiceTemplate` is similar to `spec.serviceTemplate`, that is:
-
-- metadata:
-  - annotations
-- spec:
-  - type
-  - ports
-  - clusterIP
-  - externalIPs
-  - loadBalancerIP
-  - loadBalancerSourceRanges
-  - externalTrafficPolicy
-  - healthCheckNodePort
-
-See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
 ### spec.deletionPolicy
 
@@ -488,22 +425,24 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 - Delete (`Default`)
 - WipeOut
 
-When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete MSSQLServer crd for different termination policies,
 
-| Behavior                                 | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
-| ---------------------------------------- | :------------: | :------: | :------: | :------: |
-| 1. Block Delete operation                |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Create Dormant Database               |    &#10007;    | &#10003; | &#10007; | &#10007; |
-| 3. Delete PetSet                    |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 4. Delete Services                       |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 5. Delete PVCs                           |    &#10007;    | &#10007; | &#10003; | &#10003; |
-| 6. Delete Secrets                        |    &#10007;    | &#10007; | &#10007; | &#10003; |
-| 7. Delete Snapshots                      |    &#10007;    | &#10007; | &#10007; | &#10003; |
-| 8. Delete Snapshot data from bucket      |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
+| ----------------------------------- | :------------: | :------: | :------: | :------: |
+| 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
+| 2. Delete PetSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
+| 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 7. Delete Snapshot data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy by default.
+If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
+
+### spec.halted
+Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
 
 ## Next Steps
 
