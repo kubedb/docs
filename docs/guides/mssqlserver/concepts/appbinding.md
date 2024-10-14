@@ -18,9 +18,9 @@ section_menu_id: guides
 
 An `AppBinding` is a Kubernetes `CustomResourceDefinition`(CRD) which points to an application using either its URL (usually for a non-Kubernetes resident service instance) or a Kubernetes service object (if self-hosted in a Kubernetes cluster), some optional parameters and a credential secret. To learn more about AppBinding and the problems it solves, please read this blog post: [The case for AppBinding](https://appscode.com/blog/post/the-case-for-appbinding).
 
-If you deploy a database using [KubeDB](https://kubedb.com/docs/0.11.0/concepts/), `AppBinding` object will be created automatically for it. Otherwise, you have to create an `AppBinding` object manually pointing to your desired database.
+If you deploy a database using [KubeDB](https://kubedb.com/docs/latest/welcome/), `AppBinding` object will be created automatically for it. Otherwise, you have to create an `AppBinding` object manually pointing to your desired database.
 
-KubeDB uses [Stash](https://appscode.com/products/stash/) to perform backup/recovery of databases. Stash needs to know how to connect with a target database and the credentials necessary to access it. This is done via an `AppBinding`.
+KubeDB uses [KubeStash](https://kubestash.com/) to perform backup/recovery of databases. KubeStash needs to know how to connect with a target database and the credentials necessary to access it. This is done via an `AppBinding`.
 
 ## AppBinding CRD Specification
 
@@ -32,38 +32,50 @@ An `AppBinding` object created by `KubeDB` for MSSQLServer database is shown bel
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  name: quick-mssqlserver
-  namespace: demo
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver","namespace":"demo"},"spec":{"authSecret":{"name":"mssqlserver-auth"},"configSecret":{"name":"ms-custom-config"},"deletionPolicy":"WipeOut","healthChecker":{"disableWriteCheck":false,"failureThreshold":2,"periodSeconds":15,"timeoutSeconds":10},"internalAuth":{"endpointCert":{"certificates":[{"alias":"endpoint","secretName":"mssqlserver-endpoint-cert","subject":{"organizationalUnits":["endpoint"],"organizations":["kubedb"]}}],"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}}},"leaderElection":{"electionTick":10,"heartbeatTick":1,"period":"300ms","transferLeadershipInterval":"1s","transferLeadershipTimeout":"1m0s"},"monitor":{"agent":"prometheus.io/operator","prometheus":{"serviceMonitor":{"interval":"10s","labels":{"release":"prometheus"}}}},"podTemplate":{"controller":{"annotations":{"passMe":"ToPetSet"}},"metadata":{"annotations":{"passMe":"ToDatabasePod"}},"spec":{"containers":[{"env":[{"name":"NOT_MSSQL_SA_PASSWORD_NO","value":"Pa55w0rd!"},{"name":"NOT_MSSQL_SA_USERNAME","value":"sa"}],"name":"mssql","resources":{"limits":{"memory":"4Gi"},"requests":{"cpu":"500m","memory":"2Gi"}},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"add":["NET_BIND_SERVICE"],"drop":["ALL"]},"runAsGroup":10001,"runAsNonRoot":true,"runAsUser":10001,"seccompProfile":{"type":"RuntimeDefault"}}},{"name":"mssql-coordinator","resources":{"limits":{"memory":"256Mi"},"requests":{"cpu":"200m","memory":"256Mi"}},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsGroup":10001,"runAsNonRoot":true,"runAsUser":10001,"seccompProfile":{"type":"RuntimeDefault"}}}],"initContainers":[{"name":"mssql-init","resources":{"limits":{"memory":"512Mi"},"requests":{"cpu":"200m","memory":"512Mi"}},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsGroup":10001,"runAsNonRoot":true,"runAsUser":10001,"seccompProfile":{"type":"RuntimeDefault"}}}],"podPlacementPolicy":{"name":"default"},"securityContext":{"fsGroup":10001}}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","tls":{"certificates":[{"alias":"server","emailAddresses":["dev@appscode.com"],"secretName":"mssqlserver-server-cert","subject":{"organizationalUnits":["server"],"organizations":["kubedb"]}},{"alias":"client","emailAddresses":["abc@appscode.com"],"secretName":"mssqlserver-client-cert","subject":{"organizationalUnits":["client"],"organizations":["kubedb"]}}],"clientTLS":true,"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}},"topology":{"availabilityGroup":{"databases":["agdb1","agdb2"]},"mode":"AvailabilityGroup"},"version":"2022-cu12"}}
+  creationTimestamp: "2024-10-14T10:13:19Z"
+  generation: 1
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: quick-mssqlserver
+    app.kubernetes.io/instance: mssqlserver
     app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: mssqlserver
-    app.kubernetes.io/version: "10.2"
-    app.kubernetes.io/name: mssqlserveres.kubedb.com
-    app.kubernetes.io/instance: quick-mssqlserver
+    app.kubernetes.io/name: mssqlservers.kubedb.com
+  name: mssqlserver
+  namespace: demo
+  ownerReferences:
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: MSSQLServer
+      name: mssqlserver
+      uid: df41bddb-dfa0-4bfb-bac6-39e124722f28
+  resourceVersion: "382556"
+  uid: 9d64bc4b-1926-4faa-ac5c-36561471c98a
 spec:
-  type: kubedb.com/mssqlserver
-  secret:
-    name: quick-mssqlserver-auth
+  appRef:
+    apiGroup: kubedb.com
+    kind: MSSQLServer
+    name: mssqlserver
+    namespace: demo
   clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURMekNDQWhlZ0F3SUJBZ0lVVG9Sb1Q3KzZ5OUZ5OURrVml1aWFQR2c0TmRvd0RRWUpLb1pJaHZjTkFRRUwKQlFBd0p6RVVNQklHQTFVRUF3d0xUVk5UVVV4VFpYSjJaWEl4RHpBTkJnTlZCQW9NQm10MVltVmtZakFlRncweQpOREV3TURneE1EVTBNekZhRncweU5URXdNRGd4TURVME16RmFNQ2N4RkRBU0JnTlZCQU1NQzAxVFUxRk1VMlZ5CmRtVnlNUTh3RFFZRFZRUUtEQVpyZFdKbFpHSXdnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUsKQW9JQkFRREt1Yk1LUHNZVDA5aUZGdS92NGhhMFNpSG05NThxcTlkRlpkNWFaTVVkTTgxanA2Y1oyZ0IrVlJXUgpLVlpGa20vNmRIamdyZnJCelhkMHRQdW1NZ3plRU9WU00yckxWY1lISytZWjh2SWMxYmNuVWlCaCtJU2FCb3UrClZaUGRlZGpienNhb0ozSW9xY3IyWjBtVERYMlJ6TmRWK3E3M3BTc3Q4UnZaQWtLU3BGZ2R3Y1p3dkJlYmduOFkKUm13ZFhzZlNGS0NhU0pORENlTjFEdEtZTGVSRndRV2JwdTBZM0VVUGFpcC9xaDZvNTdKUUhTaFlTQzVoVndSUgpqSzRwTDVVVnlia096MHlTeFVqQzI2MGJnWWNPWmE2OElMdDJWNEVDNVpzRkZNTWc5S3JzcUhvRnRDQmw0ZVNNCmFlaXhQWEljWEVkTktGTWJRazdySFVXU1hSanZBZ01CQUFHalV6QlJNQjBHQTFVZERnUVdCQlIxdDVDQnBhY00KZVY3dVJFUHAwUG91d0t1aGxUQWZCZ05WSFNNRUdEQVdnQlIxdDVDQnBhY01lVjd1UkVQcDBQb3V3S3VobFRBUApCZ05WSFJNQkFmOEVCVEFEQVFIL01BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQjJSaWhSYU4zQStXR1JQbHhqCkZOMzVwOVZtTnduSjRHcEZSOVF0blg5bVNhdkovS1VGUXAwbXVEK29pT0FHYkJvWENBSXBwUTBsOXFCWDV1N3UKeWxjQzN5Q2Z4UHhZS1NiMjNyL2FqQ3J3T3E2Y0xMU3RvaGFDRnhNdHRBOUoxUldURHp0U2E0SER5VWJCUllOUwowb1BBOThEYkJ2clBFVU11ajlUbUZpS0wwQmhHakx0bmttQmJGdkUrZkZ4RWltMzE2ai84TjZlT0xkQlJQUmIwCjhQMmN6dW9wbGFMcDNCUmttR3A2cDJKd1BwNXUrZlZ5UE9wbWhPWW5hTEZaYXdHTHUzS0c4amViZ1psTllJU2MKdUFNZWpqNW1rT0l5VFl0NFJZSThBeW11bWZsYjZBM1g0YkZhS1hsVUdKQlRjWTJGakZ5VkFHcWxTTGJ1ZkZPYQovbXh6Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
     service:
-      name: quick-mssqlserver
+      name: mssqlserver
       path: /
-      port: 5432
-      query: sslmode=disable
-      scheme: mssqlserverql
-  secretTransforms:
-    - renameKey:
-        from: POSTGRES_USER
-        to: username
-    - renameKey:
-        from: POSTGRES_PASSWORD
-        to: password
-  version: "10.2"
+      port: 1433
+      scheme: tcp
+    url: tcp(mssqlserver.demo.svc:1433)/
+  secret:
+    name: mssqlserver-auth
+  tlsSecret:
+    name: mssqlserver-client-cert
+  type: kubedb.com/mssqlserver
+  version: "2022"
 ```
 
-Here, we are going to describe the sections of an `AppBinding` crd.
+Here, we are going to describe the sections of an `AppBinding` CR.
 
 ### AppBinding `Spec`
 
@@ -71,7 +83,7 @@ An `AppBinding` object has the following fields in the `spec` section:
 
 #### spec.type
 
-`spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to. Stash uses this field to resolve the values of `TARGET_APP_TYPE`, `TARGET_APP_GROUP` and `TARGET_APP_RESOURCE` variables of [BackupBlueprint](https://appscode.com/products/stash/latest/concepts/crds/backupblueprint/) object.
+`spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to. KubeStash uses this field to resolve the values of `TARGET_APP_TYPE`, `TARGET_APP_GROUP` and `TARGET_APP_RESOURCE` variables of [BackupBlueprint](https://appscode.com/products/KubeStash/latest/concepts/crds/backupblueprint/) object.
 
 This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `mssqlserver` resource under `kubedb.com` group.
 
@@ -90,6 +102,13 @@ Here, the variables are parsed as follows:
 This secret must contain the following keys:
 
 MSSQLServer :
+
+| Key         | Usage                                          |
+|-------------|------------------------------------------------|
+| `username`  | Username of the target database.               |
+| `password`  | Password for the user specified by `username`. |
+
+PostgreSQL :
 
 | Key                 | Usage                                               |
 | ------------------- | --------------------------------------------------- |
@@ -123,13 +142,13 @@ Elasticsearch:
 
 You can configure following fields in `spec.clientConfig` section:
 
-- **spec.clientConfig.url**
+- **spec.clientConfig.url**   
 
   `spec.clientConfig.url` gives the location of the database, in standard URL form (i.e. `[scheme://]host:port/[path]`). This is particularly useful when the target database is running outside of the Kubernetes cluster. If your database is running inside the cluster, use `spec.clientConfig.service` section instead.
 
-  > Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
+  > Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. KubeStash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
 
-- **spec.clientConfig.service**
+- **spec.clientConfig.service**   
 
   If you are running the database inside the Kubernetes cluster, you can use Kubernetes service to connect with the database. You have to specify the following fields in `spec.clientConfig.service` section if you manually create an `AppBinding` object.
 
