@@ -238,7 +238,7 @@ redis@redis-cluster-shard0-0:/data$ redis-cli -c
 OK
 127.0.0.1:6379> set db redis
 OK
-127.0.0.1:6379> set name neaj
+127.0.0.1:6379> set name batman
 -> Redirected to slot [5798] located at 10.244.0.48:6379
 OK
 10.244.0.48:6379> set key value
@@ -282,7 +282,7 @@ spec:
   storage:
     provider: gcs
     gcs:
-      bucket: neaj-demo
+      bucket: kubestash-qa
       prefix: demo
       secretName: gcs-secret
   usagePolicy:
@@ -649,7 +649,7 @@ Once, you have created the `RestoreSession` object, KubeStash will create restor
 
 ```bash
 $ watch kubectl get restoresession -n demo
-Every 2.0s: kubectl get restoresession -n demo                                                  neaj-desktop: Wed Sep 18 15:53:42 2024
+Every 2.0s: kubectl get restoresession -n demo                                                  batman-desktop: Wed Sep 18 15:53:42 2024
 NAME                    REPOSITORY       FAILURE-POLICY   PHASE       DURATION   AGE
 redis-cluster-restore   gcs-redis-repo                    Succeeded   1m26s      4m49s
 ```
@@ -692,7 +692,7 @@ OK
 "redis"
 127.0.0.1:6379> get name 
 -> Redirected to slot [5798] located at 10.244.0.66:6379
-"neaj"
+"batman"
 10.244.0.66:6379> get key
 -> Redirected to slot [12539] located at 10.244.0.70:6379
 "value"
