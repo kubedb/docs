@@ -2,9 +2,9 @@
 title: MSSQLServerVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: ms-catalog-concepts
+    identifier: ms-concepts-catalog
     name: MSSQLServerVersion
-    parent: ms-concepts-mssqlserver
+    parent: ms-concepts
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides

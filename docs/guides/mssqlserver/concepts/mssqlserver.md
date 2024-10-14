@@ -430,9 +430,9 @@ When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validation
 Following table show what KubeDB does when you delete MSSQLServer crd for different termination policies,
 
 | Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
-| ----------------------------------- | :------------: | :------: | :------: | :------: |
+|-------------------------------------| :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Delete PetSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 2. Delete PetSet                    |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
 | 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |

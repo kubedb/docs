@@ -5,7 +5,7 @@ menu:
     identifier: ms-quickstart-quickstart
     name: Overview
     parent: ms-quickstart
-    weight: 15
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

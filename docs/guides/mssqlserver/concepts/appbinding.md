@@ -2,9 +2,9 @@
 title: AppBinding CRD
 menu:
   docs_{{ .version }}:
-    identifier: ms-appbinding-concepts
+    identifier: ms-concepts-appbinding
     name: AppBinding
-    parent: ms-concepts-mssqlserver
+    parent: ms-concepts
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -5,6 +5,6 @@ menu:
     identifier: ms-concepts
     name: Concepts
     parent: guides-mssqlserver
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 ---
