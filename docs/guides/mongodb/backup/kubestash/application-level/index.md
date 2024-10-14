@@ -239,7 +239,7 @@ We are going to store our backed up data into a `S3` bucket. At first, we need t
 
 Let's create a secret called `s3-secret` with access credentials to our desired S3 bucket,
 
-```console
+```bash
 $ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
 $ echo -n '<your-aws-secret-access-key-here>' > AWS_SECRET_ACCESS_KEY
 $ kubectl create secret generic -n demo s3-secret \
@@ -290,7 +290,7 @@ We have to create a `BackupConfiguration` targeting respective MongoDB crd of ou
 
 EncryptionSecret refers to the Secret containing the encryption key which will be used to encode/decode the backed up data. Let's create a secret called `encry-secret`
 
-```console
+```bash
 $ kubectl create secret generic encry-secret -n demo \
     --from-literal=RESTIC_PASSWORD='123' -n demo
 secret/encry-secret created
@@ -317,7 +317,7 @@ spec:
 
 Let's create the RetentionPolicy we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/kubestash/application-level/examples/retentionpolicy.yaml
 retentionpolicy.storage.kubestash.com/backup-rp created
 ```
