@@ -33,7 +33,7 @@ You have to be familiar with following custom resources:
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create `demo` namespace if you haven't created yet.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -82,7 +82,7 @@ spec:
 
 Create the above `MongoDB` crd,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/kubestash/logical/sharding/examples/mongodb-sharding.yaml
 mongodb.kubedb.com/sample-mg-sh created
 ```
@@ -91,7 +91,7 @@ KubeDB will deploy a MongoDB database according to the above specification. It w
 
 Let's check if the database is ready to use,
 
-```console
+```bash
 $ kubectl get mongodb -n demo sample-mg-sh
 NAME           VERSION   STATUS   AGE
 sample-mg-sh   4.2.24     Ready    5m39s
@@ -99,7 +99,7 @@ sample-mg-sh   4.2.24     Ready    5m39s
 
 The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
 
-```console
+```bash
 $ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-mg-sh
 NAME                TYPE                       DATA   AGE
 sample-mg-sh-auth   kubernetes.io/basic-auth   2      21m
@@ -123,7 +123,7 @@ Here, we have to use service `sample-mg-sh` and secret `sample-mg-sh-auth` to co
 
 For simplicity, we are going to exec into the database pod and create some sample data. At first, find out the database mongos pod using the following command,
 
-```console
+```bash
 $ kubectl get pods -n demo --selector="mongodb.kubedb.com/node.mongos=sample-mg-sh-mongos"
 NAME                    READY   STATUS    RESTARTS   AGE
 sample-mg-sh-mongos-0   1/1     Running   0          21m
@@ -132,7 +132,7 @@ sample-mg-sh-mongos-1   1/1     Running   0          21m
 
 Now, let's exec into the pod and create a table,
 
-```console
+```bash
 $ export USER=$(kubectl get secrets -n demo sample-mg-sh-auth -o jsonpath='{.data.\username}' | base64 -d)
 
 $ export PASSWORD=$(kubectl get secrets -n demo sample-mg-sh-auth -o jsonpath='{.data.\password}' | base64 -d)
@@ -183,7 +183,7 @@ We are going to store our backed up data into a S3 bucket. At first, we need to 
 
 Let's create a secret called `s3-secret` with access credentials to our desired S3 bucket,
 
-```console
+```bash
 $ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
 $ echo -n '<your-aws-secret-access-key-here>' > AWS_SECRET_ACCESS_KEY
 $ kubectl create secret generic -n demo s3-secret \
@@ -219,7 +219,7 @@ spec:
 
 Let's create the `BackupStorage` we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/kubestash/logical/sharding/examples/backupstorage-sharding.yaml
 backupstorage.storage.kubestash.com/s3-storage-sharding created
 ```
@@ -234,7 +234,7 @@ We have to create a `BackupConfiguration` targeting respective MongoDB crd of ou
 
 EncryptionSecret refers to the Secret containing the encryption key which will be used to encode/decode the backed up data. Let's create a secret called `encry-secret`
 
-```console
+```bash
 $ kubectl create secret generic encry-secret -n demo \
     --from-literal=RESTIC_PASSWORD='123' -n demo
 secret/encry-secret created
@@ -244,7 +244,7 @@ secret/encry-secret created
 
 `RetentionPolicy` specifies how the old Snapshots should be cleaned up. This is a namespaced CRD.However, we can refer it from other namespaces as long as it is permitted via `.spec.usagePolicy`. Below is the YAML of the `RetentionPolicy` called `backup-rp`
 
-```console
+```bash
 apiVersion: storage.kubestash.com/v1alpha1
 kind: RetentionPolicy
 metadata:
@@ -261,7 +261,7 @@ spec:
 
 Let's create the RetentionPolicy we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/kubestash/logical/sharding/examples/retentionpolicy.yaml
 retentionpolicy.storage.kubestash.com/backup-rp created
 ```
@@ -321,7 +321,7 @@ Here,
 
 Let's create the `BackupConfiguration` crd we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/kubestash/logical/sharding/examples/backupconfiguration-sharding.yaml
 backupconfiguration.core.kubestash.com/mg created
 ```
@@ -330,7 +330,7 @@ backupconfiguration.core.kubestash.com/mg created
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
-```console
+```bash
 $ kubectl get backupconfiguration -n demo
 NAME   PHASE   PAUSED   AGE
 mg     Ready            85s
@@ -342,7 +342,7 @@ KubeStash will create a CronJob with the schedule specified in `spec.sessions.sc
 
 Verify that the CronJob has been created using the following command,
 
-```console
+```bash
 $ kubectl get cronjob -n demo
 NAME                  SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 trigger-mg-frequent   */3 * * * *   False     0        <none>          101s
@@ -354,7 +354,7 @@ The `trigger-mg-frequent` CronJob will trigger a backup on each schedule by crea
 
 Wait for the next schedule. Run the following command to watch `BackupSession` crd,
 
-```console
+```bash
 $ kubectl get backupsession -n demo
 NAME                     INVOKER-TYPE          INVOKER-NAME   PHASE       DURATION   AGE
 mg-frequent-1701950402   BackupConfiguration   mg             Succeeded              3m5s
@@ -367,7 +367,7 @@ We can see above that the backup session has succeeded. Now, we are going to ver
 
 Once a backup is complete, KubeStash will update the respective `Snapshot` crd to reflect the backup. It will be created when a backup is triggered. Check that the `Snapshot` Phase to verify backup.
 
-```console
+```bash
 $ kubectl get snapshot -n demo
 NAME                             REPOSITORY   SESSION    SNAPSHOT-TIME          DELETION-POLICY   PHASE       VERIFICATION-STATUS   AGE
 s3-repo-mg-frequent-1701950402   s3-repo      frequent   2023-12-07T12:00:11Z   Delete            Succeeded                         3m37s
@@ -376,7 +376,7 @@ s3-repo-mg-frequent-1701950582   s3-repo      frequent   2023-12-07T12:03:08Z   
 
 KubeStash will also update the respective `Repository` crd to reflect the backup. Check that the repository `s3-repo` has been updated by the following command,
 
-```console
+```bash
 $ kubectl get repository -n demo s3-repo
 NAME      INTEGRITY   SNAPSHOT-COUNT   SIZE         PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 s3-repo   true        2                95.660 KiB   Ready   41s                      4m3s
@@ -401,7 +401,7 @@ backupconfiguration.core.kubestash.com/mg patched
 
 Now, wait for a moment. KubeStash will pause the BackupConfiguration. Verify that the BackupConfiguration  has been paused,
 
-```console
+```bash
 $ kubectl get backupconfiguration -n demo mg
 NAME   PHASE   PAUSED   AGE
 mg     Ready   true     11m
@@ -446,14 +446,14 @@ spec:
 
 Create the above `MongoDB` crd,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/kubestash/logical/sharding/examples/mongodb-sharding-restore.yaml
 mongodb.kubedb.com/sample-mg-sh-restore created
 ```
 
 Let's check if the database is ready to use,
 
-```console
+```bash
 $ kubectl get mg -n demo sample-mg-sh-restore
 NAME                   VERSION   STATUS   AGE
 sample-mg-sh-restore   4.2.24     Ready    7m47s
@@ -461,7 +461,7 @@ sample-mg-sh-restore   4.2.24     Ready    7m47s
 
 Let's verify all the databases of this `sample-mg-sh-restore` by exec into its mongos pod
 
-```console
+```bash
 $ export USER=$(kubectl get secrets -n demo sample-mg-sh-restore-auth -o jsonpath='{.data.\username}' | base64 -d)
 
 $ export PASSWORD=$(kubectl get secrets -n demo sample-mg-sh-restore-auth -o jsonpath='{.data.\password}' | base64 -d)
@@ -534,7 +534,7 @@ Here,
 
 Let's create the `RestoreSession` crd we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/kubestash/logical/sharding/examples/restoresession-sharding.yaml
 restoresession.core.kubestash.com/mg-sh-restore created
 ```
@@ -543,7 +543,7 @@ Once, you have created the `RestoreSession` crd, KubeStash will create a job to 
 
 Run the following command to watch `RestoreSession` phase,
 
-```console
+```bash
 $ kubectl get restoresession -n demo mg-sh-restore -w
 NAME            REPOSITORY   FAILURE-POLICY   PHASE       DURATION   AGE
 mg-sh-restore   s3-repo                       Succeeded   15s        48s
@@ -557,7 +557,7 @@ In this section, we are going to verify that the desired data has been restored 
 
 Lets, exec into the database's mongos pod and list available tables,
 
-```console
+```bash
 $ kubectl exec -it -n demo sample-mg-sh-restore-mongos-0 -- mongo admin -u $USER -p $PASSWORD
 
 mongos> show dbs
@@ -600,7 +600,7 @@ So, from the above output, we can see the database `newdb` that we had created e
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete -n demo restoresession mg-sh-restore
 kubectl delete -n demo backupconfiguration mg
 kubectl delete -n demo mg sample-mg-sh
