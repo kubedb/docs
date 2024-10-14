@@ -1,0 +1,21 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: FerretDBAutoscaler
+metadata:
+  name: ferretdb-autoscale-ops
+  namespace: demo
+spec:
+  databaseRef:
+    name: ferretdb-autoscale
+  compute:
+    ferretdb:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 400m
+        memory: 400Mi
+      maxAllowed:
+        cpu: 1
+        memory: 1Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"
