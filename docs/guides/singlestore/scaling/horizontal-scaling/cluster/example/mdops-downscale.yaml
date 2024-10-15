@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MariaDBOpsRequest
+metadata:
+  name: mdops-scale-horizontal-down
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: sample-mariadb
+  horizontalScaling:
+    member : 3
