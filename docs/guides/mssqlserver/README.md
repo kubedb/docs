@@ -65,5 +65,5 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 - [Quickstart Microsoft SQL Server](/docs/guides/mssqlserver/quickstart/quickstart.md) with KubeDB Operator.
 - Detail concepts of [MSSQLServer object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
 - [SQL Server Availability Group Clustering](/docs/guides/mssqlserver/clustering/ag_cluster.md) supported by KubeDB.
-- How to [Backup & Restore](/docs/guides/mssqlserver/backup/kubestash/overview/index.md) SQL Server using [KubeStash](https://kubestash.com/).
+- How to [Backup & Restore](/docs/guides/mssqlserver/backup/overview/index.md) SQL Server using [KubeStash](https://kubestash.com/).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

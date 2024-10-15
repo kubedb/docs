@@ -20,7 +20,7 @@ section_menu_id: guides
 
 When you install KubeDB, a `MSSQLServerVersion` custom resource will be created automatically for every supported MSSQLServer versions. You have to specify the name of `MSSQLServerVersion` CR in `spec.version` field of [MSSQLServer](/docs/guides/mssqlserver/concepts/mssqlserver.md) CR. Then, KubeDB will use the docker images specified in the `MSSQLServerVersion` CR to create your expected database.
 
-Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database. For more details about how to use custom image with SQL Server in KubeDB, please visit [here](/docs/guides/mssqlserver/custom-versions/setup.md).
+Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database.   
 
 ## MSSQLServerVersion Specification
 
@@ -98,6 +98,11 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 ### spec.exporter.image
 
 `spec.exporter.image` is a required field that specifies the image which will be used to export Prometheus metrics.
+
+### spec.archiver
+
+`spec.archiver` is a required field that specifies the `walg` (mssql wal archiver sidekick) and mssqlserver `kubestash addon` related specifications. 
+Addon specifies the backup and restore capabilities. [Here](https://github.com/kubestash/apimachinery/blob/master/apis/addons/v1alpha1/addon_types.go) you can find more details on Addon and Task.
 
 ## Next Steps
 

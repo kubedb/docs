@@ -32,9 +32,6 @@ An `AppBinding` object created by `KubeDB` for MSSQLServer database is shown bel
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver","namespace":"demo"},"spec":{"authSecret":{"name":"mssqlserver-auth"},"configSecret":{"name":"ms-custom-config"},"deletionPolicy":"WipeOut","healthChecker":{"disableWriteCheck":false,"failureThreshold":2,"periodSeconds":15,"timeoutSeconds":10},"internalAuth":{"endpointCert":{"certificates":[{"alias":"endpoint","secretName":"mssqlserver-endpoint-cert","subject":{"organizationalUnits":["endpoint"],"organizations":["kubedb"]}}],"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}}},"leaderElection":{"electionTick":10,"heartbeatTick":1,"period":"300ms","transferLeadershipInterval":"1s","transferLeadershipTimeout":"1m0s"},"monitor":{"agent":"prometheus.io/operator","prometheus":{"serviceMonitor":{"interval":"10s","labels":{"release":"prometheus"}}}},"podTemplate":{"controller":{"annotations":{"passMe":"ToPetSet"}},"metadata":{"annotations":{"passMe":"ToDatabasePod"}},"spec":{"containers":[{"env":[{"name":"NOT_MSSQL_SA_PASSWORD_NO","value":"Pa55w0rd!"},{"name":"NOT_MSSQL_SA_USERNAME","value":"sa"}],"name":"mssql","resources":{"limits":{"memory":"4Gi"},"requests":{"cpu":"500m","memory":"2Gi"}},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"add":["NET_BIND_SERVICE"],"drop":["ALL"]},"runAsGroup":10001,"runAsNonRoot":true,"runAsUser":10001,"seccompProfile":{"type":"RuntimeDefault"}}},{"name":"mssql-coordinator","resources":{"limits":{"memory":"256Mi"},"requests":{"cpu":"200m","memory":"256Mi"}},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsGroup":10001,"runAsNonRoot":true,"runAsUser":10001,"seccompProfile":{"type":"RuntimeDefault"}}}],"initContainers":[{"name":"mssql-init","resources":{"limits":{"memory":"512Mi"},"requests":{"cpu":"200m","memory":"512Mi"}},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsGroup":10001,"runAsNonRoot":true,"runAsUser":10001,"seccompProfile":{"type":"RuntimeDefault"}}}],"podPlacementPolicy":{"name":"default"},"securityContext":{"fsGroup":10001}}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","tls":{"certificates":[{"alias":"server","emailAddresses":["dev@appscode.com"],"secretName":"mssqlserver-server-cert","subject":{"organizationalUnits":["server"],"organizations":["kubedb"]}},{"alias":"client","emailAddresses":["abc@appscode.com"],"secretName":"mssqlserver-client-cert","subject":{"organizationalUnits":["client"],"organizations":["kubedb"]}}],"clientTLS":true,"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}},"topology":{"availabilityGroup":{"databases":["agdb1","agdb2"]},"mode":"AvailabilityGroup"},"version":"2022-cu12"}}
   creationTimestamp: "2024-10-14T10:13:19Z"
   generation: 1
   labels:
@@ -108,45 +105,12 @@ MSSQLServer :
 | `username`  | Username of the target database.               |
 | `password`  | Password for the user specified by `username`. |
 
-PostgreSQL :
-
-| Key                 | Usage                                               |
-| ------------------- | --------------------------------------------------- |
-| `POSTGRES_USER`     | Username of the target database.                    |
-| `POSTGRES_PASSWORD` | Password for the user specified by `POSTGRES_USER`. |
-
-MySQL :
-
-| Key        | Usage                                          |
-| ---------- | ---------------------------------------------- |
-| `username` | Username of the target database.               |
-| `password` | Password for the user specified by `username`. |
-
-MongoDB :
-
-| Key        | Usage                                          |
-| ---------- | ---------------------------------------------- |
-| `username` | Username of the target database.               |
-| `password` | Password for the user specified by `username`. |
-
-Elasticsearch:
-
-|       Key        |          Usage          |
-| ---------------- | ----------------------- |
-| `ADMIN_USERNAME` | Admin username          |
-| `ADMIN_PASSWORD` | Password for admin user |
 
 #### spec.clientConfig
 
 `spec.clientConfig` defines how to communicate with the target database. You can use either an URL or a Kubernetes service to connect with the database. You don't have to specify both of them.
 
 You can configure following fields in `spec.clientConfig` section:
-
-- **spec.clientConfig.url**   
-
-  `spec.clientConfig.url` gives the location of the database, in standard URL form (i.e. `[scheme://]host:port/[path]`). This is particularly useful when the target database is running outside of the Kubernetes cluster. If your database is running inside the cluster, use `spec.clientConfig.service` section instead.
-
-  > Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. KubeStash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
 
 - **spec.clientConfig.service**   
 

@@ -619,10 +619,10 @@ NAME                       READY   STATUS    RESTARTS   AGE
 mssqlserver-ag-cluster-0   2/2     Running   0          129m
 mssqlserver-ag-cluster-1   2/2     Running   0          129m
 mssqlserver-ag-cluster-2   2/2     Running   0          129m
-neaj@neaj-desktop:~/g/s/k/mssqlserver|master✓
+
 $ kubectl delete pod -n demo mssqlserver-ag-cluster-0 
 pod "mssqlserver-ag-cluster-0" deleted
-neaj@neaj-desktop:~/g/s/k/mssqlserver|master✓
+
 $ kubectl get pods -n demo
 NAME                       READY   STATUS    RESTARTS   AGE
 mssqlserver-ag-cluster-0   2/2     Running   0          7s
@@ -832,8 +832,8 @@ Now, run the following command to get all mssqlserver resources in `demo` namesp
 
 ```bash
 $ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
-NAME                       TYPE                DATA   AGE
-secret/mssqlserver-ca                         kubernetes.io/tls          2      3h8m
+NAME                       TYPE                       DATA   AGE
+secret/mssqlserver-ca      kubernetes.io/tls          2      3h8m
 ```
 
 From the above output, you can see that all mssqlserver resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `WipeOut`.

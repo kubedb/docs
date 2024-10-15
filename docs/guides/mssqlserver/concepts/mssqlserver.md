@@ -148,15 +148,6 @@ spec:
           passMe: ToService
       spec:
         type: LoadBalancer
-    - alias: secondary
-      metadata:
-        annotations:
-          passMe: ToReplicaService
-      spec:
-        type: NodePort
-        ports:
-          - name:  http
-            port:  1433
   tls:
     certificates:
       - alias: server
@@ -216,14 +207,19 @@ To learn more about how to setup a SQL Server Availability Group cluster (HA con
 
 ### spec.leaderElection
 
-There are three fields under MSSQLServer CRD's `spec.leaderElection`. These values define how fast the leader election can happen.
+There are five fields under MSSQLServer CRD's `spec.leaderElection`. These values define how fast the leader election can happen.
 
-- `leaseDurationSeconds`: This is the duration in seconds that non-leader candidates will wait to force acquire leadership. This is measured against time of last observed ack. Default 15 sec.
-- `renewDeadlineSeconds`: This is the duration in seconds that the acting master will retry refreshing leadership before giving up. Normally, LeaseDuration \* 2 / 3. Default 10 sec.
-- `retryPeriodSeconds`: This is the duration in seconds the LeaderElector clients should wait between tries of actions. Normally, LeaseDuration / 3. Default 2 sec.
+- `Period`: This is the period between each invocation of `Node.Tick`. It represents the time base for election actions. Default is `100ms`.
 
-If the Cluster machine is powerful, user can reduce the times. But, Do not make it so little, in that case MSSQLServer will restart very often.
+- `ElectionTick`: This is the number of `Node.Tick` invocations that must pass between elections. If a follower does not receive any message from the leader during this period, it becomes a candidate and starts an election. It is recommended to set `ElectionTick = 10 * HeartbeatTick` to prevent unnecessary leader switching. Default is `10`.
 
+- `HeartbeatTick`: This defines the interval between heartbeats sent by the leader to maintain its leadership. A leader sends heartbeat messages every `HeartbeatTick` ticks. Default is `1`.
+
+- `TransferLeadershipInterval`: This specifies retry interval to transfer leadership to the healthiest node. Default is `1s`.
+
+- `TransferLeadershipTimeout`: This specifies the  retry timeout for transferring leadership to the healthiest node. Default is `60s`.
+
+You can increase the period and the electionTick if the system has high network latency.
 
 ### spec.authSecret
 
@@ -274,21 +270,15 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 ### spec.init
 
-`spec.init` is an optional section that can be used to initialize a newly created MSSQLServer database. MSSQLServer databases can be initialized from these two ways:
-
-1. Initialize from Script
-2. Initialize from Snapshot
+`spec.init` is an optional section that can be used to initialize a newly created MSSQLServer database. MSSQLServer databases can be initialized from Snapshots.
 
 ### spec.monitor
 
-MSSQLServer managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
-
-- [Monitor MSSQLServer with builtin Prometheus](/docs/guides/mssqlserver/monitoring/using-builtin-prometheus.md)
-- [Monitor MSSQLServer with Prometheus operator](/docs/guides/mssqlserver/monitoring/using-prometheus-operator.md)
+MSSQLServer managed by KubeDB can be monitored with Prometheus operator out-of-the-box.
 
 ### spec.configSecret
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for MSSQLServer. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mssqlserver/configuration/using-config-file.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for MSSQLServer. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use Kubernetes supported volume source `secret`.
 
 ### spec.podTemplate
 
@@ -339,7 +329,7 @@ The `spec.podTemplate.spec.volumes` is an optional field. This can be used to pr
 The `spec.podTemplate.spec.containers` can be used to provide the list of containers and their configurations for to the database pod. some of the fields are described below,
 
 ##### spec.podTemplate.spec.containers[].name
-The `spec.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
+The `spec.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a `DNS_LABEL`. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
 
 ##### spec.podTemplate.spec.containers[].args
 `spec.podTemplate.spec.containers[].args` is an optional field. This can be used to provide additional arguments to database installation.
@@ -360,7 +350,7 @@ Also, note that KubeDB does not allow to update the environment variables as upd
 
 ##### spec.podTemplate.spec.containers[].resources
 
-`spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
+`spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
 
 #### spec.podTemplate.spec.serviceAccountName
 
@@ -370,7 +360,7 @@ If this field is left empty, the KubeDB operator will create a service account n
 
 If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
-If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mssqlserver/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
+If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
 
 
 #### spec.podTemplate.spec.nodeSelector
