@@ -1,5 +1,5 @@
 ---
-title: Run SQL Server with Custom Configuration
+title: Run Microsoft SQL Server with Custom Configuration
 menu:
   docs_{{ .version }}:
     identifier: ms-configuration

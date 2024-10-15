@@ -33,17 +33,15 @@ KubeDB supports providing custom configuration for MSSQLServer. This tutorial wi
 
 ## Overview
 
-MSSQLServer allows configuring database via configuration file. The default configuration file for MSSQLServer deployed by `KubeDB` can be found in `/data/configdb/mssql.conf`. When MSSQLServer starts, it will look for custom configuration file in `/configdb-readonly/mssql.conf`. If configuration file exist, this custom configuration will overwrite the existing default one.
+MSSQLServer allows configuring database via configuration file. The default configuration file for MSSQLServer deployed by `KubeDB` can be found in `/var/opt/mssql/mssql.conf`. When MSSQLServer starts, it will look for  configuration file in `/var/opt/mssql/mssql.conf`. If configuration file exist, this configuration will overwrite the existing defaults.
 
-> To learn available configuration option of MSSQLServer see [Configuration File Options](https://docs.mssqlserver.com/manual/reference/configuration-options/).
+> To learn available configuration option of MSSQLServer see [Configure SQL Server on Linux](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-mssql-conf?view=sql-server-ver16).
 
-At first, you have to create a secret with your configuration file contents as the value of this key `mssql.conf`. Then, you have to specify the name of this secret in `spec.configSecret.name` section while creating MSSQLServer crd. KubeDB will mount this secret into `/configdb-readonly/` directory of the database pod.
+At first, you have to create a config file named `mssql.conf` with your desired configuration. Then you have to create a [secret](https://kubernetes.io/docs/concepts/configuration/secret/) using this file. You have to specify this secret name in `spec.configSecret.name` section while creating MSSQLServer CR. 
 
-Here one important thing to note that, `spec.configSecret.name` will be used for standard replicaset members & standalone mssqlserver only. If you want to configure a specific type of mongo nodes, you have to set the name in respective fields.
-For example, to configure shard topology node, set `spec.shardTopology.<shard / configServer / mongos>.configSecret.name` field.
-Similarly, To configure arbiter node, set `spec.arbiter.configSecret.name` field.
+KubeDB will create a secret named `{mssqlserver-name}-config` with configuration file contents as the value of the key `mssql.conf` and mount this secret into `/var/opt/mssql/` directory of the database pod. the secret named `{mssqlserver-name}-config` will contain your desired configurations with some default configurations.
 
-In this tutorial, we will configure [net.maxIncomingConnections](https://docs.mssqlserver.com/manual/reference/configuration-options/#net.maxIncomingConnections) (default value: 65536) via a custom config file.
+In this tutorial, we will configure sql server via a custom config file.
 
 ## Custom Configuration
 
@@ -51,8 +49,7 @@ At first, create `mssql.conf` file containing required configuration settings.
 
 ```ini
 $ cat mssql.conf
-net:
-   maxIncomingConnections: 10000
+
 ```
 
 Here, `maxIncomingConnections` is set to `10000`, whereas the default value is 65536.
@@ -85,7 +82,7 @@ net:
   maxIncomingConnections: 100000
 ```
 
-Now, create MSSQLServer crd specifying `spec.configSecret` field.
+Now, create MSSQLServer CR specifying `spec.configSecret` field.
 
 ```yaml
 apiVersion: kubedb.com/v1
