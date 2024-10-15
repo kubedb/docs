@@ -12,357 +12,426 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-
 # Druid
 
-[//]: # ()
-[//]: # (## What is PgBouncer)
+## What is Druid
+
+`Druid` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Druid](https://druid.apache.org/) in a Kubernetes native way. You only need to describe the desired database configuration in a `Druid`object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+
+## Druid Spec
+
+As with all other Kubernetes objects, a Druid needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example Druid object.
+
+```yaml
+apiVersion: kubedb.com/v1
+kind: Druid
+metadata:
+  name: druid
+  namespace: demo
+spec:
+  authSecret:
+    name: druid-admin-cred
+  configSecret:
+    name: druid-custom-config
+  enableSSL: true
+  healthChecker:
+    failureThreshold: 3
+    periodSeconds: 20
+    timeoutSeconds: 10
+  keystoreCredSecret:
+    name: druid-keystore-cred
+  podTemplate:
+    metadata:
+      annotations:
+        passMe: ToDatabasePod
+      labels:
+        thisLabel: willGoToPod
+    controller:
+      annotations:
+        passMe: ToPetSet
+      labels:
+        thisLabel: willGoToPts
+  storageType: Durable
+  deletionPolicy: DoNotTerminate
+  tls:
+    certificates:
+      - alias: server
+        secretName: druid-server-cert
+      - alias: client
+        secretName: druid-client-cert
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: druid-ca-issuer
+  topology:
+    coordinators:
+      podTemplate:
+        spec:
+          containers:
+            - name: druid
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1024Mi
+                limits:
+                  cpu: 700m
+                  memory: 2Gi
+    historicals:
+      podTemplate:
+        spec:
+          containers:
+            - name: druid
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1024Mi
+                limits:
+                  cpu: 700m
+                  memory: 2Gi
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: standard
+    routers:
+      podTemplate:
+        spec:
+          containers:
+            - name: druid
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1024Mi
+                limits:
+                  cpu: 700m
+                  memory: 2Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      exporter:
+        port: 56790
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+  version: 3.6.1
+```
 
-[//]: # ()
-[//]: # (`PgBouncer` is a Kubernetes `Custom Resource Definitions` &#40;CRD&#41;. It provides declarative configuration for [PgBouncer]&#40;https://www.pgbouncer.github.io/&#41; in a Kubernetes native way. You only need to describe the desired configurations in a `PgBouncer` object, and the KubeDB operator will create Kubernetes resources in the desired state for you.)
+### spec.version
 
-[//]: # ()
-[//]: # (## PgBouncer Spec)
+`spec.version` is a required field specifying the name of the [DruidVersion](/docs/guides/druid/concepts/druidversion.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `Druid` resources,
 
-[//]: # ()
-[//]: # (Like any official Kubernetes resource, a `PgBouncer` object has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.)
+- `28.0.1`
+- `30.0.1`
 
-[//]: # ()
-[//]: # (Below is an example PgBouncer object.)
+### spec.replicas
 
-[//]: # ()
-[//]: # (```yaml)
+`spec.replicas` the number of members in Druid replicaset.
 
-[//]: # (apiVersion: kubedb.com/v1alpha2)
+If `spec.topology` is set, then `spec.replicas` needs to be empty. Instead use `spec.topology.controller.replicas` and `spec.topology.broker.replicas`. You need to set both of them for topology clustering.
 
-[//]: # (kind: PgBouncer)
+KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
 
-[//]: # (metadata:)
+### spec.authSecret
 
-[//]: # (  name: pgbouncer-server)
+`spec.authSecret` is an optional field that points to a Secret used to hold credentials for `druid` admin user. If not set, KubeDB operator creates a new Secret `{druid-object-name}-auth` for storing the password for `admin` user for each Druid object.
 
-[//]: # (  namespace: demo)
+We can use this field in 3 mode.
+1. Using an external secret. In this case, You need to create an auth secret first with required fields, then specify the secret name when creating the Druid object using `spec.authSecret.name` & set `spec.authSecret.externallyManaged` to true.
+```yaml
+authSecret:
+  name: <your-created-auth-secret-name>
+  externallyManaged: true
+```
 
-[//]: # (spec:)
+2. Specifying the secret name only. In this case, You need to specify the secret name when creating the Druid object using `spec.authSecret.name`. `externallyManaged` is by default false.
+```yaml
+authSecret:
+  name: <intended-auth-secret-name>
+```
 
-[//]: # (  version: "1.18.0")
+3. Let KubeDB do everything for you. In this case, no work for you.
 
-[//]: # (  replicas: 2)
+AuthSecret contains a `user` key and a `password` key which contains the `username` and `password` respectively for Druid `admin` user.
 
-[//]: # (  databases:)
+Example:
 
-[//]: # (  - alias: "postgres")
+```bash
+$ kubectl create secret generic druid-auth -n demo \
+--from-literal=username=jhon-doe \
+--from-literal=password=6q8u_2jMOW-OOZXk
+secret "kf-auth" created
+```
 
-[//]: # (    databaseName: "postgres")
+```yaml
+apiVersion: v1
+data:
+  password: NnE4dV8yak1PVy1PT1pYaw==
+  username: amhvbi1kb2U=
+kind: Secret
+metadata:
+  name: druid-auth
+  namespace: demo
+type: Opaque
+```
 
-[//]: # (    databaseRef:)
+Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
-[//]: # (      name: "quick-postgres")
+### spec.configSecret
 
-[//]: # (      namespace: demo)
+`spec.configSecret` is an optional field that points to a Secret used to hold custom Druid configuration. If not set, KubeDB operator will use default configuration for Druid.
 
-[//]: # (  connectionPool:)
+### spec.topology
 
-[//]: # (    maxClientConnections: 20)
+`spec.topology` represents the topology configuration for Druid cluster in KRaft mode.
 
-[//]: # (    reservePoolSize: 5)
+When `spec.topology` is set, the following fields needs to be empty, otherwise validating webhook will throw error.
 
-[//]: # (  monitor:)
+- `spec.replicas`
+- `spec.podTemplate`
+- `spec.storage`
 
-[//]: # (    agent: prometheus.io/operator)
+#### spec.topology.broker
 
-[//]: # (    prometheus:)
+`broker` represents configuration for brokers of Druid. In KRaft Topology mode clustering each pod can act as a single dedicated Druid broker.
 
-[//]: # (      serviceMonitor:)
+Available configurable fields:
 
-[//]: # (        labels:)
+- `topology.broker`:
+    - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Druid `broker` pods. Defaults to `1`.
+    - `suffix` (`: "broker"`) - is an `optional` field that is added as the suffix of the broker PetSet name. Defaults to `broker`.
+    - `storage` is a `required` field that specifies how much storage to claim for each of the `broker` pods.
+    - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `broker` pods.
 
-[//]: # (          release: prometheus)
+#### spec.topology.controller
 
-[//]: # (        interval: 10s)
+`controller` represents configuration for controllers of Druid. In KRaft Topology mode clustering each pod can act as a single dedicated Druid controller that preserves metadata for the whole cluster and participated in leader election.
 
-[//]: # (```)
+Available configurable fields:
 
-[//]: # ()
-[//]: # (### spec.version)
+- `topology.controller`:
+    - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Druid `controller` pods. Defaults to `1`.
+    - `suffix` (`: "controller"`) - is an `optional` field that is added as the suffix of the controller PetSet name. Defaults to `controller`.
+    - `storage` is a `required` field that specifies how much storage to claim for each of the `controller` pods.
+    - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `controller` pods.
 
-[//]: # ()
-[//]: # (`spec.version` is a required field that specifies the name of the [PgBouncerVersion]&#40;/docs/guides/pgbouncer/concepts/catalog.md&#41; crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PgBouncerVersion` resources,)
+### spec.enableSSL
 
-[//]: # ()
-[//]: # (- `1.18.0`)
+`spec.enableSSL` is an `optional` field that specifies whether to enable TLS to HTTP layer. The default value of this field is `false`.
 
-[//]: # ()
-[//]: # (### spec.replicas)
+```yaml
+spec:
+  enableSSL: true 
+```
 
-[//]: # ()
-[//]: # (`spec.replicas` specifies the total number of available pgbouncer server nodes for each crd. KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas are available during [voluntary disruptions]&#40;https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions&#41;.)
+### spec.tls
 
-[//]: # ()
-[//]: # (### spec.databases)
+`spec.tls` specifies the TLS/SSL configurations. The KubeDB operator supports TLS management by using the [cert-manager](https://cert-manager.io/). Currently, the operator only supports the `PKCS#8` encoded certificates.
 
-[//]: # ()
-[//]: # (`spec.databases` specifies an array of postgres databases that pgbouncer should add to its connection pool. It contains three `required` fields and two `optional` fields for each database connection.)
+```yaml
+spec:
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: kf-issuer
+    certificates:
+    - alias: server
+      privateKey:
+        encoding: PKCS8
+      secretName: kf-client-cert
+      subject:
+        organizations:
+        - kubedb
+    - alias: http
+      privateKey:
+        encoding: PKCS8
+      secretName: kf-server-cert
+      subject:
+        organizations:
+        - kubedb
+```
 
-[//]: # ()
-[//]: # (- `spec.databases.alias`:  specifies an alias for the target database located in a postgres server specified by an appbinding.)
+The `spec.tls` contains the following fields:
 
-[//]: # (- `spec.databases.databaseName`:  specifies the name of the target database.)
+- `tls.issuerRef` - is an `optional` field that references to the `Issuer` or `ClusterIssuer` custom resource object of [cert-manager](https://cert-manager.io/docs/concepts/issuer/). It is used to generate the necessary certificate secrets for Druid. If the `issuerRef` is not specified, the operator creates a self-signed CA and also creates necessary certificate (valid: 365 days) secrets using that CA.
+    - `apiGroup` - is the group name of the resource that is being referenced. Currently, the only supported value is `cert-manager.io`.
+    - `kind` - is the type of resource that is being referenced. The supported values are `Issuer` and `ClusterIssuer`.
+    - `name` - is the name of the resource ( `Issuer` or `ClusterIssuer` ) that is being referenced.
 
-[//]: # (- `spec.databases.databaseRef`:  specifies the name and namespace of the AppBinding that contains the path to a PostgreSQL server where the target database can be found.)
+- `tls.certificates` - is an `optional` field that specifies a list of certificate configurations used to configure the  certificates. It has the following fields:
+    - `alias` - represents the identifier of the certificate. It has the following possible value:
+        - `server` - is used for the server certificate configuration.
+        - `client` - is used for the client certificate configuration.
 
-[//]: # ()
-[//]: # (ConnectionPool is used to configure pgbouncer connection-pool. All the fields here are accompanied by default values and can be left unspecified if no customisation is required by the user.)
+    - `secretName` - ( `string` | `"<database-name>-alias-cert"` ) - specifies the k8s secret name that holds the certificates.
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.port`: specifies the port on which pgbouncer should listen to connect with clients. The default is 5432.)
+    - `subject` - specifies an `X.509` distinguished name (DN). It has the following configurable fields:
+        - `organizations` ( `[]string` | `nil` ) - is a list of organization names.
+        - `organizationalUnits` ( `[]string` | `nil` ) - is a list of organization unit names.
+        - `countries` ( `[]string` | `nil` ) -  is a list of country names (ie. Country Codes).
+        - `localities` ( `[]string` | `nil` ) - is a list of locality names.
+        - `provinces` ( `[]string` | `nil` ) - is a list of province names.
+        - `streetAddresses` ( `[]string` | `nil` ) - is a list of street addresses.
+        - `postalCodes` ( `[]string` | `nil` ) - is a list of postal codes.
+        - `serialNumber` ( `string` | `""` ) is a serial number.
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.poolMode`: specifies the value of pool_mode. Specifies when a server connection can be reused by other clients.)
+      For more details, visit [here](https://golang.org/pkg/crypto/x509/pkix/#Name).
 
-[//]: # ()
-[//]: # (  - session)
+    - `duration` ( `string` | `""` ) - is the period during which the certificate is valid. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as `"300m"`, `"1.5h"` or `"20h45m"`. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+    - `renewBefore` ( `string` | `""` ) - is a specifiable time before expiration duration.
+    - `dnsNames` ( `[]string` | `nil` ) - is a list of subject alt names.
+    - `ipAddresses` ( `[]string` | `nil` ) - is a list of IP addresses.
+    - `uris` ( `[]string` | `nil` ) - is a list of URI Subject Alternative Names.
+    - `emailAddresses` ( `[]string` | `nil` ) - is a list of email Subject Alternative Names.
 
-[//]: # ()
-[//]: # (    Server is released back to pool after client disconnects. Default.)
 
-[//]: # ()
-[//]: # (  - transaction)
+### spec.storageType
 
-[//]: # ()
-[//]: # (    Server is released back to pool after transaction finishes.)
+`spec.storageType` is an optional field that specifies the type of storage to use for database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Druid cluster using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume.
 
-[//]: # ()
-[//]: # (  - statement)
+### spec.storage
 
-[//]: # ()
-[//]: # (    Server is released back to pool after query finishes. Long transactions spanning multiple statements are disallowed in this mode.)
+If you set `spec.storageType:` to `Durable`, then `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.maxClientConnections`: specifies the value of max_client_conn. When increased then the file descriptor limits should also be increased. Note that actual number of file descriptors used is more than max_client_conn. Theoretical maximum used is:)
+- `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
+- `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
+- `spec.storage.resources` can be used to request specific quantities of storage. This follows the same resource model used by PVCs.
 
-[//]: # ()
-[//]: # (  ```bash)
+To learn how to configure `spec.storage`, please visit the links below:
 
-[//]: # (  max_client_conn + &#40;max pool_size * total databases * total users&#41;)
+- https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
 
-[//]: # (  ```)
+NB. If `spec.topology` is set, then `spec.storage` needs to be empty. Instead use `spec.topology.<controller/broker>.storage`
 
-[//]: # ()
-[//]: # (  if each user connects under its own username to server. If a database user is specified in connect string &#40;all users connect under same username&#41;, the theoretical maximum is:)
+### spec.monitor
 
-[//]: # ()
-[//]: # (  ```bash)
+Druid managed by KubeDB can be monitored with Prometheus operator out-of-the-box. To learn more,
+- [Monitor Apache Druid with Prometheus operator](/docs/guides/druid/monitoring/using-prometheus-operator.md)
+- [Monitor Apache Druid with Built-in Prometheus](/docs/guides/druid/monitoring/using-builtin-prometheus.md)
 
-[//]: # (  max_client_conn + &#40;max pool_size * total databases&#41;)
+### spec.podTemplate
 
-[//]: # (  ```)
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for Druid cluster.
 
-[//]: # ()
-[//]: # (  The theoretical maximum should be never reached, unless somebody deliberately crafts special load for it. Still, it means you should set the number of file descriptors to a safely high number.)
+KubeDB accept following fields to set in `spec.podTemplate:`
 
-[//]: # ()
-[//]: # (  Search for `ulimit` in your favorite shell man page. Note: `ulimit` does not apply in a Windows environment.)
+- metadata:
+    - annotations (pod's annotation)
+    - labels (pod's labels)
+- controller:
+    - annotations (petset's annotation)
+    - labels (petset's labels)
+- spec:
+    - containers
+    - volumes
+    - podPlacementPolicy
+    - initContainers
+    - containers
+    - imagePullSecrets
+    - nodeSelector
+    - affinity
+    - serviceAccountName
+    - schedulerName
+    - tolerations
+    - priorityClassName
+    - priority
+    - securityContext
+    - livenessProbe
+    - readinessProbe
+    - lifecycle
 
-[//]: # ()
-[//]: # (  Default: 100)
+You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go#L26C1-L279C1).
+Uses of some field of `spec.podTemplate` is described below,
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.defaultPoolSize`: specifies the value of default_pool_size. Used to determine how many server connections to allow per user/database pair. Can be overridden in the per-database configuration.)
+NB. If `spec.topology` is set, then `spec.podTemplate` needs to be empty. Instead use `spec.topology.<controller/broker>.podTemplate`
 
-[//]: # ()
-[//]: # (  Default: 20)
+#### spec.podTemplate.spec.tolerations
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.minPoolSize`: specifies the value of min_pool_size. PgBouncer adds more server connections to pool if below this number. Improves behavior when usual load comes suddenly back after period of total inactivity.)
+The `spec.podTemplate.spec.tolerations` is an optional field. This can be used to specify the pod's tolerations.
 
-[//]: # ()
-[//]: # (  Default: 0 &#40;disabled&#41;)
+#### spec.podTemplate.spec.volumes
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.reservePoolSize`: specifies the value of reserve_pool_size. Used to determine how many additional connections to allow to a pool. 0 disables.)
+The `spec.podTemplate.spec.volumes` is an optional field. This can be used to provide the list of volumes that can be mounted by containers belonging to the pod.
 
-[//]: # ()
-[//]: # (  Default: 0 &#40;disabled&#41;)
+#### spec.podTemplate.spec.podPlacementPolicy
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.reservePoolTimeout`: specifies the value of reserve_pool_timeout. If a client has not been serviced in this many seconds, pgbouncer enables use of additional connections from reserve pool. 0 disables.)
+`spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
 
-[//]: # ()
-[//]: # (  Default: 5.0)
+#### spec.podTemplate.spec.nodeSelector
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.maxDbConnections`: specifies the value of max_db_connections. PgBouncer does not allow more than this many connections per-database &#40;regardless of pool - i.e. user&#41;. It should be noted that when you hit the limit, closing a client connection to one pool will not immediately allow a server connection to be established for another pool, because the server connection for the first pool is still open. Once the server connection closes &#40;due to idle timeout&#41;, a new server connection will immediately be opened for the waiting pool.)
+`spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
 
-[//]: # ()
-[//]: # (  Default: unlimited)
+### spec.serviceTemplates
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.maxUserConnections`: specifies the value of max_user_connections. PgBouncer does not allow more than this many connections per-user &#40;regardless of pool - i.e. user&#41;. It should be noted that when you hit the limit, closing a client connection to one pool will not immediately allow a server connection to be established for another pool, because the server connection for the first pool is still open. Once the server connection closes &#40;due to idle timeout&#41;, a new server connection will immediately be opened for the waiting pool.)
+You can also provide template for the services created by KubeDB operator for Druid cluster through `spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
 
-[//]: # (  Default: unlimited)
+KubeDB allows following fields to set in `spec.serviceTemplates`:
+- `alias` represents the identifier of the service. It has the following possible value:
+    - `stats` is used for the exporter service identification.
+- metadata:
+    - labels
+    - annotations
+- spec:
+    - type
+    - ports
+    - clusterIP
+    - externalIPs
+    - loadBalancerIP
+    - loadBalancerSourceRanges
+    - externalTrafficPolicy
+    - healthCheckNodePort
+    - sessionAffinityConfig
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.statsPeriod`: sets how often the averages shown in various `SHOW` commands are updated and how often aggregated statistics are written to the log.)
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.21.1/api/v1/types.go#L237) to understand these fields in detail.
 
-[//]: # (  Default: 60)
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.authType`: specifies how to authenticate users. PgBouncer supports several authentication methods including pam, md5, scram-sha-256, trust , or any. However hba, and cert are not supported.)
+#### spec.podTemplate.spec.containers
 
-[//]: # ()
-[//]: # (- `spec.connectionPool.IgnoreStartupParameters`: specifies comma-separated startup parameters that pgbouncer knows are handled by admin and it can ignore them.)
+The `spec.podTemplate.spec.containers` can be used to provide the list containers and their configurations for to the database pod. some of the fields are described below,
 
-[//]: # ()
-[//]: # (### spec.monitor)
+##### spec.podTemplate.spec.containers[].name
+The `spec.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
 
-[//]: # ()
-[//]: # (PgBouncer managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,)
+##### spec.podTemplate.spec.containers[].args
+`spec.podTemplate.spec.containers[].args` is an optional field. This can be used to provide additional arguments to database installation.
 
-[//]: # ()
-[//]: # (- [Monitor PgBouncer with builtin Prometheus]&#40;/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md&#41;)
+##### spec.podTemplate.spec.containers[].env
 
-[//]: # (- [Monitor PgBouncer with Prometheus operator]&#40;/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md&#41;)
+`spec.podTemplate.spec.containers[].env` is an optional field that specifies the environment variables to pass to the Redis containers.
 
-[//]: # ()
-[//]: # (### spec.podTemplate)
+##### spec.podTemplate.spec.containers[].resources
 
-[//]: # ()
-[//]: # (KubeDB allows providing a template for pgbouncer pods through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for PgBouncer server)
+`spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
-[//]: # ()
-[//]: # (KubeDB accept following fields to set in `spec.podTemplate:`)
+### spec.deletionPolicy
 
-[//]: # ()
-[//]: # (- metadata)
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Druid` crd or which resources KubeDB should keep or delete when you delete `Druid` crd. KubeDB provides following four deletion policies:
 
-[//]: # (  - annotations &#40;pod's annotation&#41;)
+- DoNotTerminate
+- WipeOut
+- Halt
+- Delete
 
-[//]: # (- controller)
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
-[//]: # (  - annotations &#40;petset's annotation&#41;)
+## spec.healthChecker
+It defines the attributes for the health checker.
+- `spec.healthChecker.periodSeconds` specifies how often to perform the health check.
+- `spec.healthChecker.timeoutSeconds` specifies the number of seconds after which the probe times out.
+- `spec.healthChecker.failureThreshold` specifies minimum consecutive failures for the healthChecker to be considered failed.
+- `spec.healthChecker.disableWriteCheck` specifies whether to disable the writeCheck or not.
 
-[//]: # (- spec:)
+Know details about KubeDB Health checking from this [blog post](https://appscode.com/blog/post/kubedb-health-checker/).
 
-[//]: # (  - env)
+## Next Steps
 
-[//]: # (  - resources)
-
-[//]: # (  - initContainers)
-
-[//]: # (  - imagePullSecrets)
-
-[//]: # (  - affinity)
-
-[//]: # (  - tolerations)
-
-[//]: # (  - priorityClassName)
-
-[//]: # (  - priority)
-
-[//]: # (  - lifecycle)
-
-[//]: # ()
-[//]: # (Usage of some fields in `spec.podTemplate` is described below,)
-
-[//]: # ()
-[//]: # (#### spec.podTemplate.spec.env)
-
-[//]: # ()
-[//]: # (`spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the PgBouncer docker image. To know about supported environment variables, please visit [here]&#40;https://hub.docker.com/kubedb/pgbouncer/&#41;.)
-
-[//]: # ()
-[//]: # (Also, note that KubeDB does not allow updates to the environment variables as updating them does not have any effect once the server is created. If you try to update environment variables, KubeDB operator will reject the request with following error,)
-
-[//]: # ()
-[//]: # (```ini)
-
-[//]: # (Error from server &#40;BadRequest&#41;: error when applying patch:)
-
-[//]: # (...)
-
-[//]: # (for: "./pgbouncer.yaml": admission webhook "pgbouncer.validators.kubedb.com" denied the request: precondition failed for:)
-
-[//]: # (...)
-
-[//]: # (At least one of the following was changed:)
-
-[//]: # (    apiVersion)
-
-[//]: # (    kind)
-
-[//]: # (    name)
-
-[//]: # (    namespace)
-
-[//]: # (    spec.podTemplate.spec.nodeSelector)
-
-[//]: # (```)
-
-[//]: # ()
-[//]: # (#### spec.podTemplate.spec.imagePullSecrets)
-
-[//]: # ()
-[//]: # (`spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker image if you are using a private docker registry. For more details on how to use private docker registry, please visit [here]&#40;/docs/guides/pgbouncer/private-registry/using-private-registry.md&#41;.)
-
-[//]: # ()
-[//]: # (#### spec.podTemplate.spec.nodeSelector)
-
-[//]: # ()
-[//]: # (`spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels &#40;it can have additional labels as well&#41;. To learn more, see [here]&#40;https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector&#41; .)
-
-[//]: # ()
-[//]: # (#### spec.podTemplate.spec.resources)
-
-[//]: # ()
-[//]: # (`spec.podTemplate.spec.resources` is an optional field. This can be used to request compute resources required by the database pods. To learn more, visit [here]&#40;http://kubernetes.io/docs/user-guide/compute-resources/&#41;.)
-
-[//]: # ()
-[//]: # (### spec.serviceTemplate)
-
-[//]: # ()
-[//]: # (KubeDB creates a service for each PgBouncer instance. The service has the same name as the `pgbouncer.name` and points to pgbouncer pods.)
-
-[//]: # ()
-[//]: # (You can provide template for this service using `spec.serviceTemplate`. This will allow you to set the type and other properties of the service. If `spec.serviceTemplate` is not provided, KubeDB will create a service of type `ClusterIP` with minimal settings.)
-
-[//]: # ()
-[//]: # (KubeDB allows the following fields to set in `spec.serviceTemplate`:)
-
-[//]: # ()
-[//]: # (- metadata:)
-
-[//]: # (  - annotations)
-
-[//]: # (- spec:)
-
-[//]: # (  - type)
-
-[//]: # (  - ports)
-
-[//]: # (  - clusterIP)
-
-[//]: # (  - externalIPs)
-
-[//]: # (  - loadBalancerIP)
-
-[//]: # (  - loadBalancerSourceRanges)
-
-[//]: # (  - externalTrafficPolicy)
-
-[//]: # (  - healthCheckNodePort)
-
-[//]: # (  - sessionAffinityConfig)
-
-[//]: # ()
-[//]: # (See [here]&#40;https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163&#41; to understand these fields in detail.)
-
-[//]: # ()
-[//]: # (## Next Steps)
-
-[//]: # ()
-[//]: # (- Learn how to use KubeDB to run a PostgreSQL database [here]&#40;/docs/guides/postgres/README.md&#41;.)
-
-[//]: # (- Learn how to how to get started with PgBouncer [here]&#40;/docs/guides/pgbouncer/quickstart/quickstart.md&#41;.)
-
-[//]: # (- Want to hack on KubeDB? Check our [contribution guidelines]&#40;/docs/CONTRIBUTING.md&#41;.)
+- Learn how to use KubeDB to run Apache Druid cluster [here](/docs/guides/druid/README.md).
+- Deploy [dedicated topology cluster](/docs/guides/druid/clustering/topology-cluster/index.md) for Apache Druid
+- Deploy [combined cluster](/docs/guides/druid/clustering/combined-cluster/index.md) for Apache Druid
+- Monitor your Druid cluster with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/druid/monitoring/using-prometheus-operator.md).
+- Detail concepts of [DruidVersion object](/docs/guides/druid/concepts/druidversion.md).
+- Learn to use KubeDB managed Druid objects using [CLIs](/docs/guides/druid/cli/cli.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

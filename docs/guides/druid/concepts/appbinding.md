@@ -22,218 +22,127 @@ If you deploy a database using [KubeDB](https://kubedb.com/docs/latest/welcome/)
 
 KubeDB uses [Stash](https://appscode.com/products/stash/) to perform backup/recovery of databases. Stash needs to know how to connect with a target database and the credentials necessary to access it. This is done via an `AppBinding`.
 
-[//]: # (## AppBinding CRD Specification)
+## AppBinding CRD Specification
+
+Like any official Kubernetes resource, an `AppBinding` has `TypeMeta`, `ObjectMeta` and `Spec` sections. However, unlike other Kubernetes resources, it does not have a `Status` section.
+
+An `AppBinding` object created by `KubeDB` for Kafka database is shown below,
+
+```yaml
+apiVersion: appcatalog.appscode.com/v1alpha1
+kind: AppBinding
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Kafka","metadata":{"annotations":{},"name":"kafka","namespace":"demo"},"spec":{"enableSSL":true,"monitor":{"agent":"prometheus.io/operator","prometheus":{"exporter":{"port":9091},"serviceMonitor":{"interval":"10s","labels":{"release":"prometheus"}}}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","tls":{"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"kafka-ca-issuer"}},"version":"3.6.1"}}
+  creationTimestamp: "2023-03-27T08:04:43Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: kafka
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: kafkas.kubedb.com
+  name: kafka
+  namespace: demo
+  ownerReferences:
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: Kafka
+      name: kafka
+      uid: a4d3bd6d-798d-4789-a228-6eed057ccbb2
+  resourceVersion: "409855"
+  uid: 946988c0-15ef-4ee8-b489-b7ea9be3f97e
+spec:
+  appRef:
+    apiGroup: kubedb.com
+    kind: Kafka
+    name: kafka
+    namespace: demo
+  clientConfig:
+    caBundle: dGhpcyBpcyBub3QgYSBjZXJ0
+    service:
+      name: kafka-pods
+      port: 9092
+      scheme: https
+  secret:
+    name: kafka-admin-cred
+  tlsSecret:
+    name: kafka-client-cert
+  type: kubedb.com/kafka
+  version: 3.6.1
+```
 
-[//]: # ()
-[//]: # (Like any official Kubernetes resource, an `AppBinding` has `TypeMeta`, `ObjectMeta` and `Spec` sections. However, unlike other Kubernetes resources, it does not have a `Status` section.)
+Here, we are going to describe the sections of an `AppBinding` crd.
 
-[//]: # ()
-[//]: # (An `AppBinding` object created by `KubeDB` for PostgreSQL database is shown below,)
+### AppBinding `Spec`
 
-[//]: # ()
-[//]: # (```yaml)
+An `AppBinding` object has the following fields in the `spec` section:
 
-[//]: # (apiVersion: appcatalog.appscode.com/v1alpha1)
+#### spec.type
 
-[//]: # (kind: AppBinding)
+`spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to.
 
-[//]: # (metadata:)
+<!--- Add when Stash support is added --->
+<!---
+Stash uses this field to resolve the values of `TARGET_APP_TYPE`, `TARGET_APP_GROUP` and `TARGET_APP_RESOURCE` variables of [BackupBlueprint](https://appscode.com/products/stash/latest/concepts/crds/backupblueprint/) object.
 
-[//]: # (  name: quick-postgres)
+This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `kafka` resource under `kubedb.com` group.
 
-[//]: # (  namespace: demo)
+Here, the variables are parsed as follows:
 
-[//]: # (  labels:)
+|       Variable        | Usage                                                                                                                          |
+| --------------------- |--------------------------------------------------------------------------------------------------------------------------------|
+| `TARGET_APP_GROUP`    | Represents the application group where the respective app belongs (i.e: `kubedb.com`).                                         |
+| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents (i.e: `kafka`).                           |
+| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` (i.e: `kubedb.com/kafka`). |
 
-[//]: # (    app.kubernetes.io/component: database)
+--->
 
-[//]: # (    app.kubernetes.io/instance: quick-postgres)
+#### spec.secret
 
-[//]: # (    app.kubernetes.io/managed-by: kubedb.com)
+`spec.secret` specifies the name of the secret which contains the credentials that are required to access the database. This secret must be in the same namespace as the `AppBinding`.
 
-[//]: # (    app.kubernetes.io/name: postgres)
+This secret must contain the following keys for Kafka:
 
-[//]: # (    app.kubernetes.io/version: "10.2"-v2)
+| Key        | Usage                                          |
+| ---------- |------------------------------------------------|
+| `username` | Username of the target Kafka instance.         |
+| `password` | Password for the user specified by `username`. |
 
-[//]: # (    app.kubernetes.io/name: postgreses.kubedb.com)
 
-[//]: # (    app.kubernetes.io/instance: quick-postgres)
+#### spec.appRef
+appRef refers to the underlying application. It has 4 fields named `apiGroup`, `kind`, `name` & `namespace`.
 
-[//]: # (spec:)
+#### spec.clientConfig
 
-[//]: # (  type: kubedb.com/postgres)
+`spec.clientConfig` defines how to communicate with the target database. You can use either a URL or a Kubernetes service to connect with the database. You don't have to specify both of them.
 
-[//]: # (  secret:)
+You can configure following fields in `spec.clientConfig` section:
 
-[//]: # (    name: quick-postgres-auth)
+- **spec.clientConfig.url**
 
-[//]: # (  clientConfig:)
+  `spec.clientConfig.url` gives the location of the database, in standard URL form (i.e. `[scheme://]host:port/[path]`). This is particularly useful when the target database is running outside the Kubernetes cluster. If your database is running inside the cluster, use `spec.clientConfig.service` section instead.
 
-[//]: # (    service:)
+> Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
 
-[//]: # (      name: quick-postgres)
+- **spec.clientConfig.service**
 
-[//]: # (      path: /)
+  If you are running the database inside the Kubernetes cluster, you can use Kubernetes service to connect with the database. You have to specify the following fields in `spec.clientConfig.service` section if you manually create an `AppBinding` object.
 
-[//]: # (      port: 5432)
+    - **name :** `name` indicates the name of the service that connects with the target database.
+    - **scheme :** `scheme` specifies the scheme (i.e. http, https) to use to connect with the database.
+    - **port :** `port` specifies the port where the target database is running.
 
-[//]: # (      query: sslmode=disable)
+- **spec.clientConfig.insecureSkipTLSVerify**
 
-[//]: # (      scheme: postgresql)
+  `spec.clientConfig.insecureSkipTLSVerify` is used to disable TLS certificate verification while connecting with the database. We strongly discourage to disable TLS verification during backup. You should provide the respective CA bundle through `spec.clientConfig.caBundle` field instead.
 
-[//]: # (  secretTransforms:)
+- **spec.clientConfig.caBundle**
 
-[//]: # (    - renameKey:)
+  `spec.clientConfig.caBundle` is a PEM encoded CA bundle which will be used to validate the serving certificate of the database.
 
-[//]: # (        from: POSTGRES_USER)
+## Next Steps
 
-[//]: # (        to: username)
-
-[//]: # (    - renameKey:)
-
-[//]: # (        from: POSTGRES_PASSWORD)
-
-[//]: # (        to: password)
-
-[//]: # (  version: "10.2")
-
-[//]: # (```)
-
-[//]: # ()
-[//]: # (Here, we are going to describe the sections of an `AppBinding` crd.)
-
-[//]: # ()
-[//]: # (### AppBinding `Spec`)
-
-[//]: # ()
-[//]: # (An `AppBinding` object has the following fields in the `spec` section:)
-
-[//]: # ()
-[//]: # (#### spec.type)
-
-[//]: # ()
-[//]: # (`spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to. Stash uses this field to resolve the values of `TARGET_APP_TYPE`, `TARGET_APP_GROUP` and `TARGET_APP_RESOURCE` variables of [BackupBlueprint]&#40;https://appscode.com/products/stash/latest/concepts/crds/backupblueprint/&#41; object.)
-
-[//]: # ()
-[//]: # (This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `postgres` resource under `kubedb.com` group.)
-
-[//]: # ()
-[//]: # (Here, the variables are parsed as follows:)
-
-[//]: # ()
-[//]: # (|       Variable        |                                                               Usage                                                               |)
-
-[//]: # (| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |)
-
-[//]: # (| `TARGET_APP_GROUP`    | Represents the application group where the respective app belongs &#40;i.e: `kubedb.com`&#41;.                                            |)
-
-[//]: # (| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents &#40;i.e: `postgres`&#41;.                           |)
-
-[//]: # (| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` &#40;i.e: `kubedb.com/postgres`&#41;. |)
-
-[//]: # ()
-[//]: # (#### spec.secret)
-
-[//]: # ()
-[//]: # (`spec.secret` specifies the name of the secret which contains the credentials that are required to access the database. This secret must be in the same namespace as the `AppBinding`.)
-
-[//]: # ()
-[//]: # (This secret must contain the following keys:)
-
-[//]: # ()
-[//]: # (PostgreSQL :)
-
-[//]: # ()
-[//]: # (| Key                 | Usage                                               |)
-
-[//]: # (| ------------------- | --------------------------------------------------- |)
-
-[//]: # (| `POSTGRES_USER`     | Username of the target database.                    |)
-
-[//]: # (| `POSTGRES_PASSWORD` | Password for the user specified by `POSTGRES_USER`. |)
-
-[//]: # ()
-[//]: # (MySQL :)
-
-[//]: # ()
-[//]: # (| Key        | Usage                                          |)
-
-[//]: # (| ---------- | ---------------------------------------------- |)
-
-[//]: # (| `username` | Username of the target database.               |)
-
-[//]: # (| `password` | Password for the user specified by `username`. |)
-
-[//]: # ()
-[//]: # (MongoDB :)
-
-[//]: # ()
-[//]: # (| Key        | Usage                                          |)
-
-[//]: # (| ---------- | ---------------------------------------------- |)
-
-[//]: # (| `username` | Username of the target database.               |)
-
-[//]: # (| `password` | Password for the user specified by `username`. |)
-
-[//]: # ()
-[//]: # (Elasticsearch:)
-
-[//]: # ()
-[//]: # (|       Key        |          Usage          |)
-
-[//]: # (| ---------------- | ----------------------- |)
-
-[//]: # (| `ADMIN_USERNAME` | Admin username          |)
-
-[//]: # (| `ADMIN_PASSWORD` | Password for admin user |)
-
-[//]: # ()
-[//]: # (#### spec.clientConfig)
-
-[//]: # ()
-[//]: # (`spec.clientConfig` defines how to communicate with the target database. You can use either an URL or a Kubernetes service to connect with the database. You don't have to specify both of them.)
-
-[//]: # ()
-[//]: # (You can configure following fields in `spec.clientConfig` section:)
-
-[//]: # ()
-[//]: # (- **spec.clientConfig.url**)
-
-[//]: # ()
-[//]: # (  `spec.clientConfig.url` gives the location of the database, in standard URL form &#40;i.e. `[scheme://]host:port/[path]`&#41;. This is particularly useful when the target database is running outside of the Kubernetes cluster. If your database is running inside the cluster, use `spec.clientConfig.service` section instead.)
-
-[//]: # ()
-[//]: # (  > Note that, attempting to use a user or basic auth &#40;e.g. `user:password@host:port`&#41; is not allowed. Stash will insert them automatically from the respective secret. Fragments &#40;"#..."&#41; and query parameters &#40;"?..."&#41; are not allowed either.)
-
-[//]: # ()
-[//]: # (- **spec.clientConfig.service**)
-
-[//]: # ()
-[//]: # (  If you are running the database inside the Kubernetes cluster, you can use Kubernetes service to connect with the database. You have to specify the following fields in `spec.clientConfig.service` section if you manually create an `AppBinding` object.)
-
-[//]: # ()
-[//]: # (  - **name :** `name` indicates the name of the service that connects with the target database.)
-
-[//]: # (  - **scheme :** `scheme` specifies the scheme &#40;i.e. http, https&#41; to use to connect with the database.)
-
-[//]: # (  - **port :** `port` specifies the port where the target database is running.)
-
-[//]: # ()
-[//]: # (- **spec.clientConfig.insecureSkipTLSVerify**)
-
-[//]: # ()
-[//]: # (  `spec.clientConfig.insecureSkipTLSVerify` is used to disable TLS certificate verification while connecting with the database. We strongly discourage to disable TLS verification during backup. You should provide the respective CA bundle through `spec.clientConfig.caBundle` field instead.)
-
-[//]: # ()
-[//]: # (- **spec.clientConfig.caBundle**)
-
-[//]: # ()
-[//]: # (  `spec.clientConfig.caBundle` is a PEM encoded CA bundle which will be used to validate the serving certificate of the database.)
-
-[//]: # (## Next Steps)
-
-[//]: # ()
-[//]: # (- Learn how to use KubeDB to manage various databases [here]&#40;/docs/guides/README.md&#41;.)
-
-[//]: # (- Want to hack on KubeDB? Check our [contribution guidelines]&#40;/docs/CONTRIBUTING.md&#41;.)
+- Learn how to use KubeDB to manage various databases [here](/docs/guides/README.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
