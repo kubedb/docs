@@ -130,98 +130,97 @@ Let's check the Pod containers resources,
 $ kubectl get pod -n demo sample-sdb-aggregator-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
-    "cpu": "500m",
-    "memory": "1Gi"
+    "cpu": "600m",
+    "memory": "2Gi"
   },
   "requests": {
-    "cpu": "500m",
-    "memory": "1Gi"
+    "cpu": "600m",
+    "memory": "2Gi"
   }
 }
+
 ```
 
-You can see the Pod has the default resources which is assigned by Kubedb operator.
-
-We are now ready to apply the `MariaDBOpsRequest` CR to update the resources of this database.
+We are now ready to apply the `SingleStoreOpsRequest` CR to update the resources of this database.
 
 ### Vertical Scaling
 
 Here, we are going to update the resources of the database to meet the desired resources after scaling.
 
-#### Create MariaDBOpsRequest
+#### Create SingleStoreOpsRequest
 
-In order to update the resources of the database, we have to create a `MariaDBOpsRequest` CR with our desired resources. Below is the YAML of the `MariaDBOpsRequest` CR that we are going to create,
+In order to update the resources of the database, we have to create a `SingleStoreOpsRequest` CR with our desired resources. Below is the YAML of the `SingleStoreOpsRequest` CR that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
-kind: MariaDBOpsRequest
+kind: SinglestoreOpsRequest
 metadata:
-  name: mdops-vscale
+  name: sdbops-vscale
   namespace: demo
 spec:
-  type: VerticalScaling
+  type: VerticalScaling  
   databaseRef:
-    name: sample-mariadb
+    name: sample-sdb
   verticalScaling:
-    mariadb:
+    aggregator:
       resources:
         requests:
-          memory: "1.2Gi"
-          cpu: "0.6"
+          memory: "2500Mi"
+          cpu: "0.7"
         limits:
-          memory: "1.2Gi"
-          cpu: "0.6"
+          memory: "2500Mi"
+          cpu: "0.7"
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `sample-mariadb` database.
+- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `sample-sdb` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
-- `spec.VerticalScaling.mariadb` specifies the desired resources after scaling.
+- `spec.VerticalScaling.aggregator` specifies the desired `aggregator` nodes resources after scaling. As well you can scale resources for leaf node, standalone node and coordinator container.
 
-Let's create the `MariaDBOpsRequest` CR we have shown above,
+Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/scaling/vertical-scaling/cluster/example/mdops-vscale.yaml
-mariadbopsrequest.ops.kubedb.com/mdops-vscale created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/scaling/vertical-scaling/cluster/example/sdbops-vscale.yaml
+singlestoreopsrequest.ops.kubedb.com/sdbops-vscale created
 ```
 
-#### Verify MariaDB Cluster resources updated successfully 
+#### Verify SingleStore Cluster resources updated successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `MariaDB` object and related `PetSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the resources of `SingleStore` object and related `PetSets` and `Pods`.
 
-Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
+Let's wait for `SingleStoreOpsRequest` to be `Successful`.  Run the following command to watch `SingleStoreOpsRequest` CR,
 
 ```bash
-$ kubectl get mariadbopsrequest -n demo
-Every 2.0s: kubectl get mariadbopsrequest -n demo
-NAME                     TYPE              STATUS       AGE
-mdops-vscale        VerticalScaling      Successful    3m56s
+$ kubectl get singlestoreopsrequest -n demo
+NAME            TYPE              STATUS       AGE
+sdbops-vscale   VerticalScaling   Successful   7m30s
 ```
 
-We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify from one of the Pod yaml whether the resources of the database has updated to meet up the desired state, Let's check,
+We can see from the above output that the `SingleStoreOpsRequest` has succeeded. Now, we are going to verify from one of the Pod yaml whether the resources of the database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo sample-sdb-aggregator-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
-    "cpu": "600m",
-    "memory": "1288490188800m"
+    "cpu": "700m",
+    "memory": "2500Mi"
   },
   "requests": {
-    "cpu": "600m",
-    "memory": "1288490188800m"
+    "cpu": "700m",
+    "memory": "2500Mi"
   }
 }
+
 ```
 
-The above output verifies that we have successfully scaled up the resources of the MariaDB database.
+The above output verifies that we have successfully scaled up the resources of the SingleStore database.
 
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-$ kubectl delete mariadbopsrequest -n demo mdops-vscale
+$ kubectl delete sdb -n demo sample-sdb
+$ kubectl delete singlestoreopsrequest -n demo sdbops-vscale
 ```
