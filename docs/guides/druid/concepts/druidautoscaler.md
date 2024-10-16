@@ -1,9 +1,9 @@
 ---
-title: AppBinding CRD
+title: DruidAutoscaler CRD
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-concepts-druidautoscaler
-    name: AppBinding
+    name: DruidAutoscaler
     parent: guides-druid-concepts
     weight: 50
 menu_name: docs_{{ .version }}
@@ -12,69 +12,34 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# KafkaAutoscaler
+# DruidAutoscaler
 
-## What is KafkaAutoscaler
+## What is DruidAutoscaler
 
-`KafkaAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling [Kafka](https://kafka.apache.org/) compute resources and storage of database components in a Kubernetes native way.
+`DruidAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling [Druid](https://druid.apache.org/) compute resources and storage of database components in a Kubernetes native way.
 
-## KafkaAutoscaler CRD Specifications
+## DruidAutoscaler CRD Specifications
 
-Like any official Kubernetes resource, a `KafkaAutoscaler` has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.
+Like any official Kubernetes resource, a `DruidAutoscaler` has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.
 
-Here, some sample `KafkaAutoscaler` CROs for autoscaling different components of database is given below:
+Here, some sample `DruidAutoscaler` CROs for autoscaling different components of database is given below:
 
-**Sample `KafkaAutoscaler` for combined cluster:**
+**Sample `DruidAutoscaler` for `druid` cluster:**
 
 ```yaml
 apiVersion: autoscaling.kubedb.com/v1alpha1
-kind: KafkaAutoscaler
+kind: DruidAutoscaler
 metadata:
-  name: kf-autoscaler-combined
+  name: dr-autoscaler
   namespace: demo
 spec:
   databaseRef:
-    name: kafka-dev
+    name: druid-prod
   opsRequestOptions:
     timeout: 3m
     apply: IfReady
   compute:
-    node:
-      trigger: "On"
-      podLifeTimeThreshold: 24h
-      minAllowed:
-        cpu: 250m
-        memory: 350Mi
-      maxAllowed:
-        cpu: 1
-        memory: 1Gi
-      controlledResources: ["cpu", "memory"]
-      containerControlledValues: "RequestsAndLimits"
-      resourceDiffPercentage: 10
-  storage:
-    node:
-      expansionMode: "Online"
-      trigger: "On"
-      usageThreshold: 60
-      scalingThreshold: 50
-```
-
-**Sample `KafkaAutoscaler` for topology cluster:**
-
-```yaml
-apiVersion: autoscaling.kubedb.com/v1alpha1
-kind: KafkaAutoscaler
-metadata:
-  name: kf-autoscaler-topology
-  namespace: demo
-spec:
-  databaseRef:
-    name: kafka-prod
-  opsRequestOptions:
-    timeout: 3m
-    apply: IfReady
-  compute:
-    broker:
+    coordinators:
       trigger: "On"
       podLifeTimeThreshold: 24h
       minAllowed:
@@ -86,7 +51,7 @@ spec:
       controlledResources: ["cpu", "memory"]
       containerControlledValues: "RequestsAndLimits"
       resourceDiffPercentage: 10
-    controller:
+    brokers:
       trigger: "On"
       podLifeTimeThreshold: 24h
       minAllowed:
@@ -99,27 +64,27 @@ spec:
       containerControlledValues: "RequestsAndLimits"
       resourceDiffPercentage: 10
   storage:
-    broker:
+    historicals:
       expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
-    controller:
+    middleMangers:
       expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
 ```
 
-Here, we are going to describe the various sections of a `KafkaAutoscaler` crd.
+Here, we are going to describe the various sections of a `DruidAutoscaler` crd.
 
-A `KafkaAutoscaler` object has the following fields in the `spec` section.
+A `DruidAutoscaler` object has the following fields in the `spec` section.
 
 ### spec.databaseRef
 
-`spec.databaseRef` is a required field that point to the [Kafka](/docs/guides/kafka/concepts/kafka.md) object for which the autoscaling will be performed. This field consists of the following sub-field:
+`spec.databaseRef` is a required field that point to the [Druid](/docs/guides/druid/concepts/druid.md) object for which the autoscaling will be performed. This field consists of the following sub-field:
 
-- **spec.databaseRef.name :** specifies the name of the [Kafka](/docs/guides/kafka/concepts/kafka.md) object.
+- **spec.databaseRef.name :** specifies the name of the [Druid](/docs/guides/druid/concepts/druid.md) object.
 
 ### spec.opsRequestOptions
 These are the options to pass in the internally created opsRequest CRO. `opsRequestOptions` has two fields.
@@ -128,9 +93,12 @@ These are the options to pass in the internally created opsRequest CRO. `opsRequ
 
 `spec.compute` specifies the autoscaling configuration for the compute resources i.e. cpu and memory of the database components. This field consists of the following sub-field:
 
-- `spec.compute.node` indicates the desired compute autoscaling configuration for a combined Kafka cluster.
-- `spec.compute.broker` indicates the desired compute autoscaling configuration for broker of a topology Kafka database.
-- `spec.compute.controller` indicates the desired compute autoscaling configuration for controller of a topology Kafka database.
+- `spec.compute.coordinators` indicates the desired compute autoscaling configuration for coordinators of a topology Druid database.
+- `spec.compute.overlords` indicates the desired compute autoscaling configuration for overlords of a topology Druid database.
+- `spec.compute.brokers` indicates the desired compute autoscaling configuration for brokers of a topology Druid database.
+- `spec.compute.routers` indicates the desired compute autoscaling configuration for routers of a topology Druid database.
+- `spec.compute.historicals` indicates the desired compute autoscaling configuration for historicals of a topology Druid database.
+- `spec.compute.middleManagers` indicates the desired compute autoscaling configuration for middleManagers of a topology Druid database.
 
 
 All of them has the following sub-fields:
@@ -149,12 +117,12 @@ There are two more fields, those are only specifiable for the percona variant in
 
 ### spec.storage
 
-`spec.compute` specifies the autoscaling configuration for the storage resources of the database components. This field consists of the following sub-field:
+`spec.storage` specifies the autoscaling configuration for the storage resources of the database components. This field consists of the following sub-field:
 
-- `spec.compute.node` indicates the desired storage autoscaling configuration for a combined Kafka cluster.
-- `spec.compute.broker` indicates the desired storage autoscaling configuration for broker of a combined Kafka cluster.
-- `spec.compute.controller` indicates the desired storage autoscaling configuration for controller of a topology Kafka cluster.
+- `spec.storage.historicals` indicates the desired storage autoscaling configuration for historicals of a topology Druid cluster.
+- `spec.storage.middleManagers` indicates the desired storage autoscaling configuration for middleManagers of a topology Druid cluster.
 
+> `spec.storage` is only supported for druid data nodes i.e. `historicals` and `middleManagers` as they are the only nodes containing volumes.
 
 All of them has the following sub-fields:
 
