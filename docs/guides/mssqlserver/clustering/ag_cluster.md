@@ -57,7 +57,7 @@ NAME        VERSION   DB_IMAGE                                                DE
 
 ## Deploy Microsoft SQL Server Availability Group Cluster 
 
-At first, we need to create an Issuer/ClusterIssuer which will be used to generate the certificate used for TLS configurations.
+First, an issuer needs to be created, even if TLS is not enabled for SQL Server. The issuer will be used to configure the TLS-enabled Wal-G proxy server, which is required for the SQL Server backup and restore operations.
 
 ### Create Issuer/ClusterIssuer
 

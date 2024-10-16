@@ -367,6 +367,62 @@ If a service account name is given, and there's an existing service account by t
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
 
+
+### spec.tls
+
+`spec.tls` specifies the TLS/SSL configurations for the MSSQLServer. KubeDB uses [cert-manager](https://cert-manager.io/) v1 api to provision and manage TLS certificates.
+
+The following fields are configurable in the `spec.tls` section:
+
+- `issuerRef` is a reference to the `Issuer` or `ClusterIssuer` CR of [cert-manager](https://cert-manager.io/docs/concepts/issuer/) that will be used by `KubeDB` to generate necessary certificates.
+
+  - `apiGroup` is the group name of the resource that is being referenced. Currently, the only supported value is `cert-manager.io`.
+  - `kind` is the type of resource that is being referenced. KubeDB supports both `Issuer` and `ClusterIssuer` as values for this field.
+  - `name` is the name of the resource (`Issuer` or `ClusterIssuer`) being referenced.
+
+
+- `clientTLS` This setting determines whether TLS (Transport Layer Security) is enabled for the MS SQL Server.   
+  - If set to `true`, the sql server will be provisioned with `TLS`, and you will need to install the [csi-driver-cacerts](https://github.com/kubeops/csi-driver-cacerts) which will be used to add self-signed ca certificates to the OS trusted certificate store (/etc/ssl/certs/ca-certificates.crt).
+  - If set to `false`, TLS will not be enabled for SQL Server. However, the Issuer will still be used to configure a TLS-enabled WAL-G proxy server, which is necessary for performing SQL Server backup operations.
+  
+
+- `certificates` (optional) are a list of certificates used to configure the server and/or client certificate. It has the following fields:
+  - `alias` represents the identifier of the certificate. It has the following possible value:
+    - `server` is used for server certificate identification.
+    - `client` is used for client certificate identification.
+    - `exporter` is used for metrics exporter certificate identification.
+  - `secretName` (optional) specifies the k8s secret name that holds the certificates.
+ This field is optional. If the user does not specify this field, the default secret name will be created in the following format: `<database-name>-<cert-alias>-cert`.
+
+  - `subject` (optional) specifies an `X.509` distinguished name. It has the following possible field,
+      - `organizations` (optional) are the list of different organization names to be used on the Certificate.
+      - `organizationalUnits` (optional) are the list of different organization unit name to be used on the Certificate.
+      - `countries` (optional) are the list of country names to be used on the Certificate.
+      - `localities` (optional) are the list of locality names to be used on the Certificate.
+      - `provinces` (optional) are the list of province names to be used on the Certificate.
+      - `streetAddresses` (optional) are the list of a street address to be used on the Certificate.
+      - `postalCodes` (optional) are the list of postal code to be used on the Certificate.
+      - `serialNumber` (optional) is a serial number to be used on the Certificate.
+        You can find more details from [Here](https://golang.org/pkg/crypto/x509/pkix/#Name)
+    - `duration` (optional) is the period during which the certificate is valid.
+    - `renewBefore` (optional) is a specifiable time before expiration duration.
+    - `dnsNames` (optional) is a list of subject alt names to be used in the Certificate.
+    - `ipAddresses` (optional) is a list of IP addresses to be used in the Certificate.
+    - `uris` (optional) is a list of URI Subject Alternative Names to be set in the Certificate.
+    - `emailAddresses` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
+    - `privateKey` (optional) specifies options to control private keys used for the Certificate.
+      - `encoding` (optional) is the private key cryptography standards (PKCS) encoding for this certificate's private key to be encoded in. If provided, allowed values are "pkcs1" and "pkcs8" standing for PKCS#1 and PKCS#8, respectively. It defaults to PKCS#1 if not specified.
+
+### spec.internalAuth
+`spec.internalAuth.endpointCert` specifies the TLS/SSL configurations for internal endpoint authentication of sql server availabilty group replicas. An availability group uses TCP endpoints for communication. Under Linux, endpoints for an AG are only supported if certificates are used for authentication. Explore more on [sql server docs](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-create-availability-group?view=sql-server-ver16&tabs=ru). To generate the certificate used for internal endpoint authentication of availability group replicas, you have to specify
+  - `issuerRef` is a reference to the `Issuer` or `ClusterIssuer` CR of [cert-manager](https://cert-manager.io/docs/concepts/issuer/) that will be used by `KubeDB` to generate necessary certificates. Same as `spec.tls.issuerRef`.
+ - `certificates` (optional) is the certificate used to configure endpoints. It has the following fields:
+   - `alias` represents the identifier of the certificate. It has the following possible value:
+     - `endpoint` is used for endpoint certificate identification.
+   - `secretName` (optional) specifies the k8s secret name that holds the certificates. This field is optional. If the user does not specify this field, the default secret name will be created in the following format: `<database-name>-endpoint-cert`.
+   - `subject` is same as described in `spec.tls.certificate.subject`
+ 
+
 ### spec.serviceTemplate
 
 KubeDB creates two different services for each MSSQLServer instance. One of them is a primary service named `<mssqlserver-name>` and points to the MSSQLServer `Primary` pod/node. Another one is a secondary service named `<mssqlserver-name>-secondary` and points to MSSQLServer `secondary` replica pods/nodes.
