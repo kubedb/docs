@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Using Custom Configuration File
 
-KubeDB supports providing custom configuration for MSSQLServer. This tutorial will show you how to use KubeDB to run a MSSQLServer database with custom configuration.
+KubeDB supports providing custom configuration for MSSQLServer. This tutorial will show you how to use KubeDB to run SQL Server with custom configuration.
 
 ## Before You Begin
 
@@ -33,11 +33,11 @@ KubeDB supports providing custom configuration for MSSQLServer. This tutorial wi
 
 ## Overview
 
-MSSQLServer allows configuring database via configuration file. The default configuration file for MSSQLServer deployed by `KubeDB` can be found in `/var/opt/mssql/mssql.conf`. When MSSQLServer starts, it will look for  configuration file in `/var/opt/mssql/mssql.conf`. If configuration file exist, this configuration will overwrite the existing defaults.
+SQL Server allows configuring database via configuration file. The default configuration file for SQL Server deployed by `KubeDB` can be found in `/var/opt/mssql/mssql.conf`. When SQL Server starts, it will look for  configuration file in `/var/opt/mssql/mssql.conf`. If configuration file exist, this configuration will overwrite the existing defaults.
 
-> To learn available configuration option of MSSQLServer see [Configure SQL Server on Linux](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-mssql-conf?view=sql-server-ver16).
+> To learn available configuration option of SQL Server see [Configure SQL Server on Linux](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-mssql-conf?view=sql-server-ver16).
 
-At first, you have to create a config file named `mssql.conf` with your desired configuration. Then you have to create a [secret](https://kubernetes.io/docs/concepts/configuration/secret/) using this file. You have to specify this secret name in `spec.configSecret.name` section while creating MSSQLServer CR. 
+At first, you have to create a config file named `mssql.conf` with your desired configuration. Then you have to create a [secret](https://kubernetes.io/docs/concepts/configuration/secret/) using this file. Then specify this secret name in `spec.configSecret.name` section while creating MSSQLServer CR. 
 
 KubeDB will create a secret named `{mssqlserver-name}-config` with configuration file contents as the value of the key `mssql.conf` and mount this secret into `/var/opt/mssql/` directory of the database pod. the secret named `{mssqlserver-name}-config` will contain your desired configurations with some default configurations.
 
@@ -49,153 +49,161 @@ At first, create `mssql.conf` file containing required configuration settings.
 
 ```ini
 $ cat mssql.conf
+[network]
+tlsprotocols = 1.2
+forceencryption = 1
 
+[language]
+lcid = 1036
+
+[memory]
+memorylimitmb = 2304
 ```
 
-Here, `maxIncomingConnections` is set to `10000`, whereas the default value is 65536.
+Here we have set 
+- [memory limit](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-mssql-conf?view=sql-server-ver16#memorylimit), The `memory.memorylimitmb` setting controls the amount of physical memory (in MB) available to SQL Server. The default is 80% of the physical memory, to prevent out-of-memory (OOM) conditions. The above configuration changes the memory available to SQL Server to 2.25 GB (2,304 MB).
+- [SQL Server Locale](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-mssql-conf?view=sql-server-ver16#lcid), The language.lcid setting changes the SQL Server locale to any supported language identifier (LCID). The above example changes the locale to French (1036):
+- [TLS](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-mssql-conf?view=sql-server-ver16#tls) The `network.forceencryption` If 1, then SQL Server forces all connections to be encrypted. By default, this option is 0. The `network.tlsprotocols`	A comma-separated list of which TLS protocols are allowed by SQL Server. SQL Server always attempts to negotiate the strongest allowed protocol. If a client doesn't support any allowed protocol, SQL Server rejects the connection attempt. For compatibility, all supported protocols are allowed by default (1.2, 1.1, 1.0). If your clients support TLS 1.2, Microsoft recommends allowing only TLS 1.2.
+
+
 
 Now, create the secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo ms-configuration --from-file=./mssql.conf
-secret/ms-configuration created
+$ kubectl create secret generic -n demo ms-custom-config --from-file=./mssql.conf
+secret/ms-custom-config created
 ```
 
 Verify the secret has the configuration file.
+```bash
+$ kubectl get secret -n demo ms-custom-config -oyaml
+```
 
 ```yaml
-$  kubectl get secret -n demo ms-configuration -o yaml
 apiVersion: v1
 data:
-  mssql.conf: bmV0OgogIG1heEluY29taW5nQ29ubmVjdGlvbnM6IDEwMDAwMA==
+  mssql.conf: W25ldHdvcmtdCnRsc3Byb3RvY29scyA9IDEuMgpmb3JjZWVuY3J5cHRpb24gPSAxCgpbbGFuZ3VhZ2VdCmxjaWQgPSAxMDM2CgpbbWVtb3J5XQptZW1vcnlsaW1pdG1iID0gMjMwNA==
 kind: Secret
 metadata:
-  creationTimestamp: "2021-02-09T12:59:50Z"
-  name: ms-configuration
+  creationTimestamp: "2024-10-16T06:12:28Z"
+  name: ms-custom-config
   namespace: demo
-  resourceVersion: "52495"
-  uid: 92ca4191-eb97-4274-980c-9430ab7cc5d1
+  resourceVersion: "451820"
+  uid: e7242e3a-d5dc-4705-a0f3-20b0ff0a59d3
 type: Opaque
-
-$ echo bmV0OgogIG1heEluY29taW5nQ29ubmVjdGlvbnM6IDEwMDAwMA== | base64 -d
-net:
-  maxIncomingConnections: 100000
 ```
 
 Now, create MSSQLServer CR specifying `spec.configSecret` field.
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
   name: mssql-custom-config
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "2022-cu12"
+  configSecret:
+    name: ms-custom-config
+  replicas: 1
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
   storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  configSecret:
-    name: ms-configuration
+  deletionPolicy: WipeOut
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/configuration/replicaset.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/configuration/mssql-custom-config.yaml
 mssqlserver.kubedb.com/mssql-custom-config created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `mssql-custom-config-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secrets etc. If everything goes well, we will see that a pod with the name `mssql-custom-config-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo mssql-custom-config-0
-NAME                  READY     STATUS    RESTARTS   AGE
-mssql-custom-config-0   1/1       Running   0          1m
+NAME                    READY   STATUS    RESTARTS   AGE
+mssql-custom-config-0   1/1     Running   0          94s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
-Now, you can connect to this database through [mongo-shell](https://docs.mssqlserver.com/v4.2/mongo/). In this tutorial, we are connecting to the MSSQLServer server from inside the pod.
+Now, Let's connect to the MSSQLServer from inside the pod.
 
 ```bash
 $ kubectl get secrets -n demo mssql-custom-config-auth -o jsonpath='{.data.\username}' | base64 -d
-root
+sa
 
 $ kubectl get secrets -n demo mssql-custom-config-auth -o jsonpath='{.data.\password}' | base64 -d
-ErialNojWParBFoP
+AqRe6WIuqwKXLaWc
 
-$ kubectl exec -it mssql-custom-config-0 -n demo sh
+$ kubectl exec -it mssql-custom-config-0 -n demo -c mssql -- bash
+mssql@mssql-custom-config-0:/$ cat /var/opt/mssql/mssql.conf
+[language]
+lcid = 1036
+[network]
+tlsprotocols = 1.2
+forceencryption = 1
+[memory]
+memorylimitmb = 2304
+mssql@mssql-custom-config-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P AqRe6WIuqwKXLaWc
+1> SELECT encrypt_option FROM sys.dm_exec_connections WHERE session_id = @@SPID;
+2> go
+encrypt_option                          
+----------------------------------------
+TRUE                                    
 
-> mongo admin
+(1 rows affected)
+1> SELECT default_language_name FROM sys.server_principals WHERE name = 'sa';
+2> go
+default_language_name                                                                                                           
+-----------------------------------------------------------
+Français                                                                                                                        
 
-> db.auth("root","ErialNojWParBFoP")
-1
-
-> db._adminCommand( {getCmdLineOpts: 1})
-{
-	"argv" : [
-		"mongod",
-		"--dbpath=/data/db",
-		"--auth",
-		"--ipv6",
-		"--bind_ip_all",
-		"--port=27017",
-		"--tlsMode=disabled",
-		"--config=/data/configdb/mssql.conf"
-	],
-	"parsed" : {
-		"config" : "/data/configdb/mssql.conf",
-		"net" : {
-			"bindIp" : "*",
-			"ipv6" : true,
-			"maxIncomingConnections" : 10000,
-			"port" : 27017,
-			"tls" : {
-				"mode" : "disabled"
-			}
-		},
-		"security" : {
-			"authorization" : "enabled"
-		},
-		"storage" : {
-			"dbPath" : "/data/db"
-		}
-	},
-	"ok" : 1
-}
-
-> exit
-bye
+(1 rows affected)
+1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
+2> go
+physical_memory_mb  
+--------------------
+2304
+(1 rows affected)
+1> 
 ```
 
-As we can see from the configuration of running mssqlserver, the value of `maxIncomingConnections` has been set to 10000 successfully.
+
+As we can see from the configuration of running sql server, the configuration given in the config secret has been set successfully.
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo ms/mssql-custom-config -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo ms/mssql-custom-config
+$ kubectl patch -n demo ms/mssql-custom-config -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 
-kubectl delete -n demo secret ms-configuration
+$ kubectl delete -n demo ms/mssql-custom-config
+mssqlserver.kubedb.com "mssql-custom-config" deleted
+
+$ kubectl delete -n demo secret ms-custom-config
+mssqlserver.kubedb.com "mssql-custom-config" deleted
 
 kubectl delete ns demo
 ```
 
 ## Next Steps
 
-- [Backup and Restore](/docs/guides/mssqlserver/backup/stash/overview/index.md) MSSQLServer databases using Stash.
-- Initialize [MSSQLServer with Script](/docs/guides/mssqlserver/initialization/using-script.md).
-- Monitor your MSSQLServer database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mssqlserver/monitoring/using-prometheus-operator.md).
-- Monitor your MSSQLServer database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mssqlserver/monitoring/using-builtin-prometheus.md).
-- Use [kubedb cli](/docs/guides/mssqlserver/cli/cli.md) to manage databases like kubectl for Kubernetes.
+- [Backup and Restore](/docs/guides/mssqlserver/backup/overview/index.md) MSSQLServer databases using KubeStash.
 - Detail concepts of [MSSQLServer object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
 - Detail concepts of [MSSQLServerVersion object](/docs/guides/mssqlserver/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
