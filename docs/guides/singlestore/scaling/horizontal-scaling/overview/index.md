@@ -1,10 +1,10 @@
 ---
-title: MariaDB Horizontal Scaling Overview
+title: SingleStore Horizontal Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-scaling-horizontal-overview
+    identifier: guides-sdb-scaling-horizontal-overview
     name: Overview
-    parent: guides-mariadb-scaling-horizontal
+    parent: guides-sdb-scaling-horizontal
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,43 +12,43 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# MariaDB Horizontal Scaling
+# SingleStore Horizontal Scaling
 
-This guide will give an overview on how KubeDB Ops Manager scales up or down `MariaDB Cluster`.
+This guide will give an overview on how KubeDB Ops Manager scales up or down `SingleStore Cluster`.
 
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MariaDB](/docs/guides/mariadb/concepts/mariadb/)
-  - [MariaDBOpsRequest](/docs/guides/mariadb/concepts/opsrequest/)
+  - [SingleStore](/docs/guides/singlestore/concepts/singlestore.md)
+  - [SingleStoreOpsRequest](/docs/guides/singlestore/concepts/opsrequest.md)
 
 ## How Horizontal Scaling Process Works
 
-The following diagram shows how KubeDB Ops Manager scales up or down `MariaDB` database components. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops Manager scales up or down `SingleStore` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Horizontal scaling process of MariaDB" src="/docs/guides/mariadb/scaling/horizontal-scaling/overview/images/horizontal-scaling.jpg">
-<figcaption align="center">Fig: Horizontal scaling process of MariaDB</figcaption>
+  <img alt="Horizontal scaling process of SingleStore" src="/docs/guides/singlestore/scaling/horizontal-scaling/overview/images/horizontal-scaling.svg">
+<figcaption align="center">Fig: Horizontal scaling process of SingleStore</figcaption>
 </figure>
 
 The Horizontal scaling process consists of the following steps:
 
-1. At first, a user creates a `MariaDB` Custom Resource (CR).
+1. At first, a user creates a `SingleStore` Custom Resource (CR).
 
-2. `KubeDB` Community operator watches the `MariaDB` CR.
+2. `KubeDB` Provisioner operator watches the `SingleStore` CR.
 
-3. When the operator finds a `MariaDB` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `SingleStore` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
-4. Then, in order to scale the `MariaDB` database the user creates a `MariaDBOpsRequest` CR with desired information.
+4. Then, in order to scale the `SingleStore` database the user creates a `SingleStoreOpsRequest` CR with desired information.
 
-5. `KubeDB` Enterprise operator watches the `MariaDBOpsRequest` CR.
+5. `KubeDB` Ops-manager operator watches the `SingleStoreOpsRequest` CR.
 
-6. When it finds a `MariaDBOpsRequest` CR, it pauses the `MariaDB` object which is referred from the `MariaDBOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `MariaDB` object during the horizontal scaling process.  
+6. When it finds a `SingleStoreOpsRequest` CR, it pauses the `SingleStore` object which is referred from the `SingleStoreOpsRequest`. So, the `KubeDB` Provisioner operator doesn't perform any operations on the `SingleStore` object during the horizontal scaling process.  
 
-7. Then the `KubeDB` Enterprise operator will scale the related PetSet Pods to reach the expected number of replicas defined in the `MariaDBOpsRequest` CR.
+7. Then the `KubeDB` Ops-manager operator will scale the related PetSet Pods to reach the expected number of replicas defined in the `SingleStoreOpsRequest` CR.
 
-8. After the successfully scaling the replicas of the PetSet Pods, the `KubeDB` Enterprise operator updates the number of replicas in the `MariaDB` object to reflect the updated state.
+8. After the successfully scaling the replicas of the PetSet Pods, the `KubeDB` Ops-manager operator updates the number of replicas in the `SingleStore` object to reflect the updated state.
 
-9. After the successful scaling of the `MariaDB` replicas, the `KubeDB` Enterprise operator resumes the `MariaDB` object so that the `KubeDB` Community operator resumes its usual operations.
+9. After the successful scaling of the `SingleStore` replicas, the `KubeDB` Ops-manager operator resumes the `SingleStore` object so that the `KubeDB` Provisioner operator resumes its usual operations.
 
-In the next docs, we are going to show a step by step guide on horizontal scaling of MariaDB database using `MariaDBOpsRequest` CRD.
+In the next docs, we are going to show a step by step guide on horizontal scaling of SingleStore database using `SingleStoreOpsRequest` CRD.

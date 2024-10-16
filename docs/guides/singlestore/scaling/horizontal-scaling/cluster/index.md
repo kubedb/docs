@@ -1,10 +1,10 @@
 ---
-title: Horizontal Scaling MariaDB
+title: Horizontal Scaling SingleStore
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-scaling-horizontal-cluster
+    identifier: guides-sdb-scaling-horizontal-cluster
     name: Cluster
-    parent: guides-mariadb-scaling-horizontal
+    parent: guides-sdb-scaling-horizontal
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Horizontal Scale MariaDB
+# Horizontal Scale SingleStore
 
-This guide will show you how to use `KubeDB` Enterprise operator to scale the cluster of a MariaDB database.
+This guide will show you how to use `KubeDB` Enterprise operator to scale the cluster of a SingleStore database.
 
 ## Before You Begin
 
@@ -23,10 +23,10 @@ This guide will show you how to use `KubeDB` Enterprise operator to scale the cl
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MariaDB](/docs/guides/mariadb/concepts/mariadb/)
-  - [MariaDB Cluster](/docs/guides/mariadb/clustering/galera-cluster/)
-  - [MariaDBOpsRequest](/docs/guides/mariadb/concepts/opsrequest/)
-  - [Horizontal Scaling Overview](/docs/guides/mariadb/scaling/horizontal-scaling/overview/)
+  - [SingleStore](/docs/guides/singlestore/concepts/singlestore.md)
+  - [SingleStore Cluster](/docs/guides/singlestore/clustering/)
+  - [SingleStoreOpsRequest](/docs/guides/singlestore/concepts/opsrequest.md)
+  - [Horizontal Scaling Overview](/docs/guides/singlestore/scaling/horizontal-scaling/overview/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -37,236 +37,290 @@ namespace/demo created
 
 ## Apply Horizontal Scaling on Cluster
 
-Here, we are going to deploy a  `MariaDB` cluster using a supported version by `KubeDB` operator. Then we are going to apply horizontal scaling on it.
+Here, we are going to deploy a  `SingleStore` cluster using a supported version by `KubeDB` operator. Then we are going to apply horizontal scaling on it.
 
-### Prepare MariaDB Cluster Database
+### Create SingleStore License Secret
 
-Now, we are going to deploy a `MariaDB` cluster with version `10.5.23`.
+We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
-### Deploy MariaDB Cluster
+```bash
+$ kubectl create secret generic -n demo license-secret \
+                --from-literal=username=license \
+                --from-literal=password='your-license-set-here'
+secret/license-secret created
+```
 
-In this section, we are going to deploy a MariaDB cluster. Then, in the next section we will scale the database using `MariaDBOpsRequest` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
+### Deploy SingleStore Cluster
+
+In this section, we are going to deploy a SingleStore cluster. Then, in the next section we will scale the database using `SingleStoreOpsRequest` CRD. Below is the YAML of the `SingleStore` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1
-kind: MariaDB
+apiVersion: kubedb.com/v1alpha2
+kind: Singlestore
 metadata:
-  name: sample-mariadb
+  name: sample-sdb
   namespace: demo
 spec:
-  version: "10.5.23"
-  replicas: 3
+  version: "8.7.10"
+  topology:
+    aggregator:
+      replicas: 1
+      podTemplate:
+        spec:
+          containers:
+          - name: singlestore
+            resources:
+              limits:
+                memory: "2Gi"
+                cpu: "600m"
+              requests:
+                memory: "2Gi"
+                cpu: "600m"
+      storage:
+        storageClassName: "longhorn"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    leaf:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "600m"
+                requests:
+                  memory: "2Gi"
+                  cpu: "600m"                      
+      storage:
+        storageClassName: "longhorn"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  licenseSecret:
+    name: license-secret
   storageType: Durable
-  storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
   deletionPolicy: WipeOut
 ```
 
-Let's create the `MariaDB` CR we have shown above,
+Let's create the `SingleStore` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/scaling/horizontal-scaling/cluster/example/sample-mariadb.yaml
-mariadb.kubedb.com/sample-mariadb created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/scaling/horizontal-scaling/cluster/example/sample-sdb.yaml
+singlestore.kubedb.com/sample-sdb created
 ```
 
-Now, wait until `sample-mariadb` has status `Ready`. i.e,
+Now, wait until `sample-sdb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mariadb -n demo
-NAME             VERSION   STATUS   AGE
-sample-mariadb   10.5.23    Ready    2m36s
+$ kubectl get singlestore -n demo
+NAME         TYPE                  VERSION   STATUS   AGE
+sample-sdb   kubedb.com/v1alpha2   8.7.10    Ready    86s
 ```
 
-Let's check the number of replicas this database has from the MariaDB object, number of pods the petset have,
+Let's check the number of `aggreagtor replicas` and `leaf replicas` this database has from the SingleStore object, number of pods the `aggregator-petset` and `leaf-petset` have,
 
 ```bash
-$ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.replicas'
-3
-$ kubectl get sts -n demo sample-mariadb -o json | jq '.spec.replicas'
-3
-```
+$ kubectl get sdb -n demo sample-sdb -o json | jq '.spec.topology.aggregator.replicas'
+1
+$ kubectl get sdb -n demo sample-sdb -o json | jq '.spec.topology.leaf.replicas'
+2
 
-We can see from both command that the database has 3 replicas in the cluster.
+$ kubectl get petset -n demo sample-sdb-aggregator -o=jsonpath='{.spec.replicas}{"\n"}'
+1
+kubectl get petset -n demo sample-sdb-leaf -o=jsonpath='{.spec.replicas}{"\n"}'
+2
 
-Also, we can verify the replicas of the replicaset from an internal mariadb command by execing into a replica.
-
-First we need to get the username and password to connect to a mariadb instance,
-```bash
-$ kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.\username}' | base64 -d
-root
-
-$ kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.\password}' | base64 -d
-nrKuxni0wDSMrgwy
-```
-
-Now let's connect to a mariadb instance and run a mariadb internal command to check the number of replicas,
-
-```bash
-$  kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
-root@sample-mariadb-0:/ mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like 'wsrep_cluster_size';"
-+--------------------+-------+
-| Variable_name      | Value |
-+--------------------+-------+
-| wsrep_cluster_size | 3     |
-+--------------------+-------+
 
 ```
 
-We can see from the above output that the cluster has 3 nodes.
+We can see from both command that the database has 1 `aggregator replicas` and 2 `leaf replicas` in the cluster.
 
-We are now ready to apply the `MariaDBOpsRequest` CR to scale this database.
+Also, we can verify the replicas of the from an internal memsqlctl command by execing into a replica.
+
+Now let's connect to a singlestore instance and run a memsqlctl internal command to check the number of replicas,
+
+```bash
+$ kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
+[memsql@sample-sdb-aggregator-0 /]$ memsqlctl show-cluster
++---------------------+--------------------------------------------------+------+--------------------+-----------+-----------+--------+--------------------+------------------------------+--------+-------------------+
+|        Role         |                       Host                       | Port | Availability Group | Pair Host | Pair Port | State  | Opened Connections | Average Roundtrip Latency ms | NodeId | Master Aggregator |
++---------------------+--------------------------------------------------+------+--------------------+-----------+-----------+--------+--------------------+------------------------------+--------+-------------------+
+| Leaf                | sample-sdb-leaf-0.sample-sdb-pods.demo.svc       | 3306 | 1                  | null      | null      | online | 2                  |                              | 2      |                   |
+| Leaf                | sample-sdb-leaf-1.sample-sdb-pods.demo.svc       | 3306 | 1                  | null      | null      | online | 3                  |                              | 3      |                   |
+| Aggregator (Leader) | sample-sdb-aggregator-0.sample-sdb-pods.demo.svc | 3306 |                    | null      | null      | online | 1                  | null                         | 1      | 1                 |
++---------------------+--------------------------------------------------+------+--------------------+-----------+-----------+--------+--------------------+------------------------------+--------+-------------------+
+
+
+```
+
+We can see from the above output that the cluster has 1 aggregator node and 2 leaf nodes.
+
+We are now ready to apply the `SingleStoreOpsRequest` CR to scale this database.
 
 ## Scale Up Replicas
 
-Here, we are going to scale up the replicas of the replicaset to meet the desired number of replicas after scaling.
+Here, we are going to scale up the replicas of the `leaf nodes` to meet the desired number of replicas after scaling.
 
-#### Create MariaDBOpsRequest
+#### Create SingleStoreOpsRequest
 
-In order to scale up the replicas of the replicaset of the database, we have to create a `MariaDBOpsRequest` CR with our desired replicas. Below is the YAML of the `MariaDBOpsRequest` CR that we are going to create,
+In order to scale up the replicas of the `leaf nodes` of the database, we have to create a `SingleStoreOpsRequest` CR with our desired replicas. Below is the YAML of the `SingleStoreOpsRequest` CR that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
-kind: MariaDBOpsRequest
+kind: SinglestoreOpsRequest
 metadata:
-  name: mdops-scale-horizontal-up
+  name: sdbops-scale-horizontal-up
   namespace: demo
 spec:
   type: HorizontalScaling
   databaseRef:
-    name: sample-mariadb
+    name: sample-sdb
   horizontalScaling:
-    member : 5
+    leaf: 3
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing horizontal scaling operation on `sample-mariadb` database.
+- `spec.databaseRef.name` specifies that we are performing horizontal scaling operation on `sample-sdb` database.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our database.
-- `spec.horizontalScaling.member` specifies the desired replicas after scaling.
+- `spec.horizontalScaling.leaf` specifies the desired leaf replicas after scaling.
 
-Let's create the `MariaDBOpsRequest` CR we have shown above,
+Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/scaling/horizontal-scaling/cluster/example/mdops-upscale.yaml
-mariadbopsrequest.ops.kubedb.com/mdops-scale-horizontal-up created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/scaling/horizontal-scaling/cluster/example/sdbops-upscale.yaml
+singlestoreopsrequest.ops.kubedb.com/sdbops-scale-horizontal-up created
 ```
 
 #### Verify Cluster replicas scaled up successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MariaDB` object and related `PetSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas of `SingleStore` object and related `PetSets` and `Pods`.
 
-Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
-
-```bash
-$ watch kubectl get mariadbopsrequest -n demo
-Every 2.0s: kubectl get mariadbopsrequest -n demo
-NAME                        TYPE                STATUS       AGE
-mdps-scale-horizontal    HorizontalScaling    Successful     106s
-```
-
-We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the MariaDB object, number of pods the petset have,
+Let's wait for `SingleStoreOpsRequest` to be `Successful`.  Run the following command to watch `SingleStoreOpsRequest` CR,
 
 ```bash
-$ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.replicas'
-5
-$ kubectl get sts -n demo sample-mariadb -o json | jq '.spec.replicas'
-5
+ $ kubectl get singlestoreopsrequest -n demo
+NAME                         TYPE                STATUS       AGE
+sdbops-scale-horizontal-up   HorizontalScaling   Successful   74s
 ```
 
-Now let's connect to a mariadb instance and run a mariadb internal command to check the number of replicas,
+We can see from the above output that the `SingleStoreOpsRequest` has succeeded. Now, we are going to verify the number of `leaf replicas` this database has from the SingleStore object, number of pods the `leaf petset` have,
 
 ```bash
-$ $  kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
-root@sample-mariadb-0:/ mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like 'wsrep_cluster_size';"
-+--------------------+-------+
-| Variable_name      | Value |
-+--------------------+-------+
-| wsrep_cluster_size | 5     |
-+--------------------+-------+
+$ kubectl get sdb -n demo sample-sdb -o json | jq '.spec.topology.leaf.replicas'
+3
+$ kubectl get petset -n demo sample-sdb-leaf -o=jsonpath='{.spec.replicas}{"\n"}'
+3
+
 ```
 
-From all the above outputs we can see that the replicas of the cluster is `5`. That means we have successfully scaled up the replicas of the MariaDB replicaset.
+Now let's connect to a singlestore instance and run a memsqlctl internal command to check the number of replicas,
+
+```bash
+$ kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
+[memsql@sample-sdb-aggregator-0 /]$ memsqlctl show-cluster
++---------------------+--------------------------------------------------+------+--------------------+-----------+-----------+--------+--------------------+------------------------------+--------+-------------------+
+|        Role         |                       Host                       | Port | Availability Group | Pair Host | Pair Port | State  | Opened Connections | Average Roundtrip Latency ms | NodeId | Master Aggregator |
++---------------------+--------------------------------------------------+------+--------------------+-----------+-----------+--------+--------------------+------------------------------+--------+-------------------+
+| Leaf                | sample-sdb-leaf-0.sample-sdb-pods.demo.svc       | 3306 | 1                  | null      | null      | online | 2                  |                              | 2      |                   |
+| Leaf                | sample-sdb-leaf-1.sample-sdb-pods.demo.svc       | 3306 | 1                  | null      | null      | online | 3                  |                              | 3      |                   |
+| Leaf                | sample-sdb-leaf-2.sample-sdb-pods.demo.svc       | 3306 | 1                  | null      | null      | online | 2                  |                              | 4      |                   |
+| Aggregator (Leader) | sample-sdb-aggregator-0.sample-sdb-pods.demo.svc | 3306 |                    | null      | null      | online | 1                  | null                         | 1      | 1                 |
++---------------------+--------------------------------------------------+------+--------------------+-----------+-----------+--------+--------------------+------------------------------+--------+-------------------+
+
+```
+
+From all the above outputs we can see that the `leaf replicas` of the cluster is `3`. That means we have successfully scaled up the `leaf replicas` of the SingleStore Cluster.
 
 ### Scale Down Replicas
 
-Here, we are going to scale down the replicas of the cluster to meet the desired number of replicas after scaling.
+Here, we are going to scale down the `leaf replicas` of the cluster to meet the desired number of replicas after scaling.
 
-#### Create MariaDBOpsRequest
+#### Create SingleStoreOpsRequest
 
-In order to scale down the cluster of the database, we have to create a `MariaDBOpsRequest` CR with our desired replicas. Below is the YAML of the `MariaDBOpsRequest` CR that we are going to create,
+In order to scale down the cluster of the database, we have to create a `SingleStoreOpsRequest` CR with our desired replicas. Below is the YAML of the `SingleStoreOpsRequest` CR that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
-kind: MariaDBOpsRequest
+kind: SinglestoreOpsRequest
 metadata:
-  name: mdops-scale-horizontal-down
+  name: sdbops-scale-horizontal-down
   namespace: demo
 spec:
   type: HorizontalScaling
   databaseRef:
-    name: sample-mariadb
+    name: sample-sdb
   horizontalScaling:
-    member : 3
+    leaf: 2
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing horizontal scaling down operation on `sample-mariadb` database.
+- `spec.databaseRef.name` specifies that we are performing horizontal scaling down operation on `sample-sdb` database.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our database.
-- `spec.horizontalScaling.replicas` specifies the desired replicas after scaling.
+- `spec.horizontalScaling.leaf` specifies the desired `leaf replicas` after scaling.
 
-Let's create the `MariaDBOpsRequest` CR we have shown above,
+Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/scaling/horizontal-scaling/cluster/example/mdops-downscale.yaml
-mariadbopsrequest.ops.kubedb.com/mdops-scale-horizontal-down created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/scaling/horizontal-scaling/cluster/example/sdbops-downscale.yaml
+singlestoreopsrequest.ops.kubedb.com/sdbops-scale-horizontal-down created
 ```
 
 #### Verify Cluster replicas scaled down successfully 
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MariaDB` object and related `PetSets` and `Pods`.
+If everything goes well, `KubeDB` Enterprise operator will update the replicas of `SingleStore` object and related `PetSets` and `Pods`.
 
-Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
-
-```bash
-$ watch kubectl get mariadbopsrequest -n demo
-Every 2.0s: kubectl get mariadbopsrequest -n demo
-NAME                          TYPE                STATUS       AGE
-mops-hscale-down-replicaset   HorizontalScaling   Successful   2m32s
-```
-
-We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the MariaDB object, number of pods the petset have,
+Let's wait for `SingleStoreOpsRequest` to be `Successful`.  Run the following command to watch `SingleStoreOpsRequest` CR,
 
 ```bash
-$ kubectl get mariadb -n demo sample-mariadb -o json | jq '.spec.replicas' 
-3
-$ kubectl get sts -n demo sample-mariadb -o json | jq '.spec.replicas'
-3
+$ kubectl get singlestoreopsrequest -n demo
+NAME                           TYPE                STATUS       AGE
+sdbops-scale-horizontal-down   HorizontalScaling   Successful   63s
 ```
 
-Now let's connect to a mariadb instance and run a mariadb internal command to check the number of replicas,
+We can see from the above output that the `SingleStoreOpsRequest` has succeeded. Now, we are going to verify the number of `leaf replicas` this database has from the SingleStore object, number of pods the `leaf petset` have,
+
 ```bash
-$ $  kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
-root@sample-mariadb-0:/ mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like 'wsrep_cluster_size';"
-+--------------------+-------+
-| Variable_name      | Value |
-+--------------------+-------+
-| wsrep_cluster_size | 5     |
-+--------------------+-------+
+$ kubectl get sdb -n demo sample-sdb -o json | jq '.spec.topology.leaf.replicas'
+2
+$ kubectl get petset -n demo sample-sdb-leaf -o=jsonpath='{.spec.replicas}{"\n"}'
+2
+
 ```
 
-From all the above outputs we can see that the replicas of the cluster is `5`. That means we have successfully scaled down the replicas of the MariaDB replicaset.
+Now let's connect to a singlestore instance and run a memsqlctl internal command to check the number of replicas,
+```bash
+$ kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
+bash: mesqlctl: command not found
+[memsql@sample-sdb-aggregator-0 /]$ memsqlctl show-cluster
++---------------------+--------------------------------------------------+------+--------------------+-----------+-----------+--------+--------------------+------------------------------+--------+-------------------+
+|        Role         |                       Host                       | Port | Availability Group | Pair Host | Pair Port | State  | Opened Connections | Average Roundtrip Latency ms | NodeId | Master Aggregator |
++---------------------+--------------------------------------------------+------+--------------------+-----------+-----------+--------+--------------------+------------------------------+--------+-------------------+
+| Leaf                | sample-sdb-leaf-0.sample-sdb-pods.demo.svc       | 3306 | 1                  | null      | null      | online | 2                  |                              | 2      |                   |
+| Leaf                | sample-sdb-leaf-1.sample-sdb-pods.demo.svc       | 3306 | 1                  | null      | null      | online | 3                  |                              | 3      |                   |
+| Aggregator (Leader) | sample-sdb-aggregator-0.sample-sdb-pods.demo.svc | 3306 |                    | null      | null      | online | 1                  | null                         | 1      | 1                 |
++---------------------+--------------------------------------------------+------+--------------------+-----------+-----------+--------+--------------------+------------------------------+--------+-------------------+
+
+```
+
+From all the above outputs we can see that the `leaf replicas` of the cluster is `2`. That means we have successfully scaled down the `leaf replicas` of the SingleStore database.
 
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-$ kubectl delete mariadbopsrequest -n demo  mdops-scale-horizontal-up mdops-scale-horizontal-down
+$ kubectl delete sdb -n demo sample-sdb
+$ kubectl delete singlestoreopsrequest -n demo  sdbops-scale-horizontal-up sdbops-scale-horizontal-down
 ```
