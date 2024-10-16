@@ -459,7 +459,6 @@ items:
           path: /
           port: 1433
           scheme: tcp
-        url: tcp(mssqlserver-quickstart.demo.svc:1433)/
       secret:
         name: mssqlserver-quickstart-auth
       type: kubedb.com/mssqlserver

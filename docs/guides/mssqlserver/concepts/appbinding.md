@@ -63,7 +63,6 @@ spec:
       path: /
       port: 1433
       scheme: tcp
-    url: tcp(mssqlserver.demo.svc:1433)/
   secret:
     name: mssqlserver-auth
   tlsSecret:

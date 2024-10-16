@@ -455,7 +455,6 @@ items:
           path: /
           port: 1433
           scheme: tcp
-        url: tcp(mssqlserver-standalone.demo.svc:1433)/
       secret:
         name: mssqlserver-standalone-auth
       type: kubedb.com/mssqlserver

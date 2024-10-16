@@ -3,7 +3,7 @@ title: SQL Server Availability Group Cluster Guide
 menu:
   docs_{{ .version }}:
     identifier: ms-clustering-availability-group
-    name: Availability Group (HA) Cluster
+    name: Availability Group (HA Cluster)
     parent: ms-clustering
     weight: 10
 menu_name: docs_{{ .version }}
@@ -711,7 +711,6 @@ items:
           path: /
           port: 1433
           scheme: tcp
-        url: tcp(mssqlserver-ag-cluster.demo.svc:1433)/
       secret:
         name: mssqlserver-ag-cluster-auth
       type: kubedb.com/mssqlserver
