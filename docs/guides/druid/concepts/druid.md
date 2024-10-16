@@ -29,6 +29,19 @@ metadata:
   name: druid
   namespace: demo
 spec:
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
+  metadataStorage:
+    type: PostgreSQL
+    name: pg-demo
+    namespace: demo
+    externallyManaged: true
+  zookeeperRef:
+    name: zk-demo
+    namespace: demo
+    externallyManaged: true
   authSecret:
     name: druid-admin-cred
   configSecret:
@@ -76,6 +89,61 @@ spec:
                 limits:
                   cpu: 700m
                   memory: 2Gi
+    overlords:
+      podTemplate:
+        spec:
+          containers:
+            - name: druid
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1024Mi
+                limits:
+                  cpu: 700m
+                  memory: 2Gi
+    brokers:
+      podTemplate:
+        spec:
+          containers:
+            - name: druid
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1024Mi
+                limits:
+                  cpu: 700m
+                  memory: 2Gi
+    routers:
+      podTemplate:
+        spec:
+          containers:
+            - name: druid
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1024Mi
+                limits:
+                  cpu: 700m
+                  memory: 2Gi
+    middleManagers:
+      podTemplate:
+        spec:
+          containers:
+            - name: druid
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1024Mi
+                limits:
+                  cpu: 700m
+                  memory: 2Gi
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: standard
     historicals:
       podTemplate:
         spec:
@@ -95,18 +163,6 @@ spec:
           requests:
             storage: 10Gi
         storageClassName: standard
-    routers:
-      podTemplate:
-        spec:
-          containers:
-            - name: druid
-              resources:
-                requests:
-                  cpu: 500m
-                  memory: 1024Mi
-                limits:
-                  cpu: 700m
-                  memory: 2Gi
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -162,7 +218,7 @@ Example:
 $ kubectl create secret generic druid-auth -n demo \
 --from-literal=username=jhon-doe \
 --from-literal=password=6q8u_2jMOW-OOZXk
-secret "kf-auth" created
+secret "druid-auth" created
 ```
 
 ```yaml
@@ -193,29 +249,74 @@ When `spec.topology` is set, the following fields needs to be empty, otherwise v
 - `spec.podTemplate`
 - `spec.storage`
 
-#### spec.topology.broker
+#### spec.topology.coordinators
 
-`broker` represents configuration for brokers of Druid. In KRaft Topology mode clustering each pod can act as a single dedicated Druid broker.
-
-Available configurable fields:
-
-- `topology.broker`:
-    - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Druid `broker` pods. Defaults to `1`.
-    - `suffix` (`: "broker"`) - is an `optional` field that is added as the suffix of the broker PetSet name. Defaults to `broker`.
-    - `storage` is a `required` field that specifies how much storage to claim for each of the `broker` pods.
-    - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `broker` pods.
-
-#### spec.topology.controller
-
-`controller` represents configuration for controllers of Druid. In KRaft Topology mode clustering each pod can act as a single dedicated Druid controller that preserves metadata for the whole cluster and participated in leader election.
+`coordinators` represents configuration for coordinators node of Druid. It is a mandatory node. So, if not mentioned in the `YAML`, this node will be initialized by `KubeDB` operator.  
 
 Available configurable fields:
 
-- `topology.controller`:
-    - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Druid `controller` pods. Defaults to `1`.
-    - `suffix` (`: "controller"`) - is an `optional` field that is added as the suffix of the controller PetSet name. Defaults to `controller`.
-    - `storage` is a `required` field that specifies how much storage to claim for each of the `controller` pods.
-    - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `controller` pods.
+- `topology.coordinators`:
+    - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Druid `coordinators` pods. Defaults to `1`.
+    - `suffix` (`: "coordinators"`) - is an `optional` field that is added as the suffix of the coordinators PetSet name. Defaults to `coordinators`.
+    - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `coordinators` pods.
+
+#### spec.topology.overlords
+
+`overlords` represents configuration for overlords node of Druid. It is an optional node. So, it is only going to be deployed by the `KubeDB` operator if explicitly mentioned in the `YAML`. Otherwise, `coordinators` node will act as `overlords`. 
+
+Available configurable fields:
+
+- `topology.overlords`:
+  - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Druid `overlords` pods. Defaults to `1`.
+  - `suffix` (`: "overlords"`) - is an `optional` field that is added as the suffix of the overlords PetSet name. Defaults to `overlords`.
+  - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `overlords` pods.
+
+#### spec.topology.brokers
+
+`brokers` represents configuration for brokers node of Druid. It is a mandatory node. So, if not mentioned in the `YAML`, this node will be initialized by `KubeDB` operator.
+
+Available configurable fields:
+
+- `topology.brokers`:
+  - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Druid `brokers` pods. Defaults to `1`.
+  - `suffix` (`: "brokers"`) - is an `optional` field that is added as the suffix of the brokers PetSet name. Defaults to `brokers`.
+  - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `brokers` pods.
+
+#### spec.topology.routers
+
+`routers` represents configuration for routers node of Druid. It is an optional node. So, it is only going to be deployed by the `KubeDB` operator if explicitly mentioned in the `YAML`. Otherwise, `coordinators` node will act as `routers`.
+
+Available configurable fields:
+
+- `topology.routers`:
+  - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Druid `routers` pods. Defaults to `1`.
+  - `suffix` (`: "routers"`) - is an `optional` field that is added as the suffix of the routers PetSet name. Defaults to `routers`.
+  - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `routers` pods.
+
+#### spec.topology.historicals
+
+`historicals` represents configuration for historicals node of Druid. It is a mandatory node. So, if not mentioned in the `YAML`, this node will be initialized by `KubeDB` operator.  
+
+Available configurable fields:
+
+- `topology.historicals`:
+    - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Druid `historicals` pods. Defaults to `1`.
+    - `suffix` (`: "historicals"`) - is an `optional` field that is added as the suffix of the controller PetSet name. Defaults to `historicals`.
+    - `storage` is a `required` field that specifies how much storage to claim for each of the `historicals` pods.
+    - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `historicals` pods.
+
+#### spec.topology.middleManagers
+
+`middleManagers` represents configuration for middleManagers node of Druid. It is a mandatory node. So, if not mentioned in the `YAML`, this node will be initialized by `KubeDB` operator.
+
+Available configurable fields:
+
+- `topology.middleManagers`:
+  - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the dedicated Druid `middleManagers` pods. Defaults to `1`.
+  - `suffix` (`: "middleManagers"`) - is an `optional` field that is added as the suffix of the controller PetSet name. Defaults to `middleManagers`.
+  - `storage` is a `required` field that specifies how much storage to claim for each of the `middleManagers` pods.
+  - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `middleManagers` pods.
+
 
 ### spec.enableSSL
 
@@ -236,19 +337,19 @@ spec:
     issuerRef:
       apiGroup: "cert-manager.io"
       kind: Issuer
-      name: kf-issuer
+      name: druid-issuer
     certificates:
     - alias: server
       privateKey:
         encoding: PKCS8
-      secretName: kf-client-cert
+      secretName: druid-client-cert
       subject:
         organizations:
         - kubedb
     - alias: http
       privateKey:
         encoding: PKCS8
-      secretName: kf-server-cert
+      secretName: druid-server-cert
       subject:
         organizations:
         - kubedb
@@ -288,23 +389,21 @@ The `spec.tls` contains the following fields:
     - `emailAddresses` ( `[]string` | `nil` ) - is a list of email Subject Alternative Names.
 
 
-### spec.storageType
+### spec.<historicals/middleManagers>.storageType
 
 `spec.storageType` is an optional field that specifies the type of storage to use for database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Druid cluster using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume.
 
-### spec.storage
+### spec.<historicals/middleManagers>.storage
 
-If you set `spec.storageType:` to `Durable`, then `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+If you set `spec.<historicals/middleManagers>.storageType:` to `Durable`, then `spec.<historicals/middleManagers>.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-- `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
-- `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
-- `spec.storage.resources` can be used to request specific quantities of storage. This follows the same resource model used by PVCs.
+- `spec.<historicals/middleManagers>.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
+- `spec.<historicals/middleManagers>.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
+- `spec.<historicals/middleManagers>.storage.resources` can be used to request specific quantities of storage. This follows the same resource model used by PVCs.
 
-To learn how to configure `spec.storage`, please visit the links below:
+To learn how to configure `spec.<historicals/middleManagers>.storage`, please visit the links below:
 
 - https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
-
-NB. If `spec.topology` is set, then `spec.storage` needs to be empty. Instead use `spec.topology.<controller/broker>.storage`
 
 ### spec.monitor
 
@@ -312,11 +411,11 @@ Druid managed by KubeDB can be monitored with Prometheus operator out-of-the-box
 - [Monitor Apache Druid with Prometheus operator](/docs/guides/druid/monitoring/using-prometheus-operator.md)
 - [Monitor Apache Druid with Built-in Prometheus](/docs/guides/druid/monitoring/using-builtin-prometheus.md)
 
-### spec.podTemplate
+### spec.<node-name>.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for Druid cluster.
+KubeDB allows providing a template for database pod through `spec.<node-name>.podTemplate`. KubeDB operator will pass the information provided in `spec.<node-name>.podTemplate` to the PetSet created for Druid cluster.
 
-KubeDB accept following fields to set in `spec.podTemplate:`
+KubeDB accept following fields to set in `spec.<node-name>.podTemplate:`
 
 - metadata:
     - annotations (pod's annotation)
@@ -344,25 +443,23 @@ KubeDB accept following fields to set in `spec.podTemplate:`
     - lifecycle
 
 You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go#L26C1-L279C1).
-Uses of some field of `spec.podTemplate` is described below,
+Uses of some field of `spec.<node-name>.podTemplate` is described below,
 
-NB. If `spec.topology` is set, then `spec.podTemplate` needs to be empty. Instead use `spec.topology.<controller/broker>.podTemplate`
-
-#### spec.podTemplate.spec.tolerations
+#### spec.<node-name>.podTemplate.spec.tolerations
 
 The `spec.podTemplate.spec.tolerations` is an optional field. This can be used to specify the pod's tolerations.
 
-#### spec.podTemplate.spec.volumes
+#### spec.<node-name>.podTemplate.spec.volumes
 
-The `spec.podTemplate.spec.volumes` is an optional field. This can be used to provide the list of volumes that can be mounted by containers belonging to the pod.
+The `spec.<node-name>.podTemplate.<node-name>.volumes` is an optional field. This can be used to provide the list of volumes that can be mounted by containers belonging to the pod.
 
-#### spec.podTemplate.spec.podPlacementPolicy
+#### spec.<node-name>.podTemplate.spec.podPlacementPolicy
 
-`spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
+`spec.<node-name>.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the podPlacementPolicy. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
 
-#### spec.podTemplate.spec.nodeSelector
+#### spec.<node-name>.podTemplate.spec.nodeSelector
 
-`spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
+`spec.<node-name>.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
 
 ### spec.serviceTemplates
 
@@ -370,7 +467,12 @@ You can also provide template for the services created by KubeDB operator for Dr
 
 KubeDB allows following fields to set in `spec.serviceTemplates`:
 - `alias` represents the identifier of the service. It has the following possible value:
-    - `stats` is used for the exporter service identification.
+    - `stats` for is used for the `exporter` service identification.
+
+Druid comes with four services for `coordinators`, `overlords`, `routers` and `brokers`. There are two options for providing serviceTemplates:
+  - To provide `serviceTemplates` for a specific service, the `serviceTemplates.ports.port` should be equal to the port of that service and `serviceTemplate` will be used for that particular service only.
+  - However, to provide a common `serviceTemplates`, `serviceTemplates.ports.port` should be empty.
+
 - metadata:
     - labels
     - annotations
@@ -388,23 +490,23 @@ KubeDB allows following fields to set in `spec.serviceTemplates`:
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.21.1/api/v1/types.go#L237) to understand these fields in detail.
 
 
-#### spec.podTemplate.spec.containers
+#### spec.<node-name>.podTemplate.spec.containers
 
-The `spec.podTemplate.spec.containers` can be used to provide the list containers and their configurations for to the database pod. some of the fields are described below,
+The `spec.<node-name>.podTemplate.spec.containers` can be used to provide the list containers and their configurations for to the database pod. some of the fields are described below,
 
-##### spec.podTemplate.spec.containers[].name
-The `spec.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
+##### spec.<node-name>.podTemplate.spec.containers[].name
+The `spec.<node-name>.podTemplate.spec.containers[].name` field used to specify the name of the container specified as a DNS_LABEL. Each container in a pod must have a unique name (DNS_LABEL). Cannot be updated.
 
-##### spec.podTemplate.spec.containers[].args
-`spec.podTemplate.spec.containers[].args` is an optional field. This can be used to provide additional arguments to database installation.
+##### spec.<node-name>.podTemplate.spec.containers[].args
+`spec.<node-name>.podTemplate.spec.containers[].args` is an optional field. This can be used to provide additional arguments to database installation.
 
-##### spec.podTemplate.spec.containers[].env
+##### spec.<node-name>.podTemplate.spec.containers[].env
 
-`spec.podTemplate.spec.containers[].env` is an optional field that specifies the environment variables to pass to the Redis containers.
+`spec.<node-name>.podTemplate.spec.containers[].env` is an optional field that specifies the environment variables to pass to the Redis containers.
 
-##### spec.podTemplate.spec.containers[].resources
+##### spec.<node-name>.podTemplate.spec.containers[].resources
 
-`spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
+`spec.<node-name>.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
 ### spec.deletionPolicy
 

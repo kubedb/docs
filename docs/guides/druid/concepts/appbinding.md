@@ -26,7 +26,7 @@ KubeDB uses [Stash](https://appscode.com/products/stash/) to perform backup/reco
 
 Like any official Kubernetes resource, an `AppBinding` has `TypeMeta`, `ObjectMeta` and `Spec` sections. However, unlike other Kubernetes resources, it does not have a `Status` section.
 
-An `AppBinding` object created by `KubeDB` for Kafka database is shown below,
+An `AppBinding` object created by `KubeDB` for Druid database is shown below,
 
 ```yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
@@ -34,45 +34,89 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Kafka","metadata":{"annotations":{},"name":"kafka","namespace":"demo"},"spec":{"enableSSL":true,"monitor":{"agent":"prometheus.io/operator","prometheus":{"exporter":{"port":9091},"serviceMonitor":{"interval":"10s","labels":{"release":"prometheus"}}}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","tls":{"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"kafka-ca-issuer"}},"version":"3.6.1"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"druid","namespace":"demo"},"spec":{"enableSSL":true,"monitor":{"agent":"prometheus.io/operator","prometheus":{"exporter":{"port":9091},"serviceMonitor":{"interval":"10s","labels":{"release":"prometheus"}}}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","tls":{"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"druid-ca-issuer"}},"version":"3.6.1"}}
   creationTimestamp: "2023-03-27T08:04:43Z"
   generation: 1
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: kafka
+    app.kubernetes.io/instance: druid
     app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: kafkas.kubedb.com
-  name: kafka
+    app.kubernetes.io/name: druids.kubedb.com
+  name: druid
   namespace: demo
   ownerReferences:
     - apiVersion: kubedb.com/v1alpha2
       blockOwnerDeletion: true
       controller: true
-      kind: Kafka
-      name: kafka
+      kind: Druid
+      name: druid
       uid: a4d3bd6d-798d-4789-a228-6eed057ccbb2
   resourceVersion: "409855"
   uid: 946988c0-15ef-4ee8-b489-b7ea9be3f97e
 spec:
   appRef:
     apiGroup: kubedb.com
-    kind: Kafka
-    name: kafka
+    kind: Druid
+    name: druid
     namespace: demo
   clientConfig:
     caBundle: dGhpcyBpcyBub3QgYSBjZXJ0
     service:
-      name: kafka-pods
+      name: druid-pods
       port: 9092
       scheme: https
   secret:
-    name: kafka-admin-cred
+    name: druid-admin-cred
   tlsSecret:
-    name: kafka-client-cert
-  type: kubedb.com/kafka
+    name: druid-client-cert
+  type: kubedb.com/druid
   version: 3.6.1
 ```
-
+```
+apiVersion: appcatalog.appscode.com/v1alpha1
+kind: AppBinding
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"druid-quickstart","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"topology":{"routers":{"replicas":1}},"version":"28.0.1"}}
+  creationTimestamp: "2024-10-16T13:28:40Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: druid-quickstart
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: druids.kubedb.com
+  name: druid-quickstart
+  namespace: demo
+  ownerReferences:
+  - apiVersion: kubedb.com/v1alpha2
+    blockOwnerDeletion: true
+    controller: true
+    kind: Druid
+    name: druid-quickstart
+    uid: 06dc7c5f-65ad-4310-a203-b18c0d33d662
+  resourceVersion: "45154"
+  uid: 58861709-99f9-4c78-8cf9-b5dc6534102e
+spec:
+  appRef:
+    apiGroup: kubedb.com
+    kind: Druid
+    name: druid-quickstart
+    namespace: demo
+  clientConfig:
+    caBundle: dGhpcyBpcyBub3QgYSBjZXJ0
+    service:
+      name: druid-quickstart-pods
+      port: 8888
+      scheme: http
+    url: http://druid-quickstart-coordinators-0.druid-quickstart-pods.demo.svc.cluster.local:8081,http://druid-quickstart-overlords-0.druid-quickstart-pods.demo.svc.cluster.local:8090,http://druid-quickstart-middlemanagers-0.druid-quickstart-pods.demo.svc.cluster.local:8091,http://druid-quickstart-historicals-0.druid-quickstart-pods.demo.svc.cluster.local:8083,http://druid-quickstart-brokers-0.druid-quickstart-pods.demo.svc.cluster.local:8082,http://druid-quickstart-routers-0.druid-quickstart-pods.demo.svc.cluster.local:8888
+  secret:
+    name: druid-quickstart-admin-cred
+  tlsSecret:
+    name: druid-client-cert
+  type: kubedb.com/druid
+  version: 28.0.1
+```
 Here, we are going to describe the sections of an `AppBinding` crd.
 
 ### AppBinding `Spec`
@@ -87,15 +131,15 @@ An `AppBinding` object has the following fields in the `spec` section:
 <!---
 Stash uses this field to resolve the values of `TARGET_APP_TYPE`, `TARGET_APP_GROUP` and `TARGET_APP_RESOURCE` variables of [BackupBlueprint](https://appscode.com/products/stash/latest/concepts/crds/backupblueprint/) object.
 
-This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `kafka` resource under `kubedb.com` group.
+This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `druid` resource under `kubedb.com` group.
 
 Here, the variables are parsed as follows:
 
 |       Variable        | Usage                                                                                                                          |
 | --------------------- |--------------------------------------------------------------------------------------------------------------------------------|
 | `TARGET_APP_GROUP`    | Represents the application group where the respective app belongs (i.e: `kubedb.com`).                                         |
-| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents (i.e: `kafka`).                           |
-| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` (i.e: `kubedb.com/kafka`). |
+| `TARGET_APP_RESOURCE` | Represents the resource under that application group that this appbinding represents (i.e: `druid`).                           |
+| `TARGET_APP_TYPE`     | Represents the complete type of the application. It's simply `TARGET_APP_GROUP/TARGET_APP_RESOURCE` (i.e: `kubedb.com/druid`). |
 
 --->
 
@@ -103,11 +147,11 @@ Here, the variables are parsed as follows:
 
 `spec.secret` specifies the name of the secret which contains the credentials that are required to access the database. This secret must be in the same namespace as the `AppBinding`.
 
-This secret must contain the following keys for Kafka:
+This secret must contain the following keys for Druid:
 
 | Key        | Usage                                          |
 | ---------- |------------------------------------------------|
-| `username` | Username of the target Kafka instance.         |
+| `username` | Username of the target Druid instance.         |
 | `password` | Password for the user specified by `username`. |
 
 
