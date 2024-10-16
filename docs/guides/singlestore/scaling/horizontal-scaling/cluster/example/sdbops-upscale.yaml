@@ -1,11 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
-kind: MariaDBOpsRequest
+kind: SinglestoreOpsRequest
 metadata:
-  name: mdops-scale-horizontal-down
+  name: sdbops-scale-horizontal-up
   namespace: demo
 spec:
   type: HorizontalScaling
   databaseRef:
-    name: sample-mariadb
+    name: sample-sdb
   horizontalScaling:
-    member : 3
+    leaf: 3
