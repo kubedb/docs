@@ -5,6 +5,6 @@ menu:
     identifier: guides-sdb-monitoring
     name: Monitoring
     parent: guides-singlestore
-    weight: 40
+    weight: 120
 menu_name: docs_{{ .version }}
 ---
