@@ -29,35 +29,35 @@ A `SingleStore cluster` is a distributed database system that consists of multip
 
 A SingleStore cluster is made up of two main types of nodes:
 
-1. Aggregators:
+- Aggregators:
    - Purpose: These nodes act as query routers. Aggregators handle query parsing, optimization, and distribution to the other nodes in the cluster. They do not store data themselves.
    - Role: Aggregators receive SQL queries, optimize them, and then route them to the appropriate leaf nodes that actually store and process the data.
    - Benefits: They help balance the workload and ensure that queries are efficiently executed by leveraging the full processing power of the cluster.
 
-2. Leaves:
+- Leaves:
    - Purpose: These are the nodes responsible for data storage and processing. They store data in distributed partitions called shards.
    - Role: Leaf nodes are responsible for executing the actual query tasks. They perform data retrieval, computation, and provide results back to the aggregators.
    - Benefits: Leaf nodes ensure that data is distributed across the cluster, enabling horizontal scalability and high fault tolerance.
 
 ### How a SingleStore Cluster Works
 
-1. Data Sharding and Partitioning:
+- Data Sharding and Partitioning:
    - In a SingleStore cluster, data is partitioned into `shards` that are distributed across multiple leaf nodes. Each shard is a portion of the overall dataset, and the distribution allows the workload to be spread evenly, improving both read and write performance.
    - Sharding also allows for `parallel processing`, which enhances query performance by splitting tasks among several nodes.
 
-2. Scalability:
+- Scalability:
    - SingleStore clusters can be `scaled horizontally` by adding more nodes (both leaf and aggregator). As data volume grows, adding more leaf nodes allows the system to continue performing efficiently without the need for massive hardware upgrades.
    - Aggregator nodes can also be scaled to handle more queries concurrently, helping balance the load during times of high user activity.
 
-3. High Availability and Fault Tolerance:
+- High Availability and Fault Tolerance:
    - SingleStore clusters maintain multiple replicas of each shard on different leaf nodes. This replication provides `high availability (HA)` because if one node fails, another node holding a replica can take over, ensuring no data loss and minimizing downtime.
    - The automatic failover and `self-healing` capabilities ensure that the system continues to operate smoothly even in the face of hardware or software failures.
 
-4. Distributed Query Processing:
+- Distributed Query Processing:
    - When a query is submitted to an aggregator, it breaks down the query into smaller tasks and sends them to relevant leaf nodes.
    - `Parallel processing` at the leaf nodes enables quick handling of large, complex queries, making it particularly effective for real-time analytics.
 
-5. Hybrid Workload Handling:
+- Hybrid Workload Handling:
    - SingleStore is a `unified database`, meaning it can handle `both OLTP (Online Transaction Processing)` and `OLAP (Online Analytical Processing)` workloads within the same cluster.
    - This capability is achieved by storing data in rowstore for fast transactions and `columnstore` for efficient analytical queries, which can be leveraged simultaneously.
 
