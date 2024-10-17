@@ -1,10 +1,10 @@
 ---
-title: Backup & Restore SingleStore
+title: Monitoring SingleStore
 menu:
   docs_{{ .version }}:
     identifier: guides-sdb-backup
     name: Backup & Restore
     parent: guides-singlestore
-    weight: 40
+    weight: 70
 menu_name: docs_{{ .version }}
 ---
