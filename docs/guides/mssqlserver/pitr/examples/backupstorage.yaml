@@ -13,5 +13,4 @@ spec:
   usagePolicy:
     allowedNamespaces:
       from: All
-  default: true
   deletionPolicy: Delete

@@ -73,7 +73,6 @@ spec:
   usagePolicy:
     allowedNamespaces:
       from: All
-  default: true
   deletionPolicy: Delete
 ```
 
@@ -187,6 +186,12 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mssqlserverarchiver.archiver.kubedb.com/sample-mssqlserverarchiver created
 ```
 
+Here,
+- The `databases` field within `spec.fullBackup.task.params` specifies the target databases for the archive. If no database list is provided, the archiver will target all non-system databases by default.
+
+
+> The `KubeDB` provisioner uses `KubeStash` for full-backup and `mssqlserver-archiver` for transaction log-backup. Both utilizes `Wal-G` to perform backups of Microsoft SQL Server databases. Since `Wal-G` operates with `root` user privileges, it’s necessary to configure our full-backup job and `archiver pod` to run as a `root` user.
+
 ### Deploy Sample Microsoft SQL Server Database
 
 First, an `Issuer/ClusterIssuer` needs to be created, even if TLS is not enabled for `Microsoft SQL Server`. The issuer will be used to configure the TLS-enabled `Wal-G proxy server`, which is required for the SQL Server backup and restore operations.
@@ -277,6 +282,9 @@ spec:
         storage: 1Gi
   deletionPolicy: WipeOut
 ```
+
+Here,
+- We don't have to specify `spec.archiver.ref` field. The `archiver` will be auto-selected using the `archiver.spec.databases` field.
 
 Create the above `MSSQLServer` CR,
 
