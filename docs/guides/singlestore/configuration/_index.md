@@ -5,6 +5,6 @@ menu:
     identifier: guides-sdb-configuration
     name: Custom Configuration
     parent: guides-singlestore
-    weight: 30
+    weight: 80
 menu_name: docs_{{ .version }}
 ---
