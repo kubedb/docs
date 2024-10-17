@@ -174,7 +174,7 @@ metadata:
   name: coreos-prom-fr
   namespace: demo
 spec:
-  version: "1.23.0"
+  version: "1.18.0"
   storage:
     accessModes:
       - ReadWriteOnce
@@ -212,7 +212,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get fr -n demo coreos-prom-fr
 NAME             NAMESPACE   VERSION   STATUS   AGE
-coreos-prom-fr   demo        1.23.0    Ready    111s
+coreos-prom-fr   demo        1.18.0    Ready    111s
 ```
 
 KubeDB will create a separate stats service with name `{FerretDB crd name}-stats` for monitoring purpose.
@@ -340,7 +340,7 @@ Forwarding from [::1]:9090 -> 9090
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `metrics` endpoint of `coreos-prom-fr-stats` service as one of the targets.
 
 <p align="center">
-  <img alt="Prometheus Target" src="/docs/images/ferretdb/monitoring/pp-coreos-prom-target.png" style="padding:10px">
+  <img alt="Prometheus Target" src="/docs/images/ferretdb/fr-coreos-prom-target.png" style="padding:10px">
 </p>
 
 Check the `endpoint` and `service` labels marked by the red rectangles. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create a beautiful dashboard with collected metrics.
