@@ -47,10 +47,12 @@ This tutorial will show you how to use KubeDB to run a SingleStore database.
 When you have installed KubeDB, it has created `SinglestoreVersion` crd for all supported SingleStore versions. Check it by using the `kubectl get singlestoreversions` command. You can also use `sdbv` shorthand instead of `singlestoreversions`.
 
 ```bash
-$ kubectl get singlestoreversions
+ $ kubectl get singlestoreversions.catalog.kubedb.com
 NAME     VERSION   DB_IMAGE                                                          DEPRECATED   AGE
-8.1.32   8.1.32    ghcr.io/appscode-images/singlestore-node:alma-8.1.32-e3d3cde6da                72m
-8.5.7    8.5.7     ghcr.io/appscode-images/singlestore-node:alma-8.5.7-bf633c1a54                 72m
+8.1.32   8.1.32    ghcr.io/appscode-images/singlestore-node:alma-8.1.32-e3d3cde6da                2d1h
+8.5.30   8.5.30    ghcr.io/appscode-images/singlestore-node:alma-8.5.30-4f46ab16a5                2d1h
+8.5.7    8.5.7     ghcr.io/appscode-images/singlestore-node:alma-8.5.7-bf633c1a54                 2d1h
+8.7.10   8.7.10    ghcr.io/appscode-images/singlestore-node:alma-8.7.10-95e2357384                2d1h
 
 ```
 ## Create SingleStore License Secret
