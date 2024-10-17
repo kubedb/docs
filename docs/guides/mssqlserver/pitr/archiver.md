@@ -20,9 +20,9 @@ Here, will show you how to use KubeDB to provision a Microsoft SQL Server to Arc
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install `KubeDB` operator in your cluster following the steps [here](/docs/setup/README.md).
-
-To install `KubeStash` operator in your cluster following the steps [here](https://github.com/kubestash/installer/tree/master/charts/kubestash).
+Now, 
+- install `KubeDB` operator in your cluster following the steps [here](/docs/setup/README.md).
+- install `KubeStash` operator in your cluster following the steps [here](https://github.com/kubestash/installer/tree/master/charts/kubestash).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -34,7 +34,7 @@ namespace/demo created
 
 ## Continuous Archiving
 
-Continuous archiving involves making regular copies (or "archives") of the Microsoft SQL Server transaction log files.To ensure continuous archiving to a remote location we need prepare `BackupStorage`,`RetentionPolicy`,`MSSQLServerArchiver` for the KubeDB Managed Microsoft SQL Server Databases.
+Continuous archiving involves making regular copies (or "archives") of the Microsoft SQL Server transaction log files.To ensure continuous archiving to a remote location we need prepare `BackupStorage`, `RetentionPolicy`, `MSSQLServerArchiver` for the KubeDB Managed Microsoft SQL Server Databases.
 
 ### Prepare Backend
 
@@ -55,7 +55,7 @@ secret/gcs-secret created
 
 **Create BackupStorage:**
 
-Now, create a `BackupStorage` using this secret. Below is the YAML of `BackupStorage` CR we are going to create,
+Now, create a `BackupStorage` that references this secret. Below is the YAML of `BackupStorage` CR we are going to create,
 
 ```yaml
 apiVersion: storage.kubestash.com/v1alpha1
@@ -127,7 +127,7 @@ secret "encrypt-secret" created
 
 **Create MSSQLServerArchiver CR:**
 
-`MSSQLServerArchiver` is a CR provided by KubeDB for managing the archiving of `MSSQLServer` binlog files and performing volume-level backups.
+`MSSQLServerArchiver` is a CR provided by KubeDB for managing the archiving of `MSSQLServer` transaction log files and performing volume-level backups.
 
 ```yaml
 apiVersion: archiver.kubedb.com/v1alpha1
@@ -189,7 +189,7 @@ mssqlserverarchiver.archiver.kubedb.com/sample-mssqlserverarchiver created
 
 ### Deploy Sample Microsoft SQL Server Database
 
-By default, a KubeDB-managed `Microsoft SQL Server` instance run with TLS disabled. However, the `.spec.tls` field is mandatory and will be used during backup and restore operations.
+First, an `Issuer/ClusterIssuer` needs to be created, even if TLS is not enabled for `Microsoft SQL Server`. The issuer will be used to configure the TLS-enabled `Wal-G proxy server`, which is required for the SQL Server backup and restore operations.
 
 **Create Issuer/ClusterIssuer:**
 
@@ -210,7 +210,7 @@ $ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespa
 secret/mssqlserver-ca created
 ```
 
-Now, we are going to create an `Issuer` CR using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
+Now, we are going to create an `Issuer` CR using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -247,7 +247,7 @@ spec:
     timeoutSeconds: 100
   archiver:
     ref:
-      name: mssqlserverarchiver-sample
+      name: sample-mssqlserverarchiver
       namespace: demo
   version: "2022-cu12"
   replicas: 2
@@ -260,17 +260,16 @@ spec:
     endpointCert:
       issuerRef:
         apiGroup: cert-manager.io
-        name: mssqlserver-issuer
         kind: Issuer
+        name: mssqlserver-ca-issuer
   tls:
     issuerRef:
-      name: mssqlserver-issuer
+      apiGroup: cert-manager.io
       kind: Issuer
-      apiGroup: "cert-manager.io"
+      name: mssqlserver-ca-issuer
     clientTLS: false
   storageType: Durable
   storage:
-    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -401,7 +400,7 @@ id          type                                               quant       color
 
 (1 rows affected)
 
-# At this point we have 10 rows in our newly created `equipment` table on database demo. we will restore here.
+# At this point we have a table named `equipment` with 10 rows database `demo`. we will restore here.
 1> SELECT GETDATE();
 2> GO
                        
@@ -438,12 +437,9 @@ name
 
 We can’t restore from a full backup since at this point no full backup was perform. So we can choose a specific time in which time we want to restore.
 
-For the demo I will use the previous time,
+For the demo, I will use the time previous drop table,
 
 ```bash
-1> SELECT GETDATE();
-2> GO
-                       
 -----------------------
 2024-10-15 09:57:10.530
 ```
@@ -464,7 +460,7 @@ spec:
       encryptionSecret:
         name: encrypt-secret
         namespace: demo
-      recoveryTimestamp: "2024-10-15T09:57:10.530216Z"
+      recoveryTimestamp: "2024-10-15T09:57:10.530Z"
       fullDBRepository:
         name: sample-mssqlserver-ag-archiver
         namespace: demo
@@ -506,14 +502,14 @@ $ kubectl get pods -n demo
 NAME                                                 READY   STATUS      RESTARTS   AGE
 restored-mssqlserver-ag-0                            2/2     Running     0          2m10s
 restored-mssqlserver-ag-1                            2/2     Running     0          2m3s
-restored-mssqlserver-ag-manifest-restorer-7kpn8      0/1     Completed   0          65s
+restored-mssqlserver-ag-full-backup-restorer-7kpn8   0/1     Completed   0          65s
 restored-mssqlserver-ag-log-restorer-d9sjd           1/1     Running     0          11s
 restored-mssqlserver-ag-manifest-restorer-7kpn8      0/1     Completed   0          2m31s
 ```
 
 Here,
 - Pod `restored-mssqlserver-ag-manifest-restorer-7kpn8` is responsible for manifest restore. 
-- Pod `restored-mssqlserver-ag-manifest-restorer-7kpn8` is use for full-backup restore.
+- Pod `restored-mssqlserver-ag-full-backup-restorer-6kpny` is use for full-backup restore.
 - Pod `restored-mssqlserver-ag-log-restorer-d9sjd` is responsible for transaction logs restore.
 
 > Note: Restore process works sequentially. Manifest Restore --> Full-backup Restore -->  Transaction Logs Restore.
