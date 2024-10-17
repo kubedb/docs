@@ -21,7 +21,7 @@ Here we'll discuss some concepts about SingleStore Cluster.
 A `SingleStore cluster` is a distributed database system that consists of multiple servers (nodes) working together to provide high performance, scalability, and fault tolerance for data storage and processing. It is specifically designed to handle both transactional (OLTP) and analytical (OLAP) workloads, making it suitable for a wide range of real-time data use cases. Here’s a detailed look at what a SingleStore cluster is and how it functions:
 
 <figure align="center">
-  <img alt="SingleStore Cluster" src="/docs/guides/singlestore/clustering/overview/images/sdb-cluster.png">
+  <img alt="SingleStore Cluster" src="/docs/guides/singlestore/clustering/overview/images/sdb-cluster-2.png">
 <figcaption align="center">Fig: SingleStore Cluster</figcaption>
 </figure>
 
