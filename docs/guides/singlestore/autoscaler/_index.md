@@ -5,6 +5,6 @@ menu:
     identifier: sdb-auto-scaling
     name: Autoscaling
     parent: guides-singlestore
-    weight: 46
+    weight: 47
 menu_name: docs_{{ .version }}
 ---
