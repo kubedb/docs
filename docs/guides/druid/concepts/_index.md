@@ -5,6 +5,6 @@ menu:
     identifier: guides-druid-concepts
     name: Concepts
     parent: guides-druid
-    weight: 10
+    weight: 15
 menu_name: docs_{{ .version }}
 ---

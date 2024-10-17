@@ -531,7 +531,7 @@ Know details about KubeDB Health checking from this [blog post](https://appscode
 ## Next Steps
 
 - Learn how to use KubeDB to run Apache Druid cluster [here](/docs/guides/druid/README.md).
-- Deploy [dedicated topology cluster](/docs/guides/druid/clustering/topology-cluster/index.md) for Apache Druid
+- Deploy [dedicated topology cluster](/docs/guides/druid/clustering/topology-cluster-guide/index.md) for Apache Druid
 - Deploy [combined cluster](/docs/guides/druid/clustering/combined-cluster/index.md) for Apache Druid
 - Monitor your Druid cluster with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/druid/monitoring/using-prometheus-operator.md).
 - Detail concepts of [DruidVersion object](/docs/guides/druid/concepts/druidversion.md).
