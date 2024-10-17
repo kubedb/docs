@@ -39,7 +39,7 @@ spec:
             namespace: demo
         - name: s3-mysql-repo
           backend: s3-backend
-          directory: /mysql-copy
+          directory: /mysql
           encryptionSecret:
             name: encrypt-secret
             namespace: demo

@@ -1,0 +1,48 @@
+apiVersion: archiver.kubedb.com/v1alpha1
+kind: MSSQLServerArchiver
+metadata:
+  name: mssqlserverarchiver-sample
+  namespace: demo
+spec:
+  pause: false
+  databases:
+    namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          kubernetes.io/metadata.name: demo
+    selector:
+      matchLabels:
+        archiver: "true"
+  retentionPolicy:
+    name: demo-retention
+    namespace: demo
+  encryptionSecret:
+    name: encrypt-secret
+    namespace: demo
+  fullBackup:
+    driver: WalG
+    task:
+      params:
+        databases: demo
+    scheduler:
+      successfulJobsHistoryLimit: 1
+      failedJobsHistoryLimit: 1
+      schedule: "/30 * * * *"
+    sessionHistoryLimit: 2
+    jobTemplate:
+      spec:
+        securityContext:
+          runAsUser: 0
+  walBackup:
+    runtimeSettings:
+      pod:
+        securityContext:
+          runAsUser: 0
+      container:
+        securityContext:
+          runAsUser: 0
+  backupStorage:
+    ref:
+      name: gcs-storage
+      namespace: demo
