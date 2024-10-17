@@ -37,11 +37,9 @@ Read about the fields in details from [MSSQLServer Concepts](/docs/guides/mssqls
 `KubeDB` uses the `Issuer` or `ClusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificate` to generate certificate secrets using `Issuer/ClusterIssuers` specification. These certificates secrets including `ca.crt`, `server.crt` and `server.key` etc. are used to configure `MSSQLServer` server, exporter etc. respectively.
 
 
-# TODO......................
-
 ## How TLS/SSL configures in MSSQLServer
 
-The following figure shows how `KubeDB` enterprise used to configure TLS/SSL in MSSQLServer. Open the image in a new tab to see the enlarged version.
+The following figure shows how `KubeDB` used to configure TLS/SSL in MSSQLServer. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
 <img alt="Deploy MSSQLServer with TLS/SSL" src="/docs/images/day-2-operation/mssqlserver/ms-tls.svg">
@@ -50,17 +48,17 @@ The following figure shows how `KubeDB` enterprise used to configure TLS/SSL in 
 
 Deploying MSSQLServer with TLS/SSL configuration process consists of the following steps:
 
-1. At first, a user creates a `Issuer/ClusterIssuer` cr.
+1. At first, a user creates a `Issuer/ClusterIssuer` CR.
 
-2. Then the user creates a `MSSQLServer` cr which refers to the `Issuer/ClusterIssuer` cr that the user created in the previous step.
+2. Then the user creates a `MSSQLServer` CR which refers to the `Issuer/ClusterIssuer` CR that the user created in the previous step.
 
-3. `KubeDB` Provisioner  operator watches for the `MSSQLServer` cr.
+3. `KubeDB` Provisioner  operator watches for the `MSSQLServer` CR.
 
-4. When it finds one, it creates `Secret`, `Service`, etc. for the `MSSQLServer` database.
+4. When it finds one, it creates `Secret`, `Service`, etc. for the `MSSQLServer`.
 
 5. `KubeDB` Ops-manager operator watches for `MSSQLServer`(5c), `Issuer/ClusterIssuer`(5b), `Secret` and `Service`(5a).
 
-6. When it finds all the resources(`MSSQLServer`, `Issuer/ClusterIssuer`, `Secret`, `Service`), it creates `Certificates` by using `tls.issuerRef` and `tls.certificates` field specification from `MSSQLServer` cr.
+6. When it finds all the resources(`MSSQLServer`, `Issuer/ClusterIssuer`, `Secret`, `Service`), it creates `Certificates` by using `tls.issuerRef` and `tls.certificates` field specification from `MSSQLServer` CR.
 
 7. `cert-manager` watches for certificates.
 

@@ -193,6 +193,4 @@ issuer.cert-manager.io "mssqlserver-ca-issuer" deleted
 ## Next Steps
 
 - Detail concepts of [MSSQLServer object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
-- [Backup and Restore](/docs/guides/mssqlserver/backup/kubestash/overview/index.md) MSSQLServer databases using KubeStash. .
-- Monitor your MSSQLServer database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mssqlserver/monitoring/using-prometheus-operator.md).
-- Monitor your MSSQLServer database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mssqlserver/monitoring/using-builtin-prometheus.md).
+- [Backup and Restore](/docs/guides/mssqlserver/backup/overview/index.md) MSSQLServer databases using KubeStash. .
