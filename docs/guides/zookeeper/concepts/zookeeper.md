@@ -33,9 +33,13 @@ spec:
   replicas: 3
   disableAuth: false
   adminServerPort: 8080
+  clientSecurePort: 2182
   authSecret:
     name: zk-auth
     externallyManaged: false
+  keystoreCredSecret:
+    name: zk-quickstart-keystore-cred
+  enableSSL: true
   storage:
     storageClassName: "standard"
     accessModes:
@@ -83,6 +87,16 @@ spec:
     timeoutSeconds: 10
     failureThreshold: 2
     disableWriteCheck: false
+  tls:
+    certificates:
+      - alias: server
+        secretName: zk-quickstart-server-cert
+      - alias: client
+        secretName: zk-quickstart-client-cert
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: zookeeper-ca-issuer
 ```
 
 
@@ -94,6 +108,11 @@ spec:
 -  `3.8.3`
 -  `3.9.1`
 
+### spec.replicas
+
+`spec.replicas` the number of nodes in ZooKeeper cluster.
+
+KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
 
 ### spec.disableAuth
 
@@ -165,6 +184,77 @@ ZooKeeper managed by KubeDB can be monitored with builtin-Prometheus and Prometh
 ### spec.configSecret
 
 `spec.configSecret` is an optional field that allows users to provide custom configuration for ZooKeeper. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc.
+
+### spec.enableSSL
+
+`spec.enableSSL` is an `optional` field that specifies whether to enable TLS to HTTP layer. The default value of this field is `false`.
+
+```yaml
+spec:
+  enableSSL: true 
+```
+
+### spec.tls
+
+`spec.tls` specifies the TLS/SSL configurations. The KubeDB operator supports TLS management by using the [cert-manager](https://cert-manager.io/). Currently, the operator only supports the `PKCS#8` encoded certificates.
+
+```yaml
+spec:
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: zk-issuer
+    certificates:
+    - alias: server
+      privateKey:
+        encoding: PKCS8
+      secretName: zk-client-cert
+      subject:
+        organizations:
+        - kubedb
+    - alias: http
+      privateKey:
+        encoding: PKCS8
+      secretName: zk-server-cert
+      subject:
+        organizations:
+        - kubedb
+```
+
+The `spec.tls` contains the following fields:
+
+- `tls.issuerRef` - is an `optional` field that references to the `Issuer` or `ClusterIssuer` custom resource object of [cert-manager](https://cert-manager.io/docs/concepts/issuer/). It is used to generate the necessary certificate secrets for ZooKeeper. If the `issuerRef` is not specified, the operator creates a self-signed CA and also creates necessary certificate (valid: 365 days) secrets using that CA.
+  - `apiGroup` - is the group name of the resource that is being referenced. Currently, the only supported value is `cert-manager.io`.
+  - `kind` - is the type of resource that is being referenced. The supported values are `Issuer` and `ClusterIssuer`.
+  - `name` - is the name of the resource ( `Issuer` or `ClusterIssuer` ) that is being referenced.
+
+- `tls.certificates` - is an `optional` field that specifies a list of certificate configurations used to configure the  certificates. It has the following fields:
+  - `alias` - represents the identifier of the certificate. It has the following possible value:
+    - `server` - is used for the server certificate configuration.
+    - `client` - is used for the client certificate configuration.
+
+  - `secretName` - ( `string` | `"<database-name>-alias-cert"` ) - specifies the k8s secret name that holds the certificates.
+
+  - `subject` - specifies an `X.509` distinguished name (DN). It has the following configurable fields:
+    - `organizations` ( `[]string` | `nil` ) - is a list of organization names.
+    - `organizationalUnits` ( `[]string` | `nil` ) - is a list of organization unit names.
+    - `countries` ( `[]string` | `nil` ) -  is a list of country names (ie. Country Codes).
+    - `localities` ( `[]string` | `nil` ) - is a list of locality names.
+    - `provinces` ( `[]string` | `nil` ) - is a list of province names.
+    - `streetAddresses` ( `[]string` | `nil` ) - is a list of street addresses.
+    - `postalCodes` ( `[]string` | `nil` ) - is a list of postal codes.
+    - `serialNumber` ( `string` | `""` ) is a serial number.
+
+    For more details, visit [here](https://golang.org/pkg/crypto/x509/pkix/#Name).
+
+  - `duration` ( `string` | `""` ) - is the period during which the certificate is valid. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as `"300m"`, `"1.5h"` or `"20h45m"`. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+  - `renewBefore` ( `string` | `""` ) - is a specifiable time before expiration duration.
+  - `dnsNames` ( `[]string` | `nil` ) - is a list of subject alt names.
+  - `ipAddresses` ( `[]string` | `nil` ) - is a list of IP addresses.
+  - `uris` ( `[]string` | `nil` ) - is a list of URI Subject Alternative Names.
+  - `emailAddresses` ( `[]string` | `nil` ) - is a list of email Subject Alternative Names.
+
 
 ### spec.podTemplate
 
