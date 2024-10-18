@@ -35,6 +35,55 @@ Before proceeding:
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/druid/clustering/topology-cluster-guide/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/druid/clustering/topology-cluster-guide/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
+## Create External Dependency (Deep Storage)
+
+Before proceeding further, we need to prepare deep storage, which is one of the external dependency of Druid and used for storing the segments. It is a storage mechanism that Apache Druid does not provide. **Amazon S3**, **Google Cloud Storage**, or **Azure Blob Storage**, **S3-compatible storage** (like **Minio**), or **HDFS** are generally convenient options for deep storage.
+
+In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
+
+```bash
+
+$ helm repo add minio https://operator.min.io/
+$ helm repo update minio
+$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+
+$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+--set tenant.pools[0].servers=1 \
+--set tenant.pools[0].volumesPerServer=1 \
+--set tenant.pools[0].size=1Gi \
+--set tenant.certificate.requestAutoCert=false \
+--set tenant.buckets[0].name="druid" \
+--set tenant.pools[0].name="default"
+
+```
+
+Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: deep-storage-config
+  namespace: demo
+stringData:
+  druid.storage.type: "s3"
+  druid.storage.bucket: "druid"
+  druid.storage.baseKey: "druid/segments"
+  druid.s3.accessKey: "minio"
+  druid.s3.secretKey: "minio123"
+  druid.s3.protocol: "http"
+  druid.s3.enablePathStyleAccess: "true"
+  druid.s3.endpoint.signingRegion: "us-east-1"
+  druid.s3.endpoint.url: "http://myminio-hl.demo.svc.cluster.local:9000/"
+```
+
+Let’s create the `deep-storage-config` Secret shown above:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/application-level/examples/deep-storage-config.yaml
+secret/deep-storage-config created
+```
+
 ## Deploy Druid Cluster
 
 The following is an example `Druid` object which creates a Druid cluster of six nodes (coordinators, overlords, brokers, routers, historicals and middleManager). Each with one replica.

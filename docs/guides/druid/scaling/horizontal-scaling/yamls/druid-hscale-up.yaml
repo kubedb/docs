@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DruidOpsRequest
+metadata:
+    name: druid-hscale-up
+    namespace: demo
+spec:
+    type: HorizontalScaling
+    databaseRef:
+        name: druid-cluster
+    horizontalScaling:
+        topology:
+            coordinators: 2
+            historicals: 2
