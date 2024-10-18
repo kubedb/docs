@@ -1,5 +1,5 @@
 ---
-title: Vertical Scaling Kafka Topology Cluster
+title: Vertical Scaling Druid Cluster
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-scaling-vertical-scaling-guide
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Vertical Scale Kafka Topology Cluster
+# Vertical Scale Druid Topology Cluster
 
-This guide will show you how to use `KubeDB` Ops-manager operator to update the resources of a Kafka topology cluster.
+This guide will show you how to use `KubeDB` Ops-manager operator to update the resources of a Druid topology cluster.
 
 ## Before You Begin
 
@@ -23,10 +23,10 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 - Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Kafka](/docs/guides/kafka/concepts/kafka.md)
-    - [Topology](/docs/guides/kafka/clustering/topology-cluster/index.md)
-    - [KafkaOpsRequest](/docs/guides/kafka/concepts/kafkaopsrequest.md)
-    - [Vertical Scaling Overview](/docs/guides/kafka/scaling/vertical-scaling/overview.md)
+    - [Druid](/docs/guides/druid/concepts/druid.md)
+    - [Topology](/docs/guides/druid/clustering/topology-cluster/index.md)
+    - [DruidOpsRequest](/docs/guides/druid/concepts/druidopsrequest.md)
+    - [Vertical Scaling Overview](/docs/guides/druid/scaling/vertical-scaling/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -35,74 +35,110 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/kafka](/docs/examples/kafka) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/druid](/docs/examples/druid) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Apply Vertical Scaling on Topology Cluster
 
-Here, we are going to deploy a `Kafka` topology cluster using a supported version by `KubeDB` operator. Then we are going to apply vertical scaling on it.
+Here, we are going to deploy a `Druid` topology cluster using a supported version by `KubeDB` operator. Then we are going to apply vertical scaling on it.
 
-### Prepare Kafka Topology Cluster
+### Prepare Druid Topology Cluster
 
-Now, we are going to deploy a `Kafka` topology cluster database with version `3.6.1`.
+Now, we are going to deploy a `Druid` topology cluster database with version `28.0.1`.
 
-### Deploy Kafka Topology Cluster
+### Create External Dependency (Deep Storage)
 
-In this section, we are going to deploy a Kafka topology cluster. Then, in the next section we will update the resources of the database using `KafkaOpsRequest` CRD. Below is the YAML of the `Kafka` CR that we are going to create,
+Before proceeding further, we need to prepare deep storage, which is one of the external dependency of Druid and used for storing the segments. It is a storage mechanism that Apache Druid does not provide. **Amazon S3**, **Google Cloud Storage**, or **Azure Blob Storage**, **S3-compatible storage** (like **Minio**), or **HDFS** are generally convenient options for deep storage.
+
+In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
+
+```bash
+
+$ helm repo add minio https://operator.min.io/
+$ helm repo update minio
+$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+
+$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+--set tenant.pools[0].servers=1 \
+--set tenant.pools[0].volumesPerServer=1 \
+--set tenant.pools[0].size=1Gi \
+--set tenant.certificate.requestAutoCert=false \
+--set tenant.buckets[0].name="druid" \
+--set tenant.pools[0].name="default"
+
+```
+
+Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
 
 ```yaml
-apiVersion: kubedb.com/v1
-kind: Kafka
+apiVersion: v1
+kind: Secret
 metadata:
-  name: kafka-prod
+  name: deep-storage-config
+  namespace: demo
+stringData:
+  druid.storage.type: "s3"
+  druid.storage.bucket: "druid"
+  druid.storage.baseKey: "druid/segments"
+  druid.s3.accessKey: "minio"
+  druid.s3.secretKey: "minio123"
+  druid.s3.protocol: "http"
+  druid.s3.enablePathStyleAccess: "true"
+  druid.s3.endpoint.signingRegion: "us-east-1"
+  druid.s3.endpoint.url: "http://myminio-hl.demo.svc.cluster.local:9000/"
+```
+
+Let’s create the `deep-storage-config` Secret shown above:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/deep-storage-config.yaml
+secret/deep-storage-config created
+```
+
+### Deploy Druid Cluster
+
+In this section, we are going to deploy a Druid topology cluster. Then, in the next section we will update the resources of the database using `DruidOpsRequest` CRD. Below is the YAML of the `Druid` CR that we are going to create,
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Druid
+metadata:
+  name: druid-quickstart
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 28.0.1
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
   topology:
-    broker:
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
-    controller:
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
-  storageType: Durable
-  deletionPolicy: WipeOut
+    routers:
+      replicas: 1
+  deletionPolicy: Delete
 ```
 
-Let's create the `Kafka` CR we have shown above,
+Let's create the `Druid` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/kafka-topology.yaml
-kafka.kubedb.com/kafka-prod created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/scaling/vertical-scaling/yamls/druid-cluster.yaml
+druid.kubedb.com/druid-cluster created
 ```
 
-Now, wait until `kafka-prod` has status `Ready`. i.e,
+Now, wait until `druid-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
-NAME          TYPE            VERSION   STATUS         AGE
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   0s
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   24s
+$ kubectl get dr -n demo -w
+NAME             TYPE                  VERSION    STATUS         AGE
+druid-cluster    kubedb.com/v1aplha2   28.0.1     Provisioning   0s
+druid-cluster    kubedb.com/v1aplha2   28.0.1     Provisioning   24s
 .
 .
-kafka-prod    kubedb.com/v1   3.6.1     Ready          92s
+druid-cluster    kubedb.com/v1aplha2   28.0.1     Ready          92s
 ```
 
-Let's check the Pod containers resources for both `broker` and `controller` of the Kafka topology cluster. Run the following command to get the resources of the `broker` and `controller` containers of the Kafka topology cluster
+Let's check the Pod containers resources for both `coordinators` and `historicals` of the Druid topology cluster. Run the following command to get the resources of the `coordinators` and `historicals` containers of the Druid topology cluster
 
 ```bash
-$ kubectl get pod -n demo kafka-prod-broker-0 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo druid-cluster-coordinators-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
     "memory": "1Gi"
@@ -115,7 +151,7 @@ $ kubectl get pod -n demo kafka-prod-broker-0 -o json | jq '.spec.containers[].r
 ```
 
 ```bash
-$ kubectl get pod -n demo kafka-prod-controller-0 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo druid-cluster-historicals-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
     "memory": "1Gi"
@@ -126,30 +162,30 @@ $ kubectl get pod -n demo kafka-prod-controller-0 -o json | jq '.spec.containers
   }
 }
 ```
-This is the default resources of the Kafka topology cluster set by the `KubeDB` operator.
+This is the default resources of the Druid topology cluster set by the `KubeDB` operator.
 
-We are now ready to apply the `KafkaOpsRequest` CR to update the resources of this database.
+We are now ready to apply the `DruidOpsRequest` CR to update the resources of this database.
 
 ### Vertical Scaling
 
 Here, we are going to update the resources of the topology cluster to meet the desired resources after scaling.
 
-#### Create KafkaOpsRequest
+#### Create DruidOpsRequest
 
-In order to update the resources of the database, we have to create a `KafkaOpsRequest` CR with our desired resources. Below is the YAML of the `KafkaOpsRequest` CR that we are going to create,
+In order to update the resources of the database, we have to create a `DruidOpsRequest` CR with our desired resources. Below is the YAML of the `DruidOpsRequest` CR that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
-kind: KafkaOpsRequest
+kind: DruidOpsRequest
 metadata:
-  name: kfops-vscale-topology
+  name: druid-vscale
   namespace: demo
 spec:
   type: VerticalScaling
   databaseRef:
-    name: kafka-prod
+    name: druid-cluster
   verticalScaling:
-    broker:
+    coordinators:
       resources:
         requests:
           memory: "1.2Gi"
@@ -157,7 +193,7 @@ spec:
         limits:
           memory: "1.2Gi"
           cpu: "0.6"
-    controller:
+    historicals:
       resources:
         requests:
           memory: "1.1Gi"
@@ -171,39 +207,46 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `kafka-prod` cluster.
-- `spec.type` specifies that we are performing `VerticalScaling` on kafka.
-- `spec.VerticalScaling.node` specifies the desired resources after scaling.
+- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `druid-cluster` cluster.
+- `spec.type` specifies that we are performing `VerticalScaling` on druid.
+- `spec.VerticalScaling.coordinators` specifies the desired resources of `coordinators` node after scaling.
+- `spec.VerticalScaling.historicals` specifies the desired resources of `historicals` node after scaling.
 
-Let's create the `KafkaOpsRequest` CR we have shown above,
+> **Note:** Similarly you can scale other druid nodes vertically by specifying the following fields:
+> - For `overlords` use `spec.verticalScaling.overlords`.
+> - For `brokers` use `spec.verticalScaling.brokers`.
+> - For `middleManagers` use `spec.verticalScaling.middleManagers`.
+> - For `routers` use `spec.verticalScaling.routers`.
+
+Let's create the `DruidOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/vertical-scaling/kafka-vertical-scaling-topology.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-vscale-topology created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/druid-vscale.yaml
+druidopsrequest.ops.kubedb.com/druid-vscale created
 ```
 
-#### Verify Kafka Topology cluster resources updated successfully
+#### Verify Druid cluster resources have been updated successfully
 
-If everything goes well, `KubeDB` Ops-manager operator will update the resources of `Kafka` object and related `PetSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the resources of `Druid` object and related `PetSets` and `Pods`.
 
-Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CR,
+Let's wait for `DruidOpsRequest` to be `Successful`.  Run the following command to watch `DruidOpsRequest` CR,
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo
-NAME                     TYPE              STATUS       AGE
-kfops-vscale-topology    VerticalScaling   Successful   3m56s
+$ kubectl get druidopsrequest -n demo
+NAME            TYPE              STATUS       AGE
+druid-vscale    VerticalScaling   Successful   3m56s
 ```
 
-We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
+We can see from the above output that the `DruidOpsRequest` has succeeded. If we describe the `DruidOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kfops-vscale-topology
-Name:         kfops-vscale-topology
+$ kubectl describe druidopsrequest -n demo druid-vscale
+Name:         druid-vscale
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
-Kind:         KafkaOpsRequest
+Kind:         DruidOpsRequest
 Metadata:
   Creation Timestamp:  2024-08-02T06:09:46Z
   Generation:          1
@@ -212,7 +255,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Database Ref:
-    Name:   kafka-prod
+    Name:   druid-cluster
   Timeout:  5m
   Type:     VerticalScaling
   Vertical Scaling:
@@ -235,7 +278,7 @@ Spec:
 Status:
   Conditions:
     Last Transition Time:  2024-08-02T06:09:46Z
-    Message:               Kafka ops-request has started to vertically scaling the kafka nodes
+    Message:               Druid ops-request has started to vertically scaling the druid nodes
     Observed Generation:   1
     Reason:                VerticalScaling
     Status:                True
@@ -247,65 +290,65 @@ Status:
     Status:                True
     Type:                  UpdatePetSets
     Last Transition Time:  2024-08-02T06:09:55Z
-    Message:               get pod; ConditionStatus:True; PodName:kafka-prod-broker-0
+    Message:               get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
     Observed Generation:   1
     Status:                True
-    Type:                  GetPod--kafka-prod-broker-0
+    Type:                  GetPod--druid-cluster-coordinators-0
     Last Transition Time:  2024-08-02T06:09:55Z
-    Message:               evict pod; ConditionStatus:True; PodName:kafka-prod-broker-0
+    Message:               evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
     Observed Generation:   1
     Status:                True
-    Type:                  EvictPod--kafka-prod-broker-0
+    Type:                  EvictPod--druid-cluster-coordinators-0
     Last Transition Time:  2024-08-02T06:10:00Z
-    Message:               check pod running; ConditionStatus:True; PodName:kafka-prod-broker-0
+    Message:               check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0
     Observed Generation:   1
     Status:                True
-    Type:                  CheckPodRunning--kafka-prod-broker-0
+    Type:                  CheckPodRunning--druid-cluster-coordinators-0
     Last Transition Time:  2024-08-02T06:10:05Z
-    Message:               get pod; ConditionStatus:True; PodName:kafka-prod-broker-1
+    Message:               get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1
     Observed Generation:   1
     Status:                True
-    Type:                  GetPod--kafka-prod-broker-1
+    Type:                  GetPod--druid-cluster-coordinators-1
     Last Transition Time:  2024-08-02T06:10:05Z
-    Message:               evict pod; ConditionStatus:True; PodName:kafka-prod-broker-1
+    Message:               evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1
     Observed Generation:   1
     Status:                True
-    Type:                  EvictPod--kafka-prod-broker-1
+    Type:                  EvictPod--druid-cluster-coordinators-1
     Last Transition Time:  2024-08-02T06:10:15Z
-    Message:               check pod running; ConditionStatus:True; PodName:kafka-prod-broker-1
+    Message:               check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-1
     Observed Generation:   1
     Status:                True
-    Type:                  CheckPodRunning--kafka-prod-broker-1
+    Type:                  CheckPodRunning--druid-cluster-coordinators-1
     Last Transition Time:  2024-08-02T06:10:20Z
-    Message:               get pod; ConditionStatus:True; PodName:kafka-prod-controller-0
+    Message:               get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
     Observed Generation:   1
     Status:                True
-    Type:                  GetPod--kafka-prod-controller-0
+    Type:                  GetPod--druid-cluster-historicals-0
     Last Transition Time:  2024-08-02T06:10:20Z
-    Message:               evict pod; ConditionStatus:True; PodName:kafka-prod-controller-0
+    Message:               evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
     Observed Generation:   1
     Status:                True
-    Type:                  EvictPod--kafka-prod-controller-0
+    Type:                  EvictPod--druid-cluster-historicals-0
     Last Transition Time:  2024-08-02T06:10:35Z
-    Message:               check pod running; ConditionStatus:True; PodName:kafka-prod-controller-0
+    Message:               check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0
     Observed Generation:   1
     Status:                True
-    Type:                  CheckPodRunning--kafka-prod-controller-0
+    Type:                  CheckPodRunning--druid-cluster-historicals-0
     Last Transition Time:  2024-08-02T06:10:40Z
-    Message:               get pod; ConditionStatus:True; PodName:kafka-prod-controller-1
+    Message:               get pod; ConditionStatus:True; PodName:druid-cluster-historicals-1
     Observed Generation:   1
     Status:                True
-    Type:                  GetPod--kafka-prod-controller-1
+    Type:                  GetPod--druid-cluster-historicals-1
     Last Transition Time:  2024-08-02T06:10:40Z
-    Message:               evict pod; ConditionStatus:True; PodName:kafka-prod-controller-1
+    Message:               evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-1
     Observed Generation:   1
     Status:                True
-    Type:                  EvictPod--kafka-prod-controller-1
+    Type:                  EvictPod--druid-cluster-historicals-1
     Last Transition Time:  2024-08-02T06:10:55Z
-    Message:               check pod running; ConditionStatus:True; PodName:kafka-prod-controller-1
+    Message:               check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-1
     Observed Generation:   1
     Status:                True
-    Type:                  CheckPodRunning--kafka-prod-controller-1
+    Type:                  CheckPodRunning--druid-cluster-historicals-1
     Last Transition Time:  2024-08-02T06:11:00Z
     Message:               Successfully Restarted Pods With Resources
     Observed Generation:   1
@@ -313,7 +356,7 @@ Status:
     Status:                True
     Type:                  RestartPods
     Last Transition Time:  2024-08-02T06:11:00Z
-    Message:               Successfully completed the vertical scaling for kafka
+    Message:               Successfully completed the vertical scaling for druid
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -323,33 +366,33 @@ Status:
 Events:
   Type     Reason                                                                     Age    From                         Message
   ----     ------                                                                     ----   ----                         -------
-  Normal   Starting                                                                   3m32s  KubeDB Ops-manager Operator  Start processing for KafkaOpsRequest: demo/kfops-vscale-topology
-  Normal   Starting                                                                   3m32s  KubeDB Ops-manager Operator  Pausing Kafka databse: demo/kafka-prod
-  Normal   Successful                                                                 3m32s  KubeDB Ops-manager Operator  Successfully paused Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-vscale-topology
+  Normal   Starting                                                                   3m32s  KubeDB Ops-manager Operator  Start processing for DruidOpsRequest: demo/druid-vscale
+  Normal   Starting                                                                   3m32s  KubeDB Ops-manager Operator  Pausing Druid databse: demo/druid-cluster
+  Normal   Successful                                                                 3m32s  KubeDB Ops-manager Operator  Successfully paused Druid database: demo/druid-cluster for DruidOpsRequest: druid-vscale
   Normal   UpdatePetSets                                                              3m28s  KubeDB Ops-manager Operator  Successfully updated PetSets Resources
-  Warning  get pod; ConditionStatus:True; PodName:kafka-prod-broker-0                 3m23s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:kafka-prod-broker-0
-  Warning  evict pod; ConditionStatus:True; PodName:kafka-prod-broker-0               3m23s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:kafka-prod-broker-0
-  Warning  check pod running; ConditionStatus:True; PodName:kafka-prod-broker-0       3m18s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:kafka-prod-broker-0
-  Warning  get pod; ConditionStatus:True; PodName:kafka-prod-broker-1                 3m13s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:kafka-prod-broker-1
-  Warning  evict pod; ConditionStatus:True; PodName:kafka-prod-broker-1               3m13s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:kafka-prod-broker-1
-  Warning  check pod running; ConditionStatus:False; PodName:kafka-prod-broker-1      3m8s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:kafka-prod-broker-1
-  Warning  check pod running; ConditionStatus:True; PodName:kafka-prod-broker-1       3m3s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:kafka-prod-broker-1
-  Warning  get pod; ConditionStatus:True; PodName:kafka-prod-controller-0             2m58s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:kafka-prod-controller-0
-  Warning  evict pod; ConditionStatus:True; PodName:kafka-prod-controller-0           2m58s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:kafka-prod-controller-0
-  Warning  check pod running; ConditionStatus:False; PodName:kafka-prod-controller-0  2m53s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:kafka-prod-controller-0
-  Warning  check pod running; ConditionStatus:True; PodName:kafka-prod-controller-0   2m43s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:kafka-prod-controller-0
-  Warning  get pod; ConditionStatus:True; PodName:kafka-prod-controller-1             2m38s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:kafka-prod-controller-1
-  Warning  evict pod; ConditionStatus:True; PodName:kafka-prod-controller-1           2m38s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:kafka-prod-controller-1
-  Warning  check pod running; ConditionStatus:False; PodName:kafka-prod-controller-1  2m33s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:kafka-prod-controller-1
-  Warning  check pod running; ConditionStatus:True; PodName:kafka-prod-controller-1   2m23s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:kafka-prod-controller-1
+  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0                 3m23s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+  Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0               3m23s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0       3m18s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1                 3m13s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1
+  Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1               3m13s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1
+  Warning  check pod running; ConditionStatus:False; PodName:druid-cluster-coordinators-1      3m8s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:druid-cluster-coordinators-1
+  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-1       3m3s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-1
+  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0             2m58s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
+  Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0           2m58s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
+  Warning  check pod running; ConditionStatus:False; PodName:druid-cluster-historicals-0  2m53s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:druid-cluster-historicals-0
+  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0   2m43s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0
+  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-1             2m38s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-1
+  Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-1           2m38s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-1
+  Warning  check pod running; ConditionStatus:False; PodName:druid-cluster-historicals-1  2m33s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:druid-cluster-historicals-1
+  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-1   2m23s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-1
   Normal   RestartPods                                                                2m18s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
-  Normal   Starting                                                                   2m18s  KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
-  Normal   Successful                                                                 2m18s  KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-vscale-topology
+  Normal   Starting                                                                   2m18s  KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-cluster
+  Normal   Successful                                                                 2m18s  KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-cluster for DruidOpsRequest: druid-vscale
 ```
 Now, we are going to verify from one of the Pod yaml whether the resources of the topology cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo kafka-prod-broker-1 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo druid-cluster-coordinators-1 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
     "cpu": "600m",
@@ -360,7 +403,7 @@ $ kubectl get pod -n demo kafka-prod-broker-1 -o json | jq '.spec.containers[].r
     "memory": "1288490188800m"
   }
 }
-$ kubectl get pod -n demo kafka-prod-controller-1 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo druid-cluster-historicals-1 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
     "cpu": "600m",
@@ -373,23 +416,23 @@ $ kubectl get pod -n demo kafka-prod-controller-1 -o json | jq '.spec.containers
 }
 ```
 
-The above output verifies that we have successfully scaled up the resources of the Kafka topology cluster.
+The above output verifies that we have successfully scaled up the resources of the Druid topology cluster.
 
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete kf -n demo kafka-prod
-kubectl delete kafkaopsrequest -n demo kfops-vscale-topology
+kubectl delete dr -n demo druid-cluster
+kubectl delete druidopsrequest -n demo druid-vscale
 kubectl delete ns demo
 ```
 
 ## Next Steps
 
-- Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka.md).
-- Different Kafka topology clustering modes [here](/docs/guides/kafka/clustering/_index.md).
-- Monitor your Kafka database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/kafka/monitoring/using-prometheus-operator.md).
+- Detail concepts of [Druid object](/docs/guides/druid/concepts/druid.md).
+- Different Druid topology clustering modes [here](/docs/guides/druid/clustering/_index.md).
+- Monitor your Druid database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/druid/monitoring/using-prometheus-operator.md).
 
-[//]: # (- Monitor your Kafka database with KubeDB using [out-of-the-box builtin-Prometheus]&#40;/docs/guides/kafka/monitoring/using-builtin-prometheus.md&#41;.)
+[//]: # (- Monitor your Druid database with KubeDB using [out-of-the-box builtin-Prometheus]&#40;/docs/guides/druid/monitoring/using-builtin-prometheus.md&#41;.)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

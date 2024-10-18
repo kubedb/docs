@@ -1,10 +1,10 @@
 ---
-title: Scaling Druid
+title: Restart Druid
 menu:
   docs_{{ .version }}:
-    identifier: guides-druid-scaling
-    name: Scaling
+    identifier: guides-druid-restart
+    name: Restart
     parent: guides-druid
-    weight: 80
+    weight: 70
 menu_name: docs_{{ .version }}
 ---

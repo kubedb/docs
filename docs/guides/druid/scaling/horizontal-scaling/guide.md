@@ -120,7 +120,7 @@ spec:
 Let's create the `Druid` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/scaling/druid-topology.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/scaling/horizontal-scaling/yamls/druid-topology.yaml
 druid.kubedb.com/druid-cluster created
 ```
 
@@ -342,7 +342,7 @@ Here,
 - `spec.horizontalScaling.topology.coordinators` specifies the desired replicas after scaling for coordinators.
 - `spec.horizontalScaling.topology.historicals` specifies the desired replicas after scaling for historicals.
 
-> **Note:** Similarly you can scale other druid nodes by specifying the following fields:
+> **Note:** Similarly you can scale other druid nodes horizontally by specifying the following fields:
   > - For `overlords` use `spec.horizontalScaling.topology.overlords`.
   > - For `brokers` use `spec.horizontalScaling.topology.brokers`.
   > - For `middleManagers` use `spec.horizontalScaling.topology.middleManagers`.
