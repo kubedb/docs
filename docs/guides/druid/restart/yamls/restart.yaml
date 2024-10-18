@@ -1,13 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: DruidOpsRequest
 metadata:
-    name: druid-update-version
+    name: restart
     namespace: demo
 spec:
-    type: UpdateVersion
+    type: Restart
     databaseRef:
         name: druid-cluster
-    updateVersion:
-        targetVersion: 3.0.0
     timeout: 5m
-    apply: IfReady
+    apply: Always
