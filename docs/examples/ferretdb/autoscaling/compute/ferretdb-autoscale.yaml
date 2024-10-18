@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1alpha2
+kind: FerretDB
+metadata:
+  name: ferretdb-autoscale
+  namespace: demo
+spec:
+  version: "1.23.0"
+  replicas: 1
+  backend:
+    externallyManaged: false
+  podTemplate:
+    spec:
+      containers:
+        - name: ferretdb
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "300Mi"
+            limits:
+              cpu: "200m"
+              memory: "300Mi"
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 500Mi
+  deletionPolicy: WipeOut
