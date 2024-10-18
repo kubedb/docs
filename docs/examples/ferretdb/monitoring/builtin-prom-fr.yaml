@@ -4,7 +4,7 @@ metadata:
   name: builtin-prom-fr
   namespace: demo
 spec:
-  version: "1.18.0"
+  version: "1.23.0"
   storage:
     accessModes:
       - ReadWriteOnce

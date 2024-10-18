@@ -3,7 +3,7 @@ title: FerretDB TLS/SSL Encryption
 menu:
   docs_{{ .version }}:
     identifier: fr-tls-configure
-    name: FerretDB_SSL
+    name: FerretDB TLS/SSL Configuration
     parent: fr-tls
     weight: 20
 menu_name: docs_{{ .version }}
@@ -131,10 +131,10 @@ spec:
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ferretdb/tls/ferretdb-tls.yaml
-ferretdb.kubedb.com/pp-tls created
+ferretdb.kubedb.com/fr-tls created
 ```
 
-Now, wait until `pp-tls created` has status `Ready`. i.e,
+Now, wait until `fr-tls created` has status `Ready`. i.e,
 
 ```bash
 $ watch kubectl get fr -n demo
@@ -214,7 +214,7 @@ For mongosh info see: https://docs.mongodb.com/mongodb-shell/
 
 ------
    The server generated these startup warnings when booting
-   2024-03-12T05:56:50.979Z: Powered by FerretDB v1.18.0 and PostgreSQL 13.13 on x86_64-pc-linux-musl, compiled by gcc.
+   2024-03-12T05:56:50.979Z: Powered by FerretDB v1.23.0 and PostgreSQL 13.13 on x86_64-pc-linux-musl, compiled by gcc.
    2024-03-12T05:56:50.979Z: Please star us on GitHub: https://github.com/FerretDB/FerretDB.
    2024-03-12T05:56:50.979Z: The telemetry state is undecided.
    2024-03-12T05:56:50.979Z: Read more about FerretDB telemetry and how to opt out at https://beacon.ferretdb.io.

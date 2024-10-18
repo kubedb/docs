@@ -216,7 +216,7 @@ FerretDB managed by KubeDB can be monitored with builtin-Prometheus and Promethe
 
 ### spec.deletionPolicy
 
-`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Pgpool` CR or which resources KubeDB should keep or delete when you delete `Pgpool` CR. KubeDB provides following four deletion policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `FerretDB` CR or which resources KubeDB should keep or delete when you delete `FerretDB` CR. KubeDB provides following four deletion policies:
 
 - DoNotTerminate
 - Delete
@@ -224,7 +224,7 @@ FerretDB managed by KubeDB can be monitored with builtin-Prometheus and Promethe
 
 When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
-Following table show what KubeDB does when you delete Pgpool CR for different deletion policies,
+Following table show what KubeDB does when you delete FerretDB CR for different deletion policies,
 
 | Behavior                  | DoNotTerminate |    Delete    | WipeOut  |
 |---------------------------| :------------: |:------------:| :------: |
@@ -237,7 +237,7 @@ If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` deletion policy 
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for Pgpool.
+KubeDB allows providing a template for pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for FerretDB.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 

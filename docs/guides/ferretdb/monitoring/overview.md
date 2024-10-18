@@ -53,11 +53,16 @@ metadata:
   name: sample-ferretdb
   namespace: databases
 spec:
-  version: "4.5.0"
+  version: "1.23.0"
   deletionPolicy: WipeOut
-  postgresRef:
-    name: ha-postgres
-    namespace: demo
+  backend:
+    externallyManaged: false
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 500Mi
   monitor:
     agent: prometheus.io/operator
     prometheus:
