@@ -45,10 +45,10 @@ In this section, we are going to deploy a FerretDB without TLS. In the next few 
 apiVersion: kubedb.com/v1alpha2
 kind: FerretDB
 metadata:
-  name: ferretdb
+  name: ferretdb-x
   namespace: demo
 spec:
-  version: "1.23.0"
+  version: "1.18.0"
   storage:
     accessModes:
       - ReadWriteOnce
@@ -72,7 +72,7 @@ Now, wait until `ferretdb` has status `Ready`. i.e,
 ```bash
 $ kubectl get fr -n demo
 NAME       NAMESPACE   VERSION   STATUS   AGE
-ferretdb   demo        1.23.0    Ready    75s
+ferretdb   demo        1.18.0    Ready    75s
 
 $ kubectl dba describe ferretdb ferretdb -n demo
 Name:         ferretdb
@@ -138,7 +138,7 @@ Spec:
       Requests:
         Storage:  500Mi
   Storage Type:   Durable
-  Version:        1.23.0
+  Version:        1.18.0
 Status:
   Conditions:
     Last Transition Time:  2024-10-17T11:04:08Z
@@ -456,14 +456,7 @@ So, here we have connected using the client certificate and the connection is tl
 
 ## Rotate Certificate
 
-Now we are going to rotate the certificate of this database. First let's check the current expiration date of the certificate.
-
-```bash
-$ openssl x509 -in ./ca.crt -inform PEM -enddate -nameopt RFC2253 -noout
-notAfter=Oct 14 10:20:07 2025 GMT
-```
-
-So, the certificate will expire on this time `Oct 14 10:20:07 2025 GMT`.
+Now we are going to rotate the certificate of this database. First we can store the current expiration date of the certificate by exec into `ferretdb-0` pod. Certs are located in `/etc/certs/server/` path.
 
 ### Create FerretDBOpsRequest
 
@@ -639,14 +632,6 @@ Events:
   Normal   Successful                                                   16s   KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/ferretdb for FerretDBOpsRequest: frops-rotate
 ```
 
-Now, let's check the expiration date of the certificate.
-
-```bash
-$ kubectl exec -it -n demo ferretdb-0 -- bash                                                                                                 master ⬆ ⬇ ✱ ◼
-ferretdb-0:/$ openssl x509 -in /opt/ferretdb-II/tls/ca.pem -inform PEM -enddate -nameopt RFC2253 -noout
-notAfter=Oct 27 07:10:20 2024 GMT
-```
-
 As we can see from the above output, the certificate has been rotated successfully.
 
 ## Change Issuer/ClusterIssuer
@@ -702,7 +687,7 @@ In order to use the new issuer to issue new certificates, we have to create a `F
 apiVersion: ops.kubedb.com/v1alpha1
 kind: FerretDBOpsRequest
 metadata:
-  name: ppops-change-issuer
+  name: frops-change-issuer
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -724,8 +709,8 @@ Here,
 Let's create the `FerretDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ferretdb/reconfigure-tls/ppops-change-issuer.yaml
-ferretdbopsrequest.ops.kubedb.com/ppops-change-issuer created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ferretdb/reconfigure-tls/frops-change-issuer.yaml
+ferretdbopsrequest.ops.kubedb.com/frops-change-issuer created
 ```
 
 #### Verify Issuer is changed successfully
@@ -736,24 +721,24 @@ Let's wait for `FerretDBOpsRequest` to be `Successful`.  Run the following comma
 $ watch kubectl get ferretdbopsrequest -n demo
 Every 2.0s: kubectl get ferretdbopsrequest -n demo
 NAME                  TYPE             STATUS       AGE
-ppops-change-issuer   ReconfigureTLS   Successful   87s
+frops-change-issuer   ReconfigureTLS   Successful   87s
 ```
 
 We can see from the above output that the `FerretDBOpsRequest` has succeeded. If we describe the `FerretDBOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe ferretdbopsrequest -n demo ppops-change-issuer
-Name:         ppops-change-issuer
+$ kubectl describe ferretdbopsrequest -n demo frops-change-issuer
+Name:         frops-change-issuer
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         FerretDBOpsRequest
 Metadata:
-  Creation Timestamp:  2024-07-29T07:37:09Z
+  Creation Timestamp:  2024-10-18T10:14:38Z
   Generation:          1
-  Resource Version:    12367
-  UID:                 f48452ed-7264-4e99-80f1-58d7e826d9a9
+  Resource Version:    423126
+  UID:                 1bf730e8-603e-4f30-b9ab-5a4e75d3a4d4
 Spec:
   Apply:  IfReady
   Database Ref:
@@ -766,74 +751,83 @@ Spec:
   Type:           ReconfigureTLS
 Status:
   Conditions:
-    Last Transition Time:  2024-07-29T07:37:09Z
-    Message:               FerretDB ops-request has started to reconfigure tls for RabbitMQ nodes
+    Last Transition Time:  2024-10-18T10:14:38Z
+    Message:               FerretDB ops-request has started to reconfigure tls for FerretDB nodes
     Observed Generation:   1
     Reason:                ReconfigureTLS
     Status:                True
     Type:                  ReconfigureTLS
-    Last Transition Time:  2024-07-29T07:37:12Z
+    Last Transition Time:  2024-10-18T10:14:41Z
     Message:               Successfully paused database
     Observed Generation:   1
     Reason:                DatabasePauseSucceeded
     Status:                True
     Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-07-29T07:37:24Z
+    Last Transition Time:  2024-10-18T10:14:46Z
+    Message:               get certificate; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetCertificate
+    Last Transition Time:  2024-10-18T10:14:46Z
+    Message:               ready condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  ReadyCondition
+    Last Transition Time:  2024-10-18T10:14:46Z
+    Message:               issuing condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  IssuingCondition
+    Last Transition Time:  2024-10-18T10:14:46Z
     Message:               Successfully synced all certificates
     Observed Generation:   1
     Reason:                CertificateSynced
     Status:                True
     Type:                  CertificateSynced
-    Last Transition Time:  2024-07-29T07:37:18Z
-    Message:               get certificate; ConditionStatus:True
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetCertificate
-    Last Transition Time:  2024-07-29T07:37:18Z
-    Message:               check ready condition; ConditionStatus:True
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckReadyCondition
-    Last Transition Time:  2024-07-29T07:37:18Z
-    Message:               check issuing condition; ConditionStatus:True
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckIssuingCondition
-    Last Transition Time:  2024-07-29T07:37:30Z
-    Message:               successfully reconciled the FerretDB with TLS
+    Last Transition Time:  2024-10-18T10:14:51Z
+    Message:               successfully reconciled the FerretDB with tls configuration
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2024-07-29T07:38:15Z
-    Message:               Successfully Restarted FerretDB pods
-    Observed Generation:   1
-    Reason:                RestartPods
-    Status:                True
-    Type:                  RestartPods
-    Last Transition Time:  2024-07-29T07:37:35Z
+    Last Transition Time:  2024-10-18T10:14:56Z
     Message:               get pod; ConditionStatus:True; PodName:ferretdb-0
     Observed Generation:   1
     Status:                True
     Type:                  GetPod--ferretdb-0
-    Last Transition Time:  2024-07-29T07:37:35Z
+    Last Transition Time:  2024-10-18T10:14:56Z
     Message:               evict pod; ConditionStatus:True; PodName:ferretdb-0
     Observed Generation:   1
     Status:                True
     Type:                  EvictPod--ferretdb-0
-    Last Transition Time:  2024-07-29T07:38:10Z
+    Last Transition Time:  2024-10-18T10:15:01Z
     Message:               check pod running; ConditionStatus:True; PodName:ferretdb-0
     Observed Generation:   1
     Status:                True
     Type:                  CheckPodRunning--ferretdb-0
-    Last Transition Time:  2024-07-29T07:38:15Z
-    Message:               Successfully updated FerretDB
+    Last Transition Time:  2024-10-18T10:15:06Z
+    Message:               get pod; ConditionStatus:True; PodName:ferretdb-1
     Observed Generation:   1
-    Reason:                UpdateDatabase
     Status:                True
-    Type:                  UpdateDatabase
-    Last Transition Time:  2024-07-29T07:38:16Z
-    Message:               Successfully updated FerretDB TLS
+    Type:                  GetPod--ferretdb-1
+    Last Transition Time:  2024-10-18T10:15:06Z
+    Message:               evict pod; ConditionStatus:True; PodName:ferretdb-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--ferretdb-1
+    Last Transition Time:  2024-10-18T10:15:11Z
+    Message:               check pod running; ConditionStatus:True; PodName:ferretdb-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--ferretdb-1
+    Last Transition Time:  2024-10-18T10:15:16Z
+    Message:               Successfully restarted all nodes
+    Observed Generation:   1
+    Reason:                RestartNodes
+    Status:                True
+    Type:                  RestartNodes
+    Last Transition Time:  2024-10-18T10:15:16Z
+    Message:               Successfully completed the ReconfigureTLS for FerretDB
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -841,50 +835,33 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                      Age    From                         Message
-  ----     ------                                                      ----   ----                         -------
-  Normal   Starting                                                    3m39s  KubeDB Ops-manager Operator  Start processing for FerretDBOpsRequest: demo/ppops-change-issuer
-  Normal   Starting                                                    3m39s  KubeDB Ops-manager Operator  Pausing FerretDB databse: demo/ferretdb
-  Normal   Successful                                                  3m39s  KubeDB Ops-manager Operator  Successfully paused FerretDB database: demo/ferretdb for FerretDBOpsRequest: ppops-change-issuer
-  Warning  get certificate; ConditionStatus:True                       3m30s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
-  Warning  check ready condition; ConditionStatus:True                 3m30s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
-  Warning  check issuing condition; ConditionStatus:True               3m30s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
-  Warning  get certificate; ConditionStatus:True                       3m30s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
-  Warning  check ready condition; ConditionStatus:True                 3m30s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
-  Warning  check issuing condition; ConditionStatus:True               3m30s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
-  Warning  get certificate; ConditionStatus:True                       3m30s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
-  Warning  check ready condition; ConditionStatus:True                 3m30s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
-  Warning  check issuing condition; ConditionStatus:True               3m30s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
-  Normal   CertificateSynced                                           3m30s  KubeDB Ops-manager Operator  Successfully synced all certificates
-  Warning  get certificate; ConditionStatus:True                       3m25s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
-  Warning  check ready condition; ConditionStatus:True                 3m25s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
-  Warning  check issuing condition; ConditionStatus:True               3m24s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
-  Warning  get certificate; ConditionStatus:True                       3m24s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
-  Warning  check ready condition; ConditionStatus:True                 3m24s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
-  Warning  check issuing condition; ConditionStatus:True               3m24s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
-  Warning  get certificate; ConditionStatus:True                       3m24s  KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
-  Warning  check ready condition; ConditionStatus:True                 3m24s  KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
-  Warning  check issuing condition; ConditionStatus:True               3m24s  KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
-  Normal   CertificateSynced                                           3m24s  KubeDB Ops-manager Operator  Successfully synced all certificates
-  Normal   UpdatePetSets                                               3m18s  KubeDB Ops-manager Operator  successfully reconciled the FerretDB with TLS
-  Warning  get pod; ConditionStatus:True; PodName:ferretdb-0             3m13s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:ferretdb-0
-  Warning  evict pod; ConditionStatus:True; PodName:ferretdb-0           3m13s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:ferretdb-0
-  Warning  check pod running; ConditionStatus:False; PodName:ferretdb-0  3m8s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:ferretdb-0
-  Warning  check pod running; ConditionStatus:True; PodName:ferretdb-0   2m38s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:ferretdb-0
-  Normal   RestartPods                                                 2m33s  KubeDB Ops-manager Operator  Successfully Restarted FerretDB pods
-  Normal   Starting                                                    2m32s  KubeDB Ops-manager Operator  Resuming FerretDB database: demo/ferretdb
-  Normal   Successful                                                  2m32s  KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/ferretdb for FerretDBOpsRequest: ppops-change-issuer
+  Type     Reason                                                       Age   From                         Message
+  ----     ------                                                       ----  ----                         -------
+  Normal   Starting                                                     88s   KubeDB Ops-manager Operator  Start processing for FerretDBOpsRequest: demo/frops-change-issuer
+  Normal   Starting                                                     88s   KubeDB Ops-manager Operator  Pausing FerretDB database: demo/ferretdb
+  Normal   Successful                                                   88s   KubeDB Ops-manager Operator  Successfully paused FerretDB database: demo/ferretdb for FerretDBOpsRequest: frops-change-issuer
+  Warning  get certificate; ConditionStatus:True                        80s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  ready condition; ConditionStatus:True                        80s   KubeDB Ops-manager Operator  ready condition; ConditionStatus:True
+  Warning  issuing condition; ConditionStatus:True                      80s   KubeDB Ops-manager Operator  issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                        80s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  ready condition; ConditionStatus:True                        80s   KubeDB Ops-manager Operator  ready condition; ConditionStatus:True
+  Warning  issuing condition; ConditionStatus:True                      80s   KubeDB Ops-manager Operator  issuing condition; ConditionStatus:True
+  Normal   CertificateSynced                                            80s   KubeDB Ops-manager Operator  Successfully synced all certificates
+  Normal   UpdatePetSets                                                75s   KubeDB Ops-manager Operator  successfully reconciled the FerretDB with tls configuration
+  Warning  get pod; ConditionStatus:True; PodName:ferretdb-0            70s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:ferretdb-0
+  Warning  evict pod; ConditionStatus:True; PodName:ferretdb-0          70s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:ferretdb-0
+  Warning  check pod running; ConditionStatus:True; PodName:ferretdb-0  65s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:ferretdb-0
+  Warning  get pod; ConditionStatus:True; PodName:ferretdb-1            60s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:ferretdb-1
+  Warning  evict pod; ConditionStatus:True; PodName:ferretdb-1          60s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:ferretdb-1
+  Warning  check pod running; ConditionStatus:True; PodName:ferretdb-1  55s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:ferretdb-1
+  Normal   RestartNodes                                                 50s   KubeDB Ops-manager Operator  Successfully restarted all nodes
+  Normal   Starting                                                     50s   KubeDB Ops-manager Operator  Resuming FerretDB database: demo/ferretdb
+  Normal   Successful                                                   50s   KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/ferretdb for FerretDBOpsRequest: frops-change-issuer
 ```
 
-Now, Let's exec ferretdb and find out the ca subject to see if it matches the one we have provided.
+Now, If exec ferretdb and find out the ca subject in `/etc/certs/server` location, we can see that the CN and O is updated according to out new ca.crt.
 
-```bash
-$ kubectl exec -it -n demo ferretdb-0 -- bash
-ferretdb-0:/$ openssl x509 -in /opt/ferretdb-II/tls/ca.pem -inform PEM -subject -nameopt RFC2253 -noout
-subject=O=kubedb-updated,CN=ca-updated
-```
-
-We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
+We can see that subject name of this ca.crt matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
 ## Remove TLS from the ferretdb
 
@@ -898,7 +875,7 @@ Below is the YAML of the `FerretDBOpsRequest` CRO that we are going to create,
 apiVersion: ops.kubedb.com/v1alpha1
 kind: FerretDBOpsRequest
 metadata:
-  name: ppops-remove
+  name: frops-remove
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -917,8 +894,8 @@ Here,
 Let's create the `FerretDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ferretdb/reconfigure-tls/ppops-remove.yaml
-ferretdbopsrequest.ops.kubedb.com/ppops-remove created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ferretdb/reconfigure-tls/frops-remove.yaml
+ferretdbopsrequest.ops.kubedb.com/frops-remove created
 ```
 
 #### Verify TLS Removed Successfully
@@ -929,24 +906,24 @@ Let's wait for `FerretDBOpsRequest` to be `Successful`.  Run the following comma
 $ wacth kubectl get ferretdbopsrequest -n demo
 Every 2.0s: kubectl get ferretdbopsrequest -n demo
 NAME           TYPE             STATUS       AGE
-ppops-remove   ReconfigureTLS   Successful   65s
+frops-remove   ReconfigureTLS   Successful   65s
 ```
 
 We can see from the above output that the `FerretDBOpsRequest` has succeeded. If we describe the `FerretDBOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe ferretdbopsrequest -n demo ppops-remove
-Name:         ppops-remove
+$ kubectl describe ferretdbopsrequest -n demo frops-remove
+Name:         frops-remove
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         FerretDBOpsRequest
 Metadata:
-  Creation Timestamp:  2024-07-29T08:38:35Z
+  Creation Timestamp:  2024-10-18T11:11:55Z
   Generation:          1
-  Resource Version:    16378
-  UID:                 f848e04f-0fd1-48ce-813d-67dbdc3e4a55
+  Resource Version:    428244
+  UID:                 28a6ba72-0a2d-47f1-97b0-1e9609845acc
 Spec:
   Apply:  IfReady
   Database Ref:
@@ -956,53 +933,62 @@ Spec:
   Type:      ReconfigureTLS
 Status:
   Conditions:
-    Last Transition Time:  2024-07-29T08:38:37Z
-    Message:               FerretDB ops-request has started to reconfigure tls for RabbitMQ nodes
+    Last Transition Time:  2024-10-18T11:11:55Z
+    Message:               FerretDB ops-request has started to reconfigure tls for FerretDB nodes
     Observed Generation:   1
     Reason:                ReconfigureTLS
     Status:                True
     Type:                  ReconfigureTLS
-    Last Transition Time:  2024-07-29T08:38:41Z
+    Last Transition Time:  2024-10-18T11:11:58Z
     Message:               Successfully paused database
     Observed Generation:   1
     Reason:                DatabasePauseSucceeded
     Status:                True
     Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-07-29T08:38:47Z
-    Message:               successfully reconciled the FerretDB with TLS
+    Last Transition Time:  2024-10-18T11:12:04Z
+    Message:               successfully reconciled the FerretDB with tls configuration
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2024-07-29T08:39:32Z
-    Message:               Successfully Restarted FerretDB pods
-    Observed Generation:   1
-    Reason:                RestartPods
-    Status:                True
-    Type:                  RestartPods
-    Last Transition Time:  2024-07-29T08:38:52Z
+    Last Transition Time:  2024-10-18T11:12:09Z
     Message:               get pod; ConditionStatus:True; PodName:ferretdb-0
     Observed Generation:   1
     Status:                True
     Type:                  GetPod--ferretdb-0
-    Last Transition Time:  2024-07-29T08:38:52Z
+    Last Transition Time:  2024-10-18T11:12:09Z
     Message:               evict pod; ConditionStatus:True; PodName:ferretdb-0
     Observed Generation:   1
     Status:                True
     Type:                  EvictPod--ferretdb-0
-    Last Transition Time:  2024-07-29T08:39:27Z
+    Last Transition Time:  2024-10-18T11:12:14Z
     Message:               check pod running; ConditionStatus:True; PodName:ferretdb-0
     Observed Generation:   1
     Status:                True
     Type:                  CheckPodRunning--ferretdb-0
-    Last Transition Time:  2024-07-29T08:39:32Z
-    Message:               Successfully updated FerretDB
+    Last Transition Time:  2024-10-18T11:12:19Z
+    Message:               get pod; ConditionStatus:True; PodName:ferretdb-1
     Observed Generation:   1
-    Reason:                UpdateDatabase
     Status:                True
-    Type:                  UpdateDatabase
-    Last Transition Time:  2024-07-29T08:39:33Z
-    Message:               Successfully updated FerretDB TLS
+    Type:                  GetPod--ferretdb-1
+    Last Transition Time:  2024-10-18T11:12:19Z
+    Message:               evict pod; ConditionStatus:True; PodName:ferretdb-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--ferretdb-1
+    Last Transition Time:  2024-10-18T11:12:24Z
+    Message:               check pod running; ConditionStatus:True; PodName:ferretdb-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--ferretdb-1
+    Last Transition Time:  2024-10-18T11:12:29Z
+    Message:               Successfully restarted all nodes
+    Observed Generation:   1
+    Reason:                RestartNodes
+    Status:                True
+    Type:                  RestartNodes
+    Last Transition Time:  2024-10-18T11:12:29Z
+    Message:               Successfully completed the ReconfigureTLS for FerretDB
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -1010,64 +996,61 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                      Age   From                         Message
-  ----     ------                                                      ----  ----                         -------
-  Normal   Starting                                                    84s   KubeDB Ops-manager Operator  Start processing for FerretDBOpsRequest: demo/ppops-remove
-  Normal   Starting                                                    84s   KubeDB Ops-manager Operator  Pausing FerretDB databse: demo/ferretdb
-  Normal   Successful                                                  83s   KubeDB Ops-manager Operator  Successfully paused FerretDB database: demo/ferretdb for FerretDBOpsRequest: ppops-remove
-  Normal   UpdatePetSets                                               74s   KubeDB Ops-manager Operator  successfully reconciled the FerretDB with TLS
-  Warning  get pod; ConditionStatus:True; PodName:ferretdb-0             69s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:ferretdb-0
-  Warning  evict pod; ConditionStatus:True; PodName:ferretdb-0           69s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:ferretdb-0
-  Warning  check pod running; ConditionStatus:False; PodName:ferretdb-0  64s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:ferretdb-0
-  Warning  check pod running; ConditionStatus:True; PodName:ferretdb-0   34s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:ferretdb-0
-  Normal   RestartPods                                                 29s   KubeDB Ops-manager Operator  Successfully Restarted FerretDB pods
-  Normal   Starting                                                    29s   KubeDB Ops-manager Operator  Resuming FerretDB database: demo/ferretdb
-  Normal   Successful                                                  28s   KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/ferretdb for FerretDBOpsRequest: ppops-remove
+  Type     Reason                                                       Age   From                         Message
+  ----     ------                                                       ----  ----                         -------
+  Normal   Starting                                                     87s   KubeDB Ops-manager Operator  Start processing for FerretDBOpsRequest: demo/frops-remove
+  Normal   Starting                                                     87s   KubeDB Ops-manager Operator  Pausing FerretDB database: demo/ferretdb
+  Normal   Successful                                                   87s   KubeDB Ops-manager Operator  Successfully paused FerretDB database: demo/ferretdb for FerretDBOpsRequest: frops-remove
+  Normal   UpdatePetSets                                                78s   KubeDB Ops-manager Operator  successfully reconciled the FerretDB with tls configuration
+  Warning  get pod; ConditionStatus:True; PodName:ferretdb-0            73s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:ferretdb-0
+  Warning  evict pod; ConditionStatus:True; PodName:ferretdb-0          73s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:ferretdb-0
+  Warning  check pod running; ConditionStatus:True; PodName:ferretdb-0  68s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:ferretdb-0
+  Warning  get pod; ConditionStatus:True; PodName:ferretdb-1            63s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:ferretdb-1
+  Warning  evict pod; ConditionStatus:True; PodName:ferretdb-1          63s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:ferretdb-1
+  Warning  check pod running; ConditionStatus:True; PodName:ferretdb-1  58s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:ferretdb-1
+  Normal   RestartNodes                                                 53s   KubeDB Ops-manager Operator  Successfully restarted all nodes
+  Normal   Starting                                                     53s   KubeDB Ops-manager Operator  Resuming FerretDB database: demo/ferretdb
+  Normal   Successful                                                   53s   KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/ferretdb for FerretDBOpsRequest: frops-remove
 ```
 
-Now, Let's exec into ferretdb and find out that TLS is disabled or not.
+Now, Let's try to connect with ferretdb without TLS certs.
 
 ```bash
-$ kubectl exec -it -n demo ferretdb-0 -- bash
-ferretdb-0:/$ cat opt/ferretdb-II/etc/ferretdb.conf
-backend_hostname0 = 'ha-postgres.demo.svc'
-backend_port0 = 5432
-backend_weight0 = 1
-backend_flag0 = 'ALWAYS_PRIMARY|DISALLOW_TO_FAILOVER'
-backend_hostname1 = 'ha-postgres-standby.demo.svc'
-backend_port1 = 5432
-backend_weight1 = 1
-backend_flag1 = 'DISALLOW_TO_FAILOVER'
-enable_pool_hba = on
-listen_addresses = *
-port = 9999
-socket_dir = '/var/run/ferretdb'
-pcp_listen_addresses = *
-pcp_port = 9595
-pcp_socket_dir = '/var/run/ferretdb'
-log_per_node_statement = on
-sr_check_period = 0
-health_check_period = 0
-backend_clustering_mode = 'streaming_replication'
-num_init_children = 5
-max_pool = 15
-child_life_time = 300
-child_max_connections = 0
-connection_life_time = 0
-client_idle_limit = 0
-connection_cache = on
-load_balance_mode = on
-ssl = 'off'
-failover_on_backend_error = 'off'
-log_min_messages = 'warning'
-statement_level_load_balance = 'off'
-memory_cache_enabled = 'off'
-memqcache_oiddir = '/tmp/oiddir/'
-allow_clear_text_frontend_auth = 'false'
-failover_on_backend_error = 'off'
+$ kubectl get secrets -n demo ferret-auth -o jsonpath='{.data.\username}' | base64 -d
+postgres
+$ kubectl get secrets -n demo ferret-auth -o jsonpath='{.data.\\password}' | base64 -d
+l*jGp8u*El8WRSDJ
+
+$ kubectl port-forward svc/ferret -n demo 27017
+Forwarding from 127.0.0.1:27017 -> 27017
+Forwarding from [::1]:27017 -> 27017
+Handling connection for 27017
+Handling connection for 27017
 ```
 
-We can see from the above output that `ssl='off'` so we can verify that TLS is disabled successfully for this ferretdb.
+Now in another terminal
+
+```bash
+$ mongosh 'mongodb://postgres:l*jGp8u*El8WRSDJ@localhost:27017/ferretdb?authMechanism=PLAIN'
+Current Mongosh Log ID:	65efeea2a3347fff66d04c70
+Connecting to:		mongodb://<credentials>@localhost:27017/ferretdb?authMechanism=PLAIN&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.5
+Using MongoDB:		7.0.42
+Using Mongosh:		2.1.5
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2024-03-12T05:56:50.979Z: Powered by FerretDB v1.18.0 and PostgreSQL 13.13 on x86_64-pc-linux-musl, compiled by gcc.
+   2024-03-12T05:56:50.979Z: Please star us on GitHub: https://github.com/FerretDB/FerretDB.
+   2024-03-12T05:56:50.979Z: The telemetry state is undecided.
+   2024-03-12T05:56:50.979Z: Read more about FerretDB telemetry and how to opt out at https://beacon.ferretdb.io.
+------
+
+ferretdb>
+```
+
+We can see that we can now connect without providing TLS certs. So TLS connection is successfully disabled
 
 ## Cleaning up
 
@@ -1076,8 +1059,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl delete ferretdb -n demo ferretdb
 kubectl delete issuer -n demo ferretdb-issuer fr-new-issuer
-kubectl delete ferretdbopsrequest -n demo ppops-add-tls ppops-remove ppops-rotate ppops-change-issuer
-kubectl delete pg -n demo ha-postgres
+kubectl delete ferretdbopsrequest -n demo frops-add-tls frops-remove frops-rotate frops-change-issuer
 kubectl delete ns demo
 ```
 
