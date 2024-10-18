@@ -20,7 +20,7 @@ This guide will give you how you can take application-level backup and restore y
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using `Minikube` or `Kind`.
-- Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md) and make sure to include the flags `--set global.featureGates.Druid=true` to ensure **Druid CRD** and `--set global.featureGates.ZooKeeper=true` to ensure **ZooKeeper CRD** as Druid depends on ZooKeeper for external dependency with helm command.
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
 - If you are not familiar with how KubeStash backup and restore Druid databases, please check the following guide [here](/docs/guides/druid/backup/overview/index.md).
@@ -51,7 +51,6 @@ KubeStash supports backups for `Druid` instances for various Cluster setups. In 
 This section will demonstrate how to take application-level backup of a `Druid` database. Here, we are going to deploy a `Druid` database using KubeDB. Then, we are going to back up the database at the application level to a `GCS` bucket. Finally, we will restore the entire `Druid` database.
 
 ## Deploy Sample Druid Database
-
 
 **Create External Dependency (Deep Storage):**
 

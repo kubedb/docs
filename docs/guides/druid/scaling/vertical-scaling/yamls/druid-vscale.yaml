@@ -1,0 +1,28 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DruidOpsRequest
+metadata:
+    name: druid-vscale
+    namespace: demo
+spec:
+    type: VerticalScaling
+    databaseRef:
+        name: druid-cluster
+    verticalScaling:
+        coordinators:
+            resources:
+                requests:
+                    memory: "1.2Gi"
+                    cpu: "0.6"
+                limits:
+                    memory: "1.2Gi"
+                    cpu: "0.6"
+        historicals:
+            resources:
+                requests:
+                    memory: "1.1Gi"
+                    cpu: "0.6"
+                limits:
+                    memory: "1.1Gi"
+                    cpu: "0.6"
+    timeout: 5m
+    apply: IfReady
