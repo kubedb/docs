@@ -3,7 +3,7 @@ title: FerretDB Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: fr-auto-scaling-ferretdb
-    name: ferretdbCompute
+    name: Ferretdb Compute Autoscaling
     parent: fr-compute-auto-scaling
     weight: 15
 menu_name: docs_{{ .version }}

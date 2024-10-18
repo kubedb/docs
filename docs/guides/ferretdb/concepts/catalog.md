@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is FerretDBVersion
 
-`FerretDBVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [FerretDB](https://ferretdb.net/) server deployed with KubeDB in a Kubernetes native way.
+`FerretDBVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [FerretDB](https://ferretdb.com/) server deployed with KubeDB in a Kubernetes native way.
 
 When you install KubeDB, a `FerretDBVersion` custom resource will be created automatically for every supported FerretDB release versions. You have to specify the name of `FerretDBVersion` crd in `spec.version` field of [FerretDB](/docs/guides/ferretdb/concepts/ferretdb.md) crd. Then, KubeDB will use the docker images specified in the `FerretDBVersion` crd to create your expected FerretDB instance.
 

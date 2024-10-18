@@ -350,8 +350,7 @@ Check the `endpoint` and `service` labels marked by the red rectangles. It verif
 To clean up the Kubernetes resources created by this tutorial, run following commands
 
 ```bash
-kubectl delete -n demo pp/coreos-prom-pp
-kubectl delete -n demo pg/ha-postgres
+kubectl delete -n demo fr/coreos-prom-fr
 kubectl delete ns demo
 ```
 
