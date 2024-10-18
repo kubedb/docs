@@ -5,6 +5,6 @@ menu:
     identifier: guides-druid-clustering
     name: Druid Clustering
     parent: guides-druid
-    weight: 20
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

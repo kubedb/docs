@@ -3,7 +3,7 @@ title: Druid Topology Cluster Overview
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-clustering-topology-cluster-overview
-    name: Druid Group Replication Overview
+    name: Druid Topology Cluster Overview
     parent: guides-druid-clustering
     weight: 15
 menu_name: docs_{{ .version }}

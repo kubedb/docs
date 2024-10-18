@@ -3,8 +3,8 @@ title: Run Druid with Custom Configuration
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-configuration
-    name: Configuration
+    name: Custom Configuration
     parent: guides-druid
-    weight: 25
+    weight: 40
 menu_name: docs_{{ .version }}
 ---
