@@ -21,7 +21,7 @@ In Druid cluster, there are six nodes available coordinators, overlords, brokers
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- - Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md) and make sure to include the flags `--set global.featureGates.Druid=true` to ensure **Druid CRD** and `--set global.featureGates.ZooKeeper=true` to ensure **ZooKeeper CRD** as Druid depends on ZooKeeper for external dependency with helm command.
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md) and make sure to include the flags `--set global.featureGates.Druid=true` to ensure **Druid CRD** and `--set global.featureGates.ZooKeeper=true` to ensure **ZooKeeper CRD** as Druid depends on ZooKeeper for external dependency with helm command.
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -47,6 +47,57 @@ standard (default)   rancher.io/local-path   Delete          WaitForFirstConsume
 ```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
+
+Before deploying `Druid` cluster, we need to prepare the external dependencies.
+
+## Create External Dependency (Deep Storage)
+
+Before proceeding further, we need to prepare deep storage, which is one of the external dependency of Druid and used for storing the segments. It is a storage mechanism that Apache Druid does not provide. **Amazon S3**, **Google Cloud Storage**, or **Azure Blob Storage**, **S3-compatible storage** (like **Minio**), or **HDFS** are generally convenient options for deep storage.
+
+In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
+
+```bash
+
+$ helm repo add minio https://operator.min.io/
+$ helm repo update minio
+$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+
+$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+--set tenant.pools[0].servers=1 \
+--set tenant.pools[0].volumesPerServer=1 \
+--set tenant.pools[0].size=1Gi \
+--set tenant.certificate.requestAutoCert=false \
+--set tenant.buckets[0].name="druid" \
+--set tenant.pools[0].name="default"
+
+```
+
+Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: deep-storage-config
+  namespace: demo
+stringData:
+  druid.storage.type: "s3"
+  druid.storage.bucket: "druid"
+  druid.storage.baseKey: "druid/segments"
+  druid.s3.accessKey: "minio"
+  druid.s3.secretKey: "minio123"
+  druid.s3.protocol: "http"
+  druid.s3.enablePathStyleAccess: "true"
+  druid.s3.endpoint.signingRegion: "us-east-1"
+  druid.s3.endpoint.url: "http://myminio-hl.demo.svc.cluster.local:9000/"
+```
+
+Let’s create the `deep-storage-config` Secret shown above:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/application-level/examples/deep-storage-config.yaml
+secret/deep-storage-config created
+```
 
 ## Use Custom Configuration
 

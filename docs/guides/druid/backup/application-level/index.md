@@ -52,7 +52,6 @@ This section will demonstrate how to take application-level backup of a `Druid` 
 
 ## Deploy Sample Druid Database
 
-
 **Create External Dependency (Deep Storage):**
 
 One of the external dependency of Druid is deep storage where the segments are stored. It is a storage mechanism that Apache Druid does not provide. **Amazon S3**, **Google Cloud Storage**, or **Azure Blob Storage**, **S3-compatible storage** (like **Minio**), or **HDFS** are generally convenient options for deep storage.
