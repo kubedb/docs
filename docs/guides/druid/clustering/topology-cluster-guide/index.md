@@ -111,226 +111,744 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 druid.kubedb.com/druid-cluster created
 ```
 
-KubeDB operator watches for `Druid` objects using Kubernetes API. When a `Druid` object is created, KubeDB operator will create a new PetSet and a Service with the matching Druid object name. KubeDB operator will also create a governing service for the PetSet with the name `<druid-object-name>-pods`.
+KubeDB operator watches for `Druid` objects using Kubernetes API. When a `Druid` object is created, KubeDB operator will create new PetSets and Services with the matching Druid object name. KubeDB operator will also create a governing service for the PetSet with the name `<druid-object-name>-pods`.
 
 ```bash
-$ kubectl dba describe my -n demo druid-cluster
-Name:               druid-cluster
-Namespace:          demo
-CreationTimestamp:  Tue, 28 Jun 2022 17:54:10 +0600
-Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"Druid","metadata":{"annotations":{},"name":"druid-cluster","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
-Replicas:           3  total
-Status:             Provisioning
-StorageType:        Durable
-Volume:
-  StorageClass:      standard
-  Capacity:          1Gi
-  Access Modes:      RWO
-Paused:              false
-Halted:              false
-Termination Policy:  WipeOut
-
-PetSet:          
-  Name:               druid-cluster
-  CreationTimestamp:  Tue, 28 Jun 2022 17:54:10 +0600
-  Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=druid-cluster
-                        app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=druids.kubedb.com
-  Annotations:        <none>
-  Replicas:           824640792392 desired | 3 total
-  Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
-
-Service:        
-  Name:         druid-cluster
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=druid-cluster
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=druids.kubedb.com
-  Annotations:  <none>
-  Type:         ClusterIP
-  IP:           10.96.223.45
-  Port:         primary  3306/TCP
-  TargetPort:   db/TCP
-  Endpoints:    10.244.0.44:3306
-
-Service:        
-  Name:         druid-cluster-pods
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=druid-cluster
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=druids.kubedb.com
-  Annotations:  <none>
-  Type:         ClusterIP
-  IP:           None
-  Port:         db  3306/TCP
-  TargetPort:   db/TCP
-  Endpoints:    10.244.0.44:3306,10.244.0.46:3306,10.244.0.48:3306
-
-Service:        
-  Name:         druid-cluster-standby
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=druid-cluster
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=druids.kubedb.com
-  Annotations:  <none>
-  Type:         ClusterIP
-  IP:           10.96.70.224
-  Port:         standby  3306/TCP
-  TargetPort:   db/TCP
-  Endpoints:    <none>
-
-Auth Secret:
-  Name:         druid-cluster-auth
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=druid-cluster
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=druids.kubedb.com
-  Annotations:  <none>
-  Type:         kubernetes.io/basic-auth
-  Data:
-    password:  16 bytes
-    username:  4 bytes
-
-AppBinding:
-  Metadata:
-    Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"Druid","metadata":{"annotations":{},"name":"druid-cluster","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"group":{"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.35"}}
-
-    Creation Timestamp:  2022-06-28T11:54:10Z
-    Labels:
-      app.kubernetes.io/component:   database
-      app.kubernetes.io/instance:    druid-cluster
-      app.kubernetes.io/managed-by:  kubedb.com
-      app.kubernetes.io/name:        druids.kubedb.com
-    Name:                            druid-cluster
-    Namespace:                       demo
-  Spec:
-    Client Config:
-      Service:
-        Name:    druid-cluster
-        Path:    /
-        Port:    3306
-        Scheme:  druid
-      URL:       tcp(druid-cluster.demo.svc:3306)/
-    Parameters:
-      API Version:  appcatalog.appscode.com/v1alpha1
-      Kind:         StashAddon
-      Stash:
-        Addon:
-          Backup Task:
-            Name:  druid-backup-8.0.21
-            Params:
-              Name:   args
-              Value:  --all-databases --set-gtid-purged=OFF
-          Restore Task:
-            Name:  druid-restore-8.0.21
-    Secret:
-      Name:   druid-cluster-auth
-    Type:     kubedb.com/druid
-    Version:  8.0.35
-
-Events:
-  Type     Reason      Age   From               Message
-  ----     ------      ----  ----               -------
-  Normal   Successful  1m    Kubedb operator  Successfully created governing service
-  Normal   Successful  1m    Kubedb operator  Successfully created service for primary/standalone
-  Normal   Successful  1m    Kubedb operator  Successfully created service for secondary replicas
-  Normal   Successful  1m    Kubedb operator  Successfully created database auth secret
-  Normal   Successful  1m    Kubedb operator  Successfully created PetSet
-  Normal   Successful  1m    Kubedb operator  Successfully created Druid
-  Normal   Successful  1m    Kubedb operator  Successfully created appbinding
-
+$ kubectl describe druid -n demo druid-cluster
+Name:         druid-cluster
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  kubedb.com/v1alpha2
+Kind:         Druid
+Metadata:
+  Creation Timestamp:  2024-10-21T06:01:32Z
+  Finalizers:
+    kubedb.com/druid
+  Generation:  1
+  Managed Fields:
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .:
+          v:"kubedb.com/druid":
+    Manager:      druid-operator
+    Operation:    Update
+    Time:         2024-10-21T06:01:32Z
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:deepStorage:
+          .:
+          f:configSecret:
+          f:type:
+        f:deletionPolicy:
+        f:healthChecker:
+          .:
+          f:failureThreshold:
+          f:periodSeconds:
+          f:timeoutSeconds:
+        f:topology:
+          .:
+          f:routers:
+            .:
+            f:replicas:
+        f:version:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2024-10-21T06:01:32Z
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:phase:
+    Manager:         druid-operator
+    Operation:       Update
+    Subresource:     status
+    Time:            2024-10-21T06:04:29Z
+  Resource Version:  52093
+  UID:               a2e12db2-6694-419f-ad07-2c906df5b611
+Spec:
+  Auth Secret:
+    Name:  druid-cluster-admin-cred
+  Deep Storage:
+    Config Secret:
+      Name:         deep-storage-config
+    Type:           s3
+  Deletion Policy:  Delete
+  Health Checker:
+    Failure Threshold:  3
+    Period Seconds:     30
+    Timeout Seconds:    10
+  Metadata Storage:
+    Create Tables:  true
+    Linked DB:      druid
+    Name:           druid-cluster-mysql-metadata
+    Namespace:      demo
+    Type:           MySQL
+    Version:        8.0.35
+  Topology:
+    Brokers:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+    Coordinators:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+    Historicals:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+      Storage:
+        Access Modes:
+          ReadWriteOnce
+        Resources:
+          Requests:
+            Storage:  1Gi
+      Storage Type:   Durable
+    Middle Managers:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  2560Mi
+              Requests:
+                Cpu:     500m
+                Memory:  2560Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+      Storage:
+        Access Modes:
+          ReadWriteOnce
+        Resources:
+          Requests:
+            Storage:  1Gi
+      Storage Type:   Durable
+    Routers:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+  Version:             28.0.1
+  Zookeeper Ref:
+    Name:       druid-cluster-zk
+    Namespace:  demo
+    Version:    3.7.2
+Status:
+  Conditions:
+    Last Transition Time:  2024-10-21T06:01:32Z
+    Message:               The KubeDB operator has started the provisioning of Druid: demo/druid-cluster
+    Observed Generation:   1
+    Reason:                DatabaseProvisioningStartedSuccessfully
+    Status:                True
+    Type:                  ProvisioningStarted
+  Phase:                   Provisioning
+Events:                    <none>
 
 $ kubectl get petset -n demo
-NAME       READY   AGE
-druid-cluster   3/3     3m47s
+NAME                           AGE
+druid-cluster-brokers          13m
+druid-cluster-coordinators     13m
+druid-cluster-historicals      13m
+druid-cluster-middlemanagers   13m
+druid-cluster-mysql-metadata   14m
+druid-cluster-routers          13m
+druid-cluster-zk               14m
 
-$ kubectl get pvc -n demo
-NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-data-druid-cluster-0   Bound    pvc-4f8538f6-a6ce-4233-b533-8566852f5b98   1Gi        RWO            standard       4m16s
-data-druid-cluster-1   Bound    pvc-8823d3ad-d614-4172-89ac-c2284a17f502   1Gi        RWO            standard       4m11s
-data-druid-cluster-2   Bound    pvc-94f1c312-50e3-41e1-94a8-a820be0abc08   1Gi        RWO            standard       4m7s
-s
+$ kubectl get pvc -n demo -l app.kubernetes.io/name=druids.kubedb.com
+NAME                                                         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   Bound    pvc-d288b621-d281-4004-995d-7a25bb4149de   1Gi        RWO            standard       14m
+druid-cluster-segment-cache-druid-cluster-historicals-0      Bound    pvc-ccca6be2-658a-46af-a270-de1c6a041af7   1Gi        RWO            standard       14m
+
 
 $ kubectl get pv -n demo
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
-pvc-4f8538f6-a6ce-4233-b533-8566852f5b98   1Gi        RWO            Delete           Bound    demo/data-druid-cluster-0   standard                4m39s
-pvc-8823d3ad-d614-4172-89ac-c2284a17f502   1Gi        RWO            Delete           Bound    demo/data-druid-cluster-1   standard                4m35s
-pvc-94f1c312-50e3-41e1-94a8-a820be0abc08   1Gi        RWO            Delete           Bound    demo/data-druid-cluster-2   standard                4m31s
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                              STORAGECLASS   REASON   AGE
+pvc-4f8538f6-a6ce-4233-b533-8566852f5b98   1Gi        RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0    standard                4m39s
+pvc-8823d3ad-d614-4172-89ac-c2284a17f502   1Gi        RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0       standard                4m35s
 
 $ kubectl get service -n demo
-NAME               TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-druid-cluster           ClusterIP      10.96.223.45    <none>        3306/TCP       5m13s
-druid-cluster-pods      ClusterIP      None            <none>        3306/TCP       5m13s
-druid-cluster-standby   ClusterIP      10.96.70.224    <none>        3306/TCP       5m13s
-
+NAME                                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                 AGE
+druid-cluster-brokers                  ClusterIP   10.96.186.168   <none>        8082/TCP                                                17m
+druid-cluster-coordinators             ClusterIP   10.96.122.235   <none>        8081/TCP                                                17m
+druid-cluster-mysql-metadata           ClusterIP   10.96.109.2     <none>        3306/TCP                                                18m
+druid-cluster-mysql-metadata-pods      ClusterIP   None            <none>        3306/TCP                                                18m
+druid-cluster-mysql-metadata-standby   ClusterIP   10.96.97.152    <none>        3306/TCP                                                18m
+druid-cluster-pods                     ClusterIP   None            <none>        8081/TCP,8090/TCP,8083/TCP,8091/TCP,8082/TCP,8888/TCP   17m
+druid-cluster-routers                  ClusterIP   10.96.138.237   <none>        8888/TCP                                                17m
+druid-cluster-zk                       ClusterIP   10.96.148.251   <none>        2181/TCP                                                18m
+druid-cluster-zk-admin-server          ClusterIP   10.96.2.106     <none>        8080/TCP                                                18m
+druid-cluster-zk-pods                  ClusterIP   None            <none>        2181/TCP,2888/TCP,3888/TCP                              18m
 ```
 
-KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `Druid` object:
+KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified `Druid` object:
 
-```yaml
-$ kubectl get  my -n demo druid-cluster -o yaml | kubectl neat
-apiVersion: kubedb.com/v1
-kind: Druid
-metadata:
-  name: druid-cluster
-  namespace: demo
-spec:
-  authSecret:
-    name: druid-cluster-auth
-  podTemplate:
-    spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: druid-cluster
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: druids.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: druid-cluster
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: druids.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
-      serviceAccountName: druid-cluster
-  replicas: 3
-  storage:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-    storageClassName: standard
-  storageType: Durable
-  deletionPolicy: WipeOut
-  topology:
-    group:
-      name: dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b
-    mode: GroupReplication
-  version: 8.0.35
-status:
-  observedGeneration: 2$4213139756412538772
-  phase: Running
+```bash
+$ kubectl describe druid -n demo druid-cluster
+Name:         druid-cluster
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  kubedb.com/v1alpha2
+Kind:         Druid
+Metadata:
+  Creation Timestamp:  2024-10-21T06:01:32Z
+  Finalizers:
+    kubedb.com/druid
+  Generation:  1
+  Managed Fields:
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+          .:
+          v:"kubedb.com/druid":
+    Manager:      druid-operator
+    Operation:    Update
+    Time:         2024-10-21T06:01:32Z
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:deepStorage:
+          .:
+          f:configSecret:
+          f:type:
+        f:deletionPolicy:
+        f:healthChecker:
+          .:
+          f:failureThreshold:
+          f:periodSeconds:
+          f:timeoutSeconds:
+        f:topology:
+          .:
+          f:routers:
+            .:
+            f:replicas:
+        f:version:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2024-10-21T06:01:32Z
+    API Version:  kubedb.com/v1alpha2
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:phase:
+    Manager:         druid-operator
+    Operation:       Update
+    Subresource:     status
+    Time:            2024-10-21T06:04:29Z
+  Resource Version:  52093
+  UID:               a2e12db2-6694-419f-ad07-2c906df5b611
+Spec:
+  Auth Secret:
+    Name:  druid-cluster-admin-cred
+  Deep Storage:
+    Config Secret:
+      Name:         deep-storage-config
+    Type:           s3
+  Deletion Policy:  Delete
+  Health Checker:
+    Failure Threshold:  3
+    Period Seconds:     30
+    Timeout Seconds:    10
+  Metadata Storage:
+    Create Tables:  true
+    Linked DB:      druid
+    Name:           druid-cluster-mysql-metadata
+    Namespace:      demo
+    Type:           MySQL
+    Version:        8.0.35
+  Topology:
+    Brokers:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+    Coordinators:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+    Historicals:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+      Storage:
+        Access Modes:
+          ReadWriteOnce
+        Resources:
+          Requests:
+            Storage:  1Gi
+      Storage Type:   Durable
+    Middle Managers:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  2560Mi
+              Requests:
+                Cpu:     500m
+                Memory:  2560Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+      Storage:
+        Access Modes:
+          ReadWriteOnce
+        Resources:
+          Requests:
+            Storage:  1Gi
+      Storage Type:   Durable
+    Routers:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  druid
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Init Containers:
+            Name:  init-druid
+            Resources:
+              Limits:
+                Memory:  512Mi
+              Requests:
+                Cpu:     200m
+                Memory:  512Mi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+  Version:             28.0.1
+  Zookeeper Ref:
+    Name:       druid-cluster-zk
+    Namespace:  demo
+    Version:    3.7.2
+Status:
+  Conditions:
+    Last Transition Time:  2024-10-21T06:01:32Z
+    Message:               The KubeDB operator has started the provisioning of Druid: demo/druid-cluster
+    Observed Generation:   1
+    Reason:                DatabaseProvisioningStartedSuccessfully
+    Status:                True
+    Type:                  ProvisioningStarted
+    Last Transition Time:  2024-10-21T06:03:03Z
+    Message:               Database dependency is ready
+    Observed Generation:   1
+    Reason:                DatabaseDependencyReady
+    Status:                True
+    Type:                  DatabaseDependencyReady
+    Last Transition Time:  2024-10-21T06:03:34Z
+    Message:               All desired replicas are ready.
+    Observed Generation:   1
+    Reason:                AllReplicasReady
+    Status:                True
+    Type:                  ReplicaReady
+    Last Transition Time:  2024-10-21T06:04:04Z
+    Message:               The Druid: demo/druid-cluster is accepting client requests and nodes formed a cluster
+    Observed Generation:   1
+    Reason:                DatabaseAcceptingConnectionRequest
+    Status:                True
+    Type:                  AcceptingConnection
+    Last Transition Time:  2024-10-21T06:04:29Z
+    Message:               The Druid: demo/druid-cluster is ready.
+    Observed Generation:   1
+    Reason:                ReadinessCheckSucceeded
+    Status:                True
+    Type:                  Ready
+    Last Transition Time:  2024-10-21T06:04:29Z
+    Message:               The Druid: demo/druid-cluster is successfully provisioned.
+    Observed Generation:   1
+    Reason:                DatabaseSuccessfullyProvisioned
+    Status:                True
+    Type:                  Provisioned
+  Phase:                   Ready
+Events:                    <none>
 ```
 
 

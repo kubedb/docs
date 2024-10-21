@@ -3,7 +3,7 @@ title: Restart Druid
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-restart-guide
-    name: Restart Druid
+    name: Guide
     parent: guides-druid-restart
     weight: 10
 menu_name: docs_{{ .version }}
@@ -134,111 +134,126 @@ spec:
 Let's create the `DruidOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/restart/restart.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/restart/restart.yaml
 druidopsrequest.ops.kubedb.com/restart created
 ```
 
 Now the Ops-manager operator will first restart the controller pods, then broker of the referenced druid.
 
 ```shell
-$ kubectl get kfops -n demo
+$ kubectl get drops -n demo
 NAME      TYPE      STATUS       AGE
-restart   Restart   Successful   119s
+restart   Restart   Successful   2m11s
 
-$ kubectl get kfops -n demo restart -oyaml
+$ kubectl get drops -n demo restart -oyaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: DruidOpsRequest
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"ops.kubedb.com/v1alpha1","kind":"DruidOpsRequest","metadata":{"annotations":{},"name":"restart","namespace":"demo"},"spec":{"apply":"Always","databaseRef":{"name":"druid-cluster"},"timeout":"3m","type":"Restart"}}
-  creationTimestamp: "2024-07-26T10:12:10Z"
+      {"apiVersion":"ops.kubedb.com/v1alpha1","kind":"DruidOpsRequest","metadata":{"annotations":{},"name":"restart","namespace":"demo"},"spec":{"apply":"Always","databaseRef":{"name":"druid-cluster"},"timeout":"5m","type":"Restart"}}
+  creationTimestamp: "2024-10-21T10:30:53Z"
   generation: 1
   name: restart
   namespace: demo
-  resourceVersion: "24434"
-  uid: 956a374e-1d6f-4f68-828f-cfed4410b175
+  resourceVersion: "83200"
+  uid: 0fcbc7d4-593f-45f7-8631-7483805efe1e
 spec:
   apply: Always
   databaseRef:
     name: druid-cluster
-  timeout: 3m
+  timeout: 5m
   type: Restart
 status:
   conditions:
-  - lastTransitionTime: "2024-07-26T10:12:10Z"
+  - lastTransitionTime: "2024-10-21T10:30:53Z"
     message: Druid ops-request has started to restart druid nodes
     observedGeneration: 1
     reason: Restart
     status: "True"
     type: Restart
-  - lastTransitionTime: "2024-07-26T10:12:18Z"
-    message: get pod; ConditionStatus:True; PodName:druid-cluster-controller-0
-    observedGeneration: 1
-    status: "True"
-    type: GetPod--druid-cluster-controller-0
-  - lastTransitionTime: "2024-07-26T10:12:18Z"
-    message: evict pod; ConditionStatus:True; PodName:druid-cluster-controller-0
-    observedGeneration: 1
-    status: "True"
-    type: EvictPod--druid-cluster-controller-0
-  - lastTransitionTime: "2024-07-26T10:12:23Z"
-    message: check pod running; ConditionStatus:True; PodName:druid-cluster-controller-0
-    observedGeneration: 1
-    status: "True"
-    type: CheckPodRunning--druid-cluster-controller-0
-  - lastTransitionTime: "2024-07-26T10:12:28Z"
-    message: get pod; ConditionStatus:True; PodName:druid-cluster-controller-1
-    observedGeneration: 1
-    status: "True"
-    type: GetPod--druid-cluster-controller-1
-  - lastTransitionTime: "2024-07-26T10:12:28Z"
-    message: evict pod; ConditionStatus:True; PodName:druid-cluster-controller-1
-    observedGeneration: 1
-    status: "True"
-    type: EvictPod--druid-cluster-controller-1
-  - lastTransitionTime: "2024-07-26T10:12:38Z"
-    message: check pod running; ConditionStatus:True; PodName:druid-cluster-controller-1
-    observedGeneration: 1
-    status: "True"
-    type: CheckPodRunning--druid-cluster-controller-1
-  - lastTransitionTime: "2024-07-26T10:12:43Z"
-    message: get pod; ConditionStatus:True; PodName:druid-cluster-broker-0
-    observedGeneration: 1
-    status: "True"
-    type: GetPod--druid-cluster-broker-0
-  - lastTransitionTime: "2024-07-26T10:12:43Z"
-    message: evict pod; ConditionStatus:True; PodName:druid-cluster-broker-0
-    observedGeneration: 1
-    status: "True"
-    type: EvictPod--druid-cluster-broker-0
-  - lastTransitionTime: "2024-07-26T10:13:18Z"
-    message: check pod running; ConditionStatus:True; PodName:druid-cluster-broker-0
-    observedGeneration: 1
-    status: "True"
-    type: CheckPodRunning--druid-cluster-broker-0
-  - lastTransitionTime: "2024-07-26T10:13:23Z"
-    message: get pod; ConditionStatus:True; PodName:druid-cluster-broker-1
-    observedGeneration: 1
-    status: "True"
-    type: GetPod--druid-cluster-broker-1
-  - lastTransitionTime: "2024-07-26T10:13:23Z"
-    message: evict pod; ConditionStatus:True; PodName:druid-cluster-broker-1
-    observedGeneration: 1
-    status: "True"
-    type: EvictPod--druid-cluster-broker-1
-  - lastTransitionTime: "2024-07-26T10:13:28Z"
-    message: check pod running; ConditionStatus:True; PodName:druid-cluster-broker-1
-    observedGeneration: 1
-    status: "True"
-    type: CheckPodRunning--druid-cluster-broker-1
-  - lastTransitionTime: "2024-07-26T10:13:33Z"
+  - lastTransitionTime: "2024-10-21T10:31:51Z"
     message: Successfully Restarted Druid nodes
     observedGeneration: 1
     reason: RestartNodes
     status: "True"
     type: RestartNodes
-  - lastTransitionTime: "2024-07-26T10:13:33Z"
+  - lastTransitionTime: "2024-10-21T10:31:01Z"
+    message: get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
+    observedGeneration: 1
+    status: "True"
+    type: GetPod--druid-cluster-historicals-0
+  - lastTransitionTime: "2024-10-21T10:31:01Z"
+    message: evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
+    observedGeneration: 1
+    status: "True"
+    type: EvictPod--druid-cluster-historicals-0
+  - lastTransitionTime: "2024-10-21T10:31:06Z"
+    message: check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0
+    observedGeneration: 1
+    status: "True"
+    type: CheckPodRunning--druid-cluster-historicals-0
+  - lastTransitionTime: "2024-10-21T10:31:11Z"
+    message: get pod; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0
+    observedGeneration: 1
+    status: "True"
+    type: GetPod--druid-cluster-middlemanagers-0
+  - lastTransitionTime: "2024-10-21T10:31:11Z"
+    message: evict pod; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0
+    observedGeneration: 1
+    status: "True"
+    type: EvictPod--druid-cluster-middlemanagers-0
+  - lastTransitionTime: "2024-10-21T10:31:16Z"
+    message: check pod running; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0
+    observedGeneration: 1
+    status: "True"
+    type: CheckPodRunning--druid-cluster-middlemanagers-0
+  - lastTransitionTime: "2024-10-21T10:31:21Z"
+    message: get pod; ConditionStatus:True; PodName:druid-cluster-brokers-0
+    observedGeneration: 1
+    status: "True"
+    type: GetPod--druid-cluster-brokers-0
+  - lastTransitionTime: "2024-10-21T10:31:21Z"
+    message: evict pod; ConditionStatus:True; PodName:druid-cluster-brokers-0
+    observedGeneration: 1
+    status: "True"
+    type: EvictPod--druid-cluster-brokers-0
+  - lastTransitionTime: "2024-10-21T10:31:26Z"
+    message: check pod running; ConditionStatus:True; PodName:druid-cluster-brokers-0
+    observedGeneration: 1
+    status: "True"
+    type: CheckPodRunning--druid-cluster-brokers-0
+  - lastTransitionTime: "2024-10-21T10:31:31Z"
+    message: get pod; ConditionStatus:True; PodName:druid-cluster-routers-0
+    observedGeneration: 1
+    status: "True"
+    type: GetPod--druid-cluster-routers-0
+  - lastTransitionTime: "2024-10-21T10:31:31Z"
+    message: evict pod; ConditionStatus:True; PodName:druid-cluster-routers-0
+    observedGeneration: 1
+    status: "True"
+    type: EvictPod--druid-cluster-routers-0
+  - lastTransitionTime: "2024-10-21T10:31:36Z"
+    message: check pod running; ConditionStatus:True; PodName:druid-cluster-routers-0
+    observedGeneration: 1
+    status: "True"
+    type: CheckPodRunning--druid-cluster-routers-0
+  - lastTransitionTime: "2024-10-21T10:31:41Z"
+    message: get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+    observedGeneration: 1
+    status: "True"
+    type: GetPod--druid-cluster-coordinators-0
+  - lastTransitionTime: "2024-10-21T10:31:41Z"
+    message: evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+    observedGeneration: 1
+    status: "True"
+    type: EvictPod--druid-cluster-coordinators-0
+  - lastTransitionTime: "2024-10-21T10:31:46Z"
+    message: check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+    observedGeneration: 1
+    status: "True"
+    type: CheckPodRunning--druid-cluster-coordinators-0
+  - lastTransitionTime: "2024-10-21T10:31:51Z"
     message: Controller has successfully restart the Druid replicas
     observedGeneration: 1
     reason: Successful
