@@ -102,7 +102,7 @@ In this section, we are going to deploy a Druid topology cluster. Then, in the n
 apiVersion: kubedb.com/v1alpha2
 kind: Druid
 metadata:
-  name: druid-quickstart
+  name: druid-cluster
   namespace: demo
 spec:
   version: 28.0.1
@@ -248,10 +248,65 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         DruidOpsRequest
 Metadata:
-  Creation Timestamp:  2024-08-02T06:09:46Z
+  Creation Timestamp:  2024-10-21T12:53:55Z
   Generation:          1
-  Resource Version:    337300
-  UID:                 ca298c0a-e08d-4c78-acbc-40eb5e96532d
+  Managed Fields:
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:apply:
+        f:databaseRef:
+        f:timeout:
+        f:type:
+        f:verticalScaling:
+          .:
+          f:coordinators:
+            .:
+            f:resources:
+              .:
+              f:limits:
+                .:
+                f:cpu:
+                f:memory:
+              f:requests:
+                .:
+                f:cpu:
+                f:memory:
+          f:historicals:
+            .:
+            f:resources:
+              .:
+              f:limits:
+                .:
+                f:cpu:
+                f:memory:
+              f:requests:
+                .:
+                f:cpu:
+                f:memory:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2024-10-21T12:53:55Z
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:         kubedb-ops-manager
+    Operation:       Update
+    Subresource:     status
+    Time:            2024-10-21T12:54:23Z
+  Resource Version:  102002
+  UID:               fe8bb22f-02e8-4a10-9a78-fc211371d581
 Spec:
   Apply:  IfReady
   Database Ref:
@@ -259,7 +314,7 @@ Spec:
   Timeout:  5m
   Type:     VerticalScaling
   Vertical Scaling:
-    Broker:
+    Coordinators:
       Resources:
         Limits:
           Cpu:     0.6
@@ -267,7 +322,7 @@ Spec:
         Requests:
           Cpu:     0.6
           Memory:  1.2Gi
-    Controller:
+    Historicals:
       Resources:
         Limits:
           Cpu:     0.6
@@ -277,86 +332,56 @@ Spec:
           Memory:  1.1Gi
 Status:
   Conditions:
-    Last Transition Time:  2024-08-02T06:09:46Z
-    Message:               Druid ops-request has started to vertically scaling the druid nodes
+    Last Transition Time:  2024-10-21T12:53:55Z
+    Message:               Druid ops-request has started to vertically scale the Druid nodes
     Observed Generation:   1
     Reason:                VerticalScaling
     Status:                True
     Type:                  VerticalScaling
-    Last Transition Time:  2024-08-02T06:09:50Z
+    Last Transition Time:  2024-10-21T12:53:58Z
     Message:               Successfully updated PetSets Resources
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2024-08-02T06:09:55Z
-    Message:               get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--druid-cluster-coordinators-0
-    Last Transition Time:  2024-08-02T06:09:55Z
-    Message:               evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--druid-cluster-coordinators-0
-    Last Transition Time:  2024-08-02T06:10:00Z
-    Message:               check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--druid-cluster-coordinators-0
-    Last Transition Time:  2024-08-02T06:10:05Z
-    Message:               get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--druid-cluster-coordinators-1
-    Last Transition Time:  2024-08-02T06:10:05Z
-    Message:               evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--druid-cluster-coordinators-1
-    Last Transition Time:  2024-08-02T06:10:15Z
-    Message:               check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--druid-cluster-coordinators-1
-    Last Transition Time:  2024-08-02T06:10:20Z
-    Message:               get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--druid-cluster-historicals-0
-    Last Transition Time:  2024-08-02T06:10:20Z
-    Message:               evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--druid-cluster-historicals-0
-    Last Transition Time:  2024-08-02T06:10:35Z
-    Message:               check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--druid-cluster-historicals-0
-    Last Transition Time:  2024-08-02T06:10:40Z
-    Message:               get pod; ConditionStatus:True; PodName:druid-cluster-historicals-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--druid-cluster-historicals-1
-    Last Transition Time:  2024-08-02T06:10:40Z
-    Message:               evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--druid-cluster-historicals-1
-    Last Transition Time:  2024-08-02T06:10:55Z
-    Message:               check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--druid-cluster-historicals-1
-    Last Transition Time:  2024-08-02T06:11:00Z
+    Last Transition Time:  2024-10-21T12:54:23Z
     Message:               Successfully Restarted Pods With Resources
     Observed Generation:   1
     Reason:                RestartPods
     Status:                True
     Type:                  RestartPods
-    Last Transition Time:  2024-08-02T06:11:00Z
-    Message:               Successfully completed the vertical scaling for druid
+    Last Transition Time:  2024-10-21T12:54:03Z
+    Message:               get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--druid-cluster-coordinators-0
+    Last Transition Time:  2024-10-21T12:54:03Z
+    Message:               evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--druid-cluster-coordinators-0
+    Last Transition Time:  2024-10-21T12:54:08Z
+    Message:               check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--druid-cluster-coordinators-0
+    Last Transition Time:  2024-10-21T12:54:13Z
+    Message:               get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--druid-cluster-historicals-0
+    Last Transition Time:  2024-10-21T12:54:13Z
+    Message:               evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--druid-cluster-historicals-0
+    Last Transition Time:  2024-10-21T12:54:18Z
+    Message:               check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--druid-cluster-historicals-0
+    Last Transition Time:  2024-10-21T12:54:23Z
+    Message:               Successfully completed the vertical scaling for RabbitMQ
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -364,35 +389,26 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                                     Age    From                         Message
-  ----     ------                                                                     ----   ----                         -------
-  Normal   Starting                                                                   3m32s  KubeDB Ops-manager Operator  Start processing for DruidOpsRequest: demo/druid-vscale
-  Normal   Starting                                                                   3m32s  KubeDB Ops-manager Operator  Pausing Druid databse: demo/druid-cluster
-  Normal   Successful                                                                 3m32s  KubeDB Ops-manager Operator  Successfully paused Druid database: demo/druid-cluster for DruidOpsRequest: druid-vscale
-  Normal   UpdatePetSets                                                              3m28s  KubeDB Ops-manager Operator  Successfully updated PetSets Resources
-  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0                 3m23s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
-  Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0               3m23s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
-  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0       3m18s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0
-  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1                 3m13s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1
-  Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1               3m13s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-1
-  Warning  check pod running; ConditionStatus:False; PodName:druid-cluster-coordinators-1      3m8s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:druid-cluster-coordinators-1
-  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-1       3m3s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-1
-  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0             2m58s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
-  Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0           2m58s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
-  Warning  check pod running; ConditionStatus:False; PodName:druid-cluster-historicals-0  2m53s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:druid-cluster-historicals-0
-  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0   2m43s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0
-  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-1             2m38s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-1
-  Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-1           2m38s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-1
-  Warning  check pod running; ConditionStatus:False; PodName:druid-cluster-historicals-1  2m33s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:druid-cluster-historicals-1
-  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-1   2m23s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-1
-  Normal   RestartPods                                                                2m18s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
-  Normal   Starting                                                                   2m18s  KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-cluster
-  Normal   Successful                                                                 2m18s  KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-cluster for DruidOpsRequest: druid-vscale
+  Type     Reason                                                                         Age   From                         Message
+  ----     ------                                                                         ----  ----                         -------
+  Normal   Starting                                                                       67s   KubeDB Ops-manager Operator  Start processing for DruidOpsRequest: demo/druid-vscale
+  Normal   Starting                                                                       67s   KubeDB Ops-manager Operator  Pausing Druid databse: demo/druid-cluster
+  Normal   Successful                                                                     67s   KubeDB Ops-manager Operator  Successfully paused Druid database: demo/druid-cluster for DruidOpsRequest: druid-vscale
+  Normal   UpdatePetSets                                                                  64s   KubeDB Ops-manager Operator  Successfully updated PetSets Resources
+  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0            59s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+  Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0          59s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0  54s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0             49s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
+  Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0           49s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
+  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0   44s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0
+  Normal   RestartPods                                                                    39s   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
+  Normal   Starting                                                                       39s   KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-cluster
+  Normal   Successful                                                                     39s   KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-cluster for DruidOpsRequest: druid-vscale
 ```
 Now, we are going to verify from one of the Pod yaml whether the resources of the topology cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo druid-cluster-coordinators-1 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo druid-cluster-coordinators-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
     "cpu": "600m",

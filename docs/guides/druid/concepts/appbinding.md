@@ -34,50 +34,6 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"druid","namespace":"demo"},"spec":{"enableSSL":true,"monitor":{"agent":"prometheus.io/operator","prometheus":{"exporter":{"port":9091},"serviceMonitor":{"interval":"10s","labels":{"release":"prometheus"}}}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","tls":{"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"druid-ca-issuer"}},"version":"3.6.1"}}
-  creationTimestamp: "2023-03-27T08:04:43Z"
-  generation: 1
-  labels:
-    app.kubernetes.io/component: database
-    app.kubernetes.io/instance: druid
-    app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: druids.kubedb.com
-  name: druid
-  namespace: demo
-  ownerReferences:
-    - apiVersion: kubedb.com/v1alpha2
-      blockOwnerDeletion: true
-      controller: true
-      kind: Druid
-      name: druid
-      uid: a4d3bd6d-798d-4789-a228-6eed057ccbb2
-  resourceVersion: "409855"
-  uid: 946988c0-15ef-4ee8-b489-b7ea9be3f97e
-spec:
-  appRef:
-    apiGroup: kubedb.com
-    kind: Druid
-    name: druid
-    namespace: demo
-  clientConfig:
-    caBundle: dGhpcyBpcyBub3QgYSBjZXJ0
-    service:
-      name: druid-pods
-      port: 9092
-      scheme: https
-  secret:
-    name: druid-admin-cred
-  tlsSecret:
-    name: druid-client-cert
-  type: kubedb.com/druid
-  version: 3.6.1
-```
-```
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
       {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"druid-quickstart","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"topology":{"routers":{"replicas":1}},"version":"28.0.1"}}
   creationTimestamp: "2024-10-16T13:28:40Z"
   generation: 1
