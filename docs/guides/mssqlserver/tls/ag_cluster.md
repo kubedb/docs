@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mssql-ag-tls-availability-group
     name: Availability Group (HA Cluster)
-    parent: mssql-ag-tls
+    parent: ms-tls
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
