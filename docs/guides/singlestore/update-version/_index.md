@@ -5,6 +5,6 @@ menu:
     identifier: guides-sdb-updating
     name: UpdateVersion
     parent: guides-singlestore
-    weight: 45
+    weight: 42
 menu_name: docs_{{ .version }}
 ---

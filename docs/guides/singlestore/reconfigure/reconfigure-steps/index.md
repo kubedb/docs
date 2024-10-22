@@ -3,7 +3,7 @@ title: Reconfigure SingleStore Configuration
 menu:
   docs_{{ .version }}:
     identifier: guides-sdb-reconfigure-reconfigure-steps
-    name: Cluster
+    name: Reconfigure OpsRequest
     parent: guides-sdb-reconfigure
     weight: 20
 menu_name: docs_{{ .version }}

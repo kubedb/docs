@@ -3,7 +3,7 @@ title: SingleStore Cluster Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: sdb-storage-auto-scaling-cluster
-    name: Cluster
+    name: SingleStore Storage
     parent: sdb-storage-auto-scaling
     weight: 20
 menu_name: docs_{{ .version }}

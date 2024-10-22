@@ -3,7 +3,7 @@ title: Vertical Scaling SingleStore Cluster
 menu:
   docs_{{ .version }}:
     identifier: guides-sdb-scaling-vertical-cluster
-    name: Cluster
+    name: Vertical Scaling OpsRequest
     parent: guides-sdb-scaling-vertical
     weight: 30
 menu_name: docs_{{ .version }}

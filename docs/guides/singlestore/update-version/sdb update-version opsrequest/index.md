@@ -3,7 +3,7 @@ title: Updating SingleStore Cluster
 menu:
   docs_{{ .version }}:
     identifier: guides-sdb-updating-cluster
-    name: Cluster
+    name: Update Version OpsRequest
     parent: guides-sdb-updating
     weight: 30
 menu_name: docs_{{ .version }}

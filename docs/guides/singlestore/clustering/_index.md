@@ -5,6 +5,6 @@ menu:
     identifier: sdb-clustering
     name: Clustering
     parent: guides-singlestore
-    weight: 30
+    weight: 25
 menu_name: docs_{{ .version }}
 ---
