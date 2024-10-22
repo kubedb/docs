@@ -5,6 +5,6 @@ menu:
     identifier: guides-sdb-initialization
     name: Initialization
     parent: guides-singlestore
-    weight: 80
+    weight: 41
 menu_name: docs_{{ .version }}
 ---

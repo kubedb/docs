@@ -5,6 +5,6 @@ menu:
     identifier: guides-sdb-tls
     name: TLS/SSL Encryption
     parent: guides-singlestore
-    weight: 110
+    weight: 45
 menu_name: docs_{{ .version }}
 ---

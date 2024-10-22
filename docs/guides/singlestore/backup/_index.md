@@ -5,6 +5,6 @@ menu:
     identifier: guides-sdb-backup
     name: Backup & Restore
     parent: guides-singlestore
-    weight: 70
+    weight: 40
 menu_name: docs_{{ .version }}
 ---

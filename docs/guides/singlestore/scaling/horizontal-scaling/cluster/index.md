@@ -3,7 +3,7 @@ title: Horizontal Scaling SingleStore
 menu:
   docs_{{ .version }}:
     identifier: guides-sdb-scaling-horizontal-cluster
-    name: Cluster
+    name: Horizontal Scaling OpsRequest
     parent: guides-sdb-scaling-horizontal
     weight: 20
 menu_name: docs_{{ .version }}
