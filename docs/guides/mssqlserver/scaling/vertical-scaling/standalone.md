@@ -292,8 +292,8 @@ Events:
   Normal  PauseDatabase    4m17s  KubeDB Enterprise Operator  Pausing MSSQLServer demo/ms
   Normal  PauseDatabase    4m17s  KubeDB Enterprise Operator  Successfully paused MSSQLServer demo/ms
   Normal  VerticalScaling  2m22s  KubeDB Enterprise Operator  SuccessfullyPerformedVerticalScaling
-  Normal  ResumeDatabase   2m22s  KubeDB Enterprise Operator  Resuming PostgreSQL demo/ms
-  Normal  ResumeDatabase   2m22s  KubeDB Enterprise Operator  Successfully resumed PostgreSQL demo/ms
+  Normal  ResumeDatabase   2m22s  KubeDB Enterprise Operator  Resuming MSSQLServer demo/ms
+  Normal  ResumeDatabase   2m22s  KubeDB Enterprise Operator  Successfully resumed MSSQLServer demo/ms
   Normal  Successful       2m22s  KubeDB Enterprise Operator  Successfully Vertically Scaled Database
 
 ```
