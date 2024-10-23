@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ZooKeeperOpsRequest
+metadata:
+  name: upgrade-topology
+  namespace: demo
+spec:
+  databaseRef:
+    name: zk-quickstart
+  type: UpdateVersion
+  updateVersion:
+    targetVersion: 3.9.1
+  timeout: 5m
+  apply: IfReady

@@ -1,9 +1,9 @@
 ---
-title: ZooKeeperOpsRequests CRD
+title: ZooKeeperOpsRequest CRD
 menu:
   docs_{{ .version }}:
     identifier: zk-opsrequest
-    name: ZooKeeperOpsRequests
+    name: ZooKeeperOpsRequest
     parent: zk-concepts-zookeeper
     weight: 25
 menu_name: docs_{{ .version }}
@@ -12,19 +12,19 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# ZooKeeperOpsRequests
+# ZooKeeperOpsRequest
 
-## What is ZooKeeperOpsRequests
+## What is ZooKeeperOpsRequest
 
-`ZooKeeperOpsRequests` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [ZooKeeper](https://zookeeper.apache.org/) administrative operations like database version updating, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
+`ZooKeeperOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [ZooKeeper](https://zookeeper.apache.org/) administrative operations like database version updating, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
 
-## ZooKeeperOpsRequests CRD Specifications
+## ZooKeeperOpsRequest CRD Specifications
 
-Like any official Kubernetes resource, a `ZooKeeperOpsRequests` has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.
+Like any official Kubernetes resource, a `ZooKeeperOpsRequest` has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.
 
-Here, some sample `ZooKeeperOpsRequests` CRs for different administrative operations is given below:
+Here, some sample `ZooKeeperOpsRequest` CRs for different administrative operations is given below:
 
-**Sample `ZooKeeperOpsRequests` for updating database:**
+**Sample `ZooKeeperOpsRequest` for updating database:**
 
 Let's assume that you have a KubeDB managed ZooKeeper cluster named `zk-quickstart` running on your kubernetes with version `3.8.3`. Now, You can update it's version to `3.9.1` using the following manifest.
 
@@ -42,7 +42,7 @@ spec:
     targetVersion: 3.9.1
 ```
 
-**Sample `ZooKeeperOpsRequests` Objects for Horizontal Scaling of the database Cluster:**
+**Sample `ZooKeeperOpsRequest` Objects for Horizontal Scaling of the database Cluster:**
 
 You can scale up and down your zookeeper cluster horizontally. 
 ```yaml
@@ -59,13 +59,13 @@ spec:
     replicas: 5
 ```
 
-**Sample `ZooKeeperOpsRequests` Objects for Vertical Scaling of the database cluster:**
+**Sample `ZooKeeperOpsRequest` Objects for Vertical Scaling of the database cluster:**
 
 You can vertically scale up or down your cluster by updating the requested cpu, memory or, by limiting them.
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
-kind: ZooKeeperOpsRequests
+kind: ZooKeeperOpsRequest
 metadata:
   name: zookeeper-vscale
   namespace: demo
@@ -84,7 +84,7 @@ spec:
           memory: 2Gi
 ```
 
-**Sample `ZooKeeperOpsRequests` Objects for Reconfiguring database cluster:**
+**Sample `ZooKeeperOpsRequest` Objects for Reconfiguring database cluster:**
 
 Reconfigure your cluster by applying new configuration via `zoo.conf` file.
 
@@ -137,7 +137,7 @@ spec:
       name: new-config-secret
 ```
 
-**Sample `ZooKeeperOpsRequests` Objects for Volume Expansion of database cluster:**
+**Sample `ZooKeeperOpsRequest` Objects for Volume Expansion of database cluster:**
 
 You can expand ZooKeeper storage volume in both online and offline mode.
 
@@ -171,7 +171,7 @@ spec:
     node: 4Gi
 ```
 
-**Sample `ZooKeeperOpsRequests` Objects for Reconfiguring TLS of the database:**
+**Sample `ZooKeeperOpsRequest` Objects for Reconfiguring TLS of the database:**
 
 You can use this Ops-Request to Add, Update, Remove or Rotate Your certificates used in TLS connectivity.
 
@@ -220,9 +220,9 @@ spec:
     remove: true
 ```
 
-Here, we are going to describe the various sections of a `ZooKeeperOpsRequests` crd.
+Here, we are going to describe the various sections of a `ZooKeeperOpsRequest` crd.
 
-A `ZooKeeperOpsRequests` object has the following fields in the `spec` section.
+A `ZooKeeperOpsRequest` object has the following fields in the `spec` section.
 
 ### spec.databaseRef
 
@@ -232,7 +232,7 @@ A `ZooKeeperOpsRequests` object has the following fields in the `spec` section.
 
 ### spec.type
 
-`spec.type` specifies the kind of operation that will be applied to the database. Currently, the following types of operations are allowed in `ZooKeeperOpsRequests`.
+`spec.type` specifies the kind of operation that will be applied to the database. Currently, the following types of operations are allowed in `ZooKeeperOpsRequest`.
 
 - `Upgrade` / `UpdateVersion`
 - `HorizontalScaling`
@@ -242,7 +242,7 @@ A `ZooKeeperOpsRequests` object has the following fields in the `spec` section.
 - `ReconfigureTLS`
 - `Restart`
 
-> You can perform only one type of operation on a single `ZooKeeperOpsRequests` CR. For example, if you want to update your database and scale up its replica then you have to create two separate `ZooKeeperOpsRequests`. At first, you have to create a `ZooKeeperOpsRequests` for updating. Once it is completed, then you can create another `ZooKeeperOpsRequests` for scaling.
+> You can perform only one type of operation on a single `ZooKeeperOpsRequest` CR. For example, if you want to update your database and scale up its replica then you have to create two separate `ZooKeeperOpsRequest`. At first, you have to create a `ZooKeeperOpsRequest` for updating. Once it is completed, then you can create another `ZooKeeperOpsRequest` for scaling.
 
 > Note: There is an exception to the above statement. It is possible to specify both `spec.configuration` & `spec.verticalScaling` in a OpsRequest of type `VerticalScaling`.
 
@@ -338,33 +338,33 @@ This field controls the execution of obsRequest depending on the database state.
 Use IfReady, if you want to process the opsRequest only when the database is Ready. And use Always, if you want to process the execution of opsReq irrespective of the Database state.
 
 
-### ZooKeeperOpsRequests `Status`
+### ZooKeeperOpsRequest `Status`
 
-`.status` describes the current state and progress of a `ZooKeeperOpsRequests` operation. It has the following fields:
+`.status` describes the current state and progress of a `ZooKeeperOpsRequest` operation. It has the following fields:
 
 ### status.phase
 
-`status.phase` indicates the overall phase of the operation for this `ZooKeeperOpsRequests`. It can have the following three values:
+`status.phase` indicates the overall phase of the operation for this `ZooKeeperOpsRequest`. It can have the following three values:
 
 | Phase       | Meaning                                                                             |
 |-------------|-------------------------------------------------------------------------------------|
-| Successful  | KubeDB has successfully performed the operation requested in the ZooKeeperOpsRequests |
-| Progressing | KubeDB has started the execution of the applied ZooKeeperOpsRequests                  |
-| Failed      | KubeDB has failed the operation requested in the ZooKeeperOpsRequests                 |
-| Denied      | KubeDB has denied the operation requested in the ZooKeeperOpsRequests                 |
-| Skipped     | KubeDB has skipped the operation requested in the ZooKeeperOpsRequests                |
+| Successful  | KubeDB has successfully performed the operation requested in the ZooKeeperOpsRequest |
+| Progressing | KubeDB has started the execution of the applied ZooKeeperOpsRequest                  |
+| Failed      | KubeDB has failed the operation requested in the ZooKeeperOpsRequest                 |
+| Denied      | KubeDB has denied the operation requested in the ZooKeeperOpsRequest                 |
+| Skipped     | KubeDB has skipped the operation requested in the ZooKeeperOpsRequest                |
 
 Important: Ops-manager Operator can skip an opsRequest, only if its execution has not been started yet & there is a newer opsRequest applied in the cluster. `spec.type` has to be same as the skipped one, in this case.
 
 ### status.observedGeneration
 
-`status.observedGeneration` shows the most recent generation observed by the `ZooKeeperOpsRequests` controller.
+`status.observedGeneration` shows the most recent generation observed by the `ZooKeeperOpsRequest` controller.
 
 ### status.conditions
 
-`status.conditions` is an array that specifies the conditions of different steps of `ZooKeeperOpsRequests` processing. Each condition entry has the following fields:
+`status.conditions` is an array that specifies the conditions of different steps of `ZooKeeperOpsRequest` processing. Each condition entry has the following fields:
 
-- `types` specifies the type of the condition. ZooKeeperOpsRequests has the following types of conditions:
+- `types` specifies the type of the condition. ZooKeeperOpsRequest has the following types of conditions:
 
 | Type                           |   | Meaning                                                                   |
 |--------------------------------|---|---------------------------------------------------------------------------|
