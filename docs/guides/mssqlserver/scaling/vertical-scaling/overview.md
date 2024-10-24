@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Vertical Scaling MSSQLServer
 
-This guide will give you an overview of how KubeDB Ops Manager updates the resources(for example Memory, CPU etc.) of the `MSSQLServer` database server.
+This guide will give you an overview of how KubeDB Ops Manager updates the resources(for example Memory, CPU etc.) of the `MSSQLServer`.
 
 ## Before You Begin
 

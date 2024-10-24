@@ -118,19 +118,17 @@ A `MSSQLServerOpsRequest` object has the following fields in the `spec` section.
 
 `spec.databaseRef` is a required field that point to the [MSSQLServer](/docs/guides/mssqlserver/concepts/mssqlserver.md) object where the administrative operations will be applied. This field consists of the following sub-field:
 
-- **spec.databaseRef.name :**  specifies the name of the [MSSQLServer](/docs/guides/MSSQLServer/concepts/MSSQLServer.md) object.
+- **spec.databaseRef.name :**  specifies the name of the [MSSQLServer](/docs/guides/mssqlserver/concepts/mssqlserver.md) object.
 
 #### spec.type
 
 `spec.type` specifies the kind of operation that will be applied to the database. Currently, the following types of operations are allowed in `MSSQLServerOpsRequest`.
 
-- `Upgrade` / `UpdateVersion`
+- `UpdateVersion`
 - `HorizontalScaling`
 - `VerticalScaling`
-- `volumeExpansion`
+- `VolumeExpansion`
 - `Restart`
-- `Reconfigure`
-- `ReconfigureTLS`
 
 >You can perform only one type of operation on a single `MSSQLServerOpsRequest` CR. For example, if you want to update your database and scale up its replica then you have to create two separate `MSSQLServerOpsRequest`. At first, you have to create a `MSSQLServerOpsRequest` for updating. Once it is completed, then you can create another `MSSQLServerOpsRequest` for scaling. You should not create two `MSSQLServerOpsRequest` simultaneously.
 
@@ -138,7 +136,7 @@ A `MSSQLServerOpsRequest` object has the following fields in the `spec` section.
 
 If you want to update your MSSQLServer version, you have to specify the `spec.updateVersion`  section that specifies the desired version information. This field consists of the following sub-field:
 
-- `spec.updateVersion.targetVersion` refers to a [MSSQLServerVersion](/docs/guides/MSSQLServer/concepts/catalog.md) CR that contains the MSSQLServer version information where you want to update.
+- `spec.updateVersion.targetVersion` refers to a [MSSQLServerVersion](/docs/guides/mssqlserver/concepts/catalog.md) CR that contains the MSSQLServer version information where you want to update.
 
 >You can only update between MSSQLServer versions. KubeDB does not support downgrade for MSSQLServer.
 
@@ -146,50 +144,79 @@ If you want to update your MSSQLServer version, you have to specify the `spec.up
 
 If you want to scale-up or scale-down your MSSQLServer cluster, you have to specify `spec.horizontalScaling` section. This field consists of the following sub-field:
 
-- `spec.horizontalScaling.member` indicates the desired number of members for your MSSQLServer cluster after scaling. For example, if your cluster currently has 4 members and you want to add additional 2 members then you have to specify 6 in `spec.horizontalScaling.member` field. Similarly, if you want to remove one member from the cluster, you have to specify 3  in `spec.horizontalScaling.member` field.
+- `spec.horizontalScaling.replicas` indicates the desired number of replicas for your MSSQLServer cluster after scaling. For example, if your cluster currently has 4 replicas, and you want to add additional 2 replicas then you have to specify 6 in `spec.horizontalScaling.replicas` field. Similarly, if you want to remove one member from the cluster, you have to specify 3  in `spec.horizontalScaling.replicas` field.
 
 #### spec.verticalScaling
 
-`spec.verticalScaling` is a required field specifying the information of `MSSQLServer` resources like `cpu`, `memory` etc that will be scaled. This field consists of the following sub-fields:
+`spec.verticalScaling` is a required field specifying the information of `MSSQLServer` resources like `cpu`, `memory` etc. that will be scaled. This field consists of the following sub-fields:
 
-- `spec.verticalScaling.MSSQLServer` indicates the `MSSQLServer` server resources. It has the below structure:
+- `spec.verticalScaling.mssqlserver` indicates the `MSSQLServer` server resources. It has the below structure:
 
 ```yaml
-requests:
-  memory: "200Mi"
-  cpu: "0.1"
-limits:
-  memory: "300Mi"
-  cpu: "0.2"
+resources:
+  requests:
+    memory: "5Gi"
+    cpu: 1
+  limits:
+    memory: "5Gi"
+    cpu: 2
 ```
 
 Here, when you specify the resource request for `MSSQLServer` container, the scheduler uses this information to decide which node to place the container of the Pod on and when you specify a resource limit for `MSSQLServer` container, the `kubelet` enforces those limits so that the running container is not allowed to use more of that resource than the limit you set. you can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
 
-- `spec.verticalScaling.exporter` indicates the `exporter` container resources. It has the same structure as `spec.verticalScaling.MSSQLServer` and you can scale the resource the same way as `MSSQLServer` container.
+- `spec.verticalScaling.exporter` indicates the `exporter` container resources. It has the same structure as `spec.verticalScaling.mssqlserver` and you can scale the resource the same way as `MSSQLServer` container.
 
 >You can increase/decrease resources for both `MSSQLServer` container and `exporter` container on a single `MSSQLServerOpsRequest` CR.
 
+### spec.volumeExpansion
+
+> To use the volume expansion feature the storage class must support volume expansion
+
+If you want to expand the volume of your MSSQLServer cluster, you have to specify `spec.volumeExpansion` section. This field consists of the following sub-field:
+
+- `spec.volumeExpansion.mode` specifies the volume expansion mode. Supported values are `Online` & `Offline`. The default is `Online`.
+- `spec.volumeExpansion.mssqlserver` indicates the desired size for the persistent volumes of a MSSQLServer.
+
+All of them refer to [Quantity](https://v1-22.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#quantity-resource-core) types of Kubernetes.
+
+Example usage of this field is given below:
+
+```yaml
+spec:
+  volumeExpansion:
+    mode: "Online"
+    mssqlserver: 30Gi
+```
+
+This will expand the volume size of all the mssql server nodes to 30 GB.
+
+
 #### spec.timeout
 
-Timeout for each step of the ops request in second. If a step doesn't finish within the specified timeout, the ops request will result in failure.
+As we internally retry the ops request steps multiple times, This `timeout` field helps the users to specify the timeout for those steps of the ops request (in second). If a step doesn’t finish within the specified timeout, the ops request will result in failure.
+
 
 #### spec.apply
 
-Apply is to control the execution of OpsRequest depending on the database state.
+This field controls the execution of obsRequest depending on the database state. It has two supported values: `Always` & `IfReady`. Use IfReady, if you want to process the opsRequest only when the database is Ready. And use Always, if you want to process the execution of opsReq irrespective of the Database state.
 
 ### MSSQLServerOpsRequest `Status`
 
 `.status` describes the current state and progress of the `MSSQLServerOpsRequest` operation. It has the following fields:
 
-#### status.phase
+### status.phase
 
-`status.phase` indicates the overall phase of the operation for this `MSSQLServerOpsRequest`. It can have the following three values:
+`status.phase` indicates the overall phase of the operation for this `MSSQLServerOpsRequest`. It can have the following values:
 
-| Phase      | Meaning                                                                             |
-| ---------- | ----------------------------------------------------------------------------------- |
-| Successful | KubeDB has successfully performed the operation requested in the MSSQLServerOpsRequest |
-| Failed     | KubeDB has failed the operation requested in the MSSQLServerOpsRequest                 |
-| Denied     | KubeDB has denied the operation requested in the MSSQLServerOpsRequest                 |
+| Phase       | Meaning                                                                            |
+|-------------|------------------------------------------------------------------------------------|
+| Successful  | KubeDB has successfully performed the operation requested in the MSSQLServerOpsRequest |
+| Progressing | KubeDB has started the execution of the applied MSSQLServerOpsRequest                  |
+| Failed      | KubeDB has failed the operation requested in the MSSQLServerOpsRequest                 |
+| Denied      | KubeDB has denied the operation requested in the MSSQLServerOpsRequest                 |
+| Skipped     | KubeDB has skipped the operation requested in the MSSQLServerOpsRequest                |
+
+Important: Ops-manager Operator can skip an opsRequest, only if its execution has not been started yet & there is a newer opsRequest applied in the cluster. `spec.type` has to be same as the skipped one, in this case.
 
 #### status.observedGeneration
 
@@ -201,18 +228,18 @@ Apply is to control the execution of OpsRequest depending on the database state.
 
 - `types` specifies the type of the condition. MSSQLServerOpsRequest has the following types of conditions:
 
-| Type               | Meaning                                                                                   |
-|--------------------| ----------------------------------------------------------------------------------------- |
-| `Progressing`      | Specifies that the operation is now progressing                                           |
-| `Successful`       | Specifies such a state that the operation on the database has been successful.            |
-| `HaltDatabase`     | Specifies such a state that the database is halted by the operator                        |
-| `ResumeDatabase`   | Specifies such a state that the database is resumed by the operator                       |
-| `Failure`          | Specifies such a state that the operation on the database has been failed.                |
-| `Scaling`          | Specifies such a state that the scaling operation on the database has stared              |
-| `VerticalScaling`  | Specifies such a state that vertical scaling has performed successfully on database       |
+| Type                | Meaning                                                                                   |
+|---------------------| ----------------------------------------------------------------------------------------- |
+| `Progressing`       | Specifies that the operation is now progressing                                           |
+| `Successful`        | Specifies such a state that the operation on the database has been successful.            |
+| `HaltDatabase`      | Specifies such a state that the database is halted by the operator                        |
+| `ResumeDatabase`    | Specifies such a state that the database is resumed by the operator                       |
+| `Failed`           | Specifies such a state that the operation on the database has been failed.                |
+| `Scaling`           | Specifies such a state that the scaling operation on the database has stared              |
+| `VerticalScaling`   | Specifies such a state that vertical scaling has performed successfully on database       |
 | `HorizontalScaling` | Specifies such a state that horizontal scaling has performed successfully on database     |
-| `updating`        | Specifies such a state that database updating operation has stared                       |
-| `UpdateVersion`    | Specifies such a state that version updating on the database have performed successfully |
+| `Updating`          | Specifies such a state that database updating operation has stared                       |
+| `UpdateVersion`     | Specifies such a state that version updating on the database have performed successfully |
 
 - The `status` field is a string, with possible values `"True"`, `"False"`, and `"Unknown"`.
     - `status` will be `"True"` if the current transition is succeeded.
