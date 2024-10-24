@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DruidOpsRequest
+metadata:
+    name: druid-update-version
+    namespace: demo
+spec:
+    type: UpdateVersion
+    databaseRef:
+        name: druid-cluster
+    updateVersion:
+        targetVersion: 30.0.0
+    timeout: 5m
+    apply: IfReady
