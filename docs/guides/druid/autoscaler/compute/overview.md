@@ -28,7 +28,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `Druid` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Compute Auto Scaling process of Druid" src="/docs/images/day-2-operation/kafka/kf-compute-autoscaling.svg">
+  <img alt="Volume Expansion process of Druid" src="/docs/guides/druid/autoscaler/compute/images/compute-autoscaling.png">
 <figcaption align="center">Fig: Compute Auto Scaling process of Druid</figcaption>
 </figure>
 

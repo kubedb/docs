@@ -1,0 +1,31 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: DruidAutoscaler
+metadata:
+    name: druid-autoscaler
+    namespace: demo
+spec:
+    databaseRef:
+        name: druid-cluster
+    compute:
+        coordinators:
+            trigger: "On"
+            podLifeTimeThreshold: 1m
+            minAllowed:
+                cpu: 600m
+                memory: 2Gi
+            maxAllowed:
+                cpu: 1000m
+                memory: 5Gi
+            resourceDiffPercentage: 20
+            controlledResources: ["cpu", "memory"]
+        historicals:
+            trigger: "On"
+            podLifeTimeThreshold: 1m
+            minAllowed:
+                cpu: 600m
+                memory: 2Gi
+            maxAllowed:
+                cpu: 1000m
+                memory: 5Gi
+            resourceDiffPercentage: 20
+            controlledResources: [ "cpu", "memory"]
