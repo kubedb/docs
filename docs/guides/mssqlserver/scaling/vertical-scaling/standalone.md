@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Vertical Scale MSSQLServer Instance
+# Vertical Scale MSSQLServer Instances
 
-This guide will show you how to use `kubeDB-Ops-Manager` to update the resources of a MSSQLServer instance.
+This guide will show you how to use `kubeDB-Ops-Manager` to update the resources of a MSSQLServer instances.
 
 ## Before You Begin
 
