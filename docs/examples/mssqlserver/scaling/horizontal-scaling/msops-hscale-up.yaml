@@ -1,11 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
+kind: MSSQLServerOpsRequest
 metadata:
-  name: mops-hscale-down-replicaset
+  name: msops-hscale-up
   namespace: demo
 spec:
   type: HorizontalScaling
   databaseRef:
-    name: mg-replicaset
+    name: mssql-ag-cluster
   horizontalScaling:
     replicas: 3
