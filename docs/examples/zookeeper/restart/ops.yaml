@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ZooKeeperOpsRequest
+metadata:
+  name: zk-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: zk-quickstart
+  timeout: 3m
+  apply: Always
