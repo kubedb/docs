@@ -10,4 +10,4 @@ spec:
     volumeExpansion:
         historicals: 3Gi
         middleManagers: 2Gi
-        mode: Online
+        mode: Offline

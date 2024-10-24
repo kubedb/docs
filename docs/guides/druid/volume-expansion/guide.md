@@ -62,7 +62,6 @@ Before proceeding further, we need to prepare deep storage, which is one of the 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
-
 $ helm repo add minio https://operator.min.io/
 $ helm repo update minio
 $ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
@@ -380,11 +379,9 @@ $ kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.vo
 "2Gi"
 
 $ kubectl get pv -n demo                                       
-NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                           STORAGECLASS   REASON   AGE
-pvc-3f177a92721440bb   1Gi        RWO            Delete           Bound      demo/druid-cluster-data-druid-cluster-middleManagers-0    standard                5m25s
-pvc-86ff354122324b1c   1Gi        RWO            Delete           Bound      demo/druid-cluster-data-druid-cluster-historicals-1        standard                4m51s
-pvc-9fa35d773aa74bd0   1Gi        RWO            Delete           Bound      demo/druid-cluster-data-druid-cluster-middleManagers-1    standard                5m1s
+NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                                      STORAGECLASS   REASON   AGE
 pvc-ccf50adf179e4162   1Gi        RWO            Delete           Bound      demo/druid-cluster-data-druid-cluster-historicals-0        standard                5m30s
+pvc-3f177a92721440bb   1Gi        RWO            Delete           Bound      demo/druid-cluster-data-druid-cluster-middleManagers-0     standard                5m25s
 ```
 
 The above output verifies that we have successfully expanded the volume of the Druid.

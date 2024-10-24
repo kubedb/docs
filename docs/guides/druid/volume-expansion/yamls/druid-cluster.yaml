@@ -18,7 +18,6 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
     middleManagers:
       replicas: 1
       storage:
@@ -27,7 +26,6 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
     routers:
       replicas: 1
   deletionPolicy: Delete
