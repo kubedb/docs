@@ -1,10 +1,10 @@
 ---
-title: Kafka Topology Autoscaling
+title: Druid Topology Autoscaling
 menu:
   docs_{{ .version }}:
-    identifier: kf-storage-auto-scaling-topology
+    identifier: guides-druid-autoscaler-storage-guide
     name: Topology Cluster
-    parent: kf-storage-auto-scaling
+    parent: guides-druid-autoscaler-storage
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Storage Autoscaling of a Kafka Topology Cluster
+# Storage Autoscaling of a Druid Topology Cluster
 
-This guide will show you how to use `KubeDB` to autoscale the storage of a Kafka Topology cluster.
+This guide will show you how to use `KubeDB` to autoscale the storage of a Druid Topology cluster.
 
 ## Before You Begin
 
@@ -29,10 +29,10 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Kafka
 - You must have a `StorageClass` that supports volume expansion.
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Kafka](/docs/guides/kafka/concepts/kafka.md)
-    - [KafkaAutoscaler](/docs/guides/kafka/concepts/kafkaautoscaler.md)
-    - [KafkaOpsRequest](/docs/guides/kafka/concepts/kafkaopsrequest.md)
-    - [Storage Autoscaling Overview](/docs/guides/kafka/autoscaler/storage/overview.md)
+    - [Druid](/docs/guides/druid/concepts/druid.md)
+    - [DruidAutoscaler](/docs/guides/druid/concepts/druidautoscaler.md)
+    - [DruidOpsRequest](/docs/guides/druid/concepts/druidopsrequest.md)
+    - [Storage Autoscaling Overview](/docs/guides/druid/autoscaler/storage/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -41,7 +41,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/kafka](/docs/examples/kafka) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/druid](/docs/examples/druid) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Storage Autoscaling of Topology Cluster
 
@@ -55,17 +55,17 @@ standard (default)   kubernetes.io/gce-pd   Delete          Immediate           
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `Kafka` topology using a supported version by `KubeDB` operator. Then we are going to apply `KafkaAutoscaler` to set up autoscaling.
+Now, we are going to deploy a `Druid` topology using a supported version by `KubeDB` operator. Then we are going to apply `DruidAutoscaler` to set up autoscaling.
 
-#### Deploy Kafka topology
+#### Deploy Druid topology
 
-In this section, we are going to deploy a Kafka topology cluster with version `4.4.26`.  Then, in the next section we will set up autoscaling for this cluster using `KafkaAutoscaler` CRD. Below is the YAML of the `Kafka` CR that we are going to create,
+In this section, we are going to deploy a Druid topology cluster with version `4.4.26`.  Then, in the next section we will set up autoscaling for this cluster using `DruidAutoscaler` CRD. Below is the YAML of the `Druid` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
-kind: Kafka
+kind: Druid
 metadata:
-  name: kafka-prod
+  name: druid-prod
   namespace: demo
 spec:
   version: 3.6.1
@@ -92,61 +92,61 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Let's create the `Kafka` CRO we have shown above,
+Let's create the `Druid` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaler/kafka-topology.yaml
-kafka.kubedb.com/kafka-prod created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/autoscaler/druid-topology.yaml
+druid.kubedb.com/druid-prod created
 ```
 
-Now, wait until `kafka-dev` has status `Ready`. i.e,
+Now, wait until `druid-dev` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get kf -n demo -w
 NAME          TYPE            VERSION   STATUS         AGE
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   0s
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   24s
+druid-prod    kubedb.com/v1   3.6.1     Provisioning   0s
+druid-prod    kubedb.com/v1   3.6.1     Provisioning   24s
 .
 .
-kafka-prod    kubedb.com/v1   3.6.1     Ready          119s
+druid-prod    kubedb.com/v1   3.6.1     Ready          119s
 ```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo druid-prod-broker -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
-$ kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo druid-prod-controller -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                                      STORAGECLASS          REASON     AGE
-pvc-128d9138-64da-4021-8a7c-7ca80823e842   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1               longhorn              <unset>    33s
-pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0                   longhorn              <unset>    51s
-pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0               longhorn              <unset>    50s
-pvc-68f86aac-33d1-423a-bc56-8a905b546db2   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1                   longhorn              <unset>    32s
+pvc-128d9138-64da-4021-8a7c-7ca80823e842   1Gi        RWO            Delete           Bound      demo/druid-prod-data-druid-prod-controller-1               longhorn              <unset>    33s
+pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21   1Gi        RWO            Delete           Bound      demo/druid-prod-data-druid-prod-broker-0                   longhorn              <unset>    51s
+pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57   1Gi        RWO            Delete           Bound      demo/druid-prod-data-druid-prod-controller-0               longhorn              <unset>    50s
+pvc-68f86aac-33d1-423a-bc56-8a905b546db2   1Gi        RWO            Delete           Bound      demo/druid-prod-data-druid-prod-broker-1                   longhorn              <unset>    32s
 ```
 
 You can see the petset for both broker and controller has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
-We are now ready to apply the `KafkaAutoscaler` CRO to set up storage autoscaling for this cluster(broker and controller).
+We are now ready to apply the `DruidAutoscaler` CRO to set up storage autoscaling for this cluster(broker and controller).
 
 ### Storage Autoscaling
 
-Here, we are going to set up storage autoscaling using a KafkaAutoscaler Object.
+Here, we are going to set up storage autoscaling using a DruidAutoscaler Object.
 
-#### Create KafkaAutoscaler Object
+#### Create DruidAutoscaler Object
 
-In order to set up vertical autoscaling for this topology cluster, we have to create a `KafkaAutoscaler` CRO with our desired configuration. Below is the YAML of the `KafkaAutoscaler` object that we are going to create,
+In order to set up vertical autoscaling for this topology cluster, we have to create a `DruidAutoscaler` CRO with our desired configuration. Below is the YAML of the `DruidAutoscaler` object that we are going to create,
 
 ```yaml
 apiVersion: autoscaling.kubedb.com/v1alpha1
-kind: KafkaAutoscaler
+kind: DruidAutoscaler
 metadata:
   name: kf-storage-autoscaler-topology
   namespace: demo
 spec:
   databaseRef:
-    name: kafka-prod
+    name: druid-prod
   storage:
     broker:
       expansionMode: "Online"
@@ -162,34 +162,34 @@ spec:
 
 Here,
 
-- `spec.clusterRef.name` specifies that we are performing vertical scaling operation on `kafka-prod` cluster.
+- `spec.clusterRef.name` specifies that we are performing vertical scaling operation on `druid-prod` cluster.
 - `spec.storage.broker.trigger/spec.storage.controller.trigger` specifies that storage autoscaling is enabled for broker and controller of topology cluster.
 - `spec.storage.broker.usageThreshold/spec.storage.controller.usageThreshold` specifies storage usage threshold, if storage usage exceeds `60%` then storage autoscaling will be triggered.
 - `spec.storage.broker.scalingThreshold/spec.storage.broker.scalingThreshold` specifies the scaling threshold. Storage will be scaled to `100%` of the current amount.
 - It has another field `spec.storage.broker.expansionMode/spec.storage.controller.expansionMode` to set the opsRequest volumeExpansionMode, which support two values: `Online` & `Offline`. Default value is `Online`.
 
-Let's create the `KafkaAutoscaler` CR we have shown above,
+Let's create the `DruidAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaling/storage/kafka-storage-autoscaler-topology.yaml
-kafkaautoscaler.autoscaling.kubedb.com/kf-storage-autoscaler-topology created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/autoscaling/storage/druid-storage-autoscaler-topology.yaml
+druidautoscaler.autoscaling.kubedb.com/kf-storage-autoscaler-topology created
 ```
 
 #### Storage Autoscaling is set up successfully
 
-Let's check that the `kafkaautoscaler` resource is created successfully,
+Let's check that the `druidautoscaler` resource is created successfully,
 
 ```bash
 NAME                             AGE
 kf-storage-autoscaler-topology   8s
 
-$ kubectl describe kafkaautoscaler -n demo kf-storage-autoscaler-topology 
+$ kubectl describe druidautoscaler -n demo kf-storage-autoscaler-topology 
 Name:         kf-storage-autoscaler-topology
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  autoscaling.kubedb.com/v1alpha1
-Kind:         KafkaAutoscaler
+Kind:         DruidAutoscaler
 Metadata:
   Creation Timestamp:  2024-08-27T08:54:35Z
   Generation:          1
@@ -197,14 +197,14 @@ Metadata:
     API Version:           kubedb.com/v1
     Block Owner Deletion:  true
     Controller:            true
-    Kind:                  Kafka
-    Name:                  kafka-prod
+    Kind:                  Druid
+    Name:                  druid-prod
     UID:                   1ae37155-dd92-4547-8aba-589140d1d2cf
   Resource Version:        1142604
   UID:                     bca444d0-d860-4588-9b51-412c614c4771
 Spec:
   Database Ref:
-    Name:  kafka-prod
+    Name:  druid-prod
   Ops Request Options:
     Apply:  IfReady
   Storage:
@@ -226,7 +226,7 @@ Spec:
       Usage Threshold:    60
 Events:                   <none>
 ```
-So, the `kafkaautoscaler` resource is created successfully.
+So, the `druidautoscaler` resource is created successfully.
 
 Now, for this demo, we are going to manually fill up the persistent volume to exceed the `usageThreshold` using `dd` command to see if storage autoscaling is working or not.
 
@@ -235,68 +235,68 @@ We are autoscaling volume for both broker and controller. So we need to fill up 
 1. Let's exec into the broker pod and fill the cluster volume using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- bash
-kafka@kafka-prod-broker-0:~$ df -h /var/log/kafka
+$ kubectl exec -it -n demo druid-prod-broker-0 -- bash
+druid@druid-prod-broker-0:~$ df -h /var/log/druid
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21  974M  256K  958M   1% /var/log/kafka
-kafka@kafka-prod-broker-0:~$ dd if=/dev/zero of=/var/log/kafka/file.img bs=600M count=1
+/dev/standard/pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21  974M  256K  958M   1% /var/log/druid
+druid@druid-prod-broker-0:~$ dd if=/dev/zero of=/var/log/druid/file.img bs=600M count=1
 1+0 records in
 1+0 records out
 629145600 bytes (629 MB, 600 MiB) copied, 5.58851 s, 113 MB/s
-kafka@kafka-prod-broker-0:~$ df -h /var/log/kafka
+druid@druid-prod-broker-0:~$ df -h /var/log/druid
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21  974M  601M  358M  63% /var/log/kafka
+/dev/standard/pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21  974M  601M  358M  63% /var/log/druid
 ```
 
 2. Let's exec into the controller pod and fill the cluster volume using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-controller-0 -- bash
-kafka@kafka-prod-controller-0:~$ df -h /var/log/kafka
+$ kubectl exec -it -n demo druid-prod-controller-0 -- bash
+druid@druid-prod-controller-0:~$ df -h /var/log/druid
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57  974M  192K  958M   1% /var/log/kafka
-kafka@kafka-prod-controller-0:~$ dd if=/dev/zero of=/var/log/kafka/file.img bs=600M count=1
+/dev/standard/pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57  974M  192K  958M   1% /var/log/druid
+druid@druid-prod-controller-0:~$ dd if=/dev/zero of=/var/log/druid/file.img bs=600M count=1
 1+0 records in
 1+0 records out
 629145600 bytes (629 MB, 600 MiB) copied, 3.39618 s, 185 MB/s
-kafka@kafka-prod-controller-0:~$ df -h /var/log/kafka
+druid@druid-prod-controller-0:~$ df -h /var/log/druid
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57  974M  601M  358M  63% /var/log/kafka
+/dev/standard/pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57  974M  601M  358M  63% /var/log/druid
 ```
 
 So, from the above output we can see that the storage usage is 63% for both nodes, which exceeded the `usageThreshold` 60%.
 
-There will be two `KafkaOpsRequest` created for both broker and controller to expand the volume of the cluster for both nodes.
-Let's watch the `kafkaopsrequest` in the demo namespace to see if any `kafkaopsrequest` object is created. After some time you'll see that a `kafkaopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
+There will be two `DruidOpsRequest` created for both broker and controller to expand the volume of the cluster for both nodes.
+Let's watch the `druidopsrequest` in the demo namespace to see if any `druidopsrequest` object is created. After some time you'll see that a `druidopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ watch kubectl get kafkaopsrequest -n demo
-Every 2.0s: kubectl get kafkaopsrequest -n demo
+$ watch kubectl get druidopsrequest -n demo
+Every 2.0s: kubectl get druidopsrequest -n demo
 NAME                     TYPE              STATUS        AGE
-kfops-kafka-prod-7qwpbn  VolumeExpansion   Progressing   10s
+kfops-druid-prod-7qwpbn  VolumeExpansion   Progressing   10s
 ```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo 
+$ kubectl get druidopsrequest -n demo 
 NAME                    TYPE              STATUS        AGE
-kfops-kafka-prod-7qwpbn  VolumeExpansion   Successful   2m37s
+kfops-druid-prod-7qwpbn  VolumeExpansion   Successful   2m37s
 ```
 
-We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to expand the volume of the cluster.
+We can see from the above output that the `DruidOpsRequest` has succeeded. If we describe the `DruidOpsRequest` we will get an overview of the steps that were followed to expand the volume of the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequests -n demo kfops-kafka-prod-7qwpbn 
-Name:         kfops-kafka-prod-7qwpbn
+$ kubectl describe druidopsrequests -n demo kfops-druid-prod-7qwpbn 
+Name:         kfops-druid-prod-7qwpbn
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
-              app.kubernetes.io/instance=kafka-prod
+              app.kubernetes.io/instance=druid-prod
               app.kubernetes.io/managed-by=kubedb.com
-              app.kubernetes.io/name=kafkas.kubedb.com
+              app.kubernetes.io/name=druids.kubedb.com
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
-Kind:         KafkaOpsRequest
+Kind:         DruidOpsRequest
 Metadata:
   Creation Timestamp:  2024-08-27T08:59:43Z
   Generation:          1
@@ -304,7 +304,7 @@ Metadata:
     API Version:           autoscaling.kubedb.com/v1alpha1
     Block Owner Deletion:  true
     Controller:            true
-    Kind:                  KafkaAutoscaler
+    Kind:                  DruidAutoscaler
     Name:                  kf-storage-autoscaler-topology
     UID:                   bca444d0-d860-4588-9b51-412c614c4771
   Resource Version:        1144249
@@ -312,7 +312,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Database Ref:
-    Name:  kafka-prod
+    Name:  druid-prod
   Type:    VolumeExpansion
   Volume Expansion:
     Broker:  2041405440
@@ -320,7 +320,7 @@ Spec:
 Status:
   Conditions:
     Last Transition Time:  2024-08-27T08:59:43Z
-    Message:               Kafka ops-request has started to expand volume of kafka nodes.
+    Message:               Druid ops-request has started to expand volume of druid nodes.
     Observed Generation:   1
     Reason:                VolumeExpansion
     Status:                True
@@ -363,7 +363,7 @@ Status:
     Status:                True
     Type:                  UpdateBrokerNodePVCs
     Last Transition Time:  2024-08-27T09:04:03Z
-    Message:               successfully reconciled the Kafka resources
+    Message:               successfully reconciled the Druid resources
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
@@ -375,7 +375,7 @@ Status:
     Status:                True
     Type:                  ReadyPetSets
     Last Transition Time:  2024-08-27T09:04:08Z
-    Message:               Successfully completed volumeExpansion for kafka
+    Message:               Successfully completed volumeExpansion for druid
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -385,9 +385,9 @@ Status:
 Events:
   Type     Reason                                   Age    From                         Message
   ----     ------                                   ----   ----                         -------
-  Normal   Starting                                 6m6s   KubeDB Ops-manager Operator  Start processing for KafkaOpsRequest: demo/kfops-kafka-prod-7qwpbn
-  Normal   Starting                                 6m6s   KubeDB Ops-manager Operator  Pausing Kafka databse: demo/kafka-prod
-  Normal   Successful                               6m6s   KubeDB Ops-manager Operator  Successfully paused Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-kafka-prod-7qwpbn
+  Normal   Starting                                 6m6s   KubeDB Ops-manager Operator  Start processing for DruidOpsRequest: demo/kfops-druid-prod-7qwpbn
+  Normal   Starting                                 6m6s   KubeDB Ops-manager Operator  Pausing Druid databse: demo/druid-prod
+  Normal   Successful                               6m6s   KubeDB Ops-manager Operator  Successfully paused Druid database: demo/druid-prod for DruidOpsRequest: kfops-druid-prod-7qwpbn
   Warning  get pet set; ConditionStatus:True        5m58s  KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
   Warning  is petset deleted; ConditionStatus:True  5m58s  KubeDB Ops-manager Operator  is petset deleted; ConditionStatus:True
   Warning  get pet set; ConditionStatus:True        5m53s  KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
@@ -445,44 +445,44 @@ Events:
   Warning  get pvc; ConditionStatus:True            118s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
   Warning  compare storage; ConditionStatus:True    118s   KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
   Normal   UpdateBrokerNodePVCs                     113s   KubeDB Ops-manager Operator  successfully updated broker node PVC sizes
-  Normal   UpdatePetSets                            106s   KubeDB Ops-manager Operator  successfully reconciled the Kafka resources
+  Normal   UpdatePetSets                            106s   KubeDB Ops-manager Operator  successfully reconciled the Druid resources
   Warning  get pet set; ConditionStatus:True        101s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
   Normal   ReadyPetSets                             101s   KubeDB Ops-manager Operator  PetSet is recreated
-  Normal   Starting                                 101s   KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
-  Normal   Successful                               101s   KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-kafka-prod-7qwpbn
+  Normal   Starting                                 101s   KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-prod
+  Normal   Successful                               101s   KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-prod for DruidOpsRequest: kfops-druid-prod-7qwpbn
 ```
 
-After a few minutes, another `KafkaOpsRequest` of type `VolumeExpansion` will be created for the controller node.
+After a few minutes, another `DruidOpsRequest` of type `VolumeExpansion` will be created for the controller node.
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo
+$ kubectl get druidopsrequest -n demo
 NAME                     TYPE              STATUS        AGE
-kfops-kafka-prod-7qwpbn  VolumeExpansion   Successful   2m47s
-kfops-kafka-prod-sa4thn  VolumeExpansion   Progressing  10s
+kfops-druid-prod-7qwpbn  VolumeExpansion   Successful   2m47s
+kfops-druid-prod-sa4thn  VolumeExpansion   Progressing  10s
 ```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo
+$ kubectl get druidopsrequest -n demo
 NAME                     TYPE              STATUS        AGE
-kfops-kafka-prod-7qwpbn  VolumeExpansion   Successful   4m47s
-kfops-kafka-prod-sa4thn  VolumeExpansion   Successful   2m10s
+kfops-druid-prod-7qwpbn  VolumeExpansion   Successful   4m47s
+kfops-druid-prod-sa4thn  VolumeExpansion   Successful   2m10s
 ```
 
-We can see from the above output that the `KafkaOpsRequest` `kfops-kafka-prod-sa4thn` has also succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to expand the volume of the cluster.
+We can see from the above output that the `DruidOpsRequest` `kfops-druid-prod-sa4thn` has also succeeded. If we describe the `DruidOpsRequest` we will get an overview of the steps that were followed to expand the volume of the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequests -n demo kfops-kafka-prod-2ta9m6 
-Name:         kfops-kafka-prod-2ta9m6
+$ kubectl describe druidopsrequests -n demo kfops-druid-prod-2ta9m6 
+Name:         kfops-druid-prod-2ta9m6
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
-              app.kubernetes.io/instance=kafka-prod
+              app.kubernetes.io/instance=druid-prod
               app.kubernetes.io/managed-by=kubedb.com
-              app.kubernetes.io/name=kafkas.kubedb.com
+              app.kubernetes.io/name=druids.kubedb.com
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
-Kind:         KafkaOpsRequest
+Kind:         DruidOpsRequest
 Metadata:
   Creation Timestamp:  2024-08-27T09:04:43Z
   Generation:          1
@@ -490,7 +490,7 @@ Metadata:
     API Version:           autoscaling.kubedb.com/v1alpha1
     Block Owner Deletion:  true
     Controller:            true
-    Kind:                  KafkaAutoscaler
+    Kind:                  DruidAutoscaler
     Name:                  kf-storage-autoscaler-topology
     UID:                   bca444d0-d860-4588-9b51-412c614c4771
   Resource Version:        1145309
@@ -498,7 +498,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Database Ref:
-    Name:  kafka-prod
+    Name:  druid-prod
   Type:    VolumeExpansion
   Volume Expansion:
     Controller:  2041405440
@@ -506,7 +506,7 @@ Spec:
 Status:
   Conditions:
     Last Transition Time:  2024-08-27T09:04:43Z
-    Message:               Kafka ops-request has started to expand volume of kafka nodes.
+    Message:               Druid ops-request has started to expand volume of druid nodes.
     Observed Generation:   1
     Reason:                VolumeExpansion
     Status:                True
@@ -549,7 +549,7 @@ Status:
     Status:                True
     Type:                  UpdateControllerNodePVCs
     Last Transition Time:  2024-08-27T09:09:47Z
-    Message:               successfully reconciled the Kafka resources
+    Message:               successfully reconciled the Druid resources
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
@@ -561,7 +561,7 @@ Status:
     Status:                True
     Type:                  ReadyPetSets
     Last Transition Time:  2024-08-27T09:09:53Z
-    Message:               Successfully completed volumeExpansion for kafka
+    Message:               Successfully completed volumeExpansion for druid
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -571,9 +571,9 @@ Status:
 Events:
   Type     Reason                                   Age    From                         Message
   ----     ------                                   ----   ----                         -------
-  Normal   Starting                                 8m17s  KubeDB Ops-manager Operator  Start processing for KafkaOpsRequest: demo/kfops-kafka-prod-2ta9m6
-  Normal   Starting                                 8m17s  KubeDB Ops-manager Operator  Pausing Kafka databse: demo/kafka-prod
-  Normal   Successful                               8m17s  KubeDB Ops-manager Operator  Successfully paused Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-kafka-prod-2ta9m6
+  Normal   Starting                                 8m17s  KubeDB Ops-manager Operator  Start processing for DruidOpsRequest: demo/kfops-druid-prod-2ta9m6
+  Normal   Starting                                 8m17s  KubeDB Ops-manager Operator  Pausing Druid databse: demo/druid-prod
+  Normal   Successful                               8m17s  KubeDB Ops-manager Operator  Successfully paused Druid database: demo/druid-prod for DruidOpsRequest: kfops-druid-prod-2ta9m6
   Warning  get pet set; ConditionStatus:True        8m9s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
   Warning  is petset deleted; ConditionStatus:True  8m9s   KubeDB Ops-manager Operator  is petset deleted; ConditionStatus:True
   Warning  get pet set; ConditionStatus:True        8m4s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
@@ -640,45 +640,45 @@ Events:
   Warning  get pvc; ConditionStatus:True            3m24s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
   Warning  compare storage; ConditionStatus:True    3m24s  KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
   Normal   UpdateControllerNodePVCs                 3m19s  KubeDB Ops-manager Operator  successfully updated controller node PVC sizes
-  Normal   UpdatePetSets                            3m12s  KubeDB Ops-manager Operator  successfully reconciled the Kafka resources
+  Normal   UpdatePetSets                            3m12s  KubeDB Ops-manager Operator  successfully reconciled the Druid resources
   Warning  get pet set; ConditionStatus:True        3m7s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
   Normal   ReadyPetSets                             3m7s   KubeDB Ops-manager Operator  PetSet is recreated
-  Normal   Starting                                 3m7s   KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
-  Normal   Successful                               3m7s   KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-kafka-prod-2ta9m6
+  Normal   Starting                                 3m7s   KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-prod
+  Normal   Successful                               3m7s   KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-prod for DruidOpsRequest: kfops-druid-prod-2ta9m6
 ```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the topology cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo druid-prod-broker -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "2041405440"
-$ kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo druid-prod-controller -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "2041405440"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY     ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                                      STORAGECLASS          REASON     AGE
-pvc-128d9138-64da-4021-8a7c-7ca80823e842   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1               longhorn              <unset>    33s
-pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0                   longhorn              <unset>    51s
-pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0               longhorn              <unset>    50s
-pvc-68f86aac-33d1-423a-bc56-8a905b546db2   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1                   longhorn              <unset>    32s
+pvc-128d9138-64da-4021-8a7c-7ca80823e842   1948Mi       RWO            Delete           Bound      demo/druid-prod-data-druid-prod-controller-1               longhorn              <unset>    33s
+pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21   1948Mi       RWO            Delete           Bound      demo/druid-prod-data-druid-prod-broker-0                   longhorn              <unset>    51s
+pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57   1948Mi       RWO            Delete           Bound      demo/druid-prod-data-druid-prod-controller-0               longhorn              <unset>    50s
+pvc-68f86aac-33d1-423a-bc56-8a905b546db2   1948Mi       RWO            Delete           Bound      demo/druid-prod-data-druid-prod-broker-1                   longhorn              <unset>    32s
 ```
 
-The above output verifies that we have successfully autoscaled the volume of the Kafka topology cluster for both broker and controller.
+The above output verifies that we have successfully autoscaled the volume of the Druid topology cluster for both broker and controller.
 
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete kafkaopsrequests -n demo kfops-kafka-prod-7qwpbn kfops-kafka-prod-sa4thn
-kubectl delete kafkautoscaler -n demo kf-storage-autoscaler-topology
-kubectl delete kf -n demo kafka-prod
+kubectl delete druidopsrequests -n demo kfops-druid-prod-7qwpbn kfops-druid-prod-sa4thn
+kubectl delete druidutoscaler -n demo kf-storage-autoscaler-topology
+kubectl delete kf -n demo druid-prod
 ```
 
 ## Next Steps
 
-- Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka.md).
-- Different Kafka topology clustering modes [here](/docs/guides/kafka/clustering/_index.md).
-- Monitor your Kafka database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/kafka/monitoring/using-prometheus-operator.md).
+- Detail concepts of [Druid object](/docs/guides/druid/concepts/druid.md).
+- Different Druid topology clustering modes [here](/docs/guides/druid/clustering/_index.md).
+- Monitor your Druid database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/druid/monitoring/using-prometheus-operator.md).
 
-[//]: # (- Monitor your Kafka database with KubeDB using [out-of-the-box builtin-Prometheus]&#40;/docs/guides/kafka/monitoring/using-builtin-prometheus.md&#41;.)
+[//]: # (- Monitor your Druid database with KubeDB using [out-of-the-box builtin-Prometheus]&#40;/docs/guides/druid/monitoring/using-builtin-prometheus.md&#41;.)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
