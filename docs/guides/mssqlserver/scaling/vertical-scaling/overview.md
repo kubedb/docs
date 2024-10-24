@@ -35,15 +35,15 @@ The vertical scaling process consists of the following steps:
 
 1. At first, a user creates a `MSSQLServer` CR.
 
-2. `KubeDB` community operator watches for the `MSSQLServer` CR.
+2. `KubeDB` provisioner operator watches for the `MSSQLServer` CR.
 
-3. When it finds one, it creates a `PetSet` and related necessary stuff like secret, service, etc.
+3. When the operator finds a `MSSQLServer` CR, it creates a `PetSet` and related necessary stuff like secret, service, etc.
 
-4. Then, in order to update the resources(for example `CPU`, `Memory` etc.) of the `MSSQLServer` database the user creates a `MSSQLServerOpsRequest` CR.
+4. Then, in order to update the resources(for example `CPU`, `Memory` etc.) of the `MSSQLServer` cluster the user creates a `MSSQLServerOpsRequest` CR with desired information.
 
 5. `KubeDB` Ops Manager watches for `MSSQLServerOpsRequest`.
 
-6. When it finds one, it halts the `MSSQLServer` object so that the `KubeDB` Provisioner operator doesn't perform any operation on the `MSSQLServer` during the scaling process.
+6. When it finds one, it halts the `MSSQLServer` object so that the `KubeDB` provisioner operator doesn't perform any operation on the `MSSQLServer` during the scaling process.
 
 7. Then the KubeDB Ops-manager operator will update resources of the PetSet's Pods to reach desired state.
 
