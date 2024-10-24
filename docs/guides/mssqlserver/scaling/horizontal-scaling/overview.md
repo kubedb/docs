@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Horizontal Scaling Overview
 
-This guide will give you an overview of how `KubeDB` Ops Manager scales up/down the number of members of a `MSSQLServer` instance.
+This guide will give you an overview of how `KubeDB` Ops Manager scales up/down the number of members of a `MSSQLServer`.
 
 ## Before You Begin
 
@@ -35,15 +35,15 @@ The horizontal scaling process consists of the following steps:
 
 1. At first, a user creates a `MSSQLServer` CR.
 
-2. `KubeDB` community operator watches for the `MSSQLServer` CR.
+2. `KubeDB` provisioner operator watches for the `MSSQLServer` CR.
 
 3. When it finds one, it creates a `PetSet` and related necessary stuff like secret, service, etc.
 
-4. Then, in order to scale the cluster, the user creates a `MSSQLServerOpsRequest` cr with the desired number of members after scaling.
+4. Then, in order to scale the cluster up or down, the user creates a `MSSQLServerOpsRequest` CR with the desired number of replicas after scaling.
 
 5. `KubeDB` Ops Manager watches for `MSSQLServerOpsRequest`.
 
-6. When it finds one, it halts the `MSSQLServer` object so that the `KubeDB` community operator doesn't perform any operation on the `MSSQLServer` during the scaling process.  
+6. When it finds one, it halts the `MSSQLServer` object so that the `KubeDB` provisioner operator doesn't perform any operation on the `MSSQLServer` during the scaling process.  
 
 7. Then `KubeDB` Ops Manager will add nodes in case of scale up or remove nodes in case of scale down.
 
@@ -51,6 +51,6 @@ The horizontal scaling process consists of the following steps:
 
 9.  After successful scaling of the PetSet's replica, the `KubeDB` Ops Manager updates the `spec.replicas` field of `MSSQLServer` object to reflect the updated cluster state.
 
-10. After successful scaling of the `MSSQLServer` replicas, the `KubeDB` Ops Manager resumes the `MSSQLServer` object so that the `KubeDB` community operator can resume its usual operations.
+10. After successful scaling of the `MSSQLServer` replicas, the `KubeDB` Ops Manager resumes the `MSSQLServer` object so that the `KubeDB` provisioner operator can resume its usual operations.
 
 In the next doc, we are going to show a step-by-step guide on scaling of a MSSQLServer cluster using Horizontal Scaling.
