@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SinglestoreOpsRequest
+metadata:
+  name: sdb-offline-vol-expansion
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: sample-sdb
+  volumeExpansion:
+    mode: "Offline"
+    aggregator: 2Gi
+    leaf: 11Gi

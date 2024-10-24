@@ -42,7 +42,8 @@ SingleStore, a distributed SQL database for real-time analytics, transactional w
 
 KubeDB supports the following SingleSore Versions.
 - `8.1.32`
-- `8.5.7`
+- `8.5.30`
+- `8.7.10`
 
 ## Life Cycle of a SingleStore Object
 
