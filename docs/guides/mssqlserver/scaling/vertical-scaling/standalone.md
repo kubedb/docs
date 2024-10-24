@@ -3,7 +3,7 @@ title: Vertical Scaling MSSQLServer
 menu:
   docs_{{ .version }}:
     identifier: ms-scaling-vertical-standalone
-    name: scale vertically
+    name: Standalone
     parent: ms-scaling-vertical
     weight: 20
 menu_name: docs_{{ .version }}
@@ -56,9 +56,40 @@ NAME        VERSION   DB_IMAGE                                                DE
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MSSQLServer`. You can use any non-deprecated version. Here, we are going to create a mssqlserver using non-deprecated `MSSQLServer` version `2022-cu12`.
 
+
+At first, we need to create an Issuer/ClusterIssuer which will be used to generate the certificate used for TLS configurations.
+
+#### Create Issuer/ClusterIssuer
+
+Now, we are going to create an example `Issuer` that will be used throughout the duration of this tutorial. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`. By following the below steps, we are going to create our desired issuer,
+
+- Start off by generating our ca-certificates using openssl,
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=MSSQLServer/O=kubedb"
+```
+-
+- Create a secret using the certificate files we have just generated,
+```bash
+$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
+secret/mssqlserver-ca created
+```
+Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+ name: mssqlserver-ca-issuer
+ namespace: demo
+spec:
+ ca:
+   secretName: mssqlserver-ca
+```
+
 **Deploy MSSQLServer:**
 
-In this section, we are going to deploy a MSSQLServer instance. Then, in the next section, we will update the resources of the database server using vertical scaling. Below is the YAML of the `MSSQLServer` CR that we are going to create,
+In this section, we are going to deploy a MSSQLServer instance. Then, in the next section, we will update the resources of the database server using vertical scaling.
+Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -99,18 +130,22 @@ mssqlserver.kubedb.com/mssql-standalone created
 `KubeDB` watches for `MSSQLServer` objects using Kubernetes API. When a `MSSQLServer` object is created, `KubeDB` will create a new PetSet, Services, and Secrets, etc.
 Now, watch `MSSQLServer` is going to be in `Running` state and also watch `PetSet` and its pod is created and going to be in `Running` state,
 
+
+
+
+
 ```bash
 $ watch kubectl get ms,petset,pods -n demo
-Every 2.0s: kubectl get ms,petset,pods -n demo                   
+Every 2.0s: kubectl get ms,petset,pods -n demo                    
 
 NAME                                      VERSION     STATUS   AGE
-mssqlserver.kubedb.com/mssql-standalone   2022-cu12   Ready    2m43s
+mssqlserver.kubedb.com/mssql-standalone   2022-cu12   Ready    4m7s
 
 NAME                                            AGE
-petset.apps.k8s.appscode.com/mssql-standalone   2m13s
+petset.apps.k8s.appscode.com/mssql-standalone   3m33s
 
 NAME                     READY   STATUS    RESTARTS   AGE
-pod/mssql-standalone-0   1/1     Running   0          2m12s
+pod/mssql-standalone-0   1/1     Running   0          3m33s
 ```
 
 Let's check the `mssql-standalone-0` pod's `mssql` container's resources, `mssql` container is the first container So it's index will be 0.
@@ -123,7 +158,7 @@ $ kubectl get pod -n demo mssql-standalone-0 -o json | jq '.spec.containers[0].r
   },
   "requests": {
     "cpu": "500m",
-    "memory": "4Gi"         //  todo future :   1.5GB 
+    "memory": "4Gi"
   }
 }
 ```
@@ -162,7 +197,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `mssql-standalone` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
-- `spec.VerticalScaling.mssqlserver` specifies the expected mssqlserver container resources after scaling.
+- `spec.VerticalScaling.mssqlserver` specifies the expected `mssql` container resources after scaling.
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
@@ -177,18 +212,12 @@ If everything goes well, `KubeDB-Ops-Manager` will update the resources of the P
 
 First, we will wait for `MSSQLServerOpsRequest` to be successful. Run the following command to watch `MSSQLServerOpsRequest` CR,
 
-
-TODO................................
-
-
 ```bash
 $ watch kubectl get mssqlserveropsrequest -n demo mops-vscale-standalone
+Every 2.0s: kubectl get mssqlserveropsrequest -n demo mops-vscale-standalone
 
-Every 2.0s: kubectl get mssqlserveropsrequest -n demo ms-scale-ve...  emon-r7: Thu Dec  2 11:09:49 2021
-
-NAME                TYPE              STATUS       AGE
-mops-vscale-standalone   VerticalScaling   Successful   3m42s
-
+NAME                     TYPE              STATUS       AGE
+mops-vscale-standalone   VerticalScaling   Successful   3m22s
 ```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest`, we will see that the mssqlserver resources are updated.
@@ -202,84 +231,67 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MSSQLServerOpsRequest
 Metadata:
-  Creation Timestamp:  2021-12-02T05:06:07Z
+  Creation Timestamp:  2024-10-24T13:43:57Z
   Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:databaseRef:
-          .:
-          f:name:
-        f:type:
-        f:verticalScaling:
-          .:
-          f:mssqlserver:
-            .:
-            f:limits:
-              .:
-              f:cpu:
-              f:memory:
-            f:requests:
-              .:
-              f:cpu:
-              f:memory:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2021-12-02T05:06:07Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-enterprise
-    Operation:       Update
-    Time:            2021-12-02T05:06:07Z
-  Resource Version:  8452
-  UID:               92d1e69f-c99a-4d0b-b8bf-e904e1336083
+  Resource Version:    744508
+  UID:                 68bcc122-2ad7-4ae0-ab72-1a3e01fd6f40
 Spec:
+  Apply:  IfReady
   Database Ref:
     Name:  mssql-standalone
   Type:    VerticalScaling
   Vertical Scaling:
-    MSSQLServer:
-      Limits:
-        Cpu:     0.7
-        Memory:  1200Mi
-      Requests:
-        Cpu:     0.7
-        Memory:  1200Mi
+    Mssqlserver:
+      Resources:
+        Limits:
+          Cpu:     2
+          Memory:  5Gi
+        Requests:
+          Cpu:     1
+          Memory:  5Gi
 Status:
   Conditions:
-    Last Transition Time:  2021-12-02T05:06:07Z
-    Message:               MSSQLServer ops request is vertically scaling database
-    Observed Generation:   1
-    Reason:                Progressing
-    Status:                True
-    Type:                  Progressing
-    Last Transition Time:  2021-12-02T05:06:07Z
-    Message:               Successfully updated petsets resources
-    Observed Generation:   1
-    Reason:                UpdatePetSetResources
-    Status:                True
-    Type:                  UpdatePetSetResources
-    Last Transition Time:  2021-12-02T05:08:02Z
-    Message:               SuccessfullyPerformedVerticalScaling
+    Last Transition Time:  2024-10-24T13:43:57Z
+    Message:               MSSQLServer ops-request has started to vertically scaling the MSSQLServer nodes
     Observed Generation:   1
     Reason:                VerticalScaling
     Status:                True
     Type:                  VerticalScaling
-    Last Transition Time:  2021-12-02T05:08:02Z
-    Message:               Successfully Vertically Scaled Database
+    Last Transition Time:  2024-10-24T13:44:24Z
+    Message:               Successfully paused database
+    Observed Generation:   1
+    Reason:                DatabasePauseSucceeded
+    Status:                True
+    Type:                  DatabasePauseSucceeded
+    Last Transition Time:  2024-10-24T13:44:24Z
+    Message:               Successfully updated PetSets Resources
+    Observed Generation:   1
+    Reason:                UpdatePetSets
+    Status:                True
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-10-24T13:44:29Z
+    Message:               get pod; ConditionStatus:True; PodName:mssql-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--mssql-standalone-0
+    Last Transition Time:  2024-10-24T13:44:29Z
+    Message:               evict pod; ConditionStatus:True; PodName:mssql-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--mssql-standalone-0
+    Last Transition Time:  2024-10-24T13:45:04Z
+    Message:               check pod running; ConditionStatus:True; PodName:mssql-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--mssql-standalone-0
+    Last Transition Time:  2024-10-24T13:45:09Z
+    Message:               Successfully Restarted Pods With Resources
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-10-24T13:45:09Z
+    Message:               Successfully completed the VerticalScaling for MSSQLServer
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -287,15 +299,19 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason           Age    From                        Message
-  ----    ------           ----   ----                        -------
-  Normal  PauseDatabase    4m17s  KubeDB Enterprise Operator  Pausing MSSQLServer demo/ms
-  Normal  PauseDatabase    4m17s  KubeDB Enterprise Operator  Successfully paused MSSQLServer demo/ms
-  Normal  VerticalScaling  2m22s  KubeDB Enterprise Operator  SuccessfullyPerformedVerticalScaling
-  Normal  ResumeDatabase   2m22s  KubeDB Enterprise Operator  Resuming MSSQLServer demo/ms
-  Normal  ResumeDatabase   2m22s  KubeDB Enterprise Operator  Successfully resumed MSSQLServer demo/ms
-  Normal  Successful       2m22s  KubeDB Enterprise Operator  Successfully Vertically Scaled Database
-
+  Type     Reason                                                                Age    From                         Message
+  ----     ------                                                                ----   ----                         -------
+  Normal   Starting                                                              3m55s  KubeDB Ops-manager Operator  Start processing for MSSQLServerOpsRequest: demo/mops-vscale-standalone
+  Normal   Starting                                                              3m55s  KubeDB Ops-manager Operator  Pausing MSSQLServer database: demo/mssql-standalone
+  Normal   Successful                                                            3m55s  KubeDB Ops-manager Operator  Successfully paused MSSQLServer database: demo/mssql-standalone for MSSQLServerOpsRequest: mops-vscale-standalone
+  Normal   UpdatePetSets                                                         3m28s  KubeDB Ops-manager Operator  Successfully updated PetSets Resources
+  Warning  get pod; ConditionStatus:True; PodName:mssql-standalone-0             3m23s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:mssql-standalone-0
+  Warning  evict pod; ConditionStatus:True; PodName:mssql-standalone-0           3m23s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:mssql-standalone-0
+  Warning  check pod running; ConditionStatus:False; PodName:mssql-standalone-0  3m18s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:mssql-standalone-0
+  Warning  check pod running; ConditionStatus:True; PodName:mssql-standalone-0   2m48s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:mssql-standalone-0
+  Normal   RestartPods                                                           2m43s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
+  Normal   Starting                                                              2m43s  KubeDB Ops-manager Operator  Resuming MSSQLServer database: demo/mssql-standalone
+  Normal   Successful                                                            2m43s  KubeDB Ops-manager Operator  Successfully resumed MSSQLServer database: demo/mssql-standalone for MSSQLServerOpsRequest: mops-vscale-standalone
 ```
 
 Now, we are going to verify whether the resources of the mssqlserver instance has updated to meet up the desired state, Let's check,
@@ -304,14 +320,13 @@ Now, we are going to verify whether the resources of the mssqlserver instance ha
 $ kubectl get pod -n demo mssql-standalone-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
+    "cpu": "2",
     "memory": "5Gi"
   },
   "requests": {
-    "cpu": "1000m",
+    "cpu": "1",
     "memory": "5Gi"
   }
-}
-
 ```
 
 The above output verifies that we have successfully scaled up the resources of the MSSQLServer.
@@ -323,6 +338,9 @@ To clean up the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl delete mssqlserver -n demo mssql-standalone
 kubectl delete mssqlserveropsrequest -n demo mops-vscale-standalone
+kubectl delete issuer -n demo mssqlserver-ca-issuer
+kubectl delete secret -n demo mssqlserver-ca
+kubectl delete ns demo
 ```
 
 

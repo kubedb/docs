@@ -1,17 +1,18 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MSSQLServerOpsRequest
 metadata:
-  name: mops-vscale-standalone
+  name: mops-vscale-ag-cluster
   namespace: demo
 spec:
   type: VerticalScaling
   databaseRef:
-    name: mssqlserver-ag-cluster
+    name: mssql-ag-cluster
   verticalScaling:
     mssqlserver:
       resources:
         requests:
-          memory: "5Gi"
-          cpu: "1000m"
+          memory: "1.7Gi"
+          cpu: "700m"
         limits:
-          memory: "5Gi"
+          cpu: 2
+          memory: "4Gi"

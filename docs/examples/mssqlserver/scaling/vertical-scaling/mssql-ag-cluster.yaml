@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
-  name: mssqlserver-ag-cluster
+  name: mssql-ag-cluster
   namespace: demo
 spec:
   version: "2022-cu12"
@@ -24,6 +24,17 @@ spec:
       kind: Issuer
       apiGroup: "cert-manager.io"
     clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1.5Gi"
+            limits:
+              cpu: 1
+              memory: "2Gi"
   storageType: Durable
   storage:
     storageClassName: "standard"
