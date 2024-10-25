@@ -27,7 +27,7 @@ This guide will give you an overview of how `KubeDB` Ops Manager scales up/down 
 The following diagram shows how `KubeDB` Ops Manager used to scale up the number of members of a `MSSQLServer` cluster. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Horizontal scaling Flow" src="/docs/guides/mssqlserver/scaling/horizontal-scaling/overview/images/ms-horizontal-scaling.png">
+  <img alt="Horizontal scaling Flow" src="/docs/images/day-2-operation/mssqlserver/ms-horizontal-scaling.svg">
 <figcaption align="center">Fig: Horizontal scaling process of MSSQLServer</figcaption>
 </figure>
 
