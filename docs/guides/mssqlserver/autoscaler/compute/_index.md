@@ -5,6 +5,6 @@ menu:
     identifier: ms-compute-autoscaling
     name: Compute Autoscaling
     parent: ms-autoscaling
-    weight: 46
+    weight: 10
 menu_name: docs_{{ .version }}
 ---

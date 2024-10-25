@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # MSSQLServer Compute Resource Autoscaling
 
-This guide will give an overview on how KubeDB Autoscaler operator autoscales the database compute resources i.e. cpu and memory using `mssqlserverautoscaler` crd.
+This guide will give an overview on how KubeDB Autoscaler operator autoscales the database compute resources i.e. cpu and memory using `MSSQLServerAutoscaler` crd.
 
 ## Before You Begin
 
@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `MSSQLServer` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Compute Auto Scaling process of MSSQLServer" src="/docs/images/mssqlserver/ms-compute-process.svg">
+  <img alt="Compute Auto Scaling process of MSSQLServer" src="/docs/images/mssqlserver/ms-compute-autoscaling.svg">
 <figcaption align="center">Fig: Compute Auto Scaling process of MSSQLServer</figcaption>
 </figure>
 
@@ -35,7 +35,7 @@ The Auto Scaling process consists of the following steps:
 
 1. At first, a user creates a `MSSQLServer` Custom Resource Object (CRO).
 
-2. `KubeDB` Provisioner  operator watches the `MSSQLServer` CRO.
+2. `KubeDB` Provisioner operator watches the `MSSQLServer` CRO.
 
 3. When the operator finds a `MSSQLServer` CRO, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
@@ -51,4 +51,4 @@ The Auto Scaling process consists of the following steps:
 
 9. Then the `KubeDB` Ops-manager operator will scale the database component vertically as specified on the `MSSQLServerOpsRequest` CRO.
 
-In the next docs, we are going to show a step by step guide on Autoscaling of various MSSQLServer database components using `MSSQLServerAutoscaler` CRD.
+In the next docs, we are going to show a step-by-step guide on Autoscaling of various MSSQLServer database using `MSSQLServerAutoscaler` CRD.
