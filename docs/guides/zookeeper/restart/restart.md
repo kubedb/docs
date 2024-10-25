@@ -3,7 +3,7 @@ title: Restart ZooKeeper
 menu:
   docs_{{ .version }}:
     identifier: zk-restart-details
-    name: Restart Cluster
+    name: Restart Ensemble
     parent: zk-restart
     weight: 10
 menu_name: docs_{{ .version }}
@@ -96,7 +96,7 @@ Now the Ops-manager operator will restart the pods sequentially by their cardina
 
 ```shell
 $ kubectl get zookeeperopsrequest -n demo
-NAME      TYPE      STATUS       AGE
+NAME         TYPE      STATUS       AGE
 zk-restart   Restart   Successful   10m
 
 $ kubectl get zookeeperopsrequest -n demo -oyaml zk-restart

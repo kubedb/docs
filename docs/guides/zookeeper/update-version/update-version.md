@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# update version of ZooKeeper Cluster
+# Update Version of ZooKeeper Ensemble
 
 This guide will show you how to use `KubeDB` Ops-manager operator to update the version of `ZooKeeper` Cluster.
 
@@ -36,7 +36,7 @@ namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/zookeeper](/docs/examples/zookeeper) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
-## Prepare ZooKeeper cluster
+## Prepare ZooKeeper Ensemble
 
 Now, we are going to deploy a `ZooKeeper` cluster with version `3.8.3`.
 
@@ -76,8 +76,8 @@ Now, wait until `zk-quickstart` created has status `Ready`. i.e,
 
 ```bash
 $ kubectl get zk -n demo                                                                                                                                             
-NAME            VERSION    STATUS    AGE
-zk-quickstart      3.12.12   Ready     109s
+NAME               VERSION    STATUS    AGE
+zk-quickstart      3.9.1      Ready     109s
 ```
 
 We are now ready to apply the `ZooKeeperOpsRequest` CR to update this database.
@@ -129,7 +129,7 @@ Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following comm
 ```bash
 $ kubectl get zookeeperopsrequest -n demo
 Every 2.0s: kubectl get zookeeperopsrequest -n demo
-NAME                      TYPE            STATUS       AGE
+NAME                TYPE            STATUS       AGE
 upgrade-topology    UpdateVersion   Successful   84s
 ```
 

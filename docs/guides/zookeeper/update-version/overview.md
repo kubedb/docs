@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# updating ZooKeeper version Overview
+# Overview of ZooKeeper Version Update
 
 This guide will give you an overview on how KubeDB Ops-manager operator update the version of `ZooKeeper` database.
 
@@ -45,10 +45,10 @@ The updating process consists of the following steps:
 
 6. When it finds a `ZooKeeperOpsRequest` CR, it halts the `ZooKeeper` object which is referred from the `ZooKeeperOpsRequest`. So, the `KubeDB` Provisioner  operator doesn't perform any operations on the `ZooKeeper` object during the updating process.
 
-7. By looking at the target version from `ZooKeeperOpsRequest` CR, `KubeDB` Ops-manager operator updates the images of all the `PetSets`. After each image update, the operator performs some checks such as if the oplog is synced and database size is almost same or not.
+7. By looking at the target version from `ZooKeeperOpsRequest` CR, `KubeDB` Ops-manager operator updates the images of all the `PetSets`. 
 
-8. After successfully updating the `PetSets` and their `Pods` images, the `KubeDB` Ops-manager operator updates the image of the `ZooKeeper` object to reflect the updated state of the database.
+8. After successfully updating the `PetSets` and their `Pods` images, the `KubeDB` Ops-manager operator updates the version field of the `ZooKeeper` object to reflect the updated state of the database.
 
 9. After successfully updating of `ZooKeeper` object, the `KubeDB` Ops-manager operator resumes the `ZooKeeper` object so that the `KubeDB` Provisioner  operator can resume its usual operations.
 
-In the next doc, we are going to show a step-by-step guide on updating of a ZooKeeper database using updateVersion operation.
+In the [next](/docs/guides/zookeeper/update-version/update-version.md) doc, we are going to show a step-by-step guide on updating of a ZooKeeper database using updateVersion operation.
