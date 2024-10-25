@@ -14,14 +14,14 @@ section_menu_id: guides
 
 # Druid Compute Resource Autoscaling
 
-This guide will give an overview on how KubeDB Autoscaler operator autoscales the database compute resources i.e. cpu and memory using `kafkaautoscaler` crd.
+This guide will give an overview on how KubeDB Autoscaler operator autoscales the database compute resources i.e. cpu and memory using `druidautoscaler` crd.
 
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [Druid](/docs/guides/kafka/concepts/kafka.md)
-  - [DruidAutoscaler](/docs/guides/kafka/concepts/kafkaautoscaler.md)
-  - [DruidOpsRequest](/docs/guides/kafka/concepts/kafkaopsrequest.md)
+  - [Druid](/docs/guides/druid/concepts/druid.md)
+  - [DruidAutoscaler](/docs/guides/druid/concepts/druidautoscaler.md)
+  - [DruidOpsRequest](/docs/guides/druid/concepts/druidopsrequest.md)
 
 ## How Compute Autoscaling Works
 
@@ -52,4 +52,4 @@ The Auto Scaling process consists of the following steps:
 
 9. Then the `KubeDB` Ops-manager operator will scale the database component vertically as specified on the `DruidOpsRequest` CRO.
 
-In the next docs, we are going to show a step by step guide on Autoscaling of various Druid database components using `DruidAutoscaler` CRD.
+In the next docs, we are going to show a step-by-step guide on Autoscaling of various Druid database components using `DruidAutoscaler` CRD.

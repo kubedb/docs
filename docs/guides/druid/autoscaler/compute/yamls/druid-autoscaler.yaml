@@ -1,7 +1,7 @@
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: DruidAutoscaler
 metadata:
-    name: druid-autoscaler
+    name: druid-storage-autoscaler
     namespace: demo
 spec:
     databaseRef:

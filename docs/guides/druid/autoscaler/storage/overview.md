@@ -28,10 +28,9 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `Druid` cluster components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Storage Auto Scaling process of Druid" src="/docs/images/day-2-operation/druid/kf-storage-autoscaling.svg">
+  <img alt="Storage Auto Scaling process of Druid" src="/docs/guides/druid/autoscaler/storage/images/storage-autoscaling.png">
 <figcaption align="center">Fig: Storage Auto Scaling process of Druid</figcaption>
 </figure>
-
 
 The Auto Scaling process consists of the following steps:
 
@@ -41,17 +40,16 @@ The Auto Scaling process consists of the following steps:
 
 3. When the operator finds a `Druid` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
-- Each PetSet creates a Persistent Volume according to the Volume Claim Template provided in the petset configuration.
+4. Each PetSet creates a Persistent Volume according to the Volume Claim Template provided in the petset configuration. 
 
-4. Then, in order to set up storage autoscaling of the various components (ie. Combined, Broker, Controller.) of the `Druid` cluster, the user creates a `DruidAutoscaler` CRO with desired configuration.
+5. Then, in order to set up storage autoscaling of the druid data nodes (i.e. Historicals, MiddleManagers) of the `Druid` cluster, the user creates a `DruidAutoscaler` CRO with desired configuration.
 
-5. `KubeDB` Autoscaler operator watches the `DruidAutoscaler` CRO.
+6. `KubeDB` Autoscaler operator watches the `DruidAutoscaler` CRO.
 
-6. `KubeDB` Autoscaler operator continuously watches persistent volumes of the clusters to check if it exceeds the specified usage threshold.
-- If the usage exceeds the specified usage threshold, then `KubeDB` Autoscaler operator creates a `DruidOpsRequest` to expand the storage of the database.
+7. `KubeDB` Autoscaler operator continuously watches persistent volumes of the clusters to check if it exceeds the specified usage threshold. If the usage exceeds the specified usage threshold, then `KubeDB` Autoscaler operator creates a `DruidOpsRequest` to expand the storage of the database.
 
-7. `KubeDB` Ops-manager operator watches the `DruidOpsRequest` CRO.
+8. `KubeDB` Ops-manager operator watches the `DruidOpsRequest` CRO. 
 
-8. Then the `KubeDB` Ops-manager operator will expand the storage of the cluster component as specified on the `DruidOpsRequest` CRO.
+9. Then the `KubeDB` Ops-manager operator will expand the storage of the cluster component as specified on the `DruidOpsRequest` CRO.
 
-In the next docs, we are going to show a step by step guide on Autoscaling storage of various Druid cluster components using `DruidAutoscaler` CRD.
+In the next docs, we are going to show a step-by-step guide on Autoscaling storage of various Druid cluster components using `DruidAutoscaler` CRD.

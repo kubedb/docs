@@ -8,6 +8,6 @@ spec:
     databaseRef:
         name: druid-cluster
     volumeExpansion:
-        historicals: 3Gi
+        historicals: 2Gi
         middleManagers: 2Gi
         mode: Offline

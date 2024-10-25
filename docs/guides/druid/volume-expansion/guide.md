@@ -49,11 +49,13 @@ At first verify that your cluster has a storage class, that supports volume expa
 
 ```bash
 $ kubectl get storageclass
-NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  28h
+longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   27h
+longhorn-static        driver.longhorn.io      Delete          Immediate              true                   27h
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 ### Create External Dependency (Deep Storage)
 
@@ -130,7 +132,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageType: Durable
     middleManagers:
       replicas: 1
       storage:
@@ -139,7 +141,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+      storageType: Durable
     routers:
       replicas: 1
   deletionPolicy: Delete
@@ -174,9 +176,9 @@ $ kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.vo
 "1Gi"
 
 $ kubectl get pv -n demo                                       
-NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                                      STORAGECLASS   REASON   AGE
-pvc-ccf50adf179e4162   1Gi        RWO            Delete           Bound      demo/druid-cluster-data-druid-cluster-historicals-0        standard                106s
-pvc-3f177a92721440bb   1Gi        RWO            Delete           Bound      demo/druid-cluster-data-druid-cluster-middleManagers-0     standard                106s
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                             STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+pvc-0bf49077-1c7a-4943-bb17-1dffd1626dcd   1Gi        RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      longhorn       <unset>                          10m
+pvc-59ed4914-53b3-4f18-a6aa-7699c2b738e2   1Gi        RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   longhorn       <unset>                          10m
 ```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
@@ -202,9 +204,9 @@ spec:
   databaseRef:
     name: druid-cluster
   volumeExpansion:
-    historicals: 3Gi
+    historicals: 2Gi
     middleManagers: 2Gi
-    mode: Online
+    mode: Offline
 ```
 
 Here,
@@ -213,6 +215,9 @@ Here,
 - `spec.type` specifies that we are performing `VolumeExpansion` on our database.
 - `spec.volumeExpansion.historicals` specifies the desired volume size for historicals node.
 - `spec.volumeExpansion.middleManagers` specifies the desired volume size for middleManagers node.
+- `spec.volumeExpansion.mode` specifies the desired volume expansion mode(`Online` or `Offline`).
+
+During `Online` VolumeExpansion KubeDB expands volume without pausing database object, it directly updates the underlying PVC. And for `Offline` volume expansion, the database is paused. The Pods are deleted and PVC is updated. Then the database Pods are recreated with updated PVC.
 
 > If you want to expand the volume of only one node, you can specify the desired volume size for that node only.
 
@@ -238,7 +243,7 @@ dr-volume-exp            VolumeExpansion   Successful   3m1s
 We can see from the above output that the `DruidOpsRequest` has succeeded. If we describe the `DruidOpsRequest` we will get an overview of the steps that were followed to expand the volume of druid.
 
 ```bash
-$ kubectl describe druidopsrequest -n demo dr-volume-exp   
+$  kubectl describe druidopsrequest -n demo dr-volume-exp   
 Name:         dr-volume-exp
 Namespace:    demo
 Labels:       <none>
@@ -246,84 +251,142 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         DruidOpsRequest
 Metadata:
-  Creation Timestamp:  2024-07-31T04:44:17Z
+  Creation Timestamp:  2024-10-25T09:22:02Z
   Generation:          1
-  Resource Version:    149682
-  UID:                 e0e19d97-7150-463c-9a7d-53eff05ea6c4
+  Managed Fields:
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:apply:
+        f:databaseRef:
+        f:type:
+        f:volumeExpansion:
+          .:
+          f:historicals:
+          f:middleManagers:
+          f:mode:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2024-10-25T09:22:02Z
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:         kubedb-ops-manager
+    Operation:       Update
+    Subresource:     status
+    Time:            2024-10-25T09:24:35Z
+  Resource Version:  221378
+  UID:               2407cfa7-8d3b-463e-abf7-1910249009bd
 Spec:
   Apply:  IfReady
   Database Ref:
     Name:  druid-cluster
   Type:    VolumeExpansion
   Volume Expansion:
-    Broker:      3Gi
-    Controller:  2Gi
-    Mode:        Online
+    Historicals:      2Gi
+    Middle Managers:  2Gi
+    Mode:             Offline
 Status:
   Conditions:
-    Last Transition Time:  2024-07-31T04:44:17Z
+    Last Transition Time:  2024-10-25T09:22:02Z
     Message:               Druid ops-request has started to expand volume of druid nodes.
     Observed Generation:   1
     Reason:                VolumeExpansion
     Status:                True
     Type:                  VolumeExpansion
-    Last Transition Time:  2024-07-31T04:44:25Z
+    Last Transition Time:  2024-10-25T09:22:10Z
     Message:               get pet set; ConditionStatus:True
     Observed Generation:   1
     Status:                True
     Type:                  GetPetSet
-    Last Transition Time:  2024-07-31T04:44:25Z
-    Message:               is petset deleted; ConditionStatus:True
+    Last Transition Time:  2024-10-25T09:22:10Z
+    Message:               is pet set deleted; ConditionStatus:True
     Observed Generation:   1
     Status:                True
-    Type:                  IsPetsetDeleted
-    Last Transition Time:  2024-07-31T04:44:45Z
+    Type:                  IsPetSetDeleted
+    Last Transition Time:  2024-10-25T09:22:30Z
     Message:               successfully deleted the petSets with orphan propagation policy
     Observed Generation:   1
     Reason:                OrphanPetSetPods
     Status:                True
     Type:                  OrphanPetSetPods
-    Last Transition Time:  2024-07-31T04:44:50Z
+    Last Transition Time:  2024-10-25T09:22:35Z
+    Message:               get pod; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod
+    Last Transition Time:  2024-10-25T09:22:35Z
+    Message:               is ops req patched; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  IsOpsReqPatched
+    Last Transition Time:  2024-10-25T09:22:35Z
+    Message:               create pod; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CreatePod
+    Last Transition Time:  2024-10-25T09:22:40Z
     Message:               get pvc; ConditionStatus:True
     Observed Generation:   1
     Status:                True
     Type:                  GetPvc
-    Last Transition Time:  2024-07-31T04:44:50Z
+    Last Transition Time:  2024-10-25T09:22:40Z
     Message:               is pvc patched; ConditionStatus:True
     Observed Generation:   1
     Status:                True
     Type:                  IsPvcPatched
-    Last Transition Time:  2024-07-31T04:44:55Z
+    Last Transition Time:  2024-10-25T09:23:50Z
     Message:               compare storage; ConditionStatus:True
     Observed Generation:   1
     Status:                True
     Type:                  CompareStorage
-    Last Transition Time:  2024-07-31T04:45:10Z
+    Last Transition Time:  2024-10-25T09:23:00Z
+    Message:               create; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  Create
+    Last Transition Time:  2024-10-25T09:23:08Z
+    Message:               is druid running; ConditionStatus:False
+    Observed Generation:   1
+    Status:                False
+    Type:                  IsDruidRunning
+    Last Transition Time:  2024-10-25T09:23:20Z
     Message:               successfully updated middleManagers node PVC sizes
     Observed Generation:   1
-    Reason:                UpdateControllerNodePVCs
+    Reason:                UpdateMiddleManagersNodePVCs
     Status:                True
-    Type:                  UpdateControllerNodePVCs
-    Last Transition Time:  2024-07-31T04:45:35Z
+    Type:                  UpdateMiddleManagersNodePVCs
+    Last Transition Time:  2024-10-25T09:24:15Z
     Message:               successfully updated historicals node PVC sizes
     Observed Generation:   1
-    Reason:                UpdateBrokerNodePVCs
+    Reason:                UpdateHistoricalsNodePVCs
     Status:                True
-    Type:                  UpdateBrokerNodePVCs
-    Last Transition Time:  2024-07-31T04:45:42Z
+    Type:                  UpdateHistoricalsNodePVCs
+    Last Transition Time:  2024-10-25T09:24:30Z
     Message:               successfully reconciled the Druid resources
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2024-07-31T04:45:47Z
+    Last Transition Time:  2024-10-25T09:24:35Z
     Message:               PetSet is recreated
     Observed Generation:   1
     Reason:                ReadyPetSets
     Status:                True
     Type:                  ReadyPetSets
-    Last Transition Time:  2024-07-31T04:45:47Z
-    Message:               Successfully completed volumeExpansion for druid
+    Last Transition Time:  2024-10-25T09:24:35Z
+    Message:               Successfully completed volumeExpansion for Druid
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -331,42 +394,71 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                   Age   From                         Message
-  ----     ------                                   ----  ----                         -------
-  Normal   Starting                                 116s  KubeDB Ops-manager Operator  Start processing for DruidOpsRequest: demo/dr-volume-exp
-  Normal   Starting                                 116s  KubeDB Ops-manager Operator  Pausing Druid databse: demo/druid-cluster
-  Normal   Successful                               116s  KubeDB Ops-manager Operator  Successfully paused Druid database: demo/druid-cluster for DruidOpsRequest: dr-volume-exp
-  Warning  get pet set; ConditionStatus:True        108s  KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Warning  is petset deleted; ConditionStatus:True  108s  KubeDB Ops-manager Operator  is petset deleted; ConditionStatus:True
-  Warning  get pet set; ConditionStatus:True        103s  KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Warning  get pet set; ConditionStatus:True        98s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Warning  is petset deleted; ConditionStatus:True  98s   KubeDB Ops-manager Operator  is petset deleted; ConditionStatus:True
-  Warning  get pet set; ConditionStatus:True        93s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Normal   OrphanPetSetPods                         88s   KubeDB Ops-manager Operator  successfully deleted the petSets with orphan propagation policy
-  Warning  get pvc; ConditionStatus:True            83s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  is pvc patched; ConditionStatus:True     83s   KubeDB Ops-manager Operator  is pvc patched; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            78s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  compare storage; ConditionStatus:True    78s   KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            73s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  is pvc patched; ConditionStatus:True     73s   KubeDB Ops-manager Operator  is pvc patched; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            68s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  compare storage; ConditionStatus:True    68s   KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
-  Normal   UpdateControllerNodePVCs                 63s   KubeDB Ops-manager Operator  successfully updated middleManagers node PVC sizes
-  Warning  get pvc; ConditionStatus:True            58s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  is pvc patched; ConditionStatus:True     58s   KubeDB Ops-manager Operator  is pvc patched; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            53s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  compare storage; ConditionStatus:True    53s   KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            48s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  is pvc patched; ConditionStatus:True     48s   KubeDB Ops-manager Operator  is pvc patched; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            43s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  compare storage; ConditionStatus:True    43s   KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
-  Normal   UpdateBrokerNodePVCs                     38s   KubeDB Ops-manager Operator  successfully updated historicals node PVC sizes
-  Normal   UpdatePetSets                            31s   KubeDB Ops-manager Operator  successfully reconciled the Druid resources
-  Warning  get pet set; ConditionStatus:True        26s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Warning  get pet set; ConditionStatus:True        26s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Normal   ReadyPetSets                             26s   KubeDB Ops-manager Operator  PetSet is recreated
-  Normal   Starting                                 26s   KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-cluster
-  Normal   Successful                               26s   KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-cluster for DruidOpsRequest: dr-volume-exp
+  Type     Reason                                    Age    From                         Message
+  ----     ------                                    ----   ----                         -------
+  Normal   Starting                                  10m    KubeDB Ops-manager Operator  Start processing for DruidOpsRequest: demo/dr-volume-exp
+  Normal   Starting                                  10m    KubeDB Ops-manager Operator  Pausing Druid databse: demo/druid-cluster
+  Normal   Successful                                10m    KubeDB Ops-manager Operator  Successfully paused Druid database: demo/druid-cluster for DruidOpsRequest: dr-volume-exp
+  Warning  get pet set; ConditionStatus:True         10m    KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
+  Warning  is pet set deleted; ConditionStatus:True  10m    KubeDB Ops-manager Operator  is pet set deleted; ConditionStatus:True
+  Warning  get pet set; ConditionStatus:True         10m    KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
+  Warning  get pet set; ConditionStatus:True         10m    KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
+  Warning  is pet set deleted; ConditionStatus:True  10m    KubeDB Ops-manager Operator  is pet set deleted; ConditionStatus:True
+  Warning  get pet set; ConditionStatus:True         10m    KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
+  Normal   OrphanPetSetPods                          9m59s  KubeDB Ops-manager Operator  successfully deleted the petSets with orphan propagation policy
+  Warning  get pod; ConditionStatus:True             9m54s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  is ops req patched; ConditionStatus:True  9m54s  KubeDB Ops-manager Operator  is ops req patched; ConditionStatus:True
+  Warning  create pod; ConditionStatus:True          9m54s  KubeDB Ops-manager Operator  create pod; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             9m49s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True             9m49s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  is pvc patched; ConditionStatus:True      9m49s  KubeDB Ops-manager Operator  is pvc patched; ConditionStatus:True
+  Warning  compare storage; ConditionStatus:False    9m49s  KubeDB Ops-manager Operator  compare storage; ConditionStatus:False
+  Warning  get pod; ConditionStatus:True             9m44s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True             9m44s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             9m39s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True             9m39s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             9m34s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True             9m34s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             9m29s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True             9m29s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  compare storage; ConditionStatus:True     9m29s  KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
+  Warning  create; ConditionStatus:True              9m29s  KubeDB Ops-manager Operator  create; ConditionStatus:True
+  Warning  is ops req patched; ConditionStatus:True  9m29s  KubeDB Ops-manager Operator  is ops req patched; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             9m24s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  is druid running; ConditionStatus:False   9m21s  KubeDB Ops-manager Operator  is druid running; ConditionStatus:False
+  Warning  get pod; ConditionStatus:True             9m19s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             9m14s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Normal   UpdateMiddleManagersNodePVCs              9m9s   KubeDB Ops-manager Operator  successfully updated middleManagers node PVC sizes
+  Warning  get pod; ConditionStatus:True             9m4s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  is ops req patched; ConditionStatus:True  9m4s   KubeDB Ops-manager Operator  is ops req patched; ConditionStatus:True
+  Warning  create pod; ConditionStatus:True          9m4s   KubeDB Ops-manager Operator  create pod; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             8m59s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True             8m59s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  is pvc patched; ConditionStatus:True      8m59s  KubeDB Ops-manager Operator  is pvc patched; ConditionStatus:True
+  Warning  compare storage; ConditionStatus:False    8m59s  KubeDB Ops-manager Operator  compare storage; ConditionStatus:False
+  Warning  get pod; ConditionStatus:True             8m54s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True             8m54s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             8m49s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True             8m49s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             8m44s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True             8m44s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             8m39s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True             8m39s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  compare storage; ConditionStatus:True     8m39s  KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
+  Warning  create; ConditionStatus:True              8m39s  KubeDB Ops-manager Operator  create; ConditionStatus:True
+  Warning  is ops req patched; ConditionStatus:True  8m39s  KubeDB Ops-manager Operator  is ops req patched; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             8m34s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  is druid running; ConditionStatus:False   8m31s  KubeDB Ops-manager Operator  is druid running; ConditionStatus:False
+  Warning  get pod; ConditionStatus:True             8m29s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             8m24s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Warning  get pod; ConditionStatus:True             8m19s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
+  Normal   UpdateHistoricalsNodePVCs                 8m14s  KubeDB Ops-manager Operator  successfully updated historicals node PVC sizes
+  Normal   UpdatePetSets                             7m59s  KubeDB Ops-manager Operator  successfully reconciled the Druid resources
+  Warning  get pet set; ConditionStatus:True         7m54s  KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
+  Warning  get pet set; ConditionStatus:True         7m54s  KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
+  Normal   ReadyPetSets                              7m54s  KubeDB Ops-manager Operator  PetSet is recreated
+  Normal   Starting                                  7m54s  KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-cluster
+  Normal   Successful                                7m54s  KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-cluster for DruidOpsRequest: dr-volume-exp
 ```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
@@ -379,9 +471,9 @@ $ kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.vo
 "2Gi"
 
 $ kubectl get pv -n demo                                       
-NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                                      STORAGECLASS   REASON   AGE
-pvc-ccf50adf179e4162   1Gi        RWO            Delete           Bound      demo/druid-cluster-data-druid-cluster-historicals-0        standard                5m30s
-pvc-3f177a92721440bb   1Gi        RWO            Delete           Bound      demo/druid-cluster-data-druid-cluster-middleManagers-0     standard                5m25s
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                             STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+pvc-0bf49077-1c7a-4943-bb17-1dffd1626dcd   2Gi        RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      longhorn       <unset>                          23m
+pvc-59ed4914-53b3-4f18-a6aa-7699c2b738e2   2Gi        RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   longhorn       <unset>                          23m
 ```
 
 The above output verifies that we have successfully expanded the volume of the Druid.

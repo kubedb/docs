@@ -10,7 +10,22 @@ spec:
     configSecret:
       name: deep-storage-config
   topology:
+    historicals:
+      replicas: 1
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    middleManagers:
+      replicas: 1
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
     routers:
       replicas: 1
-  deletionPolicy: WipeOut
-
+  deletionPolicy: Delete

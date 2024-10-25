@@ -18,6 +18,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
+      storageType: Durable
     middleManagers:
       replicas: 1
       storage:
@@ -26,7 +27,14 @@ spec:
         resources:
           requests:
             storage: 1Gi
+      storageType: Durable
     routers:
       replicas: 1
   deletionPolicy: Delete
-
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
