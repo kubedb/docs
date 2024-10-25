@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
-  name: mssqlserver-quickstart
+  name: mssql-standalone-tls
   namespace: demo
 spec:
   version: "2022-cu12"
@@ -12,7 +12,7 @@ spec:
       name: mssqlserver-ca-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
-    clientTLS: false
+    clientTLS: true
   storage:
     storageClassName: "standard"
     accessModes:

@@ -1,18 +1,20 @@
 apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
-  name: mssqlserver-quickstart
+  name: mssql-custom-config
   namespace: demo
 spec:
   version: "2022-cu12"
+  configSecret:
+    name: ms-custom-config
   replicas: 1
-  storageType: Durable
   tls:
     issuerRef:
       name: mssqlserver-ca-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
     clientTLS: false
+  storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
