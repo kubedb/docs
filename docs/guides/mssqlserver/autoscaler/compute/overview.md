@@ -21,6 +21,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 - You should be familiar with the following `KubeDB` concepts:
   - [MSSQLServer](/docs/guides/mssqlserver/concepts/mssqlserver.md)
   - [MSSQLServerOpsRequest](/docs/guides/mssqlserver/concepts/opsrequest.md)
+  - [MSSQLServerAutoscaler](/docs/guides/mssqlserver/concepts/autoscaler.md)
 
 ## How Compute Autoscaling Works
 
