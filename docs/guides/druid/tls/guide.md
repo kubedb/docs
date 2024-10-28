@@ -3,7 +3,7 @@ title: Druid Combined TLS/SSL Encryption
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-tls-guide
-    name: Topology Cluster
+    name: Guide
     parent: guides-druid-tls
     weight: 30
 menu_name: docs_{{ .version }}
@@ -219,7 +219,7 @@ tls.key:           1708 bytes
 truststore.jks:    865 bytes
 ```
 
-Now, Lets exec into a druid broker pod and verify the configuration that the TLS is enabled.
+Now, Lets exec into a druid coordinators pod and verify the configuration that the TLS is enabled.
 
 ```bash
 $ kubectl exec -it -n demo druid-cluster-tls-coordinators-0 -- bash
@@ -245,9 +245,7 @@ We can see from the above output that, all the TLS related configuration is adde
 
 #### Verify TLS/SSL using Druid UI
 
-
 To check follow the following steps:
-
 
 Druid uses separate ports for TLS/SSL. While the plaintext port for `routers` node is `8888`. For TLS, it is `9088`. Hence, we will use that port to access the UI. 
 
