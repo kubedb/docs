@@ -12,15 +12,17 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Storage Autoscaling of a MSSQLServer Cluster
+# Storage Autoscaling of a MSSQLServer Availability Group Cluster
 
-This guide will show you how to use `KubeDB` to autoscale the storage of a MSSQLServer Replicaset database.
+This guide will show you how to use `KubeDB` to autoscale the storage of a MSSQLServer Availability Group Cluster.
 
 ## Before You Begin
 
-- At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
+- You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` Community, Enterprise and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md). Make sure install with helm command including `--set global.featureGates.MSSQLServer=true` to ensure MSSQLServer CRD installation.
+
+- To configure TLS/SSL in `MSSQLServer`, `KubeDB` uses `cert-manager` to issue certificates. So first you have to make sure that the cluster has `cert-manager` installed. To install `cert-manager` in your cluster following steps [here](https://cert-manager.io/docs/installation/kubernetes/).
 
 - Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
 
@@ -31,6 +33,7 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a MSSQL
 - You should be familiar with the following `KubeDB` concepts:
   - [MSSQLServer](/docs/guides/mssqlserver/concepts/mssqlserver.md)
   - [MSSQLServerOpsRequest](/docs/guides/mssqlserver/concepts/opsrequest.md)
+  - [MSSQLServerAutoscaler](/docs/guides/mssqlserver/concepts/autoscaler.md)
   - [Storage Autoscaling Overview](/docs/guides/mssqlserver/autoscaler/storage/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -40,41 +43,105 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-## Storage Autoscaling of Cluster Database
+## Storage Autoscaling MSSQLServer Cluster
 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
 $ kubectl get storageclass
-NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-standard (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  79m
-topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   78m
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  4d21h
+longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   2d20h
+longhorn-static        driver.longhorn.io      Delete          Immediate              true                   2d20h
 ```
 
-We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `MSSQLServer` cluster using a supported version by `KubeDB` operator. Then we are going to apply `MSSQLServerAutoscaler` to set up autoscaling.
 
 #### Deploy MSSQLServer Cluster
 
-In this section, we are going to deploy a MSSQLServer cluster database with version `16.1`.  Then, in the next section we will set up autoscaling for this database using `MSSQLServerAutoscaler` CRD. Below is the YAML of the `MSSQLServer` CR that we are going to create,
+First, an issuer needs to be created, even if TLS is not enabled for SQL Server. The issuer will be used to configure the TLS-enabled Wal-G proxy server, which is required for the SQL Server backup and restore operations.
 
-> If you want to autoscale MSSQLServer `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
+### Create Issuer/ClusterIssuer
+
+Now, we are going to create an example `Issuer` that will be used throughout the duration of this tutorial. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`. By following the below steps, we are going to create our desired issuer,
+
+- Start off by generating our ca-certificates using openssl,
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=MSSQLServer/O=kubedb"
+```
+- Create a secret using the certificate files we have just generated,
+```bash
+$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
+secret/mssqlserver-ca created
+```
+Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+ name: mssqlserver-ca-issuer
+ namespace: demo
+spec:
+ ca:
+   secretName: mssqlserver-ca
+```
+
+Let’s create the `Issuer` CR we have shown above,
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
+issuer.cert-manager.io/mssqlserver-ca-issuer created
+```
+
+Now, we are going to deploy a MSSQLServer cluster database with version `2022-cu12`. Then, in the next section we will set up autoscaling for this database using `MSSQLServerAutoscaler` CRD. Below is the YAML of the `MSSQLServer` CR that we are going to create,
+
+> If you want to autoscale MSSQLServer `Standalone`, Just deploy a [standalone](/docs/guides/mssqlserver/clustering/standalone.md) sql server instance using KubeDB.
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
-  name: ha-mssqlserver
+  name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "16.1"
+  version: "2022-cu12"
   replicas: 3
+  topology:
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
+  internalAuth:
+    endpointCert:
+      issuerRef:
+        apiGroup: cert-manager.io
+        name: mssqlserver-ca-issuer
+        kind: Issuer
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1.5Gi"
+            limits:
+              cpu: "600m"
+              memory: "1.6Gi"
   storageType: Durable
   storage:
-    storageClassName: "topolvm-provisioner"
+    storageClassName: "longhorn"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -84,29 +151,29 @@ spec:
 Let's create the `MSSQLServer` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/autoscaler/storage/ha-mssqlserver.yaml
-mssqlserver.kubedb.com/ha-mssqlserver created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/autoscaler/storage/mssqlserver-ag-cluster.yaml
+mssqlserver.kubedb.com/mssqlserver-ag-cluster created
 ```
 
-Now, wait until `ha-mssqlserver` has status `Ready`. i.e,
+Now, wait until `mssqlserver-ag-cluster` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get mssqlserver -n demo
 NAME             VERSION   STATUS   AGE
-ha-mssqlserver        16.1    Ready    3m46s
+mssqlserver-ag-cluster        16.1    Ready    3m46s
 ```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo ha-mssqlserver -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get sts -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
-pvc-43266d76-f280-4cca-bd78-d13660a84db9   1Gi        RWO            Delete           Bound    demo/data-ha-mssqlserver-2   topolvm-provisioner            57s
-pvc-4a509b05-774b-42d9-b36d-599c9056af37   1Gi        RWO            Delete           Bound    demo/data-ha-mssqlserver-0   topolvm-provisioner            58s
-pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1Gi        RWO            Delete           Bound    demo/data-ha-mssqlserver-1   topolvm-provisioner            57s
+pvc-43266d76-f280-4cca-bd78-d13660a84db9   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   topolvm-provisioner            57s
+pvc-4a509b05-774b-42d9-b36d-599c9056af37   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   topolvm-provisioner            58s
+pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   topolvm-provisioner            57s
 ```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
@@ -129,7 +196,7 @@ metadata:
   namespace: demo
 spec:
   databaseRef:
-    name: ha-mssqlserver
+    name: mssqlserver-ag-cluster
   storage:
     mssqlserver:
       trigger: "On"
@@ -140,7 +207,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `ha-mssqlserver` database.
+- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `mssqlserver-ag-cluster` database.
 - `spec.storage.mssqlserver.trigger` specifies that storage autoscaling is enabled for this database.
 - `spec.storage.mssqlserver.usageThreshold` specifies storage usage threshold, if storage usage exceeds `20%` then storage autoscaling will be triggered.
 - `spec.storage.mssqlserver.scalingThreshold` specifies the scaling threshold. Storage will be scaled to `20%` of the current amount.
@@ -177,7 +244,7 @@ Metadata:
   UID:               4f45a3b3-fc72-4d04-b52c-a770944311f6
 Spec:
   Database Ref:
-    Name:  ha-mssqlserver
+    Name:  mssqlserver-ag-cluster
   Storage:
     Mariadb:
       Scaling Threshold:  20
@@ -193,15 +260,15 @@ Now, for this demo, we are going to manually fill up the persistent volume to ex
 Let's exec into the database pod and fill the database volume(`/var/pv/data`) using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo ha-mssqlserver-0 -- bash
-root@ha-mssqlserver-0:/ df -h /var/pv/data
+$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -- bash
+root@mssqlserver-ag-cluster-0:/ df -h /var/pv/data
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/57cd4330-784f-42c1-bf8e-e743241df164 1014M  357M  658M  36% /var/pv/data
-root@ha-mssqlserver-0:/ dd if=/dev/zero of=/var/pv/data/file.img bs=500M count=1
+root@mssqlserver-ag-cluster-0:/ dd if=/dev/zero of=/var/pv/data/file.img bs=500M count=1
 1+0 records in
 1+0 records out
 524288000 bytes (524 MB, 500 MiB) copied, 0.340877 s, 1.5 GB/s
-root@ha-mssqlserver-0:/ df -h /var/pv/data
+root@mssqlserver-ag-cluster-0:/ df -h /var/pv/data
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/57cd4330-784f-42c1-bf8e-e743241df164 1014M  857M  158M  85% /var/pv/data
 ```
@@ -213,7 +280,7 @@ Let's watch the `mssqlserveropsrequest` in the demo namespace to see if any `mss
 ```bash
 $ kubectl get mssqlserveropsrequest -n demo
 NAME                         TYPE              STATUS        AGE
-msops-ha-mssqlserver-xojkua   VolumeExpansion   Progressing   15s
+msops-mssqlserver-ag-cluster-xojkua   VolumeExpansion   Progressing   15s
 ```
 
 Let's wait for the ops request to become successful.
@@ -221,17 +288,17 @@ Let's wait for the ops request to become successful.
 ```bash
 $ kubectl get mssqlserveropsrequest -n demo
 NAME                         TYPE              STATUS       AGE
-msops-ha-mssqlserver-xojkua   VolumeExpansion   Successful   97s
+msops-mssqlserver-ag-cluster-xojkua   VolumeExpansion   Successful   97s
 ```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo msops-ha-mssqlserver-xojkua
-Name:         msops-ha-mssqlserver-xojkua
+$ kubectl describe mssqlserveropsrequest -n demo msops-mssqlserver-ag-cluster-xojkua
+Name:         msops-mssqlserver-ag-cluster-xojkua
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
-              app.kubernetes.io/instance=ha-mssqlserver
+              app.kubernetes.io/instance=mssqlserver-ag-cluster
               app.kubernetes.io/managed-by=kubedb.com
               app.kubernetes.io/name=mssqlservers.kubedb.com
 Annotations:  <none>
@@ -252,26 +319,26 @@ Metadata:
   UID:                     90763a49-a03f-407c-a233-fb20c4ab57d7
 Spec:
   Database Ref:
-    Name:  ha-mssqlserver
+    Name:  mssqlserver-ag-cluster
   Type:    VolumeExpansion
   Volume Expansion:
     Mariadb:  1594884096
 Status:
   Conditions:
     Last Transition Time:  2022-01-14T06:13:10Z
-    Message:               Controller has started to Progress the MSSQLServerOpsRequest: demo/mops-ha-mssqlserver-xojkua
+    Message:               Controller has started to Progress the MSSQLServerOpsRequest: demo/mops-mssqlserver-ag-cluster-xojkua
     Observed Generation:   1
     Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
     Last Transition Time:  2022-01-14T06:14:25Z
-    Message:               Volume Expansion performed successfully in MSSQLServer pod for MSSQLServerOpsRequest: demo/mops-ha-mssqlserver-xojkua
+    Message:               Volume Expansion performed successfully in MSSQLServer pod for MSSQLServerOpsRequest: demo/mops-mssqlserver-ag-cluster-xojkua
     Observed Generation:   1
     Reason:                SuccessfullyVolumeExpanded
     Status:                True
     Type:                  VolumeExpansion
     Last Transition Time:  2022-01-14T06:14:25Z
-    Message:               Controller has successfully expand the volume of MSSQLServer demo/mops-ha-mssqlserver-xojkua
+    Message:               Controller has successfully expand the volume of MSSQLServer demo/mops-mssqlserver-ag-cluster-xojkua
     Observed Generation:   1
     Reason:                OpsRequestProcessedSuccessfully
     Status:                True
@@ -281,27 +348,27 @@ Status:
 Events:
   Type    Reason      Age    From                        Message
   ----    ------      ----   ----                        -------
-  Normal  Starting    2m58s  KubeDB Enterprise Operator  Start processing for MSSQLServerOpsRequest: demo/mops-ha-mssqlserver-xojkua
-  Normal  Starting    2m58s  KubeDB Enterprise Operator  Pausing MSSQLServer databse: demo/ha-mssqlserver
-  Normal  Successful  2m58s  KubeDB Enterprise Operator  Successfully paused MSSQLServer database: demo/ha-mssqlserver for MSSQLServerOpsRequest: mops-ha-mssqlserver-xojkua
-  Normal  Successful  103s   KubeDB Enterprise Operator  Volume Expansion performed successfully in MSSQLServer pod for MSSQLServerOpsRequest: demo/mops-ha-mssqlserver-xojkua
+  Normal  Starting    2m58s  KubeDB Enterprise Operator  Start processing for MSSQLServerOpsRequest: demo/mops-mssqlserver-ag-cluster-xojkua
+  Normal  Starting    2m58s  KubeDB Enterprise Operator  Pausing MSSQLServer databse: demo/mssqlserver-ag-cluster
+  Normal  Successful  2m58s  KubeDB Enterprise Operator  Successfully paused MSSQLServer database: demo/mssqlserver-ag-cluster for MSSQLServerOpsRequest: mops-mssqlserver-ag-cluster-xojkua
+  Normal  Successful  103s   KubeDB Enterprise Operator  Volume Expansion performed successfully in MSSQLServer pod for MSSQLServerOpsRequest: demo/mops-mssqlserver-ag-cluster-xojkua
   Normal  Starting    103s   KubeDB Enterprise Operator  Updating MSSQLServer storage
   Normal  Successful  103s   KubeDB Enterprise Operator  Successfully Updated MSSQLServer storage
-  Normal  Starting    103s   KubeDB Enterprise Operator  Resuming MSSQLServer database: demo/ha-mssqlserver
-  Normal  Successful  103s   KubeDB Enterprise Operator  Successfully resumed MSSQLServer database: demo/ha-mssqlserver
-  Normal  Successful  103s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of MSSQLServer: demo/ha-mssqlserver
+  Normal  Starting    103s   KubeDB Enterprise Operator  Resuming MSSQLServer database: demo/mssqlserver-ag-cluster
+  Normal  Successful  103s   KubeDB Enterprise Operator  Successfully resumed MSSQLServer database: demo/mssqlserver-ag-cluster
+  Normal  Successful  103s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of MSSQLServer: demo/mssqlserver-ag-cluster
 ```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the cluster database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo ha-mssqlserver -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get sts -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1594884096"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
-pvc-43266d76-f280-4cca-bd78-d13660a84db9   2Gi        RWO            Delete           Bound    demo/data-ha-mssqlserver-2   topolvm-provisioner            23m
-pvc-4a509b05-774b-42d9-b36d-599c9056af37   2Gi        RWO            Delete           Bound    demo/data-ha-mssqlserver-0   topolvm-provisioner            24m
-pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   2Gi        RWO            Delete           Bound    demo/data-ha-mssqlserver-1   topolvm-provisioner            23m
+pvc-43266d76-f280-4cca-bd78-d13660a84db9   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   topolvm-provisioner            23m
+pvc-4a509b05-774b-42d9-b36d-599c9056af37   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   topolvm-provisioner            24m
+pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   topolvm-provisioner            23m
 ```
 
 The above output verifies that we have successfully autoscaled the volume of the MSSQLServer cluster database.
@@ -311,7 +378,7 @@ The above output verifies that we have successfully autoscaled the volume of the
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete mssqlserver -n demo ha-mssqlserver
+kubectl delete mssqlserver -n demo mssqlserver-ag-cluster
 kubectl delete mssqlserverautoscaler -n demo ms-as-st
 kubectl delete ns demo
 ```
