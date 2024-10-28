@@ -13,7 +13,7 @@ section_menu_id: guides
 
 ## What is SingleStore
 
-`SingleStore` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [SingleStore](https://www.singlestore.com/) in a Kubernetes native way. You only need to describe the desired database configuration in a MongoDB object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`SingleStore` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [SingleStore](https://www.singlestore.com/) in a Kubernetes native way. You only need to describe the desired database configuration in a SingleStore object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## SingleStore Spec
 
@@ -117,7 +117,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [SinglestoreVersion](/docs/guides/mongodb/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `SinglestoreVersion` resources,
+`spec.version` is a required field specifying the name of the [SinglestoreVersion](/docs/guides/singlestore/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `SinglestoreVersion` resources,
 
 - `8.1.32`
 - `8.5.7`, `8.5.30`

@@ -52,4 +52,4 @@ The Auto Scaling process consists of the following steps:
 
 9. Then the `KubeDB` Ops-manager operator will scale the database component vertically as specified on the `SingleStoreOpsRequest` CRO.
 
-In the next docs, we are going to show a step by step guide on Autoscaling of various MongoDB database components using `SingleStoreAutoscaler` CRD.
+In the next docs, we are going to show a step by step guide on Autoscaling of various SingleStore database components using `SingleStoreAutoscaler` CRD.

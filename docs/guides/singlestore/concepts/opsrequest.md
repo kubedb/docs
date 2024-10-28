@@ -394,7 +394,7 @@ KubeDB provisioner operator applies these two directly while reconciling.
       max_connections = 550
 ```
 
-- `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed mongodb server.
+- `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed singlestore server.
 
 ### spec.tls
 
