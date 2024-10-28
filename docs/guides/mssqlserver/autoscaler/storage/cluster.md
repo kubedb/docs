@@ -159,21 +159,21 @@ Now, wait until `mssqlserver-ag-cluster` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get mssqlserver -n demo
-NAME             VERSION   STATUS   AGE
-mssqlserver-ag-cluster        16.1    Ready    3m46s
+NAME                     VERSION     STATUS   AGE
+mssqlserver-ag-cluster   2022-cu12   Ready    89m
 ```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
-pvc-43266d76-f280-4cca-bd78-d13660a84db9   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   topolvm-provisioner            57s
-pvc-4a509b05-774b-42d9-b36d-599c9056af37   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   topolvm-provisioner            58s
-pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   topolvm-provisioner            57s
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+pvc-1497dd6d-9cbd-467a-8e0c-c3963ce09e1b   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn       <unset>                          88m
+pvc-37a7bc8d-2c04-4eb4-8e53-e610fd1daaf5   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn       <unset>                          88m
+pvc-817866af-5277-4d51-8d81-434e8ec1c442   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn       <unset>                          88m
 ```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
@@ -186,13 +186,13 @@ Here, we are going to set up storage autoscaling using a `MSSQLServerAutoscaler`
 
 #### Create MSSQLServerAutoscaler Object
 
-In order to set up vertical autoscaling for this cluster database, we have to create a `MSSQLServerAutoscaler` CRO with our desired configuration. Below is the YAML of the `MSSQLServerAutoscaler` object that we are going to create,
+In order to set up storage autoscaling for this database cluster, we have to create a `MSSQLServerAutoscaler` CRO with our desired configuration. Below is the YAML of the `MSSQLServerAutoscaler` object that we are going to create,
 
 ```yaml
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: MSSQLServerAutoscaler
 metadata:
-  name: ms-as-st
+  name: ms-as-storage
   namespace: demo
 spec:
   databaseRef:
@@ -200,24 +200,24 @@ spec:
   storage:
     mssqlserver:
       trigger: "On"
-      usageThreshold: 20
-      scalingThreshold: 20
-      expansionMode: "Online"
+      usageThreshold: 60
+      scalingThreshold: 50
+      expansionMode: "Offline"
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `mssqlserver-ag-cluster` database.
+- `spec.databaseRef.name` specifies that we are performing volume expansion operation on `mssqlserver-ag-cluster` database.
 - `spec.storage.mssqlserver.trigger` specifies that storage autoscaling is enabled for this database.
-- `spec.storage.mssqlserver.usageThreshold` specifies storage usage threshold, if storage usage exceeds `20%` then storage autoscaling will be triggered.
-- `spec.storage.mssqlserver.scalingThreshold` specifies the scaling threshold. Storage will be scaled to `20%` of the current amount.
-- `spec.storage.mssqlserver.expansionMode` specifies the expansion mode of volume expansion `MSSQLServerOpsRequest` created by `MSSQLServerAutoscaler`. topolvm-provisioner supports online volume expansion so here `expansionMode` is set as "Online".
+- `spec.storage.mssqlserver.usageThreshold` specifies storage usage threshold, if storage usage exceeds `60%` then storage autoscaling will be triggered.
+- `spec.storage.mssqlserver.scalingThreshold` specifies the scaling threshold. Storage will be scaled to `50%` of the current amount.
+- `spec.storage.mssqlserver.expansionMode` specifies the expansion mode of volume expansion `MSSQLServerOpsRequest` created by `MSSQLServerAutoscaler`, `longhorn` supports offline volume expansion so here `expansionMode` is set as "Offline".
 
 Let's create the `MSSQLServerAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/autoscaler/storage/msas-storage.yaml
-mssqlserverautoscaler.autoscaling.kubedb.com/ms-as-st created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/autoscaler/storage/ms-as-storage.yaml
+mssqlserverautoscaler.autoscaling.kubedb.com/ms-as-storage created
 ```
 
 #### Storage Autoscaling is set up successfully
@@ -226,59 +226,72 @@ Let's check that the `mssqlserverautoscaler` resource is created successfully,
 
 ```bash
 $ kubectl get mssqlserverautoscaler -n demo
-NAME           AGE
-ms-as-st   33s
+NAME            AGE
+ms-as-storage   17s
 
-$ kubectl describe mssqlserverautoscaler ms-as-st -n demo
-Name:         ms-as-st
+
+$ kubectl describe mssqlserverautoscaler ms-as-storage -n demo
+Name:         ms-as-storage
 Namespace:    demo
 Labels:       <none>
-Annotations:  API Version:  autoscaling.kubedb.com/v1alpha1
+Annotations:  <none>
+API Version:  autoscaling.kubedb.com/v1alpha1
 Kind:         MSSQLServerAutoscaler
 Metadata:
-  Creation Timestamp:  2022-01-14T06:08:02Z
+  Creation Timestamp:  2024-10-28T12:27:31Z
   Generation:          1
-  Managed Fields:
-    ...
-  Resource Version:  24009
-  UID:               4f45a3b3-fc72-4d04-b52c-a770944311f6
+  Resource Version:    494502
+  UID:                 834cf122-b68c-41a5-924f-8b7fc09f4ed5
 Spec:
   Database Ref:
     Name:  mssqlserver-ag-cluster
   Storage:
-    Mariadb:
-      Scaling Threshold:  20
+    Mssqlserver:
+      Expansion Mode:     Offline
+      Scaling Threshold:  50
       Trigger:            On
-      Usage Threshold:    20
+      Usage Threshold:    60
 Events:                   <none>
 ```
 
 So, the `mssqlserverautoscaler` resource is created successfully.
 
-Now, for this demo, we are going to manually fill up the persistent volume to exceed the `usageThreshold` using `dd` command to see if storage autoscaling is working or not.
+Now, for this demo, we are going to manually fill up the persistent volume to exceed the `usageThreshold` using `dd` command to see storage autoscaling.
 
-Let's exec into the database pod and fill the database volume(`/var/pv/data`) using the following commands:
+Lets exec into the database pod and fill the database volume(`/var/opt/mssql/`) using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -- bash
-root@mssqlserver-ag-cluster-0:/ df -h /var/pv/data
-Filesystem                                         Size  Used Avail Use% Mounted on
-/dev/topolvm/57cd4330-784f-42c1-bf8e-e743241df164 1014M  357M  658M  36% /var/pv/data
-root@mssqlserver-ag-cluster-0:/ dd if=/dev/zero of=/var/pv/data/file.img bs=500M count=1
-1+0 records in
-1+0 records out
-524288000 bytes (524 MB, 500 MiB) copied, 0.340877 s, 1.5 GB/s
-root@mssqlserver-ag-cluster-0:/ df -h /var/pv/data
-Filesystem                                         Size  Used Avail Use% Mounted on
-/dev/topolvm/57cd4330-784f-42c1-bf8e-e743241df164 1014M  857M  158M  85% /var/pv/data
+$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+mssql@mssqlserver-ag-cluster-0:/$ df -h /var/opt/mssql
+Filesystem                                              Size  Used Avail Use% Mounted on
+/dev/longhorn/pvc-37a7bc8d-2c04-4eb4-8e53-e610fd1daaf5  974M  274M  685M  29% /var/opt/mssql
+
+mssql@mssqlserver-ag-cluster-0:/$ dd if=/dev/zero of=/var/opt/mssql/file.img bs=120M count=5
+5+0 records in
+5+0 records out
+629145600 bytes (629 MB, 600 MiB) copied, 6.09315 s, 103 MB/s
+mssql@mssqlserver-ag-cluster-0:/$ df -h /var/opt/mssql
+Filesystem                                              Size  Used Avail Use% Mounted on
+/dev/longhorn/pvc-37a7bc8d-2c04-4eb4-8e53-e610fd1daaf5  974M  874M   85M  92% /var/opt/mssql
 ```
 
-So, from the above output we can see that the storage usage is 83%, which exceeded the `usageThreshold` 20%.
+So, from the above output we can see that the storage usage is 92%, which exceeded the `usageThreshold` 60%.
 
 Let's watch the `mssqlserveropsrequest` in the demo namespace to see if any `mssqlserveropsrequest` object is created. After some time you'll see that a `mssqlserveropsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
+
+
+
+
+
+
+
+
+
+
+
 ```bash
-$ kubectl get mssqlserveropsrequest -n demo
+$ watch kubectl get mssqlserveropsrequest -n demo
 NAME                         TYPE              STATUS        AGE
 msops-mssqlserver-ag-cluster-xojkua   VolumeExpansion   Progressing   15s
 ```
@@ -313,7 +326,7 @@ Metadata:
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  MSSQLServerAutoscaler
-    Name:                  ms-as-st
+    Name:                  ms-as-storage
     UID:                   4f45a3b3-fc72-4d04-b52c-a770944311f6
   Resource Version:        25557
   UID:                     90763a49-a03f-407c-a233-fb20c4ab57d7
@@ -359,7 +372,7 @@ Events:
   Normal  Successful  103s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of MSSQLServer: demo/mssqlserver-ag-cluster
 ```
 
-Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the cluster database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get sts -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -379,6 +392,8 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete mssqlserver -n demo mssqlserver-ag-cluster
-kubectl delete mssqlserverautoscaler -n demo ms-as-st
+kubectl delete mssqlserverautoscaler -n demo ms-as-storage
+kubectl delete issuer -n demo mssqlserver-ca-issuer
+kubectl delete secret -n demo mssqlserver-ca
 kubectl delete ns demo
 ```
