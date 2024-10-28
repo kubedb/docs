@@ -116,7 +116,7 @@ Let's create the ZooKeeper CR that is shown above:
 
 ```bash
 $ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
-ZooKeeper.kubedb.com/es-quickstart created
+zooKeeper.kubedb.com/zoo-com created
 ```
 
 The ZooKeeper's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
