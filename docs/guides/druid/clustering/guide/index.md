@@ -2,8 +2,8 @@
 title: Druid Topology Cluster Guide
 menu:
   docs_{{ .version }}:
-    identifier: guides-druid-clustering-topology-cluster-guide
-    name: Druid Topology Cluster Guide
+    identifier: guides-druid-clustering-guide
+    name: Druid Clustering Overview
     parent: guides-druid-clustering
     weight: 20
 menu_name: docs_{{ .version }}
@@ -20,7 +20,7 @@ This tutorial will show you how to use KubeDB to provision a Druid Cluster.
 
 Before proceeding:
 
-- Read [druid topology cluster overview](/docs/guides/druid/clustering/topology-cluster-overview/index.md) to get a basic idea about the design and architecture of Druid.
+- Read [druid topology cluster overview](/docs/guides/druid/clustering/overview/index.md) to get a basic idea about the design and architecture of Druid.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -107,7 +107,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/clustering/topology-cluster-guide/yamls/druid-with-config.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/clustering/guide/yamls/druid-with-monitoring.yaml
 druid.kubedb.com/druid-cluster created
 ```
 
@@ -920,6 +920,6 @@ namespace "demo" deleted
 
 ## Next Steps
 
-- Detail concepts of [Druid object](/docs/guides/druid/concepts/database/index.md).
-- Detail concepts of [DruidDBVersion object](/docs/guides/druid/concepts/catalog/index.md).
+- Detail concepts of [Druid object](/docs/guides/druid/concepts/druid.md).
+- Detail concepts of [DruidDBVersion object](/docs/guides/druid/concepts/druidversion.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

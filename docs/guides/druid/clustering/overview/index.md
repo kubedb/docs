@@ -2,8 +2,8 @@
 title: Druid Topology Cluster Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-druid-clustering-topology-cluster-overview
-    name: Druid Topology Cluster Overview
+    identifier: guides-druid-clustering-overview
+    name: Druid Clustering Overview
     parent: guides-druid-clustering
     weight: 15
 menu_name: docs_{{ .version }}
@@ -18,7 +18,7 @@ Druid has a distributed architecture that is designed to be cloud-friendly and e
 
 The following diagram shows the services that make up the Druid architecture, their typical arrangement across servers, and how queries and data flow through this architecture.
 
-![Druid Architecture](/docs/guides/druid/clustering/topology-cluster-overview/images/druid-architecture.svg)
+![Druid Architecture](/docs/guides/druid/clustering/overview/images/druid-architecture.svg)
 
 Image ref: <https://druid.apache.org/assets/images/druid-architecture-7db1cd79d2d70b2e5ccc73b6bebfcaa4.svg>
 
@@ -72,7 +72,7 @@ Data servers divide operations between Historical and MiddleManager services.
 [Historical](https://druid.apache.org/docs/latest/design/historical/) services handle storage and querying on historical data, including any streaming data that has been in the system long enough to be committed. Historical services download segments from deep storage and respond to queries about these segments. They don't accept writes.
 
 #### MiddleManager service
-[MiddleManager](https://druid.apache.org/docs/latest/design/middleManager) services handle ingestion of new data into the cluster. They are responsible for reading from external data sources and publishing new Druid segments.
+[MiddleManager](https://druid.apache.org/docs/latest/design/middlemanager) services handle ingestion of new data into the cluster. They are responsible for reading from external data sources and publishing new Druid segments.
 
 ## External dependencies
 In addition to its built-in service types, Druid also has three external dependencies. These are intended to be able to leverage existing infrastructure, where present.
@@ -111,5 +111,5 @@ For more details, please see the [ZooKeeper](https://druid.apache.org/docs/lates
 
 ## Next Steps
 
-- [Deploy Druid Group Replication](/docs/guides/druid/clustering/group-replication/index.md) using KubeDB.
+- [Deploy Druid Cluster](/docs/guides/druid/clustering/overview/index.md) using KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md)

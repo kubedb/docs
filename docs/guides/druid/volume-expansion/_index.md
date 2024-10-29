@@ -5,6 +5,6 @@ menu:
     identifier: guides-druid-volume-expansion
     name: Volume Expansion
     parent: guides-druid
-    weight: 44
+    weight: 80
 menu_name: docs_{{ .version }}
 ---

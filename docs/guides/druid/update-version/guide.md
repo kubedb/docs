@@ -3,7 +3,7 @@ title: Update Version of Druid
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-update-version-guide
-    name: Guide
+    name: Update Druid Version
     parent: guides-druid-update-version
     weight: 20
 menu_name: docs_{{ .version }}

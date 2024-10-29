@@ -3,7 +3,7 @@ title: Horizontal Scaling Druid Cluster
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-scaling-horizontal-scaling-guide
-    name: Guide
+    name: Druid Horizontal Scaling
     parent: guides-druid-scaling-horizontal-scaling
     weight: 20
 menu_name: docs_{{ .version }}
@@ -24,7 +24,7 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the D
 
 - You should be familiar with the following `KubeDB` concepts:
     - [Druid](/docs/guides/druid/concepts/druid.md)
-    - [Topology](/docs/guides/druid/clustering/topology-cluster/index.md)
+    - [Topology](/docs/guides/druid/clustering/overview/index.md)
     - [DruidOpsRequest](/docs/guides/druid/concepts/druidopsrequest.md)
     - [Horizontal Scaling Overview](/docs/guides/druid/scaling/horizontal-scaling/overview.md)
 

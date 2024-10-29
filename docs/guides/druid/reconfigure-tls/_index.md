@@ -5,6 +5,6 @@ menu:
     identifier: guides-druid-reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: guides-druid
-    weight: 46
+    weight: 120
 menu_name: docs_{{ .version }}
 ---

@@ -188,7 +188,7 @@ spec:
   volumeExpansion:
     mode: "Online"
     historicals: 2Gi
-    middleMangers: 2Gi
+    middleManagers: 2Gi
 status:
   conditions:
     - lastTransitionTime: "2024-07-25T18:22:38Z"

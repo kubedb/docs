@@ -5,6 +5,6 @@ menu:
     identifier: guides-druid-tls
     name: TLS/SSL Encryption
     parent: guides-druid
-    weight: 45
+    weight: 90
 menu_name: docs_{{ .version }}
 ---

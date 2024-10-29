@@ -3,7 +3,7 @@ title: Configuring Druid Cluster
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-configuration-druid-cluster
-    name: Guide
+    name: Configuration File
     parent: guides-druid-configuration
     weight: 10
 menu_name: docs_{{ .version }}
@@ -102,7 +102,7 @@ secret/deep-storage-config created
 
 ## Use Custom Configuration
 
-Say we want to change the default log retention time and default replication factor of creating a topic of brokers. Let's create the `middleManagers.properties` file with our desire configurations.
+Say we want to change the default maximum number of tasks the MiddleManager can accept. Let's create the `middleManagers.properties` file with our desire configurations.
 
 **middleManagers.properties:**
 
@@ -110,7 +110,7 @@ Say we want to change the default log retention time and default replication fac
 druid.worker.capacity=5
 ```
 
-and we also want to change the metadata.log.dir of the all historicals nodes. Let's create the `historicals.properties` file with our desire configurations.
+and we also want to change the number of processing threads to have available for parallel processing of segments of the historicals nodes. Let's create the `historicals.properties` file with our desire configurations.
 
 **historicals.properties:**
 
@@ -170,7 +170,7 @@ spec:
 Now, create the Druid object by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/yamls/druid-with-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/yamls/druid-with-monitoring.yaml
 druid.kubedb.com/druid-with-config created
 ```
 
@@ -256,7 +256,7 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 After providing the credentials correctly, you should be able to access the web console like shown below.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/configuration/images/druid-ui.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/reconfigure/images/druid-updated-ui.png">
 </p>
 
 

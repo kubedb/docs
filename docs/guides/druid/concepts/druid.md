@@ -23,7 +23,7 @@ section_menu_id: guides
 As with all other Kubernetes objects, a Druid needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example Druid object.
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: Druid
 metadata:
   name: druid
@@ -53,18 +53,6 @@ spec:
     timeoutSeconds: 10
   keystoreCredSecret:
     name: druid-keystore-cred
-  podTemplate:
-    metadata:
-      annotations:
-        passMe: ToDatabasePod
-      labels:
-        thisLabel: willGoToPod
-    controller:
-      annotations:
-        passMe: ToPetSet
-      labels:
-        thisLabel: willGoToPts
-  storageType: Durable
   deletionPolicy: DoNotTerminate
   tls:
     certificates:
@@ -137,6 +125,7 @@ spec:
                 limits:
                   cpu: 700m
                   memory: 2Gi
+      storageType: Durable
       storage:
         accessModes:
           - ReadWriteOnce
@@ -156,6 +145,7 @@ spec:
                 limits:
                   cpu: 700m
                   memory: 2Gi
+      storageType: Durable
       storage:
         accessModes:
           - ReadWriteOnce
@@ -172,7 +162,7 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  version: 3.6.1
+  version: 30.0.0
 ```
 
 ### spec.version
@@ -180,7 +170,7 @@ spec:
 `spec.version` is a required field specifying the name of the [DruidVersion](/docs/guides/druid/concepts/druidversion.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `Druid` resources,
 
 - `28.0.1`
-- `30.0.1`
+- `30.0.0`
 
 ### spec.replicas
 
@@ -531,9 +521,9 @@ Know details about KubeDB Health checking from this [blog post](https://appscode
 ## Next Steps
 
 - Learn how to use KubeDB to run Apache Druid cluster [here](/docs/guides/druid/README.md).
-- Deploy [dedicated topology cluster](/docs/guides/druid/clustering/topology-cluster-guide/index.md) for Apache Druid
-- Deploy [combined cluster](/docs/guides/druid/clustering/combined-cluster/index.md) for Apache Druid
+- Deploy [dedicated topology cluster](/docs/guides/druid/clustering/guide/index.md) for Apache Druid
 - Monitor your Druid cluster with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/druid/monitoring/using-prometheus-operator.md).
 - Detail concepts of [DruidVersion object](/docs/guides/druid/concepts/druidversion.md).
-- Learn to use KubeDB managed Druid objects using [CLIs](/docs/guides/druid/cli/cli.md).
+
+[//]: # (- Learn to use KubeDB managed Druid objects using [CLIs]&#40;/docs/guides/druid/cli/cli.md&#41;.)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

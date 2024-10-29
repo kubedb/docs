@@ -3,7 +3,7 @@ title: Druid Combined TLS/SSL Encryption
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-tls-guide
-    name: Guide
+    name: Druid TLS/SSL
     parent: guides-druid-tls
     weight: 30
 menu_name: docs_{{ .version }}
@@ -301,6 +301,7 @@ kubectl delete ns demo
 - Detail concepts of [Druid object](/docs/guides/druid/concepts/druid.md).
 - Monitor your Druid cluster with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/druid/monitoring/using-prometheus-operator.md).
 - Monitor your Druid cluster with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/druid/monitoring/using-builtin-prometheus.md).
-- Use [kubedb cli](/docs/guides/druid/cli/cli.md) to manage databases like kubectl for Kubernetes.
+
+[//]: # (- Use [kubedb cli]&#40;/docs/guides/druid/cli/cli.md&#41; to manage databases like kubectl for Kubernetes.)
 - Detail concepts of [Druid object](/docs/guides/druid/concepts/druid.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

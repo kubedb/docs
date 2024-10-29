@@ -3,7 +3,7 @@ title: Druid Topology Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-autoscaler-storage-guide
-    name: Topology Cluster
+    name: Druid Storage Autoscaling
     parent: guides-druid-autoscaler-storage
     weight: 20
 menu_name: docs_{{ .version }}

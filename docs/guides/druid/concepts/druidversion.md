@@ -99,4 +99,4 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 ## Next Steps
 
 - Learn about Druid CRD [here](/docs/guides/druid/concepts/druid.md).
-- Deploy your first Druid database with KubeDB by following the guide [here](/docs/guides/druid/quickstart/druid/index.md).
+- Deploy your first Druid database with KubeDB by following the guide [here](/docs/guides/druid/quickstart/guide/index.md).

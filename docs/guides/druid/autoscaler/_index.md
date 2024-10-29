@@ -5,6 +5,6 @@ menu:
     identifier: guides-druid-autoscaler
     name: Autoscaling
     parent: guides-druid
-    weight: 46
+    weight: 100
 menu_name: docs_{{ .version }}
 ---

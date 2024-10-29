@@ -69,7 +69,7 @@ spec:
       trigger: "On"
       usageThreshold: 60
       scalingThreshold: 50
-    middleMangers:
+    middleManagers:
       expansionMode: "Online"
       trigger: "On"
       usageThreshold: 60

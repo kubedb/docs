@@ -3,7 +3,7 @@ title: Restart Druid
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-restart-guide
-    name: Guide
+    name: Restart Druid
     parent: guides-druid-restart
     weight: 10
 menu_name: docs_{{ .version }}

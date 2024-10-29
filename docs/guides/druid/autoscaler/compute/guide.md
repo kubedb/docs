@@ -2,9 +2,9 @@
 title: Druid Topology Autoscaling
 menu:
   docs_{{ .version }}:
-    identifier: guides-druid-autoscaler-guide
-    name: Topology Cluster
-    parent: guides-druid-autoscaler
+    identifier: guides-druid-autoscaler-compute-guide
+    name: Druid Compute Autoscaling
+    parent: guides-druid-autoscaler-compute
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -3,7 +3,7 @@ title: Druid Topology Volume Expansion
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-volume-expansion-guide
-    name: Topology
+    name: Druid Volume Expansion
     parent: guides-druid-volume-expansion
     weight: 30
 menu_name: docs_{{ .version }}
@@ -26,7 +26,7 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 
 - You should be familiar with the following `KubeDB` concepts:
     - [Druid](/docs/guides/druid/concepts/druid.md)
-    - [Topology](/docs/guides/druid/clustering/topology-cluster/index.md)
+    - [Topology](/docs/guides/druid/clustering/overview/index.md)
     - [DruidOpsRequest](/docs/guides/druid/concepts/druidopsrequest.md)
     - [Volume Expansion Overview](/docs/guides/druid/volume-expansion/overview.md)
 
@@ -132,7 +132,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageType: Durable
+      storageType: Durable
     middleManagers:
       replicas: 1
       storage:

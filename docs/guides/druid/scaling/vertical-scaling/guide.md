@@ -3,7 +3,7 @@ title: Vertical Scaling Druid Cluster
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-scaling-vertical-scaling-guide
-    name: Topology Cluster
+    name: Druid Vertical Scaling
     parent: guides-druid-scaling-vertical-scaling
     weight: 30
 menu_name: docs_{{ .version }}
@@ -24,7 +24,7 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 
 - You should be familiar with the following `KubeDB` concepts:
     - [Druid](/docs/guides/druid/concepts/druid.md)
-    - [Topology](/docs/guides/druid/clustering/topology-cluster/index.md)
+    - [Topology](/docs/guides/druid/clustering/overview/index.md)
     - [DruidOpsRequest](/docs/guides/druid/concepts/druidopsrequest.md)
     - [Vertical Scaling Overview](/docs/guides/druid/scaling/vertical-scaling/overview.md)
 

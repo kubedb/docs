@@ -18,7 +18,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageType: Durable
+      storageType: Durable
     middleManagers:
       replicas: 1
       storage:

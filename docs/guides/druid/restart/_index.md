@@ -5,6 +5,6 @@ menu:
     identifier: guides-druid-restart
     name: Restart
     parent: guides-druid
-    weight: 70
+    weight: 130
 menu_name: docs_{{ .version }}
 ---
