@@ -1,0 +1,63 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Singlestore
+metadata:
+  name: sdb-custom-sidecar
+  namespace: demo
+spec:
+  version: "8.7.10"
+  topology:
+    aggregator:
+      replicas: 1
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "600m"
+                requests:
+                  memory: "2Gi"
+                  cpu: "600m"
+            - name: sidecar
+              image: nginx:alpine
+              ports:
+                - containerPort: 80
+              volumeMounts:
+                - name: nginx-config
+                  mountPath: /etc/nginx/conf.d
+          volumes:
+            - name: nginx-config
+              configMap:
+                name: nginx-config-map
+      storage:
+        storageClassName: "longhorn"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    leaf:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+            - name: singlestore
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "600m"
+                requests:
+                  memory: "2Gi"
+                  cpu: "600m"
+      storage:
+        storageClassName: "longhorn"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  licenseSecret:
+    name: license-secret
+  storageType: Durable
+  deletionPolicy: WipeOut

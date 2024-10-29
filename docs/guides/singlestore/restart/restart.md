@@ -3,7 +3,7 @@ title: Restart SingleStore
 menu:
   docs_{{ .version }}:
     identifier: sdb-restart-details
-    name: Restart Cluster
+    name: Restart SingleStore
     parent: sdb-restart
     weight: 10
 menu_name: docs_{{ .version }}
@@ -146,12 +146,13 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 singlestoreopsrequest.ops.kubedb.com/restart created
 ```
 
-Now the Ops-manager operator will restrart the pods sequetially by their cardinal suffix.
+Now the Ops-manager operator will restart the pods sequentially by their cardinal suffix.
 
 ```shell
 $ kubectl get singlestoreopsrequest -n demo
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   10m
+
 $ kubectl get singlestoreopsrequest -n demo restart -oyaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: SinglestoreOpsRequest
