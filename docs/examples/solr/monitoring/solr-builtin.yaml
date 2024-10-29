@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Solr
+metadata:
+  name: builtin-prom-sl
+  namespace: demo
+spec:
+  version: 9.6.1
+  replicas: 2
+  enableSSL: true
+  monitor:
+    agent: prometheus.io/builtin
+  solrModules:
+    - prometheus-exporter
+  zookeeperRef:
+    name: zoo
+    namespace: demo
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard

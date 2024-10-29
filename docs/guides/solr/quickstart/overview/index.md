@@ -122,7 +122,7 @@ zooKeeper.kubedb.com/zoo-com created
 The ZooKeeper's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
 
 ```bash
-$ kubectl get ZooKeeper -n demo -w
+$ kubectl get zookeeper -n demo -w
 NAME       TYPE                  VERSION   STATUS   AGE
 zoo-com    kubedb.com/v1alpha2   3.7.2     Ready    13m
 ```

@@ -1,0 +1,29 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Solr
+metadata:
+  name: operator-prom-sl
+  namespace: demo
+spec:
+  version: 9.6.1
+  replicas: 2
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+  solrModules:
+    - s3-repository
+    - gcs-repository
+    - prometheus-exporter
+  zookeeperRef:
+    name: zoo
+    namespace: demo
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
