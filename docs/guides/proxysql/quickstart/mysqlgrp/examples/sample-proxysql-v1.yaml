@@ -5,7 +5,26 @@ metadata:
   namespace: demo
 spec:
   version: "2.3.2-debian"
-  replicas: 1
+  replicas: 3
+  podTemplate:
+    spec:
+      containers:
+        - name: proxysql
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
+      securityContext:
+        runAsGroup: 999
+        runAsNonRoot: true
+        runAsUser: 999
+        seccompProfile:
+          type: RuntimeDefault
+      podPlacementPolicy:
+        name: default
   syncUsers: true
   backend:
     name: mysql-server

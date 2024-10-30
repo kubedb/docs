@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SinglestoreOpsRequest
+metadata:
+  name: sdbops-scale-horizontal-down
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: sample-sdb
+  horizontalScaling:
+    leaf: 2

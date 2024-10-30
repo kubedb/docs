@@ -1,0 +1,15 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: SinglestoreAutoscaler
+metadata:
+  name: sdb-cluster-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: sdb-sample
+  storage:
+    leaf:
+      trigger: "On"
+      usageThreshold: 30
+      scalingThreshold: 50
+      expansionMode: "Online"
+      upperBound: "100Gi"

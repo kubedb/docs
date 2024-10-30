@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Singlestore
+metadata:
+  name: sdb-with-tolerations
+  namespace: demo
+spec:
+  podTemplate:
+    spec:
+      tolerations:
+      - key: "key1"
+        operator: "Equal"
+        value: "node1"
+        effect: "NoSchedule"
+  deletionPolicy: WipeOut
+  licenseSecret:
+    name: license-secret
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  storageType: Durable
+  version: 8.7.10

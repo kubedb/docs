@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Singlestore
+metadata:
+  name: sdb-node-selector
+  namespace: demo
+spec:
+  version: "8.7.10"
+  podTemplate:
+    spec:
+      nodeSelector:
+        disktype: ssd
+  deletionPolicy: WipeOut
+  licenseSecret:
+    name: license-secret
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  storageType: Durable
