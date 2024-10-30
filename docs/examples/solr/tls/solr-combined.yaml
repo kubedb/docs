@@ -1,0 +1,33 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Solr
+metadata:
+  name: solr-combined
+  namespace: demo
+spec:
+  version: 9.4.1
+  replicas: 2
+  enableSSL: true
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      name: solr-ca-issuer
+      kind: Issuer
+    certificates:
+      - alias: server
+        subject:
+          organizations:
+            - kubedb:server
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
+  zookeeperRef:
+    name: zoo
+    namespace: demo
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
