@@ -3,7 +3,7 @@ title: Reconfigure SingleStore TLS/SSL Encryption
 menu:
   docs_{{ .version }}:
     identifier: guides-sdb-reconfigure-tls-cluster
-    name: Reconfigure sdb TLS/SSL Encryption
+    name: Reconfigure TLS/SSL Encryption
     parent: guides-sdb-reconfigure-tls
     weight: 20
 menu_name: docs_{{ .version }}
