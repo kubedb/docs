@@ -143,13 +143,13 @@ spec:
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
-      schedule: "/30 * * * *"
+      schedule: "*/30 * * * *"
     sessionHistoryLimit: 2
   manifestBackup:
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1 
-      schedule: "/30 * * * *"
+      schedule: "*/30 * * * *"
     sessionHistoryLimit: 2
   backupStorage:
     ref:

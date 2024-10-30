@@ -1,0 +1,21 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: SinglestoreAutoscaler
+metadata:
+  name: sdb-cluster-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: sdb-sample
+  compute:
+    aggregator:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      minAllowed:
+        cpu: 900m
+        memory: 3Gi
+      maxAllowed:
+        cpu: 2000m
+        memory: 6Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"
+      resourceDiffPercentage: 10

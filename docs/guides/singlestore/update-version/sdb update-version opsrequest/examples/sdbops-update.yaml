@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SinglestoreOpsRequest
+metadata:
+  name: sdb-update-patch
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: sample-sdb
+  updateVersion:
+    targetVersion: "8.7.10"

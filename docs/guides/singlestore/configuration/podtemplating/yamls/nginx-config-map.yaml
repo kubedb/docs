@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config-map
+  namespace: demo
+data:
+  default.conf: |
+    server {
+        listen 80;
+        location / {
+            proxy_pass http://localhost:9000;
+        }
+    }

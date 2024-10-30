@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SinglestoreOpsRequest
+metadata:
+  name: sdbops-reconfigure-config
+  namespace: demo
+spec:
+  type: Configuration
+  databaseRef:
+    name: custom-sdb
+  configuration:
+    aggregator:  
+      removeCustomConfig: true

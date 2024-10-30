@@ -3,7 +3,7 @@ title: Application Level Backup & Restore MySQL | KubeStash
 description: Application Level Backup and Restore using KubeStash
 menu:
   docs_{{ .version }}:
-    identifier: guides-application-level-backup-stashv2
+    identifier: guides-mysql-application-level-backup-stashv2
     name: Application Level Backup
     parent: guides-mysql-backup-stashv2
     weight: 40

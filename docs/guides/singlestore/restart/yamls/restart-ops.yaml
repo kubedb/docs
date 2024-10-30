@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SinglestoreOpsRequest
+metadata:
+  name: restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: sdb-sample
+  timeout: 10m
+  apply: Always
