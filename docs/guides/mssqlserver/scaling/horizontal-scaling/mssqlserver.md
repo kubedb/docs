@@ -644,11 +644,9 @@ Events:
   Warning  get current raft leader; ConditionStatus:True; PodName:mssql-ag-cluster-0   104s  KubeDB Ops-manager Operator  get current raft leader; ConditionStatus:True; PodName:mssql-ag-cluster-0
   Warning  get raft node; ConditionStatus:True; PodName:mssql-ag-cluster-0             104s  KubeDB Ops-manager Operator  get raft node; ConditionStatus:True; PodName:mssql-ag-cluster-0
   Warning  remove raft node; ConditionStatus:True; PodName:mssql-ag-cluster-2          104s  KubeDB Ops-manager Operator  remove raft node; ConditionStatus:True; PodName:mssql-ag-cluster-2
-  Warning  get current raft leader; ConditionStatus:False; PodName:mssql-ag-cluster-0  99s   KubeDB Ops-manager Operator  get current raft leader; ConditionStatus:False; PodName:mssql-ag-cluster-0
   Warning  get current raft leader; ConditionStatus:True; PodName:mssql-ag-cluster-0   94s   KubeDB Ops-manager Operator  get current raft leader; ConditionStatus:True; PodName:mssql-ag-cluster-0
   Warning  get raft node; ConditionStatus:True; PodName:mssql-ag-cluster-0             94s   KubeDB Ops-manager Operator  get raft node; ConditionStatus:True; PodName:mssql-ag-cluster-0
   Warning  patch petset; ConditionStatus:True; PodName:mssql-ag-cluster-2              94s   KubeDB Ops-manager Operator  patch petset; ConditionStatus:True; PodName:mssql-ag-cluster-2
-  Warning  get pod; ConditionStatus:False                                              89s   KubeDB Ops-manager Operator  get pod; ConditionStatus:False
   Warning  get pod; ConditionStatus:True; PodName:mssql-ag-cluster-2                   59s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:mssql-ag-cluster-2
   Warning  delete pvc; ConditionStatus:True; PodName:mssql-ag-cluster-2                59s   KubeDB Ops-manager Operator  delete pvc; ConditionStatus:True; PodName:mssql-ag-cluster-2
   Warning  get pvc; ConditionStatus:False                                              59s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:False

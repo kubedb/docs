@@ -344,4 +344,9 @@ kubectl delete ns demo
 ```
 
 
+## Next Steps
+
+- Detail concepts of [MSSQLServer object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
+- [Backup and Restore](/docs/guides/mssqlserver/backup/overview/index.md) MSSQLServer databases using KubeStash.
+
 

@@ -22,7 +22,7 @@ section_menu_id: guides
 
 Like any official Kubernetes resource, a `MSSQLServerOpsRequest` has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.
 
-Here, some sample `MSSQLServerOpsRequest` CRs for different administrative operations is given below,
+Here, some sample `MSSQLServerOpsRequest` CR for different administrative operations are given below,
 
 Sample `MSSQLServerOpsRequest` for updating database:
 
@@ -172,7 +172,7 @@ Here, when you specify the resource request for `MSSQLServer` container, the sch
 
 > To use the volume expansion feature the storage class must support volume expansion
 
-If you want to expand the volume of your MSSQLServer cluster, you have to specify `spec.volumeExpansion` section. This field consists of the following sub-field:
+If you want to expand the volume of your MSSQLServer cluster, you have to specify `spec.volumeExpansion` section. This field consists of the following sub-fields:
 
 - `spec.volumeExpansion.mode` specifies the volume expansion mode. Supported values are `Online` & `Offline`. The default is `Online`.
 - `spec.volumeExpansion.mssqlserver` indicates the desired size for the persistent volumes of a MSSQLServer.
@@ -208,8 +208,8 @@ This field controls the execution of obsRequest depending on the database state.
 
 `status.phase` indicates the overall phase of the operation for this `MSSQLServerOpsRequest`. It can have the following values:
 
-| Phase       | Meaning                                                                            |
-|-------------|------------------------------------------------------------------------------------|
+| Phase       | Meaning                                                                                |
+|-------------|----------------------------------------------------------------------------------------|
 | Successful  | KubeDB has successfully performed the operation requested in the MSSQLServerOpsRequest |
 | Progressing | KubeDB has started the execution of the applied MSSQLServerOpsRequest                  |
 | Failed      | KubeDB has failed the operation requested in the MSSQLServerOpsRequest                 |
@@ -228,18 +228,18 @@ Important: Ops-manager Operator can skip an opsRequest, only if its execution ha
 
 - `types` specifies the type of the condition. MSSQLServerOpsRequest has the following types of conditions:
 
-| Type                | Meaning                                                                                   |
-|---------------------| ----------------------------------------------------------------------------------------- |
-| `Progressing`       | Specifies that the operation is now progressing                                           |
-| `Successful`        | Specifies such a state that the operation on the database has been successful.            |
-| `HaltDatabase`      | Specifies such a state that the database is halted by the operator                        |
-| `ResumeDatabase`    | Specifies such a state that the database is resumed by the operator                       |
-| `Failed`           | Specifies such a state that the operation on the database has been failed.                |
-| `Scaling`           | Specifies such a state that the scaling operation on the database has stared              |
-| `VerticalScaling`   | Specifies such a state that vertical scaling has performed successfully on database       |
-| `HorizontalScaling` | Specifies such a state that horizontal scaling has performed successfully on database     |
-| `Updating`          | Specifies such a state that database updating operation has stared                       |
-| `UpdateVersion`     | Specifies such a state that version updating on the database have performed successfully |
+| Type                | Meaning                                                                                     |
+|---------------------|---------------------------------------------------------------------------------------------|
+| `Progressing`       | Specifies that the operation is now progressing                                             |
+| `Successful`        | Specifies such a state that the operation on the database has been successful.              |
+| `HaltDatabase`      | Specifies such a state that the database is halted by the operator                          |
+| `ResumeDatabase`    | Specifies such a state that the database is resumed by the operator                         |
+| `Failed`            | Specifies such a state that the operation on the database has been failed.                  |
+| `Scaling`           | Specifies such a state that the scaling operation on the database has started               |
+| `VerticalScaling`   | Specifies such a state that vertical scaling has performed successfully on database         |
+| `HorizontalScaling` | Specifies such a state that horizontal scaling has performed successfully on database       |
+| `Updating`          | Specifies such a state that database updating operation has started                         |
+| `UpdateVersion`     | Specifies such a state that version updating on the database have performed successfully    |
 
 - The `status` field is a string, with possible values `"True"`, `"False"`, and `"Unknown"`.
     - `status` will be `"True"` if the current transition is succeeded.
