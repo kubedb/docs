@@ -128,7 +128,7 @@ metadata:
   name: sdbops-reconfigure-config
   namespace: demo
 spec:
-  type: Configuration
+  type: Reconfigure
   databaseRef:
     name: sdb-sample
   configuration:
@@ -149,7 +149,7 @@ metadata:
   name: sdbops-reconfigure-config
   namespace: demo
 spec:
-  type: Configuration
+  type: Reconfigure
   databaseRef:
     name: sdb-standalone
   configuration:
@@ -166,7 +166,7 @@ metadata:
   name: sdbops-reconfigure-config
   namespace: demo
 spec:
-  type: Configuration
+  type: Reconfigure
   databaseRef:
     name: sdb-sample
   configuration:
@@ -185,7 +185,7 @@ metadata:
   name: sdbops-reconfigure-config
   namespace: demo
 spec:
-  type: Configuration
+  type: Reconfigure
   databaseRef:
     name: sdb-standalone
   configuration:

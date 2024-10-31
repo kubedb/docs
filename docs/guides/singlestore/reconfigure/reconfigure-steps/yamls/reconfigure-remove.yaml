@@ -4,7 +4,7 @@ metadata:
   name: sdbops-reconfigure-config
   namespace: demo
 spec:
-  type: Configuration
+  type: Reconfigure
   databaseRef:
     name: custom-sdb
   configuration:
