@@ -27,7 +27,7 @@ This guide will give you an overview of how KubeDB Ops Manager updates the resou
 The following diagram shows how the `KubeDB` Ops Manager used to update the resources of the `MSSQLServer`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Vertical scaling process of MSSQLServer" src="/docs/images/day-2-operation/mssqlserver/ms-vertical-scaling.svg">
+  <img alt="Vertical scaling process of MSSQLServer" src="/docs/images/day-2-operation/mssqlserver/ms-vertical-scaling.png">
 <figcaption align="center">Fig: Vertical scaling process of MSSQLServer</figcaption>
 </figure>
 
