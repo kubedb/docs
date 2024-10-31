@@ -280,19 +280,9 @@ So, from the above output we can see that the storage usage is 92%, which exceed
 Let's watch the `mssqlserveropsrequest` in the demo namespace to see if any `mssqlserveropsrequest` object is created. After some time you'll see that a `mssqlserveropsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 
-
-
-
-
-
-
-
-
-
-
 ```bash
 $ watch kubectl get mssqlserveropsrequest -n demo
-NAME                         TYPE              STATUS        AGE
+NAME                                  TYPE              STATUS        AGE
 msops-mssqlserver-ag-cluster-xojkua   VolumeExpansion   Progressing   15s
 ```
 
@@ -300,7 +290,7 @@ Let's wait for the ops request to become successful.
 
 ```bash
 $ kubectl get mssqlserveropsrequest -n demo
-NAME                         TYPE              STATUS       AGE
+NAME                                  TYPE              STATUS       AGE
 msops-mssqlserver-ag-cluster-xojkua   VolumeExpansion   Successful   97s
 ```
 
@@ -375,13 +365,13 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1594884096"
 $ kubectl get pv -n demo
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
-pvc-43266d76-f280-4cca-bd78-d13660a84db9   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   topolvm-provisioner            23m
-pvc-4a509b05-774b-42d9-b36d-599c9056af37   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   topolvm-provisioner            24m
-pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   topolvm-provisioner            23m
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS  REASON   AGE
+pvc-43266d76-f280-4cca-bd78-d13660a84db9   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn            23m
+pvc-4a509b05-774b-42d9-b36d-599c9056af37   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn            24m
+pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn            23m
 ```
 
 The above output verifies that we have successfully autoscaled the volume of the MSSQLServer cluster database.
