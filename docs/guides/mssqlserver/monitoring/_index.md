@@ -1,10 +1,10 @@
 ---
-title: Monitoring MSSQLServer
+title: Monitoring Microsoft SQL Server
 menu:
   docs_{{ .version }}:
-    identifier: ms-monitoring-mssqlserver
+    identifier: ms-monitoring
     name: Monitoring
-    parent: ms-mssqlserver-guides
-    weight: 40
+    parent: guides-mssqlserver
+    weight: 50
 menu_name: docs_{{ .version }}
 ---
