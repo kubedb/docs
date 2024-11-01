@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops Manager expand the volume of 
 The following diagram shows how KubeDB Ops Manager expand the volumes of `MSSQLServer` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Volume Expansion process of MSSQLServer" src="/docs/images/day-2-operation/mssqlserver/ms-volume-expansion.svg">
+  <img alt="Volume Expansion process of MSSQLServer" src="/docs/images/day-2-operation/mssqlserver/ms-volume-expansion.png">
 <figcaption align="center">Fig: Volume Expansion process of MSSQLServer</figcaption>
 </figure>
 
@@ -54,3 +54,4 @@ The Volume Expansion process consists of the following steps:
 10. After the successful Volume Expansion of the `MSSQLServer`, the `KubeDB` Ops-manager operator resumes the `MSSQLServer` object so that the `KubeDB` Provisioner operator resumes its usual operations.
 
 In the next docs, we are going to show a step-by-step guide on Volume Expansion of various MSSQLServer database using `MSSQLServerOpsRequest` CRD.
+
