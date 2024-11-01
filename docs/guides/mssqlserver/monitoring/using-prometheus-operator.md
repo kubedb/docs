@@ -43,7 +43,7 @@ section_menu_id: guides
 
 ## Find out required labels for ServiceMonitor
 
-We need to know the labels used to select `ServiceMonitor` by a `Prometheus` CRD. We are going to provide these labels in `spec.monitor.prometheus.labels` field of MSSQLServer CR so that KubeDB creates `ServiceMonitor` object accordingly.
+We need to know the labels used to select `ServiceMonitor` by `Prometheus` Operator. We are going to provide these labels in `spec.monitor.prometheus.labels` field of MSSQLServer CR so that KubeDB creates `ServiceMonitor` object accordingly.
 
 At first, let's find out the available Prometheus server in our cluster.
 
