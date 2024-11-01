@@ -1,0 +1,14 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: MSSQLServerAutoscaler
+metadata:
+  name: ms-as-storage
+  namespace: demo
+spec:
+  databaseRef:
+    name: mssqlserver-ag-cluster
+  storage:
+    mssqlserver:
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 50
+      expansionMode: "Offline"
