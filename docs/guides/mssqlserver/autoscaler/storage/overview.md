@@ -28,7 +28,7 @@ This guide will give an overview on how KubeDB `Autoscaler` operator autoscales 
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `MSSQLServer`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Storage Auto Scaling process of MSSQLServer" src="/docs/images/mssqlserver/ms-storage-autoscaling.svg">
+  <img alt="Storage Auto Scaling process of MSSQLServer" src="/docs/images/mssqlserver/ms-storage-autoscaling.png">
 <figcaption align="center">Fig: Storage Auto Scaling process of MSSQLServer</figcaption>
 </figure>
 
