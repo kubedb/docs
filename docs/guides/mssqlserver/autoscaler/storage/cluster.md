@@ -203,6 +203,7 @@ spec:
       usageThreshold: 60
       scalingThreshold: 50
       expansionMode: "Offline"
+      upperBound: "100Gi"
 ```
 
 Here,
@@ -238,18 +239,24 @@ Annotations:  <none>
 API Version:  autoscaling.kubedb.com/v1alpha1
 Kind:         MSSQLServerAutoscaler
 Metadata:
-  Creation Timestamp:  2024-10-28T12:27:31Z
+  Creation Timestamp:  2024-11-01T09:39:54Z
   Generation:          1
-  Resource Version:    494502
-  UID:                 834cf122-b68c-41a5-924f-8b7fc09f4ed5
+  Resource Version:    922388
+  UID:                 1e239b31-c6c8-4e2c-8cf6-2b95a88b9d45
 Spec:
   Database Ref:
     Name:  mssqlserver-ag-cluster
+  Ops Request Options:
+    Apply:  IfReady
   Storage:
     Mssqlserver:
-      Expansion Mode:     Offline
+      Expansion Mode:  Offline
+      Scaling Rules:
+        Applies Upto:     
+        Threshold:        50pc
       Scaling Threshold:  50
       Trigger:            On
+      Upper Bound:        100Gi
       Usage Threshold:    60
 Events:                   <none>
 ```
@@ -283,7 +290,7 @@ Let's watch the `mssqlserveropsrequest` in the demo namespace to see if any `mss
 ```bash
 $ watch kubectl get mssqlserveropsrequest -n demo
 NAME                                  TYPE              STATUS        AGE
-msops-mssqlserver-ag-cluster-xojkua   VolumeExpansion   Progressing   15s
+msops-mssqlserver-ag-cluster-8m7l5s   VolumeExpansion   Progressing   2m20s
 ```
 
 Let's wait for the ops request to become successful.
@@ -291,14 +298,14 @@ Let's wait for the ops request to become successful.
 ```bash
 $ kubectl get mssqlserveropsrequest -n demo
 NAME                                  TYPE              STATUS       AGE
-msops-mssqlserver-ag-cluster-xojkua   VolumeExpansion   Successful   97s
+msops-mssqlserver-ag-cluster-8m7l5s   VolumeExpansion   Successful   17m
 ```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo msops-mssqlserver-ag-cluster-xojkua
-Name:         msops-mssqlserver-ag-cluster-xojkua
+$ kubectl describe mssqlserveropsrequest -n demo msops-mssqlserver-ag-cluster-8m7l5s 
+Name:         msops-mssqlserver-ag-cluster-8m7l5s
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
               app.kubernetes.io/instance=mssqlserver-ag-cluster
@@ -308,70 +315,127 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MSSQLServerOpsRequest
 Metadata:
-  Creation Timestamp:  2022-01-14T06:13:10Z
+  Creation Timestamp:  2024-11-01T09:40:05Z
   Generation:          1
-  Managed Fields: ...
   Owner References:
     API Version:           autoscaling.kubedb.com/v1alpha1
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  MSSQLServerAutoscaler
     Name:                  ms-as-storage
-    UID:                   4f45a3b3-fc72-4d04-b52c-a770944311f6
-  Resource Version:        25557
-  UID:                     90763a49-a03f-407c-a233-fb20c4ab57d7
+    UID:                   1e239b31-c6c8-4e2c-8cf6-2b95a88b9d45
+  Resource Version:        924068
+  UID:                     d0dfbe3d-4f0f-43ec-bdff-6d9f3fa96516
 Spec:
+  Apply:  IfReady
   Database Ref:
     Name:  mssqlserver-ag-cluster
   Type:    VolumeExpansion
   Volume Expansion:
-    Mariadb:  1594884096
+    Mode:         Offline
+    Mssqlserver:  1531054080
 Status:
   Conditions:
-    Last Transition Time:  2022-01-14T06:13:10Z
-    Message:               Controller has started to Progress the MSSQLServerOpsRequest: demo/mops-mssqlserver-ag-cluster-xojkua
+    Last Transition Time:  2024-11-01T09:40:05Z
+    Message:               MSSQLServer ops-request has started to expand volume of mssqlserver nodes.
     Observed Generation:   1
-    Reason:                OpsRequestProgressingStarted
-    Status:                True
-    Type:                  Progressing
-    Last Transition Time:  2022-01-14T06:14:25Z
-    Message:               Volume Expansion performed successfully in MSSQLServer pod for MSSQLServerOpsRequest: demo/mops-mssqlserver-ag-cluster-xojkua
-    Observed Generation:   1
-    Reason:                SuccessfullyVolumeExpanded
+    Reason:                VolumeExpansion
     Status:                True
     Type:                  VolumeExpansion
-    Last Transition Time:  2022-01-14T06:14:25Z
-    Message:               Controller has successfully expand the volume of MSSQLServer demo/mops-mssqlserver-ag-cluster-xojkua
+    Last Transition Time:  2024-11-01T09:40:13Z
+    Message:               get petset; ConditionStatus:True
     Observed Generation:   1
-    Reason:                OpsRequestProcessedSuccessfully
+    Status:                True
+    Type:                  GetPetset
+    Last Transition Time:  2024-11-01T09:40:13Z
+    Message:               delete petset; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  DeletePetset
+    Last Transition Time:  2024-11-01T09:40:23Z
+    Message:               successfully deleted the petSets with orphan propagation policy
+    Observed Generation:   1
+    Reason:                OrphanPetSetPods
+    Status:                True
+    Type:                  OrphanPetSetPods
+    Last Transition Time:  2024-11-01T09:46:48Z
+    Message:               get pod; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod
+    Last Transition Time:  2024-11-01T09:40:28Z
+    Message:               patch ops request; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  PatchOpsRequest
+    Last Transition Time:  2024-11-01T09:40:28Z
+    Message:               delete pod; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  DeletePod
+    Last Transition Time:  2024-11-01T09:41:03Z
+    Message:               get pvc; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPvc
+    Last Transition Time:  2024-11-01T09:41:03Z
+    Message:               patch pvc; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  PatchPvc
+    Last Transition Time:  2024-11-01T09:48:33Z
+    Message:               compare storage; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CompareStorage
+    Last Transition Time:  2024-11-01T09:42:48Z
+    Message:               create pod; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CreatePod
+    Last Transition Time:  2024-11-01T09:42:53Z
+    Message:               running mssql server; ConditionStatus:False
+    Observed Generation:   1
+    Status:                False
+    Type:                  RunningMssqlServer
+    Last Transition Time:  2024-11-01T09:48:58Z
+    Message:               successfully updated node PVC sizes
+    Observed Generation:   1
+    Reason:                UpdateNodePVCs
+    Status:                True
+    Type:                  UpdateNodePVCs
+    Last Transition Time:  2024-11-01T09:49:03Z
+    Message:               successfully reconciled the MSSQLServer resources
+    Observed Generation:   1
+    Reason:                UpdatePetSets
+    Status:                True
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-11-01T09:49:03Z
+    Message:               PetSet is recreated
+    Observed Generation:   1
+    Reason:                ReadyPetSets
+    Status:                True
+    Type:                  ReadyPetSets
+    Last Transition Time:  2024-11-01T09:49:03Z
+    Message:               Successfully completed volumeExpansion for MSSQLServer
+    Observed Generation:   1
+    Reason:                Successful
     Status:                True
     Type:                  Successful
-  Observed Generation:     3
+  Observed Generation:     1
   Phase:                   Successful
-Events:
-  Type    Reason      Age    From                        Message
-  ----    ------      ----   ----                        -------
-  Normal  Starting    2m58s  KubeDB Enterprise Operator  Start processing for MSSQLServerOpsRequest: demo/mops-mssqlserver-ag-cluster-xojkua
-  Normal  Starting    2m58s  KubeDB Enterprise Operator  Pausing MSSQLServer databse: demo/mssqlserver-ag-cluster
-  Normal  Successful  2m58s  KubeDB Enterprise Operator  Successfully paused MSSQLServer database: demo/mssqlserver-ag-cluster for MSSQLServerOpsRequest: mops-mssqlserver-ag-cluster-xojkua
-  Normal  Successful  103s   KubeDB Enterprise Operator  Volume Expansion performed successfully in MSSQLServer pod for MSSQLServerOpsRequest: demo/mops-mssqlserver-ag-cluster-xojkua
-  Normal  Starting    103s   KubeDB Enterprise Operator  Updating MSSQLServer storage
-  Normal  Successful  103s   KubeDB Enterprise Operator  Successfully Updated MSSQLServer storage
-  Normal  Starting    103s   KubeDB Enterprise Operator  Resuming MSSQLServer database: demo/mssqlserver-ag-cluster
-  Normal  Successful  103s   KubeDB Enterprise Operator  Successfully resumed MSSQLServer database: demo/mssqlserver-ag-cluster
-  Normal  Successful  103s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of MSSQLServer: demo/mssqlserver-ag-cluster
 ```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
-"1594884096"
+"1531054080"
 $ kubectl get pv -n demo
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS  REASON   AGE
-pvc-43266d76-f280-4cca-bd78-d13660a84db9   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn            23m
-pvc-4a509b05-774b-42d9-b36d-599c9056af37   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn            24m
-pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn            23m
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+pvc-2ff83356-1bbc-44ab-99f1-025e3690a471   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn       <unset>                          3h50m
+pvc-a5cc0ae9-2c8d-456c-ace2-fc4fafc6784f   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn       <unset>                          3h51m
+pvc-e8ab47a4-17a6-45fb-9f39-e71a03498ab5   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn       <unset>                          3h51m
 ```
 
 The above output verifies that we have successfully autoscaled the volume of the MSSQLServer cluster database.

@@ -12,3 +12,4 @@ spec:
       usageThreshold: 60
       scalingThreshold: 50
       expansionMode: "Offline"
+      upperBound: "100Gi"
