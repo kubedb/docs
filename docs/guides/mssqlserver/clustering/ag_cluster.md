@@ -861,6 +861,6 @@ If you are just testing some basic functionalities, you might want to avoid addi
 ## Next Steps
 
 - Learn about [backup and restore](/docs/guides/mssqlserver/backup/overview/index.md) SQL Server using KubeStash.
-- Want to set up SQL Server Availability Group clusters? Check how to [Configure SQL Server Availability Gruop Cluster](/docs/guides/mssqlserver/clustering/ag_cluster.md)
-- Detail concepts of [MSSQLServer object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
+- Want to set up SQL Server Availability Group clusters? Check how to [Configure SQL Server Availability Group Cluster](/docs/guides/mssqlserver/clustering/ag_cluster.md)
+- Detail concepts of [MSSQLServer Object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -42,7 +42,7 @@ Read about the fields in details from [MSSQLServer Concepts](/docs/guides/mssqls
 The following figure shows how `KubeDB` used to configure TLS/SSL in MSSQLServer. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-<img alt="Deploy MSSQLServer with TLS/SSL" src="/docs/images/day-2-operation/mssqlserver/ms-tls.svg">
+<img alt="Deploy MSSQLServer with TLS/SSL" src="/docs/images/day-2-operation/mssqlserver/ms-tls.png">
 <figcaption align="center">Fig: Deploy MSSQLServer with TLS/SSL</figcaption>
 </figure>
 
