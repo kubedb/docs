@@ -553,28 +553,6 @@ Status:
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-Events:
-  Type     Reason                                                                      Age   From                         Message
-  ----     ------                                                                      ----  ----                         -------
-  Normal   Starting                                                                    12m   KubeDB Ops-manager Operator  Start processing for MSSQLServerOpsRequest: demo/msops-mssqlserver-ag-cluster-8li26q
-  Normal   Starting                                                                    12m   KubeDB Ops-manager Operator  Pausing MSSQLServer database: demo/mssqlserver-ag-cluster
-  Normal   Successful                                                                  12m   KubeDB Ops-manager Operator  Successfully paused MSSQLServer database: demo/mssqlserver-ag-cluster for MSSQLServerOpsRequest: msops-mssqlserver-ag-cluster-8li26q
-  Normal   UpdatePetSets                                                               12m   KubeDB Ops-manager Operator  Successfully updated PetSets Resources
-  Warning  get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0             12m   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0
-  Warning  evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0           12m   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0
-  Warning  check pod running; ConditionStatus:False; PodName:mssqlserver-ag-cluster-0  12m   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:mssqlserver-ag-cluster-0
-  Warning  check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0   11m   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0
-  Warning  get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1             11m   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1
-  Warning  evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1           11m   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1
-  Warning  check pod running; ConditionStatus:False; PodName:mssqlserver-ag-cluster-1  11m   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:mssqlserver-ag-cluster-1
-  Warning  check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1   11m   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1
-  Warning  get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2             11m   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2
-  Warning  evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2           11m   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2
-  Warning  check pod running; ConditionStatus:False; PodName:mssqlserver-ag-cluster-2  11m   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:mssqlserver-ag-cluster-2
-  Warning  check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2   10m   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2
-  Normal   RestartPods                                                                 10m   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
-  Normal   Starting                                                                    10m   KubeDB Ops-manager Operator  Resuming MSSQLServer database: demo/mssqlserver-ag-cluster
-  Normal   Successful                                                                  10m   KubeDB Ops-manager Operator  Successfully resumed MSSQLServer database: demo/mssqlserver-ag-cluster for MSSQLServerOpsRequest: msops-mssqlserver-ag-cluster-8li26q
 ```
 
 Now, we are going to verify from the Pod, and the MSSQLServer yaml whether the resources of the cluster database has updated to meet up the desired state, Let's check,

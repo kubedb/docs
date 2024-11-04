@@ -160,7 +160,7 @@ Now, wait until `mssqlserver-ag-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get mssqlserver -n demo
 NAME                     VERSION     STATUS   AGE
-mssqlserver-ag-cluster   2022-cu12   Ready    89m
+mssqlserver-ag-cluster   2022-cu12   Ready    4m
 ```
 
 Let's check volume size from petset, and from the persistent volume,
@@ -171,9 +171,9 @@ $ kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeCl
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-1497dd6d-9cbd-467a-8e0c-c3963ce09e1b   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn       <unset>                          88m
-pvc-37a7bc8d-2c04-4eb4-8e53-e610fd1daaf5   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn       <unset>                          88m
-pvc-817866af-5277-4d51-8d81-434e8ec1c442   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn       <unset>                          88m
+pvc-1497dd6d-9cbd-467a-8e0c-c3963ce09e1b   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn       <unset>                          8m
+pvc-37a7bc8d-2c04-4eb4-8e53-e610fd1daaf5   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn       <unset>                          8m
+pvc-817866af-5277-4d51-8d81-434e8ec1c442   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn       <unset>                          8m
 ```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
@@ -433,9 +433,9 @@ $ kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeCl
 "1531054080"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-2ff83356-1bbc-44ab-99f1-025e3690a471   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn       <unset>                          3h50m
-pvc-a5cc0ae9-2c8d-456c-ace2-fc4fafc6784f   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn       <unset>                          3h51m
-pvc-e8ab47a4-17a6-45fb-9f39-e71a03498ab5   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn       <unset>                          3h51m
+pvc-2ff83356-1bbc-44ab-99f1-025e3690a471   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn       <unset>                          15m
+pvc-a5cc0ae9-2c8d-456c-ace2-fc4fafc6784f   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn       <unset>                          16m
+pvc-e8ab47a4-17a6-45fb-9f39-e71a03498ab5   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn       <unset>                          16m
 ```
 
 The above output verifies that we have successfully autoscaled the volume of the MSSQLServer cluster database.
