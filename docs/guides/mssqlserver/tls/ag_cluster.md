@@ -204,6 +204,7 @@ Ng1DaJSNjZkgXXFX
 
 ```bash
 $ kubectl exec -it -n demo mssql-ag-tls-0 -c mssql -- bash
+mssql@mssql-ag-tls-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Ng1DaJSNjZkgXXFX -N 
 1> select name from sys.databases
 2> go
 name                                                  
