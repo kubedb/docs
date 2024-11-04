@@ -5,20 +5,6 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true
-  tls:
-    issuerRef:
-      apiGroup: cert-manager.io
-      name: self-signed-issuer
-      kind: ClusterIssuer
-    certificates:
-      - alias: server
-        subject:
-          organizations:
-            - kubedb:server
-        dnsNames:
-          - localhost
-        ipAddresses:
-          - "127.0.0.1"
   deletionPolicy: DoNotTerminate
   version: 9.6.1
   zookeeperRef:

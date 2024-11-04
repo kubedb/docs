@@ -5,6 +5,6 @@ menu:
     identifier: sl-monitoring-solr
     name: Monitoring
     parent: sl-solr-guides
-    weight: 18
+    weight: 20
 menu_name: docs_{{ .version }}
 ---
