@@ -33,4 +33,4 @@ spec:
       addon:
         name: mongodb-addon
         tasks:
-          - name: LogicalBackup
+          - name: logical-backup

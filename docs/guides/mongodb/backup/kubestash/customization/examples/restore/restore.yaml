@@ -18,7 +18,7 @@ spec:
   addon:
     name: mongodb-addon
     tasks:
-      - name: LogicalBackupRestoress
+      - name: logical-backup-restore
     jobTemplate:
       spec:
         securityContext:
