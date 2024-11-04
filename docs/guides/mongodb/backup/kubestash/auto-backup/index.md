@@ -169,7 +169,7 @@ spec:
         addon:
           name: mongodb-addon
           tasks:
-            - name: LogicalBackup
+            - name: logical-backup
 ```
 
 Here, we define a template for `BackupConfiguration`. Notice the `backends` and `sessions` fields of `backupConfigurationTemplate` section. We have used some variables in form of `${VARIABLE_NAME}`. KubeStash will automatically resolve those variables from the database annotations information to make `BackupConfiguration` according to that databases need.
@@ -269,7 +269,7 @@ spec:
   - addon:
       name: mongodb-addon
       tasks:
-      - name: LogicalBackup
+      - name: logical-backup
     failurePolicy: Fail
     name: frequent
     repositories:
