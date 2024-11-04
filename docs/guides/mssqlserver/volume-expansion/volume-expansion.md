@@ -199,7 +199,7 @@ Here,
 
 > **Note:** If the Storageclass you are using support `Online` Volume Expansion, Try Online volume expansion by using `spec.volumeExpansion.mode:"Online"`.
 
-During `Online` VolumeExpansion KubeDB expands volume without pausing database object, it directly updates the underlying PVC. And for Offline volume expansion, the database is paused. The Pods are deleted and PVC is updated. Then the database Pods are recreated with updated PVC.
+During `Online` VolumeExpansion KubeDB expands volume without deleting the pods, it directly updates the underlying PVC. And for Offline volume expansion, the database is paused. The Pods are deleted and PVC is updated. Then the database Pods are recreated with updated PVC.
 
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
