@@ -41,7 +41,7 @@ Now, we are going to deploy a  `Solr` cluster using a supported version by `Kube
 
 ### Prepare Solr Cluster
 
-Now, we are going to deploy a `Solr` cluster with version `3.6.1`.
+Now, we are going to deploy a `Solr` cluster with version `9.6.1`.
 
 ### Deploy Solr
 
