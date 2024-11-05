@@ -1,0 +1,23 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: sl-reconfigure-apply-config
+  namespace: demo
+spec:
+  apply: IfReady
+  configuration:
+     applyConfig:
+       solr.xml: |
+         <solr>
+           <int name="maxBooleanClauses">${solr.max.booleanClauses:2024}</int>
+           <backup>
+             <repository name="kubedb-proxy-s3" class="org.apache.solr.s3.S3BackupRepository">
+               <str name="s3.bucket.name">solrbackup</str>
+               <str name="s3.region">us-east-1</str>
+               <str name="s3.endpoint">http://s3proxy-s3.demo.svc:80</str>
+             </repository>
+           </backup>
+         </solr>
+  databaseRef:
+    name: solr-combined
+  type: Reconfigure
