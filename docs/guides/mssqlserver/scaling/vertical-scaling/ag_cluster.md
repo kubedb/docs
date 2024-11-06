@@ -5,7 +5,7 @@ menu:
     identifier: ms-scaling-vertical-ag-cluster
     name: Availability Group (HA Cluster)
     parent: ms-scaling-vertical
-    weight: 20
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
