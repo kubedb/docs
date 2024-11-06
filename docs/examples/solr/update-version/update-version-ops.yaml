@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: solr-update-version
+  namespace: demo
+spec:
+  databaseRef:
+    name: solr-cluster
+  type: UpdateVersion
+  updateVersion:
+    targetVersion: 9.6.1
