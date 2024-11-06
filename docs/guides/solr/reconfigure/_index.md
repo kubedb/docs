@@ -1,5 +1,5 @@
 ---
-title: Run Solr With TLS
+title: Solr Reconfigure
 menu:
   docs_{{ .version }}:
     identifier: sl-reconfigure
