@@ -1,9 +1,9 @@
 ---
-title: Reconfigure MSSQLServer Replicaset
+title: Reconfigure MSSQLServer Availability Group
 menu:
   docs_{{ .version }}:
-    identifier: mg-reconfigure-replicaset
-    name: Replicaset
+    identifier: mg-reconfigure-ag-cluster
+    name: Availability Group
     parent: mg-reconfigure
     weight: 30
 menu_name: docs_{{ .version }}
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Reconfigure MSSQLServer Replicaset Database
+# Reconfigure MSSQLServer Availability Group
 
-This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure a MSSQLServer Replicaset.
+This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure a SQL Server Availability Group cluster.
 
 ## Before You Begin
 
@@ -26,7 +26,7 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MSSQLServer](/docs/guides/mssqlserver/concepts/mssqlserver.md)
-  - [ReplicaSet](/docs/guides/mssqlserver/clustering/replicaset.md)
+  - [Availabilty Group](/docs/guides/mssqlserver/clustering/ag_cluster.md)
   - [MSSQLServerOpsRequest](/docs/guides/mssqlserver/concepts/opsrequest.md)
   - [Reconfigure Overview](/docs/guides/mssqlserver/reconfigure/overview.md)
 
@@ -37,154 +37,174 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/mssqlserver](/docs/examples/mssqlserver) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/mssqlserver](/docs/examples/mssqlserver/reconfigure) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-Now, we are going to deploy a  `MSSQLServer` Replicaset using a supported version by `KubeDB` operator. Then we are going to apply `MSSQLServerOpsRequest` to reconfigure its configuration.
+Now, we are going to deploy a  `MSSQLServer` Availability Group using a supported version by `KubeDB` operator. Then we are going to apply `MSSQLServerOpsRequest` to reconfigure its configuration.
 
-### Prepare MSSQLServer Replicaset
+### Prepare MSSQLServer Availability Group
 
-Now, we are going to deploy a `MSSQLServer` Replicaset database with version `4.4.26`.
+Now, we are going to deploy a `MSSQLServer` Availability Group with version `2022-cu12`.
 
-### Deploy MSSQLServer 
+### Deploy MSSQLServer Availability Group Cluster
 
-At first, we will create `mongod.conf` file containing required configuration settings.
+At first, we need to create an Issuer/ClusterIssuer which will be used to generate the certificate used for TLS configurations.
+
+### Create Issuer/ClusterIssuer
+
+Now, we are going to create an example `Issuer` that will be used throughout the duration of this tutorial. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`. By following the below steps, we are going to create our desired issuer,
+
+- Start off by generating our ca-certificates using openssl,
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=MSSQLServer/O=kubedb"
+```
+-
+- Create a secret using the certificate files we have just generated,
+```bash
+$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
+secret/mssqlserver-ca created
+```
+Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+ name: mssqlserver-ca-issuer
+ namespace: demo
+spec:
+ ca:
+   secretName: mssqlserver-ca
+```
+
+Let’s create the `Issuer` CR we have shown above,
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
+issuer.cert-manager.io/mssqlserver-ca-issuer created
+```
+Now, we will create `mssql.conf` file containing required configuration settings.
 
 ```ini
-$ cat mongod.conf
-net:
-   maxIncomingConnections: 10000
+$ cat mssql.conf
+[memory]
+memorylimitmb = 2048
 ```
-Here, `maxIncomingConnections` is set to `10000`, whereas the default value is `65536`.
+Here, `memorylimitmb` is set to `2048`, whereas the default value is `12280`.
 
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo mg-custom-config --from-file=./mongod.conf
-secret/mg-custom-config created
+$ kubectl create secret generic -n demo ms-custom-config --from-file=./mssql.conf
+secret/ms-custom-config created
 ```
 
 In this section, we are going to create a MSSQLServer object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
-  name: mg-replicaset
+  name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "2022-cu12"
+  configSecret:
+    name: ms-custom-config
   replicas: 3
-  replicaSet:
-    name: rs0
+  topology:
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation
   storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  configSecret:
-    name: mg-custom-config
+  deletionPolicy: WipeOut
 ```
 
 Let's create the `MSSQLServer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/mg-replicaset-config.yaml
-MSSQLServer.kubedb.com/mg-replicaset created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/mssqlserver-ag-cluster.yaml
+MSSQLServer.kubedb.com/mssqlserver-ag-cluster created
 ```
 
-Now, wait until `mg-replicaset` has status `Ready`. i.e,
+Now, wait until `mssqlserver-ag-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo                                                                                                                                            
-NAME            VERSION   STATUS   AGE
-mg-replicaset   4.4.26     Ready    19m
+$ kubectl get ms -n demo                  
+NAME                     VERSION     STATUS   AGE
+mssqlserver-ag-cluster   2022-cu12   Ready    5m47s                                   
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a MSSQLServer instance,
 ```bash
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d                                                                       
-root
+$ kubectl get secrets -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\username}' | base64 -d  
+sa
 
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\password}' | base64 -d                                                                         
-nrKuxni0wDSMrgwy
+$ kubectl get secrets -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\password}' | base64 -d    
+gkBGX7RE0ap4yjHt                 
 ```
 
-Now let's connect to a MSSQLServer instance and run a MSSQLServer internal command to check the configuration we have provided.
+Now let's connect to the SQL Server instance and run internal command to check the configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet                        
-{
-	"argv" : [
-		"mongod",
-		"--dbpath=/data/db",
-		"--auth",
-		"--ipv6",
-		"--bind_ip_all",
-		"--port=27017",
-		"--tlsMode=disabled",
-		"--replSet=rs0",
-		"--keyFile=/data/configdb/key.txt",
-		"--clusterAuthMode=keyFile",
-		"--config=/data/configdb/mongod.conf"
-	],
-	"parsed" : {
-		"config" : "/data/configdb/mongod.conf",
-		"net" : {
-			"bindIp" : "*",
-			"ipv6" : true,
-			"maxIncomingConnections" : 10000,
-			"port" : 27017,
-			"tls" : {
-				"mode" : "disabled"
-			}
-		},
-		"replication" : {
-			"replSet" : "rs0"
-		},
-		"security" : {
-			"authorization" : "enabled",
-			"clusterAuthMode" : "keyFile",
-			"keyFile" : "/data/configdb/key.txt"
-		},
-		"storage" : {
-			"dbPath" : "/data/db"
-		}
-	},
-	"ok" : 1,
-	"$clusterTime" : {
-		"clusterTime" : Timestamp(1614668500, 1),
-		"signature" : {
-			"hash" : BinData(0,"7sh886HhsNYajGxYGp5Jxi52IzA="),
-			"keyId" : NumberLong("6934943333319966722")
-		}
-	},
-	"operationTime" : Timestamp(1614668500, 1)
-}
+$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash           
+mssql@mssqlserver-ag-cluster-0:/$ cat /var/opt/mssql/mssql.conf
+[language]
+lcid = 1033
+[memory]
+memorylimitmb = 2048
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P gkBGX7RE0ap4yjHt
+1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
+2> go
+physical_memory_mb  
+--------------------
+                2048
+
+(1 rows affected)
 ```
 
-As we can see from the configuration of ready MSSQLServer, the value of `maxIncomingConnections` has been set to `10000`.
+As we can see from the configuration of running MSSQLServer, the value of `physical_memory_mb` has been set to `2048`.
 
 ### Reconfigure using new config secret
 
-Now we will reconfigure this database to set `maxIncomingConnections` to `20000`. 
+Now we will reconfigure this database to set `memorylimitmb` to `2560`.
 
-Now, we will edit the `mongod.conf` file containing required configuration settings.
+Now, we will edit the `mssql.conf` file containing required configuration settings.
 
 ```ini
-$ cat mongod.conf
-net:
-   maxIncomingConnections: 20000
+$ cat mssql.conf
+[memory]
+memorylimitmb = 2560
 ```
 
 Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-custom-config --from-file=./mongod.conf
+$ kubectl create secret generic -n demo new-custom-config --from-file=./mssql.conf
 secret/new-custom-config created
 ```
 
@@ -196,36 +216,31 @@ Now, we will use this secret to replace the previous secret using a `MSSQLServer
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MSSQLServerOpsRequest
 metadata:
-  name: mops-reconfigure-replicaset
+  name: msops-reconfigure-ag
   namespace: demo
 spec:
   type: Reconfigure
   databaseRef:
-    name: mg-replicaset
+    name: mssqlserver-ag-cluster
   configuration:
-    replicaSet:
-      configSecret:
-        name: new-custom-config
-  readinessCriteria:
-    oplogMaxLagSeconds: 20
-    objectsCountDiffPercentage: 10
+    configSecret:
+      name: new-custom-config
   timeout: 5m
   apply: IfReady
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-replicaset` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `mssqlserver-ag-cluster` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.customConfig.replicaSet.configSecret.name` specifies the name of the new secret.
-- `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
-- Have a look [here](/docs/guides/mssqlserver/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
+- Have a look [here](/docs/guides/mssqlserver/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/mops-reconfigure-replicaset.yaml
-MSSQLServeropsrequest.ops.kubedb.com/mops-reconfigure-replicaset created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/msops-reconfigure-ag.yaml
+MSSQLServeropsrequest.ops.kubedb.com/msops-reconfigure-ag created
 ```
 
 #### Verify the new configuration is working 
@@ -236,183 +251,133 @@ Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following co
 
 ```bash
 $ watch kubectl get MSSQLServeropsrequest -n demo
-Every 2.0s: kubectl get MSSQLServeropsrequest -n demo
-NAME                          TYPE          STATUS       AGE
-mops-reconfigure-replicaset   Reconfigure   Successful   113s
+NAME                   TYPE          STATUS       AGE
+msops-reconfigure-ag   Reconfigure   Successful   4m1s
 ```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe MSSQLServeropsrequest -n demo mops-reconfigure-replicaset 
-Name:         mops-reconfigure-replicaset
+$ kubectl describe MSSQLServeropsrequest -n demo msops-reconfigure-ag 
+Name:         msops-reconfigure-ag
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MSSQLServerOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-02T07:04:31Z
+  Creation Timestamp:  2024-11-11T13:07:49Z
   Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:apply:
-        f:configuration:
-          .:
-          f:replicaSet:
-            .:
-            f:configSecret:
-              .:
-              f:name:
-        f:databaseRef:
-          .:
-          f:name:
-        f:readinessCriteria:
-          .:
-          f:objectsCountDiffPercentage:
-          f:oplogMaxLagSeconds:
-        f:timeout:
-        f:type:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2021-03-02T07:04:31Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:spec:
-        f:configuration:
-          f:replicaSet:
-            f:podTemplate:
-              .:
-              f:controller:
-              f:metadata:
-              f:spec:
-                .:
-                f:resources:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-enterprise
-    Operation:       Update
-    Time:            2021-03-02T07:04:31Z
-  Resource Version:  29869
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mssqlserveropsrequests/mops-reconfigure-replicaset
-  UID:               064733d6-19db-4153-82f7-bc0580116ee6
+  Resource Version:    272883
+  UID:                 2bbc64b6-9d88-4adc-854e-de444c716f57
 Spec:
-  Apply: IfReady
+  Apply:  IfReady
   Configuration:
-    Replica Set:
-      Config Secret:
-        Name:  new-custom-config
+    Config Secret:
+      Name:  new-custom-config
   Database Ref:
-    Name:  mg-replicaset
-  Readiness Criteria:
-    Objects Count Diff Percentage:  10
-    Oplog Max Lag Seconds:          20
-  Timeout:                          5m
-  Type:    Reconfigure
+    Name:   mssqlserver-ag-cluster
+  Timeout:  5m
+  Type:     Reconfigure
 Status:
   Conditions:
-    Last Transition Time:  2021-03-02T07:04:31Z
-    Message:               MSSQLServer ops request is reconfiguring database
+    Last Transition Time:  2024-11-11T13:07:49Z
+    Message:               MSSQLServer ops-request has started to reconfigure MSSQLServer nodes
     Observed Generation:   1
     Reason:                Reconfigure
     Status:                True
     Type:                  Reconfigure
-    Last Transition Time:  2021-03-02T07:06:21Z
-    Message:               Successfully Reconfigured MSSQLServer
+    Last Transition Time:  2024-11-11T13:07:58Z
+    Message:               successfully reconciled the mssqlserver with new configuration
     Observed Generation:   1
-    Reason:                ReconfigureReplicaset
+    Reason:                UpdatePetSets
     Status:                True
-    Type:                  ReconfigureReplicaset
-    Last Transition Time:  2021-03-02T07:06:21Z
-    Message:               Successfully completed the modification process.
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-11-11T13:08:03Z
+    Message:               get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--mssqlserver-ag-cluster-0
+    Last Transition Time:  2024-11-11T13:08:03Z
+    Message:               evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--mssqlserver-ag-cluster-0
+    Last Transition Time:  2024-11-11T13:08:38Z
+    Message:               check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--mssqlserver-ag-cluster-0
+    Last Transition Time:  2024-11-11T13:08:43Z
+    Message:               get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--mssqlserver-ag-cluster-1
+    Last Transition Time:  2024-11-11T13:08:43Z
+    Message:               evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--mssqlserver-ag-cluster-1
+    Last Transition Time:  2024-11-11T13:09:18Z
+    Message:               check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--mssqlserver-ag-cluster-1
+    Last Transition Time:  2024-11-11T13:09:23Z
+    Message:               get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--mssqlserver-ag-cluster-2
+    Last Transition Time:  2024-11-11T13:09:23Z
+    Message:               evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--mssqlserver-ag-cluster-2
+    Last Transition Time:  2024-11-11T13:09:58Z
+    Message:               check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--mssqlserver-ag-cluster-2
+    Last Transition Time:  2024-11-11T13:10:03Z
+    Message:               Successfully Restarted Pods after reconfiguration
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-11-11T13:10:03Z
+    Message:               Successfully completed reconfiguring for MSSQLServer
     Observed Generation:   1
     Reason:                Successful
     Status:                True
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-Events:
-  Type    Reason                 Age    From                        Message
-  ----    ------                 ----   ----                        -------
-  Normal  PauseDatabase          2m55s  KubeDB Ops-manager operator  Pausing MSSQLServer demo/mg-replicaset
-  Normal  PauseDatabase          2m55s  KubeDB Ops-manager operator  Successfully paused MSSQLServer demo/mg-replicaset
-  Normal  ReconfigureReplicaset  65s    KubeDB Ops-manager operator  Successfully Reconfigured MSSQLServer
-  Normal  ResumeDatabase         65s    KubeDB Ops-manager operator  Resuming MSSQLServer demo/mg-replicaset
-  Normal  ResumeDatabase         65s    KubeDB Ops-manager operator  Successfully resumed MSSQLServer demo/mg-replicaset
-  Normal  Successful             65s    KubeDB Ops-manager operator  Successfully Reconfigured Database
 ```
 
-Now let's connect to a MSSQLServer instance and run a MSSQLServer internal command to check the new configuration we have provided.
+Now let's connect to SQL Server instance and run internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
-{
-	"argv" : [
-		"mongod",
-		"--dbpath=/data/db",
-		"--auth",
-		"--ipv6",
-		"--bind_ip_all",
-		"--port=27017",
-		"--tlsMode=disabled",
-		"--replSet=rs0",
-		"--keyFile=/data/configdb/key.txt",
-		"--clusterAuthMode=keyFile",
-		"--config=/data/configdb/mongod.conf"
-	],
-	"parsed" : {
-		"config" : "/data/configdb/mongod.conf",
-		"net" : {
-			"bindIp" : "*",
-			"ipv6" : true,
-			"maxIncomingConnections" : 20000,
-			"port" : 27017,
-			"tls" : {
-				"mode" : "disabled"
-			}
-		},
-		"replication" : {
-			"replSet" : "rs0"
-		},
-		"security" : {
-			"authorization" : "enabled",
-			"clusterAuthMode" : "keyFile",
-			"keyFile" : "/data/configdb/key.txt"
-		},
-		"storage" : {
-			"dbPath" : "/data/db"
-		}
-	},
-	"ok" : 1,
-	"$clusterTime" : {
-		"clusterTime" : Timestamp(1614668887, 1),
-		"signature" : {
-			"hash" : BinData(0,"5q35Y51+YpbVHFKoaU7lUWi38oY="),
-			"keyId" : NumberLong("6934943333319966722")
-		}
-	},
-	"operationTime" : Timestamp(1614668887, 1)
-}
+$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash      
+mssql@mssqlserver-ag-cluster-0:/$ cat /var/opt/mssql/mssql.conf
+[language]
+lcid = 1033
+[memory]
+memorylimitmb = 2560
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P gkBGX7RE0ap4yjHt
+1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
+2> go
+physical_memory_mb  
+--------------------
+                2560
+
+(1 rows affected)
 ```
 
-As we can see from the configuration of ready MSSQLServer, the value of `maxIncomingConnections` has been changed from `10000` to `20000`. So the reconfiguration of the database is successful.
-
+As we can see from the configuration of running SQL Server, the value of `physical_memory_mb` has been changed from `2048` to `2560`. So the reconfiguration of the database is successful.
 
 ### Reconfigure using apply config
 
-Now we will reconfigure this database again to set `maxIncomingConnections` to `30000`. This time we won't use a new secret. We will use the `applyConfig` field of the `MSSQLServerOpsRequest`. This will merge the new config in the existing secret.
+Now we will reconfigure this database again to set `memorylimitmb` to `3072`. This time we won't use a new secret. We will use the `applyConfig` field of the `MSSQLServerOpsRequest`. This will merge the new config in the existing secret.
 
 #### Create MSSQLServerOpsRequest
 
@@ -422,38 +387,32 @@ Now, we will use the new configuration in the `applyConfig` field in the `MSSQLS
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MSSQLServerOpsRequest
 metadata:
-  name: mops-reconfigure-apply-replicaset
+  name: msops-reconfigure-ag-apply
   namespace: demo
 spec:
   type: Reconfigure
   databaseRef:
-    name: mg-replicaset
+    name: mssqlserver-ag-cluster
   configuration:
-    replicaSet:
-      applyConfig:
-        mongod.conf: |-
-          net:
-            maxIncomingConnections: 30000
-  readinessCriteria:
-    oplogMaxLagSeconds: 20
-    objectsCountDiffPercentage: 10
+    applyConfig:
+      mssql.conf: |-
+        [memory]
+        memorylimitmb = 3072
   timeout: 5m
   apply: IfReady
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-apply-replicaset` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `mssqlserver-ag-cluster` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.replicaSet.applyConfig` specifies the new configuration that will be merged in the existing secret.
-- `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
-- Have a look [here](/docs/guides/mssqlserver/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
+- `spec.configuration.applyConfig` specifies the new configuration that will be merged in the existing secret.
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/mops-reconfigure-apply-replicaset.yaml
-MSSQLServeropsrequest.ops.kubedb.com/mops-reconfigure-apply-replicaset created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/msops-reconfigure-ag-apply.yaml
+MSSQLServeropsrequest.ops.kubedb.com/msops-reconfigure-ag-apply created
 ```
 
 #### Verify the new configuration is working 
@@ -462,186 +421,149 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 
 Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following command to watch `MSSQLServerOpsRequest` CR,
 
+----  
+
+
 ```bash
 $ watch kubectl get MSSQLServeropsrequest -n demo
-Every 2.0s: kubectl get MSSQLServeropsrequest -n demo
-NAME                               TYPE          STATUS       AGE
-mops-reconfigure-apply-replicaset   Reconfigure   Successful   109s
+msops-reconfigure-ag-apply   Reconfigure   Successful   3m34s
 ```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe MSSQLServeropsrequest -n demo mops-reconfigure-apply-replicaset
-Name:         mops-reconfigure-apply-replicaset
+$ kubectl describe MSSQLServeropsrequest -n demo msops-reconfigure-ag-apply
+Name:         msops-reconfigure-ag-apply
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MSSQLServerOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-02T07:09:39Z
+  Creation Timestamp:  2024-11-11T13:16:11Z
   Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:apply:
-        f:configuration:
-          .:
-          f:replicaSet:
-            .:
-            f:applyConfig:
-        f:databaseRef:
-          .:
-          f:name:
-        f:readinessCriteria:
-          .:
-          f:objectsCountDiffPercentage:
-          f:oplogMaxLagSeconds:
-        f:timeout:
-        f:type:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2021-03-02T07:09:39Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:spec:
-        f:configuration:
-          f:replicaSet:
-            f:podTemplate:
-              .:
-              f:controller:
-              f:metadata:
-              f:spec:
-                .:
-                f:resources:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-enterprise
-    Operation:       Update
-    Time:            2021-03-02T07:09:39Z
-  Resource Version:  31005
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mssqlserveropsrequests/mops-reconfigure-apply-replicaset
-  UID:               0137442b-1b04-43ed-8de7-ecd913b44065
+  Resource Version:    273846
+  UID:                 434d35ef-89e5-4d1a-aac2-22941346d77e
 Spec:
-  Apply: IfReady
+  Apply:  IfReady
   Configuration:
-    Replica Set:
-      Apply Config:  net:
-  maxIncomingConnections: 30000
-
+    Apply Config:
+      mssql.conf:  [memory]
+memorylimitmb = 3072
   Database Ref:
-    Name:  mg-replicaset
-  Readiness Criteria:
-    Objects Count Diff Percentage:  10
-    Oplog Max Lag Seconds:          20
-  Timeout:                          5m
-  Type:    Reconfigure
+    Name:   mssqlserver-ag-cluster
+  Timeout:  5m
+  Type:     Reconfigure
 Status:
   Conditions:
-    Last Transition Time:  2021-03-02T07:09:39Z
-    Message:               MSSQLServer ops request is reconfiguring database
+    Last Transition Time:  2024-11-11T13:16:11Z
+    Message:               MSSQLServer ops-request has started to reconfigure MSSQLServer nodes
     Observed Generation:   1
     Reason:                Reconfigure
     Status:                True
     Type:                  Reconfigure
-    Last Transition Time:  2021-03-02T07:11:14Z
-    Message:               Successfully Reconfigured MSSQLServer
+    Last Transition Time:  2024-11-11T13:16:14Z
+    Message:               Successfully prepared user provided custom config secret
     Observed Generation:   1
-    Reason:                ReconfigureReplicaset
+    Reason:                PrepareCustomConfig
     Status:                True
-    Type:                  ReconfigureReplicaset
-    Last Transition Time:  2021-03-02T07:11:14Z
-    Message:               Successfully completed the modification process.
+    Type:                  PrepareCustomConfig
+    Last Transition Time:  2024-11-11T13:16:19Z
+    Message:               successfully reconciled the mssqlserver with new configuration
+    Observed Generation:   1
+    Reason:                UpdatePetSets
+    Status:                True
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-11-11T13:16:24Z
+    Message:               get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--mssqlserver-ag-cluster-0
+    Last Transition Time:  2024-11-11T13:16:24Z
+    Message:               evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--mssqlserver-ag-cluster-0
+    Last Transition Time:  2024-11-11T13:16:59Z
+    Message:               check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--mssqlserver-ag-cluster-0
+    Last Transition Time:  2024-11-11T13:17:04Z
+    Message:               get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--mssqlserver-ag-cluster-1
+    Last Transition Time:  2024-11-11T13:17:04Z
+    Message:               evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--mssqlserver-ag-cluster-1
+    Last Transition Time:  2024-11-11T13:17:39Z
+    Message:               check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--mssqlserver-ag-cluster-1
+    Last Transition Time:  2024-11-11T13:17:44Z
+    Message:               get pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--mssqlserver-ag-cluster-2
+    Last Transition Time:  2024-11-11T13:17:44Z
+    Message:               evict pod; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--mssqlserver-ag-cluster-2
+    Last Transition Time:  2024-11-11T13:18:19Z
+    Message:               check pod running; ConditionStatus:True; PodName:mssqlserver-ag-cluster-2
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--mssqlserver-ag-cluster-2
+    Last Transition Time:  2024-11-11T13:18:24Z
+    Message:               Successfully Restarted Pods after reconfiguration
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-11-11T13:18:24Z
+    Message:               Successfully completed reconfiguring for MSSQLServer
     Observed Generation:   1
     Reason:                Successful
     Status:                True
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-Events:
-  Type    Reason                 Age    From                        Message
-  ----    ------                 ----   ----                        -------
-  Normal  PauseDatabase          9m20s  KubeDB Ops-manager operator  Pausing MSSQLServer demo/mg-replicaset
-  Normal  PauseDatabase          9m20s  KubeDB Ops-manager operator  Successfully paused MSSQLServer demo/mg-replicaset
-  Normal  ReconfigureReplicaset  7m45s  KubeDB Ops-manager operator  Successfully Reconfigured MSSQLServer
-  Normal  ResumeDatabase         7m45s  KubeDB Ops-manager operator  Resuming MSSQLServer demo/mg-replicaset
-  Normal  ResumeDatabase         7m45s  KubeDB Ops-manager operator  Successfully resumed MSSQLServer demo/mg-replicaset
-  Normal  Successful             7m45s  KubeDB Ops-manager operator  Successfully Reconfigured Database
 ```
 
-Now let's connect to a MSSQLServer instance and run a MSSQLServer internal command to check the new configuration we have provided.
+Now let's connect to the SQL Server instance and run a internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
-{
-	"argv" : [
-		"mongod",
-		"--dbpath=/data/db",
-		"--auth",
-		"--ipv6",
-		"--bind_ip_all",
-		"--port=27017",
-		"--tlsMode=disabled",
-		"--replSet=rs0",
-		"--keyFile=/data/configdb/key.txt",
-		"--clusterAuthMode=keyFile",
-		"--config=/data/configdb/mongod.conf"
-	],
-	"parsed" : {
-		"config" : "/data/configdb/mongod.conf",
-		"net" : {
-			"bindIp" : "*",
-			"ipv6" : true,
-			"maxIncomingConnections" : 30000,
-			"port" : 27017,
-			"tls" : {
-				"mode" : "disabled"
-			}
-		},
-		"replication" : {
-			"replSet" : "rs0"
-		},
-		"security" : {
-			"authorization" : "enabled",
-			"clusterAuthMode" : "keyFile",
-			"keyFile" : "/data/configdb/key.txt"
-		},
-		"storage" : {
-			"dbPath" : "/data/db"
-		}
-	},
-	"ok" : 1,
-	"$clusterTime" : {
-		"clusterTime" : Timestamp(1614669580, 1),
-		"signature" : {
-			"hash" : BinData(0,"u/xTAa4aW/8bsRvBYPffwQCeTF0="),
-			"keyId" : NumberLong("6934943333319966722")
-		}
-	},
-	"operationTime" : Timestamp(1614669580, 1)
-}
+$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+mssql@mssqlserver-ag-cluster-0:/$  cat /var/opt/mssql/mssql.conf
+[language]
+lcid = 1033
+[memory]
+memorylimitmb = 3072
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P gkBGX7RE0ap4yjHt
+1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
+2> go
+physical_memory_mb  
+--------------------
+                3072
+
+(1 rows affected)
 ```
 
-As we can see from the configuration of ready MSSQLServer, the value of `maxIncomingConnections` has been changed from `20000` to `30000`. So the reconfiguration of the database using the `applyConfig` field is successful.
-
+As we can see from the configuration of running SQL Server, the value of `physical_memory_mb` has been changed from `2560` to `3072`. So the reconfiguration of the database using the `applyConfig` field is successful.
 
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete mg -n demo mg-replicaset
-kubectl delete MSSQLServeropsrequest -n demo mops-reconfigure-replicaset mops-reconfigure-apply-replicaset
+kubectl delete ms -n demo mssqlserver-ag-cluster
+kubectl delete msops -n demo msops-reconfigure-ag msops-reconfigure-ag-apply
+kubectl delete issuer -n demo mssqlserver-ca-issuer
+kubectl delete secret -n demo mssqlserver-ca
+kubectl delete ns demo
 ```
