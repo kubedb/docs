@@ -1,13 +1,19 @@
 apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
-  name: ms-standalone
+  name: mssqlserver-ag-cluster
   namespace: demo
 spec:
   version: "2022-cu12"
   configSecret:
     name: ms-custom-config
-  replicas: 1
+  replicas: 3
+  topology:
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
   tls:
     issuerRef:
       name: mssqlserver-ca-issuer
@@ -22,7 +28,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation
+              value: Developer
   storageType: Durable
   storage:
     storageClassName: "standard"
