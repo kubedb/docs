@@ -17,28 +17,27 @@ aliases:
 
 ## Elasticsearch Features
 
-| Features                                                                                                                                                                                                                                                                        | Community     | Enterprise |
-|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| :----------:  |:----------:|
-| Combined Cluster (n nodes with master,data,ingest: ture; n >= 1 )                                                                                                                                                                                                               |   &#10003;    |  &#10003;  |
-| Topology Cluster (n master, m data, x ingest nodes; n,m,x >= 1 )                                                                                                                                                                                                                |   &#10003;    |  &#10003;  |
-| Hot-Warm-Cold Topology Cluster (a hot, b warm, c cold nodes; a,b,c >= 1 )                                                                                                                                                                                                       |   &#10003;    |  &#10003;  |
-| TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) )                                                                                                                                                                                              |   &#10007;    |  &#10003;  |
-| Automated Version Update                                                                                                                                                                                                                                                        |   &#10007;    |  &#10003;  |
-| Automatic Vertical Scaling                                                                                                                                                                                                                                                      |   &#10007;    |  &#10003;  |
-| Automated Horizontal Scaling                                                                                                                                                                                                                                                    |   &#10007;    |  &#10003;  |
-| Automated Volume Expansion                                                                                                                                                                                                                                                      |   &#10007;    |  &#10003;  |
-| Backup/Recovery: Instant, Scheduled ( [Stash](https://stash.run/) )                                                                                                                                                                                                             |   &#10003;    |  &#10003;  |
-| Dashboard ( Kibana , Opensearch-Dashboards )                                                                                                                                                                                                                                    |   &#10003;    |  &#10003;  |
-| Grafana Dashboards                                                                                                                                                                                                                                                              |    &#10007;    |  &#10003;  |
-| Initialization from Snapshot ( [Stash](https://stash.run/) )                                                                                                                                                                                                                    |   &#10003;    |  &#10003;  |
-| Authentication ( [OpensSearch](https://opensearch.org/) / [X-Pack](https://www.elastic.co/guide/en/elasticsearch/reference/7.9/setup-xpack.html) / [OpenDistro](https://opendistro.github.io/for-elasticsearch-docs/) / [Search Guard](https://docs.search-guard.com/latest/) ) |   &#10003;    |  &#10003;  |
-| Authorization ( [OpensSearch](https://opensearch.org/) / [X-Pack](https://www.elastic.co/guide/en/elasticsearch/reference/7.9/setup-xpack.html) / [OpenDistro](https://opendistro.github.io/for-elasticsearch-docs/) / [Search Guard](https://docs.search-guard.com/latest/) )  |   &#10003;    |  &#10003;  |
-| Persistent Volume                                                                                                                                                                                                                                                               |   &#10003;    |  &#10003;  |
-| Exports Prometheus Matrices                                                                                                                                                                                                                                                     |   &#10003;    |  &#10003;  |
-| Custom Configuration                                                                                                                                                                                                                                                            |   &#10003;    |  &#10003;  |
-| Using Custom Docker Image                                                                                                                                                                                                                                                       |   &#10003;    |  &#10003;  |
-| Initialization From Script                                                                                                                                                                                                                                                      |   &#10007;    |  &#10007;  |
-| Autoscaling (vertically)	                                                                                                                                                                                                                                                       |   &#10007;    |  &#10003;  |
+| Features                                                                                                                                                                                                                                                                        | Availability |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------:|
+| Combined Cluster (n nodes with master,data,ingest: ture; n >= 1 )                                                                                                                                                                                                               |   &#10003;   |
+| Topology Cluster (n master, m data, x ingest nodes; n,m,x >= 1 )                                                                                                                                                                                                                |   &#10003;   |
+| Hot-Warm-Cold Topology Cluster (a hot, b warm, c cold nodes; a,b,c >= 1 )                                                                                                                                                                                                       |   &#10003;   |
+| TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) )                                                                                                                                                                                              |   &#10003;   |
+| Automated Version Update                                                                                                                                                                                                                                                        |   &#10003;   |
+| Automatic Vertical Scaling                                                                                                                                                                                                                                                      |   &#10003;   |
+| Automated Horizontal Scaling                                                                                                                                                                                                                                                    |   &#10003;   |
+| Automated Volume Expansion                                                                                                                                                                                                                                                      |   &#10003;   |
+| Backup/Recovery: Instant, Scheduled ( [Stash](https://stash.run/) )                                                                                                                                                                                                             |   &#10003;   |
+| Dashboard ( Kibana , Opensearch-Dashboards )                                                                                                                                                                                                                                    |   &#10003;   |
+| Grafana Dashboards                                                                                                                                                                                                                                                              |   &#10003;   |
+| Initialization from Snapshot ( [Stash](https://stash.run/) )                                                                                                                                                                                                                    |   &#10003;   |
+| Authentication ( [OpensSearch](https://opensearch.org/) / [X-Pack](https://www.elastic.co/guide/en/elasticsearch/reference/7.9/setup-xpack.html) / [OpenDistro](https://opendistro.github.io/for-elasticsearch-docs/) / [Search Guard](https://docs.search-guard.com/latest/) ) |   &#10003;   |
+| Authorization ( [OpensSearch](https://opensearch.org/) / [X-Pack](https://www.elastic.co/guide/en/elasticsearch/reference/7.9/setup-xpack.html) / [OpenDistro](https://opendistro.github.io/for-elasticsearch-docs/) / [Search Guard](https://docs.search-guard.com/latest/) )  |   &#10003;   |
+| Persistent Volume                                                                                                                                                                                                                                                               |   &#10003;   |
+| Exports Prometheus Matrices                                                                                                                                                                                                                                                     |   &#10003;   |
+| Custom Configuration                                                                                                                                                                                                                                                            |   &#10003;   |
+| Using Custom Docker Image                                                                                                                                                                                                                                                       |   &#10003;   |
+| Autoscaling (vertically)	                                                                                                                                                                                                                                                       |   &#10003;   |
 
 ## Lifecycle of Elasticsearch Object
 
@@ -60,31 +59,36 @@ KubeDB supports `Elasticsearch` provided by Elastic with `xpack` auth plugin. `O
 <tr>
 <td>
 
-| Version  | ElasticSearch | Dashboard(Kibana) |
-|:--------:|:-------------:|:-----------------:|
-|  6.8.x   |   &#10003;    |     &#10003;      |
-|  7.13.x  |   &#10003;    |     &#10003;      |
-|  7.14.x  |   &#10003;    |     &#10003;      |
-|  7.16.x  |   &#10003;    |     &#10003;      |
-|  7.17.x  |   &#10003;    |     &#10003;      |
-|  8.2.x   |   &#10003;    |     &#10003;      |
-|  8.5.x   |   &#10003;    |     &#10003;      |
-|  8.6.x   |   &#10003;    |     &#10003;      |
-|  8.8.x   |   &#10003;    |     &#10003;      |
-|  8.11.x  |   &#10003;    |     &#10003;      |
+| Version | ElasticSearch | Dashboard(Kibana) |
+|:-------:|:-------------:|:-----------------:|
+|  6.8.x  |   &#10003;    |     &#10003;      |
+| 7.13.x  |   &#10003;    |     &#10003;      |
+| 7.14.x  |   &#10003;    |     &#10003;      |
+| 7.16.x  |   &#10003;    |     &#10003;      |
+| 7.17.x  |   &#10003;    |     &#10003;      |
+|  8.2.x  |   &#10003;    |     &#10003;      |
+|  8.5.x  |   &#10003;    |     &#10003;      |
+|  8.6.x  |   &#10003;    |     &#10003;      |
+|  8.8.x  |   &#10003;    |     &#10003;      |
+| 8.11.x  |   &#10003;    |     &#10003;      |
+| 8.13.x  |   &#10003;    |     &#10003;      |
+| 8.14.x  |   &#10003;    |     &#10003;      |
+| 8.15.x  |   &#10003;    |     &#10003;      |
 
 </td>
 <td style="vertical-align:top">
 
-| Version  | OpenSearch | Dashboard<br/>(OpenSearch-Dashboards) |
-|:--------:|:----------:|:-------------------------------------:|
-|  1.1.x   |  &#10003;  |               &#10003;                |
-|  1.2.x   |  &#10003;  |               &#10003;                |
-|  1.3.x   |  &#10003;  |               &#10003;                |
-|  2.0.x   |  &#10003;  |               &#10003;                |
-|  2.5.x   |  &#10003;  |               &#10003;                |
-|  2.8.x   |  &#10003;  |               &#10003;                |
-|  2.11.x  |  &#10003;  |               &#10003;                |
+| Version | OpenSearch | Dashboard<br/>(OpenSearch-Dashboards) |
+|:-------:|:----------:|:-------------------------------------:|
+|  1.1.x  |  &#10003;  |               &#10003;                |
+|  1.2.x  |  &#10003;  |               &#10003;                |
+|  1.3.x  |  &#10003;  |               &#10003;                |
+|  2.0.x  |  &#10003;  |               &#10003;                |
+|  2.5.x  |  &#10003;  |               &#10003;                |
+|  2.8.x  |  &#10003;  |               &#10003;                |
+| 2.11.x  |  &#10003;  |               &#10003;                |
+| 2.14.x  |  &#10003;  |               &#10003;                |
+| 2.16.x  |  &#10003;  |               &#10003;                |
 
 </td>
 </tr>
