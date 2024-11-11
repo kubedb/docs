@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: slops-hscale-up-topology
+  namespace: demo
+spec:
+  databaseRef:
+    name: solr-cluster
+  type: HorizontalScaling
+  horizontalScaling:
+    data: 2
+    overseer: 2
+    coordinator: 2

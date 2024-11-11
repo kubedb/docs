@@ -1,0 +1,34 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: slops-vscale-topology
+  namespace: demo
+spec:
+  databaseRef:
+    name: solr-cluster
+  type: VerticalScaling
+  verticalScaling:
+    data:
+      resources:
+        limits:
+          cpu: 1
+          memory: 2.5Gi
+        requests:
+          cpu: 1
+          memory: 2.5Gi
+    overseer:
+      resources:
+        limits:
+          cpu: 1
+          memory: 2.5Gi
+        requests:
+          cpu: 1
+          memory: 2.5Gi
+    coordinator:
+      resources:
+        limits:
+          cpu: 1
+          memory: 2.5Gi
+        requests:
+          cpu: 1
+          memory: 2.5Gi
