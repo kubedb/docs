@@ -24,7 +24,7 @@ KubeDB operator now comes bundled with Pgpool crd to manage all the essential fe
 ## Supported Pgpool Features
 
 | Features                                                    | Availability |
-|-------------------------------------------------------------| :----------: |
+|-------------------------------------------------------------|:------------:|
 | Clustering                                                  |   &#10003;   |
 | Multiple Pgpool Versions                                    |   &#10003;   |
 | Custom Configuration                                        |   &#10003;   |
