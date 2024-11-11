@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: slops-hscale-up-combined
+  namespace: demo
+spec:
+  databaseRef:
+    name: solr-combined
+  type: HorizontalScaling
+  horizontalScaling:
+    node: 4
