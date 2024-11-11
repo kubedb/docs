@@ -18,17 +18,17 @@ aliases:
 
 ## Supported PerconaXtraDB Features
 
-| Features                                                | Availability |
-| ------------------------------------------------------- | :----------: |
-| Clustering                                              |   &#10003;   |
-| Persistent Volume                                       |   &#10003;   |
-| Instant Backup                                          |   &#10003;   |
-| Scheduled Backup                                        |   &#10003;   |
-| Initialize using Snapshot                               |   &#10003;   |
-| Custom Configuration                                    |   &#10003;   |
-| Using Custom docker image                               |   &#10003;   |
-| Builtin Prometheus Discovery                            |   &#10003;   |
-| Using Prometheus operator                               |   &#10003;   |
+| Features                     | Availability |
+|------------------------------|:------------:|
+| Clustering                   |   &#10003;   |
+| Persistent Volume            |   &#10003;   |
+| Instant Backup               |   &#10003;   |
+| Scheduled Backup             |   &#10003;   |
+| Initialize using Snapshot    |   &#10003;   |
+| Custom Configuration         |   &#10003;   |
+| Using Custom docker image    |   &#10003;   |
+| Builtin Prometheus Discovery |   &#10003;   |
+| Using Prometheus operator    |   &#10003;   |
 
 ## Life Cycle of a PerconaXtraDB Object
 
