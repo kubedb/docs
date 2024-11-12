@@ -40,27 +40,13 @@ spec:
       databases:
         - agdb1
         - agdb2
+      leaderElection:
+        electionTick: 10
+        heartbeatTick: 1
+        period: 300ms
+        transferLeadershipInterval: 1s
+        transferLeadershipTimeout: 1m0s
     mode: AvailabilityGroup
-  internalAuth:
-    endpointCert:
-      certificates:
-        - alias: endpoint
-          secretName: mssqlserver-endpoint-cert
-          subject:
-            organizationalUnits:
-              - endpoint
-            organizations:
-              - kubedb
-      issuerRef:
-        apiGroup: cert-manager.io
-        kind: Issuer
-        name: mssqlserver-ca-issuer
-  leaderElection:
-    electionTick: 10
-    heartbeatTick: 1
-    period: 300ms
-    transferLeadershipInterval: 1s
-    transferLeadershipTimeout: 1m0s
   podTemplate:
     metadata:
       annotations:
@@ -151,23 +137,30 @@ spec:
   tls:
     certificates:
       - alias: server
+        emailAddresses:
+          - dev@appscode.com
         secretName: mssqlserver-server-cert
         subject:
           organizationalUnits:
             - server
           organizations:
             - kubedb
-        emailAddresses:
-          - dev@appscode.com
       - alias: client
+        emailAddresses:
+          - abc@appscode.com
         secretName: mssqlserver-client-cert
         subject:
           organizationalUnits:
             - client
           organizations:
             - kubedb
-        emailAddresses:
-          - abc@appscode.com
+      - alias: endpoint
+        secretName: mssqlserver-endpoint-cert
+        subject:
+          organizationalUnits:
+            - endpoint
+          organizations:
+            - kubedb
     clientTLS: true
     issuerRef:
       apiGroup: cert-manager.io

@@ -139,18 +139,21 @@ spec:
       databases:
         - agdb1
         - agdb2
-  internalAuth:
-    endpointCert:
-      issuerRef:
-        apiGroup: cert-manager.io
-        name: mssqlserver-ca-issuer
-        kind: Issuer
   tls:
     issuerRef:
       name: mssqlserver-ca-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
     clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -242,33 +245,11 @@ metadata:
 spec:
   authSecret:
     name: mssqlserver-ag-cluster-auth
-  coordinator:
-    resources: {}
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10
     timeoutSeconds: 10
-  internalAuth:
-    endpointCert:
-      certificates:
-        - alias: endpoint
-          secretName: mssqlserver-ag-cluster-endpoint-cert
-          subject:
-            organizationalUnits:
-              - endpoint
-            organizations:
-              - kubedb
-      issuerRef:
-        apiGroup: cert-manager.io
-        kind: Issuer
-        name: mssqlserver-ca-issuer
-  leaderElection:
-    electionTick: 10
-    heartbeatTick: 1
-    period: 300ms
-    transferLeadershipInterval: 1s
-    transferLeadershipTimeout: 1m0s
   podTemplate:
     controller: {}
     metadata: {}

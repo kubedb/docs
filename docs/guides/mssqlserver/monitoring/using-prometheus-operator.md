@@ -222,6 +222,15 @@ spec:
       kind: Issuer
       apiGroup: "cert-manager.io"
     clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation
   monitor:
     agent: prometheus.io/operator
     prometheus:
