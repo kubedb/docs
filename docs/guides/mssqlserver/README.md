@@ -20,30 +20,30 @@ Microsoft SQL Server is one of the most popular relational database management s
 
 ## Supported Microsoft SQL Server Features
 
-| Features                                                            | Availability |
-|---------------------------------------------------------------------|:------------:|
-| Standalone and Availability Group Cluster (HA configuration)        |   &#10003;   |
-| Synchronous Replication                                             |   &#10003;   |
-| Automatic Failover                                                  |   &#10003;   |
-| Custom Configuration                                                |   &#10003;   |
-| Authentication & Authorization                                      |   &#10003;   |
-| Externally manageable Auth Secret                                   |   &#10003;   |
-| Instant and Scheduled Backup  ([KubeStash](https://kubestash.com/)) |   &#10003;   |
-| Continuous Archiving using `wal-g`                                  |   &#10003;   |
-| Initialization from WAL archive                                     |   &#10003;   |
-| Initializing from Snapshot ([KubeStash](https://kubestash.com/))    |   &#10003;   |
-| Reconfigurable Health Checker                                       |   &#10003;   |
-| Persistent volume                                                   |   &#10003;   | 
-| Builtin Prometheus Discovery                                        |   &#10003;   |
-| Using Prometheus operator                                           |   &#10003;   |
-| Automated Version Update                                            |   &#10003;   |
-| Automated Vertical Scaling, Volume Expansion                        |   &#10003;   |
-| Automated Horizontal Scaling                                        |   &#10003;   |
-| Autoscaler for Compute and Storage Resources                        |   &#10003;   |
-| Reconfiguration                                                     |   &#10003;   |
-| TLS                                                                 |   &#10003;   |
-| Grafana Dashboards                                                  |   &#10003;   |
-| Autoscaling (vertically)                                            |   &#10003;   |
+| Features                                                           | Availability |
+|--------------------------------------------------------------------|:------------:|
+| Standalone and Availability Group Cluster (HA configuration)       |   &#10003;   |
+| Synchronous Replication                                            |   &#10003;   |
+| Automatic Failover                                                 |   &#10003;   |
+| Custom Configuration                                               |   &#10003;   |
+| Authentication & Authorization                                     |   &#10003;   |
+| Externally manageable Auth Secret                                  |   &#10003;   |
+| Instant and Scheduled Backup ([KubeStash](https://kubestash.com/)) |   &#10003;   |
+| Continuous Archiving using `wal-g`                                 |   &#10003;   |
+| Initialization from WAL archive                                    |   &#10003;   |
+| Initializing from Snapshot ([KubeStash](https://kubestash.com/))   |   &#10003;   |
+| Reconfigurable Health Checker                                      |   &#10003;   |
+| Persistent Volume                                                  |   &#10003;   |
+| Builtin Prometheus Discovery                                       |   &#10003;   |
+| Using Prometheus operator                                          |   &#10003;   |
+| Automated Version Update                                           |   &#10003;   |
+| Automated Vertical Scaling, Volume Expansion                       |   &#10003;   |
+| Automated Horizontal Scaling                                       |   &#10003;   |
+| Autoscaling Compute and Storage Resources                          |   &#10003;   |
+| Reconfiguration                                                    |   &#10003;   |
+| TLS                                                                |   &#10003;   |
+| Reconfigure TLS                                                    |   &#10003;   |
+| Grafana Dashboards                                                 |   &#10003;   |
 
 
 ## Supported Microsoft SQL Server Versions
