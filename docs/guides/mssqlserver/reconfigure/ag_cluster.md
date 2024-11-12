@@ -2,9 +2,9 @@
 title: Reconfigure MSSQLServer Availability Group
 menu:
   docs_{{ .version }}:
-    identifier: mg-reconfigure-ag-cluster
+    identifier: ms-reconfigure-ag-cluster
     name: Availability Group
-    parent: mg-reconfigure
+    parent: ms-reconfigure
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
