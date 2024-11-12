@@ -5,6 +5,6 @@ menu:
     identifier: pitr-mssqlserver
     name: Point-in-time Recovery
     parent: guides-mssqlserver
-    weight: 42
+    weight: 45
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: ms-tls
     name: TLS/SSL Encryption
     parent: guides-mssqlserver
-    weight: 45
+    weight: 65
 menu_name: docs_{{ .version }}
 ---
