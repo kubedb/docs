@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 The following diagram shows how KubeDB Ops-manager operator reconfigures `Solr` components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Reconfiguring process of Solr" src="/docs/images/day-2-operation/Solr/kf-reconfigure.svg">
+  <img alt="Reconfiguring process of Solr" src="/docs/images/day-2-operation/solr/reconfigure.svg">
 <figcaption align="center">Fig: Reconfiguring process of Solr</figcaption>
 </figure>
 

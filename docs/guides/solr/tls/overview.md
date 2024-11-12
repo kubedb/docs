@@ -41,7 +41,7 @@ When, `enableSSL` is set to `true`, the users must specify the `tls.issuerRef` f
 The following figure shows how `KubeDB` enterprise used to configure TLS/SSL in Solr. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-<img alt="Deploy Solr with TLS/SSL" src="/docs/images/Solr/kf-tls.svg">
+<img alt="Deploy Solr with TLS/SSL" src="/docs/images/solr/tls.svg">
 <figcaption align="center">Fig: Deploy Solr with TLS/SSL</figcaption>
 </figure>
 

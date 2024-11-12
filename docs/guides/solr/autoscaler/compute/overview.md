@@ -27,6 +27,10 @@ This guide will give an overview on how the KubeDB Autoscaler operator autoscale
 
 The Auto Scaling process consists of the following steps:
 
+<p align="center">
+  <img alt="Compute Autoscaling Flow"  src="/docs/images/day-2-operation/solr/compute-autoscaling.svg">
+</p>
+
 1. At first, a user creates a `Solr` Custom Resource Object (CRO).
 
 2. `KubeDB` Provisioner  operator watches the `Solr` CRO.
