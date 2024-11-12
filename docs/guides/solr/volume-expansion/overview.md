@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator expand the v
 The following diagram shows how KubeDB Ops-manager operator expand the volumes of `Solr` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Volume Expansion process of Solr" src="/docs/images/day-2-operation/Solr/kf-volume-expansion.svg">
+  <img alt="Volume Expansion process of Solr" src="/docs/images/day-2-operation/solr/volume-expansion.svg">
 <figcaption align="center">Fig: Volume Expansion process of Solr</figcaption>
 </figure>
 
