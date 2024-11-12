@@ -2,9 +2,9 @@
 title: Reconfiguring MSSQLServer
 menu:
   docs_{{ .version }}:
-    identifier: mg-reconfigure-overview
+    identifier: ms-reconfigure-overview
     name: Overview
-    parent: mg-reconfigure
+    parent: ms-reconfigure
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 The following diagram shows how KubeDB Ops-manager operator reconfigures `MSSQLServer` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Reconfiguring process of MSSQLServer" src="/docs/images/day-2-operation/mssqlserver/mg-reconfigure.svg">
+  <img alt="Reconfiguring process of MSSQLServer" src="/docs/images/day-2-operation/mssqlserver/ms-reconfigure.png">
 <figcaption align="center">Fig: Reconfiguring process of MSSQLServer</figcaption>
 </figure>
 
