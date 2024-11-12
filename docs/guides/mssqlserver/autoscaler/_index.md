@@ -5,6 +5,6 @@ menu:
     identifier: ms-autoscaling
     name: Autoscaling
     parent: guides-mssqlserver
-    weight: 46
+    weight: 70
 menu_name: docs_{{ .version }}
 ---

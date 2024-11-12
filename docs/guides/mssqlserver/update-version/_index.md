@@ -1,10 +1,10 @@
 ---
-title: Reconfigure
+title: Updating MSSQLServer
 menu:
   docs_{{ .version }}:
-    identifier: ms-reconfigure
-    name: Reconfigure
+    identifier: mssql-updating
+    name: UpdateVersion
     parent: guides-mssqlserver
-    weight: 75
+    weight: 50
 menu_name: docs_{{ .version }}
 ---
