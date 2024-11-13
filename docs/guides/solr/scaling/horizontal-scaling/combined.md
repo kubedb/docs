@@ -3,7 +3,7 @@ title: Solr Combined Horizontal Scaling
 menu:
   docs_{{ .version }}:
     identifier: sl-scaling-horizontal-combined
-    name: Solr Combined Horizontal Scaling
+    name: Combined Cluster
     parent: sl-scaling-horizontal
     weight: 50
 menu_name: docs_{{ .version }}

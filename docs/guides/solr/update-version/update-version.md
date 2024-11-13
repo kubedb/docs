@@ -3,7 +3,7 @@ title: Update Version of Solr
 menu:
   docs_{{ .version }}:
     identifier: sl-update-version-solr
-    name: Solr
+    name: Update Version OpsRequest
     parent: sl-update-version
     weight: 30
 menu_name: docs_{{ .version }}

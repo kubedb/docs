@@ -3,7 +3,7 @@ title: Solr Vertical Scaling Combined
 menu:
   docs_{{ .version }}:
     identifier: sl-scaling-vertical-combined
-    name: Solr Vertical Scaling Combined
+    name: Combined Cluster
     parent: sl-scaling-vertical
     weight: 20
 menu_name: docs_{{ .version }}

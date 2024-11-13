@@ -3,7 +3,7 @@ title: Solr Vertical Scaling Overview
 menu:
   docs_{{ .version }}:
     identifier: sl-scaling-vertical-overview
-    name: Solr Vertical Scaling Overview
+    name: Overview
     parent: sl-scaling-vertical
     weight: 10
 menu_name: docs_{{ .version }}

@@ -3,7 +3,7 @@ title: AppBinding CRD
 menu:
   docs_{{ .version }}:
     identifier: sl-solropsrequest-solr
-    name: AppBinding
+    name: SolrOpsRequest
     parent: sl-concepts-solr
     weight: 40
 menu_name: docs_{{ .version }}
