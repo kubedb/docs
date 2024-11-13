@@ -3,7 +3,7 @@ title: Solr Topology Volume Expansion
 menu:
   docs_{{ .version }}:
     identifier: sl-volume-expansion-topology
-    name: Topology
+    name: Topology Cluster
     parent: sl-volume-expansion
     weight: 30
 menu_name: docs_{{ .version }}

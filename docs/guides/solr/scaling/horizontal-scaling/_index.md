@@ -3,7 +3,7 @@ title: Solr Horizontal Scaling
 menu:
   docs_{{ .version }}:
     identifier: sl-scaling-horizontal
-    name: Solr Horizontal Scaling
+    name: Horizontal Scaling
     parent: sl-scaling
     weight: 30
 menu_name: docs_{{ .version }}

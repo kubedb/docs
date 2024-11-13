@@ -1,9 +1,9 @@
 ---
-title: Solr Custom Configuration
+title: Custom Configuration With Config Files
 menu:
   docs_{{ .version }}:
-    identifier: sl-custom-config-solr
-    name: Solr Custom Configuration
+    identifier: sl-custom-config-file
+    name: Config Files
     parent: sl-custom-config
     weight: 30
 menu_name: docs_{{ .version }}

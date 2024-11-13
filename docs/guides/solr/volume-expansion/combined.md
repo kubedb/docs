@@ -3,7 +3,7 @@ title: Solr Combined Volume Expansion
 menu:
   docs_{{ .version }}:
     identifier: sl-volume-expansion-combined
-    name: Combined
+    name: Combined Cluster
     parent: sl-volume-expansion
     weight: 20
 menu_name: docs_{{ .version }}

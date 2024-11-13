@@ -3,7 +3,7 @@ title: Solr Topology Horizontal Scaling
 menu:
   docs_{{ .version }}:
     identifier: sl-scaling-horizontal-topology
-    name: Solr Topology Horizontal Scaling
+    name: Topology Cluster
     parent: sl-scaling-horizontal
     weight: 40
 menu_name: docs_{{ .version }}

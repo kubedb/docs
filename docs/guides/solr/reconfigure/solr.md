@@ -3,7 +3,7 @@ title: Reconfigure Solr
 menu:
   docs_{{ .version }}:
     identifier: sl-reconfigure-solr
-    name: Reconfigure Solr
+    name: Reconfigure OpsRequest
     parent: sl-reconfigure
     weight: 30
 menu_name: docs_{{ .version }}

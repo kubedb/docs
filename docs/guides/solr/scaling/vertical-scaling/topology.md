@@ -3,7 +3,7 @@ title: Solr Vertical Scaling Topology
 menu:
   docs_{{ .version }}:
     identifier: sl-scaling-vertical-topology
-    name: Solr Vertical Scaling Topology
+    name: Topology Cluster
     parent: sl-scaling-vertical
     weight: 30
 menu_name: docs_{{ .version }}

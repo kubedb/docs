@@ -154,6 +154,121 @@ type: Opaque
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
+### spec.topology
+
+`spec.topology` is an `optional` field that provides a way to configure different types of nodes for the Solr cluster. This field enables you to specify how many nodes you want to act as `overseer`, `data`, `coordinator` or other node roles for Elasticsearch. You can also specify how much storage and resources to allocate for each type of node independently.
+
+Currently supported node types are -
+- **data**: Data nodes hold the shards that contain the documents you have indexed. Data nodes handle data related operations like CRUD, search, and aggregations
+- **overseer**: Overseer nodes can execute shard distributions, composed of one or more overseer processors
+- **coordinator**: The coordinator node can act as if it has replicas of all collections in the cluster when a query is performed.
+
+```yaml
+  topology:
+    data:
+      replicas: 3
+      podTemplate: 
+        spec:
+          containers:
+            - name: "solr"
+              resources:
+                requests:
+                  cpu: "900m"
+                limits:
+                  cpu: "900m"
+                  memory: "2.5Gi"
+      storage:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+      suffix: data
+    overseer:
+      replicas: 3
+      podTemplate:
+        spec:
+          containers:
+            - name: "solr"
+              resources:
+                requests:
+                  cpu: "900m"
+                limits:
+                  cpu: "900m"
+                  memory: "2.5Gi"
+      storage:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+      suffix: overseer
+    coordinator:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+            - name: "solr"
+              resources:
+                requests:
+                  cpu: "900m"
+                limits:
+                  cpu: "900m"
+                  memory: "2.5Gi"
+      storage:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+      suffix: coordinator
+```
+
+The `spec.topology` contains the following fields:
+
+- `topology.overseer`:
+  - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the `overseer` nodes. Defaults to `1`.
+  - `suffix` (`: "overseer"`) - is an `optional` field that is added as the suffix of the overseer PetSet name. Defaults to `overseer`.
+  - `storage` is a `required` field that specifies how much storage to claim for each of the `overseer` nodes.
+  - `resources` (`: "cpu: 900m, memory: 2Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `overseer` nodes.
+
+- `topology.data`:
+  - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the `data` nodes. Defaults to `1`.
+  - `suffix` (`: "data"`) - is an `optional` field that is added as the suffix of the data PetSet name. Defaults to `data`.
+  - `storage` is a `required` field that specifies how much storage to claim for each of the `data` nodes.
+  - `resources` (` cpu: 900m, memory: 2Gi `) - is an `optional` field that specifies which amount of computational resources to request or to limit for each of the `data` nodes.
+
+- `topology.coordinator`:
+  - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the `coordinator` nodes. Defaults to `1`.
+  - `suffix` (`: "coordinator"`) - is an `optional` field that is added as the suffix of the data PetSet name. Defaults to `coordinator`.
+  - `storage` is a `required` field that specifies how much storage to claim for each of the `coordinator` nodes.
+  - `resources` (` cpu: 900m, memory: 2Gi `) - is an `optional` field that specifies which amount of computational resources to request or to limit for each of the `data` nodes.
+
+> Note: Any two types of nodes can't have the same `suffix`.
+
+If you specify `spec.topology` field then you **do not need** to specify the following fields in Elasticsearch CRD.
+
+- `spec.replicas`
+- `spec.storage`
+- `spec.podTemplate.spec.resources`
+
+If you do not specify `spec.topology` field, the Elasticsearch Cluster runs in combined mode.
+
+> Combined Mode: all nodes of the Elasticsearch cluster will work as `overseer`, `data` and `coordinator` nodes simultaneously.
+
+### spec.replicas
+
+`spec.replicas` is an `optional` field that can be used if `spec.topology` is not specified. This field specifies the number of nodes (ie. pods) in the Elasticsearch cluster. The default value of this field is `1`.
+
+```yaml
+spec:
+  replicas: 3
+```
+
+
 
 ### spec.zookeeperRef
 
