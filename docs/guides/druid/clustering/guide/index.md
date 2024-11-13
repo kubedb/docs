@@ -3,7 +3,7 @@ title: Druid Topology Cluster Guide
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-clustering-guide
-    name: Druid Clustering Overview
+    name: Deploy Druid Cluster
     parent: guides-druid-clustering
     weight: 20
 menu_name: docs_{{ .version }}

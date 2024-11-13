@@ -20,7 +20,7 @@ The following diagram shows the services that make up the Druid architecture, th
 
 ![Druid Architecture](/docs/guides/druid/clustering/overview/images/druid-architecture.svg)
 
-Image ref: <https://druid.apache.org/assets/images/druid-architecture-7db1cd79d2d70b2e5ccc73b6bebfcaa4.svg>
+Image ref: [Druid Official Documentation](https://druid.apache.org/assets/images/druid-architecture-7db1cd79d2d70b2e5ccc73b6bebfcaa4.svg)
 
 
 ## Druid services
