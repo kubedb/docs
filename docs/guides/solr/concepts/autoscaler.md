@@ -71,7 +71,7 @@ spec:
   databaseRef:
     name: solr-cluster
   compute:
-    master:
+    overseer:
       trigger: "On"
       podLifeTimeThreshold: 24h
       minAllowed:
@@ -95,7 +95,7 @@ spec:
       controlledResources: ["cpu", "memory"]
       containerControlledValues: "RequestsAndLimits"
       resourceDiffPercentage: 10
-    ingest:
+    coordinator:
       trigger: "On"
       podLifeTimeThreshold: 24h
       minAllowed:
