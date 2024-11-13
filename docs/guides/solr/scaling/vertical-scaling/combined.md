@@ -310,7 +310,7 @@ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [Solr object](/docs/guides/solr/concepts/solr.md).
-- Different Solr Combined clustering modes [here](/docs/guides/solr/clustering/Combined_cluster.md).
+- Different Solr Combined clustering modes [here](/docs/guides/solr/clustering/combined_cluster.md).
 - Monitor your Solr database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/solr/monitoring/prometheus-operator.md).
 
 - Monitor your Solr database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/solr/monitoring/prometheus-builtin.md)

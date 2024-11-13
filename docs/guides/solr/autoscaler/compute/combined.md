@@ -164,7 +164,7 @@ Here,
 - `spec.compute.node.resourceDiffPercentage` specifies the minimum resource difference in percentage. The default is 10%.
   If the difference between current & recommended resource is less than ResourceDiffPercentage, Autoscaler Operator will ignore the updating.
 - `spec.compute.node.containerControlledValues` specifies which resource values should be controlled. The default is "RequestsAndLimits".
-- - `spec.opsRequestOptions` contains the options to pass to the created OpsRequest. It has 2 fields. Know more about them here : [timeout](/docs/guides/Solr/concepts/Solr-ops-request/index.md#spectimeout), [apply](/docs/guides/Solr/concepts/Solr-ops-request/index.md#specapply).
+- - `spec.opsRequestOptions` contains the options to pass to the created OpsRequest. It has 2 fields. Know more about them here : [timeout](/docs/guides/solr/concepts/solropsrequests.md#spectimeout), [apply](/docs/guides/solr/concepts/solropsrequests.md#specapply).
 
 Let's create the `SolrAutoscaler` CR we have shown above,
 

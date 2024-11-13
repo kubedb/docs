@@ -642,8 +642,7 @@ $ kubectl delete namespace demo
 
 ## Next Steps
 
-- Monitor your Solr database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/Solr/monitoring/using-builtin-prometheus.md).
-- Monitor your Solr database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/Solr/monitoring/using-prometheus-operator.md).
-- Detail concepts of [Solr object](/docs/guides/Solr/concepts/Solr/index.md).
-- Use [private Docker registry](/docs/guides/Solr/private-registry/using-private-registry.md) to deploy Solr with KubeDB.
+- Monitor your Solr database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/solr/monitoring/prometheus-builtin.md).
+- Monitor your Solr database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/solr/monitoring/prometheus-operator.md).
+- Detail concepts of [Solr object](/docs/guides/solr/concepts/solr.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

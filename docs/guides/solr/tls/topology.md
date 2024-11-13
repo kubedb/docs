@@ -43,7 +43,7 @@ KubeDB uses following crd fields to enable SSL/TLS encryption in Solr.
         - `issuerRef`
         - `certificate`
 
-Read about the fields in details in [Solr concept](/docs/guides/Solr/concepts/Solr.md),
+Read about the fields in details in [Solr concept](/docs/guides/solr/concepts/solr.md),
 
 `tls` is applicable for all types of Solr (i.e., `combined` and `topology`).
 
@@ -232,6 +232,6 @@ kubectl delete ns demo
 ## Next Steps
 
 - Monitor your Solr cluster with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/solr/monitoring/prometheus-operator.md).
-- Monitor your Solr cluster with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/solr/monitoring/builtin-prometheus.md).
+- Monitor your Solr cluster with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/solr/monitoring/prometheus-builtin.md).
 - Detail concepts of [Solr object](/docs/guides/solr/concepts/solr.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
