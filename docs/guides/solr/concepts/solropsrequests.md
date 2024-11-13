@@ -100,7 +100,7 @@ spec:
 `spec.horizontalScaling` is an `optional` field, but it acts as a `required` field when the `spec.type` is set to `HorizontalScaling`.
 It specifies the necessary information required to horizontally scale the Solr nodes (ie. pods). It consists of the following sub-field:
 
-- `horizontalScaling.node` - specifies the desired number of nodes for the Solr cluster running in combined mode (ie. `Solr.spec.topology` is `empty`).  The value should be greater than the maximum value of replication for the shard of any index. For example, if a shard has `x` replicas, `x+1` data nodes are required to allocate them.
+- `horizontalScaling.node` - specifies the desired number of nodes for the Solr cluster running in combined mode (ie. `solr.spec.topology` is `empty`).  The value should be greater than the maximum value of replication for the shard of any index. For example, if a shard has `x` replicas, `x+1` data nodes are required to allocate them.
 - `horizontalScaling.overseer` - specifies the desired number of overseer nodes. The value should be greater than zero ( >= 1 ).
 - `horizontalScaling.data` - specifies the desired number of data nodes. The value should be greater than zero ( >= 1 ).
 - `horizontalScaling.coordinator` - specifies the desired number of coordinator nodes. ( >= 1)
@@ -154,7 +154,6 @@ spec:
     databaseRef:
       name: solr-cluster
     horizontalScaling:
-      topology:
         data: 4
   ```
 
@@ -162,7 +161,7 @@ spec:
 
 `spec.verticalScaling` is an `optional` field, but it acts as a `required` field when the `spec.type` is set to `VerticalScaling`. It specifies the necessary information required to vertically scale the Solr node resources (ie. `cpu`, `memory`). It consists of the following sub-field:
 
-- `verticalScaling.node` - specifies the desired node resources for the Solr cluster running in combined mode (ie. `Solr.spec.topology` is `empty`).
+- `verticalScaling.node` - specifies the desired node resources for the Solr cluster running in combined mode (ie. `solr.spec.topology` is `empty`).
 - `verticalScaling.overseer` - specifies the desired resources for the overseer nodes. It takes input same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
 - `verticalScaling.data` - specifies the desired node resources for the data nodes. It takes input  same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
 - `verticalScaling.coordinator` - specifies the desired node resources for the coordinator nodes. It takes input  same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
@@ -262,7 +261,7 @@ spec:
 
 `spec.volumeExpansion` is an `optional` field, but it acts as a `required` field when the `spec.type` is set to `VolumeExpansion`. It specifies the necessary information required to expand the storage of the Solr node. It consists of the following sub-field:
 
-- `volumeExpansion.node` - specifies the desired size of the persistent volume for the Solr node running in combined mode (ie. `Solr.spec.topology` is `empty`).
+- `volumeExpansion.node` - specifies the desired size of the persistent volume for the Solr node running in combined mode (ie. `solr.spec.topology` is `empty`).
 - `volumeExpansion.overseer` - specifies the desired size of the persistent volume for the overseer nodes.
 - `volumeExpansion.data` - specifies the desired size of the persistent volume for the data nodes.
 - `volumeExpansion.coordinator` - specifies the desired size of the persistent volume for the ingest nodes.
