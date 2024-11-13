@@ -2,7 +2,7 @@
 title: Configuring Druid Cluster
 menu:
   docs_{{ .version }}:
-    identifier: guides-druid-configuration-druid-cluster
+    identifier: guides-druid-configuration-config-file
     name: Configuration File
     parent: guides-druid-configuration
     weight: 10
@@ -134,7 +134,7 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/yamls/config-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/config-file/yamls/config-secret.yaml
 secret/config-secret created
 ```
 
@@ -170,7 +170,7 @@ spec:
 Now, create the Druid object by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/yamls/druid-with-monitoring.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/config-file/yamls/druid-with-monitoring.yaml
 druid.kubedb.com/druid-with-config created
 ```
 
@@ -256,7 +256,7 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 After providing the credentials correctly, you should be able to access the web console like shown below.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/reconfigure/images/druid-updated-ui.png">
+  <img alt="druid-ui"  src="/docs/guides/druid/configuration/config-file/images/druid-updated-ui.png">
 </p>
 
 

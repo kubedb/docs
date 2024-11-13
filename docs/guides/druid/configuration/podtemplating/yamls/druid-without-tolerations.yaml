@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: Druid
 metadata:
-  name: druid-cluster
+  name: druid-without-tolerations
   namespace: demo
 spec:
   version: 28.0.1

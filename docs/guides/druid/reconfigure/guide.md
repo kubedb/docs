@@ -678,7 +678,7 @@ You can access the UI similarly by doing port-forward as mentioned in [Check Con
 You should be able to see the following changes in the UI:
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/druid/reconfigure/images/druid-updated-ui.png">
+  <img alt="lifecycle"  src="/docs/guides/druid/configuration/config-file/images/druid-updated-ui.png">
 </p>
 
 You can see that there are 5 task slots reflecting with our provided custom configuration of `druid.worker.capacity=5`.
