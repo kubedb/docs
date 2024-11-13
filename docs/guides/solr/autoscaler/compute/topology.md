@@ -37,7 +37,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in this [directory](/docs/guides/Solr/autoscaler/compute/topology/yamls) of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in this [directory](/docs/examples/solr/autoscaler/compute) of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Autoscaling of Topology Cluster
 
