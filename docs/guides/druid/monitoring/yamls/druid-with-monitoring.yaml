@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Druid
+metadata:
+  name: druid-with-monitoring
+  namespace: demo
+spec:
+  version: 28.0.1
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
+  topology:
+    routers:
+      replicas: 1
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+  deletionPolicy: WipeOut
+

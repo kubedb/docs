@@ -5,6 +5,6 @@ menu:
     identifier: guides-druid-backup
     name: Backup & Restore
     parent: guides-druid
-    weight: 40
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

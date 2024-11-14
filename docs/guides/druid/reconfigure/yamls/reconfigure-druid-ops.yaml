@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DruidOpsRequest
+metadata:
+  name: reconfigure-drops
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: druid-cluster
+  configuration:
+    configSecret:
+      name: new-config

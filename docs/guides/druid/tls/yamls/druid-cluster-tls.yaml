@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Druid
+metadata:
+  name: druid-cluster-tls
+  namespace: demo
+spec:
+  version: 28.0.1
+  enableSSL: true
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: druid-ca-issuer
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
+  topology:
+    routers:
+      replicas: 1
+  deletionPolicy: Delete
