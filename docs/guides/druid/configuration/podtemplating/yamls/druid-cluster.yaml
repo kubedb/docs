@@ -1,0 +1,43 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Druid
+metadata:
+  name: druid-cluster
+  namespace: demo
+spec:
+  version: 28.0.1
+  configSecret:
+    name: config-secret
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
+  topology:
+    coordinators:
+      replicas: 1
+      podTemplate:
+        spec:
+          containers:
+            - name: druid
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "600m"
+                requests:
+                  memory: "2Gi"
+                  cpu: "600m"
+    brokers:
+      replicas: 1
+      podTemplate:
+        spec:
+          containers:
+            - name: druid
+              resources:
+                limits:
+                  memory: "2Gi"
+                  cpu: "600m"
+                requests:
+                  memory: "2Gi"
+                  cpu: "600m"
+    routers:
+      replicas: 1
+  deletionPolicy: WipeOut

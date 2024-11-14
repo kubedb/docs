@@ -2,8 +2,8 @@
 title: Druid Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: guides-druid-quickstart-overview
-    name: Overview
+    identifier: guides-druid-quickstart-guide
+    name: Druid Quickstart
     parent: guides-druid-quickstart
     weight: 10
 menu_name: docs_{{ .version }}
@@ -24,7 +24,7 @@ This tutorial will show you how to use KubeDB to run an [Apache Druid](https://d
 
 At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md) and make sure install with helm command including the flags `--set global.featureGates.Druid=true` to ensure **Druid CRD** and `--set global.featureGates.ZooKeeper=true` to ensure **ZooKeeper CRD** as Druid depends on ZooKeeper for external dependency.
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md) and make sure to include the flags `--set global.featureGates.Druid=true` to ensure **Druid CRD** and `--set global.featureGates.ZooKeeper=true` to ensure **ZooKeeper CRD** as Druid depends on ZooKeeper for external dependency  with helm command.
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -39,7 +39,7 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [guides/druid/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/druid/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Druid. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/druid/quickstart/overview/index.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Druid. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/druid/quickstart/guide/index.md#tips-for-testing).
 
 ## Find Available StorageClass
 
@@ -55,7 +55,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 
 ## Find Available DruidVersion
 
-When you install the KubeDB operator, it registers a CRD named [DruidVersion](/docs/guides/druid/concepts/catalog.md). The installation process comes with a set of tested DruidVersion objects. Let's check available DruidVersions by,
+When you install the KubeDB operator, it registers a CRD named [DruidVersion](/docs/guides/druid/concepts/druidversion.md). The installation process comes with a set of tested DruidVersion objects. Let's check available DruidVersions by,
 
 ```bash
 $ kubectl get druidversion
@@ -194,7 +194,7 @@ Here,
 Let's create the Druid CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-quickstart.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-with-monitoring.yaml
 druid.kubedb.com/druid-quickstart created
 ```
 
