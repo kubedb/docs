@@ -2,9 +2,9 @@
 title: Reconfiguring TLS of MSSQLServer Database
 menu:
   docs_{{ .version }}:
-    identifier: mg-reconfigure-tls-overview
+    identifier: ms-reconfigure-tls-overview
     name: Overview
-    parent: mg-reconfigure-tls
+    parent: ms-reconfigure-tls
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 The following diagram shows how KubeDB Ops-manager operator reconfigures TLS of a `MSSQLServer` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Reconfiguring TLS process of MSSQLServer" src="/docs/images/day-2-operation/mssqlserver/mg-reconfigure-tls.svg">
+  <img alt="Reconfiguring TLS process of MSSQLServer" src="/docs/images/day-2-operation/mssqlserver/ms-reconfigure-tls.svg">
 <figcaption align="center">Fig: Reconfiguring TLS process of MSSQLServer</figcaption>
 </figure>
 
@@ -51,4 +51,4 @@ The Reconfiguring MSSQLServer TLS process consists of the following steps:
 
 9. After the successful reconfiguring of the `MSSQLServer` TLS, the `KubeDB` Ops-manager operator resumes the `MSSQLServer` object so that the `KubeDB` Provisioner  operator resumes its usual operations.
 
-In the next docs, we are going to show a step by step guide on reconfiguring TLS configuration of a MSSQLServer database using `MSSQLServerOpsRequest` CRD.
+In the next docs, we are going to show a step-by-step guide on reconfiguring TLS configuration of a MSSQLServer database using `MSSQLServerOpsRequest` CRD.
