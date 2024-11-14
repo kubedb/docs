@@ -1,0 +1,19 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: DruidAutoscaler
+metadata:
+    name: druid-storage-autoscaler
+    namespace: demo
+spec:
+    databaseRef:
+        name: druid-cluster
+    storage:
+        historicals:
+            expansionMode: "Offline"
+            trigger: "On"
+            usageThreshold: 60
+            scalingThreshold: 100
+        middleManagers:
+            expansionMode: "Offline"
+            trigger: "On"
+            usageThreshold: 60
+            scalingThreshold: 100

@@ -1,0 +1,20 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Druid
+metadata:
+  name: druid-node-selector
+  namespace: demo
+spec:
+  version: 28.0.1
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
+  topology:
+    routers:
+      replicas: 1
+    coordinators:
+      podTemplate:
+        spec:
+          nodeSelector:
+            disktype: ssd
+  deletionPolicy: Delete
