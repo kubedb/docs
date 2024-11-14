@@ -158,7 +158,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation
+              value: Evaluation # Change it 
   storageType: Durable
   storage:
     storageClassName: "standard"
