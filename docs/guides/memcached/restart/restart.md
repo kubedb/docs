@@ -166,8 +166,8 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Monitor your Memcached database with KubeDB using [built-in Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md).
-- Monitor your MemcachedQL database with KubeDB using [Prometheus operator](/docs/guides/Memcached/monitoring/using-prometheus-operator.md).
-- Detail concepts of [Memcached object](/docs/guides/Memcached/concepts/Memcached.md).
-- Use [private Docker registry](/docs/guides/Memcached/private-registry/using-private-registry.md) to deploy MemcachedQL with KubeDB.
+- Monitor your Memcached database with KubeDB using [Built-in Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md).
+- Monitor your Memcached database with KubeDB using [Prometheus Operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md).
+- Detail concepts of [Memcached](/docs/guides/memcached/concepts/memcached.md).
+- Use [private Docker registry](/docs/guides/memcached/private-registry/using-private-registry.md) to deploy Memcached with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
