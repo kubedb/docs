@@ -1,21 +1,24 @@
 apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
+kind: MSSQLServerOpsRequest
 metadata:
-  name: mops-add-tls
+  name: msops-add-tls
   namespace: demo
 spec:
   type: ReconfigureTLS
   databaseRef:
-    name: mg-rs
+    name: ms-standalone
   tls:
     issuerRef:
-      name: mg-issuer
+      name: mssqlserver-ca-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
     certificates:
       - alias: client
         subject:
           organizations:
-            - mongo
+            - mssqlserver
           organizationalUnits:
             - client
+    clientTLS: true
+  timeout: 5m
+  apply: IfReady

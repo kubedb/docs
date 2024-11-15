@@ -1,5 +1,5 @@
 ---
-title: Reconfigure MSSQLServer TLS/SSL Encryption
+title: Reconfigure Standalone MSSQLServer TLS/SSL Encryption
 menu:
   docs_{{ .version }}:
     identifier: ms-reconfigure-tls-standalone
@@ -68,7 +68,7 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/issuer.yaml
 issuer.cert-manager.io/mssqlserver-ca-issuer created
 ```
 
@@ -487,23 +487,19 @@ mssql@ms-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P l2mGQ
 We can verify from the above output that TLS is enabled for this database, `mssql.conf` file has tls configurations.  So, TLS is enabled successfully to this database.
 
 
-
-
-
-start from here. .... 
-
-
 ## Rotate Certificate
 
 Now we are going to rotate the certificate of this database. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it ms-standalone-2 -n demo bash
-root@ms-standalone-2:/# openssl x509 -in /var/run/mssqlserver/tls/client.pem -inform PEM -enddate -nameopt RFC2253 -noout
-notAfter=Jun  9 13:32:20 2021 GMT
+$ kubectl exec -it ms-standalone-0 -n demo -c mssql -- bash
+mssql@ms-standalone-0:/$ openssl x509 -in /var/opt/mssql/tls/client.crt -inform PEM -enddate -nameopt RFC2253 -noout
+notAfter=Feb 16 13:11:02 2025 GMT
+mssql@ms-standalone-0:/$ 
 ```
 
-So, the certificate will expire on this time `Jun  9 13:32:20 2021 GMT`. 
+So, the certificate will expire on this time `Feb 16 13:11:02 2025 GMT`.
+
 
 ### Create MSSQLServerOpsRequest
 
@@ -513,7 +509,7 @@ Now we are going to increase it using a MSSQLServerOpsRequest. Below is the yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MSSQLServerOpsRequest
 metadata:
-  name: mops-rotate
+  name: msops-rotate
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -521,6 +517,8 @@ spec:
     name: ms-standalone
   tls:
     rotateCertificates: true
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -532,8 +530,8 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/mops-rotate.yaml
-mssqlserveropsrequest.ops.kubedb.com/mops-rotate created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/msops-rotate.yaml
+mssqlserveropsrequest.ops.kubedb.com/msops-rotate created
 ```
 
 #### Verify Certificate Rotated Successfully
@@ -543,111 +541,117 @@ Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following co
 ```bash
 $ kubectl get mssqlserveropsrequest -n demo
 Every 2.0s: kubectl get mssqlserveropsrequest -n demo
-NAME           TYPE             STATUS        AGE
-mops-rotate    ReconfigureTLS   Successful    112s
+NAME            TYPE             STATUS       AGE
+msops-rotate    ReconfigureTLS   Successful   2m47s
 ```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo mops-rotate
-Name:         mops-rotate
+$ kubectl describe mssqlserveropsrequest -n demo msops-rotate
+Name:         msops-rotate
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MSSQLServerOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-11T16:17:55Z
+  Creation Timestamp:  2024-11-18T13:17:50Z
   Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:databaseRef:
-          .:
-          f:name:
-        f:tls:
-          .:
-          f:rotateCertificates:
-        f:type:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2021-03-11T16:17:55Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-enterprise
-    Operation:       Update
-    Time:            2021-03-11T16:17:55Z
-  Resource Version:  521643
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mssqlserveropsrequests/mops-rotate
-  UID:               6d96ead2-a868-47d8-85fb-77eecc9a96b4
+  Resource Version:    549743
+  UID:                 af51934d-1fb4-4fa6-b254-46b1de199fae
 Spec:
+  Apply:  IfReady
   Database Ref:
-    Name:  ms-standalone
+    Name:   ms-standalone
+  Timeout:  5m
   Tls:
     Rotate Certificates:  true
   Type:                   ReconfigureTLS
 Status:
   Conditions:
-    Last Transition Time:  2021-03-11T16:17:55Z
-    Message:               MSSQLServer ops request is reconfiguring TLS
+    Last Transition Time:  2024-11-18T13:17:50Z
+    Message:               MSSQLServer ops-request has started to reconfigure tls for mssqlserver nodes
     Observed Generation:   1
     Reason:                ReconfigureTLS
     Status:                True
     Type:                  ReconfigureTLS
-    Last Transition Time:  2021-03-11T16:17:55Z
-    Message:               Successfully Added Issuing Condition in Certificates
+    Last Transition Time:  2024-11-18T13:17:50Z
+    Message:               Successfully paused database
     Observed Generation:   1
-    Reason:                IssuingConditionUpdated
+    Reason:                DatabasePauseSucceeded
     Status:                True
-    Type:                  IssuingConditionUpdated
-    Last Transition Time:  2021-03-11T16:18:00Z
-    Message:               Successfully Issued New Certificates
+    Type:                  DatabasePauseSucceeded
+    Last Transition Time:  2024-11-18T13:17:50Z
+    Message:               successfully add issuing condition to all the certificates
     Observed Generation:   1
-    Reason:                CertificateIssuingSuccessful
+    Reason:                IssueCertificatesSucceeded
     Status:                True
-    Type:                  CertificateIssuingSuccessful
-    Last Transition Time:  2021-03-11T16:19:45Z
-    Message:               Successfully Restarted ReplicaSet nodes
+    Type:                  IssueCertificatesSucceeded
+    Last Transition Time:  2024-11-18T13:18:00Z
+    Message:               Successfully synced all certificates
     Observed Generation:   1
-    Reason:                RestartReplicaSet
+    Reason:                CertificateSynced
     Status:                True
-    Type:                  RestartReplicaSet
-    Last Transition Time:  2021-03-11T16:19:45Z
-    Message:               Successfully Reconfigured TLS
+    Type:                  CertificateSynced
+    Last Transition Time:  2024-11-18T13:17:55Z
+    Message:               get certificate; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetCertificate
+    Last Transition Time:  2024-11-18T13:17:55Z
+    Message:               check ready condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckReadyCondition
+    Last Transition Time:  2024-11-18T13:17:55Z
+    Message:               issuing condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  IssuingCondition
+    Last Transition Time:  2024-11-18T13:18:05Z
+    Message:               successfully reconciled the MSSQLServer with tls configuration
+    Observed Generation:   1
+    Reason:                UpdatePetSets
+    Status:                True
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-11-18T13:18:51Z
+    Message:               Successfully restarted all nodes
+    Observed Generation:   1
+    Reason:                RestartNodes
+    Status:                True
+    Type:                  RestartNodes
+    Last Transition Time:  2024-11-18T13:18:11Z
+    Message:               get pod; ConditionStatus:True; PodName:ms-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--ms-standalone-0
+    Last Transition Time:  2024-11-18T13:18:11Z
+    Message:               evict pod; ConditionStatus:True; PodName:ms-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--ms-standalone-0
+    Last Transition Time:  2024-11-18T13:18:46Z
+    Message:               check pod running; ConditionStatus:True; PodName:ms-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--ms-standalone-0
+    Last Transition Time:  2024-11-18T13:18:51Z
+    Message:               Successfully completed reconfigureTLS for mssqlserver.
     Observed Generation:   1
     Reason:                Successful
     Status:                True
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-Events:
-  Type    Reason                        Age    From                        Message
-  ----    ------                        ----   ----                        -------
-  Normal  CertificateIssuingSuccessful  2m10s  KubeDB Ops-manager operator  Successfully Issued New Certificates
-  Normal  RestartReplicaSet             25s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
-  Normal  Successful                    25s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
 ```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it ms-standalone-2 -n demo bash
-root@ms-standalone-2:/# openssl x509 -in /var/run/mssqlserver/tls/client.pem -inform PEM -enddate -nameopt RFC2253 -noout
-notAfter=Jun  9 16:17:55 2021 GMT
+$ kubectl exec -it ms-standalone-0 -n demo -c mssql -- bash
+mssql@ms-standalone-0:/$ openssl x509 -in /var/opt/mssql/tls/client.crt -inform PEM -enddate -nameopt RFC2253 -noout
+notAfter=Feb 16 13:17:50 2025 GMT
 ```
 
 As we can see from the above output, the certificate has been rotated successfully.
@@ -670,11 +674,11 @@ writing new private key to './ca.key'
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls mongo-new-ca \
-     --cert=ca.crt \
-     --key=ca.key \
-     --namespace=demo
-secret/mongo-new-ca created
+$ kubectl create secret tls mssqlserver-new-ca \
+           --cert=ca.crt \
+           --key=ca.key \
+           --namespace=demo
+secret/mssqlserver-new-ca created
 ```
 
 Now, Let's create a new `Issuer` using the `mongo-new-ca` secret that we have just created. The `YAML` file looks like this:
@@ -683,18 +687,18 @@ Now, Let's create a new `Issuer` using the `mongo-new-ca` secret that we have ju
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: ms-new-issuer
+  name: mssqlserver-new-ca-issuer
   namespace: demo
 spec:
   ca:
-    secretName: mongo-new-ca
+    secretName: mssqlserver-new-ca
 ```
 
 Let's apply the `YAML` file:
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/new-issuer.yaml
-issuer.cert-manager.io/ms-new-issuer created
+issuer.cert-manager.io/mssqlserver-new-ca-issuer created
 ```
 
 ### Create MSSQLServerOpsRequest
@@ -705,7 +709,7 @@ In order to use the new issuer to issue new certificates, we have to create a `M
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MSSQLServerOpsRequest
 metadata:
-  name: mops-change-issuer
+  name: msops-change-issuer
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -713,7 +717,7 @@ spec:
     name: ms-standalone
   tls:
     issuerRef:
-      name: ms-new-issuer
+      name: mssqlserver-new-ca-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
 ```
@@ -727,8 +731,8 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/mops-change-issuer.yaml
-mssqlserveropsrequest.ops.kubedb.com/mops-change-issuer created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/msops-change-issuer.yaml
+mssqlserveropsrequest.ops.kubedb.com/msops-change-issuer created
 ```
 
 #### Verify Issuer is changed successfully
@@ -738,111 +742,112 @@ Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following co
 ```bash
 $ kubectl get mssqlserveropsrequest -n demo
 Every 2.0s: kubectl get mssqlserveropsrequest -n demo
-NAME                  TYPE             STATUS        AGE
-mops-change-issuer    ReconfigureTLS   Successful    105s
+NAME                  TYPE             STATUS       AGE
+msops-change-issuer   ReconfigureTLS   Successful   3m28s
 ```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo mops-change-issuer
-Name:         mops-change-issuer
+$ kubectl describe mssqlserveropsrequest -n demo msops-change-issuer
+Name:         msops-change-issuer
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MSSQLServerOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-11T16:27:47Z
+  Creation Timestamp:  2024-11-18T13:38:48Z
   Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:databaseRef:
-          .:
-          f:name:
-        f:tls:
-          .:
-          f:issuerRef:
-            .:
-            f:apiGroup:
-            f:kind:
-            f:name:
-        f:type:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2021-03-11T16:27:47Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-enterprise
-    Operation:       Update
-    Time:            2021-03-11T16:27:47Z
-  Resource Version:  523903
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mssqlserveropsrequests/mops-change-issuer
-  UID:               cdfe8a7d-52ef-466c-a5dd-97e74ad598ca
+  Resource Version:    551920
+  UID:                 551ce6a4-742a-43ed-a994-be4ba4809bca
 Spec:
+  Apply:  IfReady
   Database Ref:
     Name:  ms-standalone
   Tls:
     Issuer Ref:
       API Group:  cert-manager.io
       Kind:       Issuer
-      Name:       ms-new-issuer
+      Name:       mssqlserver-new-ca-issuer
   Type:           ReconfigureTLS
 Status:
   Conditions:
-    Last Transition Time:  2021-03-11T16:27:47Z
-    Message:               MSSQLServer ops request is reconfiguring TLS
+    Last Transition Time:  2024-11-18T13:38:48Z
+    Message:               MSSQLServer ops-request has started to reconfigure tls for mssqlserver nodes
     Observed Generation:   1
     Reason:                ReconfigureTLS
     Status:                True
     Type:                  ReconfigureTLS
-    Last Transition Time:  2021-03-11T16:27:52Z
-    Message:               Successfully Issued New Certificates
+    Last Transition Time:  2024-11-18T13:38:51Z
+    Message:               Successfully paused database
     Observed Generation:   1
-    Reason:                CertificateIssuingSuccessful
+    Reason:                DatabasePauseSucceeded
     Status:                True
-    Type:                  CertificateIssuingSuccessful
-    Last Transition Time:  2021-03-11T16:29:37Z
-    Message:               Successfully Restarted ReplicaSet nodes
+    Type:                  DatabasePauseSucceeded
+    Last Transition Time:  2024-11-18T13:39:01Z
+    Message:               Successfully synced all certificates
     Observed Generation:   1
-    Reason:                RestartReplicaSet
+    Reason:                CertificateSynced
     Status:                True
-    Type:                  RestartReplicaSet
-    Last Transition Time:  2021-03-11T16:29:37Z
-    Message:               Successfully Reconfigured TLS
+    Type:                  CertificateSynced
+    Last Transition Time:  2024-11-18T13:38:56Z
+    Message:               get certificate; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetCertificate
+    Last Transition Time:  2024-11-18T13:38:56Z
+    Message:               check ready condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckReadyCondition
+    Last Transition Time:  2024-11-18T13:38:56Z
+    Message:               issuing condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  IssuingCondition
+    Last Transition Time:  2024-11-18T13:39:06Z
+    Message:               successfully reconciled the MSSQLServer with tls configuration
+    Observed Generation:   1
+    Reason:                UpdatePetSets
+    Status:                True
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-11-18T13:42:11Z
+    Message:               Successfully restarted all nodes
+    Observed Generation:   1
+    Reason:                RestartNodes
+    Status:                True
+    Type:                  RestartNodes
+    Last Transition Time:  2024-11-18T13:39:11Z
+    Message:               get pod; ConditionStatus:True; PodName:ms-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--ms-standalone-0
+    Last Transition Time:  2024-11-18T13:39:11Z
+    Message:               evict pod; ConditionStatus:True; PodName:ms-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--ms-standalone-0
+    Last Transition Time:  2024-11-18T13:42:06Z
+    Message:               check pod running; ConditionStatus:True; PodName:ms-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--ms-standalone-0
+    Last Transition Time:  2024-11-18T13:42:11Z
+    Message:               Successfully completed reconfigureTLS for mssqlserver.
     Observed Generation:   1
     Reason:                Successful
     Status:                True
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-Events:
-  Type    Reason                        Age    From                        Message
-  ----    ------                        ----   ----                        -------
-  Normal  CertificateIssuingSuccessful  2m27s  KubeDB Ops-manager operator  Successfully Issued New Certificates
-  Normal  RestartReplicaSet             42s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
-  Normal  Successful                    42s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
 ```
 
-Now, Let's exec into a database node and find out the ca subject to see if it matches the one we have provided.
+Now, Lets exec into a database node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it ms-standalone-2 -n demo bash
-root@ms o-rs-tls-2:/$ openssl x509 -in /var/run/mssqlserver/tls/ca.crt -inform PEM -subject -nameopt RFC2253 -noout
+$ kubectl exec -it ms-standalone-0 -n demo -c mssql -- bash
+mssql@ms-standalone-0:/$  openssl x509 -in /var/opt/mssql/tls/ca.crt -inform PEM -subject -nameopt RFC2253 -noout
 subject=O=kubedb-updated,CN=ca-updated
 ```
 
@@ -860,7 +865,7 @@ Below is the YAML of the `MSSQLServerOpsRequest` CRO that we are going to create
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MSSQLServerOpsRequest
 metadata:
-  name: mops-remove
+  name: msops-remove
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -879,8 +884,8 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/mops-remove.yaml
-mssqlserveropsrequest.ops.kubedb.com/mops-remove created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/msops-remove.yaml
+mssqlserveropsrequest.ops.kubedb.com/msops-remove created
 ```
 
 #### Verify TLS Removed Successfully
@@ -888,60 +893,29 @@ mssqlserveropsrequest.ops.kubedb.com/mops-remove created
 Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following command to watch `MSSQLServerOpsRequest` CRO,
 
 ```bash
-$ kubectl get mssqlserveropsrequest -n demo
+$ watch kubectl get mssqlserveropsrequest -n demo
 Every 2.0s: kubectl get mssqlserveropsrequest -n demo
-NAME          TYPE             STATUS        AGE
-mops-remove   ReconfigureTLS   Successful    105s
+NAME                  TYPE             STATUS       AGE
+msops-remove          ReconfigureTLS   Successful   2m36s
 ```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo mops-remove
-Name:         mops-remove
+$ kubectl describe mssqlserveropsrequest -n demo msops-remove
+Name:         msops-remove
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MSSQLServerOpsRequest
 Metadata:
-  Creation Timestamp:  2021-03-11T16:35:32Z
+  Creation Timestamp:  2024-11-18T13:49:15Z
   Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:databaseRef:
-          .:
-          f:name:
-        f:tls:
-          .:
-          f:remove:
-        f:type:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2021-03-11T16:35:32Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-enterprise
-    Operation:       Update
-    Time:            2021-03-11T16:35:32Z
-  Resource Version:  525550
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mssqlserveropsrequests/mops-remove
-  UID:               99184cc4-1595-4f0f-b8eb-b65c5d0e86a6
+  Resource Version:    552812
+  UID:                 7e4b9c39-7fd2-44f6-9972-367c95198105
 Spec:
+  Apply:  IfReady
   Database Ref:
     Name:  ms-standalone
   Tls:
@@ -949,83 +923,86 @@ Spec:
   Type:      ReconfigureTLS
 Status:
   Conditions:
-    Last Transition Time:  2021-03-11T16:35:32Z
-    Message:               MSSQLServer ops request is reconfiguring TLS
+    Last Transition Time:  2024-11-18T13:49:15Z
+    Message:               MSSQLServer ops-request has started to reconfigure tls for mssqlserver nodes
     Observed Generation:   1
     Reason:                ReconfigureTLS
     Status:                True
     Type:                  ReconfigureTLS
-    Last Transition Time:  2021-03-11T16:35:37Z
-    Message:               Successfully Updated PetSets
+    Last Transition Time:  2024-11-18T13:49:42Z
+    Message:               Successfully paused database
     Observed Generation:   1
-    Reason:                TLSRemoved
+    Reason:                DatabasePauseSucceeded
     Status:                True
-    Type:                  TLSRemoved
-    Last Transition Time:  2021-03-11T16:37:07Z
-    Message:               Successfully Restarted ReplicaSet nodes
+    Type:                  DatabasePauseSucceeded
+    Last Transition Time:  2024-11-18T13:49:47Z
+    Message:               successfully reconciled the MSSQLServer with tls configuration
     Observed Generation:   1
-    Reason:                RestartReplicaSet
+    Reason:                UpdatePetSets
     Status:                True
-    Type:                  RestartReplicaSet
-    Last Transition Time:  2021-03-11T16:37:07Z
-    Message:               Successfully Reconfigured TLS
+    Type:                  UpdatePetSets
+    Last Transition Time:  2024-11-18T13:51:32Z
+    Message:               Successfully restarted all nodes
+    Observed Generation:   1
+    Reason:                RestartNodes
+    Status:                True
+    Type:                  RestartNodes
+    Last Transition Time:  2024-11-18T13:49:52Z
+    Message:               get pod; ConditionStatus:True; PodName:ms-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--ms-standalone-0
+    Last Transition Time:  2024-11-18T13:49:52Z
+    Message:               evict pod; ConditionStatus:True; PodName:ms-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--ms-standalone-0
+    Last Transition Time:  2024-11-18T13:51:27Z
+    Message:               check pod running; ConditionStatus:True; PodName:ms-standalone-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodRunning--ms-standalone-0
+    Last Transition Time:  2024-11-18T13:51:32Z
+    Message:               Successfully completed reconfigureTLS for mssqlserver.
     Observed Generation:   1
     Reason:                Successful
     Status:                True
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-Events:
-  Type    Reason             Age   From                        Message
-  ----    ------             ----  ----                        -------
-  Normal  PauseDatabase      2m5s  KubeDB Ops-manager operator  Pausing MSSQLServer demo/ms-standalone
-  Normal  PauseDatabase      2m5s  KubeDB Ops-manager operator  Successfully paused MSSQLServer demo/ms-standalone
-  Normal  TLSRemoved         2m5s  KubeDB Ops-manager operator  Successfully Updated PetSets
-  Normal  RestartReplicaSet  35s   KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
-  Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Resuming MSSQLServer demo/ms-standalone
-  Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Successfully resumed MSSQLServer demo/ms-standalone
-  Normal  Successful         35s   KubeDB Ops-manager operator  Successfully Reconfigured TLS
 ```
 
-Now, Let's exec into the database primary node and find out that TLS is disabled or not.
 
+Now, Lets exec into the pod find out that TLS is disabled or not.
 ```bash
-$ kubectl exec -it -n demo ms-standalone-1 -- mongo admin -u root -p 'U6(h_pYrekLZ2OOd'
-rs0:PRIMARY> db.adminCommand({ getParameter:1, sslMode:1 })
-{
-	"sslMode" : "disabled",
-	"ok" : 1,
-	"$clusterTime" : {
-		"clusterTime" : Timestamp(1615480817, 1),
-		"signature" : {
-			"hash" : BinData(0,"CWJngDTQqDhKXyx7WMFJqqUfvhY="),
-			"keyId" : NumberLong("6938294279689207810")
-		}
-	},
-	"operationTime" : Timestamp(1615480817, 1)
-}
+$ kubectl exec -it -n demo ms-standalone-0 -c mssql -- bash
+mssql@ms-standalone-0:/$ cat /var/opt/mssql/mssql.conf
+[language]
+lcid = 1033
+mssql@ms-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P b1HLv9EV4CaSalX6 -N
+Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : SSL Provider: [error:0A000086:SSL routines::certificate verify failed:self-signed certificate].
+Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Client unable to establish connection.
+
+So Now, we have to connect with -C [Trust Server Certificate]
+mssql@ms-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P b1HLv9EV4CaSalX6 -N -C
+1> 
 ```
 
-So, we can see from the above that, output that tls is disabled successfully.
+We can verify from the above output that TLS is disabled for this database, `mssql.conf` file has no tls configuration.
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete mssqlserver -n demo ms-standalone
-kubectl delete issuer -n demo ms-issuer ms-new-issuer
-kubectl delete mssqlserveropsrequest msops-add-tls mops-remove mops-rotate mops-change-issuer
+kubectl delete issuer -n demo mssqlserver-ca-issuer mssqlserver-new-ca-issuer
+kubectl delete mssqlserveropsrequest msops-add-tls msops-remove msops-rotate msops-change-issuer
 kubectl delete ns demo
 ```
 
 ## Next Steps
 
 - Detail concepts of [MSSQLServer object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
-- Initialize [MSSQLServer with Script](/docs/guides/mssqlserver/initialization/using-script.md).
 - Monitor your MSSQLServer database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mssqlserver/monitoring/using-prometheus-operator.md).
-- Monitor your MSSQLServer database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mssqlserver/monitoring/using-builtin-prometheus.md).
-- Use [private Docker registry](/docs/guides/mssqlserver/private-registry/using-private-registry.md) to deploy MSSQLServer with KubeDB.
-- Use [kubedb cli](/docs/guides/mssqlserver/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MSSQLServer object](/docs/guides/mssqlserver/concepts/mongodb.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

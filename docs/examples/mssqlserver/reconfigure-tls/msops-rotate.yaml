@@ -1,11 +1,13 @@
 apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
+kind: MSSQLServerOpsRequest
 metadata:
-  name: mops-rotate
+  name: msops-rotate
   namespace: demo
 spec:
   type: ReconfigureTLS
   databaseRef:
-    name: mg-rs
+    name: ms-standalone
   tls:
     rotateCertificates: true
+  timeout: 5m
+  apply: IfReady
