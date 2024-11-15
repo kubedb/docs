@@ -81,7 +81,7 @@ spec:
 
 - `spec.type` specifies the Type of the ops Request
 - `spec.databaseRef` holds the name of the Memcached database. The database should be available in the same namespace as the opsRequest
-- The meaning of `spec.timeout` & `spec.apply` fields can be found [here](/docs/guides/Memcached/concepts/opsrequest.md)
+- The meaning of `spec.timeout` & `spec.apply` fields can be found [here](/docs/guides/memcached/concepts/memcached-opsrequest.md)
 
 Let's create the `MemcachedOpsRequest` CR we have shown above:
 
