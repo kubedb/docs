@@ -5,6 +5,6 @@ menu:
     identifier: sl-restart
     name: Restart
     parent: sl-solr-guides
-    weight: 28
+    weight: 34
 menu_name: docs_{{ .version }}
 --- 

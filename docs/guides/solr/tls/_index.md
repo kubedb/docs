@@ -5,6 +5,6 @@ menu:
     identifier: sl-tls-solr
     name: TLS/SSL Encryption
     parent: sl-solr-guides
-    weight: 22
+    weight: 26
 menu_name: docs_{{ .version }}
 ---

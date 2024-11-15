@@ -5,7 +5,7 @@ menu:
     identifier: sl-scaling
     name: Scaling
     parent: sl-solr-guides
-    weight: 32
+    weight: 22
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

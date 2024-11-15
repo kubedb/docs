@@ -5,6 +5,6 @@ menu:
     identifier: sl-reconfigure
     name: Reconfigure
     parent: sl-solr-guides
-    weight: 26
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

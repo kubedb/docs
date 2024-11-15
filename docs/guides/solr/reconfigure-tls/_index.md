@@ -5,6 +5,6 @@ menu:
     identifier: sl-reconfigure-tls
     name: Reconfigure TLS
     parent: sl-solr-guides
-    weight: 24
+    weight: 32
 menu_name: docs_{{ .version }}
 ---
