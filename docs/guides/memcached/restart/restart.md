@@ -3,8 +3,8 @@ title: Restart Memcached
 menu:
   docs_{{ .version }}:
     identifier: mc-restart
-    name: Restart Memcached
-    parent: restart
+    name: Restart
+    parent: TLS/SSL Encryption
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
