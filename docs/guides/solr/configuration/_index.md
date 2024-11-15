@@ -5,7 +5,7 @@ menu:
     identifier: sl-custom-config
     name: Custom Configuration
     parent: sl-solr-guides
-    weight: 30
+    weight: 18
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

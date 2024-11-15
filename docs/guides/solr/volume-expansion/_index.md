@@ -5,7 +5,7 @@ menu:
     identifier: sl-volume-expansion
     name: Volume Expansion
     parent: sl-solr-guides
-    weight: 34
+    weight: 24
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

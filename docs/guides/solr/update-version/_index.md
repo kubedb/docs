@@ -5,7 +5,7 @@ menu:
     identifier: sl-update-version
     name: Update Version
     parent: sl-solr-guides
-    weight: 28
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

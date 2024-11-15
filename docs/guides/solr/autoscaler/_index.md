@@ -5,6 +5,6 @@ menu:
     identifier: sl-autoscaling-solr
     name: Autoscaling
     parent: sl-solr-guides
-    weight: 18
+    weight: 28
 menu_name: docs_{{ .version }}
 ---
