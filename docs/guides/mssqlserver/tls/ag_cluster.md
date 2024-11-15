@@ -118,18 +118,21 @@ spec:
       databases:
         - agdb1
         - agdb2
-  internalAuth:
-    endpointCert:
-      issuerRef:
-        apiGroup: cert-manager.io
-        name: mssqlserver-ca-issuer
-        kind: Issuer
   tls:
     issuerRef:
       name: mssqlserver-ca-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
     clientTLS: true
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation # Change it 
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -204,6 +207,7 @@ Ng1DaJSNjZkgXXFX
 
 ```bash
 $ kubectl exec -it -n demo mssql-ag-tls-0 -c mssql -- bash
+mssql@mssql-ag-tls-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Ng1DaJSNjZkgXXFX -N 
 1> select name from sys.databases
 2> go
 name                                                  
