@@ -107,6 +107,15 @@ spec:
       kind: Issuer
       apiGroup: "cert-manager.io"
     clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation # Change it 
   storage:
     storageClassName: "standard"
     accessModes:
@@ -320,13 +329,13 @@ Now, we are going to verify whether the resources of the mssqlserver instance ha
 $ kubectl get pod -n demo mssql-standalone-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
-    "cpu": "2",
     "memory": "5Gi"
   },
   "requests": {
     "cpu": "1",
     "memory": "5Gi"
   }
+}
 ```
 
 The above output verifies that we have successfully scaled up the resources of the MSSQLServer.

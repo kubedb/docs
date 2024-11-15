@@ -261,18 +261,21 @@ spec:
     availabilityGroup:
       databases:
         - demo
-  internalAuth:
-    endpointCert:
-      issuerRef:
-        apiGroup: cert-manager.io
-        kind: Issuer
-        name: mssqlserver-ca-issuer
   tls:
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
       name: mssqlserver-ca-issuer
     clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation # Change it 
   storageType: Durable
   storage:
     accessModes:
@@ -476,18 +479,21 @@ spec:
   replicas: 2
   topology:
     mode: AvailabilityGroup
-  internalAuth:
-    endpointCert:
-      issuerRef:
-        apiGroup: cert-manager.io
-        name: mssqlserver-ca-issuer
-        kind: Issuer
   tls:
     issuerRef:
       name: mssqlserver-ca-issuer
       kind: Issuer
       apiGroup: cert-manager.io
     clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation # Change it 
   storageType: Durable
   storage:
     accessModes:

@@ -94,7 +94,7 @@ root@rd-sample-0:/data#
 
 We can verify from the above output that TLS is disabled for this database.
 
-### Create Issuer/ StandaloneIssuer
+### Create Issuer/ClusterIssuer
 
 Now, We are going to create an example `Issuer` that will be used to enable SSL/TLS in Redis. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
 

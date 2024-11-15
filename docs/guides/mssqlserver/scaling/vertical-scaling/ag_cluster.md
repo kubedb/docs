@@ -5,7 +5,7 @@ menu:
     identifier: ms-scaling-vertical-ag-cluster
     name: Availability Group (HA Cluster)
     parent: ms-scaling-vertical
-    weight: 20
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -106,12 +106,6 @@ spec:
       databases:
         - agdb1
         - agdb2
-  internalAuth:
-    endpointCert:
-      issuerRef:
-        apiGroup: cert-manager.io
-        name: mssqlserver-ca-issuer
-        kind: Issuer
   tls:
     issuerRef:
       name: mssqlserver-ca-issuer
@@ -122,6 +116,11 @@ spec:
     spec:
       containers:
         - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation # Change it 
           resources:
             requests:
               cpu: "500m"
