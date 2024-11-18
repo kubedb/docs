@@ -100,7 +100,6 @@ $ watch kubectl get pods --all-namespaces -l "app.kubernetes.io/instance=kubedb"
 
 NAME                                            READY   STATUS    RESTARTS   AGE
 kubedb-kubedb-autoscaler-b5dd47dc5-bxnrq        1/1     Running   0          48s
-kubedb-kubedb-dashboard-99db95dc4-j78w2         1/1     Running   0          48s
 kubedb-kubedb-ops-manager-6f766b86c6-h9m66      1/1     Running   0          48s
 kubedb-kubedb-provisioner-6fd44d5784-d8v9c      1/1     Running   0          48s
 kubedb-kubedb-webhook-server-6cf469bdf4-72wvz   1/1     Running   0          48s
