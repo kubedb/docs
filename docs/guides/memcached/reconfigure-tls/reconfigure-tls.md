@@ -198,7 +198,7 @@ Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-add-tls.yaml
-Memcachedopsrequest.ops.kubedb.com/rd-add-tls created
+Memcachedopsrequest.ops.kubedb.com/mc-add-tls created
 ```
 
 #### Verify TLS Enabled Successfully
@@ -401,7 +401,7 @@ Now we are going to rotate certificates using a MemcachedOpsRequest. Below is th
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MemcachedOpsRequest
 metadata:
-  name: myops-rotate
+  name: mc-ops-rotate
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -576,7 +576,7 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/new-issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-new-issuer.yaml
 issuer.cert-manager.io/mc-new-issuer created
 ```
 
@@ -770,7 +770,7 @@ Below is the YAML of the `MemcachedOpsRequest` CRO that we are going to create,
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MemcachedOpsRequest
 metadata:
-  name: mc-ops-remove
+  name: mc-ops-tls-remove
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -789,7 +789,7 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-ops-remove.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-ops-tls-remove.yaml
 Memcachedopsrequest.ops.kubedb.com/mc-ops-remove created
 ```
 
@@ -800,15 +800,15 @@ Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following comm
 ```bash
 $ kubectl get memcachedopsrequest -n demo
 Every 2.0s: kubectl get memcachedopsrequest -n demo
-NAME            TYPE             STATUS        AGE
-mc-ops-remove   ReconfigureTLS   Successful    105s
+NAME                TYPE             STATUS        AGE
+mc-ops-tls-remove   ReconfigureTLS   Successful    105s
 ```
 
 We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mcops -n demo mc-ops-remove
-Name:         mc-ops-remove
+$ kubectl describe mcops -n demo mc-ops-tls-remove
+Name:         mc-ops-tls-remove
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
