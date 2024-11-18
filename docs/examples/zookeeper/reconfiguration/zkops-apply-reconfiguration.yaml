@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ZooKeeperOpsRequest
+metadata:
+  name: zk-reconfig-apply
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: zk-quickstart
+  configuration:
+    applyConfig:
+      zoo.cfg: |
+        maxClientCnxns=90

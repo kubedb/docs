@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ZooKeeper
+metadata:
+  name: zookeeper
+  namespace: demo
+spec:
+  version: 3.8.3
+  replicas: 3
+  storage:
+    resources:
+      requests:
+        storage: "100Mi"
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

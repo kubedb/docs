@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ZooKeeperOpsRequest
+metadata:
+  name: horizontal-scale-down
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: zk-quickstart
+  horizontalScaling:
+    replicas: 3

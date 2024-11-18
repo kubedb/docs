@@ -1,0 +1,23 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ZooKeeperOpsRequest
+metadata:
+  name: zkops-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: zk-quickstart
+  tls:
+    issuerRef:
+      name: zookeeper-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    certificates:
+      - alias: client
+        subject:
+          organizations:
+            - zookeeper
+          organizationalUnits:
+            - client
+  timeout: 5m
+  apply: IfReady
