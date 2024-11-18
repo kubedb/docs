@@ -202,5 +202,4 @@ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [ZooKeeper object](/docs/guides/zookeeper/concepts/zookeeper.md).
-- Detail concepts of [ZooKeeper object](/docs/guides/zookeeper/concepts/zookeeper.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

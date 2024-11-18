@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ZooKeeperOpsRequest
+metadata:
+  name: zk-offline-volume-expansion
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: zk-quickstart
+  volumeExpansion:
+    mode: "Offline"
+    node: 2Gi

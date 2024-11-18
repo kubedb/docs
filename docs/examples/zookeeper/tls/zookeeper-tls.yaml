@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ZooKeeper
+metadata:
+  name: zk-quickstart
+  namespace: demo
+spec:
+  version: "3.8.3"
+  enableSSL: true
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: zookeeper-ca-issuer
+  adminServerPort: 8080
+  replicas: 5
+  storage:
+    resources:
+      requests:
+        storage: "1Gi"
+    accessModes:
+      - ReadWriteOnce
+  deletionPolicy: "WipeOut"
