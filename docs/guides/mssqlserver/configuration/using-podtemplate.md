@@ -141,6 +141,8 @@ spec:
       containers:
         - name: mssql
           env:
+            - name: ACCEPT_EULA
+              value: "Y"
             - name: MSSQL_PID
               value: "Evaluation"
             - name: MSSQL_MEMORY_LIMIT_MB

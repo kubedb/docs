@@ -61,7 +61,7 @@ spec:
       addon:
         name: mongodb-addon
         tasks:
-          - name: LogicalBackup
+          - name: logical-backup
             params:
               args: "--db=testdb"
 ```
@@ -108,7 +108,7 @@ spec:
       addon:
         name: mongodb-addon
         tasks:
-          - name: LogicalBackup
+          - name: logical-backup
         jobTemplate:
           spec:
             securityContext:
@@ -156,7 +156,7 @@ spec:
       addon:
         name: mongodb-addon
         tasks:
-          - name: LogicalBackup
+          - name: logical-backup
         containerRuntimeSettings:
           resources:
             requests:
@@ -196,7 +196,7 @@ spec:
   addon:
     name: mongodb-addon
     tasks:
-      - name: LogicalBackupRestoress
+      - name: logical-backup-restore
         params:
           args: "--db=testdb"
 ```
@@ -235,7 +235,7 @@ spec:
   addon:
     name: mongodb-addon
     tasks:
-      - name: LogicalBackupRestoress
+      - name: logical-backup-restore
 ```
 
 >Please, do not specify multiple snapshots here. Each snapshot represents a complete backup of your database. Multiple snapshots are only usable during file/directory restore.
@@ -265,7 +265,7 @@ spec:
   addon:
     name: mongodb-addon
     tasks:
-      - name: LogicalBackupRestoress
+      - name: logical-backup-restore
     jobTemplate:
       spec:
         securityContext:
@@ -298,7 +298,7 @@ spec:
   addon:
     name: mongodb-addon
     tasks:
-      - name: LogicalBackupRestoress
+      - name: logical-backup-restore
     containerRuntimeSettings:
       resources:
         requests:

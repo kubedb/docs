@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SinglestoreOpsRequest
+metadata:
+  name: sdbops-reconfigure-config
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: custom-sdb
+  configuration:
+    aggregator:
+      applyConfig:
+        sdb-apply.cnf: |-
+          max_connections = 550

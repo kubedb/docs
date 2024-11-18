@@ -16,7 +16,7 @@ aliases:
 # Guides
 
 Guides to show you how to perform tasks with KubeDB:
-- [Druid](/docs/guides/kafka/README.md). Shows how to manage Druid using KubeDB.
+- [Druid](/docs/guides/druid/README.md). Shows how to manage Druid using KubeDB.
 - [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch & OpenSearch using KubeDB.
 - [Kafka](/docs/guides/kafka/README.md). Shows how to manage Kafka using KubeDB.
 - [FerretDB](/docs/guides/ferretdb/README.md). Shows how to manage FerretDB using KubeDB.

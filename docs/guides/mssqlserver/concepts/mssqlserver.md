@@ -40,27 +40,13 @@ spec:
       databases:
         - agdb1
         - agdb2
+      leaderElection:
+        electionTick: 10
+        heartbeatTick: 1
+        period: 300ms
+        transferLeadershipInterval: 1s
+        transferLeadershipTimeout: 1m0s
     mode: AvailabilityGroup
-  internalAuth:
-    endpointCert:
-      certificates:
-        - alias: endpoint
-          secretName: mssqlserver-endpoint-cert
-          subject:
-            organizationalUnits:
-              - endpoint
-            organizations:
-              - kubedb
-      issuerRef:
-        apiGroup: cert-manager.io
-        kind: Issuer
-        name: mssqlserver-ca-issuer
-  leaderElection:
-    electionTick: 10
-    heartbeatTick: 1
-    period: 300ms
-    transferLeadershipInterval: 1s
-    transferLeadershipTimeout: 1m0s
   podTemplate:
     metadata:
       annotations:
@@ -151,23 +137,30 @@ spec:
   tls:
     certificates:
       - alias: server
+        emailAddresses:
+          - dev@appscode.com
         secretName: mssqlserver-server-cert
         subject:
           organizationalUnits:
             - server
           organizations:
             - kubedb
-        emailAddresses:
-          - dev@appscode.com
       - alias: client
+        emailAddresses:
+          - abc@appscode.com
         secretName: mssqlserver-client-cert
         subject:
           organizationalUnits:
             - client
           organizations:
             - kubedb
-        emailAddresses:
-          - abc@appscode.com
+      - alias: endpoint
+        secretName: mssqlserver-endpoint-cert
+        subject:
+          organizationalUnits:
+            - endpoint
+          organizations:
+            - kubedb
     clientTLS: true
     issuerRef:
       apiGroup: cert-manager.io
@@ -491,6 +484,7 @@ If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination poli
 Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
 
 ### Configuring Environment Variables for SQL Server on Linux
+You can use environment variables to configure SQL Server on Linux containers.
 When deploying `Microsoft SQL Server` on Linux using `containers`, you need to specify the `product edition` through the [MSSQL_PID](https://mcr.microsoft.com/en-us/product/mssql/server/about#configuration:~:text=MSSQL_PID%20is%20the,documentation%20here.) environment variable. This variable determines which `SQL Server edition` will run inside the container. The acceptable values for `MSSQL_PID` are:   
 `Developer`: This will run the container using the Developer Edition (this is the default if no MSSQL_PID environment variable is supplied)    
 `Express`: This will run the container using the Express Edition    
@@ -499,9 +493,11 @@ When deploying `Microsoft SQL Server` on Linux using `containers`, you need to s
 `EnterpriseCore`: This will run the container using the Enterprise Edition Core   
 `<valid product id>`: This will run the container with the edition that is associated with the PID
 
+`ACCEPT_EULA` confirms your acceptance of the [End-User Licensing Agreement](https://go.microsoft.com/fwlink/?linkid=857698).
+
 For a complete list of environment variables that can be used, refer to the documentation [here](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-environment-variables?view=sql-server-2017).
 
-Below is an example of how to configure the `MSSQL_PID` environment variable in the KubeDB MSSQLServer Custom Resource Definition (CRD):
+Below is an example of how to configure the `MSSQL_PID` and `ACCEPT_EULA` environment variable in the KubeDB MSSQLServer Custom Resource Definition (CRD):
 ```bash
 metadata:
   name: mssqlserver
@@ -510,10 +506,12 @@ spec:
   podTemplate:
     spec:
       containers:
-        - name: mssql
-          env:
-          - name: MSSQL_PID
-            value: Enterprise
+      - name: mssql
+        env:
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: MSSQL_PID
+          value: Enterprise
 ```
 In this example, the SQL Server container will run the Enterprise Edition.
 

@@ -1,5 +1,5 @@
 ---
-title: Backup & Restore SingleStore
+title: Monitoring SingleStore
 menu:
   docs_{{ .version }}:
     identifier: guides-sdb-backup
