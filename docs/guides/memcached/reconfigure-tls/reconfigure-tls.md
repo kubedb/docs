@@ -212,9 +212,101 @@ NAME             TYPE             STATUS       AGE
 mc-add-tls       ReconfigureTLS   Successful   79s
 ```
 
-We can see from the above output that the `MemcachedOpsRequest` has succeeded. 
+We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
 
-Now, connect to this database by exec into a pod and verify if `tls` has been set up as intended.
+```bash
+$ kubectl describe mcops -n demo mc-add-tls 
+Name:         mc-add-tls
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         MemcachedOpsRequest
+Metadata:
+  Creation Timestamp:  2024-11-15T11:10:37Z
+  Generation:          1
+  Resource Version:    1782138
+  UID:                 25123c6c-90e1-4a11-a060-42a1f75bc15d
+Spec:
+  Apply:  IfReady
+  Database Ref:
+    Name:  memcd-quickstart
+  Tls:
+    Certificates:
+      Alias:  client
+      Subject:
+        Organizational Units:
+          client
+        Organizations:
+          memcached
+    Issuer Ref:
+      API Group:  cert-manager.io
+      Kind:       Issuer
+      Name:       memcached-ca-issuer
+  Type:           ReconfigureTLS
+Status:
+  Conditions:
+    Last Transition Time:  2024-11-15T11:10:37Z
+    Message:               Memcached ops request is reconfiguring TLS
+    Observed Generation:   1
+    Reason:                ReconfigureTLS
+    Status:                True
+    Type:                  ReconfigureTLS
+    Last Transition Time:  2024-11-15T11:10:50Z
+    Message:               Successfully synced all certificates
+    Observed Generation:   1
+    Reason:                CertificateSynced
+    Status:                True
+    Type:                  CertificateSynced
+    Last Transition Time:  2024-11-15T11:10:45Z
+    Message:               get certificate; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetCertificate
+    Last Transition Time:  2024-11-15T11:10:45Z
+    Message:               check ready condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckReadyCondition
+    Last Transition Time:  2024-11-15T11:10:45Z
+    Message:               check issuing condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckIssuingCondition
+    Last Transition Time:  2024-11-15T11:11:10Z
+    Message:               Successfully restarted pods
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-11-15T11:10:55Z
+    Message:               evict pod; ConditionStatus:True; PodName:memcd-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--memcd-quickstart-0
+    Last Transition Time:  2024-11-15T11:10:55Z
+    Message:               is pod ready; ConditionStatus:False
+    Observed Generation:   1
+    Status:                False
+    Type:                  IsPodReady
+    Last Transition Time:  2024-11-15T11:11:00Z
+    Message:               is pod ready; ConditionStatus:True; PodName:memcd-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  IsPodReady--memcd-quickstart-0
+    Last Transition Time:  2024-11-15T11:11:00Z
+    Message:               Successfully reconfigured TLS
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:                    <none>
+
+```
+
+Now, let's describe the client.crt of running Memcached database.
 
 ```bash
 $ kubectl describe secret -n demo memcd-quickstart-client-cert
@@ -248,7 +340,6 @@ tls.key:           1679 bytes
 
 Now, we can connect using tls-certs to connect to the Memcached and write some data
 
-```bash
 ```bash
 $ kc port-forward -n demo memcd-quickstart-0 11211
 Forwarding from 127.0.0.1:11211 -> 11211
@@ -291,7 +382,16 @@ quit
 
 ## Rotate Certificate
 
-Now, we are going to rotate the certificate of this database.
+Now, we are going to rotate the certificate of this database. First let’s check the current expiration date of the certificate:
+```bash
+$ kubectl port-forward -n demo memcd-quickstart-0 11211
+Forwarding from 127.0.0.1:11211 -> 11211
+Forwarding from [::1]:11211 -> 11211
+
+$ openssl x509 -in <(openssl s_client -connect 127.0.0.1:11211 -showcerts < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p') -noout -enddate
+notAfter=Feb 16 04:58:37 2025 GMT
+```
+So, the certificate will expire on this time Feb 16 04:58:37 2025 GMT.
 
 ### Create MemcachedOpsRequest
 
@@ -312,7 +412,6 @@ spec:
 ```
 
 Here,
-
 - `spec.databaseRef.name` specifies that we are performing reconfigure TLS operation on `memcd-quickstart` database.
 - `spec.type` specifies that we are performing `ReconfigureTLS` on our database.
 - `spec.tls.rotateCertificates` specifies that we want to rotate the certificate of this database.
@@ -335,7 +434,106 @@ NAME             TYPE             STATUS        AGE
 mc-ops-rotate    ReconfigureTLS   Successful    5m5s
 ```
 
-We can see from the above output that the `MemcachedOpsRequest` has succeeded.
+We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
+
+```bash
+$ kubectl describe mcops -n demo mc-ops-rotate
+Name:         mc-ops-rotate
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         MemcachedOpsRequest
+Metadata:
+  Creation Timestamp:  2024-11-18T06:14:21Z
+  Generation:          1
+  Resource Version:    1802316
+  UID:                 0c54644b-3006-4c3d-8c12-4566ad73a7eb
+Spec:
+  Apply:  IfReady
+  Database Ref:
+    Name:  memcd-quickstart
+  Tls:
+    Rotate Certificates:  true
+  Type:                   ReconfigureTLS
+Status:
+  Conditions:
+    Last Transition Time:  2024-11-18T06:14:21Z
+    Message:               Memcached ops request is reconfiguring TLS
+    Observed Generation:   1
+    Reason:                ReconfigureTLS
+    Status:                True
+    Type:                  ReconfigureTLS
+    Last Transition Time:  2024-11-18T06:14:24Z
+    Message:               successfully add issuing condition to all the certificates
+    Observed Generation:   1
+    Reason:                IssueCertificatesSucceeded
+    Status:                True
+    Type:                  IssueCertificatesSucceeded
+    Last Transition Time:  2024-11-18T06:14:35Z
+    Message:               Successfully synced all certificates
+    Observed Generation:   1
+    Reason:                CertificateSynced
+    Status:                True
+    Type:                  CertificateSynced
+    Last Transition Time:  2024-11-18T06:14:29Z
+    Message:               get certificate; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetCertificate
+    Last Transition Time:  2024-11-18T06:14:29Z
+    Message:               check ready condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckReadyCondition
+    Last Transition Time:  2024-11-18T06:14:29Z
+    Message:               check issuing condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckIssuingCondition
+    Last Transition Time:  2024-11-18T06:14:55Z
+    Message:               Successfully restarted pods
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-11-18T06:14:40Z
+    Message:               evict pod; ConditionStatus:True; PodName:memcd-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--memcd-quickstart-0
+    Last Transition Time:  2024-11-18T06:14:40Z
+    Message:               is pod ready; ConditionStatus:False
+    Observed Generation:   1
+    Status:                False
+    Type:                  IsPodReady
+    Last Transition Time:  2024-11-18T06:14:45Z
+    Message:               is pod ready; ConditionStatus:True; PodName:memcd-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  IsPodReady--memcd-quickstart-0
+    Last Transition Time:  2024-11-18T06:14:45Z
+    Message:               Successfully reconfigured TLS
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:                    <none>
+
+```
+
+Now, let’s check the expiration date of the certificate:
+```bash
+$ kubectl port-forward -n demo memcd-quickstart-0 11211
+Forwarding from 127.0.0.1:11211 -> 11211
+Forwarding from [::1]:11211 -> 11211
+
+$ openssl x509 -in <(openssl s_client -connect 127.0.0.1:11211 -showcerts < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p') -noout -enddate
+notAfter=Feb 16 06:46:16 2025 GMT
+```
+As we can see from the above output, the certificate has been rotated successfully as the expire time got updated.
 
 ## Change Issuer/ClusterIssuer
 
@@ -427,7 +625,138 @@ NAME                  TYPE             STATUS        AGE
 mc-change-issuer      ReconfigureTLS   Successful    4m65s
 ```
 
-We can see from the above output that the `MemcachedOpsRequest` has succeeded. 
+We can see from the above output that the `MemcachedlOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
+
+```bash
+$ kubectl describe mcops -n demo mc-change-issuer
+Name:         mc-change-issuer
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         MemcachedOpsRequest
+Metadata:
+  Creation Timestamp:  2024-11-18T11:26:45Z
+  Generation:          1
+  Resource Version:    1830164
+  UID:                 9d1e3477-7b22-4feb-8e32-97cd33c8b312
+Spec:
+  Apply:  IfReady
+  Database Ref:
+    Name:  memcd-quickstart
+  Tls:
+    Issuer Ref:
+      API Group:  cert-manager.io
+      Kind:       Issuer
+      Name:       my-new-issuer
+  Type:           ReconfigureTLS
+Status:
+  Conditions:
+    Last Transition Time:  2024-11-18T11:26:45Z
+    Message:               Memcached ops request is reconfiguring TLS
+    Observed Generation:   1
+    Reason:                ReconfigureTLS
+    Status:                True
+    Type:                  ReconfigureTLS
+    Last Transition Time:  2024-11-18T11:26:58Z
+    Message:               Successfully synced all certificates
+    Observed Generation:   1
+    Reason:                CertificateSynced
+    Status:                True
+    Type:                  CertificateSynced
+    Last Transition Time:  2024-11-18T11:26:53Z
+    Message:               get certificate; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetCertificate
+    Last Transition Time:  2024-11-18T11:26:53Z
+    Message:               check ready condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckReadyCondition
+    Last Transition Time:  2024-11-18T11:26:53Z
+    Message:               check issuing condition; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckIssuingCondition
+    Last Transition Time:  2024-11-18T11:27:18Z
+    Message:               Successfully restarted pods
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-11-18T11:27:03Z
+    Message:               evict pod; ConditionStatus:True; PodName:memcd-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--memcd-quickstart-0
+    Last Transition Time:  2024-11-18T11:27:03Z
+    Message:               is pod ready; ConditionStatus:False
+    Observed Generation:   1
+    Status:                False
+    Type:                  IsPodReady
+    Last Transition Time:  2024-11-18T11:27:08Z
+    Message:               is pod ready; ConditionStatus:True; PodName:memcd-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  IsPodReady--memcd-quickstart-0
+    Last Transition Time:  2024-11-18T11:27:08Z
+    Message:               Successfully reconfigured TLS
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:
+  Type     Reason                                                          Age   From                         Message
+  ----     ------                                                          ----  ----                         -------
+  Normal   PauseDatabase                                                   16m   KubeDB Ops-manager Operator  Pausing Memcached demo/memcd-quickstart
+  Warning  get certificate; ConditionStatus:True                           16m   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                     16m   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True                   16m   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                           16m   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                     16m   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True                   16m   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                           16m   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                     16m   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True                   16m   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Normal   CertificateSynced                                               16m   KubeDB Ops-manager Operator  Successfully synced all certificates
+  Warning  get certificate; ConditionStatus:True                           16m   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                     16m   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True                   16m   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                           16m   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                     16m   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True                   16m   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Warning  get certificate; ConditionStatus:True                           16m   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
+  Warning  check ready condition; ConditionStatus:True                     16m   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
+  Warning  check issuing condition; ConditionStatus:True                   16m   KubeDB Ops-manager Operator  check issuing condition; ConditionStatus:True
+  Normal   CertificateSynced                                               16m   KubeDB Ops-manager Operator  Successfully synced all certificates
+  Warning  evict pod; ConditionStatus:True; PodName:memcd-quickstart-0     16m   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:memcd-quickstart-0
+  Warning  is pod ready; ConditionStatus:False                             16m   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:False
+  Warning  is pod ready; ConditionStatus:True; PodName:memcd-quickstart-0  16m   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:True; PodName:memcd-quickstart-0
+  Normal   RestartPods                                                     16m   KubeDB Ops-manager Operator  Successfully restarted pods
+  Normal   ResumeDatabase                                                  16m   KubeDB Ops-manager Operator  Resuming Memcached demo/memcd-quickstart
+  Normal   ResumeDatabase                                                  16m   KubeDB Ops-manager Operator  Successfully resumed Memcached demo/memcd-quickstart
+  Normal   Successful                                                      16m   KubeDB Ops-manager Operator  Successfully Reconfigured TLS
+  Normal   PauseDatabase                                                   16m   KubeDB Ops-manager Operator  Pausing Memcached demo/memcd-quickstart
+  Warning  evict pod; ConditionStatus:True; PodName:memcd-quickstart-0     15m   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:memcd-quickstart-0
+  Warning  is pod ready; ConditionStatus:False                             15m   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:False
+  Warning  is pod ready; ConditionStatus:True; PodName:memcd-quickstart-0  15m   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:True; PodName:memcd-quickstart-0
+  Normal   RestartPods                                                     15m   KubeDB Ops-manager Operator  Successfully restarted pods
+```
+
+Now, let’s port-forward the database pod and find out the ca subject to see if it matches the one we have provided.
+
+```bash
+$ kubectl port-forward -n demo memcd-quickstart-0 11211
+Forwarding from 127.0.0.1:11211 -> 11211
+Forwarding from [::1]:11211 -> 11211
+
+$ openssl x509 -in <(openssl s_client -connect 127.0.0.1:11211 -showcerts < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p') -inform PEM -issuer -nameopt RFC2253 -noout
+issuer=O=kubedb-updated,CN=memcached-updated
+```
+We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
 ## Remove TLS from the Database
 
@@ -475,8 +804,67 @@ NAME            TYPE             STATUS        AGE
 mc-ops-remove   ReconfigureTLS   Successful    105s
 ```
 
-We can see from the above output that the `MemcachedOpsRequest` has succeeded. 
+We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
 
+```bash
+$ kubectl describe mcops -n demo mc-ops-remove
+Name:         mc-ops-remove
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         MemcachedOpsRequest
+Metadata:
+  Creation Timestamp:  2024-11-12T12:49:09Z
+  Generation:          1
+  Resource Version:    1684823
+  UID:                 c3260cc6-7862-4f22-9e12-93dcdb3edac8
+Spec:
+  Apply:  IfReady
+  Database Ref:
+    Name:  memcd-quickstart
+  Tls:
+    Remove:  true
+  Type:      ReconfigureTLS
+Status:
+  Conditions:
+    Last Transition Time:  2024-11-12T12:49:09Z
+    Message:               Memcached ops request is reconfiguring TLS
+    Observed Generation:   1
+    Reason:                ReconfigureTLS
+    Status:                True
+    Type:                  ReconfigureTLS
+    Last Transition Time:  2024-11-12T12:49:32Z
+    Message:               Successfully restarted pods
+    Observed Generation:   1
+    Reason:                RestartPods
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-11-12T12:49:17Z
+    Message:               evict pod; ConditionStatus:True; PodName:memcd-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--memcd-quickstart-0
+    Last Transition Time:  2024-11-12T12:49:17Z
+    Message:               is pod ready; ConditionStatus:False
+    Observed Generation:   1
+    Status:                False
+    Type:                  IsPodReady
+    Last Transition Time:  2024-11-12T12:49:22Z
+    Message:               is pod ready; ConditionStatus:True; PodName:memcd-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  IsPodReady--memcd-quickstart-0
+    Last Transition Time:  2024-11-12T12:49:32Z
+    Message:               Successfully reconfigured TLS
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:                    <none>
+```
 Now, Lets check Memcached TLS is disabled or not.
 
 ```bash
