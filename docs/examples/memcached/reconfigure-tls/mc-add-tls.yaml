@@ -1,0 +1,21 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MemcachedOpsRequest
+metadata:
+  name: mc-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: memcd-quickstart
+  tls:
+    issuerRef:
+      name: memcached-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    certificates:
+      - alias: client
+        subject:
+          organizations:
+            - memcached
+          organizationalUnits:
+            - client

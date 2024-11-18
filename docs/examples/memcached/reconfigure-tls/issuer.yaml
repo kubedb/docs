@@ -1,0 +1,8 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: memcached-ca-issuer
+  namespace: demo
+spec:
+  ca:
+    secretName: memcached-ca
