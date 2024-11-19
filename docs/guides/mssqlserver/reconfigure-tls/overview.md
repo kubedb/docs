@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 The following diagram shows how KubeDB Ops-manager operator reconfigures TLS of a `MSSQLServer` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Reconfiguring TLS process of MSSQLServer" src="/docs/images/day-2-operation/mssqlserver/ms-reconfigure-tls.svg">
+  <img alt="Reconfiguring TLS process of MSSQLServer" src="/docs/images/day-2-operation/mssqlserver/ms-reconfigure-tls.png">
 <figcaption align="center">Fig: Reconfiguring TLS process of MSSQLServer</figcaption>
 </figure>
 
