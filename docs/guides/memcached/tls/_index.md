@@ -2,7 +2,7 @@
 title: Run Memcached with TLS
 menu:
   docs_{{ .version }}:
-    identifier: mc-tls
+    identifier: tls
     name: TLS/SSL Encryption
     parent: mc-memcached-guides
     weight: 45

@@ -2,9 +2,9 @@
 title: Reconfigure Memcached TLS/SSL Encryption
 menu:
   docs_{{ .version }}:
-    identifier: mc-reconfigure-tls-standalone
-    name: Memcahced Reconfigure TLS
-    parent: mc-reconfigure-tls
+    identifier: mc-reconfigure-tls
+    name: Reconfigure TLS
+    parent: reconfigure-tls
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

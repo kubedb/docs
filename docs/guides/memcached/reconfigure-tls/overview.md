@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mc-reconfigure-tls-overview
     name: Overview
-    parent: mc-reconfigure-tls
+    parent: reconfigure-tls
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
