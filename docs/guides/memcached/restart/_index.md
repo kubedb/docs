@@ -2,7 +2,7 @@
 title: Restart Memcached
 menu:
   docs_{{ .version }}:
-    identifier: mc-restart
+    identifier: restart
     name: Restart
     parent: mc-memcached-guides
     weight: 46
