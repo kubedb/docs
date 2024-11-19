@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mc-tls
     name: TLS
-    parent: mc-tls
+    parent: tls
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
