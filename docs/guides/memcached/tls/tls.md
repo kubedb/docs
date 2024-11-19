@@ -3,7 +3,7 @@ title: Memcached TLS/SSL Encryption
 menu:
   docs_{{ .version }}:
     identifier: mc-tls
-    name: TLS
+    name: TLS/SSL
     parent: tls
     weight: 20
 menu_name: docs_{{ .version }}
