@@ -88,7 +88,7 @@ Now, wait until `pb-horizontal ` has status `Ready`. i.e,
 ```bash
 $ kubectl get pb -n demo
 NAME            TYPE                  VERSION   STATUS   AGE
-pb-horizontal   kubedb.com/v1alpha2   4.5.0     Ready    2m
+pb-horizontal   kubedb.com/v1   1.18.0    Ready    2m
 ```
 
 Let's check the number of replicas this pgbouncer has from the PgBouncer object, number of pods the petset have,

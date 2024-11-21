@@ -156,7 +156,7 @@ KubeDB implements a PgBouncer crd to define the specifications of a PgBouncer.
 
 Below is the PgBouncer object created in this tutorial.
 
-`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -186,7 +186,7 @@ pgbouncer.kubedb.com/pgbouncer-server created
 ```
 
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: PgBouncer
 metadata:
   name: pgbouncer-server
@@ -208,7 +208,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-v1alpha2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-v1.yaml
 pgbouncer.kubedb.com/pgbouncer-server created
 ```
 
