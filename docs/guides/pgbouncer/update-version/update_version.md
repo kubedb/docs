@@ -160,7 +160,7 @@ Spec:
     Name:  pb-update
   Type:    UpdateVersion
   Update Version:
-    Target Version:  4.5.0
+    Target Version:  1.18.0
 Status:
   Conditions:
     Last Transition Time:  2024-07-17T06:31:58Z
@@ -242,7 +242,7 @@ $ kubectl get petset -n demo pb-update -o=jsonpath='{.spec.template.spec.contain
 mongo:4.0.5
 
 $ kubectl get pods -n demo mg-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           
-ghcr.io/appscode-images/pgbouncer2:4.5.0@sha256:2697fcad9e11bdc704f6ae0fba85c4451c6b0243140aaaa33e719c3af548bda1
+ghcr.io/appscode-images/pgbouncer:1.23.1@sha256:2697fcad9e11bdc704f6ae0fba85c4451c6b0243140aaaa33e719c3af548bda1
 ```
 
 You can see from above, our `PgBouncer` has been updated with the new version. So, the update process is successfully completed.
