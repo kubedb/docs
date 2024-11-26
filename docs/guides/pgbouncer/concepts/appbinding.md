@@ -20,8 +20,6 @@ An `AppBinding` is a Kubernetes `CustomResourceDefinition`(CRD) which points to 
 
 If you deploy a database using [KubeDB](https://kubedb.com/docs/latest/welcome/), `AppBinding` object will be created automatically for it. Otherwise, you have to create an `AppBinding` object manually pointing to your desired database.
 
-KubeDB uses [Stash](https://appscode.com/products/stash/) to perform backup/recovery of databases. Stash needs to know how to connect with a target database and the credentials necessary to access it. This is done via an `AppBinding`.
-
 ## AppBinding CRD Specification
 
 Like any official Kubernetes resource, an `AppBinding` has `TypeMeta`, `ObjectMeta` and `Spec` sections. However, unlike other Kubernetes resources, it does not have a `Status` section.
@@ -71,7 +69,7 @@ An `AppBinding` object has the following fields in the `spec` section:
 
 #### spec.type
 
-`spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to. Stash uses this field to resolve the values of `TARGET_APP_TYPE`, `TARGET_APP_GROUP` and `TARGET_APP_RESOURCE` variables of [BackupBlueprint](https://appscode.com/products/stash/latest/concepts/crds/backupblueprint/) object.
+`spec.type` is an optional field that indicates the type of the app that this `AppBinding` is pointing to. PgBouncer operator uses this field to recognise the desired postgres database.
 
 This field follows the following format: `<app group>/<resource kind>`. The above AppBinding is pointing to a `postgres` resource under `kubedb.com` group.
 

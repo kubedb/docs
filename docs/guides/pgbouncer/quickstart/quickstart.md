@@ -47,6 +47,7 @@ $ kubectl get pgbouncerversions
   NAME     VERSION   PGBOUNCER_IMAGE                   DEPRECATED   AGE
   1.17.0   1.17.0    ghcr.io/kubedb/pgbouncer:1.17.0                22h
   1.18.0   1.18.0    ghcr.io/kubedb/pgbouncer:1.18.0                22h
+  1.23.1   1.23.1    ghcr.io/kubedb/pgbouncer:1.23.1                22h
   
 ```
 
@@ -258,9 +259,8 @@ Following table show what KubeDB does when you delete Postgres crd for different
 | Behavior                  | DoNotTerminate | Delete   | WipeOut  |
 |---------------------------| :------------: | :------: | :------: |
 | 1. Block Delete operation |    &#10003;    | &#10007; | &#10007; |
-| 2. Delete PetSet     |    &#10007;    | &#10003; | &#10003; |
+| 2. Delete PetSet          |    &#10007;    | &#10003; | &#10003; |
 | 3. Delete Services        |    &#10007;    | &#10003; | &#10003; |
-| 4. Delete PVCs            |    &#10007;    | &#10003; | &#10003; |
 | 5. Delete Secrets         |    &#10007;    | &#10007; | &#10003; |
 
 

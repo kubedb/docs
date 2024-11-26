@@ -21,7 +21,7 @@ PgBouncerVersions are KubeDB crds that define the docker images KubeDB will use 
 If you want to create a custom image of pgbouncer with additional features, the best way is to build on top of the existing kubedb image.
 
 ```docker
-FROM kubedb/pgbouncer:1.17.0
+FROM kubedb/pgbouncer:1.23.1
 
 ENV SOME_VERSION_VAR 0.9.1
 
@@ -32,18 +32,18 @@ RUN set -ex \
     bash
 ```
 
-From there, we would define a PgBouncerVersion that contains this new image. Let's say we tagged it as `myco/pgbouncer:custom-1.17.0`.  You can also build exporter image yourself using [pgbouncer_exporter](https://github.com/kubedb/pgbouncer_exporter) repository.
+From there, we would define a PgBouncerVersion that contains this new image. Let's say we tagged it as `myco/pgbouncer:custom-1.23.1`.  You can also build exporter image yourself using [pgbouncer_exporter](https://github.com/kubedb/pgbouncer_exporter) repository.
 
 ```yaml
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PgBouncerVersion
 metadata:
-  name: "1.17.0"
+  name: "1.23.1"
 spec:
   deprecated: false
-  version: "1.17.0"
+  version: "1.23.1"
   pgBouncer:
-    image: "myco/pgbouncer:custom-1.17.0"
+    image: "myco/pgbouncer:custom-1.23.1"
   exporter:
     image: "myco/pgbouncer_exporter:v0.1.1"
 ```
@@ -57,7 +57,7 @@ metadata:
   name: pgbouncer-server
   namespace: demo
 spec:
-  version: "1.17.0"
+  version: "1.23.1"
   replicas: 1
   connectionPool:
     poolMode: session

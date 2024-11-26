@@ -1,0 +1,15 @@
+apiVersion: kubedb.com/v1
+kind: PgBouncer
+metadata:
+  name: pgbouncer-sync
+  namespace: demo
+spec:
+  version: "1.23.1"
+  replicas: 1
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "ha-postgres"
+      namespace: demo
+  deletionPolicy: WipeOut

@@ -100,8 +100,8 @@ Now, wait until `pgbouncer-sync` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get pb -n demo
-NAME          TYPE                  VERSION   STATUS   AGE
-pgbouncer-sync   kubedb.com/v1      1.18.0    Ready    41s
+NAME             TYPE                  VERSION   STATUS   AGE
+pgbouncer-sync   kubedb.com/v1         1.18.0    Ready    41s
 ```
 
 ### Sync Users
