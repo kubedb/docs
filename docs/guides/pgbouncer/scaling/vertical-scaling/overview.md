@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator updates the 
 The following diagram shows how KubeDB Ops-manager operator updates the resources of the `PgBouncer`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Vertical scaling process of PgBouncer" src="/docs/images/day-2-operation/pgbouncer/pb-vertical-scaling.png">
+  <img alt="Vertical scaling process of PgBouncer" src="/docs/images/day-2-operation/pgbouncer/vertical-scaling.svg">
 <figcaption align="center">Fig: Vertical scaling process of PgBouncer</figcaption>
 </figure>
 
