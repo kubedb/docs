@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgBouncerOpsRequest
+metadata:
+  name: pgbouncer-horizontal-scale-down
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: pb-horizontal
+  horizontalScaling:
+    replicas: 2
