@@ -87,8 +87,8 @@ Now, wait until `pb-horizontal ` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get pb -n demo
-NAME            TYPE                  VERSION   STATUS   AGE
-pb-horizontal   kubedb.com/v1   1.18.0    Ready    2m
+NAME            VERSION   STATUS   AGE
+pb-horizontal   1.18.0    Ready    2m19s
 ```
 
 Let's check the number of replicas this pgbouncer has from the PgBouncer object, number of pods the petset have,
@@ -101,7 +101,7 @@ $ kubectl get petset -n demo pb-horizontal -o json | jq '.spec.replicas'
 1
 ```
 
-We can see from both command that the pgbouncer has 3 replicas. 
+We can see from both command that the pgbouncer has 1 replicas. 
 
 We are now ready to apply the `PgBouncerOpsRequest` CR to scale this pgbouncer.
 
@@ -136,7 +136,7 @@ Here,
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/horizontal-scaling/pbops-hscale-up-ops.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/horizontal-scaling-ops.yaml
 pgbounceropsrequest.ops.kubedb.com/pgbouncer-horizontal-scale-up created
 ```
 
@@ -164,91 +164,59 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         PgBouncerOpsRequest
 Metadata:
-  Creation Timestamp:  2024-07-17T08:35:13Z
+  Creation Timestamp:  2024-11-27T11:12:29Z
   Generation:          1
-  Resource Version:    62002
-  UID:                 ce44f7a1-e78d-4248-a691-62fe1efd11f3
+  Resource Version:    49162
+  UID:                 ce390f66-e10f-490f-ad47-f28894d0569a
 Spec:
   Apply:  IfReady
   Database Ref:
     Name:  pb-horizontal
   Horizontal Scaling:
-    Node:  3
-  Type:    HorizontalScaling
+    Replicas:  3
+  Type:        HorizontalScaling
 Status:
   Conditions:
-    Last Transition Time:  2024-07-17T08:35:13Z
-    Message:               PgBouncer ops-request has started to horizontally scaling the nodes
+    Last Transition Time:  2024-11-27T11:12:29Z
+    Message:               Controller has started to Progress with HorizontalScaling of PgBouncerOpsRequest: demo/pgbouncer-horizontal-scale-up
     Observed Generation:   1
-    Reason:                HorizontalScaling
+    Reason:                Running
     Status:                True
-    Type:                  HorizontalScaling
-    Last Transition Time:  2024-07-17T08:35:16Z
-    Message:               Successfully paused database
+    Type:                  Running
+    Last Transition Time:  2024-11-27T11:12:32Z
+    Message:               Horizontal scaling started in PgBouncer: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-up
     Observed Generation:   1
-    Reason:                DatabasePauseSucceeded
-    Status:                True
-    Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-07-17T08:35:41Z
-    Message:               Successfully Scaled Up Node
-    Observed Generation:   1
-    Reason:                HorizontalScaleUp
-    Status:                True
-    Type:                  HorizontalScaleUp
-    Last Transition Time:  2024-07-17T08:35:21Z
-    Message:               patch petset; ConditionStatus:True; PodName:pb-horizontal-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  PatchPetset--pb-horizontal-1
-    Last Transition Time:  2024-07-17T08:35:26Z
-    Message:               is pod ready; ConditionStatus:True; PodName:pb-horizontal-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  IsPodReady--pb-horizontal-1
-    Last Transition Time:  2024-07-17T08:35:26Z
-    Message:               client failure; ConditionStatus:True; PodName:pb-horizontal-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  ClientFailure--pb-horizontal-1
-    Last Transition Time:  2024-07-17T08:35:26Z
-    Message:               is node healthy; ConditionStatus:True; PodName:pb-horizontal-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  IsNodeHealthy--pb-horizontal-1
-    Last Transition Time:  2024-07-17T08:35:31Z
-    Message:               patch petset; ConditionStatus:True; PodName:pb-horizontal-2
-    Observed Generation:   1
-    Status:                True
-    Type:                  PatchPetset--pb-horizontal-2
-    Last Transition Time:  2024-07-17T08:35:31Z
-    Message:               pb-horizontal already has desired replicas
-    Observed Generation:   1
-    Reason:                HorizontalScale
+    Reason:                HorizontalScaleStarted
     Status:                True
     Type:                  HorizontalScale
-    Last Transition Time:  2024-07-17T08:35:36Z
-    Message:               is pod ready; ConditionStatus:True; PodName:pb-horizontal-2
+    Last Transition Time:  2024-11-27T11:12:37Z
+    Message:               patch p s; ConditionStatus:True; PodName:pb-horizontal-1
     Observed Generation:   1
     Status:                True
-    Type:                  IsPodReady--pb-horizontal-2
-    Last Transition Time:  2024-07-17T08:35:36Z
-    Message:               client failure; ConditionStatus:True; PodName:pb-horizontal-2
+    Type:                  PatchPS--pb-horizontal-1
+    Last Transition Time:  2024-11-27T11:12:42Z
+    Message:               is pg bouncer running; ConditionStatus:True; PodName:pb-horizontal-1
     Observed Generation:   1
     Status:                True
-    Type:                  ClientFailure--pb-horizontal-2
-    Last Transition Time:  2024-07-17T08:35:36Z
-    Message:               is node healthy; ConditionStatus:True; PodName:pb-horizontal-2
+    Type:                  IsPgBouncerRunning--pb-horizontal-1
+    Last Transition Time:  2024-11-27T11:12:47Z
+    Message:               patch p s; ConditionStatus:True; PodName:pb-horizontal-2
     Observed Generation:   1
     Status:                True
-    Type:                  IsNodeHealthy--pb-horizontal-2
-    Last Transition Time:  2024-07-17T08:35:41Z
-    Message:               Successfully updated PgBouncer
+    Type:                  PatchPS--pb-horizontal-2
+    Last Transition Time:  2024-11-27T11:12:52Z
+    Message:               is pg bouncer running; ConditionStatus:True; PodName:pb-horizontal-2
     Observed Generation:   1
-    Reason:                UpdateDatabase
     Status:                True
-    Type:                  UpdateDatabase
-    Last Transition Time:  2024-07-17T08:35:41Z
-    Message:               Successfully completed horizontally scale pgbouncer cluster
+    Type:                  IsPgBouncerRunning--pb-horizontal-2
+    Last Transition Time:  2024-11-27T11:12:57Z
+    Message:               Horizontal scaling Up performed successfully in PgBouncer: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-up
+    Observed Generation:   1
+    Reason:                HorizontalScaleSucceeded
+    Status:                True
+    Type:                  HorizontalScaleUp
+    Last Transition Time:  2024-11-27T11:13:07Z
+    Message:               Controller has successfully completed  with HorizontalScaling of PgBouncerOpsRequest: demo/pgbouncer-horizontal-scale-up
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -256,21 +224,20 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                          Age    From                         Message
-  ----     ------                                                          ----   ----                         -------
-  Normal   Starting                                                        4m5s   KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pgbouncer-horizontal-scale-up
-  Normal   Starting                                                        4m5s   KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-horizontal
-  Normal   Successful                                                      4m5s   KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-up
-  Normal   patch petset; ConditionStatus:True; PodName:pb-horizontal-1     3m57s  KubeDB Ops-manager Operator  patch petset; ConditionStatus:True; PodName:pb-horizontal-1
-  Normal   is pod ready; ConditionStatus:True; PodName:pb-horizontal-1     3m52s  KubeDB Ops-manager Operator  is pod ready; ConditionStatus:True; PodName:pb-horizontal-1
-  Normal   is node healthy; ConditionStatus:True; PodName:pb-horizontal-1  3m52s  KubeDB Ops-manager Operator  is node healthy; ConditionStatus:True; PodName:pb-horizontal-1
-  Normal   patch petset; ConditionStatus:True; PodName:pb-horizontal-2     3m47s  KubeDB Ops-manager Operator  patch petset; ConditionStatus:True; PodName:pb-horizontal-2
-  Normal   is pod ready; ConditionStatus:True; PodName:pb-horizontal-2     3m42s  KubeDB Ops-manager Operator  is pod ready; ConditionStatus:True; PodName:pb-horizontal-2
-  Normal   is node healthy; ConditionStatus:True; PodName:pb-horizontal-2  3m42s  KubeDB Ops-manager Operator  is node healthy; ConditionStatus:True; PodName:pb-horizontal-2
-  Normal   HorizontalScaleUp                                               3m37s  KubeDB Ops-manager Operator  Successfully Scaled Up Node
-  Normal   UpdateDatabase                                                  3m37s  KubeDB Ops-manager Operator  Successfully updated PgBouncer
-  Normal   Starting                                                        3m37s  KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-horizontal
-  Normal   Successful                                                      3m37s  KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-up
+  Type     Reason                                                                Age    From                         Message
+  ----     ------                                                                ----   ----                         -------
+  Normal   Starting                                                              2m13s  KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pgbouncer-horizontal-scale-up
+  Normal   Starting                                                              2m13s  KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-horizontal
+  Normal   Successful                                                            2m13s  KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-up
+  Normal   Starting                                                              2m10s  KubeDB Ops-manager Operator  Horizontal scaling started in PgBouncer: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-up
+  Warning  patch p s; ConditionStatus:True; PodName:pb-horizontal-1              2m5s   KubeDB Ops-manager Operator  patch p s; ConditionStatus:True; PodName:pb-horizontal-1
+  Warning  is pg bouncer running; ConditionStatus:True; PodName:pb-horizontal-1  2m     KubeDB Ops-manager Operator  is pg bouncer running; ConditionStatus:True; PodName:pb-horizontal-1
+  Warning  patch p s; ConditionStatus:True; PodName:pb-horizontal-2              115s   KubeDB Ops-manager Operator  patch p s; ConditionStatus:True; PodName:pb-horizontal-2
+  Warning  is pg bouncer running; ConditionStatus:True; PodName:pb-horizontal-2  110s   KubeDB Ops-manager Operator  is pg bouncer running; ConditionStatus:True; PodName:pb-horizontal-2
+  Normal   Successful                                                            105s   KubeDB Ops-manager Operator  Horizontal scaling Up performed successfully in PgBouncer: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-up
+  Normal   Starting                                                              95s    KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-horizontal
+  Normal   Successful                                                            95s    KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-horizontal
+  Normal   Successful                                                            95s    KubeDB Ops-manager Operator  Controller has Successfully scaled the PgBouncer database: demo/pb-horizontal
 ```
 
 Now, we are going to verify the number of replicas this pgbouncer has from the PgBouncer object, number of pods the petset have,
@@ -316,7 +283,7 @@ Here,
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/horizontal-scaling/pbops-hscale-down-ops.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/horizontal-scaling-down-ops.yaml
 pgbounceropsrequest.ops.kubedb.com/pgbouncer-horizontal-scale-down created
 ```
 
@@ -344,66 +311,49 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         PgBouncerOpsRequest
 Metadata:
-  Creation Timestamp:  2024-07-17T08:52:28Z
+  Creation Timestamp:  2024-11-27T11:16:05Z
   Generation:          1
-  Resource Version:    63600
-  UID:                 019f9d8f-c2b0-4154-b3d3-b715b8805fd7
+  Resource Version:    49481
+  UID:                 cf4bc042-8316-4dce-b6a2-60981af7f4db
 Spec:
   Apply:  IfReady
   Database Ref:
     Name:  pb-horizontal
   Horizontal Scaling:
-    Node:  2
-  Type:    HorizontalScaling
+    Replicas:  2
+  Type:        HorizontalScaling
 Status:
   Conditions:
-    Last Transition Time:  2024-07-17T08:52:28Z
-    Message:               PgBouncer ops-request has started to horizontally scaling the nodes
+    Last Transition Time:  2024-11-27T11:16:05Z
+    Message:               Controller has started to Progress with HorizontalScaling of PgBouncerOpsRequest: demo/pgbouncer-horizontal-scale-down
     Observed Generation:   1
-    Reason:                HorizontalScaling
+    Reason:                Running
     Status:                True
-    Type:                  HorizontalScaling
-    Last Transition Time:  2024-07-17T08:52:31Z
-    Message:               Successfully paused database
+    Type:                  Running
+    Last Transition Time:  2024-11-27T11:16:08Z
+    Message:               Horizontal scaling started in PgBouncer: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-down
     Observed Generation:   1
-    Reason:                DatabasePauseSucceeded
-    Status:                True
-    Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-07-17T08:53:16Z
-    Message:               Successfully Scaled Down Node
-    Observed Generation:   1
-    Reason:                HorizontalScaleDown
-    Status:                True
-    Type:                  HorizontalScaleDown
-    Last Transition Time:  2024-07-17T08:52:36Z
-    Message:               patch petset; ConditionStatus:True; PodName:pb-horizontal-2
-    Observed Generation:   1
-    Status:                True
-    Type:                  PatchPetset--pb-horizontal-2
-    Last Transition Time:  2024-07-17T08:52:36Z
-    Message:               pb-horizontal already has desired replicas
-    Observed Generation:   1
-    Reason:                HorizontalScale
+    Reason:                HorizontalScaleStarted
     Status:                True
     Type:                  HorizontalScale
-    Last Transition Time:  2024-07-17T08:52:41Z
-    Message:               get pod; ConditionStatus:False
+    Last Transition Time:  2024-11-27T11:16:13Z
+    Message:               patch p s; ConditionStatus:True; PodName:pb-horizontal-3
     Observed Generation:   1
-    Status:                False
-    Type:                  GetPod
-    Last Transition Time:  2024-07-17T08:53:11Z
+    Status:                True
+    Type:                  PatchPS--pb-horizontal-3
+    Last Transition Time:  2024-11-27T11:16:18Z
     Message:               get pod; ConditionStatus:True; PodName:pb-horizontal-2
     Observed Generation:   1
     Status:                True
     Type:                  GetPod--pb-horizontal-2
-    Last Transition Time:  2024-07-17T08:53:16Z
-    Message:               Successfully updated PgBouncer
+    Last Transition Time:  2024-11-27T11:16:23Z
+    Message:               Horizontal scaling down performed successfully in PgBouncer: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-down
     Observed Generation:   1
-    Reason:                UpdateDatabase
+    Reason:                HorizontalScaleSucceeded
     Status:                True
-    Type:                  UpdateDatabase
-    Last Transition Time:  2024-07-17T08:53:16Z
-    Message:               Successfully completed horizontally scale pgbouncer cluster
+    Type:                  HorizontalScaleDown
+    Last Transition Time:  2024-11-27T11:16:33Z
+    Message:               Controller has successfully completed  with HorizontalScaling of PgBouncerOpsRequest: demo/pgbouncer-horizontal-scale-down
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -411,18 +361,18 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                       Age   From                         Message
-  ----     ------                                                       ----  ----                         -------
-  Normal   Starting                                                     96s   KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pgbouncer-horizontal-scale-down
-  Normal   Starting                                                     96s   KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-horizontal
-  Normal   Successful                                                   96s   KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-down
-  Normal   patch petset; ConditionStatus:True; PodName:pb-horizontal-2  88s   KubeDB Ops-manager Operator  patch petset; ConditionStatus:True; PodName:pb-horizontal-2
-  Normal   get pod; ConditionStatus:False                               83s   KubeDB Ops-manager Operator  get pod; ConditionStatus:False
-  Normal   get pod; ConditionStatus:True; PodName:pb-horizontal-2       53s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-horizontal-2
-  Normal   HorizontalScaleDown                                          48s   KubeDB Ops-manager Operator  Successfully Scaled Down Node
-  Normal   UpdateDatabase                                               48s   KubeDB Ops-manager Operator  Successfully updated PgBouncer
-  Normal   Starting                                                     48s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-horizontal
-  Normal   Successful                                                   48s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-down
+  Type     Reason                                                    Age    From                         Message
+  ----     ------                                                    ----   ----                         -------
+  Normal   Starting                                                  2m38s  KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pgbouncer-horizontal-scale-down
+  Normal   Starting                                                  2m38s  KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-horizontal
+  Normal   Successful                                                2m38s  KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-down
+  Normal   Starting                                                  2m35s  KubeDB Ops-manager Operator  Horizontal scaling started in PgBouncer: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-down
+  Warning  patch p s; ConditionStatus:True; PodName:pb-horizontal-3  2m30s  KubeDB Ops-manager Operator  patch p s; ConditionStatus:True; PodName:pb-horizontal-3
+  Warning  get pod; ConditionStatus:True; PodName:pb-horizontal-2    2m25s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-horizontal-2
+  Normal   Successful                                                2m20s  KubeDB Ops-manager Operator  Horizontal scaling down performed successfully in PgBouncer: demo/pb-horizontal for PgBouncerOpsRequest: pgbouncer-horizontal-scale-down
+  Normal   Starting                                                  2m10s  KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-horizontal
+  Normal   Successful                                                2m10s  KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-horizontal
+  Normal   Successful                                                2m10s  KubeDB Ops-manager Operator  Controller has Successfully scaled the PgBouncer database: demo/pb-horizontal
 ```
 
 Now, we are going to verify the number of replicas this pgbouncer has from the PgBouncer object, number of pods the petset have,
