@@ -34,7 +34,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/pgbouncer](/docs/examples/pgbouncer) directory of [kubedb/docs](https://github.com/kube/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/pgbouncer](/docs/examples/pgbouncer) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ### Prepare Postgres
 Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/clustering/streaming_replication.md), or you can use any externally managed postgres but in that case you need to create an [appbinding](/docs/guides/pgbouncer/concepts/appbinding.md) yourself. In this tutorial we will use 3 node Postgres cluster named `ha-postgres`.
@@ -150,66 +150,76 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         PgBouncerOpsRequest
 Metadata:
-  Creation Timestamp:  2024-07-17T06:31:58Z
+  Creation Timestamp:  2024-11-27T09:40:03Z
   Generation:          1
-  Resource Version:    51165
-  UID:                 1409aec6-3a25-4b2b-90fe-02e5d8b1e8c1
+  Resource Version:    41823
+  UID:                 a53940fd-4d2d-4b4b-8ef1-0419dfbce660
 Spec:
   Apply:  IfReady
   Database Ref:
     Name:  pb-update
   Type:    UpdateVersion
   Update Version:
-    Target Version:  1.18.0
+    Target Version:  1.23.1
 Status:
   Conditions:
-    Last Transition Time:  2024-07-17T06:31:58Z
-    Message:               PgBouncer ops-request has started to update version
+    Last Transition Time:  2024-11-27T09:40:03Z
+    Message:               Controller has started to Progress with UpdateVersion of PgBouncerOpsRequest: demo/pgbouncer-version-update
     Observed Generation:   1
-    Reason:                UpdateVersion
+    Reason:                Running
     Status:                True
-    Type:                  UpdateVersion
-    Last Transition Time:  2024-07-17T06:32:01Z
-    Message:               Successfully paused database
-    Observed Generation:   1
-    Reason:                DatabasePauseSucceeded
-    Status:                True
-    Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-07-17T06:32:07Z
-    Message:               successfully reconciled the PgBouncer with updated version
+    Type:                  Running
+    Last Transition Time:  2024-11-27T09:40:08Z
+    Message:               Successfully updated Petset resource
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2024-07-17T06:32:52Z
-    Message:               Successfully Restarted PgBouncer pods
-    Observed Generation:   1
-    Reason:                RestartPods
-    Status:                True
-    Type:                  RestartPods
-    Last Transition Time:  2024-07-17T06:32:12Z
+    Last Transition Time:  2024-11-27T09:40:13Z
     Message:               get pod; ConditionStatus:True; PodName:pb-update-0
     Observed Generation:   1
     Status:                True
     Type:                  GetPod--pb-update-0
-    Last Transition Time:  2024-07-17T06:32:12Z
+    Last Transition Time:  2024-11-27T09:40:13Z
     Message:               evict pod; ConditionStatus:True; PodName:pb-update-0
     Observed Generation:   1
     Status:                True
     Type:                  EvictPod--pb-update-0
-    Last Transition Time:  2024-07-17T06:32:47Z
-    Message:               check pod running; ConditionStatus:True; PodName:pb-update-0
+    Last Transition Time:  2024-11-27T09:40:18Z
+    Message:               check replica func; ConditionStatus:True; PodName:pb-update-0
     Observed Generation:   1
     Status:                True
-    Type:                  CheckPodRunning--pb-update-0
-    Last Transition Time:  2024-07-17T06:32:52Z
+    Type:                  CheckReplicaFunc--pb-update-0
+    Last Transition Time:  2024-11-27T09:40:18Z
+    Message:               check pod ready; ConditionStatus:True; PodName:pb-update-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodReady--pb-update-0
+    Last Transition Time:  2024-11-27T09:40:48Z
+    Message:               check pg bouncer running; ConditionStatus:True; PodName:pb-update-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPgBouncerRunning--pb-update-0
+    Last Transition Time:  2024-11-27T09:40:53Z
+    Message:               Restarting all pods performed successfully in PgBouncer: demo/pb-update for PgBouncerOpsRequest: pgbouncer-version-update
+    Observed Generation:   1
+    Reason:                RestartPodsSucceeded
+    Status:                True
+    Type:                  RestartPods
+    Last Transition Time:  2024-11-27T09:41:04Z
     Message:               Successfully updated PgBouncer
     Observed Generation:   1
     Reason:                UpdateDatabase
     Status:                True
     Type:                  UpdateDatabase
-    Last Transition Time:  2024-07-17T06:32:52Z
-    Message:               Successfully updated PgBouncer version
+    Last Transition Time:  2024-11-27T09:41:04Z
+    Message:               Successfully version updated
+    Observed Generation:   1
+    Reason:                VersionUpdate
+    Status:                True
+    Type:                  VersionUpdate
+    Last Transition Time:  2024-11-27T09:41:04Z
+    Message:               Controller has successfully completed  with UpdateVersion of PgBouncerOpsRequest: demo/pgbouncer-version-update
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -217,19 +227,27 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                         Age    From                         Message
-  ----     ------                                                         ----   ----                         -------
-  Normal   Starting                                                       2m55s  KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pgbouncer-version-update
-  Normal   Starting                                                       2m55s  KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-update
-  Normal   Successful                                                     2m55s  KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-update for PgBouncerOpsRequest: pgbouncer-version-update
-  Normal   UpdatePetSets                                                  2m46s  KubeDB Ops-manager Operator  successfully reconciled the PgBouncer with updated version
-  Normal   get pod; ConditionStatus:True; PodName:pb-update-0             2m41s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-update-0
-  Normal   evict pod; ConditionStatus:True; PodName:pb-update-0           2m41s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:pb-update-0
-  Normal   check pod running; ConditionStatus:False; PodName:pb-update-0  2m36s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:pb-update-0
-  Normal   check pod running; ConditionStatus:True; PodName:pb-update-0   2m6s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:pb-update-0
-  Normal   RestartPods                                                    2m1s   KubeDB Ops-manager Operator  Successfully Restarted PgBouncer pods
-  Normal   Starting                                                       2m1s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-update
-  Normal   Successful                                                     2m1s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-update for PgBouncerOpsRequest: pgbouncer-version-update
+  Type     Reason                                                                Age   From                         Message
+  ----     ------                                                                ----  ----                         -------
+  Normal   Starting                                                              114s  KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pgbouncer-version-update
+  Normal   Starting                                                              114s  KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-update
+  Normal   Successful                                                            114s  KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-update for PgBouncerOpsRequest: pgbouncer-version-update
+  Warning  get pod; ConditionStatus:True; PodName:pb-update-0                    104s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-update-0
+  Warning  evict pod; ConditionStatus:True; PodName:pb-update-0                  104s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:pb-update-0
+  Warning  check replica func; ConditionStatus:True; PodName:pb-update-0         99s   KubeDB Ops-manager Operator  check replica func; ConditionStatus:True; PodName:pb-update-0
+  Warning  check pod ready; ConditionStatus:True; PodName:pb-update-0            99s   KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:pb-update-0
+  Warning  check pg bouncer running; ConditionStatus:False; PodName:pb-update-0  89s   KubeDB Ops-manager Operator  check pg bouncer running; ConditionStatus:False; PodName:pb-update-0
+  Warning  check replica func; ConditionStatus:True; PodName:pb-update-0         89s   KubeDB Ops-manager Operator  check replica func; ConditionStatus:True; PodName:pb-update-0
+  Warning  check pod ready; ConditionStatus:True; PodName:pb-update-0            89s   KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:pb-update-0
+  Warning  check replica func; ConditionStatus:True; PodName:pb-update-0         79s   KubeDB Ops-manager Operator  check replica func; ConditionStatus:True; PodName:pb-update-0
+  Warning  check pod ready; ConditionStatus:True; PodName:pb-update-0            79s   KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:pb-update-0
+  Warning  check replica func; ConditionStatus:True; PodName:pb-update-0         69s   KubeDB Ops-manager Operator  check replica func; ConditionStatus:True; PodName:pb-update-0
+  Warning  check pod ready; ConditionStatus:True; PodName:pb-update-0            69s   KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:pb-update-0
+  Warning  check pg bouncer running; ConditionStatus:True; PodName:pb-update-0   69s   KubeDB Ops-manager Operator  check pg bouncer running; ConditionStatus:True; PodName:pb-update-0
+  Normal   Successful                                                            64s   KubeDB Ops-manager Operator  Restarting all pods performed successfully in PgBouncer: demo/pb-update for PgBouncerOpsRequest: pgbouncer-version-update
+  Normal   Starting                                                              53s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-update
+  Normal   Successful                                                            53s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-update
+  Normal   Successful                                                            53s   KubeDB Ops-manager Operator  Controller has Successfully updated the version of PgBouncer database: demo/pb-update
 ```
 
 Now, we are going to verify whether the `PgBouncer` and the related `PetSets` their `Pods` have the new version image. Let's check,
@@ -239,10 +257,10 @@ $ kubectl get pb -n demo pb-update -o=jsonpath='{.spec.version}{"\n"}'
 1.23.1
 
 $ kubectl get petset -n demo pb-update -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
-mongo:4.0.5
+ghcr.io/kubedb/pgbouncer:1.23.1@sha256:9829a24c60938ab709fe9e039fecd9f0019354edf4e74bfd9e62bb2203e945ee
 
-$ kubectl get pods -n demo mg-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           
-ghcr.io/appscode-images/pgbouncer:1.23.1@sha256:2697fcad9e11bdc704f6ae0fba85c4451c6b0243140aaaa33e719c3af548bda1
+$ kubectl get pods -n demo pb-update-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           
+ghcr.io/kubedb/pgbouncer:1.23.1@sha256:9829a24c60938ab709fe9e039fecd9f0019354edf4e74bfd9e62bb2203e945ee
 ```
 
 You can see from above, our `PgBouncer` has been updated with the new version. So, the update process is successfully completed.
