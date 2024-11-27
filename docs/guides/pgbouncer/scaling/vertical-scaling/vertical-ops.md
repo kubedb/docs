@@ -98,7 +98,6 @@ Let's check the Pod containers resources,
 $ kubectl get pod -n demo pb-vertical-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
-    "cpu": "500m",
     "memory": "1Gi"
   },
   "requests": {
@@ -153,7 +152,7 @@ Here,
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/vertical-scaling/pb-vertical-ops.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/pb-vertical-ops.yaml
 pgbounceropsrequest.ops.kubedb.com/pgbouncer-scale-vertical created
 ```
 
@@ -181,10 +180,10 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         PgBouncerOpsRequest
 Metadata:
-  Creation Timestamp:  2024-07-17T09:44:22Z
+  Creation Timestamp:  2024-11-27T12:35:02Z
   Generation:          1
-  Resource Version:    68270
-  UID:                 62a105f7-e7b9-444e-9303-79818fccfdef
+  Resource Version:    55854
+  UID:                 567e12f9-b561-4fea-af91-1ed9412a0d74
 Spec:
   Apply:  IfReady
   Database Ref:
@@ -192,7 +191,7 @@ Spec:
   Timeout:  5m
   Type:     VerticalScaling
   Vertical Scaling:
-    Node:
+    Pgbouncer:
       Resources:
         Limits:
           Cpu:     1
@@ -202,47 +201,51 @@ Spec:
           Memory:  2Gi
 Status:
   Conditions:
-    Last Transition Time:  2024-07-17T09:44:22Z
-    Message:               PgBouncer ops-request has started to vertically scaling the PgBouncer nodes
+    Last Transition Time:  2024-11-27T12:35:02Z
+    Message:               Controller has started to Progress with VerticalScaling of PgBouncerOpsRequest: demo/pgbouncer-scale-vertical
     Observed Generation:   1
-    Reason:                VerticalScaling
+    Reason:                Running
     Status:                True
-    Type:                  VerticalScaling
-    Last Transition Time:  2024-07-17T09:44:25Z
-    Message:               Successfully paused database
-    Observed Generation:   1
-    Reason:                DatabasePauseSucceeded
-    Status:                True
-    Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-07-17T09:44:25Z
-    Message:               Successfully updated PetSets Resources
+    Type:                  Running
+    Last Transition Time:  2024-11-27T12:35:08Z
+    Message:               Successfully updated Petset resource
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2024-07-17T09:45:10Z
-    Message:               Successfully Restarted Pods With Resources
-    Observed Generation:   1
-    Reason:                RestartPods
-    Status:                True
-    Type:                  RestartPods
-    Last Transition Time:  2024-07-17T09:44:30Z
+    Last Transition Time:  2024-11-27T12:35:13Z
     Message:               get pod; ConditionStatus:True; PodName:pb-vertical-0
     Observed Generation:   1
     Status:                True
     Type:                  GetPod--pb-vertical-0
-    Last Transition Time:  2024-07-17T09:44:30Z
+    Last Transition Time:  2024-11-27T12:35:13Z
     Message:               evict pod; ConditionStatus:True; PodName:pb-vertical-0
     Observed Generation:   1
     Status:                True
     Type:                  EvictPod--pb-vertical-0
-    Last Transition Time:  2024-07-17T09:45:05Z
-    Message:               check pod running; ConditionStatus:True; PodName:pb-vertical-0
+    Last Transition Time:  2024-11-27T12:35:18Z
+    Message:               check replica func; ConditionStatus:True; PodName:pb-vertical-0
     Observed Generation:   1
     Status:                True
-    Type:                  CheckPodRunning--pb-vertical-0
-    Last Transition Time:  2024-07-17T09:45:10Z
-    Message:               Successfully completed the vertical scaling for PgBouncer
+    Type:                  CheckReplicaFunc--pb-vertical-0
+    Last Transition Time:  2024-11-27T12:35:18Z
+    Message:               check pod ready; ConditionStatus:True; PodName:pb-vertical-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodReady--pb-vertical-0
+    Last Transition Time:  2024-11-27T12:35:38Z
+    Message:               check pg bouncer running; ConditionStatus:True; PodName:pb-vertical-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPgBouncerRunning--pb-vertical-0
+    Last Transition Time:  2024-11-27T12:35:43Z
+    Message:               Vertical scaling Up performed successfully in PgBouncer: demo/pb-vertical for PgBouncerOpsRequest: pgbouncer-scale-vertical
+    Observed Generation:   1
+    Reason:                VerticalScaleSucceeded
+    Status:                True
+    Type:                  VerticalScale
+    Last Transition Time:  2024-11-27T12:35:53Z
+    Message:               Controller has successfully completed  with VerticalScaling of PgBouncerOpsRequest: demo/pgbouncer-scale-vertical
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -250,19 +253,27 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                           Age    From                         Message
-  ----     ------                                                           ----   ----                         -------
-  Normal   Starting                                                         4m16s  KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pgbouncer-scale-vertical
-  Normal   Starting                                                         4m16s  KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-vertical
-  Normal   Successful                                                       4m16s  KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-vertical for PgBouncerOpsRequest: pgbouncer-scale-vertical
-  Normal   UpdatePetSets                                                    4m13s  KubeDB Ops-manager Operator  Successfully updated PetSets Resources
-  Warning  get pod; ConditionStatus:True; PodName:pb-vertical-0             4m8s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-vertical-0
-  Warning  evict pod; ConditionStatus:True; PodName:pb-vertical-0           4m8s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:pb-vertical-0
-  Warning  check pod running; ConditionStatus:False; PodName:pb-vertical-0  4m3s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:pb-vertical-0
-  Warning  check pod running; ConditionStatus:True; PodName:pb-vertical-0   3m33s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:pb-vertical-0
-  Normal   RestartPods                                                      3m28s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
-  Normal   Starting                                                         3m28s  KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-vertical
-  Normal   Successful                                                       3m28s  KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-vertical for PgBouncerOpsRequest: pgbouncer-scale-vertical
+  Type     Reason                                                                  Age   From                         Message
+  ----     ------                                                                  ----  ----                         -------
+  Normal   Starting                                                                81s   KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pgbouncer-scale-vertical
+  Normal   Starting                                                                81s   KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-vertical
+  Normal   Successful                                                              81s   KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-vertical for PgBouncerOpsRequest: pgbouncer-scale-vertical
+  Warning  get pod; ConditionStatus:True; PodName:pb-vertical-0                    70s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-vertical-0
+  Warning  evict pod; ConditionStatus:True; PodName:pb-vertical-0                  70s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:pb-vertical-0
+  Warning  check replica func; ConditionStatus:True; PodName:pb-vertical-0         65s   KubeDB Ops-manager Operator  check replica func; ConditionStatus:True; PodName:pb-vertical-0
+  Warning  check pod ready; ConditionStatus:True; PodName:pb-vertical-0            65s   KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:pb-vertical-0
+  Warning  check pg bouncer running; ConditionStatus:False; PodName:pb-vertical-0  55s   KubeDB Ops-manager Operator  check pg bouncer running; ConditionStatus:False; PodName:pb-vertical-0
+  Warning  check replica func; ConditionStatus:True; PodName:pb-vertical-0         55s   KubeDB Ops-manager Operator  check replica func; ConditionStatus:True; PodName:pb-vertical-0
+  Warning  check pod ready; ConditionStatus:True; PodName:pb-vertical-0            55s   KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:pb-vertical-0
+  Warning  check replica func; ConditionStatus:True; PodName:pb-vertical-0         45s   KubeDB Ops-manager Operator  check replica func; ConditionStatus:True; PodName:pb-vertical-0
+  Warning  check pod ready; ConditionStatus:True; PodName:pb-vertical-0            45s   KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:pb-vertical-0
+  Warning  check pg bouncer running; ConditionStatus:True; PodName:pb-vertical-0   45s   KubeDB Ops-manager Operator  check pg bouncer running; ConditionStatus:True; PodName:pb-vertical-0
+  Normal   Successful                                                              40s   KubeDB Ops-manager Operator  Vertical scaling Up performed successfully in PgBouncer: demo/pb-vertical for PgBouncerOpsRequest: pgbouncer-scale-vertical
+  Normal   Starting                                                                30s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-vertical
+  Normal   Successful                                                              30s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-vertical
+  Normal   Starting                                                                30s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-vertical
+  Normal   Successful                                                              30s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-vertical
+  Normal   Successful                                                              30s   KubeDB Ops-manager Operator  Controller has Successfully scaled the PgBouncer database: demo/pb-vertical
 ```
 
 Now, we are going to verify from the Pod yaml whether the resources of the pgbouncer has updated to meet up the desired state, Let's check,
