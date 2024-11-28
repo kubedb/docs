@@ -235,8 +235,11 @@ my-group-standby   ClusterIP      10.96.70.224    <none>        3306/TCP       5
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `MySQL` object:
 
-```yaml
+```bash
 $ kubectl get  my -n demo my-group -o yaml | kubectl neat
+```
+
+```yaml
 apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
@@ -247,29 +250,6 @@ spec:
     name: my-group-auth
   podTemplate:
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: my-group
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: mysqls.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: my-group
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: mysqls.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
       resources:
         limits:
           cpu: 500m
