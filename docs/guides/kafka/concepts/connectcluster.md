@@ -73,7 +73,7 @@ spec:
       annotations:
         passMe: ToPetSet
       labels:
-        thisLabel: willGoToSts
+        thisLabel: willGoToPetSet
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -105,7 +105,7 @@ KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are 
 
 ### spec.disableSecurity
 
-`spec.disableSecurity` is an optional field that specifies whether to disable all kind of security features like basic  authentication and tls. The default value of this field is `false`.
+`spec.disableSecurity` is an optional field that specifies whether to disable all kind of security features like basic authentication and tls. The default value of this field is `false`.
 
 ### spec.connectorPlugins
 
