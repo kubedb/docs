@@ -291,15 +291,11 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - initContainers
   - imagePullSecrets
   - nodeSelector
-  - affinity
   - schedulerName
   - tolerations
   - priorityClassName
   - priority
   - securityContext
-  - livenessProbe
-  - readinessProbe
-  - lifecycle
 
 You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go#L26C1-L279C1).
 Uses of some field of `spec.podTemplate` is described below,
