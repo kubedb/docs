@@ -113,16 +113,12 @@ KubeDB accepts the following fields to set in `spec.podTemplate`:
   - initContainers
   - imagePullSecrets
   - nodeSelector
-  - affinity
   - serviceAccountName
   - schedulerName
   - tolerations
   - priorityClassName
   - priority
   - securityContext
-  - livenessProbe
-  - readinessProbe
-  - lifecycle
 
 
 ### spec.serviceTemplates

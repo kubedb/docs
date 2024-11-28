@@ -234,35 +234,6 @@ Spec:
     Controller:
     Metadata:
     Spec:
-      Affinity:
-        Pod Anti Affinity:
-          Preferred During Scheduling Ignored During Execution:
-            Pod Affinity Term:
-              Label Selector:
-                Match Labels:
-                  app.kubernetes.io/instance:    sample-opensearch
-                  app.kubernetes.io/managed-by:  kubedb.com
-                  app.kubernetes.io/name:        elasticsearches.kubedb.com
-              Namespaces:
-                demo
-              Topology Key:  kubernetes.io/hostname
-            Weight:          100
-            Pod Affinity Term:
-              Label Selector:
-                Match Labels:
-                  app.kubernetes.io/instance:    sample-opensearch
-                  app.kubernetes.io/managed-by:  kubedb.com
-                  app.kubernetes.io/name:        elasticsearches.kubedb.com
-              Namespaces:
-                demo
-              Topology Key:  failure-domain.beta.kubernetes.io/zone
-            Weight:          50
-      Container Security Context:
-        Capabilities:
-          Add:
-            IPC_LOCK
-            SYS_RESOURCE
-        Privileged:  false
       Resources:
         Limits:
           Memory:  1Gi

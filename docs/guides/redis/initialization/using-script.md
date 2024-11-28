@@ -127,39 +127,6 @@ Spec:
     Controller:
     Metadata:
     Spec:
-      Affinity:
-        Pod Anti Affinity:
-          Preferred During Scheduling Ignored During Execution:
-            Pod Affinity Term:
-              Label Selector:
-                Match Labels:
-                  app.kubernetes.io/instance:    rd-init-script
-                  app.kubernetes.io/managed-by:  kubedb.com
-                  app.kubernetes.io/name:        redises.kubedb.com
-              Namespaces:
-                demo
-              Topology Key:  kubernetes.io/hostname
-            Weight:          100
-            Pod Affinity Term:
-              Label Selector:
-                Match Labels:
-                  app.kubernetes.io/instance:    rd-init-script
-                  app.kubernetes.io/managed-by:  kubedb.com
-                  app.kubernetes.io/name:        redises.kubedb.com
-              Namespaces:
-                demo
-              Topology Key:  failure-domain.beta.kubernetes.io/zone
-            Weight:          50
-      Container Security Context:
-        Allow Privilege Escalation:  false
-        Capabilities:
-          Drop:
-            ALL
-        Run As Group:     999
-        Run As Non Root:  true
-        Run As User:      999
-        Seccomp Profile:
-          Type:  RuntimeDefault
       Resources:
         Limits:
           Memory:  1Gi
@@ -283,39 +250,6 @@ spec:
     controller: {}
     metadata: {}
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: rd-init-script
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: redises.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: rd-init-script
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: redises.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
-      containerSecurityContext:
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-          - ALL
-        runAsGroup: 999
-        runAsNonRoot: true
-        runAsUser: 999
-        seccompProfile:
-          type: RuntimeDefault
       resources:
         limits:
           memory: 1Gi

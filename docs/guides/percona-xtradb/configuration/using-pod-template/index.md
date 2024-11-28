@@ -47,7 +47,6 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - initContainers
   - imagePullSecrets
   - nodeSelector
-  - affinity
   - schedulerName
   - tolerations
   - priorityClassName
