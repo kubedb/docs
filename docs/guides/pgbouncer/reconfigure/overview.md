@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 The following diagram shows how KubeDB Ops-manager operator reconfigures `PgBouncer`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Reconfiguring process of PgBouncer" src="/docs/images/day-2-operation/pgbouncer/pb-reconfigure.png">
+  <img alt="Reconfiguring process of PgBouncer" src="/docs/images/day-2-operation/pgbouncer/reconfiguring.png">
 <figcaption align="center">Fig: Reconfiguring process of PgBouncer</figcaption>
 </figure>
 

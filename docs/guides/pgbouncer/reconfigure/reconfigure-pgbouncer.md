@@ -110,43 +110,29 @@ Now, we will check if the pgbouncer has started with the custom configuration we
 Now, you can exec into the pgbouncer pod and find if the custom configuration is there,
 
 ```bash
-$ kubectl exec -it -n demo pb-custom-0 -- bash
-pb-custom-0:/$ cat opt/pgbouncer/etc/pgbouncer.ini
-backend_hostname0 = 'ha-postgres.demo.svc'
-backend_port0 = 5432
-backend_weight0 = 1
-backend_flag0 = 'ALWAYS_PRIMARY|DISALLOW_TO_FAILOVER'
-backend_hostname1 = 'ha-postgres-standby.demo.svc'
-backend_port1 = 5432
-backend_weight1 = 1
-backend_flag1 = 'DISALLOW_TO_FAILOVER'
-max_pool = 60
-enable_pool_hba = on
-listen_addresses = *
-port = 9999
-socket_dir = '/var/run/pgbouncer'
-pcp_listen_addresses = *
-pcp_port = 9595
-pcp_socket_dir = '/var/run/pgbouncer'
-log_per_node_statement = on
-sr_check_period = 0
-health_check_period = 0
-backend_clustering_mode = 'streaming_replication'
-num_init_children = 5
-child_life_time = 300
-child_max_connections = 0
-connection_life_time = 0
-client_idle_limit = 0
-connection_cache = on
-load_balance_mode = on
-ssl = 'off'
-failover_on_backend_error = 'off'
-log_min_messages = 'warning'
-statement_level_load_balance = 'off'
-memory_cache_enabled = 'off'
-memqcache_oiddir = '/tmp/oiddir/'
-allow_clear_text_frontend_auth = 'false'
-failover_on_backend_error = 'off'
+$ kubectl exec -it -n demo pb-custom-0  -- /bin/sh
+pb-custom-0:/$ cat etc/config/pgbouncer.ini
+[databases]
+postgres= host=ha-postgres.demo.svc port=5432 dbname=postgres
+
+[pgbouncer]
+max_client_conn = 87
+default_pool_size = 2
+min_pool_size = 1
+max_db_connections = 1
+logfile = /tmp/pgbouncer.log
+listen_port = 5432
+ignore_startup_parameters = extra_float_digits
+pidfile = /tmp/pgbouncer.pid
+listen_addr = *
+reserve_pool_size = 5
+reserve_pool_timeout = 5
+auth_type = scram-sha-256
+auth_file =  /var/run/pgbouncer/secret/userlist
+admin_users =  pgbouncer
+pool_mode = session
+max_user_connections = 2
+stats_period = 60
 pb-custom-0:/$ exit
 exit
 ```
@@ -231,68 +217,75 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         PgBouncerOpsRequest
 Metadata:
-  Creation Timestamp:  2024-07-30T05:42:56Z
+  Creation Timestamp:  2024-11-28T10:06:23Z
   Generation:          1
-  Resource Version:    95239
-  UID:                 54a12624-048c-49a6-b852-6286da587535
+  Resource Version:    86377
+  UID:                 f96d088e-a32b-40eb-bd9b-ca15a8370548
 Spec:
   Apply:  IfReady
   Configuration:
-    Config Secret:
-      Name:  new-custom-config
+    Pgbouncer:
+      Config Secret:
+        Name:  new-custom-config
   Database Ref:
     Name:   pb-custom
   Timeout:  5m
   Type:     Reconfigure
 Status:
   Conditions:
-    Last Transition Time:  2024-07-30T05:42:56Z
-    Message:               PgBouncer ops-request has started to `Reconfigure` the PgBouncer nodes
+    Last Transition Time:  2024-11-28T10:06:23Z
+    Message:               Controller has started to Progress with Reconfigure of PgBouncerOpsRequest: demo/pbops-reconfigure
     Observed Generation:   1
-    Reason:                Reconfigure
+    Reason:                Running
     Status:                True
-    Type:                  Reconfigure
-    Last Transition Time:  2024-07-30T05:42:59Z
-    Message:               Successfully paused database
+    Type:                  Running
+    Last Transition Time:  2024-11-28T10:06:26Z
+    Message:               paused pgbouncer database
     Observed Generation:   1
-    Reason:                DatabasePauseSucceeded
+    Reason:                Paused
     Status:                True
-    Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-07-30T05:43:00Z
-    Message:               Successfully updated PetSet
-    Observed Generation:   1
-    Reason:                UpdatePetSets
-    Status:                True
-    Type:                  UpdatePetSets
-    Last Transition Time:  2024-07-30T05:43:00Z
+    Type:                  Paused
+    Last Transition Time:  2024-11-28T10:06:36Z
     Message:               Successfully updated PgBouncer
     Observed Generation:   1
     Reason:                UpdateDatabase
     Status:                True
     Type:                  UpdateDatabase
-    Last Transition Time:  2024-07-30T05:43:45Z
-    Message:               Successfully Restarted Pods With Resources
+    Last Transition Time:  2024-11-28T10:06:36Z
+    Message:               Successfully updated PgBouncer backend secret
     Observed Generation:   1
-    Reason:                RestartPods
+    Reason:                UpdateBackendSecret
     Status:                True
-    Type:                  RestartPods
-    Last Transition Time:  2024-07-30T05:43:05Z
+    Type:                  UpdateBackendSecret
+    Last Transition Time:  2024-11-28T10:06:41Z
     Message:               get pod; ConditionStatus:True; PodName:pb-custom-0
     Observed Generation:   1
     Status:                True
     Type:                  GetPod--pb-custom-0
-    Last Transition Time:  2024-07-30T05:43:05Z
-    Message:               evict pod; ConditionStatus:True; PodName:pb-custom-0
+    Last Transition Time:  2024-11-28T10:07:16Z
+    Message:               volume mount check; ConditionStatus:True; PodName:pb-custom-0
     Observed Generation:   1
     Status:                True
-    Type:                  EvictPod--pb-custom-0
-    Last Transition Time:  2024-07-30T05:43:40Z
-    Message:               check pod running; ConditionStatus:True; PodName:pb-custom-0
+    Type:                  VolumeMountCheck--pb-custom-0
+    Last Transition Time:  2024-11-28T10:07:21Z
+    Message:               reload config; ConditionStatus:True; PodName:pb-custom-0
     Observed Generation:   1
     Status:                True
-    Type:                  CheckPodRunning--pb-custom-0
-    Last Transition Time:  2024-07-30T05:43:45Z
-    Message:               Successfully completed the reconfigure for PgBouncer
+    Type:                  ReloadConfig--pb-custom-0
+    Last Transition Time:  2024-11-28T10:07:21Z
+    Message:               Reloading performed successfully in PgBouncer: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure
+    Observed Generation:   1
+    Reason:                ReloadPodsSucceeded
+    Status:                True
+    Type:                  ReloadPods
+    Last Transition Time:  2024-11-28T10:07:21Z
+    Message:               Successfully Reconfigured
+    Observed Generation:   1
+    Reason:                Reconfigure
+    Status:                True
+    Type:                  Reconfigure
+    Last Transition Time:  2024-11-28T10:07:21Z
+    Message:               Controller has successfully completed  with Reconfigure of PgBouncerOpsRequest: demo/pbops-reconfigure
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -300,63 +293,55 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                         Age   From                         Message
-  ----     ------                                                         ----  ----                         -------
-  Normal   Starting                                                       100s  KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pbops-reconfigure
-  Normal   Starting                                                       100s  KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-custom
-  Normal   Successful                                                     100s  KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure
-  Normal   UpdatePetSets                                                  96s   KubeDB Ops-manager Operator  Successfully updated PetSet
-  Normal   UpdatePetSets                                                  96s   KubeDB Ops-manager Operator  Successfully updated PetSet
-  Normal   UpdateDatabase                                                 96s   KubeDB Ops-manager Operator  Successfully updated PgBouncer
-  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0             91s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
-  Warning  evict pod; ConditionStatus:True; PodName:pb-custom-0           91s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:pb-custom-0
-  Warning  check pod running; ConditionStatus:False; PodName:pb-custom-0  86s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:pb-custom-0
-  Warning  check pod running; ConditionStatus:True; PodName:pb-custom-0   56s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:pb-custom-0
-  Normal   RestartPods                                                    51s   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
-  Normal   Starting                                                       51s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-custom
-  Normal   Successful                                                     51s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure
+  Type     Reason                                                          Age   From                         Message
+  ----     ------                                                          ----  ----                         -------
+  Normal   Starting                                                        70s   KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pbops-reconfigure
+  Normal   Starting                                                        70s   KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-custom
+  Normal   Successful                                                      70s   KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure
+  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0              52s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
+  Warning  volume mount check; ConditionStatus:False; PodName:pb-custom-0  52s   KubeDB Ops-manager Operator  volume mount check; ConditionStatus:False; PodName:pb-custom-0
+  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0              47s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
+  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0              42s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
+  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0              37s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
+  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0              32s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
+  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0              27s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
+  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0              22s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
+  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0              17s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
+  Warning  volume mount check; ConditionStatus:True; PodName:pb-custom-0   17s   KubeDB Ops-manager Operator  volume mount check; ConditionStatus:True; PodName:pb-custom-0
+  Warning  reload config; ConditionStatus:True; PodName:pb-custom-0        12s   KubeDB Ops-manager Operator  reload config; ConditionStatus:True; PodName:pb-custom-0
+  Warning  reload config; ConditionStatus:True; PodName:pb-custom-0        12s   KubeDB Ops-manager Operator  reload config; ConditionStatus:True; PodName:pb-custom-0
+  Normal   Successful                                                      12s   KubeDB Ops-manager Operator  Reloading performed successfully in PgBouncer: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure
+  Normal   Starting                                                        12s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-custom
+  Normal   Successful                                                      12s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-custom
+  Normal   Successful                                                      12s   KubeDB Ops-manager Operator  Controller has Successfully Reconfigured PgBouncer databases: demo/pb-custom
 ```
 
 Now let's exec into the pgbouncer pod and check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo pb-custom-0 -- bash
-pb-custom-0:/$ cat opt/pgbouncer/etc/pgbouncer.ini
-backend_hostname0 = 'ha-postgres.demo.svc'
-backend_port0 = 5432
-backend_weight0 = 1
-backend_flag0 = 'ALWAYS_PRIMARY|DISALLOW_TO_FAILOVER'
-backend_hostname1 = 'ha-postgres-standby.demo.svc'
-backend_port1 = 5432
-backend_weight1 = 1
-backend_flag1 = 'DISALLOW_TO_FAILOVER'
-listen_addresses = *
-log_per_node_statement = on
-num_init_children = 5
-max_pool = 50
-child_life_time = '300'
-child_max_connections = 0
-connection_life_time = 0
-client_idle_limit = 0
-connection_cache = on
-load_balance_mode = on
-log_min_messages = 'warning'
-statement_level_load_balance = 'off'
-memory_cache_enabled = 'off'
-enable_pool_hba = on
-port = 9999
-socket_dir = '/var/run/pgbouncer'
-pcp_listen_addresses = *
-pcp_port = 9595
-pcp_socket_dir = '/var/run/pgbouncer'
-sr_check_period = 0
-health_check_period = 0
-backend_clustering_mode = 'streaming_replication'
-ssl = 'off'
-failover_on_backend_error = 'off'
-memqcache_oiddir = '/tmp/oiddir/'
-allow_clear_text_frontend_auth = 'false'
-failover_on_backend_error = 'off'
+$ kubectl exec -it -n demo pb-custom-0  -- /bin/sh
+pb-custom-0:/$ cat etc/config/pgbouncer.ini
+[databases]
+postgres= host=ha-postgres.demo.svc port=5432 dbname=postgres
+
+[pgbouncer]
+max_db_connections = 1
+logfile = /tmp/pgbouncer.log
+listen_addr = *
+admin_users =  pgbouncer
+pool_mode = session
+max_client_conn = 87
+listen_port = 5432
+ignore_startup_parameters = extra_float_digits
+auth_file =  /var/run/pgbouncer/secret/userlist
+default_pool_size = 2
+min_pool_size = 1
+max_user_connections = 2
+stats_period = 60
+auth_type = md5
+pidfile = /tmp/pgbouncer.pid
+reserve_pool_size = 5
+reserve_pool_timeout = 5
 pb-custom-0:/$ exit
 exit
 ```
@@ -430,68 +415,76 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         PgBouncerOpsRequest
 Metadata:
-  Creation Timestamp:  2024-07-30T05:51:18Z
+  Creation Timestamp:  2024-11-28T10:11:52Z
   Generation:          1
-  Resource Version:    95874
-  UID:                 92b0f18c-a329-4bb7-85d0-ef66f32bf57a
+  Resource Version:    86774
+  UID:                 a4b8e8b5-0b82-4391-a8fe-66911aa5bee6
 Spec:
   Apply:  IfReady
   Configuration:
-    Apply Config:
-      pgbouncer.ini:  max_pool = 75
+    Pgbouncer:
+      Apply Config:
+        pgbouncer.ini:  [pgbouncer]
+auth_type=scram-sha-256
   Database Ref:
     Name:   pb-custom
   Timeout:  5m
   Type:     Reconfigure
 Status:
   Conditions:
-    Last Transition Time:  2024-07-30T05:51:18Z
-    Message:               PgBouncer ops-request has started to `Reconfigure` the PgBouncer nodes
+    Last Transition Time:  2024-11-28T10:11:52Z
+    Message:               Controller has started to Progress with Reconfigure of PgBouncerOpsRequest: demo/pbops-reconfigure-apply
     Observed Generation:   1
-    Reason:                Reconfigure
+    Reason:                Running
     Status:                True
-    Type:                  Reconfigure
-    Last Transition Time:  2024-07-30T05:51:21Z
-    Message:               Successfully paused database
+    Type:                  Running
+    Last Transition Time:  2024-11-28T10:11:55Z
+    Message:               paused pgbouncer database
     Observed Generation:   1
-    Reason:                DatabasePauseSucceeded
+    Reason:                Paused
     Status:                True
-    Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-07-30T05:51:21Z
-    Message:               Successfully updated PetSet
-    Observed Generation:   1
-    Reason:                UpdatePetSets
-    Status:                True
-    Type:                  UpdatePetSets
-    Last Transition Time:  2024-07-30T05:51:22Z
+    Type:                  Paused
+    Last Transition Time:  2024-11-28T10:11:55Z
     Message:               Successfully updated PgBouncer
     Observed Generation:   1
     Reason:                UpdateDatabase
     Status:                True
     Type:                  UpdateDatabase
-    Last Transition Time:  2024-07-30T05:52:07Z
-    Message:               Successfully Restarted Pods With Resources
+    Last Transition Time:  2024-11-28T10:11:55Z
+    Message:               Successfully updated PgBouncer backend secret
     Observed Generation:   1
-    Reason:                RestartPods
+    Reason:                UpdateBackendSecret
     Status:                True
-    Type:                  RestartPods
-    Last Transition Time:  2024-07-30T05:51:27Z
+    Type:                  UpdateBackendSecret
+    Last Transition Time:  2024-11-28T10:12:00Z
     Message:               get pod; ConditionStatus:True; PodName:pb-custom-0
     Observed Generation:   1
     Status:                True
     Type:                  GetPod--pb-custom-0
-    Last Transition Time:  2024-07-30T05:51:27Z
-    Message:               evict pod; ConditionStatus:True; PodName:pb-custom-0
+    Last Transition Time:  2024-11-28T10:12:00Z
+    Message:               volume mount check; ConditionStatus:True; PodName:pb-custom-0
     Observed Generation:   1
     Status:                True
-    Type:                  EvictPod--pb-custom-0
-    Last Transition Time:  2024-07-30T05:52:02Z
-    Message:               check pod running; ConditionStatus:True; PodName:pb-custom-0
+    Type:                  VolumeMountCheck--pb-custom-0
+    Last Transition Time:  2024-11-28T10:12:05Z
+    Message:               reload config; ConditionStatus:True; PodName:pb-custom-0
     Observed Generation:   1
     Status:                True
-    Type:                  CheckPodRunning--pb-custom-0
-    Last Transition Time:  2024-07-30T05:52:07Z
-    Message:               Successfully completed the reconfigure for PgBouncer
+    Type:                  ReloadConfig--pb-custom-0
+    Last Transition Time:  2024-11-28T10:12:05Z
+    Message:               Reloading performed successfully in PgBouncer: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure-apply
+    Observed Generation:   1
+    Reason:                ReloadPodsSucceeded
+    Status:                True
+    Type:                  ReloadPods
+    Last Transition Time:  2024-11-28T10:12:05Z
+    Message:               Successfully Reconfigured
+    Observed Generation:   1
+    Reason:                Reconfigure
+    Status:                True
+    Type:                  Reconfigure
+    Last Transition Time:  2024-11-28T10:12:05Z
+    Message:               Controller has successfully completed  with Reconfigure of PgBouncerOpsRequest: demo/pbops-reconfigure-apply
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -501,263 +494,62 @@ Status:
 Events:
   Type     Reason                                                         Age   From                         Message
   ----     ------                                                         ----  ----                         -------
-  Normal   Starting                                                       77s   KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pbops-reconfigure-apply
-  Normal   Starting                                                       77s   KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-custom
-  Normal   Successful                                                     77s   KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure-apply
-  Normal   UpdatePetSets                                                  74s   KubeDB Ops-manager Operator  Successfully updated PetSet
-  Normal   UpdatePetSets                                                  73s   KubeDB Ops-manager Operator  Successfully updated PetSet
-  Normal   UpdateDatabase                                                 73s   KubeDB Ops-manager Operator  Successfully updated PgBouncer
-  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0             68s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
-  Warning  evict pod; ConditionStatus:True; PodName:pb-custom-0           68s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:pb-custom-0
-  Warning  check pod running; ConditionStatus:False; PodName:pb-custom-0  63s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:pb-custom-0
-  Warning  check pod running; ConditionStatus:True; PodName:pb-custom-0   33s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:pb-custom-0
-  Normal   RestartPods                                                    28s   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
-  Normal   Starting                                                       28s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-custom
-  Normal   Successful                                                     28s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure-apply
+  Normal   Starting                                                       54s   KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pbops-reconfigure-apply
+  Normal   Starting                                                       54s   KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-custom
+  Normal   Successful                                                     54s   KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure-apply
+  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0             46s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
+  Warning  volume mount check; ConditionStatus:True; PodName:pb-custom-0  46s   KubeDB Ops-manager Operator  volume mount check; ConditionStatus:True; PodName:pb-custom-0
+  Warning  reload config; ConditionStatus:True; PodName:pb-custom-0       41s   KubeDB Ops-manager Operator  reload config; ConditionStatus:True; PodName:pb-custom-0
+  Warning  reload config; ConditionStatus:True; PodName:pb-custom-0       41s   KubeDB Ops-manager Operator  reload config; ConditionStatus:True; PodName:pb-custom-0
+  Normal   Successful                                                     41s   KubeDB Ops-manager Operator  Reloading performed successfully in PgBouncer: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure-apply
+  Normal   Starting                                                       41s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-custom
+  Normal   Successful                                                     41s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-custom
+  Normal   Successful                                                     41s   KubeDB Ops-manager Operator  Controller has Successfully Reconfigured PgBouncer databases: demo/pb-custom
+  Normal   Starting                                                       41s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-custom
+  Normal   Successful                                                     41s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-custom
+  Normal   Successful                                                     41s   KubeDB Ops-manager Operator  Controller has Successfully Reconfigured PgBouncer databases: demo/pb-custom
 ```
 
 Now let's exec into the pgbouncer pod and check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo pb-custom-0 -- bash 
-pb-custom-0:/$ cat opt/pgbouncer/etc/pgbouncer.ini
-memory_cache_enabled = 'off'
-num_init_children = 5
-pcp_socket_dir = '/var/run/pgbouncer'
-port = '9999'
-enable_pool_hba = on
-log_min_messages = 'warning'
-pcp_port = '9595'
-sr_check_period = 0
-ssl = 'off'
-backend_weight1 = 1
-load_balance_mode = on
-backend_weight0 = 1
-backend_port0 = '5432'
-connection_cache = on
-backend_hostname1 = 'ha-postgres-standby.demo.svc'
-health_check_period = 0
-memqcache_oiddir = '/tmp/oiddir/'
-statement_level_load_balance = 'off'
-allow_clear_text_frontend_auth = 'false'
-log_per_node_statement = on
-backend_hostname0 = 'ha-postgres.demo.svc'
-backend_flag1 = 'DISALLOW_TO_FAILOVER'
-listen_addresses = *
-failover_on_backend_error = 'off'
-pcp_listen_addresses = *
-child_max_connections = 0
-socket_dir = '/var/run/pgbouncer'
-backend_flag0 = 'ALWAYS_PRIMARY|DISALLOW_TO_FAILOVER'
-backend_port1 = '5432'
-backend_clustering_mode = 'streaming_replication'
-connection_life_time = 0
-child_life_time = '300'
-max_pool = 75
-client_idle_limit = 0
-failover_on_backend_error = 'off'
+$ kubectl exec -it -n demo pb-custom-0  -- /bin/sh 
+pb-custom-0:/$ cat etc/config/pgbouncer.ini
+[databases]
+postgres= host=ha-postgres.demo.svc port=5432 dbname=postgres
+
+[pgbouncer]
+stats_period = 60
+pidfile = /tmp/pgbouncer.pid
+pool_mode = session
+reserve_pool_timeout = 5
+max_client_conn = 87
+min_pool_size = 1
+default_pool_size = 2
+listen_addr = *
+max_db_connections = 1
+max_user_connections = 2
+auth_type=scram-sha-256
+ignore_startup_parameters = extra_float_digits
+admin_users =  pgbouncer
+auth_file =  /var/run/pgbouncer/secret/userlist
+logfile = /tmp/pgbouncer.log
+listen_port = 5432
+reserve_pool_size = 5
 pb-custom-0:/$ exit
 exit
 ```
 
 As we can see from the configuration of running pgbouncer, the value of `auth_type` has been changed from `md5` to `scram-sha-256`. So the reconfiguration of the pgbouncer using the `applyConfig` field is successful.
 
-
 ### Remove config
 
-Now we will reconfigure this pgbouncer to remove the custom config provided and get it back to the default config. We will use the `removeCustomConfig` field of the `PgBouncerOpsRequest`. This will remove all the custom config provided and get the pgbouncer back to the default config.
-
-#### Create PgBouncerOpsRequest
-
-Now, we will use the `removeCustomConfig` field in the `PgBouncerOpsRequest` CR. The `PgBouncerOpsRequest` yaml is given below,
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: PgBouncerOpsRequest
-metadata:
-  name: pbops-reconfigure-remove
-  namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: pb-custom
-  configuration:
-    pgbouncer:
-      removeCustomConfig: true
-  timeout: 5m
-  apply: IfReady
-```
-
-Here,
+This will remove all the custom config previously provided. After this Ops-manager operator will merge the new given config with the default config and apply this.
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `pb-custom` pgbouncer.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgbouncer.
-- `spec.configuration.pgbouncer.removeCustomConfig` specifies for boolean values to remove custom configuration.
+- `spec.configuration.pgbouncer.removeCustomConfig` specifies for boolean values to remove previous custom configuration.
 
-Let's create the `PgBouncerOpsRequest` CR we have shown above,
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/reconfigure/pbops-reconfigure-remove.yaml
-pgbounceropsrequest.ops.kubedb.com/pbops-reconfigure-remove created
-```
-
-#### Verify if the configuration is removed
-
-If everything goes well, `KubeDB` Ops-manager operator will remove the custom configuration and move back to the default configuration.
-
-Let's wait for `PgBouncerOpsRequest` to be `Successful`.  Run the following command to watch `PgBouncerOpsRequest` CR,
-
-```bash
-$ watch kubectl get pgbounceropsrequest -n demo
-Every 2.0s: kubectl get pgbounceropsrequest -n demo
-kubectl get pgbounceropsrequest -n demo
-NAME                       TYPE          STATUS       AGE
-pbops-reconfigure          Reconfigure   Successful   71m
-pbops-reconfigure-apply    Reconfigure   Successful   63m
-pbops-reconfigure-remove   Reconfigure   Successful   57s
-```
-
-We can see from the above output that the `PgBouncerOpsRequest` has succeeded. If we describe the `PgBouncerOpsRequest` we will get an overview of the steps that were followed to reconfigure the pgbouncer.
-
-```bash
-$ kubectl describe pgbounceropsrequest -n demo pbops-reconfigure-remove
-Name:         pbops-reconfigure-remove
-Namespace:    demo
-Labels:       <none>
-Annotations:  <none>
-API Version:  ops.kubedb.com/v1alpha1
-Kind:         PgBouncerOpsRequest
-Metadata:
-  Creation Timestamp:  2024-07-30T06:53:27Z
-  Generation:          1
-  Resource Version:    99827
-  UID:                 24c9cba3-5e85-40dc-96f3-373d2dd7a8ba
-Spec:
-  Apply:  IfReady
-  Configuration:
-    Remove Custom Config:  true
-  Database Ref:
-    Name:   pb-custom
-  Timeout:  5m
-  Type:     Reconfigure
-Status:
-  Conditions:
-    Last Transition Time:  2024-07-30T06:53:28Z
-    Message:               PgBouncer ops-request has started to `Reconfigure` the PgBouncer nodes
-    Observed Generation:   1
-    Reason:                Reconfigure
-    Status:                True
-    Type:                  Reconfigure
-    Last Transition Time:  2024-07-30T06:53:31Z
-    Message:               Successfully paused database
-    Observed Generation:   1
-    Reason:                DatabasePauseSucceeded
-    Status:                True
-    Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-07-30T06:53:31Z
-    Message:               Successfully updated PetSet
-    Observed Generation:   1
-    Reason:                UpdatePetSets
-    Status:                True
-    Type:                  UpdatePetSets
-    Last Transition Time:  2024-07-30T06:53:32Z
-    Message:               Successfully updated PgBouncer
-    Observed Generation:   1
-    Reason:                UpdateDatabase
-    Status:                True
-    Type:                  UpdateDatabase
-    Last Transition Time:  2024-07-30T06:54:17Z
-    Message:               Successfully Restarted Pods With Resources
-    Observed Generation:   1
-    Reason:                RestartPods
-    Status:                True
-    Type:                  RestartPods
-    Last Transition Time:  2024-07-30T06:53:37Z
-    Message:               get pod; ConditionStatus:True; PodName:pb-custom-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--pb-custom-0
-    Last Transition Time:  2024-07-30T06:53:37Z
-    Message:               evict pod; ConditionStatus:True; PodName:pb-custom-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--pb-custom-0
-    Last Transition Time:  2024-07-30T06:54:12Z
-    Message:               check pod running; ConditionStatus:True; PodName:pb-custom-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--pb-custom-0
-    Last Transition Time:  2024-07-30T06:54:17Z
-    Message:               Successfully completed the reconfigure for PgBouncer
-    Observed Generation:   1
-    Reason:                Successful
-    Status:                True
-    Type:                  Successful
-  Observed Generation:     1
-  Phase:                   Successful
-Events:
-  Type     Reason                                                         Age   From                         Message
-  ----     ------                                                         ----  ----                         -------
-  Normal   Starting                                                       74s   KubeDB Ops-manager Operator  Start processing for PgBouncerOpsRequest: demo/pbops-reconfigure-remove
-  Normal   Starting                                                       74s   KubeDB Ops-manager Operator  Pausing PgBouncer databse: demo/pb-custom
-  Normal   Successful                                                     74s   KubeDB Ops-manager Operator  Successfully paused PgBouncer database: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure-remove
-  Normal   UpdatePetSets                                                  71s   KubeDB Ops-manager Operator  Successfully updated PetSet
-  Normal   UpdatePetSets                                                  70s   KubeDB Ops-manager Operator  Successfully updated PetSet
-  Normal   UpdateDatabase                                                 70s   KubeDB Ops-manager Operator  Successfully updated PgBouncer
-  Warning  get pod; ConditionStatus:True; PodName:pb-custom-0             65s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pb-custom-0
-  Warning  evict pod; ConditionStatus:True; PodName:pb-custom-0           65s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:pb-custom-0
-  Warning  check pod running; ConditionStatus:False; PodName:pb-custom-0  60s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:pb-custom-0
-  Warning  check pod running; ConditionStatus:True; PodName:pb-custom-0   30s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:pb-custom-0
-  Normal   RestartPods                                                    25s   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
-  Normal   Starting                                                       25s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-custom
-  Normal   Successful                                                     25s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-custom for PgBouncerOpsRequest: pbops-reconfigure-remove
-```
-
-Now let's exec into the pgbouncer pod and check the configuration.
-
-```bash
-$ kubectl exec -it -n demo pb-custom-0 -- bash 
-pb-custom-0:/$ cat opt/pgbouncer/etc/pgbouncer.ini
-backend_hostname0 = 'ha-postgres.demo.svc'
-backend_port0 = 5432
-backend_weight0 = 1
-backend_flag0 = 'ALWAYS_PRIMARY|DISALLOW_TO_FAILOVER'
-backend_hostname1 = 'ha-postgres-standby.demo.svc'
-backend_port1 = 5432
-backend_weight1 = 1
-backend_flag1 = 'DISALLOW_TO_FAILOVER'
-enable_pool_hba = on
-listen_addresses = *
-port = 9999
-socket_dir = '/var/run/pgbouncer'
-pcp_listen_addresses = *
-pcp_port = 9595
-pcp_socket_dir = '/var/run/pgbouncer'
-log_per_node_statement = on
-sr_check_period = 0
-health_check_period = 0
-backend_clustering_mode = 'streaming_replication'
-num_init_children = 5
-max_pool = 15
-child_life_time = 300
-child_max_connections = 0
-connection_life_time = 0
-client_idle_limit = 0
-connection_cache = on
-load_balance_mode = on
-ssl = 'off'
-failover_on_backend_error = 'off'
-log_min_messages = 'warning'
-statement_level_load_balance = 'off'
-memory_cache_enabled = 'off'
-memqcache_oiddir = '/tmp/oiddir/'
-allow_clear_text_frontend_auth = 'false'
-failover_on_backend_error = 'off'
-pb-custom-0:/$ exit
-exit
-```
-
-As we can see from the configuration of running pgbouncer, the value of `auth_type` has been changed from `scram-sha-256` to `md5`. So the reconfiguration of the pgbouncer using the `removeCustomConfig` field is successful.
 
 
 ## Cleaning Up
@@ -765,7 +557,7 @@ As we can see from the configuration of running pgbouncer, the value of `auth_ty
 To clean up the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl delete -n demo pb/pb-custom
-kubectl delete pgbounceropsrequest -n demo pbops-reconfigure  pbops-reconfigure-apply pbops-reconfigure-remove
+kubectl delete pgbounceropsrequest -n demo pbops-reconfigure  pbops-reconfigure-apply
 kubectl delete pg -n demo ha-postgres
 kubectl delete ns demo
 ```
