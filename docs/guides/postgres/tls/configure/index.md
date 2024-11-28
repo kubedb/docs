@@ -82,7 +82,7 @@ Here, our issuer `postgres-ca-issuer`  is ready to deploy a `Postgres` Cluster w
 apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
-  name: demo-pg
+  name: pg
   namespace: demo
 spec:
   version: "13.13"
@@ -139,21 +139,15 @@ Now, watch `Postgres` is going to `Running` state and also watch `PetSet` and it
 ```bash
 $  watch kubectl get postgres -n demo pg
 
-Every 2.0s: kubectl get postgres --all-namespaces                       ac-emon: Fri Dec  3 15:14:11 2021
-
 NAMESPACE   NAME   VERSION   STATUS   AGE
 demo        pg     13.2      Ready    62s
 
 
 $ watch -n 3 kubectl get sts -n demo pg
-Every 2.0s: kubectl get sts -n demo pg                                  ac-emon: Fri Dec  3 15:15:41 2021
-
 NAME   READY   AGE
 pg     3/3     2m30s
 
 $  watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=pg
-Every 3.0s: kubectl get pod -n demo -l app.kubernetes.io/name=postg...  ac-emon: Fri Dec  3 15:17:10 2021
-
 NAME   READY   STATUS    RESTARTS   AGE
 pg-0   2/2     Running   0          3m59s
 pg-1   2/2     Running   0          3m54s
@@ -174,6 +168,7 @@ pg-auth                    kubernetes.io/basic-auth              2      4m41s
 pg-client-cert             kubernetes.io/tls                     3      4m40s
 pg-metrics-exporter-cert   kubernetes.io/tls                     3      4m40s
 pg-server-cert             kubernetes.io/tls                     3      4m41s
+postgres-ca                kubernetes.io/tls                     2      5m10s
 pg-token-xvk9p             kubernetes.io/service-account-token   3      4m41s
 ```
 
