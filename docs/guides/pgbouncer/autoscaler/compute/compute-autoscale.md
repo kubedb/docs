@@ -97,7 +97,6 @@ Let's check the Pod containers resources,
 $ kubectl get pod -n demo pgbouncer-autoscale-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
-    "cpu": "200m",
     "memory": "300Mi"
   },
   "requests": {
@@ -112,7 +111,6 @@ Let's check the PgBouncer resources,
 $ kubectl get pgbouncer -n demo pgbouncer-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
 {
   "limits": {
-    "cpu": "200m",
     "memory": "300Mi"
   },
   "requests": {
@@ -403,7 +401,6 @@ Now, we are going to verify from the Pod, and the PgBouncer yaml whether the res
 $ kubectl get pod -n demo pgbouncer-autoscale-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
-    "cpu": "400m",
     "memory": "400Mi"
   },
   "requests": {
@@ -415,7 +412,6 @@ $ kubectl get pod -n demo pgbouncer-autoscale-0 -o json | jq '.spec.containers[]
 $ kubectl get pgbouncer -n demo pgbouncer-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
 {
   "limits": {
-    "cpu": "400m",
     "memory": "400Mi"
   },
   "requests": {

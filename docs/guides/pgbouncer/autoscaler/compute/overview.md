@@ -28,7 +28,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `PgBouncer`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Compute Auto Scaling process of PgBouncer" src="/docs/images/day-2-operation/pgbouncer/compute-process.png">
+  <img alt="Compute Auto Scaling process of PgBouncer" src="/docs/images/day-2-operation/pgbouncer/autoscaling.png">
 <figcaption align="center">Fig: Compute Auto Scaling process of PgBouncer</figcaption>
 </figure>
 
