@@ -250,13 +250,6 @@ spec:
     name: my-group-auth
   podTemplate:
     spec:
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
       serviceAccountName: my-group
   replicas: 3
   storage:
@@ -274,8 +267,7 @@ spec:
     mode: GroupReplication
   version: 8.0.35
 status:
-  observedGeneration: 2$4213139756412538772
-  phase: Running
+  phase: Ready
 ```
 
 ## Connect with MySQL database
