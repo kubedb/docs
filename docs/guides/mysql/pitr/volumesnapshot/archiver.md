@@ -3,7 +3,7 @@ title: Continuous Archiving and Point-in-time Recovery
 menu:
   docs_{{ .version }}:
     identifier: volumesnapshot
-    name: VolumeSnapShot
+    name: VolumeSnapshot
     parent: pitr-mysql
     weight: 10
 menu_name: docs_{{ .version }}
@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# KubeDB MySQL - Continuous Archiving and Point-in-time Recovery
+# KubeDB MySQL - Continuous Archiving and Point-in-time Recovery using VolumeSnapshot
 
 Here, will show you how to use KubeDB to provision a MySQL to Archive continuously and Restore point-in-time.
 
@@ -24,8 +24,6 @@ Now,install `KubeDB` operator in your cluster following the steps [here](/docs/s
 
 To install `KubeStash` operator in your cluster following the steps [here](https://github.com/kubestash/installer/tree/master/charts/kubestash).
 
-To install `SideKick`  in your cluster following the steps [here](https://github.com/kubeops/installer/tree/master/charts/sidekick).
-
 To install `External-snapshotter`  in your cluster following the steps [here](https://github.com/kubernetes-csi/external-snapshotter/tree/release-5.0).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
@@ -34,9 +32,9 @@ To keep things isolated, this tutorial uses a separate namespace called `demo` t
 $ kubectl create ns demo
 namespace/demo created
 ```
-> Note: The yaml files used in this tutorial are stored in [docs/guides/mysql/remote-replica/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/remote-replica/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/guides/mysql/pitr/volumesnapshot/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/pitr/volumesnapshot/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## continuous archiving
+## Continuous Archiving
 Continuous archiving involves making regular copies (or "archives") of the MySQL transaction log files.To ensure continuous archiving to a remote location we need prepare `BackupStorage`,`RetentionPolicy`,`MySQLArchiver` for the KubeDB Managed MySQL Databases.
 
 ### BackupStorage
@@ -172,9 +170,9 @@ stringData:
 ```
 
 ```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pirt/yamls/mysqlarchiver.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/volumesnapshot/yamls/mysqlarchiver.yaml
  mysqlarchiver.archiver.kubedb.com/mysqlarchiver-sample created
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pirt/yamls/encryptionSecret.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/volumesnapshot/yamls/encryptionSecret.yaml
 ```
 
 ## Ensure volumeSnapshotClass
@@ -204,6 +202,8 @@ $ helm install longhorn longhorn/longhorn --namespace longhorn-system --create-n
 $ kubectl apply -f volumesnapshotclass.yaml
   volumesnapshotclass.snapshot.storage.k8s.io/longhorn-snapshot-vsc unchanged
 ```
+
+Note: Ensure that the VolumeSnapshotClass is provisioned with the same storage class driver used for provisioning your MySQL database. In our case, we are using the longhorn storage class as our database provisioner, with the driver set to `driver.longhorn.io`.
 
 # Deploy MySQL
 So far we are ready with setup for continuously archive MySQL, We deploy a mysqlql referring the MySQL archiver object
@@ -256,7 +256,7 @@ mysql-sidekick                                           1/1     Running     0  
 
 `mysql-backup-config-manifest-1703680982-62x97` are the pod of the manifest backup related to MySQL object
 
-### validate BackupConfiguration and VolumeSnapshots
+### Validate BackupConfiguration and VolumeSnapshots
 
 ```bash
 
@@ -275,7 +275,7 @@ NAME                           READYTOUSE   SOURCEPVC                  SOURCESNA
 mysql-1702388096               true         data-mysql-1                                       1Gi           longhorn-snapshot-vsc   snapcontent-735e97ad-1dfa-4b70-b416-33f7270d792c   2m5s           2m5s
 ```
 
-## data insert and switch wal
+## Data Insert and Switch Binlog File
 After each and every wal switch the wal files will be uploaded to backup storage
 
 ```bash
@@ -431,6 +431,29 @@ mysql> select count(*) from demo_table;
 ```
 
 **so we are able to successfully recover from a disaster**
+
+**ReplicationStrategy**
+
+The ReplicationStrategy determines how MySQL restores are managed when using the VolumeSnapshot. We support three strategies: `none`, `sync`, and `fscopy`, with `none` being the default.
+
+To configure the desired strategy, set the `spec.init.archiver.replicationStrategy` field in your configuration. These strategies are applicable only when restoring a MySQL database in group replication mode.
+
+**Strategies Overview:**
+
+***none***
+
+Each MySQL replica independently restores the base backup volumesnapshot and binlog files. After completing the restore process, the replicas individually join the replication group.
+
+***sync***
+
+The base backup volumesnapshot and binlog files are restored exclusively on pod-0. Other replicas then synchronize their data by leveraging the MySQL clone plugin to replicate from pod-0.
+
+***fscopy***
+
+The base backup and binlog files are restored on pod-0. The data is then copied from pod-0's data directory to the data directories of other replicas using file system copy. Once the data transfer is complete, the group replication process begins.  Please note that `fscopy` does not support cross-zone operations.
+
+Choose the replication strategy that best fits your restoration and replication requirements. On this demonstration, we have used the sync replication strategy.
+
 
 ## Cleaning up
 

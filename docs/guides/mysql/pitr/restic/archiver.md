@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# KubeDB MySQL - Continuous Archiving and Point-in-time Recovery
+# KubeDB MySQL - Continuous Archiving and Point-in-time Recovery Using Restic Driver
 
-Here, we will demonstrate how to use KubeDB to provision a MySQL database for continuous archiving and point-in-time restoration
+Here, we will demonstrate how to use KubeDB to provision a MySQL database for continuous archiving and point-in-time restoration.
 This process utilizes [Percona XtraBackup](https://www.percona.com/mysql/software/percona-xtrabackup), a robust tool for taking physical backups of MySQL databases, ensuring data integrity and consistency. We use XtraBackup as the base backup for our MySQL archiver.
 Let's explore how we use XtraBackup in MySQL database archiving.
 ## Before You Begin
@@ -101,7 +101,7 @@ spec:
     last: 2
 ```
 ```bash
-$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/yamls/retention-policy.yaml 
+$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/retention-policy.yaml 
 retentionpolicy.storage.kubestash.com/mysql-retention-policy created
 ```
 
@@ -164,9 +164,9 @@ stringData:
 ```
 
 ```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pirt/yamls/mysqlarchiver.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/mysqlarchiver.yaml
  mysqlarchiver.archiver.kubedb.com/mysqlarchiver-sample created
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pirt/yamls/encryptionSecret.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/encryptionSecret.yaml
 ```
 
 # Deploy MySQL
@@ -199,6 +199,11 @@ spec:
   deletionPolicy: WipeOut
 ```
 
+```bash 
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/mysql.yaml
+ mysql.kubedb.com/mysql created
+ ```
+
 ```bash
 $ kubectl get pod -n demo
 NAME                                                              READY   STATUS      RESTARTS   AGE
@@ -214,8 +219,13 @@ retention-policy-mysql-archiver-manifest-backup-1733120326l79mb   0/1     Comple
 
 `mysql-sidekick` is responsible for uploading binlog files
 
-The pod mysql-archiver-full-backup-1733120326-4n8nd is responsible for creating the base backup of MySQL. 
+`mysql-archiver-full-backup-1733120326-4n8nd` is responsible for creating the base backup of MySQL. 
+
 `mysql-archiver-manifest-backup-1733120326-9gw4f` is the pod of the manifest backup related to MySQL object.
+
+`retention-policy-mysql-archiver-full-backup-1733120326-7rx9t` will automatically clean up previous full-backup snapshots according to the rules defined in the `mysql-retention-policy` custom resource (CR).
+
+`retention-policy-mysql-archiver-manifest-backup-1733120326l79mb` will automatically clean up previous manifest-backup snapshots according to the rules specified in the `mysql-retention-policy` custom resource (CR).
 
 ### Validate BackupConfiguration and BackupSession
 
@@ -230,11 +240,10 @@ $ kubectl get backupsession -n demo
 NAME                                        INVOKER-TYPE          INVOKER-NAME     PHASE       DURATION   AGE
 mysql-archiver-full-backup-1733120326       BackupConfiguration   mysql-archiver   Succeeded   50s        14m
 mysql-archiver-manifest-backup-1733120326   BackupConfiguration   mysql-archiver   Succeeded   25s        14m
-                                      1Gi           longhorn-snapshot-vsc   snapcontent-735e97ad-1dfa-4b70-b416-33f7270d792c   2m5s           2m5s
 ```
 
-## data insert and switch wal
-After each and every wal switch the wal files will be uploaded to backup storage
+## Data Insert and Switch Binlog File
+After each and every binlog switch the binlog files will be uploaded to backup storage
 
 ```bash
 $ kubectl exec -it -n demo  mysql-0 -- bash
@@ -286,7 +295,7 @@ mysql> select count(*) from demo_table;
 
 ## Point-in-time Recovery
 Point-In-Time Recovery allows you to restore a MySQL database to a specific point in time using the archived transaction logs. This is particularly useful in scenarios where you need to recover to a state just before a specific error or data corruption occurred.
-Let's say accidentally our dba drops the the table tab_1 and we want to restore.
+Let's say accidentally our db drops the the table `demo_table` and we want to restore that.
 
 ```bash
 $ kubectl exec -it -n demo  mysql-0 -- bash
@@ -296,10 +305,9 @@ mysql> drop table demo_table;
 mysql> flush logs;
 
 ```
-We can't restore from a full backup since at this point no full backup was perform. so we can choose a specific time in which time we want to restore.We can get the specfice time from the wal that archived in the backup storage . Go to the binlog file and find where to store. You can parse binlog-files using  `mysqlbinlog`.
+We can't restore from a full backup since at this point no full backup was perform. so we can choose a specific time in which time we want to restore.We can get the specific time from the binlog that archived in the backup storage . Go to the binlog file and find where to store. You can parse binlog-files using  `mysqlbinlog`.
 
-
-For the demo I will use the previous time we get form `select now()`
+For the demo I will use the previous time we get from `select now()`
 
 ```bash 
 mysql> select now();
@@ -310,6 +318,8 @@ mysql> select now();
 +---------------------+
 ```
 ### Restore MySQL
+
+
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -343,21 +353,26 @@ spec:
 
 ```
 
-```bash
-$ kubectl apply -f restore.yaml
-mysql.kubedb.com/restore-mysql created
-```
+```bash 
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/mysql-restore.yaml
+ mysql.kubedb.com/restore-mysql created
+ ```
 
-**check for Restored MySQL**
+**Check for Restored MySQL**
 
 ```bash
 $ kubectl get pod -n demo
+data-restore-mysql-0-pvc-restorer-5vtj7                           0/1     Completed   0          7m40s
 restore-mysql-0                                                   2/2     Running     0          6m40s
 restore-mysql-1                                                   2/2     Running     0          5m37s
 restore-mysql-2                                                   2/2     Running     0          5m21s
 restore-mysql-binlog-restorer-0                                   0/2     Completed   0          5m58s
 restore-mysql-manifest-restorer-pzx5z                             0/1     Completed   0          6m54s
 ```
+
+The pod `data-restore-mysql-0-pvc-restorer-5vtj7` is responsible for restoring the base backup.
+
+The pod `restore-mysql-binlog-restorer-0` is responsible for restoring the binlog file.
 
 ```bash
 $ kubectl get mysql -n demo
@@ -366,7 +381,7 @@ mysql.kubedb.com/mysql           8.2.0     Ready    32m
 mysql.kubedb.com/restore-mysql   8.2.0     Ready    2m53s
 ```
 
-**Validating data on Restored MySQL**
+**Validating Data on Restored MySQL**
 
 ```bash
 $ kubectl exec -it -n demo restore-mysql-0 -- bash
@@ -404,16 +419,19 @@ The base backup and binlog files are restored exclusively on pod-0. Other replic
 
 ***fscopy***
 
-The base backup and binlog files are restored on pod-0. The data is then copied from pod-0's data directory to the data directories of other replicas using file system copy. Once the data transfer is complete, the group replication process begins.
+The base backup and binlog files are restored on pod-0. The data is then copied from pod-0's data directory to the data directories of other replicas using file system copy. Once the data transfer is complete, the group replication process begins.  Please note that `fscopy` does not support cross-zone operations.
 
-Choose the replication strategy that best fits your restoration and replication requirements.
+Choose the replication strategy that best fits your restoration and replication requirements. On this demonstration, we have used the sync replication strategy.
+
+## Cleaning up
+
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete -n demo mysql/mysql
 $ kubectl delete -n demo mysql/restore-mysql
-$ kubectl delete -n demo backupstorage
-$ kubectl delete -n demo mysqlarchiver
+$ kubectl delete -n demo backupstorage.storage.kubestash.com/storage
+$ kubectl delete -n demo mysqlarchiver/mysqlarchiver-sample
 $ kubectl delete ns demo
 ```
 
