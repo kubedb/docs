@@ -24,10 +24,6 @@ Now,install `KubeDB` operator in your cluster following the steps [here](/docs/s
 
 To install `KubeStash` operator in your cluster following the steps [here](https://github.com/kubestash/installer/tree/master/charts/kubestash).
 
-To install `SideKick`  in your cluster following the steps [here](https://github.com/kubeops/installer/tree/master/charts/sidekick).
-
-To install `External-snapshotter`  in your cluster following the steps [here](https://github.com/kubernetes-csi/external-snapshotter/tree/release-5.0).
-
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
@@ -41,32 +37,31 @@ Continuous archiving involves making regular copies (or "archives") of the MySQL
 
 ### BackupStorage
 BackupStorage is a CR provided by KubeStash that can manage storage from various providers like GCS, S3, and more.
-
+Here we are using AWS s3 bucket.
 ```yaml
 apiVersion: storage.kubestash.com/v1alpha1
 kind: BackupStorage
 metadata:
-  name: linode-storage
+  name: storage
   namespace: demo
 spec:
   storage:
     provider: s3
     s3:
-      bucket: mehedi-mysql-wal-g
-      endpoint: https://ap-south-1.linodeobjects.com
-      region: ap-south-1
-      prefix: backup
-      secretName: storage
+      endpoint: s3.amazonaws.com
+      bucket: mysql-xtrabackup
+      region: us-east-1
+      prefix: my-demo
+      secretName: s3-secret
   usagePolicy:
     allowedNamespaces:
       from: All
-  default: true
   deletionPolicy: WipeOut
 ```
 
 ```bash
    $ kubectl apply -f backupstorage.yaml
-   backupstorage.storage.kubestash.com/linode-storage created
+   backupstorage.storage.kubestash.com/storage created
 ```
 
 ### secrets for backup-storage
@@ -75,17 +70,17 @@ apiVersion: v1
 kind: Secret
 type: Opaque
 metadata:
-  name: storage
+  name: s3-secret
   namespace: demo
 stringData:
   AWS_ACCESS_KEY_ID: "*************26CX"
   AWS_SECRET_ACCESS_KEY: "************jj3lp"
-  AWS_ENDPOINT: https://ap-south-1.linodeobjects.com
+  AWS_ENDPOINT: s3.amazonaws.com
 ```
 
 ```bash
   $ kubectl apply -f storage-secret.yaml 
-  secret/storage created
+  secret/s3-secret created
 ```
 
 ### Retention policy
@@ -100,7 +95,7 @@ metadata:
 spec:
   maxRetentionPeriod: "30d"
   successfulSnapshots:
-    last: 100
+    last: 10
   failedSnapshots:
     last: 2
 ```
@@ -125,37 +120,33 @@ spec:
       from: Selector
       selector:
         matchLabels:
-         kubernetes.io/metadata.name: demo
+          kubernetes.io/metadata.name: demo
     selector:
       matchLabels:
         archiver: "true"
   retentionPolicy:
     name: mysql-retention-policy
     namespace: demo
-  encryptionSecret: 
+  encryptionSecret:
     name: "encrypt-secret"
-    namespace: "demo"  
+    namespace: "demo"
   fullBackup:
-    driver: "VolumeSnapshotter"
-    task:
-      params:
-        volumeSnapshotClassName: "longhorn-snapshot-vsc"
+    driver: "Restic"
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
-      schedule: "*/30 * * * *"
+      schedule: "0 0 * * *"
     sessionHistoryLimit: 2
   manifestBackup:
     scheduler:
       successfulJobsHistoryLimit: 1
-      failedJobsHistoryLimit: 1 
-      schedule: "*/30 * * * *"
+      failedJobsHistoryLimit: 1
+      schedule: "0 0 * * *"
     sessionHistoryLimit: 2
   backupStorage:
     ref:
-      name: "linode-storage"
+      name: "storage"
       namespace: "demo"
-
 ```
 
 ### EncryptionSecret
@@ -177,36 +168,8 @@ stringData:
  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pirt/yamls/encryptionSecret.yaml
 ```
 
-## Ensure volumeSnapshotClass
-
-```bash
-$ kubectl get volumesnapshotclasses
-NAME                    DRIVER               DELETIONPOLICY   AGE
-longhorn-snapshot-vsc   driver.longhorn.io   Delete           7d22h
-
-```
-If not any, try using `longhorn` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
-```yaml
-kind: VolumeSnapshotClass
-apiVersion: snapshot.storage.k8s.io/v1
-metadata:
-  name: longhorn-snapshot-vsc
-driver: driver.longhorn.io
-deletionPolicy: Delete
-parameters:
-  type: snap
-
-```
-
-```bash
-$ helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
-
-$ kubectl apply -f volumesnapshotclass.yaml
-  volumesnapshotclass.snapshot.storage.k8s.io/longhorn-snapshot-vsc unchanged
-```
-
 # Deploy MySQL
-So far we are ready with setup for continuously archive MySQL, We deploy a mysqlql referring the MySQL archiver object
+So far we are ready with setup for continuously archive MySQL, We deploy a mysql object referring the MySQL archiver object
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -217,20 +180,17 @@ metadata:
   labels:
     archiver: "true"
 spec:
-  authSecret:
-    name: my-auth
   version: "8.2.0"
   replicas: 3
   topology:
     mode: GroupReplication
   storageType: Durable
   storage:
-    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 1Gi
   archiver:
     ref:
       name: mysqlarchiver-sample
@@ -241,38 +201,37 @@ spec:
 
 ```bash
 $ kubectl get pod -n demo
-NAME                                                     READY   STATUS      RESTARTS        AGE
-mysql-0                                                  2/2     Running     0               28h
-mysql-1                                                  2/2     Running     0               28h
-mysql-2                                                  2/2     Running     0               28h
-mysql-backup-config-full-backup-1703680982-vqf7c         0/1     Completed   0               28h
-mysql-backup-config-manifest-1703680982-62x97            0/1     Completed   0               28h
-mysql-sidekick                                           1/1     Running     0               28h
+NAME                                                              READY   STATUS      RESTARTS   AGE
+mysql-0                                                           2/2     Running     0          15m
+mysql-1                                                           2/2     Running     0          15m
+mysql-2                                                           2/2     Running     0          15m
+mysql-archiver-full-backup-1733120326-4n8nd                       0/1     Completed   0          10m
+mysql-archiver-manifest-backup-1733120326-9gw4f                   0/1     Completed   0          10m
+mysql-sidekick                                                    1/1     Running     0          10m
+retention-policy-mysql-archiver-full-backup-1733120326-7rx9t      0/1     Completed   0          9m31s
+retention-policy-mysql-archiver-manifest-backup-1733120326l79mb   0/1     Completed   0          9m56s    28h
 ```
 
 `mysql-sidekick` is responsible for uploading binlog files
 
-`mysql-backup-config-full-backup-1703680982-vqf7c` are the pod of volumes levels backups for MySQL.
+`mysql-archiver-full-backup-1733120326-4n8nd` is the pod of physical backup using xtrabackup tools for MySQL.
 
-`mysql-backup-config-manifest-1703680982-62x97` are the pod of the manifest backup related to MySQL object
+`mysql-archiver-manifest-backup-1733120326-9gw4f` is the pod of the manifest backup related to MySQL object
 
-### validate BackupConfiguration and VolumeSnapshots
+### validate BackupConfiguration and backupSession
 
 ```bash
 
 $ kubectl get backupconfigurations -n demo
 
-NAME                    PHASE   PAUSED   AGE
-mysql-backup-config   Ready            2m43s
+NAME             PHASE   PAUSED   AGE
+mysql-archiver   Ready            14m
 
 $ kubectl get backupsession -n demo
-NAME                                           INVOKER-TYPE          INVOKER-NAME            PHASE       DURATION   AGE
-mysql-backup-config-full-backup-1702388088   BackupConfiguration   mysql-backup-config   Succeeded              74s
-mysql-backup-config-manifest-1702388088      BackupConfiguration   mysql-backup-config   Succeeded              74s
-
-kubectl get volumesnapshots -n demo
-NAME                           READYTOUSE   SOURCEPVC                  SOURCESNAPSHOTCONTENT   RESTORESIZE   SNAPSHOTCLASS           SNAPSHOTCONTENT                                    CREATIONTIME   AGE
-mysql-1702388096               true         data-mysql-1                                       1Gi           longhorn-snapshot-vsc   snapcontent-735e97ad-1dfa-4b70-b416-33f7270d792c   2m5s           2m5s
+NAME                                        INVOKER-TYPE          INVOKER-NAME     PHASE       DURATION   AGE
+mysql-archiver-full-backup-1733120326       BackupConfiguration   mysql-archiver   Succeeded   50s        14m
+mysql-archiver-manifest-backup-1733120326   BackupConfiguration   mysql-archiver   Succeeded   25s        14m
+                                      1Gi           longhorn-snapshot-vsc   snapcontent-735e97ad-1dfa-4b70-b416-33f7270d792c   2m5s           2m5s
 ```
 
 ## data insert and switch wal
@@ -306,15 +265,12 @@ mysql> INSERT INTO `demo_table` (`id`, `name`)
     ->     (9, 'Grace'),
     ->     (10, 'Henry');
 
+
 mysql> select now();
 +---------------------+
 | now()               |
 +---------------------+
-| 2023-12-28 17:10:54 |mysql> select now();
-+---------------------+
-| now()               |
-+---------------------+
-| 2023-12-28 17:10:54 |
+| 2024-12-02 06:38:42 |
 +---------------------+
 +---------------------+
 
@@ -351,7 +307,7 @@ mysql> select now();
 +---------------------+
 | now()               |
 +---------------------+
-| 2023-12-28 17:10:54 |
+| 2024-12-02 06:38:42 |
 +---------------------+
 ```
 ### Restore MySQL
@@ -365,25 +321,25 @@ metadata:
 spec:
   init:
     archiver:
+      replicationStrategy: sync
       encryptionSecret:
         name: encrypt-secret
         namespace: demo
       fullDBRepository:
         name: mysql-repository
         namespace: demo
-      recoveryTimestamp: "2023-12-28T17:10:54Z"
+      recoveryTimestamp: "2024-12-02T06:38:42Z"
   version: "8.2.0"
   replicas: 3
   topology:
     mode: GroupReplication
   storageType: Durable
   storage:
-    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 1Gi
   deletionPolicy: WipeOut
 
 ```
@@ -397,19 +353,18 @@ mysql.kubedb.com/restore-mysql created
 
 ```bash
 $ kubectl get pod -n demo
-restore-mysql-0                                          1/1     Running     0             44s
-restore-mysql-1                                          1/1     Running     0             42s
-restore-mysql-2                                          1/1     Running     0             41s
-restore-mysql-restorer-z4brz                             0/2     Completed   0             113s
-restore-mysql-restoresession-lk6jq                       0/1     Completed   0             2m6s
-
+restore-mysql-0                                                   2/2     Running     0          6m40s
+restore-mysql-1                                                   2/2     Running     0          5m37s
+restore-mysql-2                                                   2/2     Running     0          5m21s
+restore-mysql-binlog-restorer-0                                   0/2     Completed   0          5m58s
+restore-mysql-manifest-restorer-pzx5z                             0/1     Completed   0          6m54s
 ```
 
 ```bash
 $ kubectl get mysql -n demo
-NAME            VERSION   STATUS   AGE
-mysql           8.2.0    Ready    28h
-restore-mysql   8.2.0    Ready    5m37s
+NAME                             VERSION   STATUS   AGE
+mysql.kubedb.com/mysql           8.2.0     Ready    32m
+mysql.kubedb.com/restore-mysql   8.2.0     Ready    2m53s
 ```
 
 **Validating data on Restored MySQL**
