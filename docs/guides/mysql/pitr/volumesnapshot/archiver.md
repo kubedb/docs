@@ -3,7 +3,7 @@ title: Continuous Archiving and Point-in-time Recovery
 menu:
   docs_{{ .version }}:
     identifier: pitr-mysql-archiver
-    name: Overview
+    name: VolumeSnapShot
     parent: pitr-mysql
     weight: 10
 menu_name: docs_{{ .version }}
