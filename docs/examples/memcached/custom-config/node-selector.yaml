@@ -1,0 +1,13 @@
+apiVersion: kubedb.com/v1
+kind: Memcached
+metadata:
+  name: memcached-node-selector
+  namespace: demo
+spec:
+  version: "1.6.22"
+  replicas: 1
+  podTemplate:
+    spec:
+      nodeSelector:
+        disktype: ssd
+  deletionPolicy: WipeOut

@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Reconfigure Memcached TLS/SSL (Transport Encryption)
 
-KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL certificates for existing Memcached database via a MemcachedOpsRequest. This tutorial will show you how to use KubeDB to reconfigure TLS/SSL encryption.
+KubeDB supports reconfigure i.e. `add, remove, update and rotation of TLS/SSL certificates` for existing Memcached database via a `MemcachedOpsRequest`. This tutorial will show you how to use KubeDB to reconfigure TLS/SSL encryption.
 
 ## Before You Begin
 
@@ -40,7 +40,7 @@ Here, We are going to create a Memcached database without TLS and then reconfigu
 
 ### Deploy Memcached without TLS
 
-In this section, we are going to deploy a Memcached database without TLS. In the next few sections we will add reconfigure TLS using `MemcachedOpsRequest` CRD. Below is the YAML of the `Memcached` CR that we are going to create,
+In this section, we are going to deploy a `Memcached` database without TLS. In the next few sections we will add reconfigure TLS using `MemcachedOpsRequest` CRD. Below is the YAML of the `Memcached` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -70,7 +70,7 @@ NAME               VERSION   STATUS   AGE
 memcd-quickstart   1.6.22    Ready    26s
 ```
 
-Now, we can connect to this database through memcached-cli verify that the TLS is disabled.
+Now, we can connect to this database through `telnet` to verify that the `TLS` is disabled.
 
 ```bash
 $ kc port-forward -n demo memcd-quickstart-0 11211
@@ -114,7 +114,7 @@ quit
 
 We can verify from the above output that TLS is disabled for this database.
 
-### Create Issuer/ StandaloneIssuer
+### Create Issuer/ ClusterIssuer
 
 Now, We are going to create an example `Issuer` that will be used to enable SSL/TLS in Memcached. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
 
@@ -391,7 +391,7 @@ Forwarding from [::1]:11211 -> 11211
 $ openssl x509 -in <(openssl s_client -connect 127.0.0.1:11211 -showcerts < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p') -noout -enddate
 notAfter=Feb 16 04:58:37 2025 GMT
 ```
-So, the certificate will expire on this time Feb 16 04:58:37 2025 GMT.
+So, the certificate will expire on Feb 16 04:58:37 2025 GMT.
 
 ### Create MemcachedOpsRequest
 

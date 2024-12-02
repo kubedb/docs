@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Run Memcached with TLS/SSL (Transport Encryption)
 
-KubeDB supports providing TLS/SSL encryption for Memcached. This tutorial will show you how to use KubeDB to run a Memcached database with TLS/SSL encryption.
+KubeDB supports providing TLS/SSL encryption for `Memcached`. This tutorial will show you how to use KubeDB to run a Memcached database with TLS/SSL encryption.
 
 ## Before You Begin
 
@@ -37,10 +37,20 @@ KubeDB supports providing TLS/SSL encryption for Memcached. This tutorial will s
 
 KubeDB uses following crd fields to enable SSL/TLS encryption in Memcached.
 
-- `spec:`
-  - `tls:`
-    - `issuerRef`
-    - `certificate`
+```yaml
+spec:
+  tls:
+    issuerRef:
+      apiGroup:
+      name:
+      kind:
+    certificate:
+    - alias:
+      subject:
+        organizations:
+      dnsNames:
+      ipAddresses:
+```
 
 Read about the fields in details in [Memcached concept](/docs/guides/memcached/concepts/memcached.md),
 

@@ -5,6 +5,6 @@ menu:
     identifier: tls
     name: TLS/SSL Encryption
     parent: mc-memcached-guides
-    weight: 45
+    weight: 80
 menu_name: docs_{{ .version }}
 ---

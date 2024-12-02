@@ -5,6 +5,6 @@ menu:
     identifier: mc-concepts-memcached
     name: Concepts
     parent: mc-memcached-guides
-    weight: 20
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: mc-memcached-guides
-    weight: 46
+    weight: 90
 menu_name: docs_{{ .version }}
 ---
