@@ -1,9 +1,9 @@
 ---
-title: Continuous Archiving and Point-in-time Recovery
+title: Continuous Archiving and Point-in-time Recovery Using Restic Driver
 menu:
   docs_{{ .version }}:
-    identifier: pitr-mysql-archiver
-    name: Xtrabackup Restic Plugin
+    identifier: restic
+    name: Restic
     parent: pitr-mysql
     weight: 10
 menu_name: docs_{{ .version }}
@@ -14,15 +14,16 @@ section_menu_id: guides
 
 # KubeDB MySQL - Continuous Archiving and Point-in-time Recovery
 
-Here, will show you how to use KubeDB to provision a MySQL to Archive continuously and Restore point-in-time.
-
+Here, we will demonstrate how to use KubeDB to provision a MySQL database for continuous archiving and point-in-time restoration
+This process utilizes [Percona XtraBackup](https://www.percona.com/mysql/software/percona-xtrabackup), a robust tool for taking physical backups of MySQL databases, ensuring data integrity and consistency. We use XtraBackup as the base backup for our MySQL archiver.
+Let's explore how we use XtraBackup in MySQL database archiving.
 ## Before You Begin
 
-At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+To get started with archiving MySQL using Percona XtraBackup, you’ll need a Kubernetes cluster with the kubectl command-line tool configured to interact with it. If you don’t already have a cluster, you can easily create one using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now,install `KubeDB` operator in your cluster following the steps [here](/docs/setup/README.md).
+Next, install the `KubeDB` operator in your cluster by following the steps outlined [here](/docs/setup/README.md).
 
-To install `KubeStash` operator in your cluster following the steps [here](https://github.com/kubestash/installer/tree/master/charts/kubestash).
+To install the `KubeStash` operator in your cluster, follow the steps outlined [here](https://github.com/kubestash/installer/tree/master/charts/kubestash).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -30,9 +31,9 @@ To keep things isolated, this tutorial uses a separate namespace called `demo` t
 $ kubectl create ns demo
 namespace/demo created
 ```
-> Note: The yaml files used in this tutorial are stored in [docs/guides/mysql/remote-replica/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/remote-replica/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/guides/mysql/pitr/restic/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## continuous archiving
+## Continuous Archiving
 Continuous archiving involves making regular copies (or "archives") of the MySQL transaction log files.To ensure continuous archiving to a remote location we need prepare `BackupStorage`,`RetentionPolicy`,`MySQLArchiver` for the KubeDB Managed MySQL Databases.
 
 ### BackupStorage
@@ -198,7 +199,6 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-
 ```bash
 $ kubectl get pod -n demo
 NAME                                                              READY   STATUS      RESTARTS   AGE
@@ -214,11 +214,10 @@ retention-policy-mysql-archiver-manifest-backup-1733120326l79mb   0/1     Comple
 
 `mysql-sidekick` is responsible for uploading binlog files
 
-`mysql-archiver-full-backup-1733120326-4n8nd` is the pod of physical backup using xtrabackup tools for MySQL.
+The pod mysql-archiver-full-backup-1733120326-4n8nd is responsible for creating the base backup of MySQL. 
+`mysql-archiver-manifest-backup-1733120326-9gw4f` is the pod of the manifest backup related to MySQL object.
 
-`mysql-archiver-manifest-backup-1733120326-9gw4f` is the pod of the manifest backup related to MySQL object
-
-### validate BackupConfiguration and backupSession
+### Validate BackupConfiguration and BackupSession
 
 ```bash
 
@@ -387,8 +386,27 @@ mysql> select count(*) from demo_table;
 
 **so we are able to successfully recover from a disaster**
 
-## Cleaning up
+**ReplicationStrategy**
 
+The ReplicationStrategy determines how MySQL restores are managed when using the Restic driver in a group replication setup. We support three strategies: `none`, `sync`, and `fscopy`, with `none` being the default.
+ 
+To configure the desired strategy, set the spec.init.archiver.replicationStrategy field in your configuration. These strategies are applicable only when restoring a MySQL database in group replication mode.
+
+**Strategies Overview:**
+
+***none***
+
+Each MySQL replica independently restores the base backup and binlog files. After completing the restore process, the replicas individually join the replication group.
+
+***sync***
+
+The base backup and binlog files are restored exclusively on pod-0. Other replicas then synchronize their data by leveraging the MySQL clone plugin to replicate from pod-0. 
+
+***fscopy***
+
+The base backup and binlog files are restored on pod-0. The data is then copied from pod-0's data directory to the data directories of other replicas using file system copy. Once the data transfer is complete, the group replication process begins.
+
+Choose the replication strategy that best fits your restoration and replication requirements.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
