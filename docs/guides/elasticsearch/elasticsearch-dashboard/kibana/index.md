@@ -177,42 +177,6 @@ Spec:
     Controller:
     Metadata:
     Spec:
-      Affinity:
-        Pod Anti Affinity:
-          Preferred During Scheduling Ignored During Execution:
-            Pod Affinity Term:
-              Label Selector:
-                Match Expressions:
-                  Key:       ${NODE_ROLE}
-                  Operator:  Exists
-                Match Labels:
-                  app.kubernetes.io/instance:    es-cluster
-                  app.kubernetes.io/managed-by:  kubedb.com
-                  app.kubernetes.io/name:        elasticsearches.kubedb.com
-              Namespaces:
-                demo
-              Topology Key:  kubernetes.io/hostname
-            Weight:          100
-            Pod Affinity Term:
-              Label Selector:
-                Match Expressions:
-                  Key:       ${NODE_ROLE}
-                  Operator:  Exists
-                Match Labels:
-                  app.kubernetes.io/instance:    es-cluster
-                  app.kubernetes.io/managed-by:  kubedb.com
-                  app.kubernetes.io/name:        elasticsearches.kubedb.com
-              Namespaces:
-                demo
-              Topology Key:  failure-domain.beta.kubernetes.io/zone
-            Weight:          50
-      Container Security Context:
-        Capabilities:
-          Add:
-            IPC_LOCK
-            SYS_RESOURCE
-        Privileged:   false
-        Run As User:  1000
       Resources:
       Service Account Name:  es-cluster
   Storage Type:              Durable

@@ -49,16 +49,12 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - containers
   - imagePullSecrets
   - nodeSelector
-  - affinity
   - serviceAccountName
   - schedulerName
   - tolerations
   - priorityClassName
   - priority
   - securityContext
-  - livenessProbe
-  - readinessProbe
-  - lifecycle
 
 Read about the fields in details in [PodTemplate concept](/docs/guides/rabbitmq/concepts/rabbitmq.md#specpodtemplate),
 

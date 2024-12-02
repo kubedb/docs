@@ -427,8 +427,6 @@ spec:
     controller: {}
     metadata: {}
     spec:
-      affinity:
-      ...
       resources:
         limits:
           memory: 1Gi

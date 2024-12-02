@@ -287,29 +287,6 @@ spec:
     controller: {}
     metadata: {}
     spec:
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: mysql-quickstart
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: mysqls.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: kubernetes.io/hostname
-            weight: 100
-          - podAffinityTerm:
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/instance: mysql-quickstart
-                  app.kubernetes.io/managed-by: kubedb.com
-                  app.kubernetes.io/name: mysqls.kubedb.com
-              namespaces:
-              - demo
-              topologyKey: failure-domain.beta.kubernetes.io/zone
-            weight: 50
       resources:
         limits:
           memory: 1Gi

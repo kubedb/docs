@@ -150,29 +150,6 @@ Spec:
     Controller:
     Metadata:
     Spec:
-      Affinity:
-        Pod Anti Affinity:
-          Preferred During Scheduling Ignored During Execution:
-            Pod Affinity Term:
-              Label Selector:
-                Match Labels:
-                  app.kubernetes.io/instance:    sample-pxc
-                  app.kubernetes.io/managed-by:  kubedb.com
-                  app.kubernetes.io/name:        perconaxtradbs.kubedb.com
-              Namespaces:
-                demo
-              Topology Key:  kubernetes.io/hostname
-            Weight:          100
-            Pod Affinity Term:
-              Label Selector:
-                Match Labels:
-                  app.kubernetes.io/instance:    sample-pxc
-                  app.kubernetes.io/managed-by:  kubedb.com
-                  app.kubernetes.io/name:        perconaxtradbs.kubedb.com
-              Namespaces:
-                demo
-              Topology Key:  failure-domain.beta.kubernetes.io/zone
-            Weight:          50
       Resources:
         Limits:
           Memory:  1Gi
