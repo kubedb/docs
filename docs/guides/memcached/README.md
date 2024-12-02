@@ -16,19 +16,18 @@ aliases:
 > New to KubeDB? Please start [here](/docs/README.md).
 
 ## Overview
-Memcached is an in-memory key-value store that allows for high-performance, low-latency data caching. It is often used to speed up dynamic web applications by offloading frequent, computationally expensive database queries and storing data that needs to be retrieved fast. Memcached is frequently used in contexts where the rapid retrieval of tiny data items, such as session data, query results, and user profiles, is critical for increasing application performance. It is especially well-suited for use cases requiring scalability, distributed caching, and high throughput, making it a popular choice for powering online and mobile apps, particularly in high-concurrency environments. Memcached is a simple, extremely efficient caching layer that minimizes stress on backend systems and improves performance for applications that require real-time data.
+`Memcached` is an in-memory key-value store that allows for high-performance, low-latency data caching. It is often used to speed up dynamic web applications by offloading frequent, computationally expensive database queries and storing data that needs to be retrieved fast. Memcached is frequently used in contexts where the rapid retrieval of tiny data items, such as session data, query results, and user profiles, is critical for increasing application performance. It is especially well-suited for use cases requiring scalability, distributed caching, and high throughput, making it a popular choice for powering online and mobile apps, particularly in high-concurrency environments. Memcached is a simple, extremely efficient caching layer that minimizes stress on backend systems and improves performance for applications that require real-time data.
 
 ## Supported Memcached Features
 
 | Features                                              | Availability |
 | ----------------------------------------------------- | :----------: |
-| Multiple Memcached Versions                           |   &#10003;   |
 | Custom Configuration                                  |   &#10003;   |
 | Externally manageable Auth Secret	                    |   &#10003;   |
 | Reconfigurable Health Checker		                      |   &#10003;   |
 | Using Custom docker image                             |   &#10003;   |
 | Builtin Prometheus Discovery                          |   &#10003;   |
-| Using Prometheus operator                             |   &#10003;   |
+| Operator Managed Prometheus Discovery                 |   &#10003;   |
 | Automated Version Update                              |   &#10003;   |
 | Automated Vertical Scaling                            |   &#10003;   |
 | Automated Horizontal Scaling                          |   &#10003;   |
@@ -36,11 +35,10 @@ Memcached is an in-memory key-value store that allows for high-performance, low-
 | Authentication & Authorization                        |   &#10003;   |
 | TLS: Add, Remove, Update, Rotate ( Cert Manager )	    |   &#10003;   |
 | Autoscaling (Vertically)                              |   &#10003;   |
+| Multiple Memcached Versions                           |   &#10003;   |
 | Monitoring using Prometheus and Grafana               |   &#10003;   |
 | Monitoring Grafana Dashboard                          |   &#10003;   |
 | Alert Grafana Dashboard	                              |   &#10003;   |
-
-
 
 ## Life Cycle of a Memcached Object
 

@@ -14,7 +14,14 @@ section_menu_id: guides
 
 # Monitoring Memcached Using Prometheus operator
 
-[Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor Memcached server deployed with KubeDB.
+[Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor Memcached database deployed with KubeDB.
+
+The following diagram shows how KubeDB Provisioner operator monitor `Memcached` using Prometheus Operator. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Monitoring process of Memcached using Prometheus Operator" src="/docs/images/memcached/monitoring/memcached-prometheus-operator.png">
+<figcaption align="center">Fig: Monitoring process of Memcached. </figcaption>
+</figure>
 
 ## Before You Begin
 

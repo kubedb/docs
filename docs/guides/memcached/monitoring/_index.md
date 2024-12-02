@@ -5,6 +5,6 @@ menu:
     identifier: mc-monitoring-memcached
     name: Monitoring
     parent: mc-memcached-guides
-    weight: 50
+    weight: 110
 menu_name: docs_{{ .version }}
 ---

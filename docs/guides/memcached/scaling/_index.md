@@ -5,6 +5,6 @@ menu:
     identifier: scaling
     name: Scaling
     parent: mc-memcached-guides
-    weight: 43
+    weight: 60
 menu_name: docs_{{ .version }}
 ---
