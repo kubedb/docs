@@ -1,0 +1,14 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: SolrAutoscaler
+metadata:
+  name: sl-storage-autoscaler-combined
+  namespace: demo
+spec:
+  databaseRef:
+    name: solr-combined
+  storage:
+    node:
+      expansionMode: "Offline"
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 100
