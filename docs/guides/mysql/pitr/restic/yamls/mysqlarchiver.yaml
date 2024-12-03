@@ -15,65 +15,19 @@ spec:
       matchLabels:
         archiver: "true"
   retentionPolicy:
-    name: rp
+    name: mysql-retention-policy
     namespace: demo
   encryptionSecret:
     name: "encrypt-secret"
     namespace: "demo"
   fullBackup:
     driver: "Restic"
-    #    driver: "VolumeSnapshotter"
-    #    task:
-    #      params:
-    ##        volumeSnapshotClassName: "vs-gke"
-    #        volumeSnapshotClassName: "longhorn-snapshot-vsc"
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
       schedule: "0 0 * * *"
     sessionHistoryLimit: 2
-  #    jobTemplate:
-  #      spec:
-  #        containerSecurityContext:
-  #          allowPrivilegeEscalation: false
-  #          capabilities:
-  #            drop:
-  #              - ALL
-  #        securityContext:
-  #          seccompProfile:
-  #            type: RuntimeDefault
-  #          runAsNonRoot: true
-  #          runAsUser: 999
-  #          runAsGroup: 999
-  #        volumeMounts:
-  #          - mountPath: /var/lib/mysql
-  #            name: data
-  #        affinity:
-  #          podAffinity:
-  #            requiredDuringSchedulingIgnoredDuringExecution:
-  #              - labelSelector:
-  #                  matchLabels:
-  #                    kubedb.com/role: primary
-  #                    app.kubernetes.io/instance: mysql
-  #                topologyKey: "kubernetes.io/hostname"
-  #        volumes:
-  #          - name: data
-  #            persistentVolumeClaim:
-  #              claimName: data-mysql-0
   manifestBackup:
-    #    jobTemplate:
-    #      spec:
-    #        containerSecurityContext:
-    #          allowPrivilegeEscalation: false
-    #          capabilities:
-    #            drop:
-    #              - ALL
-    #        securityContext:
-    #          seccompProfile:
-    #            type: RuntimeDefault
-    #          runAsNonRoot: true
-    #          runAsUser: 999
-    #          runAsGroup: 999
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
@@ -83,4 +37,3 @@ spec:
     ref:
       name: "storage"
       namespace: "demo"
-    # subDir: "new_sub2"

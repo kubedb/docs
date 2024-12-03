@@ -11,7 +11,7 @@ spec:
         name: encrypt-secret
         namespace: demo
       fullDBRepository:
-        name: mysql-repository
+        name: mysql-full
         namespace: demo
       recoveryTimestamp: "2024-12-02T06:38:42Z"
   version: "8.2.0"
