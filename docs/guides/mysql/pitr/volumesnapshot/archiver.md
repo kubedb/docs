@@ -44,27 +44,28 @@ BackupStorage is a CR provided by KubeStash that can manage storage from various
 apiVersion: storage.kubestash.com/v1alpha1
 kind: BackupStorage
 metadata:
-  name: linode-storage
+  name: storage
   namespace: demo
 spec:
   storage:
     provider: s3
     s3:
-      bucket: mehedi-mysql-wal-g
-      endpoint: https://ap-south-1.linodeobjects.com
-      region: ap-south-1
-      prefix: backup
-      secretName: storage
+      endpoint: s3.amazonaws.com
+      bucket: mysql-archiver
+      region: us-east-1
+      prefix: my-demo
+      secretName: s3-secret
   usagePolicy:
     allowedNamespaces:
       from: All
-  default: true
   deletionPolicy: WipeOut
 ```
 
+Note: Before applying this yaml, verify that a bucket named `mysql-archiver` is already created on your bucket provider.
+
 ```bash
    $ kubectl apply -f backupstorage.yaml
-   backupstorage.storage.kubestash.com/linode-storage created
+   backupstorage.storage.kubestash.com/storage created
 ```
 
 ### secrets for backup-storage
@@ -73,17 +74,17 @@ apiVersion: v1
 kind: Secret
 type: Opaque
 metadata:
-  name: storage
+  name: s3-secret
   namespace: demo
 stringData:
   AWS_ACCESS_KEY_ID: "*************26CX"
   AWS_SECRET_ACCESS_KEY: "************jj3lp"
-  AWS_ENDPOINT: https://ap-south-1.linodeobjects.com
+  AWS_ENDPOINT: s3.amazonaws.com
 ```
 
 ```bash
   $ kubectl apply -f storage-secret.yaml 
-  secret/storage created
+  secret/s3-secret created
 ```
 
 ### Retention policy
@@ -98,7 +99,7 @@ metadata:
 spec:
   maxRetentionPeriod: "30d"
   successfulSnapshots:
-    last: 100
+    last: 10
   failedSnapshots:
     last: 2
 ```
@@ -123,16 +124,16 @@ spec:
       from: Selector
       selector:
         matchLabels:
-         kubernetes.io/metadata.name: demo
+          kubernetes.io/metadata.name: demo
     selector:
       matchLabels:
         archiver: "true"
   retentionPolicy:
     name: mysql-retention-policy
     namespace: demo
-  encryptionSecret: 
+  encryptionSecret:
     name: "encrypt-secret"
-    namespace: "demo"  
+    namespace: "demo"
   fullBackup:
     driver: "VolumeSnapshotter"
     task:
@@ -146,12 +147,12 @@ spec:
   manifestBackup:
     scheduler:
       successfulJobsHistoryLimit: 1
-      failedJobsHistoryLimit: 1 
+      failedJobsHistoryLimit: 1
       schedule: "*/30 * * * *"
     sessionHistoryLimit: 2
   backupStorage:
     ref:
-      name: "linode-storage"
+      name: "storage"
       namespace: "demo"
 
 ```
@@ -173,9 +174,10 @@ stringData:
  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/volumesnapshot/yamls/mysqlarchiver.yaml
  mysqlarchiver.archiver.kubedb.com/mysqlarchiver-sample created
  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/volumesnapshot/yamls/encryptionSecret.yaml
+ secret/encrypt-secret created
 ```
 
-## Ensure volumeSnapshotClass
+## Ensure VolumeSnapshotClass
 
 ```bash
 $ kubectl get volumesnapshotclasses
@@ -203,10 +205,10 @@ $ kubectl apply -f volumesnapshotclass.yaml
   volumesnapshotclass.snapshot.storage.k8s.io/longhorn-snapshot-vsc unchanged
 ```
 
-Note: Ensure that the VolumeSnapshotClass is provisioned with the same storage class driver used for provisioning your MySQL database. In our case, we are using the longhorn storage class as our database provisioner, with the driver set to `driver.longhorn.io`.
+Note: Ensure that the VolumeSnapshotClass is provisioned with the same storage class driver used for provisioning your MySQL database. In our case, we are using the `longhorn` storageclass as our database provisioner, with the driver set to `driver.longhorn.io`.
 
 # Deploy MySQL
-So far we are ready with setup for continuously archive MySQL, We deploy a mysqlql referring the MySQL archiver object
+We are now ready with the setup for continuous MySQL archiving. We will deploy a MySQL object that references the MySQL archiver object.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -217,8 +219,6 @@ metadata:
   labels:
     archiver: "true"
 spec:
-  authSecret:
-    name: my-auth
   version: "8.2.0"
   replicas: 3
   topology:
@@ -241,13 +241,16 @@ spec:
 
 ```bash
 $ kubectl get pod -n demo
-NAME                                                     READY   STATUS      RESTARTS        AGE
-mysql-0                                                  2/2     Running     0               28h
-mysql-1                                                  2/2     Running     0               28h
-mysql-2                                                  2/2     Running     0               28h
-mysql-backup-config-full-backup-1703680982-vqf7c         0/1     Completed   0               28h
-mysql-backup-config-manifest-1703680982-62x97            0/1     Completed   0               28h
-mysql-sidekick                                           1/1     Running     0               28h
+NAME                                                              READY   STATUS      RESTARTS        AGE
+mysql-0                                                           2/2     Running     0               28h
+mysql-1                                                           2/2     Running     0               28h
+mysql-2                                                           2/2     Running     0               28h
+mysql-archiver-full-backup-1733206003-hq4pb                       0/1     Completed   0               28h
+mysql-archiver-manifest-backup-1733206003-q78jj                   0/1     Completed   0               28h
+mysql-sidekick                                                    1/1     Running     0               28h
+retention-policy-mysql-archiver-full-backup-1733206003-b2b42      0/1     Completed   0               28h
+retention-policy-mysql-archiver-manifest-backup-1733206003skwqc   0/1     Completed   0               28h
+
 ```
 
 `mysql-sidekick` is responsible for uploading binlog files
@@ -256,6 +259,12 @@ mysql-sidekick                                           1/1     Running     0  
 
 `mysql-backup-config-manifest-1703680982-62x97` are the pod of the manifest backup related to MySQL object
 
+`retention-policy-mysql-archiver-full-backup-1733206003-b2b42` will automatically clean up previous full-backup of volumesnapshots according to the rules defined in the `mysql-retention-policy` custom resource (CR).
+
+`retention-policy-mysql-archiver-manifest-backup-1733206003skwqc` will automatically clean up previous manifest-backup snapshots according to the rules specified in the `mysql-retention-policy` custom resource (CR).
+
+
+
 ### Validate BackupConfiguration and VolumeSnapshots
 
 ```bash
@@ -263,20 +272,25 @@ mysql-sidekick                                           1/1     Running     0  
 $ kubectl get backupconfigurations -n demo
 
 NAME                    PHASE   PAUSED   AGE
-mysql-backup-config   Ready            2m43s
+mysql-archiver          Ready            2m43s
 
 $ kubectl get backupsession -n demo
-NAME                                           INVOKER-TYPE          INVOKER-NAME            PHASE       DURATION   AGE
-mysql-backup-config-full-backup-1702388088   BackupConfiguration   mysql-backup-config   Succeeded              74s
-mysql-backup-config-manifest-1702388088      BackupConfiguration   mysql-backup-config   Succeeded              74s
+NAME                                           INVOKER-TYPE          INVOKER-NAME          PHASE       DURATION   AGE
+mysql-archiver-full-backup-1733206003          BackupConfiguration   mysql-backup-config   Succeeded              74s
+mysql-archiver-manifest-backup-1733206003      BackupConfiguration   mysql-backup-config   Succeeded              74s
 
 kubectl get volumesnapshots -n demo
 NAME                           READYTOUSE   SOURCEPVC                  SOURCESNAPSHOTCONTENT   RESTORESIZE   SNAPSHOTCLASS           SNAPSHOTCONTENT                                    CREATIONTIME   AGE
 mysql-1702388096               true         data-mysql-1                                       1Gi           longhorn-snapshot-vsc   snapcontent-735e97ad-1dfa-4b70-b416-33f7270d792c   2m5s           2m5s
+
+$ kubectl get repository.storage.kubestash.com -n demo 
+NAME             INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
+mysql-full       true        1                2.073 KiB   Ready   2m43s                    2m43s
+mysql-manifest   true        1                2.073 KiB   Ready   2m43s                    2m43s
 ```
 
 ## Data Insert and Switch Binlog File
-After each and every wal switch the wal files will be uploaded to backup storage
+After each and every binlog switch the binlog files will be uploaded to backup storage
 
 ```bash
 $ kubectl exec -it -n demo  mysql-0 -- bash
@@ -310,11 +324,7 @@ mysql> select now();
 +---------------------+
 | now()               |
 +---------------------+
-| 2023-12-28 17:10:54 |mysql> select now();
-+---------------------+
-| now()               |
-+---------------------+
-| 2023-12-28 17:10:54 |
+| 2024-12-03 06:09:34 |
 +---------------------+
 +---------------------+
 
@@ -331,7 +341,7 @@ mysql> select count(*) from demo_table;
 
 ## Point-in-time Recovery
 Point-In-Time Recovery allows you to restore a MySQL database to a specific point in time using the archived transaction logs. This is particularly useful in scenarios where you need to recover to a state just before a specific error or data corruption occurred.
-Let's say accidentally our dba drops the the table tab_1 and we want to restore.
+Let's say accidentally our db drops the table `demo_table` and we want to restore that.
 
 ```bash
 $ kubectl exec -it -n demo  mysql-0 -- bash
@@ -351,7 +361,7 @@ mysql> select now();
 +---------------------+
 | now()               |
 +---------------------+
-| 2023-12-28 17:10:54 |
+| 2024-12-03 06:09:34 |
 +---------------------+
 ```
 ### Restore MySQL
@@ -365,13 +375,14 @@ metadata:
 spec:
   init:
     archiver:
+      replicationStrategy: sync
       encryptionSecret:
         name: encrypt-secret
         namespace: demo
       fullDBRepository:
-        name: mysql-repository
+        name: mysql-full
         namespace: demo
-      recoveryTimestamp: "2023-12-28T17:10:54Z"
+      recoveryTimestamp: "2024-12-03T06:09:34Z"
   version: "8.2.0"
   replicas: 3
   topology:
@@ -383,7 +394,7 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 1Gi
   deletionPolicy: WipeOut
 
 ```
@@ -408,8 +419,8 @@ restore-mysql-restoresession-lk6jq                       0/1     Completed   0  
 ```bash
 $ kubectl get mysql -n demo
 NAME            VERSION   STATUS   AGE
-mysql           8.2.0    Ready    28h
-restore-mysql   8.2.0    Ready    5m37s
+mysql           8.2.0     Ready    28h
+restore-mysql   8.2.0     Ready    5m37s
 ```
 
 **Validating data on Restored MySQL**
@@ -452,6 +463,11 @@ The base backup volumesnapshot and binlog files are restored exclusively on pod-
 
 The base backup and binlog files are restored on pod-0. The data is then copied from pod-0's data directory to the data directories of other replicas using file system copy. Once the data transfer is complete, the group replication process begins.  Please note that `fscopy` does not support cross-zone operations.
 
+***clone***
+
+If you have a different type of base backup(ex: VolumeSnapshot, Restic), the clone process will ensure that the VolumeSnapshot is restored as the base backup. Each MySQL replica independently restores the base backup volumesnapshot and binlog files. After completing the restore process, the replicas individually join the replication group. 
+
+
 Choose the replication strategy that best fits your restoration and replication requirements. On this demonstration, we have used the sync replication strategy.
 
 
@@ -462,8 +478,8 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```bash
 $ kubectl delete -n demo mysql/mysql
 $ kubectl delete -n demo mysql/restore-mysql
-$ kubectl delete -n demo backupstorage
-$ kubectl delete -n demo mysqlarchiver
+$ kubectl delete -n demo backupstorage/storage
+$ kubectl delete -n demo mysqlarchiver/mysqlarchiver-sample
 $ kubectl delete ns demo
 ```
 
