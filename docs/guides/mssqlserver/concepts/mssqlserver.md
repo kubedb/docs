@@ -196,23 +196,7 @@ NAME        VERSION   DB_IMAGE                                                DE
 
 `spec.replicas` specifies the total number of primary and secondary nodes in SQL Server Availability Group cluster configuration. One pod is selected as Primary and others act as secondary replicas. KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
 
-To learn more about how to setup a SQL Server Availability Group cluster (HA configuration) in KubeDB, please visit [here](/docs/guides/mssqlserver/clustering/ag_cluster.md).
-
-### spec.leaderElection
-
-There are five fields under MSSQLServer CRD's `spec.leaderElection`. These values define how fast the leader election can happen.
-
-- `Period`: This is the period between each invocation of `Node.Tick`. It represents the time base for election actions. Default is `100ms`.
-
-- `ElectionTick`: This is the number of `Node.Tick` invocations that must pass between elections. If a follower does not receive any message from the leader during this period, it becomes a candidate and starts an election. It is recommended to set `ElectionTick = 10 * HeartbeatTick` to prevent unnecessary leader switching. Default is `10`.
-
-- `HeartbeatTick`: This defines the interval between heartbeats sent by the leader to maintain its leadership. A leader sends heartbeat messages every `HeartbeatTick` ticks. Default is `1`.
-
-- `TransferLeadershipInterval`: This specifies retry interval to transfer leadership to the healthiest node. Default is `1s`.
-
-- `TransferLeadershipTimeout`: This specifies the  retry timeout for transferring leadership to the healthiest node. Default is `60s`.
-
-You can increase the period and the electionTick if the system has high network latency.
+To learn more about how to set up a SQL Server Availability Group cluster (HA configuration) in KubeDB, please visit [here](/docs/guides/mssqlserver/clustering/ag_cluster.md).
 
 ### spec.authSecret
 
@@ -272,6 +256,51 @@ MSSQLServer managed by KubeDB can be monitored with Prometheus operator out-of-t
 ### spec.configSecret
 
 `spec.configSecret` is an optional field that allows users to provide custom configuration for MSSQLServer. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use Kubernetes supported volume source `secret`.
+
+### spec.topology
+
+The `spec.topology` field specifies the operational mode and configuration of the SQL Server cluster. It defines how the cluster should behave, including the databases that should be included in the setup, and the leader election process for managing the primary-secondary roles.
+
+#### spec.topology.mode
+
+The `spec.topology.mode` field determines the mode in which the SQL Server cluster operates. Currently, the supported mode is `AvailabilityGroup`, which configures the cluster as an SQL Server Availability Group (AG). 
+
+- **`AvailabilityGroup` Mode**:  
+  In this mode, the KubeDB operator sets up an Availability Group with one primary replica and multiple secondary replicas for high availability. The databases specified in `spec.topology.availabilityGroup.databases` are automatically created and added to the Availability Group. Users do not need to perform these tasks manually.
+
+#### spec.topology.availabilityGroup
+
+The `spec.topology.availabilityGroup` section defines the configuration for SQL Server Availability Group (AG) when the mode is set to `AvailabilityGroup`. It includes details about the databases to be added to the group and the leader election process.
+
+
+##### spec.topology.availabilityGroup.databases
+
+This field specifies the list of database names to be included in the Availability Group. The KubeDB operator creates and adds these databases to the Availability Group automatically during cluster initialization. Users can modify this list later to add or remove databases as needed.
+
+Example:
+
+```yaml
+databases:
+  - agdb1
+  - agdb2
+```  
+In this example: agdb1 and agdb2 are added to the Availability Group upon cluster setup.
+
+### spec.topology.availabilityGroup.leaderElection
+
+There are five fields under MSSQLServer CRD's `spec.leaderElection`. These values define how fast the leader election can happen.
+
+- `Period`: This is the period between each invocation of `Node.Tick`. It represents the time base for election actions. Default is `100ms`.
+
+- `ElectionTick`: This is the number of `Node.Tick` invocations that must pass between elections. If a follower does not receive any message from the leader during this period, it becomes a candidate and starts an election. It is recommended to set `ElectionTick = 10 * HeartbeatTick` to prevent unnecessary leader switching. Default is `10`.
+
+- `HeartbeatTick`: This defines the interval between heartbeats sent by the leader to maintain its leadership. A leader sends heartbeat messages every `HeartbeatTick` ticks. Default is `1`.
+
+- `TransferLeadershipInterval`: This specifies retry interval to transfer leadership to the healthiest node. Default is `1s`.
+
+- `TransferLeadershipTimeout`: This specifies the  retry timeout for transferring leadership to the healthiest node. Default is `60s`.
+
+You can increase the period and the electionTick if the system has high network latency.
 
 ### spec.podTemplate
 
@@ -379,6 +408,7 @@ The following fields are configurable in the `spec.tls` section:
   - `alias` represents the identifier of the certificate. It has the following possible value:
     - `server` is used for server certificate identification.
     - `client` is used for client certificate identification.
+    - `endpoint`: For endpoint certificate identification
     - `exporter` is used for metrics exporter certificate identification.
   - `secretName` (optional) specifies the k8s secret name that holds the certificates.
  This field is optional. If the user does not specify this field, the default secret name will be created in the following format: `<database-name>-<cert-alias>-cert`.
@@ -401,15 +431,6 @@ The following fields are configurable in the `spec.tls` section:
     - `emailAddresses` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
     - `privateKey` (optional) specifies options to control private keys used for the Certificate.
       - `encoding` (optional) is the private key cryptography standards (PKCS) encoding for this certificate's private key to be encoded in. If provided, allowed values are "pkcs1" and "pkcs8" standing for PKCS#1 and PKCS#8, respectively. It defaults to PKCS#1 if not specified.
-
-### spec.internalAuth
-`spec.internalAuth.endpointCert` specifies the TLS/SSL configurations for internal endpoint authentication of sql server availabilty group replicas. An availability group uses TCP endpoints for communication. Under Linux, endpoints for an AG are only supported if certificates are used for authentication. Explore more on [sql server docs](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-create-availability-group?view=sql-server-ver16&tabs=ru). To generate the certificate used for internal endpoint authentication of availability group replicas, you have to specify
-  - `issuerRef` is a reference to the `Issuer` or `ClusterIssuer` CR of [cert-manager](https://cert-manager.io/docs/concepts/issuer/) that will be used by `KubeDB` to generate necessary certificates. Same as `spec.tls.issuerRef`.
- - `certificates` (optional) is the certificate used to configure endpoints. It has the following fields:
-   - `alias` represents the identifier of the certificate. It has the following possible value:
-     - `endpoint` is used for endpoint certificate identification.
-   - `secretName` (optional) specifies the k8s secret name that holds the certificates. This field is optional. If the user does not specify this field, the default secret name will be created in the following format: `<database-name>-endpoint-cert`.
-   - `subject` is same as described in `spec.tls.certificate.subject`
  
 
 ### spec.serviceTemplate
