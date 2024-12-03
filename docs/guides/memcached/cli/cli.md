@@ -292,5 +292,5 @@ $ kubectl delete memcached <name>
 ## Next Steps
 
 - Learn how to use KubeDB to run a Memcached server [here](/docs/guides/memcached/README.md).
-- Learn how to use custom configuration in Memcached with KubeDB [here](/docs/guides/memcached/custom-configuration/customize-configuration)
+- Learn how to use custom configuration in Memcached with KubeDB [here](/docs/guides/memcached/custom-configuration/using-config-file)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
