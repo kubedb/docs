@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1
+kind: Memcached
+metadata:
+  name: custom-mc
+  namespace: demo
+spec:
+  version: "1.6.22"
+  replicas: 1
+  podTemplate:
+    spec:
+      containers:
+        - name: memcached
+          env:
+            - name: "Memcached_Key"
+              value: KubeDB
+            - name: "Memcached_Value"
+              value: '123'
+  deletionPolicy: WipeOut

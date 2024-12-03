@@ -1,0 +1,16 @@
+apiVersion: kubedb.com/v1
+kind: Memcached
+metadata:
+  name: memcached-with-tolerations
+  namespace: demo
+spec:
+  version: "1.6.22"
+  replicas: 1
+  podTemplate:
+    spec:
+      tolerations:
+        - key: "key1"
+          operator: "Equal"
+          value: "node1"
+          effect: "NoSchedule"
+  deletionPolicy: WipeOut

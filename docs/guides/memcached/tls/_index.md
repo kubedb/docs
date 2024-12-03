@@ -1,10 +1,10 @@
 ---
-title: Autoscaling
+title: Run Memcached with TLS
 menu:
   docs_{{ .version }}:
-    identifier: auto-scaling
-    name: Autoscaling
+    identifier: tls
+    name: TLS/SSL Encryption
     parent: mc-memcached-guides
-    weight: 90
+    weight: 80
 menu_name: docs_{{ .version }}
 ---

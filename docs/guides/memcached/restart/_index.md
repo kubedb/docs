@@ -1,10 +1,10 @@
 ---
-title: Autoscaling
+title: Restart Memcached
 menu:
   docs_{{ .version }}:
-    identifier: auto-scaling
-    name: Autoscaling
+    identifier: restart
+    name: Restart
     parent: mc-memcached-guides
-    weight: 90
+    weight: 100
 menu_name: docs_{{ .version }}
 ---
