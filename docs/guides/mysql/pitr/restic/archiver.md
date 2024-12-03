@@ -59,6 +59,7 @@ spec:
       from: All
   deletionPolicy: WipeOut
 ```
+Note: Before applying this yaml, verify that a bucket named `mysql-xtrabackup` is already created
 
 ```bash
    $ kubectl apply -f backupstorage.yaml
@@ -106,7 +107,7 @@ retentionpolicy.storage.kubestash.com/mysql-retention-policy created
 ```
 
 ### MySQLArchiver
-MySQLArchiver is a CR provided by KubeDB for managing the archiving of MySQL binlog files and performing volume-level backups
+MySQLArchiver is a CR provided by KubeDB for managing the archiving of MySQL binlog files and performing physical backups
 
 ```yaml
 apiVersion: archiver.kubedb.com/v1alpha1
@@ -166,11 +167,13 @@ stringData:
 ```bash 
  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/mysqlarchiver.yaml
  mysqlarchiver.archiver.kubedb.com/mysqlarchiver-sample created
+ 
  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/encryptionSecret.yaml
+ secret/encrypt-secret created
 ```
 
 # Deploy MySQL
-So far we are ready with setup for continuously archive MySQL, We deploy a mysql object referring the MySQL archiver object
+We are now ready with the setup for continuous MySQL archiving. We will deploy a MySQL object that references the MySQL archiver object.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -335,7 +338,7 @@ spec:
         name: encrypt-secret
         namespace: demo
       fullDBRepository:
-        name: mysql-repository
+        name: mysql-full
         namespace: demo
       recoveryTimestamp: "2024-12-02T06:38:42Z"
   version: "8.2.0"
@@ -405,7 +408,7 @@ mysql> select count(*) from demo_table;
 
 The ReplicationStrategy determines how MySQL restores are managed when using the Restic driver in a group replication setup. We support three strategies: `none`, `sync`, and `fscopy`, with `none` being the default.
  
-To configure the desired strategy, set the spec.init.archiver.replicationStrategy field in your configuration. These strategies are applicable only when restoring a MySQL database in group replication mode.
+To configure the desired strategy, set the `spec.init.archiver.replicationStrategy` field in your MySQL Database manifest. These strategies are applicable only when restoring a MySQL database in group replication mode.
 
 **Strategies Overview:**
 
@@ -419,9 +422,11 @@ The base backup and binlog files are restored exclusively on pod-0. Other replic
 
 ***fscopy***
 
-The base backup and binlog files are restored on pod-0. The data is then copied from pod-0's data directory to the data directories of other replicas using file system copy. Once the data transfer is complete, the group replication process begins.  Please note that `fscopy` does not support cross-zone operations.
+The base backup and binlog files are restored on pod-0. The data is then copied from pod-0's data directory to the data directories of other replicas using file system copy. Once the data transfer is complete, the group replication process begins. 
 
-Choose the replication strategy that best fits your restoration and replication requirements. On this demonstration, we have used the sync replication strategy.
+Please note that `fscopy` does not support cross-zone operations.
+
+Choose the replication strategy that best fits your restoration and replication requirements. On this demonstration, we have used the `sync` replication strategy.
 
 ## Cleaning up
 
