@@ -59,7 +59,7 @@ spec:
       from: All
   deletionPolicy: WipeOut
 ```
-Note: Before applying this yaml, verify that a bucket named `mysql-xtrabackup` is already created
+Note: Before applying this yaml, verify that a bucket named `mysql-archiver` is already created on your bucket provider.
 
 ```bash
    $ kubectl apply -f backupstorage.yaml
@@ -217,7 +217,7 @@ mysql-archiver-full-backup-1733120326-4n8nd                       0/1     Comple
 mysql-archiver-manifest-backup-1733120326-9gw4f                   0/1     Completed   0          10m
 mysql-sidekick                                                    1/1     Running     0          10m
 retention-policy-mysql-archiver-full-backup-1733120326-7rx9t      0/1     Completed   0          9m31s
-retention-policy-mysql-archiver-manifest-backup-1733120326l79mb   0/1     Completed   0          9m56s    28h
+retention-policy-mysql-archiver-manifest-backup-1733120326l79mb   0/1     Completed   0          9m56s
 ```
 
 `mysql-sidekick` is responsible for uploading binlog files
@@ -243,6 +243,12 @@ $ kubectl get backupsession -n demo
 NAME                                        INVOKER-TYPE          INVOKER-NAME     PHASE       DURATION   AGE
 mysql-archiver-full-backup-1733120326       BackupConfiguration   mysql-archiver   Succeeded   50s        14m
 mysql-archiver-manifest-backup-1733120326   BackupConfiguration   mysql-archiver   Succeeded   25s        14m
+
+$ kubectl get repository.storage.kubestash.com -n demo 
+NAME             INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
+mysql-full       true        1                2.073 KiB   Ready   14m                      14m
+mysql-manifest   true        1                2.073 KiB   Ready   14m                      14m
+
 ```
 
 ## Data Insert and Switch Binlog File
