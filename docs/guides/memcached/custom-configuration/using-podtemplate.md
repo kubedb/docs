@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Run Memcached with Custom PodTemplate
 
-KubeDB supports providing custom configuration for Memcached via [PodTemplate](/docs/guides/pgpool/concepts/pgpool.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a Memcached database with custom configuration using PodTemplate.
+KubeDB supports providing custom configuration for Memcached via [PodTemplate](/docs/guides/memcached/concepts/memcached.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a Memcached database with custom configuration using PodTemplate.
 
 ## Before You Begin
 
@@ -76,7 +76,7 @@ spec:
   podTemplate:
     spec:
       containers:
-        - name: memcahced
+        - name: memcacded
           env:
             - name: "Memcached_Key"
               value: KubeDB
@@ -86,8 +86,8 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcahced/custom-config/custom-podtemplate.yaml
-memcahced.kubedb.com/custom-memcached created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/custom-podtemplate.yaml
+memcached.kubedb.com/custom-memcached created
 ```
 
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `custom-memcached-0` has been created.
@@ -100,7 +100,7 @@ NAME                 READY   STATUS    RESTARTS   AGE
 custom-memcached-0   1/1     Running   0          30s
 ```
 
-Now, check if the memcahced has started with the custom configuration we have provided. First, we will exec in the pod. Then, we will check if the environment variable is set or not.
+Now, check if the memcached has started with the custom configuration we have provided. First, we will exec in the pod. Then, we will check if the environment variable is set or not.
 
 ```bash
 $ kubectl exec -it custom-memcached-0 -n demo memcached -- sh
@@ -138,7 +138,7 @@ Now run these following commands to build and push the docker image to your dock
 $ docker build -t repository_name/custom_filebeat:latest .
 $ docker push repository_name/custom_filebeat:latest
 ```
-Now we will deploy our pgpool with custom sidecar container and will also use the `spec.initConfig` to configure the logs related settings. Here is the yaml of our pgpool:
+Now we will deploy our memcached with custom sidecar container and will also use the `spec.initConfig` to configure the logs related settings. Here is the yaml of our memcached:
 ```yaml
 apiVersion: kubedb.com/v1
 kind: Memcached
@@ -374,7 +374,7 @@ We can successfully verify that our pod was scheduled to our desired node.
 
 ## Using Taints and Tolerations
 
-Here in this example we will use [Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to schedule our pgpool pod to a specific node and also prevent from scheduling to nodes. Applying taints and tolerations to the Pod involves several steps. Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:
+Here in this example we will use [Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to schedule our memcached pod to a specific node and also prevent from scheduling to nodes. Applying taints and tolerations to the Pod involves several steps. Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:
 
 ```bash
 $ kubectl get nodes --show-labels
@@ -538,17 +538,14 @@ Here we can see that the pod has no tolerations for the tainted nodes and becaus
 
 So, let's add proper tolerations and create another memcached. Here is the yaml we are going to apply,
 ```yaml
-apiVersion: kubedb.com/v1alpha2
+apiVersion: kubedb.com/v1
 kind: Memcached
 metadata:
   name: memcached-with-tolerations
   namespace: demo
 spec:
-  version: "4.4.5"
+  version: "1.6.22"
   replicas: 1
-  postgresRef:
-    name: ha-postgres
-    namespace: demo
   podTemplate:
     spec:
       tolerations:
