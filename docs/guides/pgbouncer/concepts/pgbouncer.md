@@ -32,7 +32,7 @@ metadata:
   namespace: demo
 spec:
   version: "1.18.0"
-  replicas: 2
+  replicas: 1
   database:
     syncUsers: true
     databaseName: "postgres"

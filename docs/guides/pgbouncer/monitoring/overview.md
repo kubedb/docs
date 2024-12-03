@@ -44,27 +44,26 @@ In order to enable monitoring for a database, you have to configure `spec.monito
 
 ## Sample Configuration
 
-A sample YAML for Redis crd with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
+A sample YAML for PgBouncer crd with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
 
 ```yaml
 apiVersion: kubedb.com/v1
-kind: Redis
+kind: PgBouncer
 metadata:
-  name: sample-redis
-  namespace: databases
+  name: pb
+  namespace: demo
 spec:
-  version: 6.0.20
-  deletionPolicy: WipeOut
-  configSecret: # configure Redis to use password for authentication
-    name: redis-config
-  storageType: Durable
-  storage:
-    storageClassName: default
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 5Gi
+  replicas: 2
+  version: "1.18.0"
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "pg"
+      namespace: demo
+  connectionPool:
+    poolMode: session
+    port: 5432
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -72,14 +71,6 @@ spec:
         labels:
           release: prometheus
       exporter:
-        args:
-        - --redis.password=$(REDIS_PASSWORD)
-        env:
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: _name_of_secret_with_redis_password
-              key: password # key with the password
         resources:
           requests:
             memory: 512Mi
@@ -88,19 +79,14 @@ spec:
             memory: 512Mi
             cpu: 250m
         securityContext:
-          runAsUser: 2000
+          runAsUser: 70
           allowPrivilegeEscalation: false
 ```
 
-Assume that above Redis is configured to use basic authentication. So, exporter image also need to provide password to collect metrics. We have provided it through `spec.monitor.args` field.
-
-Here, we have specified that we are going to monitor this server using Prometheus operator through `spec.monitor.agent: prometheus.io/operator`. KubeDB will create a `ServiceMonitor` crd in `monitoring` namespace and this `ServiceMonitor` will have `release: prometheus` label.
+Here, we have specified that we are going to monitor this server using Prometheus operator through `spec.monitor.agent: prometheus.io/operator`. KubeDB will create a `ServiceMonitor` crd in databases namespace and this `ServiceMonitor` will have `release: prometheus` label.
 
 ## Next Steps
 
-- Learn how to monitor Elasticsearch database with KubeDB using [builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
-- Learn how to monitor PostgreSQL database with KubeDB using [builtin-Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
-- Learn how to monitor MySQL database with KubeDB using [builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md) and using [Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
-- Learn how to monitor MongoDB database with KubeDB using [builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
-- Learn how to monitor Redis server with KubeDB using [builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
-- Learn how to monitor Memcached server with KubeDB using [builtin-Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md).
+- Learn how to monitor PgBouncer database with KubeDB using [builtin-Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md)
+- Learn how to monitor PgBouncer database with KubeDB using [Prometheus operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md).
+
