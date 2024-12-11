@@ -3,7 +3,7 @@ title: Solr TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
     identifier: sl-tls-topology
-    name: Overview
+    name: Topology Cluster
     parent: sl-tls-solr
     weight: 30
 menu_name: docs_{{ .version }}

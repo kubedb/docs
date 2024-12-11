@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Restart Solr
 
-KubeDB supports restarting the Solr database via a SolrOpsRequest. Restarting is useful if some pods are got stuck in some phase, or they are not working correctly. This tutorial will show you how to use that.
+KubeDB supports restarting the Solr database via a `SolrOpsRequest`. Restarting is useful if some pods are got stuck in some phase, or they are not working correctly. This tutorial will show you how to use that.
 
 ## Before You Begin
 

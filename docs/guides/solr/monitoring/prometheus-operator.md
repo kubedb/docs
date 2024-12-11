@@ -16,6 +16,10 @@ section_menu_id: guides
 
 [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor Elasticsearch database deployed with KubeDB.
 
+<p align="center">
+  <img alt="Database Monitoring Flow"  src="/docs/images/solr/monitoring/database-monitoring-overview.png">
+</p>
+
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).

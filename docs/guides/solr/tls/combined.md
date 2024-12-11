@@ -3,7 +3,7 @@ title: Solr TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
     identifier: sl-tls-combined
-    name: Overview
+    name: Combined Cluster
     parent: sl-tls-solr
     weight: 20
 menu_name: docs_{{ .version }}
@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Run Solr with TLS/SSL (Transport Encryption)
 
-KubeDB supports providing TLS/SSL encryption for Solr. This tutorial will show you how to use KubeDB to run a Solr combined with TLS/SSL encryption.
+KubeDB supports providing TLS/SSL encryption for `Solr`. This tutorial will show you how to use KubeDB to run a Solr combined with TLS/SSL encryption.
 
 ## Before You Begin
 

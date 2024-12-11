@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Reconfigure Solr TLS/SSL (Transport Encryption)
 
-KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL certificates for existing Solr database via a SolrOpsRequest. This tutorial will show you how to use KubeDB to reconfigure TLS/SSL encryption.
+KubeDB supports reconfigure i.e. **add, remove, update and rotation** of TLS/SSL certificates for existing Solr database via a `SolrOpsRequest`. This tutorial will show you how to use KubeDB to reconfigure TLS/SSL encryption.
 
 ## Before You Begin
 

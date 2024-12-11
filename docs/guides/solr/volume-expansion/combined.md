@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Solr Combined Volume Expansion
 
-This guide will show you how to use `KubeDB` Ops-manager operator to expand the volume of a Solr Combined Cluster.
+This guide will show you how to use `KubeDB` Ops-manager operator to expand the volume of a `Solr` Combined Cluster.
 
 ## Before You Begin
 
