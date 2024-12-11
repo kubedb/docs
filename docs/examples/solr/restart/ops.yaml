@@ -1,0 +1,10 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: restart
+  namespace: demo
+spec:
+  apply: IfReady
+  databaseRef:
+    name: solr-cluster
+  type: Restart
