@@ -186,33 +186,6 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 pgbouncer.kubedb.com/pgbouncer-server created
 ```
 
-```yaml
-apiVersion: kubedb.com/v1
-kind: PgBouncer
-metadata:
-  name: pgbouncer-server
-  namespace: demo
-spec:
-  version: "1.18.0"
-  replicas: 1
-  database:
-    syncUsers: true
-    databaseName: "postgres"
-    databaseRef:
-      name: "quick-postgres"
-      namespace: demo
-  connectionPool:
-    port: 5432
-    maxClientConnections: 20
-    reservePoolSize: 5
-  terminationPolicy: Delete
-```
-
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-v1.yaml
-pgbouncer.kubedb.com/pgbouncer-server created
-```
-
 Here,
 
 - `spec.version` is name of the PgBouncerVersion crd where the docker images are specified. In this tutorial, a PgBouncer with base image version 1.17.0 is created.
