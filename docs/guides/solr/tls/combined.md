@@ -43,7 +43,7 @@ KubeDB uses following crd fields to enable SSL/TLS encryption in Solr.
         - `issuerRef`
         - `certificate`
 
-Read about the fields in details in [Solr concept](/docs/guides/solr/concepts/solr.md),
+Read about the fields in details in [Solr Concept](/docs/guides/solr/concepts/solr.md),
 
 `tls` is applicable for all types of Solr (i.e., `combined` and `combined`).
 
@@ -88,7 +88,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 issuer.cert-manager.io/solr-ca-issuer created
 ```
 
-## TLS/SSL encryption in Solr combined combined
+## TLS/SSL encryption in Solr Combined
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -127,7 +127,7 @@ spec:
 
 ```
 
-### Deploy Solr combined combined with TLS/SSL
+### Deploy Solr Combined with TLS/SSL
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/tls/solr-combined.yaml
@@ -142,7 +142,7 @@ NAME           TYPE                  VERSION   STATUS   AGE
 solr-combined   kubedb.com/v1alpha2   9.4.1     Ready    2m31s
 ```
 
-### Verify TLS/SSL in Solr combined combined
+### Verify TLS/SSL in Solr Combined
 
 ```bash
 $ kubectl describe secret solr-combined-client-cert -n demo

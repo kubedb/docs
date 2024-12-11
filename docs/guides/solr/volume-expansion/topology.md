@@ -39,7 +39,7 @@ namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/Solr](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/Solr) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## Expand Volume of Topology Solr Cluster
+## Expand Volume of Solr TopologyCluster
 
 Here, we are going to deploy a `Solr` topology using a supported version by `KubeDB` operator. Then we are going to apply `SolrOpsRequest` to expand its volume.
 
