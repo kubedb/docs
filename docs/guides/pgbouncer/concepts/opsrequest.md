@@ -109,7 +109,8 @@ spec:
   databaseRef:
     name: pgbouncer-server
   configuration:
-    removeCustomConfig: true
+    pgbouncer:
+      removeCustomConfig: true
 ```
 
 ```yaml
@@ -123,65 +124,9 @@ spec:
   databaseRef:
     name: pgbouncer-server
   configuration:
-    configSecret:
-      name: new-custom-config
-```
-
-
-**Sample `PgBouncerOpsRequest` Objects for Reconfiguring TLS:**
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: PgBouncerOpsRequest
-metadata:
-  name: tls
-  namespace: demo
-spec:
-  type: ReconfigureTLS
-  databaseRef:
-    name: pgbouncer-server
-  tls:
-    sslMode: verify-ca
-    clientAuthMode: cert
-    issuerRef:
-      name: pgbouncer-ca-issuer
-      kind: Issuer
-      apiGroup: "cert-manager.io"
-    certificates:
-      - alias: client
-        subject:
-          organizations:
-            - kubedb
-          organizationalUnits:
-            - client
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: PgBouncerOpsRequest
-metadata:
-  name: tls
-  namespace: demo
-spec:
-  type: ReconfigureTLS
-  databaseRef:
-    name: pgbouncer-server
-  tls:
-    rotateCertificates: true
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: PgBouncerOpsRequest
-metadata:
-  name: tls
-  namespace: demo
-spec:
-  type: ReconfigureTLS
-  databaseRef:
-    name: pgbouncer-server
-  tls:
-    remove: true
+    pgbouncer:
+      configSecret:
+        name: new-custom-config
 ```
 
 Here, we are going to describe the various sections of a `PgBouncerOpsRequest` crd.
@@ -202,7 +147,6 @@ A `PgBouncerOpsRequest` object has the following fields in the `spec` section.
 - `HorizontalScaling`
 - `VerticalScaling`
 - `Reconfigure`
-- `ReconfigureTLS`
 - `Restart`
 
 > You can perform only one type of operation on a single `PgBouncerOpsRequest` CR. For example, if you want to update your database and scale up its replica then you have to create two separate `PgBouncerOpsRequest`. At first, you have to create a `PgBouncerOpsRequest` for updating. Once it is completed, then you can create another `PgBouncerOpsRequest` for scaling. 
@@ -259,17 +203,6 @@ If you want to reconfigure your Running PgBouncer cluster or different component
 ```
 
 - `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed pgbouncer server.
-
-### spec.tls
-
-If you want to reconfigure the TLS configuration of your pgbouncer cluster i.e. add TLS, remove TLS, update issuer/cluster issuer or Certificates and rotate the certificates, you have to specify `spec.tls` section. This field consists of the following sub-field:
-
-- `spec.tls.issuerRef` specifies the issuer name, kind and api group.
-- `spec.tls.certificates` specifies the certificates. You can learn more about this field from [here](/docs/guides/pgbouncer/concepts/pgbouncer.md#spectls).
-- `spec.tls.rotateCertificates` specifies that we want to rotate the certificate of this database.
-- `spec.tls.remove` specifies that we want to remove tls from this database.
-- `spec.tls.sslMode` specifies what will be the ssl mode of the cluster allowed values are: disable,allow,prefer,require,verify-ca,verify-full
-- `spec.tls.clientAuthMode` specifies what will be the client authentication mode of the cluster allowed values are: md5,scram,cert
 
 ### spec.timeout
 As we internally retry the ops request steps multiple times, This `timeout` field helps the users to specify the timeout for those steps of the ops request (in second). 
