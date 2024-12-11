@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Solr Storange Autoscaling
+# Solr Storage SolrAutoscaler
 
 This guide will give an overview on how KubeDB Autoscaler operator autoscales the Solr storage using `Solrautoscaler` crd.
 

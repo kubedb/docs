@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Solr Compute Resource Autoscaling
+# Solr Compute SolrAutoscaler
 
 This guide will give an overview on how the KubeDB Autoscaler operator autoscales the database compute resources i.e. `cpu` and `memory` using `Solrautoscaler` crd.
 
