@@ -337,9 +337,8 @@ Forwarding from [::1]:9090 -> 9090
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see the endpoint of `builtin-prom-pb-stats` service as one of the targets.
 
 <p align="center">
-  <img alt="Prometheus Target" height="100%" src="/docs/images/pgbouncer/monitoring/pb-builtin-prom-target.png" style="padding:10px">
+  <img alt="Prometheus Target" src="/docs/images/pgbouncer/monitoring/pb-builtin-prom-target.png" style="padding:10px">
 </p>
-
 
 Check the labels marked with red rectangle. These labels confirm that the metrics are coming from `PgBouncer` database `builtin-prom-pb` through stats service `builtin-prom-pb-stats`.
 
