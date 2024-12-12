@@ -90,10 +90,10 @@ KubeDB will create a separate stats service with name `{PgBouncer cr name}-stats
 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-pb"
-NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
-builtin-prom-pb         ClusterIP   10.96.124.220   <none>        9999/TCP,9595/TCP   2m20s
-builtin-prom-pb-pods    ClusterIP   None            <none>        9999/TCP            2m20s
-builtin-prom-pb-stats   ClusterIP   10.96.132.175   <none>        9719/TCP            2m20s
+NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+builtin-prom-pb         ClusterIP   10.96.210.2     <none>        5432/TCP    86s
+builtin-prom-pb-pods    ClusterIP   None            <none>        5432/TCP    86s
+builtin-prom-pb-stats   ClusterIP   10.96.215.193   <none>        56790/TCP   74s
 ```
 
 Here, `builtin-prom-pb-stats` service has been created for monitoring purpose. Let's describe the service.
@@ -106,19 +106,20 @@ Labels:            app.kubernetes.io/component=connection-pooler
                    app.kubernetes.io/instance=builtin-prom-pb
                    app.kubernetes.io/managed-by=kubedb.com
                    app.kubernetes.io/name=pgbouncers.kubedb.com
+                   kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
                    prometheus.io/path: /metrics
-                   prometheus.io/port: 9719
+                   prometheus.io/port: 56790
                    prometheus.io/scrape: true
-Selector:          apb.kubernetes.io/instance=builtin-prom-pb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=pgbouncers.kubedb.com
+Selector:          app.kubernetes.io/instance=builtin-prom-pb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=pgbouncers.kubedb.com
 Type:              ClusterIP
 IP Family Policy:  SingleStack
 IP Families:       IPv4
-IP:                10.96.132.175
-IPs:               10.96.132.175
-Port:              metrics  9719/TCP
+IP:                10.96.215.193
+IPs:               10.96.215.193
+Port:              metrics  56790/TCP
 TargetPort:        metrics/TCP
-Endpoints:         10.244.0.27:9719
+Endpoints:         10.244.0.28:56790
 Session Affinity:  None
 Events:            <none>
 ```
@@ -127,7 +128,7 @@ You can see that the service contains following annotations.
 
 ```bash
 prometheus.io/path: /metrics
-prometheus.io/port: 9719
+prometheus.io/port: 56790
 prometheus.io/scrape: true
 ```
 
@@ -336,8 +337,9 @@ Forwarding from [::1]:9090 -> 9090
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see the endpoint of `builtin-prom-pb-stats` service as one of the targets.
 
 <p align="center">
-  <ipp alt="Prometheus Target" height="100%" src="/docs/images/pgbouncer/monitoring/pb-builtin-prom-target.png" style="padding:10px">
+  <img alt="Prometheus Target" height="100%" src="/docs/images/pgbouncer/monitoring/pb-builtin-prom-target.png" style="padding:10px">
 </p>
+
 
 Check the labels marked with red rectangle. These labels confirm that the metrics are coming from `PgBouncer` database `builtin-prom-pb` through stats service `builtin-prom-pb-stats`.
 

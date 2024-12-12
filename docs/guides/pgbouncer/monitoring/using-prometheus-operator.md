@@ -231,7 +231,7 @@ coreos-prom-pb   kubedb.com/v1          1.18.0    Ready    65s
 KubeDB will create a separate stats service with name `{PgBouncer crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-pp"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-pb"
 NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
 coreos-prom-pb         ClusterIP   10.96.201.180   <none>        9999/TCP,9595/TCP   4m3s
 coreos-prom-pb-pods    ClusterIP   None            <none>        9999/TCP            4m3s
