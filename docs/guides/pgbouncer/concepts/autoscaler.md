@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is PgBouncerAutoscaler
 
-`PgBouncerAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling [PgBouncer](https://pgbouncer.net/mediawiki/index.php/Main_Page) compute resources of PgBouncer components in a Kubernetes native way.
+`PgBouncerAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling [PgBouncer](https://www.pgbouncer.org/usage.html) compute resources of PgBouncer components in a Kubernetes native way.
 
 ## PgBouncerAutoscaler CRD Specifications
 

@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is PgBouncerOpsRequest
 
-`PgBouncerOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [PgBouncer](https://pgbouncer.net/mediawiki/index.php/Main_Page) administrative operations like version updating, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
+`PgBouncerOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [PgBouncer](https://www.pgbouncer.org/usage.html) administrative operations like version updating, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
 
 ## PgBouncerOpsRequest CRD Specifications
 
