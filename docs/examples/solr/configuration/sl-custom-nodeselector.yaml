@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Solr
+metadata:
+  name: solr-custom-nodeselector
+  namespace: demo
+spec:
+  version: 9.6.1
+  replicas: 2
+  podTemplate:
+    spec:
+      nodeSelector:
+        topology.gke.io/zone: us-central1-b
+  zookeeperRef:
+    name: zoo
+    namespace: demo
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi

@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: sl-volume-exp-topology
+  namespace: demo
+spec:
+  apply: IfReady
+  databaseRef:
+    name: solr-cluster
+  type: VolumeExpansion
+  volumeExpansion:
+    mode: Offline
+    data: 11Gi
+    overseer : 11Gi
