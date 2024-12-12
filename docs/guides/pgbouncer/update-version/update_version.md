@@ -3,7 +3,7 @@ title: Updating PgBouncer
 menu:
   docs_{{ .version }}:
     identifier: pb-updating-pgbouncer
-    name: updatingPgBouncer
+    name: Updating PgBouncer
     parent: pb-updating
     weight: 20
 menu_name: docs_{{ .version }}
