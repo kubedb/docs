@@ -1,0 +1,20 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Solr
+metadata:
+  name: solr
+  namespace: demo
+spec:
+  configSecret:
+    name: sl-combined-custom-config
+  version: 9.6.1
+  replicas: 2
+  zookeeperRef:
+    name: zoo
+    namespace: demo
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: longhorn

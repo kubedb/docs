@@ -1,0 +1,24 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: slops-add-tls
+  namespace: demo
+spec:
+  apply: IfReady
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      name: solr-ca-issuer
+      kind: Issuer
+    certificates:
+      - alias: server
+        subject:
+          organizations:
+            - kubedb:server
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
+  databaseRef:
+    name: solr-cluster
+  type: ReconfigureTLS

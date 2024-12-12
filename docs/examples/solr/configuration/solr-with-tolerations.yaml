@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Solr
+metadata:
+  name: solr-with-toleration
+  namespace: demo
+spec:
+  version: 9.6.1
+  replicas: 2
+  podTemplate:
+    spec:
+      tolerations:
+        - key: "key1"
+          operator: "Equal"
+          value: "node7"
+          effect: "NoSchedule"
+        - key: "key1"
+          operator: "Equal"
+          value: "node8"
+          effect: "NoSchedule"
+  zookeeperRef:
+    name: zoo
+    namespace: demo
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi

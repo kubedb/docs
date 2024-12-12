@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: sl-reconfigure-custom-config
+  namespace: demo
+spec:
+  apply: IfReady
+  configuration:
+    configSecret:
+      name: sl-combined-custom-config
+  databaseRef:
+    name: solr
+  type: Reconfigure
