@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # KubeDB MySQL - Continuous Archiving and Point-in-time Recovery using VolumeSnapshot
 
-Here, will show you how to use KubeDB to provision a MySQL to Archive continuously and Restore point-in-time.
+Here, will show you how to use KubeDB to provision a MySQL to Archive continuously, also show point-in-time restoration.
 
 ## Before You Begin
 
@@ -171,10 +171,12 @@ stringData:
 ```
 
 ```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/volumesnapshot/yamls/mysqlarchiver.yaml
- mysqlarchiver.archiver.kubedb.com/mysqlarchiver-sample created
  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/volumesnapshot/yamls/encryptionSecret.yaml
  secret/encrypt-secret created
+
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/volumesnapshot/yamls/mysqlarchiver.yaml
+ mysqlarchiver.archiver.kubedb.com/mysqlarchiver-sample created
+
 ```
 
 ## Ensure VolumeSnapshotClass
@@ -238,6 +240,16 @@ spec:
   deletionPolicy: WipeOut
 ```
 
+```bash
+$ kubectl get pod -n demo
+NAME                                                              READY   STATUS      RESTARTS        AGE
+mysql-0                                                           2/2     Running     0               28h
+mysql-1                                                           2/2     Running     0               28h
+mysql-2                                                           2/2     Running     0               28h
+
+```
+
+Once the MySQL database is ready and backup storage is prepared, the MySQL Archiver object will trigger the KubeDB Operator to create a sidekick pod. Subsequently, the KubeStash Operator will generate a full backup along with a manifest backup.
 
 ```bash
 $ kubectl get pod -n demo
@@ -253,11 +265,11 @@ retention-policy-mysql-archiver-manifest-backup-1733206003skwqc   0/1     Comple
 
 ```
 
-`mysql-sidekick` is responsible for uploading binlog files
+`mysql-sidekick` pod is responsible for uploading binlog files
 
-`mysql-backup-config-full-backup-1703680982-vqf7c` are the pod of volumes levels backups for MySQL.
+`mysql-backup-config-full-backup-1703680982-vqf7c` is the pod of volumes levels backups for MySQL.
 
-`mysql-backup-config-manifest-1703680982-62x97` are the pod of the manifest backup related to MySQL object
+`mysql-backup-config-manifest-1703680982-62x97` is the pod of the manifest backup related to MySQL object
 
 `retention-policy-mysql-archiver-full-backup-1733206003-b2b42` will automatically clean up previous full-backup of volumesnapshots according to the rules defined in the `mysql-retention-policy` custom resource (CR).
 
@@ -364,8 +376,35 @@ mysql> select now();
 | 2024-12-03 06:09:34 |
 +---------------------+
 ```
-### Restore MySQL
 
+### ReplicationStrategy
+
+The ReplicationStrategy determines how MySQL restores are managed when using the VolumeSnapshot. We support three strategies: `none`, `sync`, and `fscopy`, with `none` being the default.
+
+To configure the desired strategy, set the `spec.init.archiver.replicationStrategy` field in your configuration. These strategies are applicable only when restoring a MySQL database in group replication mode.
+
+**Strategies Overview:**
+
+***none***
+
+Each MySQL replica independently restores the base backup volumesnapshot and binlog files. After completing the restore process, the replicas individually join the replication group.
+
+***sync***
+
+The base backup volumesnapshot and binlog files are restored exclusively on pod-0. Other replicas then synchronize their data by leveraging the MySQL clone plugin to replicate from pod-0.
+
+***fscopy***
+
+The base backup and binlog files are restored on pod-0. The data is then copied from pod-0's data directory to the data directories of other replicas using file system copy. Once the data transfer is complete, the group replication process begins.  Please note that `fscopy` does not support cross-zone operations.
+
+***clone***
+
+If you have a different type of base backup(ex: VolumeSnapshot, Restic), the clone process will ensure that the VolumeSnapshot is restored as the base backup. Each MySQL replica independently restores the base backup volumesnapshot and binlog files. After completing the restore process, the replicas individually join the replication group.
+
+
+Choose the replication strategy that best fits your restoration and replication requirements. On this demonstration, we have used the sync replication strategy.
+
+### Restore MySQL
 ```yaml
 apiVersion: kubedb.com/v1
 kind: MySQL
@@ -443,32 +482,6 @@ mysql> select count(*) from demo_table;
 
 **so we are able to successfully recover from a disaster**
 
-**ReplicationStrategy**
-
-The ReplicationStrategy determines how MySQL restores are managed when using the VolumeSnapshot. We support three strategies: `none`, `sync`, and `fscopy`, with `none` being the default.
-
-To configure the desired strategy, set the `spec.init.archiver.replicationStrategy` field in your configuration. These strategies are applicable only when restoring a MySQL database in group replication mode.
-
-**Strategies Overview:**
-
-***none***
-
-Each MySQL replica independently restores the base backup volumesnapshot and binlog files. After completing the restore process, the replicas individually join the replication group.
-
-***sync***
-
-The base backup volumesnapshot and binlog files are restored exclusively on pod-0. Other replicas then synchronize their data by leveraging the MySQL clone plugin to replicate from pod-0.
-
-***fscopy***
-
-The base backup and binlog files are restored on pod-0. The data is then copied from pod-0's data directory to the data directories of other replicas using file system copy. Once the data transfer is complete, the group replication process begins.  Please note that `fscopy` does not support cross-zone operations.
-
-***clone***
-
-If you have a different type of base backup(ex: VolumeSnapshot, Restic), the clone process will ensure that the VolumeSnapshot is restored as the base backup. Each MySQL replica independently restores the base backup volumesnapshot and binlog files. After completing the restore process, the replicas individually join the replication group. 
-
-
-Choose the replication strategy that best fits your restoration and replication requirements. On this demonstration, we have used the sync replication strategy.
 
 
 ## Cleaning up

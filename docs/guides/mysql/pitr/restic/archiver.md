@@ -14,7 +14,8 @@ section_menu_id: guides
 
 # KubeDB MySQL - Continuous Archiving and Point-in-time Recovery Using Restic Driver
 
-Here, we will demonstrate how to use KubeDB to provision a MySQL database for continuous archiving and point-in-time restoration.
+Here, we will demonstrate how to use KubeDB to provision a MySQL database with continuous archiving capabilities, also show point-in-time restoration.
+
 This process utilizes [Percona XtraBackup](https://www.percona.com/mysql/software/percona-xtrabackup), a robust tool for taking physical backups of MySQL databases, ensuring data integrity and consistency. We use XtraBackup as the base backup for our MySQL archiver.
 Let's explore how we use XtraBackup in MySQL database archiving.
 ## Before You Begin
@@ -165,11 +166,11 @@ stringData:
 ```
 
 ```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/mysqlarchiver.yaml
- mysqlarchiver.archiver.kubedb.com/mysqlarchiver-sample created
- 
  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/encryptionSecret.yaml
  secret/encrypt-secret created
+ 
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/mysqlarchiver.yaml
+ mysqlarchiver.archiver.kubedb.com/mysqlarchiver-sample created
 ```
 
 # Deploy MySQL
@@ -195,10 +196,6 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  archiver:
-    ref:
-      name: mysqlarchiver-sample
-      namespace: demo
   deletionPolicy: WipeOut
 ```
 
@@ -213,6 +210,17 @@ NAME                                                              READY   STATUS
 mysql-0                                                           2/2     Running     0          15m
 mysql-1                                                           2/2     Running     0          15m
 mysql-2                                                           2/2     Running     0          15m
+
+```
+
+Once the MySQL database is ready and backup storage is prepared, the MySQL Archiver object will trigger the KubeDB Operator to create a sidekick pod. Subsequently, the KubeStash Operator will generate a full backup along with a manifest backup.
+
+```bash
+$ kubectl get pod -n demo
+NAME                                                              READY   STATUS      RESTARTS   AGE
+mysql-0                                                           2/2     Running     0          15m
+mysql-1                                                           2/2     Running     0          15m
+mysql-2                                                           2/2     Running     0          15m
 mysql-archiver-full-backup-1733120326-4n8nd                       0/1     Completed   0          10m
 mysql-archiver-manifest-backup-1733120326-9gw4f                   0/1     Completed   0          10m
 mysql-sidekick                                                    1/1     Running     0          10m
@@ -220,9 +228,11 @@ retention-policy-mysql-archiver-full-backup-1733120326-7rx9t      0/1     Comple
 retention-policy-mysql-archiver-manifest-backup-1733120326l79mb   0/1     Completed   0          9m56s
 ```
 
-`mysql-sidekick` is responsible for uploading binlog files
+Here,
 
-`mysql-archiver-full-backup-1733120326-4n8nd` is responsible for creating the base backup of MySQL. 
+`mysql-sidekick` pod is responsible for uploading binlog files
+
+`mysql-archiver-full-backup-1733120326-4n8nd` pod is responsible for creating the base backup of MySQL.
 
 `mysql-archiver-manifest-backup-1733120326-9gw4f` is the pod of the manifest backup related to MySQL object.
 
@@ -326,10 +336,32 @@ mysql> select now();
 | 2024-12-02 06:38:42 |
 +---------------------+
 ```
+
+### ReplicationStrategy
+
+The ReplicationStrategy determines how MySQL restores are managed when using the Restic driver in a group replication setup. We support three strategies: `none`, `sync`, and `fscopy`, with `none` being the default.
+
+To configure the desired strategy, set the `spec.init.archiver.replicationStrategy` field in your MySQL Database manifest. These strategies are applicable only when restoring a MySQL database in group replication mode.
+
+**Strategies Overview:**
+
+***none***
+
+Each MySQL replica independently restores the base backup and binlog files. After completing the restore process, the replicas individually join the replication group.
+
+***sync***
+
+The base backup and binlog files are restored exclusively on pod-0. Other replicas then synchronize their data by leveraging the MySQL clone plugin to replicate from pod-0.
+
+***fscopy***
+
+The base backup and binlog files are restored on pod-0. The data is then copied from pod-0's data directory to the data directories of other replicas using file system copy. Once the data transfer is complete, the group replication process begins.
+
+Please note that `fscopy` does not support cross-zone operations.
+
+Choose the replication strategy that best fits your restoration and replication requirements. On this demonstration, we have used the `sync` replication strategy.
+
 ### Restore MySQL
-
-
-
 ```yaml
 apiVersion: kubedb.com/v1
 kind: MySQL
@@ -410,29 +442,6 @@ mysql> select count(*) from demo_table;
 
 **so we are able to successfully recover from a disaster**
 
-**ReplicationStrategy**
-
-The ReplicationStrategy determines how MySQL restores are managed when using the Restic driver in a group replication setup. We support three strategies: `none`, `sync`, and `fscopy`, with `none` being the default.
- 
-To configure the desired strategy, set the `spec.init.archiver.replicationStrategy` field in your MySQL Database manifest. These strategies are applicable only when restoring a MySQL database in group replication mode.
-
-**Strategies Overview:**
-
-***none***
-
-Each MySQL replica independently restores the base backup and binlog files. After completing the restore process, the replicas individually join the replication group.
-
-***sync***
-
-The base backup and binlog files are restored exclusively on pod-0. Other replicas then synchronize their data by leveraging the MySQL clone plugin to replicate from pod-0. 
-
-***fscopy***
-
-The base backup and binlog files are restored on pod-0. The data is then copied from pod-0's data directory to the data directories of other replicas using file system copy. Once the data transfer is complete, the group replication process begins. 
-
-Please note that `fscopy` does not support cross-zone operations.
-
-Choose the replication strategy that best fits your restoration and replication requirements. On this demonstration, we have used the `sync` replication strategy.
 
 ## Cleaning up
 
