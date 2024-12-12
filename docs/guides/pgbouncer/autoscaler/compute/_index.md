@@ -5,6 +5,6 @@ menu:
     identifier: pb-compute-auto-scaling
     name: Compute Autoscaling
     parent: pb-auto-scaling
-    weight: 46
+    weight: 10
 menu_name: docs_{{ .version }}
 ---

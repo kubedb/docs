@@ -1,5 +1,5 @@
 ---
-title: Autoscaling
+title: Autoscaling auto
 menu:
   docs_{{ .version }}:
     identifier: pb-auto-scaling
