@@ -21,22 +21,19 @@ spec:
     name: "encrypt-secret"
     namespace: "demo"
   fullBackup:
-    driver: "VolumeSnapshotter"
-    task:
-      params:
-        volumeSnapshotClassName: "longhorn-snapshot-vsc"
+    driver: "Restic"
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
-      schedule: "*/30 * * * *"
+      schedule: "0 0 * * *"
     sessionHistoryLimit: 2
   manifestBackup:
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
-      schedule: "*/30 * * * *"
+      schedule: "0 0 * * *"
     sessionHistoryLimit: 2
   backupStorage:
     ref:
-      name: "linode-storage"
+      name: "storage"
       namespace: "demo"

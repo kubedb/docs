@@ -1,0 +1,32 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: storage
+  namespace: demo
+spec:
+  storage:
+    provider: s3
+    s3:
+      endpoint: s3.amazonaws.com
+      bucket: mysql-xtrabackup
+      region: us-east-1
+      prefix: my-demo
+      secretName: s3-secret
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  deletionPolicy: WipeOut
+  #  for restricted namespace
+  runtimeSettings:
+    pod:
+      securityContext:
+        runAsUser: 65535
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+    container:
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL

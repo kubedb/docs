@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1
+kind: MySQL
+metadata:
+  name: mysql
+  namespace: demo
+  labels:
+    archiver: "true"
+spec:
+  version: "8.2.0"
+  replicas: 3
+  topology:
+    mode: GroupReplication
+  storageType: Durable
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  archiver:
+    ref:
+      name: mysqlarchiver-sample
+      namespace: demo
+  deletionPolicy: WipeOut
