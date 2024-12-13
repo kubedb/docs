@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Monitoring PgBouncer with builtin Prometheus
 
-This tutorial will show you how to monitor PgBouncer using builtin [Prometheus](https://github.com/prometheus/prometheus) scraper.
+This tutorial will show you how to monitor PgBouncer database using builtin [Prometheus](https://github.com/prometheus/prometheus) scraper.
 
 ## Before You Begin
 
@@ -38,28 +38,31 @@ This tutorial will show you how to monitor PgBouncer using builtin [Prometheus](
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
+## Prepare Postgres
+Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/clustering/streaming_replication.md), or you can use any externally managed postgres but in that case you need to create an [appbinding](/docs/guides/pgbouncer/concepts/appbinding.md) yourself. In this tutorial we will use 3 node Postgres cluster named `ha-postgres`.
+
 ## Deploy PgBouncer with Monitoring Enabled
 
-At first, we will need a PgBouncer with monitoring enabled. This PgBouncer needs to be connected to PostgreSQL database(s). You can get a PgBouncer setup with active connection(s) to PostgreSQL by following the [quickstart](/docs/guides/pgbouncer/quickstart/quickstart.md) guide. PgBouncer object in that guide didn't come with monitoring. So we are going to enable monitoring in it. Below is the PgBouncer object that contains built-in monitoring:
+At first, let's deploy a PgBouncer with monitoring enabled. Below is the PgBouncer object that we are going to create.
 
 ```yaml
 apiVersion: kubedb.com/v1
 kind: PgBouncer
 metadata:
-  name: pgbouncer-server
+  name: builtin-prom-pb
   namespace: demo
 spec:
-  version: "1.17.0"
   replicas: 1
+  version: "1.18.0"
   database:
     syncUsers: true
     databaseName: "postgres"
     databaseRef:
-      name: "quick-postgres"
+      name: "ha-postgres"
       namespace: demo
   connectionPool:
-    maxClientConnections: 20
-    reservePoolSize: 5
+    poolMode: session
+    port: 5432
   monitor:
     agent: prometheus.io/builtin
 ```
@@ -68,49 +71,55 @@ Here,
 
 - `spec.monitor.agent: prometheus.io/builtin` specifies that we are going to monitor this server using builtin Prometheus scraper.
 
-Let's patch the existing PgBouncer with the crd we have shown above.
+Let's create the PgBouncer crd we have shown above.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/monitoring/builtin-prom-pgbouncer.yaml
-pgbouncer.kubedb.com/pgbouncer-server configured
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/monitoring/builtin-prom-pb.yaml
+pgbouncer.kubedb.com/builtin-prom-pb created
 ```
 
-PgBouncer should still be in `Running` state.
+Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get pb -n demo pgbouncer-server
-NAME               VERSION   STATUS    AGE
-pgbouncer-server   1.17.0    Running   13s
+$ kubectl get pb -n demo builtin-prom-pb
+NAME              TYPE                  VERSION   STATUS   AGE
+builtin-prom-pb   kubedb.com/v1         1.18.0    Ready    65s
 ```
 
-KubeDB will create a separate stats service with name `{PgBouncer crd name}-stats` for monitoring purpose.
+KubeDB will create a separate stats service with name `{PgBouncer cr name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=pgbouncer-server"
-NAME                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
-pgbouncer-server         ClusterIP   10.108.152.208   <none>        5432/TCP    16m
-pgbouncer-server-stats   ClusterIP   10.111.194.83    <none>        56790/TCP   16m
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-pb"
+NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+builtin-prom-pb         ClusterIP   10.96.210.2     <none>        5432/TCP    86s
+builtin-prom-pb-pods    ClusterIP   None            <none>        5432/TCP    86s
+builtin-prom-pb-stats   ClusterIP   10.96.215.193   <none>        56790/TCP   74s
 ```
 
-Here, `pgbouncer-server-stats` service has been created for monitoring purpose. Let's describe the service.
+Here, `builtin-prom-pb-stats` service has been created for monitoring purpose. Let's describe the service.
 
 ```bash
-$ kubectl describe svc -n demo pgbouncer-server-stats
-Name:              pgbouncer-server-stats
+$ kubectl describe svc -n demo builtin-prom-pb-stats
+Name:              builtin-prom-pb-stats
 Namespace:         demo
-Labels:            app.kubernetes.io/name=pgbouncers.kubedb.com
-                   app.kubernetes.io/instance=pgbouncer-server
+Labels:            app.kubernetes.io/component=connection-pooler
+                   app.kubernetes.io/instance=builtin-prom-pb
+                   app.kubernetes.io/managed-by=kubedb.com
+                   app.kubernetes.io/name=pgbouncers.kubedb.com
                    kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
                    prometheus.io/path: /metrics
                    prometheus.io/port: 56790
                    prometheus.io/scrape: true
-Selector:          app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-server
+Selector:          app.kubernetes.io/instance=builtin-prom-pb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=pgbouncers.kubedb.com
 Type:              ClusterIP
-IP:                10.110.56.149
-Port:              prom-http  56790/TCP
-TargetPort:        prom-http/TCP
-Endpoints:         172.17.0.7:56790
+IP Family Policy:  SingleStack
+IP Families:       IPv4
+IP:                10.96.215.193
+IPs:               10.96.215.193
+Port:              metrics  56790/TCP
+TargetPort:        metrics/TCP
+Endpoints:         10.244.0.28:56790
 Session Affinity:  None
 Events:            <none>
 ```
@@ -193,7 +202,7 @@ Let's configure a Prometheus scraping job to collect metrics from this service.
 
 If you already have a Prometheus server running, you have to add above scraping job in the `ConfigMap` used to configure the Prometheus server. Then, you have to restart it for the updated configuration to take effect.
 
-> If you don't use a persistent volume for Prometheus storage, you will lose your previously scraped data on restart.
+>If you don't use a persistent volume for Prometheus storage, you will lose your previously scraped data on restart.
 
 ### Deploy New Prometheus Server
 
@@ -305,15 +314,6 @@ $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/moni
 deployment.apps/prometheus created
 ```
 
-**Prometheus Service:**
-
-We will use a service for the Prometheus server. We can use this to look up metrics from within the cluster as well as outside of the cluster.
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/monitoring/builtin-prom-service.yaml
-service/prometheus-operated created
-```
-
 ### Verify Monitoring Metrics
 
 Prometheus server is listening to port `9090`. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
@@ -321,26 +321,26 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 At first, let's check if the Prometheus pod is in `Running` state.
 
 ```bash
-kubectl get pod -n monitoring -l=app=prometheus
-NAME                          READY   STATUS    RESTARTS   AGE
-prometheus-789c9695fc-7rjzf   1/1     Running   0          27s
+$ kubectl get pod -n monitoring -l=app=prometheus
+NAME                         READY   STATUS    RESTARTS   AGE
+prometheus-d64b668fb-4khbg   1/1     Running   0          21s
 ```
 
-Now, run following command on a separate terminal to forward 9090 port of `prometheus-8568c86d86-95zhn` pod,
+Now, run following command on a separate terminal to forward 9090 port of `prometheus-d64b668fb-4khbg` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring svc/prometheus-operated 9090
+$ kubectl port-forward -n monitoring prometheus-d64b668fb-4khbg 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. You should see the endpoint of `pgbouncer-server-stats` service as one of the targets.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see the endpoint of `builtin-prom-pb-stats` service as one of the targets.
 
 <p align="center">
-  <img alt="Prometheus Target" height="100%" src="/docs/images/pgbouncer/monitoring/pb-builtin-prom-target.png" style="padding:10px">
+  <img alt="Prometheus Target" src="/docs/images/pgbouncer/monitoring/pb-builtin-prom-target.png" style="padding:10px">
 </p>
 
-Check the labels which confirm that the metrics are coming from `pgbouncer-server` through stats service `pgbouncer-server-stats`.
+Check the labels marked with red rectangle. These labels confirm that the metrics are coming from `PgBouncer` database `builtin-prom-pb` through stats service `builtin-prom-pb-stats`.
 
 Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.
 
@@ -349,19 +349,22 @@ Now, you can view the collected metrics and create a graph from homepage of this
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
 ```bash
-$ kubectl delete -n demo pb/pgbouncer-server
+kubectl delete -n demo pb/builtin-prom-pb
 
-$ kubectl delete -n monitoring deployment.apps/prometheus
+kubectl delete -n monitoring deployment.apps/prometheus
 
-$ kubectl delete -n monitoring clusterrole.rbac.authorization.k8s.io/prometheus
-$ kubectl delete -n monitoring serviceaccount/prometheus
-$ kubectl delete -n monitoring clusterrolebinding.rbac.authorization.k8s.io/prometheus
+kubectl delete -n monitoring clusterrole.rbac.authorization.k8s.io/prometheus
+kubectl delete -n monitoring serviceaccount/prometheus
+kubectl delete -n monitoring clusterrolebinding.rbac.authorization.k8s.io/prometheus
 
-$ kubectl delete ns demo
-$ kubectl delete ns monitoring
+kubectl delete ns demo
+kubectl delete ns monitoring
 ```
 
 ## Next Steps
-- Monitor your PgBouncer with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md).
-- Use [private Docker registry](/docs/guides/pgbouncer/private-registry/using-private-registry.md) to deploy PgBouncer with KubeDB.
+
+
+- Monitor your PgBouncer database with KubeDB using [out-of-the-box prometheus-Operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md).
+- Detail concepts of [PgBouncer object](/docs/guides/pgbouncer/concepts/pgbouncer.md).
+- Detail concepts of [PgBouncerVersion object](/docs/guides/pgbouncer/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

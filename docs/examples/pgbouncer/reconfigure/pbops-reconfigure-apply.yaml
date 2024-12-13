@@ -1,0 +1,17 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgBouncerOpsRequest
+metadata:
+  name: pbops-reconfigure-apply
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: pb-custom
+  configuration:
+    pgbouncer:
+      applyConfig:
+        pgbouncer.ini: |-
+          [pgbouncer]
+          auth_type=scram-sha-256
+  timeout: 5m
+  apply: IfReady

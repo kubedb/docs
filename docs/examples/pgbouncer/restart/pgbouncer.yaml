@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1
+kind: PgBouncer
+metadata:
+  name: pgbouncer
+  namespace: demo
+spec:
+  replicas: 1
+  version: "1.18.0"
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "ha-postgres"
+      namespace: demo
+  connectionPool:
+    poolMode: session
+    port: 5432
+    reservePoolSize: 5
+    maxClientConnections: 87
+    defaultPoolSize: 2
+    minPoolSize: 1
+    authType: md5
+  deletionPolicy: WipeOut

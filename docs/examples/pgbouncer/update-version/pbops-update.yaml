@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgBouncerOpsRequest
+metadata:
+  name: pgbouncer-version-update
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: pb-update
+  updateVersion:
+    targetVersion: 1.23.1

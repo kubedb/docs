@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgBouncerOpsRequest
+metadata:
+  name: pbops-reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: pb-custom
+  configuration:
+    pgbouncer:
+      configSecret:
+        name: new-custom-config
+  timeout: 5m
+  apply: IfReady

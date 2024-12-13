@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgBouncerOpsRequest
+metadata:
+  name: restart-pgbouncer
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: pgbouncer
+  timeout: 3m
+  apply: Always
