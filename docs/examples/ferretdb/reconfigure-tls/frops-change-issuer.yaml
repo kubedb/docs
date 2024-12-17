@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: FerretDBOpsRequest
+metadata:
+  name: frops-change-issuer
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: ferretdb
+  tls:
+    issuerRef:
+      name: fr-new-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"

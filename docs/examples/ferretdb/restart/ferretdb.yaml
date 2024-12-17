@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1alpha2
+kind: FerretDB
+metadata:
+  name: ferretdb
+  namespace: demo
+spec:
+  version: "1.23.0"
+  replicas: 1
+  backend:
+    externallyManaged: false
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 500Mi
+  deletionPolicy: WipeOut

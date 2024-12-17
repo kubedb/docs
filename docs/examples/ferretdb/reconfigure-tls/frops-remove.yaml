@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: FerretDBOpsRequest
+metadata:
+  name: frops-remove
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: ferretdb
+  tls:
+    remove: true
