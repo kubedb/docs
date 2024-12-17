@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: FerretDBOpsRequest
+metadata:
+  name: restart-ferretdb
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: ferretdb
+  timeout: 3m
+  apply: Always

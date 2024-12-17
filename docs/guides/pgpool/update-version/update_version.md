@@ -228,9 +228,9 @@ $ kubectl get pp -n demo pp-update -o=jsonpath='{.spec.version}{"\n"}'
 4.5.0
 
 $ kubectl get petset -n demo pp-update -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
-mongo:4.0.5
+ghcr.io/appscode-images/pgpool2:4.5.0
 
-$ kubectl get pods -n demo mg-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           
+$ kubectl get pods -n demo pp-update-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           
 ghcr.io/appscode-images/pgpool2:4.5.0@sha256:2697fcad9e11bdc704f6ae0fba85c4451c6b0243140aaaa33e719c3af548bda1
 ```
 

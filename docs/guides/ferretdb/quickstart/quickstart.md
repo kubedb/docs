@@ -136,7 +136,7 @@ Metadata:
   UID:               73247297-139b-4dfe-8f9d-9baf2b092364
 Spec:
   Auth Secret:
-    Name:  ferret-pg-backend-auth
+    Name:  ferret-auth
   Backend:
     Externally Managed:  false
     Linked DB:           ferretdb
@@ -222,9 +222,6 @@ Status:
 $ kubectl get petset -n demo
 NAME                        READY   AGE
 ferret                      1/1     29m
-
-$ kubectl get petset -n demo
-NAME                        READY   AGE
 ferret-pg-backend           2/2     30m
 ferret-pg-backend-arbiter   1/1     29m
 
@@ -273,7 +270,7 @@ metadata:
   uid: 73247297-139b-4dfe-8f9d-9baf2b092364
 spec:
   authSecret:
-    name: ferret-pg-backend-auth
+    name: ferret-auth
   backend:
     externallyManaged: false
     linkedDB: ferretdb
@@ -355,16 +352,16 @@ status:
   phase: Ready
 ```
 
-Please note that KubeDB operator has created a new Secret called `ferret-pg-backend-auth` *(format: {ferretdb-object-name}-backend-auth)* for storing the password for `postgres` superuser. This secret contains a `username` key which contains the *username* for FerretDB superuser and a `password` key which contains the *password* for FerretDB superuser.
+Please note that KubeDB operator has created a new Secret called `ferret-auth` *(format: {ferretdb-object-name}-auth)* for storing the password for `postgres` superuser. This secret contains a `username` key which contains the *username* for FerretDB superuser and a `password` key which contains the *password* for FerretDB superuser.
 
 If you want to use custom or existing secret please specify that when creating the FerretDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specauthsecret).
 
 Now, you can connect to this database by port-forwarding primary service `ferret` and connecting with [mongo-shell](https://www.mongodb.com/try/download/shell) locally
 
 ```bash
-$ kubectl get secrets -n demo ferret-pg-backend-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo ferret-auth -o jsonpath='{.data.\username}' | base64 -d
 postgres
-$ kubectl get secrets -n demo ferret-pg-backend-auth -o jsonpath='{.data.\\password}' | base64 -d
+$ kubectl get secrets -n demo ferret-auth -o jsonpath='{.data.\\password}' | base64 -d
 UxV5a35kURSFE(;5
 
 $ kubectl port-forward svc/ferret -n demo 27017

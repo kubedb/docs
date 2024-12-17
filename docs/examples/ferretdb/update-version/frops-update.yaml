@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: FerretDBOpsRequest
+metadata:
+  name: ferretdb-version-update
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: fr-update
+  updateVersion:
+    targetVersion: 1.23.0

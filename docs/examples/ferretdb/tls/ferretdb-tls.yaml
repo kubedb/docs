@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1alpha2
+kind: FerretDB
+metadata:
+  name: fr-tls
+  namespace: demo
+spec:
+  version: "1.23.0"
+  authSecret:
+    externallyManaged: false
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 500Mi
+  backend:
+    externallyManaged: false
+  deletionPolicy: WipeOut
+  replicas: 1
+  sslMode: requireSSL
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: ferretdb-ca-issuer

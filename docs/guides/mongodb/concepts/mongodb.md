@@ -366,7 +366,7 @@ The following fields are configurable in the `spec.tls` section:
   - `uris` (optional) is a list of URI Subject Alternative Names to be set in the Certificate.
   - `emailAddresses` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
   - `privateKey` (optional) specifies options to control private keys used for the Certificate.
-    - `encoding` (optional) is the private key cryptography standards (PKCS) encoding for this certificate's private key to be encoded in. If provided, allowed values are "pkcs1" and "pkcs8" standing for PKCS#1 and PKCS#8, respectively. It defaults to PKCS#1 if not specified.
+  - `encoding` (optional) is the private key cryptography standards (PKCS) encoding for this certificate's private key to be encoded in. If provided, allowed values are "pkcs1" and "pkcs8" standing for PKCS#1 and PKCS#8, respectively. It defaults to PKCS#1 if not specified.
 
 ### spec.clusterAuthMode
 
