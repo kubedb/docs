@@ -1,11 +1,11 @@
 ---
-title: MSSQLServer Volume Expansion
+title: Availability Group (HA Cluster) Volume Expansion
 menu:
   docs_{{ .version }}:
-    identifier: mssqlserver-volume-expansion-guide
-    name: MSSQLServer Volume Expansion
+    identifier: volume-expansion-guide-ag-cluster
+    name: Availability Group (HA Cluster)
     parent: ms-volume-expansion
-    weight: 20
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # MSSQLServer Volume Expansion
 
-This guide will show you how to use `KubeDB` Ops-manager operator to expand the volume of a MSSQLServer.
+This guide will show you how to use `KubeDB` Ops-manager operator to expand the volume of a SQL Server Availability Group Cluster.
 
 ## Before You Begin
 
@@ -38,11 +38,11 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-## Expand Volume of MSSQLServer
+## Expand Volume of MSSQLServer Availability Group Cluster
 
 Here, we are going to deploy a  `MSSQLServer` cluster using a supported version by `KubeDB` operator. Then we are going to apply `MSSQLServerOpsRequest` to expand its volume. The process of expanding MSSQLServer `standalone` is same as MSSQLServer Availability Group cluster.
 
-### Prepare MSSQLServer 
+### Prepare MSSQLServer Availability Group Cluster
 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 

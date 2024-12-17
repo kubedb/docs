@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MSSQLServerOpsRequest
+metadata:
+  name: msops-ag-change-issuer
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: mssql-ag-cluster
+  tls:
+    issuerRef:
+      name: mssqlserver-new-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"

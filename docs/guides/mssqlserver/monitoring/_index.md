@@ -5,6 +5,6 @@ menu:
     identifier: ms-monitoring
     name: Monitoring
     parent: guides-mssqlserver
-    weight: 50
+    weight: 90
 menu_name: docs_{{ .version }}
 ---
