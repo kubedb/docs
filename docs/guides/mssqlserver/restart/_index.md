@@ -5,6 +5,6 @@ menu:
     identifier: ms-restart
     name: Restart
     parent: guides-mssqlserver
-    weight: 46
+    weight: 85
 menu_name: docs_{{ .version }}
 ---

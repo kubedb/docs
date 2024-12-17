@@ -1,10 +1,10 @@
 ---
-title: Autoscaling
+title: Reconfigure
 menu:
   docs_{{ .version }}:
-    identifier: ms-autoscaling
-    name: Autoscaling
+    identifier: ms-reconfigure
+    name: Reconfigure
     parent: guides-mssqlserver
-    weight: 70
+    weight: 75
 menu_name: docs_{{ .version }}
 ---

@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MSSQLServerOpsRequest
+metadata:
+  name: msops-update-standalone
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: mssql-standalone
+  updateVersion:
+    targetVersion: 2022-cu14
+  timeout: 5m
+  apply: IfReady

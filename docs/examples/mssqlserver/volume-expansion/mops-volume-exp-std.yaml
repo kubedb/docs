@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MSSQLServerOpsRequest
+metadata:
+  name: mops-volume-exp-std
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: mssql-standalone
+  volumeExpansion:
+    mode: "Offline" # Online
+    mssqlserver: 2Gi
