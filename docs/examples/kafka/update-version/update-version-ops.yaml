@@ -8,6 +8,6 @@ spec:
     databaseRef:
         name: kafka-prod
     updateVersion:
-        targetVersion: 3.6.1
+        targetVersion: 3.9.0
     timeout: 5m
     apply: IfReady

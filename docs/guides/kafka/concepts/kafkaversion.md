@@ -41,21 +41,21 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2024.4.27
     helm.sh/chart: kubedb-catalog-v2024.4.27
-  name: 3.6.1
+  name: 3.9.0
   resourceVersion: "2881"
   uid: 778fb80c-b37a-4ac6-bfaa-fec83e5f49c7
 spec:
   connectCluster:
-    image: ghcr.io/appscode-images/kafka-connect-cluster:3.6.1
+    image: ghcr.io/appscode-images/kafka-connect-cluster:3.9.0
   cruiseControl:
-    image: ghcr.io/appscode-images/kafka-cruise-control:3.6.1
+    image: ghcr.io/appscode-images/kafka-cruise-control:3.9.0
   db:
-    image: ghcr.io/appscode-images/kafka-kraft:3.6.1
+    image: ghcr.io/appscode-images/kafka-kraft:3.9.0
   podSecurityPolicies:
     databasePolicyName: kafka-db
   securityContext:
     runAsUser: 1001
-  version: 3.6.1
+  version: 3.9.0
 ```
 
 ### metadata.name

@@ -42,7 +42,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   topology:
     broker:
       replicas: 2

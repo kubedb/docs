@@ -43,7 +43,7 @@ Here, we are going to deploy a `Kafka` topology cluster using a supported versio
 
 ### Prepare Kafka Topology cluster
 
-Now, we are going to deploy a `Kafka` topology cluster with version `3.6.1`.
+Now, we are going to deploy a `Kafka` topology cluster with version `3.9.0`.
 
 ### Deploy Kafka topology cluster
 
@@ -56,7 +56,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   topology:
     broker:
       replicas: 2
@@ -92,11 +92,11 @@ Now, wait until `kafka-prod` has status `Ready`. i.e,
 ```bash
 $ kubectl get kf -n demo -w
 NAME          TYPE            VERSION   STATUS         AGE
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   0s
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   24s
+kafka-prod    kubedb.com/v1   3.9.0     Provisioning   0s
+kafka-prod    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
-kafka-prod    kubedb.com/v1   3.6.1     Ready          92s
+kafka-prod    kubedb.com/v1   3.9.0     Ready          92s
 ```
 
 Let's check the number of replicas has from kafka object, number of pods the petset have,

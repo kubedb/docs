@@ -99,7 +99,7 @@ metadata:
   name: connectcluster-distributed
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   enableSSL: true
   tls:
     issuerRef:
@@ -108,8 +108,8 @@ spec:
       name: connectcluster-ca-issuer
   replicas: 3
   connectorPlugins:
-    - postgres-2.4.2.final
-    - jdbc-2.6.1.final
+    - postgres-3.0.5.final
+    - jdbc-3.0.5.final
   kafkaRef:
     name: kafka-prod-tls
     namespace: demo
@@ -136,11 +136,11 @@ $ watch kubectl get connectcluster -n demo
 Every 2.0s: kubectl get connectcluster -n demo                                                                                                                 aadee: Fri Sep  6 14:59:32 2024
 
 NAME                 TYPE                        VERSION   STATUS         AGE
-connectcluster-tls   kafka.kubedb.com/v1alpha1   3.6.1     Provisioning   0s
-connectcluster-tls   kafka.kubedb.com/v1alpha1   3.6.1     Provisioning   34s
+connectcluster-tls   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   0s
+connectcluster-tls   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   34s
 .
 .
-connectcluster-tls   kafka.kubedb.com/v1alpha1   3.6.1     Ready          2m
+connectcluster-tls   kafka.kubedb.com/v1alpha1   3.9.0     Ready          2m
 ```
 
 ### Verify TLS/SSL in Kafka ConnectCluster
@@ -198,7 +198,7 @@ Here, we can see that we are unable to connect to the Kafka cluster using the HT
 
 ```bash
 kafka@connectcluster-tls-0:~$ curl --cacert /var/private/ssl/ca.crt -u "$CONNECT_CLUSTER_USER:$CONNECT_CLUSTER_PASSWORD" https://localhost:8083
-{"version":"3.6.1","commit":"5e3c2b738d253ff5","kafka_cluster_id":"11ef-8f52-c284f2efe29w"}
+{"version":"3.9.0","commit":"5e3c2b738d253ff5","kafka_cluster_id":"11ef-8f52-c284f2efe29w"}
 ```
 
 From the above output, we can see that we are able to connect to the Kafka ConnectCluster using the TLS configuration.

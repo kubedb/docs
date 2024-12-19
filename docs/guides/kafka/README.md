@@ -57,12 +57,11 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 ## Supported Kafka Versions
 
 KubeDB supports The following Kafka versions. Supported version are applicable for Kraft mode or Zookeeper-less releases:
-- `3.3.2`
-- `3.4.1`
-- `3.5.1`
 - `3.5.2`
-- `3.6.0`
 - `3.6.1`
+- `3.7.2`
+- `3.8.1`
+- `3.9.0`
 
 > The listed KafkaVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md) object with your custom Kafka image.
 
@@ -70,11 +69,17 @@ KubeDB supports The following Kafka versions. Supported version are applicable f
 
 | Connector Plugin     | Type   | Version     | Connector Class                                            |
 |----------------------|--------|-------------|------------------------------------------------------------|
-| mongodb-1.11.0       | Source | 1.11.0      | com.mongodb.kafka.connect.MongoSourceConnector             |
-| mongodb-1.11.0       | Sink   | 1.11.0      | com.mongodb.kafka.connect.MongoSinkConnector               |
-| mysql-2.4.2.final    | Source | 2.4.2.Final | io.debezium.connector.mysql.MySqlConnector                 |
-| postgres-2.4.2.final | Source | 2.4.2.Final | io.debezium.connector.postgresql.PostgresConnector         |
+| mongodb-1.13.1       | Source | 1.13.1      | com.mongodb.kafka.connect.MongoSourceConnector             |
+| mongodb-1.13.1       | Sink   | 1.13.1      | com.mongodb.kafka.connect.MongoSinkConnector               |
+| mongodb-1.14.1       | Source | 1.14.1      | com.mongodb.kafka.connect.MongoSourceConnector             |
+| mongodb-1.14.1       | Sink   | 1.14.1      | com.mongodb.kafka.connect.MongoSinkConnector               |
+| mysql-2.7.4.final    | Source | 2.7.4.Final | io.debezium.connector.mysql.MySqlConnector                 |
+| mysql-3.0.5.final    | Source | 3.0.5.Final | io.debezium.connector.mysql.MySqlConnector                 |
+| postgres-2.7.4.final | Source | 2.7.4.Final | io.debezium.connector.postgresql.PostgresConnector         |
+| postgres-3.0.5.final | Source | 3.0.5.Final | io.debezium.connector.postgresql.PostgresConnector         |
 | jdbc-2.6.1.final     | Sink   | 2.6.1.Final | io.debezium.connector.jdbc.JdbcSinkConnector               |
+| jdbc-2.7.4.final     | Sink   | 2.7.4.Final | io.debezium.connector.jdbc.JdbcSinkConnector               |
+| jdbc-3.0.5.final     | Sink   | 3.0.5.Final | io.debezium.connector.jdbc.JdbcSinkConnector               |
 | s3-2.15.0            | Sink   | 2.15.0      | io.aiven.kafka.connect.s3.AivenKafkaConnectS3SinkConnector |
 | gcs-0.13.0           | Sink   | 0.13.0      | io.aiven.kafka.connect.gcs.GcsSinkConnector                |
 

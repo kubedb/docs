@@ -97,7 +97,7 @@ metadata:
   name: kafka-prod-tls
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   enableSSL: true
   tls:
     issuerRef:
@@ -141,11 +141,11 @@ $ watch kubectl get kafka -n demo
 
 Every 2.0s: kubectl get kafka -n demo                                                                                                                          aadee: Fri Sep  6 12:34:51 2024
 NAME             TYPE            VERSION   STATUS         AGE
-kafka-prod-tls   kubedb.com/v1   3.6.1     Provisioning   17s
-kafka-prod-tls   kubedb.com/v1   3.6.1     Provisioning   12s
+kafka-prod-tls   kubedb.com/v1   3.9.0     Provisioning   17s
+kafka-prod-tls   kubedb.com/v1   3.9.0     Provisioning   12s
 .
 .
-kafka-prod-tls   kubedb.com/v1   3.6.1     Ready          2m1s
+kafka-prod-tls   kubedb.com/v1   3.9.0     Ready          2m1s
 ```
 
 ### Verify TLS/SSL in Kafka Topology Cluster
