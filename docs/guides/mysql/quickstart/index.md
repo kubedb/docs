@@ -49,15 +49,15 @@ When you have installed KubeDB, it has created `MySQLVersion` crd for all suppor
 
 ```bash
 $ kubectl get mysqlversions
-NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED   AGE
-5.7.35-v1       5.7.35    Official       mysql:5.7.35                             9s
-5.7.44          5.7.44    Official       mysql:5.7.44                             9s
-8.0.17          8.0.17    Official       mysql:8.0.17                             9s
-8.0.35          8.0.35    Official       mysql:8.0.35                             9s
-8.0.31-innodb   8.0.35    MySQL          mysql/mysql-server:8.0.35                9s
-8.0.35          8.0.35    Official       mysql:8.0.35                             9s
-8.0.3-v4        8.0.3     Official       mysql:8.0.3                              9s
-
+5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                29h
+5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                29h
+8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                29h
+8.0.35          8.0.35    Official       ghcr.io/appscode-images/mysql:8.0.35-oracle                29h
+8.0.36          8.0.36    Official       ghcr.io/appscode-images/mysql:8.0.36-debian                29h
+8.1.0           8.1.0     Official       ghcr.io/appscode-images/mysql:8.1.0-oracle                 29h
+8.2.0           8.2.0     Official       ghcr.io/appscode-images/mysql:8.2.0-oracle                 29h
+8.4.2           8.4.2     Official       ghcr.io/appscode-images/mysql:8.4.2-oracle                 29h
+9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 29h
 ```
 
 ## Create a MySQL database

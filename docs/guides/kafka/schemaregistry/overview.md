@@ -103,11 +103,11 @@ The SchemaRegistry's `STATUS` will go from `Provisioning` to `Ready` state withi
 ```bash
 $ kubectl get schemaregistry -n demo -w
 NAME                        TYPE                        VERSION   STATUS         AGE
-schemaregistry-quickstart   kafka.kubedb.com/v1alpha1   3.6.1     Provisioning   2s
-schemaregistry-quickstart   kafka.kubedb.com/v1alpha1   3.6.1     Provisioning   4s
+schemaregistry-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   2s
+schemaregistry-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   4s
 .
 .
-schemaregistry-quickstart   kafka.kubedb.com/v1alpha1   3.6.1     Ready          112s
+schemaregistry-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Ready          112s
 ```
 
 Describe the `SchemaRegistry` object to observe the progress if something goes wrong or the status is not changing for a long period of time:
