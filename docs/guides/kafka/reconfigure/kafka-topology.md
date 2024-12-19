@@ -41,7 +41,7 @@ Now, we are going to deploy a  `Kafka` Topology cluster using a supported versio
 
 ### Prepare Kafka Topology Cluster
 
-Now, we are going to deploy a `Kafka` topology cluster with version `3.6.1`.
+Now, we are going to deploy a `Kafka` topology cluster with version `3.9.0`.
 
 ### Deploy Kafka
 
@@ -92,7 +92,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   configSecret:
     name: kf-topology-custom-config
   topology:
@@ -130,11 +130,11 @@ Now, wait until `kafka-prod` has status `Ready`. i.e,
 ```bash
 $ kubectl get kf -n demo -w
 NAME          TYPE            VERSION   STATUS         AGE
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   0s
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   24s
+kafka-prod    kubedb.com/v1   3.9.0     Provisioning   0s
+kafka-prod    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
-kafka-prod    kubedb.com/v1   3.6.1     Ready          92s
+kafka-prod    kubedb.com/v1   3.9.0     Ready          92s
 ```
 
 Now, we will check if the kafka has started with the custom configuration we have provided.

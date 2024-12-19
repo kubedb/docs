@@ -48,7 +48,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   topology:
     broker:
       replicas: 2
@@ -84,11 +84,11 @@ Now, wait until `kafka-prod` has status `Ready`. i.e,
 ```bash
 $ kubectl get kf -n demo -w
 NAME          TYPE            VERSION   STATUS         AGE
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   0s
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   9s
+kafka-prod    kubedb.com/v1   3.9.0     Provisioning   0s
+kafka-prod    kubedb.com/v1   3.9.0     Provisioning   9s
 .
 .
-kafka-prod    kubedb.com/v1   3.6.1     Ready          2m10s
+kafka-prod    kubedb.com/v1   3.9.0     Ready          2m10s
 ```
 
 Now, we can exec one kafka broker pod and verify configuration that the TLS is disabled.

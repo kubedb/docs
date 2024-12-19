@@ -51,7 +51,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   configSecret:
     name: configsecret-topology
   topology:
@@ -105,18 +105,18 @@ Now, wait until `kafka-prod` created has status `Ready`. i.e,
 ```bash
 $ kubectl get kf -n demo -w                                                                                                                                           
 NAME         TYPE            VERSION   STATUS         AGE
-kafka-prod   kubedb.com/v1   3.5.2     Provisioning   0s
-kafka-prod   kubedb.com/v1   3.5.2     Provisioning   55s
+kafka-prod   kubedb.com/v1   3.8.1     Provisioning   0s
+kafka-prod   kubedb.com/v1   3.8.1     Provisioning   55s
 .
 .
-kafka-prod   kubedb.com/v1   3.5.2     Ready          119s
+kafka-prod   kubedb.com/v1   3.8.1     Ready          119s
 ```
 
 We are now ready to apply the `KafkaOpsRequest` CR to update.
 
 ### update Kafka Version
 
-Here, we are going to update `Kafka` from `3.5.2` to `3.6.1`.
+Here, we are going to update `Kafka` from `3.8.1` to `3.9.0`.
 
 #### Create KafkaOpsRequest:
 
@@ -133,7 +133,7 @@ spec:
   databaseRef:
     name: kafka-prod
   updateVersion:
-    targetVersion: 3.6.1
+    targetVersion: 3.9.0
   timeout: 5m
   apply: IfReady
 ```
@@ -142,7 +142,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `kafka-prod` Kafka.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `3.6.1`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `3.9.0`.
 
 > **Note:** If you want to update combined Kafka, you just refer to the `Kafka` combined object name in `spec.databaseRef.name`. To create a combined Kafka, you can refer to the [Kafka Combined](/docs/guides/kafka/clustering/combined-cluster/index.md) guide.
 
@@ -187,7 +187,7 @@ Spec:
   Timeout:  5m
   Type:     UpdateVersion
   Update Version:
-    Target Version:  3.6.1
+    Target Version:  3.9.0
 Status:
   Conditions:
     Last Transition Time:  2024-07-30T10:18:44Z
@@ -308,13 +308,13 @@ Now, we are going to verify whether the `Kafka` and the related `PetSets` and th
 
 ```bash
 $ kubectl get kf -n demo kafka-prod -o=jsonpath='{.spec.version}{"\n"}'
-3.6.1
+3.9.0
 
 $ kubectl get petset -n demo kafka-prod-broker -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/kafka-kraft:3.6.1@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
+ghcr.io/appscode-images/kafka-kraft:3.9.0@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
 
 $ kubectl get pods -n demo kafka-prod-broker-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/kafka-kraft:3.6.1@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
+ghcr.io/appscode-images/kafka-kraft:3.9.0@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
 ```
 
 You can see from above, our `Kafka` has been updated with the new version. So, the updateVersion process is successfully completed.

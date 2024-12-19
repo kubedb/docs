@@ -29,7 +29,7 @@ metadata:
   name: connectcluster
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   healthChecker:
     failureThreshold: 3
     periodSeconds: 20
@@ -55,11 +55,11 @@ spec:
   replicas: 3
   connectorPlugins:
     - gcs-0.13.0
-    - mongodb-1.11.0
-    - mysql-2.4.2.final
-    - postgres-2.4.2.final
+    - mongodb-1.14.1
+    - mysql-3.0.5.final
+    - postgres-3.0.5.final
     - s3-2.15.0
-    - jdbc-2.6.1.final
+    - jdbc-3.0.5.final
   kafkaRef:
     name: kafka
     namespace: demo
@@ -90,12 +90,11 @@ spec:
 
 `spec.version` is a required field specifying the name of the [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md) CR where the docker images are specified. Currently, when you install KubeDB, it creates the following `KafkaVersion` resources,
 
-- `3.3.2`
-- `3.4.1`
-- `3.5.1`
 - `3.5.2`
-- `3.6.0`
 - `3.6.1`
+- `3.7.2`
+- `3.8.1`
+- `3.9.0`
 
 ### spec.replicas
 

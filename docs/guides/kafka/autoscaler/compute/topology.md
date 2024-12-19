@@ -45,7 +45,7 @@ Here, we are going to deploy a `Kafka` Topology Cluster using a supported versio
 
 #### Deploy Kafka Topology Cluster
 
-In this section, we are going to deploy a Kafka Topology cluster with version `3.6.1`.  Then, in the next section we will set up autoscaling for this database using `KafkaAutoscaler` CRD. Below is the YAML of the `Kafka` CR that we are going to create,
+In this section, we are going to deploy a Kafka Topology cluster with version `3.9.0`.  Then, in the next section we will set up autoscaling for this database using `KafkaAutoscaler` CRD. Below is the YAML of the `Kafka` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -54,7 +54,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   topology:
     broker:
       replicas: 2
@@ -110,11 +110,11 @@ Now, wait until `kafka-prod` has status `Ready`. i.e,
 ```bash
 $ kubectl get kf -n demo -w
 NAME          TYPE            VERSION   STATUS         AGE
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   0s
-kafka-prod    kubedb.com/v1   3.6.1     Provisioning   24s
+kafka-prod    kubedb.com/v1   3.9.0     Provisioning   0s
+kafka-prod    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
-kafka-prod    kubedb.com/v1   3.6.1     Ready          118s
+kafka-prod    kubedb.com/v1   3.9.0     Ready          118s
 ```
 
 ## Kafka Topology Autoscaler(Broker) 
