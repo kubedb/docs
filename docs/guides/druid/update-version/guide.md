@@ -172,7 +172,7 @@ Here, we can see that the version of the druid cluster is `28.0.1`.
 
 ### Update Druid Version
 
-Here, we are going to update `Druid` from `28.0.1` to `30.0.0`.
+Here, we are going to update `Druid` from `28.0.1` to `30.0.1`.
 
 #### Create DruidOpsRequest:
 
@@ -189,7 +189,7 @@ spec:
   databaseRef:
     name: druid-cluster
   updateVersion:
-    targetVersion: 30.0.0
+    targetVersion: 30.0.1
   timeout: 5m
   apply: IfReady
 ```
@@ -198,7 +198,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `druid-cluster` Druid.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `30.0.0`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `30.0.1`.
 
 Let's create the `DruidOpsRequest` CR we have shown above,
 
@@ -273,7 +273,7 @@ Spec:
   Timeout:  5m
   Type:     UpdateVersion
   Update Version:
-    Target Version:  30.0.0
+    Target Version:  30.0.1
 Status:
   Conditions:
     Last Transition Time:  2024-10-21T13:04:51Z
@@ -407,13 +407,13 @@ Now, we are going to verify whether the `Druid` and the related `PetSets` and th
 
 ```bash
 $ kubectl get dr -n demo druid-cluster -o=jsonpath='{.spec.version}{"\n"}'
-30.0.0
+30.0.1
 
 $ kubectl get petset -n demo druid-cluster-brokers -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/druid:30.0.0@sha256:4cd60a1dc6a124e27e91ec52ca39e2b9ca6809df915ae2dd712a2dd7462626d7
+ghcr.io/appscode-images/druid:30.0.1@sha256:4cd60a1dc6a124e27e91ec52ca39e2b9ca6809df915ae2dd712a2dd7462626d7
 
 $ kubectl get pods -n demo druid-cluster-brokers-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/druid:30.0.0
+ghcr.io/appscode-images/druid:30.0.1
 ```
 
 You can see from above, our `Druid` has been updated with the new version. So, the updateVersion process is successfully completed.
@@ -422,7 +422,7 @@ You can see from above, our `Druid` has been updated with the new version. So, t
 
 You can also see the version of druid cluster from the druid ui by following the steps described previously in this tutorial. [Check Druid Version from UI](/docs/guides/druid/update-version/guide.md/#Check-Druid-Version-from-UI)
 
-If you follow the steps properly, you should be able to see that the version is upgraded to `30.0.0` from the druid console as shown below.
+If you follow the steps properly, you should be able to see that the version is upgraded to `30.0.1` from the druid console as shown below.
 
 <p align="center">
   <img alt="lifecycle"  src="/docs/guides/druid/update-version/images/druid-ui-30.png">

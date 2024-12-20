@@ -49,18 +49,16 @@ When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/d
 $ kubectl get kfversion
 
 NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
-3.3.2   3.3.2     ghcr.io/appscode-images/kafka-kraft:3.3.2                24m
-3.4.1   3.4.1     ghcr.io/appscode-images/kafka-kraft:3.4.1                24m
-3.5.1   3.5.1     ghcr.io/appscode-images/kafka-kraft:3.5.1                24m
-3.5.2   3.5.2     ghcr.io/appscode-images/kafka-kraft:3.5.2                24m
-3.6.0   3.6.0     ghcr.io/appscode-images/kafka-kraft:3.6.0                24m
-3.6.1   3.6.1     ghcr.io/appscode-images/kafka-kraft:3.6.1                24m
-
+3.5.2   3.5.2     ghcr.io/appscode-images/kafka-kraft:3.5.2                28h
+3.6.1   3.6.1     ghcr.io/appscode-images/kafka-kraft:3.6.1                28h
+3.7.2   3.7.2     ghcr.io/appscode-images/kafka-kraft:3.7.2                28h
+3.8.1   3.8.1     ghcr.io/appscode-images/kafka-kraft:3.8.1                28h
+3.9.0   3.9.0     ghcr.io/appscode-images/kafka-kraft:3.9.0                28h
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this KafkaVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated KafkaVersion. You can also use the short from `kfversion` to check available KafkaVersions.
 
-In this tutorial, we will use `3.6.1` KafkaVersion CR to create a Kafka Connect cluster.
+In this tutorial, we will use `3.9.0` KafkaVersion CR to create a Kafka Connect cluster.
 
 ## Find Available KafkaConnector Versions
 
@@ -70,12 +68,17 @@ When you install the KubeDB operator, it registers a CRD named [KafkaConnectorVe
 $ kubectl get kcversion
 
 NAME                   VERSION   CONNECTOR_IMAGE                                                DEPRECATED   AGE
-gcs-0.13.0             0.13.0    ghcr.io/appscode-images/kafka-connector-gcs:0.13.0                          10m
-jdbc-2.6.1.final       2.6.1     ghcr.io/appscode-images/kafka-connector-jdbc:2.6.1.final                    10m
-mongodb-1.11.0         1.11.0    ghcr.io/appscode-images/kafka-connector-mongodb:1.11.0                      10m
-mysql-2.4.2.final      2.4.2     ghcr.io/appscode-images/kafka-connector-mysql:2.4.2.final                   10m
-postgres-2.4.2.final   2.4.2     ghcr.io/appscode-images/kafka-connector-postgres:2.4.2.final                10m
-s3-2.15.0              2.15.0    ghcr.io/appscode-images/kafka-connector-s3:2.15.0                           10m
+gcs-0.13.0             0.13.0    ghcr.io/appscode-images/kafka-connector-gcs:0.13.0                          28h
+jdbc-2.6.1.final       2.6.1     ghcr.io/appscode-images/kafka-connector-jdbc:2.6.1.final                    28h
+jdbc-2.7.4.final       2.7.4     ghcr.io/appscode-images/kafka-connector-jdbc:2.7.4.final                    28h
+jdbc-3.0.5.final       3.0.5     ghcr.io/appscode-images/kafka-connector-jdbc:3.0.5.final                    28h
+mongodb-1.13.1         1.13.1    ghcr.io/appscode-images/kafka-connector-mongodb:1.13.1                      28h
+mongodb-1.14.1         1.14.1    ghcr.io/appscode-images/kafka-connector-mongodb:1.14.1                      28h
+mysql-2.7.4.final      2.7.4     ghcr.io/appscode-images/kafka-connector-mysql:2.7.4.final                   28h
+mysql-3.0.5.final      3.0.5     ghcr.io/appscode-images/kafka-connector-mysql:3.0.5.final                   28h
+postgres-2.7.4.final   2.7.4     ghcr.io/appscode-images/kafka-connector-postgres:2.7.4.final                28h
+postgres-3.0.5.final   3.0.5     ghcr.io/appscode-images/kafka-connector-postgres:3.0.5.final                28h
+s3-2.15.0              2.15.0    ghcr.io/appscode-images/kafka-connector-s3:2.15.0                           28h
 ```
 
 
@@ -85,11 +88,17 @@ Notice the `DEPRECATED` column. Here, `true` means that this KafkaConnectorVersi
 
 | Connector Plugin     | Type   | Version     | Connector Class                                            |
 |----------------------|--------|-------------|------------------------------------------------------------|
-| mongodb-1.11.0       | Source | 1.11.0      | com.mongodb.kafka.connect.MongoSourceConnector             |
-| mongodb-1.11.0       | Sink   | 1.11.0      | com.mongodb.kafka.connect.MongoSinkConnector               |
-| mysql-2.4.2.final    | Source | 2.4.2.Final | io.debezium.connector.mysql.MySqlConnector                 |
-| postgres-2.4.2.final | Source | 2.4.2.Final | io.debezium.connector.postgresql.PostgresConnector         |
+| mongodb-1.13.1       | Source | 1.13.1      | com.mongodb.kafka.connect.MongoSourceConnector             |
+| mongodb-1.13.1       | Sink   | 1.13.1      | com.mongodb.kafka.connect.MongoSinkConnector               |
+| mongodb-1.14.1       | Source | 1.14.1      | com.mongodb.kafka.connect.MongoSourceConnector             |
+| mongodb-1.14.1       | Sink   | 1.14.1      | com.mongodb.kafka.connect.MongoSinkConnector               |
+| mysql-2.7.4.final    | Source | 2.7.4.Final | io.debezium.connector.mysql.MySqlConnector                 |
+| mysql-3.0.5.final    | Source | 3.0.5.Final | io.debezium.connector.mysql.MySqlConnector                 |
+| postgres-2.7.4.final | Source | 2.7.4.Final | io.debezium.connector.postgresql.PostgresConnector         |
+| postgres-3.0.5.final | Source | 3.0.5.Final | io.debezium.connector.postgresql.PostgresConnector         |
 | jdbc-2.6.1.final     | Sink   | 2.6.1.Final | io.debezium.connector.jdbc.JdbcSinkConnector               |
+| jdbc-2.7.4.final     | Sink   | 2.7.4.Final | io.debezium.connector.jdbc.JdbcSinkConnector               |
+| jdbc-3.0.5.final     | Sink   | 3.0.5.Final | io.debezium.connector.jdbc.JdbcSinkConnector               |
 | s3-2.15.0            | Sink   | 2.15.0      | io.aiven.kafka.connect.s3.AivenKafkaConnectS3SinkConnector |
 | gcs-0.13.0           | Sink   | 0.13.0      | io.aiven.kafka.connect.gcs.GcsSinkConnector                |
 
@@ -106,13 +115,13 @@ metadata:
   name: connectcluster-quickstart
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   replicas: 3
   connectorPlugins:
-    - mongodb-1.11.0
-    - mysql-2.4.2.final
-    - postgres-2.4.2.final
-    - jdbc-2.6.1.final
+    - mongodb-1.14.1
+    - mysql-3.0.5.final
+    - postgres-3.0.5.final
+    - jdbc-3.0.5.final
   kafkaRef:
     name: kafka-quickstart
     namespace: demo
@@ -121,7 +130,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the KafkaVersion CR. Here, a ConnectCluster of version `3.6.1` will be created.
+- `spec.version` - is the name of the KafkaVersion CR. Here, a ConnectCluster of version `3.9.0` will be created.
 - `spec.replicas` - specifies the number of ConnectCluster workers.
 - `spec.connectorPlugins` - is the name of the KafkaConnectorVersion CR. Here, mongodb, mysql, postgres, and jdbc connector-plugins will be loaded to the ConnectCluster worker nodes.
 - `spec.kafkaRef` specifies the Kafka instance that the ConnectCluster will connect to. Here, the ConnectCluster will connect to the Kafka instance named `kafka-quickstart` in the `demo` namespace.
@@ -155,11 +164,11 @@ The ConnectCluster's `STATUS` will go from `Provisioning` to `Ready` state withi
 ```bash
 $ kubectl get connectcluster -n demo -w
 NAME                        TYPE                        VERSION   STATUS         AGE
-connectcluster-quickstart   kafka.kubedb.com/v1alpha1   3.6.1     Provisioning   2s
-connectcluster-quickstart   kafka.kubedb.com/v1alpha1   3.6.1     Provisioning   4s
+connectcluster-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   2s
+connectcluster-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   4s
 .
 .
-connectcluster-quickstart   kafka.kubedb.com/v1alpha1   3.6.1     Ready          112s
+connectcluster-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Ready          112s
 
 ```
 
@@ -184,10 +193,10 @@ Spec:
   Auth Secret:
     Name:  connectcluster-quickstart-connect-cred
   Connector Plugins:
-    mongodb-1.11.0
-    mysql-2.4.2.final
-    postgres-2.4.2.final
-    jdbc-2.6.1.final
+    mongodb-1.14.1
+    mysql-3.0.5.final
+    postgres-3.0.5.final
+    jdbc-3.0.5.final
   Health Checker:
     Failure Threshold:  3
     Period Seconds:     20
@@ -293,7 +302,7 @@ Spec:
         Fs Group:      1001
   Replicas:            3
   Deletion Policy:     WipeOut
-  Version:             3.6.1
+  Version:             3.9.0
 Status:
   Conditions:
     Last Transition Time:  2024-05-02T08:04:29Z
@@ -350,7 +359,7 @@ NAME                                                     READY   AGE
 petset.apps.k8s.appscode.com/connectcluster-quickstart   3/3     3m50s
 
 NAME                                                           TYPE                              VERSION   AGE
-appbinding.appcatalog.appscode.com/connectcluster-quickstart   kafka.kubedb.com/connectcluster   3.6.1     3m50s
+appbinding.appcatalog.appscode.com/connectcluster-quickstart   kafka.kubedb.com/connectcluster   3.9.0     3m50s
 
 NAME                                            TYPE                       DATA   AGE
 secret/connectcluster-quickstart-config         Opaque                     1      3m55s

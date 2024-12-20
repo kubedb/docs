@@ -4,7 +4,7 @@ metadata:
   name: connectcluster-distributed
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   enableSSL: true
   tls:
     issuerRef:
@@ -15,8 +15,8 @@ spec:
     name: connectcluster-custom-config
   replicas: 3
   connectorPlugins:
-    - postgres-2.4.2.final
-    - jdbc-2.6.1.final
+    - postgres-3.0.5.final
+    - jdbc-3.0.5.final
   kafkaRef:
     name: kafka-prod
     namespace: demo

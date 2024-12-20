@@ -53,7 +53,8 @@ NAME     VERSION   DB_IMAGE                                                     
 8.5.30   8.5.30    ghcr.io/appscode-images/singlestore-node:alma-8.5.30-4f46ab16a5                2d1h
 8.5.7    8.5.7     ghcr.io/appscode-images/singlestore-node:alma-8.5.7-bf633c1a54                 2d1h
 8.7.10   8.7.10    ghcr.io/appscode-images/singlestore-node:alma-8.7.10-95e2357384                2d1h
-
+8.7.21   8.7.21    ghcr.io/appscode-images/singlestore-node:alma-8.7.21-f0b8de04d5                2d1h
+8.9.3    8.9.3     ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a                 2d1h
 ```
 ## Create SingleStore License Secret
 

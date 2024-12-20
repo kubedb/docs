@@ -31,33 +31,60 @@ apiVersion: catalog.kubedb.com/v1alpha1
 kind: MariaDBVersion
 metadata:
   annotations:
-    meta.helm.sh/release-name: kubedb-catalog
-    meta.helm.sh/release-namespace: kube-system
-  creationTimestamp: "2021-03-09T13:00:51Z"
+    meta.helm.sh/release-name: kubedb
+    meta.helm.sh/release-namespace: kubedb
+  creationTimestamp: "2024-12-19T05:12:32Z"
   generation: 1
   labels:
-    app.kubernetes.io/instance: kubedb-catalog
+    app.kubernetes.io/instance: kubedb
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kubedb-catalog
-    app.kubernetes.io/version: v0.16.2
-    helm.sh/chart: kubedb-catalog-v0.16.2
-  ...
+    app.kubernetes.io/version: v2024.11.18
+    helm.sh/chart: kubedb-catalog-v2024.11.18
   name: 10.5.23
+  resourceVersion: "1585"
+  uid: d6b463f0-032a-4832-8b87-4648da0b38a6
 spec:
+  archiver:
+    addon:
+      name: mariadb-addon
+      tasks:
+        fullBackup:
+          name: logical-backup
+        fullBackupRestore:
+          name: logical-backup-restore
+        manifestBackup:
+          name: manifest-backup
+        manifestRestore:
+          name: manifest-restore
+        volumeSnapshot:
+          name: volume-snapshot
+    walg:
+      image: ghcr.io/kubedb/mariadb-archiver:v0.9.0_10.5.23-focal
+  coordinator:
+    image: ghcr.io/kubedb/mariadb-coordinator:v0.29.0
   db:
-    image: kubedb/mariadb:10.5.23
+    image: ghcr.io/appscode-images/mariadb:10.5.23-focal
   exporter:
-    image: kubedb/mysqld-exporter:v0.11.0
+    image: prom/mysqld-exporter:v0.13.0
   initContainer:
-    image: kubedb/busybox
+    image: ghcr.io/kubedb/mariadb-init:0.5.2
   podSecurityPolicies:
     databasePolicyName: maria-db
+  securityContext:
+    runAsUser: 999
   stash:
     addon:
       backupTask:
-        name: mariadb-backup-10.5.23
+        name: mariadb-backup-10.5.8
       restoreTask:
-        name: mariadb-restore-10.5.23
+        name: mariadb-restore-10.5.8
+  ui:
+    - name: phpmyadmin
+      version: v2024.4.27
+  updateConstraints:
+    allowlist:
+      - '> 10.5.23, <= 11.5.2'
   version: 10.5.23
 ```
 

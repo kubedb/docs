@@ -44,6 +44,8 @@ KubeDB supports the following SingleSore Versions.
 - `8.1.32`
 - `8.5.30`
 - `8.7.10`
+- `8.7.21`
+- `8.9.3`
 
 ## Life Cycle of a SingleStore Object
 

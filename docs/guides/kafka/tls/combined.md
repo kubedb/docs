@@ -97,7 +97,7 @@ metadata:
   name: kafka-dev-tls
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   enableSSL: true
   tls:
     issuerRef:
@@ -130,11 +130,11 @@ $ watch kubectl get mg -n demo
 
 Every 2.0s: kubectl get kafka -n demo                                                                                                                          aadee: Fri Sep  6 12:34:51 2024
 NAME            TYPE            VERSION   STATUS         AGE
-kafka-dev-tls   kubedb.com/v1   3.6.1     Provisioning   0s
-kafka-dev-tls   kubedb.com/v1   3.6.1     Provisioning   12s
+kafka-dev-tls   kubedb.com/v1   3.9.0     Provisioning   0s
+kafka-dev-tls   kubedb.com/v1   3.9.0     Provisioning   12s
 .
 .
-kafka-dev-tls   kubedb.com/v1   3.6.1     Ready          77s
+kafka-dev-tls   kubedb.com/v1   3.9.0     Ready          77s
 ```
 
 ### Verify TLS/SSL in Kafka Combined Cluster

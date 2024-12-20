@@ -114,7 +114,7 @@ metadata:
   name: sample-druid
   namespace: demo
 spec:
-  version: 30.0.0
+  version: 30.0.1
   deepStorage:
     type: s3
     configSecret:
@@ -143,7 +143,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get druids.kubedb.com -n demo
 NAME           TYPE                  VERSION   STATUS   AGE
-sample-druid   kubedb.com/v1alpha2   30.0.0    Ready    4m14s
+sample-druid   kubedb.com/v1alpha2   30.0.1    Ready    4m14s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
@@ -183,7 +183,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
 $ kubectl get appbindings -n demo
 NAME                          TYPE                   VERSION   AGE
-sample-druid                  kubedb.com/druid       30.0.0    4m7s
+sample-druid                  kubedb.com/druid       30.0.1    4m7s
 sample-druid-mysql-metadata   kubedb.com/mysql       8.0.35    6m31s
 sample-druid-zk               kubedb.com/zookeeper   3.7.2     6m34s
 ```
@@ -202,7 +202,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"sample-druid","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"deletionPolicy":"WipeOut","topology":{"routers":{"replicas":1}},"version":"30.0.0"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"sample-druid","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"deletionPolicy":"WipeOut","topology":{"routers":{"replicas":1}},"version":"30.0.1"}}
   creationTimestamp: "2024-09-19T13:02:20Z"
   generation: 1
   labels:
@@ -236,7 +236,7 @@ spec:
   secret:
     name: sample-druid-admin-cred
   type: kubedb.com/druid
-  version: 30.0.0
+  version: 30.0.1
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to be set in AppBinding's `.spec` section.
@@ -544,7 +544,7 @@ apiVersion: storage.kubestash.com/v1alpha1
 kind: Snapshot
 metadata:
   annotations:
-    kubedb.com/db-version: 30.0.0
+    kubedb.com/db-version: 30.0.1
   creationTimestamp: "2024-09-20T11:09:00Z"
   finalizers:
     - kubestash.com/cleanup
@@ -707,7 +707,7 @@ In this section, we will verify whether the desired `Druid` database manifest ha
 ```bash
 $ kubectl get druids.kubedb.com -n dev
 NAME           VERSION   STATUS   AGE
-restored-druid   30.0.0    Ready    39m
+restored-druid   30.0.1    Ready    39m
 ```
 
 The output confirms that the `Druid` database has been successfully created with the same configuration as it had at the time of backup.
@@ -733,7 +733,7 @@ At first, check if the database has gone into `Ready` state by the following com
 ```bash
 $ kubectl get druid -n dev restored-druid
 NAME             VERSION   STATUS  AGE
-restored-druid   30.0.0    Ready   34m
+restored-druid   30.0.1    Ready   34m
 ```
 
 Now, let's verify if our datasource `wikipedia` exists or not. For that, first find out the database `Sevices` by the following command,

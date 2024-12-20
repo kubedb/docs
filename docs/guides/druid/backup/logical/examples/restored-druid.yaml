@@ -6,7 +6,7 @@ metadata:
 spec:
   init:
     waitForInitialRestore: true
-  version: 30.0.0
+  version: 30.0.1
   deepStorage:
     type: s3
     configSecret:

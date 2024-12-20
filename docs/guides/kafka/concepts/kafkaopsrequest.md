@@ -38,7 +38,7 @@ spec:
   databaseRef:
     name: kafka-prod
   updateVersion:
-    targetVersion: 3.6.1
+    targetVersion: 3.9.0
 status:
   conditions:
     - lastTransitionTime: "2024-07-25T18:22:38Z"

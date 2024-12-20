@@ -74,6 +74,7 @@ KubeDB supports `Elasticsearch` provided by Elastic with `xpack` auth plugin. `O
 | 8.13.x  |   &#10003;    |     &#10003;      |
 | 8.14.x  |   &#10003;    |     &#10003;      |
 | 8.15.x  |   &#10003;    |     &#10003;      |
+| 8.16.x  |   &#10003;    |     &#10003;      |
 
 </td>
 <td style="vertical-align:top">
@@ -89,6 +90,8 @@ KubeDB supports `Elasticsearch` provided by Elastic with `xpack` auth plugin. `O
 | 2.11.x  |  &#10003;  |               &#10003;                |
 | 2.14.x  |  &#10003;  |               &#10003;                |
 | 2.16.x  |  &#10003;  |               &#10003;                |
+| 2.17.x  |  &#10003;  |               &#10003;                |
+| 2.18.x  |  &#10003;  |               &#10003;                |
 
 </td>
 </tr>

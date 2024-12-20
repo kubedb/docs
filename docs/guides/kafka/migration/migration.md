@@ -100,7 +100,7 @@ spec:
   authSecret:
     name: source-kafka-auth
   replicas: 2
-  version: 3.6.1
+  version: 3.9.0
   storage:
     accessModes:
       - ReadWriteOnce
@@ -124,11 +124,11 @@ Now, wait until `source-kafka` has status `Ready`. i.e,
 ```bash
 $ kubectl get kafka -n demo -w
 NAME           VERSION   STATUS         AGE
-source-kafka   3.6.1     Provisioning   1s
-source-kafka   3.6.1     Provisioning   111s
+source-kafka   3.9.0     Provisioning   1s
+source-kafka   3.9.0     Provisioning   111s
 .
 .
-source-kafka   3.6.1     Ready          2m
+source-kafka   3.9.0     Ready          2m
 ```
 
 ### Step 2:  Create Producer and Consumer
@@ -277,7 +277,7 @@ metadata:
 spec:
   authSecret:
     name: target-kafka-auth
-  version: 3.6.1
+  version: 3.9.0
   topology:
     broker:
       replicas: 2
@@ -322,11 +322,11 @@ Now, wait until `source-kafka` has status `Ready`. i.e,
 ```bash
 $ kubectl get kafka -n demo target-kafka -w
 NAME           VERSION   STATUS         AGE
-target-kafka   3.6.1     Provisioning   1s
-target-kafka   3.6.1     Provisioning   111s
+target-kafka   3.9.0     Provisioning   1s
+target-kafka   3.9.0     Provisioning   111s
 .
 .
-target-kafka   3.6.1     Ready          2m
+target-kafka   3.9.0     Ready          2m
 ```
 
 Now, create a `ConnectCluster` with monitoring enabled to migrate from the source Kafka cluster to the target Kafka cluster using `mirror-maker-2`.
@@ -360,7 +360,7 @@ metadata:
 spec:
   authSecret:
     name: mirror-connect-auth
-  version: 3.6.1
+  version: 3.9.0
   replicas: 3
   kafkaRef:
     name: target-kafka
@@ -389,11 +389,11 @@ Now, wait until `mirror-connect` has status `Ready`. i.e,
 ```bash
 $ kubectl get connectcluster -n demo -w
 NAME                VERSION   STATUS         AGE
-mirror-connect      3.6.1     Provisioning   1s
-mirror-connect      3.6.1     Provisioning   111s
+mirror-connect      3.9.0     Provisioning   1s
+mirror-connect      3.9.0     Provisioning   111s
 .
 .
-mirror-connect      3.6.1     Ready          90s
+mirror-connect      3.9.0     Ready          90s
 ```
 
 ### Step 4: Create MirrorSource Connector

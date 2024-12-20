@@ -5,7 +5,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 2
-  version: 3.6.1
+  version: 3.9.0
   configSecret:
     name: kf-combined-custom-config
   storage:

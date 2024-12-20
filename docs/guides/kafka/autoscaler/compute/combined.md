@@ -45,7 +45,7 @@ Here, we are going to deploy a `Kafka` Combined Cluster using a supported versio
 
 #### Deploy Kafka Combined Cluster
 
-In this section, we are going to deploy a Kafka Topology database with version `3.6.1`.  Then, in the next section we will set up autoscaling for this database using `KafkaAutoscaler` CRD. Below is the YAML of the `Kafka` CR that we are going to create,
+In this section, we are going to deploy a Kafka Topology database with version `3.9.0`.  Then, in the next section we will set up autoscaling for this database using `KafkaAutoscaler` CRD. Below is the YAML of the `Kafka` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -55,7 +55,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 2
-  version: 3.6.1
+  version: 3.9.0
   podTemplate:
     spec:
       containers:
@@ -89,11 +89,11 @@ Now, wait until `kafka-dev` has status `Ready`. i.e,
 ```bash
 $ kubectl get kf -n demo -w
 NAME         TYPE            VERSION   STATUS         AGE
-kafka-dev    kubedb.com/v1   3.6.1     Provisioning   0s
-kafka-dev    kubedb.com/v1   3.6.1     Provisioning   24s
+kafka-dev    kubedb.com/v1   3.9.0     Provisioning   0s
+kafka-dev    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
-kafka-dev    kubedb.com/v1   3.6.1     Ready          92s
+kafka-dev    kubedb.com/v1   3.9.0     Ready          92s
 ```
 
 Let's check the Pod containers resources,

@@ -178,12 +178,12 @@ Now, wait for the Druid to become ready:
 
 ```bash
 $ kubectl get dr -n demo -w
-NAME                TYPE            VERSION   STATUS         AGE
-druid-with-config   kubedb.com/v1   3.6.1     Provisioning   5s
-druid-with-config   kubedb.com/v1   3.6.1     Provisioning   7s
+NAME                TYPE                  VERSION   STATUS         AGE
+druid-with-config   kubedb.com/v1alpha2   28.0.1     Provisioning   5s
+druid-with-config   kubedb.com/v1alpha2   28.0.1    Provisioning   7s
 .
 .
-druid-with-config   kubedb.com/v1   3.6.1     Ready          2m
+druid-with-config   kubedb.com/v1alpha2   28.0.1     Ready          2m
 ```
 
 ## Verify Configuration

@@ -41,7 +41,7 @@ Now, we are going to deploy a  `Kafka` Combined cluster using a supported versio
 
 ### Prepare Kafka Combined Cluster
 
-Now, we are going to deploy a `Kafka` combined cluster with version `3.6.1`.
+Now, we are going to deploy a `Kafka` combined cluster with version `3.9.0`.
 
 ### Deploy Kafka
 
@@ -82,7 +82,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 2
-  version: 3.6.1
+  version: 3.9.0
   configSecret:
     name: kf-combined-custom-config
   storage:
@@ -108,11 +108,11 @@ Now, wait until `kafka-dev` has status `Ready`. i.e,
 ```bash
 $ kubectl get kf -n demo -w
 NAME         TYPE            VERSION   STATUS         AGE
-kafka-dev    kubedb.com/v1   3.6.1     Provisioning   0s
-kafka-dev    kubedb.com/v1   3.6.1     Provisioning   24s
+kafka-dev    kubedb.com/v1   3.9.0     Provisioning   0s
+kafka-dev    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
-kafka-dev    kubedb.com/v1   3.6.1     Ready          92s
+kafka-dev    kubedb.com/v1   3.9.0     Ready          92s
 ```
 
 Now, we will check if the kafka has started with the custom configuration we have provided.
