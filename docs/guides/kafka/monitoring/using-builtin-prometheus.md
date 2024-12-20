@@ -50,7 +50,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 2
-  version: 3.6.1
+  version: 3.9.0
   storage:
     accessModes:
       - ReadWriteOnce
@@ -87,7 +87,7 @@ Now, wait for the cluster to go into `Ready` state.
 
 ```bash
 NAME                 TYPE            VERSION   STATUS         AGE
-kafka-builtin-prom   kubedb.com/v1   3.6.1     Ready          31s
+kafka-builtin-prom   kubedb.com/v1   3.9.0     Ready          31s
 ```
 
 KubeDB will create a separate stats service with name `{Kafka crd name}-stats` for monitoring purpose.

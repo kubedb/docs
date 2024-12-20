@@ -6,7 +6,7 @@ metadata:
 spec:
   authSecret:
     name: target-kafka-auth
-  version: 3.6.1
+  version: 3.9.0
   topology:
     broker:
       replicas: 2

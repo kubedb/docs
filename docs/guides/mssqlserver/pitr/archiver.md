@@ -165,7 +165,7 @@ spec:
       spec:
         securityContext:
           runAsUser: 0
-  walBackup:
+  logBackup:
     runtimeSettings:
       pod:
         securityContext:

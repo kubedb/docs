@@ -115,7 +115,7 @@ metadata:
   name: druid-quickstart
   namespace: demo
 spec:
-  version: 30.0.0
+  version: 30.0.1
   deepStorage:
     type: s3
     configSecret:
@@ -140,7 +140,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get druids.kubedb.com -n demo
 NAME               TYPE                  VERSION   STATUS         AGE
-sample-druid       kubedb.com/v1alpha2   30.0.0    Ready          113s
+sample-druid       kubedb.com/v1alpha2   30.0.1    Ready          113s
 ```
 
 The database is `Ready`. Verify that KubeDB has created the necessary `Secrets` and `Services` to access the database along with `MySQL` and `ZooKeeper` instance for this database using the following commands,
@@ -167,7 +167,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
 $ kubectl get appbindings -n demo
 NAME                          TYPE                   VERSION   AGE
-sample-druid                  kubedb.com/druid       30.0.0    2m26s
+sample-druid                  kubedb.com/druid       30.0.1    2m26s
 sample-druid-mysql-metadata   kubedb.com/mysql       8.0.35    5m40s
 sample-druid-zk               kubedb.com/zookeeper   3.7.2     5m43s
 ```
@@ -184,7 +184,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"sample-druid","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"deletionPolicy":"WipeOut","topology":{"routers":{"replicas":1}},"version":"30.0.0"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"sample-druid","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"deletionPolicy":"WipeOut","topology":{"routers":{"replicas":1}},"version":"30.0.1"}}
   creationTimestamp: "2024-09-17T12:17:27Z"
   generation: 1
   labels:
@@ -218,7 +218,7 @@ spec:
   secret:
     name: sample-druid-admin-cred
   type: kubedb.com/druid
-  version: 30.0.0
+  version: 30.0.1
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -530,7 +530,7 @@ metadata:
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: gcs-druid-repo
   annotations:
-    kubedb.com/db-version: 30.0.0
+    kubedb.com/db-version: 30.0.1
   name: gcs-druid-repo-sample-druid-backup-frequent-backup-1726656835
   namespace: demo
   ownerReferences:
@@ -599,7 +599,7 @@ metadata:
 spec:
   init:
     waitForInitialRestore: true
-  version: 30.0.0
+  version: 30.0.1
   deepStorage:
     type: s3
     configSecret:
@@ -622,7 +622,7 @@ If you check the database status, you will see it is stuck in `Provisioning` sta
 ```bash
 $ kubectl get druid -n demo restored-druid
 NAME             TYPE                  VERSION   STATUS         AGE
-restored-druid   kubedb.com/v1alpha2   30.0.0    Provisioning   22s
+restored-druid   kubedb.com/v1alpha2   30.0.1    Provisioning   22s
 ```
 
 #### Create RestoreSession:

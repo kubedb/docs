@@ -4,13 +4,13 @@ metadata:
   name: connectcluster-quickstart
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   replicas: 3
   connectorPlugins:
     - mongodb-1.11.0
-    - mysql-2.4.2.final
-    - postgres-2.4.2.final
-    - jdbc-2.6.1.final
+    - mysql-3.0.5.final
+    - postgres-3.0.5.final
+    - jdbc-3.0.5.final
   kafkaRef:
     name: kafka-quickstart
     namespace: demo

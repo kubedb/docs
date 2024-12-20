@@ -41,16 +41,16 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2024.4.27
     helm.sh/chart: kubedb-catalog-v2024.4.27
-  name: mongodb-1.11.0
+  name: mongodb-1.14.1
   resourceVersion: "2873"
   uid: a5808f31-9d27-4979-8a7d-f3357dbba6ba
 spec:
   connectorPlugin:
-    image: ghcr.io/appscode-images/kafka-connector-mongodb:1.11.0
+    image: ghcr.io/appscode-images/kafka-connector-mongodb:1.14.1
   securityContext:
     runAsUser: 1001
   type: MongoDB
-  version: 1.11.0
+  version: 1.14.1
 ```
 
 ### metadata.name

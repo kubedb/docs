@@ -51,6 +51,7 @@ Microsoft SQL Server is one of the most popular relational database management s
 KubeDB supports the following Microsoft SQL Server Version.
 - `2022-CU12-ubuntu-22.04`
 - `2022-CU14-ubuntu-22.04`
+- `2022-CU16-ubuntu-22.04`
 
 ## Life Cycle of a Microsoft SQL Server Object
 

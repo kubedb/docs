@@ -97,7 +97,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 3.6.1
+  version: 3.9.0
   configSecret:
     name: configsecret-topology
   topology:
@@ -135,11 +135,11 @@ Now, wait for the Kafka to become ready:
 ```bash
 $ kubectl get kf -n demo -w
 NAME         TYPE            VERSION   STATUS         AGE
-kafka-prod   kubedb.com/v1   3.6.1     Provisioning   5s
-kafka-prod   kubedb.com/v1   3.6.1     Provisioning   7s
+kafka-prod   kubedb.com/v1   3.9.0     Provisioning   5s
+kafka-prod   kubedb.com/v1   3.9.0     Provisioning   7s
 .
 .
-kafka-prod   kubedb.com/v1   3.6.1     Ready          2m
+kafka-prod   kubedb.com/v1   3.9.0     Ready          2m
 ```
 
 ## Verify Configuration

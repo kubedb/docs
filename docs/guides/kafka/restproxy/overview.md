@@ -101,11 +101,11 @@ The RestProxy's `STATUS` will go from `Provisioning` to `Ready` state within few
 ```bash
 $ kubectl get restproxy -n demo -w
 NAME                        TYPE                        VERSION   STATUS         AGE
-restproxy-quickstart        kafka.kubedb.com/v1alpha1   3.6.1     Provisioning   2s
-restproxy-quickstart        kafka.kubedb.com/v1alpha1   3.6.1     Provisioning   4s
+restproxy-quickstart        kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   2s
+restproxy-quickstart        kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   4s
 .
 .
-restproxy-quickstart        kafka.kubedb.com/v1alpha1   3.6.1     Ready          112s
+restproxy-quickstart        kafka.kubedb.com/v1alpha1   3.9.0     Ready          112s
 ```
 
 Describe the `RestProxy` object to observe the progress if something goes wrong or the status is not changing for a long period of time:
