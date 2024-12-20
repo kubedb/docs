@@ -49,10 +49,19 @@ When you have installed KubeDB, it has created `MariaDBVersion` crd for all supp
 
 ```bash
 $ kubectl get mariadbversions
-NAME      VERSION   DB_IMAGE          DEPRECATED   AGE
-10.4.32   10.4.32   mariadb:10.4.32                9s
-10.5.23    10.5.23    mariadb:10.5.23                 9s
-10.6.16    10.6.16    mariadb:10.6.16                 9s
+10.10.7   10.10.7   ghcr.io/appscode-images/mariadb:10.10.7-jammy                27h
+10.11.6   10.11.6   ghcr.io/appscode-images/mariadb:10.11.6-jammy                27h
+10.4.32   10.4.32   ghcr.io/appscode-images/mariadb:10.4.32-focal                27h
+10.5.23   10.5.23   ghcr.io/appscode-images/mariadb:10.5.23-focal                27h
+10.6.16   10.6.16   ghcr.io/appscode-images/mariadb:10.6.16-focal                27h
+11.0.4    11.0.4    ghcr.io/appscode-images/mariadb:11.0.4-jammy                 27h
+11.1.3    11.1.3    ghcr.io/appscode-images/mariadb:11.1.3-jammy                 27h
+11.2.2    11.2.2    ghcr.io/appscode-images/mariadb:11.2.2-jammy                 27h
+11.3.2    11.3.2    ghcr.io/appscode-images/mariadb:11.3.2-jammy                 27h
+11.4.3    11.4.3    ghcr.io/appscode-images/mariadb:11.4.3-noble                 27h
+11.5.2    11.5.2    ghcr.io/appscode-images/mariadb:11.5.2-noble                 27h
+11.6.2    11.6.2    ghcr.io/appscode-images/mariadb:11.6.2-noble                 23m
+
 ```
 
 ## Create a MariaDB database
@@ -113,7 +122,7 @@ Here,
 
 - `spec.version` is the name of the MariaDBVersion CRD where the docker images are specified. In this tutorial, a MariaDB `10.5.23` database is going to create.
 - `spec.storageType` specifies the type of storage that will be used for MariaDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MariaDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MariaDB` crd or which resources KubeDB should keep or delete when you delete `MariaDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
 > Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
