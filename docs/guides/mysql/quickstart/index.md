@@ -57,7 +57,9 @@ $ kubectl get mysqlversions
 8.1.0           8.1.0     Official       ghcr.io/appscode-images/mysql:8.1.0-oracle                 29h
 8.2.0           8.2.0     Official       ghcr.io/appscode-images/mysql:8.2.0-oracle                 29h
 8.4.2           8.4.2     Official       ghcr.io/appscode-images/mysql:8.4.2-oracle                 29h
+8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 29h
 9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 29h
+9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 29h
 ```
 
 ## Create a MySQL database
