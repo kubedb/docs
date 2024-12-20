@@ -419,8 +419,8 @@ NAME                    READYTOUSE   SOURCEPVC        SOURCESNAPSHOTCONTENT   RE
 mariadb-1726549985      true         data-mariadb-0                           10Gi          longhorn-snapshot-vsc   snapcontent-317aaac9-ae4f-438b-9763-4eb81ff828af    11m            11m
 ```
 
-## data insert and switch wal
-After each and every wal switch the wal files will be uploaded to backup storage
+## Data Insert and Switch Binlog File
+After each and every binlog switch the binlog files will be uploaded to backup storage
 
 ```bash
 $ kubectl exec -it -n demo  mariadb-0 -- bash
@@ -481,7 +481,7 @@ MariaDB [hello]> drop table demo_table;
 MariaDB [hello]> flush logs;
 
 ```
-We can't restore from a full backup since at this point no full backup was perform. so we can choose a specific time in which time we want to restore.We can get the specfice time from the wal that archived in the backup storage . Go to the binlog file and find where to store. You can parse binlog-files using  `mariadbbinlog`.
+We can't restore from a full backup since at this point no full backup was perform. so we can choose a specific time in which time we want to restore.We can get the specfice time from the binlog that archived in the backup storage . Go to the binlog file and find where to store. You can parse binlog-files using  `mariadbbinlog`.
 
 
 For the demo I will use the previous time we get form `select now()`
