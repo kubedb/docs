@@ -56,7 +56,7 @@ spec:
 
 Starting with the `Stash v2024.12.18` release, the backup process for all MySQL versions now supports passing multiple dump arguments using the newly introduced `multiDumpArgs` parameter.
 
-The `multiDumpArgs` has been introduced for scenarios where you need to separate different types of data within a single dump file. For example, you can dump only database schemas without including table data and, in a separate operation, dump only the table data for specific databases. Using `multiDumpArgs`, these operations can be executed separately but stored in a single dump file, ensuring they are restored in the correct sequence.
+The `multiDumpArgs` has been introduced for scenarios where you need to separate different types of data within a single dump file. For example, you can dump separate operations to dump only database schemas without including table data and dump only table data for specific databases. Using `multiDumpArgs`, these operations can be executed separately but stored in a single dump file, ensuring they are restored in the correct sequence.
 
 You can specify dump arguments for multiple `mysqldump` commands by separating each with `$args` using the `multiDumpArgs` parameter.
 
