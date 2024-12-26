@@ -52,6 +52,47 @@ spec:
 
 > **WARNING**: Make sure that you have the specific database created before taking backup. In this case, Database `testdb` should exist before the backup job starts.
 
+### Passing multiple dump commands to the backup process
+
+Starting with the `Stash v2024.12.18` release, the backup process for all MySQL versions now supports passing multiple dump arguments using the newly introduced `multiDumpArgs` parameter.
+
+The `multiDumpArgs` has been introduced for scenarios where you need to separate different types of data within a single dump file. For example, you can dump only database schemas without including table data and, in a separate operation, dump only the table data for specific databases. Using `multiDumpArgs`, these operations can be executed separately but stored in a single dump file, ensuring they are restored in the correct sequence.
+
+You can specify dump arguments for multiple `mysqldump` commands by separating each with `$args` using the `multiDumpArgs` parameter.
+
+The following example demonstrates how to use the `multiDumpArgs` parameter:
+
+```yaml
+apiVersion: stash.appscode.com/v1beta1
+kind: BackupConfiguration
+metadata:
+  name: sample-mysql-backup
+  namespace: demo
+spec:
+  schedule: "*/5 * * * *"
+  task:
+    params:
+      - name: args
+        value: --set-gtid-purged=OFF
+      - name: multiDumpArgs
+        value: >-
+          $args=--no-tablespaces --no-data --skip-triggers --skip-opt --single-transaction --create-options --disable-keys --extended-insert --set-charset --quick --databases playground
+          $args=--no-tablespaces --no-create-info --skip-triggers --skip-opt --single-transaction --create-options --disable-keys --extended-insert --set-charset --quick --ignore-table=playground.equipment --databases playground
+          $args=--no-tablespaces --no-data --no-create-info --skip-opt --single-transaction --create-options --disable-keys --extended-insert --set-charset --quick --databases playground
+  repository:
+    name: gcs-repo
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: sample-mysql
+  retentionPolicy:
+    name: keep-last-5
+    keepLast: 5
+    prune: true
+```
+> **WARNING**: Make sure that you have the specific dump arguments are valid `mysqldump` options.
+
 ### Running backup job as a specific user
 
 If your cluster requires running the backup job as a specific user, you can provide `securityContext` under `runtimeSettings.pod` section. The below example shows how you can run the backup job as the root user.
