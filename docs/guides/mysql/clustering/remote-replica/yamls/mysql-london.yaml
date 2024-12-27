@@ -11,7 +11,7 @@ spec:
     periodSeconds: 10
     timeoutSeconds: 10
     disableWriteCheck: true
-  version: "8.0.35"
+  version: "9.1.0"
   replicas: 1
   topology:
     mode: RemoteReplica

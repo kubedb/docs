@@ -75,7 +75,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.0.35"
+  version: "9.1.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -99,7 +99,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.0.35"
+  version: "9.1.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -118,7 +118,7 @@ mysql.kubedb.com/mysql-quickstart created
 
 Here,
 
-- `spec.version` is the name of the MySQLVersion CRD where the docker images are specified. In this tutorial, a MySQL `8.0.35` database is going to be created.
+- `spec.version` is the name of the MySQLVersion CRD where the docker images are specified. In this tutorial, a MySQL `9.1.0` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for MySQL database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MySQL database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
@@ -197,7 +197,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"8.0.35"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"9.1.0"}}
 
     Creation Timestamp:  2022-06-03T06:50:40Z
     Labels:
@@ -230,7 +230,7 @@ AppBinding:
     Secret:
       Name:   mysql-quickstart-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.35
+    Version:  9.1.0
 
 Events:
   Type     Reason      Age   From             Message
@@ -272,7 +272,7 @@ kind: MySQL
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"8.0.35"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"9.1.0"}}
   creationTimestamp: "2022-06-03T06:50:40Z"
   finalizers:
   - kubedb.com
@@ -307,7 +307,7 @@ spec:
   storageType: Durable
   deletionPolicy: Delete
   useAddressType: DNS
-  version: 8.0.35
+  version: 9.1.0
 status:
   conditions:
   - lastTransitionTime: "2022-06-03T06:50:40Z"
@@ -368,7 +368,7 @@ root@mysql-quickstart-0:/# mysql -uroot -p"H(Y.s)pg&cX1Ds3J"
 
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 351
-Server version: 8.0.35 MySQL Community Server - GPL
+Server version: 9.1.0 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 
@@ -586,7 +586,7 @@ Run the following command to get MySQL resources,
 ```bash
 $ kubectl get my,sts,secret,svc,pvc -n demo
 NAME                                VERSION   STATUS   AGE
-mysql.kubedb.com/mysql-quickstart   8.0.35    Halted   22m
+mysql.kubedb.com/mysql-quickstart   9.1.0    Halted   22m
 
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      27h

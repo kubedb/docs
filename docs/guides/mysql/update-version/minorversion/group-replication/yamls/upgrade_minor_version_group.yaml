@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: my-group
   updateVersion:
-    targetVersion: "8.0.35"
+    targetversion: "9.1.0"
