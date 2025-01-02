@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops Manager transform replication
 The following diagram shows how KubeDB Ops Manager transform replication mode of `MySQL` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Volume Expansion process of MySQL" src="/docs/guides/mysql/replication-mode-transform/overview/images/replication-mode-transform.svg">
+<img alt="Volume Expansion process of MySQL" src="/docs/guides/mysql/replication-mode-transform/overview/images/replication-mode-transform.svg">
 <figcaption align="center">Fig: Replication Mode Transform process of MySQL</figcaption>
 </figure>
 
