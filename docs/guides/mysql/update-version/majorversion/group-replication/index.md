@@ -54,9 +54,9 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED 
 5.7.35-v1       5.7.35    Official       mysql:5.7.35                             13d
 5.7.44          5.7.44    Official       mysql:5.7.44                             13d
 8.0.17          8.0.17    Official       mysql:8.0.17                             13d
-9.1.0          9.1.0    Official       mysql:9.1.0                             13d
-8.0.31-innodb   9.1.0    MySQL          mysql/mysql-server:9.1.0                13d
-9.1.0          9.1.0    Official       mysql:9.1.0                             13d
+9.1.0           9.1.0     Official       mysql:9.1.0                              13d
+8.0.31-innodb   9.1.0     MySQL          mysql/mysql-server:9.1.0                 13d
+9.1.0           9.1.0     Official       mysql:9.1.0                              13d
 8.0.3-v4        8.0.3     Official       mysql:8.0.3                              13d
 
 ```
@@ -232,7 +232,7 @@ spec:
   databaseRef:
     name: my-group
   updateVersion:
-    targetversion: "9.1.0"
+    targetVersion: "8.0.36"
 ```
 
 Here,
@@ -289,7 +289,7 @@ Spec:
     Name:  my-group
   Type:    UpdateVersion
   UpdateVersion:
-    Target Version:  9.1.0
+    Target Version:  8.0.36
 Status:
   Conditions:
     Last Transition Time:  2022-06-30T07:55:16Z
@@ -338,15 +338,15 @@ Now, we are going to verify whether the `MySQL` and `PetSet` and it's `Pod` have
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-9.1.0
+8.0.36
 
 $ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
-"kubedb/mysql:9.1.0"
+"kubedb/mysql:8.0.36"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
-"kubedb/mysql:9.1.0"
-"kubedb/mysql:9.1.0"
-"kubedb/mysql:9.1.0"
+"kubedb/mysql:8.0.36"
+"kubedb/mysql:8.0.36"
+"kubedb/mysql:8.0.36"
 ```
 
 Let's also check the PetSet pods have joined the `MySQL` group replication,
@@ -363,9 +363,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                       | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
-| group_replication_applier | b0e71e0c-f849-11ec-a315-46392c50e39c | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 9.1.0         | XCom                       |
-| group_replication_applier | b34b16d7-f849-11ec-9362-a2f432876ee4 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 9.1.0         | XCom                       |
-| group_replication_applier | b5542a4a-f849-11ec-9a75-3e8abd17fee6 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 9.1.0         | XCom                       |
+| group_replication_applier | b0e71e0c-f849-11ec-a315-46392c50e39c | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.36         | XCom                       |
+| group_replication_applier | b34b16d7-f849-11ec-9362-a2f432876ee4 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.36         | XCom                       |
+| group_replication_applier | b5542a4a-f849-11ec-9a75-3e8abd17fee6 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.36         | XCom                       |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 
 ```
