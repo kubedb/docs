@@ -1,20 +1,24 @@
 ---
-title: MySQL Remote Replica Guide
+title: MySQL Replication Mode Transform
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-clustering-remote-replica
-    name: MySQL Remote Replica Guide
-    parent: guides-mysql-clustering
-    weight: 21
+    identifier: guides-mysql-replication-mode-transform
+    name: MySQL Replication Mode Transform
+    parent: guides-mysql-mode-transform
+    weight: 12
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
+# MySQL Replication Mode Transform
+
+This guide will show you how to use the `KubeDB` OpsRequest operator to transform the replication mode of a MySQL database. Currently, transforming from Remote Replica to Group Replication is supported. 
+
 # KubeDB - MySQL Remote Replica
 
-This tutorial will show you how to use KubeDB to provision a MySQL Remote Replica from a KubeDB managed mysql instance. Remote replica can use in or across cluster
+At first, we need to provision a MySQL Remote Replica from a KubeDB managed mysql instance. Remote replica can use in or across cluster
 
 
 ## Before You Begin
@@ -176,7 +180,7 @@ Now you can connect to the database using the above info. Ignore the warning mes
 
 ##  Data Insertion
 
-Let's insert some data to the newly created mysql server . we can use the primary service or governing service to connect with the database  
+Let's insert some data to the newly created mysql server . we can use the primary service or governing service to connect with the database
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
 ```bash
@@ -249,7 +253,7 @@ home/mehedi/go/src/kubedb.dev/yamls/mysql/mysql-singapore-remote-config.yaml
 #  Create  Remote Replica
 We have prepared another cluster in london region for replicating across cluster. follow the installation instruction [above](/docs/README.md).
 
-### Create sourceRef 
+### Create sourceRef
 
 We will apply the generated config from kubeDB plugin to create the source refs and secrets for it
 
@@ -265,7 +269,7 @@ NAME              TYPE               VERSION   AGE
 mysql-singapore   kubedb.com/mysql   9.1.0    4m17s
 ```
 
-### Create remote replica auth 
+### Create remote replica auth
 We will need to use the same auth secrets for remote replicas as well since operations like clone also replicated the auth-secrets from source server
 ```yaml
 apiVersion: v1
@@ -336,7 +340,7 @@ mysql-london   9.1.0    Ready    7m17s
 ```
 
 ##  Validate Remote Replica
-Since both source and replica database are in the ready state. we can validate Remote Replica is working properly by checking the replication status 
+Since both source and replica database are in the ready state. we can validate Remote Replica is working properly by checking the replication status
 
 ```bash
 $ kubectl exec -it -n demo mysql-london-0 -c mysql -- mysql -u root --password='pass' --host=mysql-london-0.mysql-london-pods.demo -e "show slave status\G" 
@@ -370,48 +374,101 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 ```
 
-## Write on Secondary Should Fail
+### Replication Mode Transform
+If primary cluster goes down or, you want to transform remote replica to group replication you can apply replication transform ops-request.
 
-Only, primary member preserves the write permission. No secondary can write data.
+#### Create MySQLOpsRequest
 
-## Automatic Failover
+In order to expand the transform replication mode, we have to create a `MySQLOpsRequest` CR with our desired replication mode. Below is the YAML of the `MySQLOpsRequest` CR that we are going to create,
 
-To test automatic failover, we will force the primary Pod to restart. Since the primary member (`Pod`) becomes unavailable, the rest of the members will elect a new primary for these group. When the old primary comes back, it will join the group as a secondary member.
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: mysql-replication-mode-transform
+  namespace: demo
+spec:
+  type: ReplicationModeTransformation
+  databaseRef:
+    name: mysql-london
+  replicationModeTransformation:
+    mode: Multi-Primary
+    requireSSL: true
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: mysql-issuer
+    certificates:
+      - alias: server
+        subject:
+          organizations:
+            - kubedb:server
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
+  timeout: 10m
+  apply: Always
+```
 
-> Read the comment written for the following commands. They contain the instructions and explanations of the commands.
+Here,
+
+- `spec.databaseRef.name` specifies that we are performing volume expansion operation on `mysql-london` database.
+- `spec.type` specifies that we are performing `ReplicationModeTransformation` on our database.
+- `spec.replicationModeTransformation.requireSSL` or `issuerRef` specifies tls or ssl enable group replication which is a optional field.
+- `spec.replicationModeTransformation.mode` specifies the desired Group Replication Primary Mode (`Multi-Primary` or `Single-Primary`).
+
+Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-# delete the primary Pod mysql-london-0
-$ kubectl delete pod mysql-london-0 -n demo
-pod "mysql-london-0" deleted
-
-# check the new primary ID
-$ kubectl exec -it -n demo mysql-london-0 -c mysql -- mysql -u root --password='pass' --host=mysql-london-0.mysql-london-pods.demo -e "show slave status\G" 
-mysql: [Warning] Using a password on the command line interface can be insecure.
-*************************** 1. row ***************************
-               Slave_IO_State: Waiting for source to send event
-                  Master_Host: mysql.demo.svc
-                  Master_User: root
-                  Master_Port: 3306
-                Connect_Retry: 60
-              Master_Log_File: binlog.000002
-          Read_Master_Log_Pos: 214789
-               Relay_Log_File: mysql-london-0-relay-bin.000002
-                Relay_Log_Pos: 186366
-        Relay_Master_Log_File: binlog.000002
-             Slave_IO_Running: Yes
-            Slave_SQL_Running: Yes
-        ...
-
-# read data after recovery
-$ kubectl exec -it -n demo mysql-london-0 -c mysql -- mysql -u root --password='pass' --host=mysql-read-2.mysql-read-pods.demo -e "SELECT * FROM playground.equipment;"
-mysql: [Warning] Using a password on the command line interface can be insecure.
-+----+-------+-------+-------+
-| id | type  | quant | color |
-+----+-------+-------+-------+
-|  7 | slide |     2 | blue  |
-+----+-------+-------+-------+
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/mode-transform-ops-request.yaml
+mysqlopsrequest.ops.kubedb.com/mysql-replication-mode-transform created
 ```
+
+#### Verify MySQL Replication Transform Mode successfully
+
+If everything goes well, `KubeDB` ops-request operator will transform replication mode of `MySQL` object.
+
+Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MySQLOpsRequest` CR,
+
+```bash
+$ kubectl get mysqlopsrequest -n demo
+NAME                               TYPE                            STATUS       AGE
+mysql-replication-mode-transform   ReplicationModeTransformation   Successful   34m
+
+$ kubectl get pod -n demo
+NAME             READY   STATUS    RESTARTS   AGE
+mysql-london-0   2/2     Running   0          35m
+mysql-london-1   2/2     Running   0          34m
+mysql-london-2   2/2     Running   0          34m
+
+$ kubectl exec -it -n demo mysql-london-0 -c mysql -- mysql -u root --password='pass'
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 630
+Server version: 9.1.0 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> select * from performance_schema.replication_group_members;
++---------------------------+--------------------------------------+-------------------------------------------+-------------+--------------+-------------+----------------+----------------------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                               | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
++---------------------------+--------------------------------------+-------------------------------------------+-------------+--------------+-------------+----------------+----------------------------+
+| group_replication_applier | 84b00535-c8e6-11ef-820f-0a4f35a3c505 | mysql-london-2.mysql-london-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 9.1.0          | XCom                       |
+| group_replication_applier | 8687321f-c8e6-11ef-825f-9e5bdabf90dd | mysql-london-1.mysql-london-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 9.1.0          | XCom                       |
+| group_replication_applier | e2b50ff7-c8ce-11ef-80d4-7a5946c0f28d | mysql-london-0.mysql-london-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 9.1.0          | XCom                       |
++---------------------------+--------------------------------------+-------------------------------------------+-------------+--------------+-------------+----------------+----------------------------+
+3 rows in set (0.00 sec)
+
+```
+
+We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed to transform replication mode of the database.
 
 ## Cleaning up
 
@@ -420,6 +477,7 @@ Clean what you created in this tutorial.
 ```bash
 kubectl delete -n demo my/mysql-singapore
 kubectl delete -n demo my/mysql-london
+kubectl delete -n demo myops/mysql-replication-mode-transform
 kubectl delete ns demo
 ```
 
