@@ -4,7 +4,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "9.1.0"
+  version: "8.0.36"
   replicas: 3
   topology:
     mode: GroupReplication

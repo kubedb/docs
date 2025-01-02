@@ -12,18 +12,16 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# MySQL Replication Mode Transform
+## MySQL Replication Mode Transform
 
 This guide will show you how to use the `KubeDB` OpsRequest operator to transform the replication mode of a MySQL database. Currently, transforming from Remote Replica to Group Replication is supported. 
 
-# KubeDB - MySQL Remote Replica
+### MySQL Remote Replica
 
 At first, we need to provision a MySQL Remote Replica from a KubeDB managed mysql instance. Remote replica can use in or across cluster
 
 
-## Before You Begin
-
-Before proceeding:
+### Before You Begin
 
 - Read [mysql replication concept](/docs/guides/mysql/clustering/overview/index.md) to learn about MySQL Replication.
 
@@ -39,12 +37,12 @@ Before proceeding:
   ```
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/mysql/clustering/remote-replica/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/clustering/group-replication/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
-## Remote Replica
+### Remote Replica
 
 The remote replica allows you to replicate data from an KubeDB managed MySQL server to a read-only mysql server. The whole process  uses MySQL asynchronous replication to keep up-to-date the replica with  source server.
 It's useful to use remote replica to scale of read-intensive workloads, can be a workaround for your  BI and analytical workloads and can be geo-replicated.
 
-## Deploy Mysql server
+### Deploy Mysql server
 
 The following is an example `MySQL` object which creates a MySQL Group replicated instance.we will create a tls secure instance since were planing to replicated across cluster
 
@@ -86,7 +84,7 @@ spec:
 Let’s create the `Issuer` cr we have shown above,
 
 ```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clustering/remote-replica/yamls/issuer.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/issuer.yaml
 issuer.cert-manager.io/mysql-issuer created
 ```
 
@@ -104,10 +102,10 @@ metadata:
 type: kubernetes.io/basic-auth
 ```
 ```bash 
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clustering/remote-replica/yamls/mysql-singapore-auth.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-singapore-auth.yaml
 secret/mysql-singapore-auth created
 ```
-## Deploy MySQL with TLS/SSL configuration
+### Deploy MySQL with TLS/SSL configuration
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -149,7 +147,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clustering/remote-replica/yamls/mysql-singapore.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-singapore.yaml
 mysql.kubedb.com/mysql created
 ```
 
@@ -161,7 +159,7 @@ NAME              VERSION   STATUS   AGE
 mysql-singapore   9.1.0    Ready    22h
 ```
 
-## Connect with MySQL database
+### Connect with MySQL database
 
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
@@ -178,7 +176,7 @@ The operator creates a standalone mysql server for the newly created `MySQL` obj
 Now you can connect to the database using the above info. Ignore the warning message. It is happening for using password in the command.
 
 
-##  Data Insertion
+###  Data Insertion
 
 Let's insert some data to the newly created mysql server . we can use the primary service or governing service to connect with the database
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
@@ -207,7 +205,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 ```
 
-# Exposing to outside world
+### Exposing to outside world
 For Now we will expose our mysql with ingress with to outside world
 ```bash
 $ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -237,20 +235,21 @@ spec:
         pathType: Prefix
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clustering/remote-replica/yamls/mysql-ingress.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-ingress.yaml
 ingress.networking.k8s.io/mysql-singapore created
 $ kubectl get ingress -n demo
 NAME              CLASS   HOSTS                           ADDRESS          PORTS   AGE
 mysql-singapore   nginx   mysql-singapore.something.org   172.104.37.147   80      22h
 ```
 Now will be able to communicate from another cluster to our source database
-# Prepare for Remote Replica
+
+### Prepare for Remote Replica
 We wil use the [kubedb_plugin](/docs/setup/README.md) for generating configuration for remote replica. It will create the appbinding and and necessary secrets to connect with source server
 ```bash
 $ kubectl dba remote-config mysql -n demo mysql-singapore -uremote -ppass -d 172.104.37.147 -y
-home/mehedi/go/src/kubedb.dev/yamls/mysql/mysql-singapore-remote-config.yaml
+home/user/go/src/kubedb.dev/yamls/mysql/mysql-singapore-remote-config.yaml
 ```
-#  Create  Remote Replica
+###  Create  Remote Replica
 We have prepared another cluster in london region for replicating across cluster. follow the installation instruction [above](/docs/README.md).
 
 ### Create sourceRef
@@ -258,7 +257,7 @@ We have prepared another cluster in london region for replicating across cluster
 We will apply the generated config from kubeDB plugin to create the source refs and secrets for it
 
 ```bash
-$ kubectl apply -f  /home/mehedi/go/src/kubedb.dev/yamls/bank_abc/mysql/mysql-singapore-remote-config.yaml
+$ kubectl apply -f  /home/user/go/src/kubedb.dev/yamls/mysql/mysql-singapore-remote-config.yaml
 
 secret/mysql-singapore-remote-replica-auth created
 secret/mysql-singapore-client-cert-remote created
@@ -284,7 +283,7 @@ type: kubernetes.io/basic-auth
 ```
 
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clustering/remote-replica/yamls/mysql-london-auth.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-london-auth.yaml
 ```
 
 ```yaml
@@ -326,7 +325,7 @@ Here,
 - `spec.topology.remoteReplica.sourceref` we are referring to source to read. The  mysql instance we previously created.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete the operation of MySQL CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mysql/concepts/database/#specdeletionpolicy).
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clustering/remote-replica/yamls/mysql-london.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-london.yaml
 mysql.kubedb.com/mysql-london created
 ```
 
@@ -339,7 +338,7 @@ NAME           VERSION   STATUS   AGE
 mysql-london   9.1.0    Ready    7m17s
 ```
 
-##  Validate Remote Replica
+###  Validate Remote Replica
 Since both source and replica database are in the ready state. we can validate Remote Replica is working properly by checking the replication status
 
 ```bash
@@ -361,7 +360,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
             ....           
 ```
 
-# Read Data
+### Read Data
 In the previous step we have inserted into the primary pod. In the next step we will read from secondary pods to determine whether the data has been successfully copied to the secondary pods.
 ```bash
 # read from secondary-1
@@ -470,7 +469,7 @@ mysql> select * from performance_schema.replication_group_members;
 
 We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed to transform replication mode of the database.
 
-## Cleaning up
+### Cleaning up
 
 Clean what you created in this tutorial.
 
@@ -481,7 +480,7 @@ kubectl delete -n demo myops/mysql-replication-mode-transform
 kubectl delete ns demo
 ```
 
-## Next Steps
+### Next Steps
 
 - Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
 - Detail concepts of [MySQLDBVersion object](/docs/guides/mysql/concepts/catalog/index.md).

@@ -54,10 +54,10 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED 
 5.7.35-v1       5.7.35    Official       mysql:5.7.35                             13d
 5.7.44          5.7.44    Official       mysql:5.7.44                             13d
 8.0.17          8.0.17    Official       mysql:8.0.17                             13d
-9.1.0          9.1.0    Official       mysql:9.1.0                             13d
-8.0.31-innodb   9.1.0    MySQL          mysql/mysql-server:9.1.0                13d
-9.1.0          9.1.0    Official       mysql:9.1.0                             13d
-8.0.3-v4        8.0.3     Official       mysql:8.0.3                              13d
+8.0.36          8.0.36    Official       mysql:8.0.36                             13d
+8.0.31-innodb   8.0.31    MySQL          mysql/mysql-server:8.0.31                13d
+9.1.0           9.1.0     Official       mysql:9.1.0                              13d
+8.0.3           8.0.3     Official       mysql:8.0.3                              13d
 ```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` standalone that will be possible to update from this version to another version. In the next section, we are going to verify version update constraints.
@@ -203,7 +203,7 @@ spec:
     name: my-standalone
   type: UpdateVersion
   updateVersion:
-    targetversion: "9.1.0"
+    targetVersion: "8.0.36"
 ```
 
 Here,
@@ -254,7 +254,7 @@ Spec:
     Name:  my-standalone
   Type:    UpdateVersion
   UpdateVersion:
-    TargetVersion:  9.1.0
+    TargetVersion:  8.0.36
 Status:
   Conditions:
     Last Transition Time:  2022-06-30T07:55:16Z
@@ -300,13 +300,13 @@ Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have up
 
 ```bash
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
-9.1.0
+8.0.36
 
 $ kubectl get sts -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-mysql:9.1.0
+mysql:8.0.36
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mysql:9.1.0
+mysql:8.0.36
 ```
 
 You can see above that our `MySQL`standalone has been updated with the new version. It verifies that we have successfully updated our standalone.
