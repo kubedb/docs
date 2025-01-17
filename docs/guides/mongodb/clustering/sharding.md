@@ -657,7 +657,7 @@ From the above output, you can see that MongoDB object, PVCs, Secret are still t
 
 ## Resume Halted Database
 
-Now, to resume the database, i.e. to get the same database setup back again, you have to set the the `spec.halted` as false. You can use the below command.
+Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
 $ kubectl patch -n demo mg/mongo-sh -p '{"spec":{"halted":false}}' --type="merge"

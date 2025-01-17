@@ -314,7 +314,7 @@ mysql> select count(*) from demo_table;
 
 ## Point-in-time Recovery
 Point-In-Time Recovery allows you to restore a MySQL database to a specific point in time using the archived transaction logs. This is particularly useful in scenarios where you need to recover to a state just before a specific error or data corruption occurred.
-Let's say accidentally our db drops the the table `demo_table` and we want to restore that.
+Let's say accidentally our db drops the table `demo_table` and we want to restore that.
 
 ```bash
 $ kubectl exec -it -n demo  mysql-0 -- bash

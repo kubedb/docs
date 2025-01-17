@@ -471,7 +471,7 @@ MariaDB [hello]> select count(*) from demo_table;
 
 ## Point-in-time Recovery
 Point-In-Time Recovery allows you to restore a MariaDB database to a specific point in time using the archived transaction logs. This is particularly useful in scenarios where you need to recover to a state just before a specific error or data corruption occurred.
-Let's say accidentally our dba drops the the table demo_table and we want to restore.
+Let's say accidentally our dba drops the table demo_table and we want to restore.
 
 ```bash
 $ kubectl exec -it -n demo  mariadb-0 -- bash

@@ -29,7 +29,7 @@ User will provide the configuration under the `.spec.initConfig` section of the 
 <figcaption align="center">Fig: ProxySQL Configuration Secret Lifecycle</figcaption>
 </figure>
 
-At any time the user might need to change the configuration. To serve that purpose we have introduced ProxySQLOpsRequest. When an ops request is being created, the `KubeDB` Ops Manager updates the configuration secret and applies the changes to the proxysql cluster nodes. This is how the the configuration secret remains as a source of truth for the ProxySQL CRO and any changes are made in a declarative way. 
+At any time the user might need to change the configuration. To serve that purpose we have introduced ProxySQLOpsRequest. When an ops request is being created, the `KubeDB` Ops Manager updates the configuration secret and applies the changes to the proxysql cluster nodes. This is how the configuration secret remains as a source of truth for the ProxySQL CRO and any changes are made in a declarative way. 
 
 > User can exec into any proxysql pod and change any configuration from the admin panel anytime. But that won't update the configuration secret. We recommend the ops-request to keep things declarative and keep the proxysql.cnf file always updated. 
 
