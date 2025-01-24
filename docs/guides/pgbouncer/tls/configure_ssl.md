@@ -280,31 +280,30 @@ pgbouncer=#
 We are connected to the pgbouncer database. Let's run some command to verify the sslMode and the user,
 
 ```bash
-pgbouncer=# SHOW STATS_TOTALS;
- database  | xact_count | query_count | bytes_received | bytes_sent | xact_time | query_time | wait_time 
------------+------------+-------------+----------------+------------+-----------+------------+-----------
- pgbouncer |          2 |           2 |              0 |          0 |         0 |          0 |         0
- postgres  |         52 |          52 |           4979 |       5785 |     20622 |      20622 |      3220
-(2 rows)
-
+pgbouncer=# SHOW SERVERS;
+type |   user   | database | state |     addr      | port | local_addr | local_port |      connect_time       |      request_time       | wait | wait_us | close_needed |      ptr       | link | remote_pid | tls | application_name 
+------+----------+----------+-------+---------------+------+------------+------------+-------------------------+-------------------------+------+---------+--------------+----------------+------+------------+-----+------------------
+ S    | postgres | postgres | idle  | 10.96.125.227 | 5432 | 10.244.0.6 |      57524 | 2025-01-24 05:17:47 UTC | 2025-01-24 06:06:07 UTC |    0 |       0 |            0 | 0x70872bea80a0 |      |        476 |     | 
+(1 row)
+~
+~
+(END)
 pgbouncer=# exit
 ⏎  
 ```
 
-You can see here that, `postgres` user with `ssl` status as t or true.
-
 ## Changing the SSLMode & ClusterAuthMode
 
-User can update `sslMode` & `clientAuthMode` if needed. Some changes may be invalid from pgbouncer end, like using `sslMode: disabled` with `clientAuthMode: cert`.
+User can update `sslMode` & `connectionPool.authType` if needed. Some changes may be invalid from pgbouncer end, like using `sslMode: disabled` with `connectionPool.authType: cert`.
 
 The good thing is, **KubeDB operator will throw error for invalid SSL specs while creating/updating the PgBouncer object.** i.e.,
 
 ```bash
-$ kubectl patch -n demo pb/pb-tls -p '{"spec":{"sslMode": "disabled","clientAuthMode": "cert"}}' --type="merge"
+$ kubectl patch -n demo pb/pb-tls -p '{"spec":{"sslMode": "disabled"}}' --type="merge"
 The PgBouncer "pb-tls" is invalid: spec.sslMode: Unsupported value: "disabled": supported values: "disable", "allow", "prefer", "require", "verify-ca", "verify-full"
 ```
 
-> Note: There is no official support for PgBouncer with the Postgres cluster having `clientAuthMode` as `cert`. Check [here](https://www.pgbouncer.net/docs/42/en/html/auth-methods.html#:~:text=Note%3A%20The%20certificate%20authentication%20works%20between%20only%20client%20and%20PgBouncer%2DII.%20The%20certificate%20authentication%20does%20not%20work%20between%20PgBouncer%2DII%20and%20PostgreSQL.%20For%20backend%20authentication%20you%20can%20use%20any%20other%20authentication%20method.).
+> Note: There is no official support from kubedb for PgBouncer to connect wit cert mode`.
 
 ## Cleaning up
 
