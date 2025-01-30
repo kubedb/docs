@@ -5,7 +5,7 @@ menu:
     identifier: es-rotate-tls-recommendation
     name: Rotate TLS Recommendation
     parent: es-recommendation-elasticsearch
-    weight: 30
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
