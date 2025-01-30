@@ -1,11 +1,11 @@
 ---
-title: Elasticsearch Version Update Recommendation
+title: Elasticsearch Rotate Auth Recommendation
 menu:
   docs_{{ .version }}:
-    identifier: es-version-update-recommendation
-    name: Version Update Recommendation
+    identifier: es-rotate-auth-recommendation
+    name: Rotate Auth Recommendation
     parent: es-recommendation-elasticsearch
-    weight: 20
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
