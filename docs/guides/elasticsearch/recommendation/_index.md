@@ -5,6 +5,6 @@ menu:
     identifier: es-recommendation-elasticsearch
     name: Recommendation
     parent: es-elasticsearch-guides
-    weight: 100
+    weight: 60
 menu_name: docs_{{ .version }}
 ---
