@@ -39,24 +39,28 @@ Docker hub repositories:
 - [kubedb/mariadb](https://hub.docker.com/r/kubedb/mariadb)
 - [kubedb/mysqld-exporter](https://hub.docker.com/r/kubedb/mysqld-exporter)
 
-- Update KubeDB catalog for private Docker registry. Ex:
+  - Update KubeDB catalog for private Docker registry. Ex:
 
-  ```yaml
-  apiVersion: catalog.kubedb.com/v1alpha1
-  kind: MariaDBVersion
-  metadata:
-    name: 10.5.23
-  spec:
-    db:
-      image: PRIVATE_REGISTRY/mysql:10.5.23
-    exporter:
-      image: PRIVATE_REGISTRY/mysqld-exporter:v0.11.0
-    initContainer:
-      image: PRIVATE_REGISTRY/busybox
-    podSecurityPolicies:
-      databasePolicyName: maria-db
-    version: 10.5.23
-  ```
+    ```yaml
+    apiVersion: catalog.kubedb.com/v1alpha1
+    kind: MariaDBVersion
+    metadata:
+      name: 10.5.23
+    spec:
+      db:
+        image: PRIVATE_REGISTRY/mysql:10.5.23
+      exporter:
+        image: PRIVATE_REGISTRY/mysqld-exporter:v0.11.0
+      initContainer:
+        image: PRIVATE_REGISTRY/busybox
+      maxscale:
+        image: mariadb/maxscale:24.02.4
+        securityContext:
+          runAsUser: 995
+      podSecurityPolicies:
+        databasePolicyName: maria-db
+      version: 10.5.23
+    ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
