@@ -19,7 +19,7 @@ Databases on Kubernetes in production grade infrastructure often need to go thro
 
 ## Overview
 
-Recommendation is a custom resource definition object which is created by KubeDB ops-manager controller and managed by supervisor. So, You need to have KubeDB and Supervisor installed first. You can simply install supervisor along with other KubeDB components using `--set supervisor.enabled=true` flag while installing KubeDB via helm chart.
+Recommendation is a custom resource definition (CRD) object which is created by KubeDB ops-manager controller and managed by supervisor. So, You need to have KubeDB and Supervisor installed first. You can simply install supervisor along with other KubeDB components using `--set supervisor.enabled=true` flag while installing KubeDB via helm chart.
 
 <p align="center">
 <img alt="Recommendation Generation"  src="/docs/guides/elasticsearch/recommendation/images/recommendation-generation.png">
@@ -33,7 +33,7 @@ KubeDB provides Three types of recommendation for Elasticsearch and Opensearch.
 2. TLS Certificate Rotation Recommendation
 3. Authentication Secret Rotation Recommendation
 
-The next page describes these recommendations, how to enable/disable them, their generation mechanism and usability.
+The next page describes these recommendations, how to approve/reject them, their generation mechanism and usability.
 
 ## Next Steps
 
