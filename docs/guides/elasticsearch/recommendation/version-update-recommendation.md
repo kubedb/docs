@@ -173,14 +173,14 @@ status:
 
 In the generated Recommendation you will find a description, targeted db object, recommended operation or Ops-Request manifest, current status of the recommendation etc. Let's just focus on the recommendation description first.
 
-```bash
+```shell
 $ kubectl get recommendation -n es elastic-x-elasticsearch-x-update-version-2juuee -o jsonpath='{.spec.description}'
 Latest Major/Minor version is available. Recommending version Update from xpack-8.15.0 to xpack-8.16.0.
 ```
 
 The recommendation says current version `xpack-8.15.0` should be latest upgradable version `xpack-8.16.0`. You can also find the recommended operation which is a `ElasticsearchOpsRequest` of `UpdateVersion` type in this case.
 
-```bash
+```shell
 $ kubectl get recommendation -n es elastic-x-elasticsearch-x-update-version-2juuee -o jsonpath='{.spec.operation}' | yq -y
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ElasticsearchOpsRequest
