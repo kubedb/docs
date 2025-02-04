@@ -1,0 +1,24 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgBouncerOpsRequest
+metadata:
+  name: add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: pb
+  tls:
+    sslMode: verify-full
+    clientAuthMode: md5
+    issuerRef:
+      name: pb-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    certificates:
+      - alias: client
+        subject:
+          organizations:
+            - pgbouncer
+          organizationalUnits:
+            - client
+  apply: Always
