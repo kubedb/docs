@@ -86,7 +86,7 @@ ha-postgres-0           2/2     Running   0          84s
 ha-postgres-1           2/2     Running   0          78s
 ha-postgres-arbiter-0   1/1     Running   0          68s
 ```
-Get the the pvc,
+Get the pvc,
 
 ```bash
 kubectl get pvc -n demo

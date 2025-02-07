@@ -998,7 +998,7 @@ NAME                     TYPE                STATUS       AGE
 mops-hscale-down-shard   HorizontalScaling   Successful   81s
 ```
 
-We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale down the the database.
+We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale down the database.
 
 ```bash
 $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-shard                     
