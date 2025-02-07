@@ -573,7 +573,7 @@ persistentvolumeclaim/datadir-mgo-replicaset-2   Bound    pvc-5a50bce3-f85f-4157
 
 ## Resume Halted Database
 
-Now, to resume the database, i.e. to get the same database setup back again, you have to set the the `spec.halted` as false. You can use the below command.
+Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
 $ kubectl patch -n demo mg/mgo-replicaset -p '{"spec":{"halted":false}}' --type="merge"

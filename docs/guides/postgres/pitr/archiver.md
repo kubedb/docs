@@ -314,7 +314,7 @@ hi=# select count(*) from tab_1 ;
 
 ## Point-in-time Recovery
 Point-In-Time Recovery allows you to restore a PostgreSQL database to a specific point in time using the archived transaction logs. This is particularly useful in scenarios where you need to recover to a state just before a specific error or data corruption occurred.
-Let's say accidentally our dba drops the the table tab_1 and we want to restore.
+Let's say accidentally our dba drops the table tab_1 and we want to restore.
 
 ```bash
 $ kubectl exec -it -n demo  demo-pg-0 -- bash
