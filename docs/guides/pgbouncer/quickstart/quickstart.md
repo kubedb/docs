@@ -48,6 +48,7 @@ $ kubectl get pgbouncerversions
   1.17.0   1.17.0    ghcr.io/kubedb/pgbouncer:1.17.0                22h
   1.18.0   1.18.0    ghcr.io/kubedb/pgbouncer:1.18.0                22h
   1.23.1   1.23.1    ghcr.io/kubedb/pgbouncer:1.23.1                22h
+  1.24.0   1.24.0    ghcr.io/kubedb/pgbouncer:1.24.0                22h
   
 ```
 
