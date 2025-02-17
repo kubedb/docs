@@ -99,7 +99,7 @@ $ kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].reso
 }
 ```
 
-You can see the Pod has the default resources which is assigned by Kubedb operator.
+You can see the Pod has the default resources which is assigned by KubeDB operator.
 
 We are now ready to apply the `MariaDBOpsRequest` CR to update the resources of this database.
 

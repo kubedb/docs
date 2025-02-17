@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Kubedb PostgreSQL - Arbiter node for PostgreSQL cluster with even nodes
+# KubeDB PostgreSQL - Arbiter node for PostgreSQL cluster with even nodes
 
 Here we will show how to use KubeDB to provision a PostgreSQL DB with Arbiter Node.
 
