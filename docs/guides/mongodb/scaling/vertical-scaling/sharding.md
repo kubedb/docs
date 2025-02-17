@@ -132,7 +132,7 @@ $ kubectl get pod -n demo mg-sharding-shard0-0 -o json | jq '.spec.containers[].
 }
 ```
 
-You can see all the Pod of mongos, configserver and shard has default resources which is assigned by Kubedb operator.
+You can see all the Pod of mongos, configserver and shard has default resources which is assigned by KubeDB operator.
 
 We are now ready to apply the `MongoDBOpsRequest` CR to update the resources of mongos, configserver and shard nodes of this database.
 

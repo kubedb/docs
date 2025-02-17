@@ -105,7 +105,7 @@ Here, we have to use the service `sample-redis` and secret `sample-redis-auth` t
 
 ### Insert Sample Data
 
-Now, we are going to exec into the database pod and create some sample data. Kubedb has created a secret with access credentials. Let's find out the credentials from the Secret,
+Now, we are going to exec into the database pod and create some sample data. KubeDB has created a secret with access credentials. Let's find out the credentials from the Secret,
 
 ```yaml
 ❯ kubectl get secret -n demo sample-redis-auth -o yaml
