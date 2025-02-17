@@ -140,7 +140,7 @@ kubectl delete ns demo
 ## Next Steps
 - Learn more about [Raft implementation](https://github.com/etcd-io/etcd/blob/main/contrib/raftexample/README.md)
 - Learn about [backup and restore](/docs/guides/mssqlserver/backup/overview/index.md) Microsoft SQL Server database using Stash.
-- Want to set up Microsoft SQL Server cluster? Check how to [configure Highly Available Microsoft SQL Server Cluster](/docs/guides/mssqlserver/clustering/ag_cluster.md)
+- Want to set up Microsoft SQL Server cluster? Check how to [Configure Highly Available Microsoft SQL Server Cluster](/docs/guides/mssqlserver/clustering/ag_cluster.md)
 - Monitor your Microsoft SQL Server database with KubeDB using [Prometheus operator](/docs/guides/mssqlserver/monitoring/using-prometheus-operator.md).
-- Detail concepts of [Postgres object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
+- Detail concepts of [MSSQLServer object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
