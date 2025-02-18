@@ -161,6 +161,133 @@ You can check arbiter pod has only one container by getting the pod yaml.
 kubectl get pods -n demo ms-even-cluster-arbiter-0 -oyaml
 ```
 
+
+
+## Connect to the database cluster
+
+KubeDB operator has created a new Secret called `ms-even-cluster-auth` *(format: {mssqlserver-object-name}-auth)* for storing the sa password for `sql server`. This secret contains a `username` key which contains the *username* for MSSQLServer SA and a `password` key which contains the *password* for MSSQLServer SA user.
+
+Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `ms-even-cluster-auth` secret holds username and password
+
+```bash
+$ kubectl get secret -n demo ms-even-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+sa
+
+$ kubectl get secret -n demo ms-even-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
+AgciggjkiIaSkDs1
+```
+We can exec into the pod `ms-even-cluster-0` using the following command:
+```bash
+$ kubectl exec -it -n demo ms-even-cluster-0 -c mssql -- bash
+mssql@ms-even-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "AgciggjkiIaSkDs1" -No
+1> select name from sys.databases
+2> go
+name                                                  
+----------------------------------------------------------------------------------
+master                                                                                                                          
+tempdb                                                                                                                          
+model                                                                                                                           
+msdb                                                                                                                            
+agdb1                                                                                                                           
+agdb2                                                                                                                           
+kubedb_system                                                                                                                   
+
+(5 rows affected)
+1> SELECT name FROM sys.availability_groups
+2> go
+name                                                                                                                            
+----------------------------------------------------------------------------
+msevencluster                                                                                                            
+
+(1 rows affected)
+1> select replica_server_name from sys.availability_replicas;
+2> go
+replica_server_name                                                                                                                                                                                                                                             
+-------------------------------------------------------------------------------------------
+ms-even-cluster-0                                                                                                                                                                                                                                        
+ms-even-cluster-1                                                                                                                                                                                                                                         
+(2 rows affected)
+1> select database_name	from sys.availability_databases_cluster;
+2> go
+database_name                                                                                                                   
+------------------------------------------------------------------------------------------
+agdb1                                                                                                                           
+agdb2                                                                                                                           
+
+(2 rows affected)
+
+```
+
+See the pod roles:
+```bash
+$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=ms-even-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+ms-even-cluster-0	primary
+ms-even-cluster-1	secondary
+ms-even-cluster-arbiter-0	arbiter
+```
+
+From the output above, we can see that ms-even-cluster-0 is the primary node. To insert data, log into the primary MSSQLServer pod. Use the following command,
+
+```bash
+$ kubectl exec -it ms-even-cluster-0 -c mssql -n demo -- bash
+mssql@ms-even-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "AgciggjkiIaSkDs1" -No
+1> SELECT database_name FROM sys.availability_databases_cluster
+2> go
+database_name                                                                                                                   
+----------------------------------------------------------------------------------------------
+agdb1                                                                                                                           
+agdb2                                                                                                                           
+
+(2 rows affected)
+1> use agdb1
+2> go
+Changed database context to 'agdb1'.
+1> CREATE TABLE Data (ID INT, NAME NVARCHAR(255), AGE INT);
+2> go
+1> INSERT INTO Data(ID, Name, Age) VALUES (1, 'John Doe', 25), (2, 'Jane Smith', 30);                                                                                              
+2> go
+(2 rows affected)
+1> Select * from data
+2> go
+ID    NAME                             AGE                                  
+--------------------------------------------------------
+1     John Doe                         25                                                                
+2     Jane Smith                       30
+
+(2 rows affected)
+1> 
+```
+Now, Let's verify that the data inserted into the primary node has been replicated to the secondary node.
+
+### Access the inserted data from secondaries
+Access the secondary node (Node 2) to verify that the data is present.
+
+```bash
+$ kubectl exec -it ms-even-cluster-1 -c mssql -n demo -- bash
+mssql@ms-even-cluster-1:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "AgciggjkiIaSkDs1" -No
+1> SELECT database_name FROM sys.availability_databases_cluster
+2> go
+database_name                                                                                                                   
+-------------------------------------------------
+agdb1                                                                                                                           
+agdb2                                                                                                                           
+
+(2 rows affected)
+1> use agdb1
+2> go
+Changed database context to 'agdb1'.
+1> select * from data
+2> go
+ID    NAME                             AGE                                  
+--------------------------------------------------------
+1     John Doe                         25                                                                
+2     Jane Smith                       30
+
+(2 rows affected)
+1> 
+```
+
+
 ## Why do we need arbiter node?
 
 Few of our users don't want to run 3 node cluster as this was quite expensive for them, instead they wanted to use 2 node cluster, 1 primary and 1 replica. But due to raft implementation, there was chance of split brain. So we introduced this arbiter node so that they can still have 1 primary and 1 replica cluster and not have face split brain problem.
