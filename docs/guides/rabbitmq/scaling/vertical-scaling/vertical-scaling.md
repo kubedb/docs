@@ -97,7 +97,7 @@ $ kubectl get pod -n demo rm-standalone-0 -o json | jq '.spec.containers[].resou
 }
 ```
 
-You can see the Pod has default resources which is assigned by the Kubedb operator.
+You can see the Pod has default resources which is assigned by the KubeDB operator.
 
 We are now ready to apply the `RabbitMQOpsRequest` CR to update the resources of this database.
 
