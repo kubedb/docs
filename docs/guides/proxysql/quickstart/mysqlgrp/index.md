@@ -66,33 +66,6 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysql.kubedb.com/mysql-server created
 ```
 
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: MySQL
-metadata:
-  name: mysql-server
-  namespace: demo
-spec:
-  version: "5.7.44"
-  replicas: 3
-  topology:
-    mode: GroupReplication
-  storageType: Durable
-  storage:
-    storageClassName: "standard"
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  terminationPolicy: WipeOut
-```
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-mysql-v1alpha2.yaml
-mysql.kubedb.com/mysql-server created
-```
-
 Let's wait for the MySQL to be Ready. 
 
 ```bash
