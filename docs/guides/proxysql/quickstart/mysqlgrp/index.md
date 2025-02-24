@@ -183,7 +183,7 @@ You can find the description of the associated objects here.
 Let's exec into the ProxySQL server pod and get into the admin panel. 
 
 ```bash
-$ kubectl exec -it -n demo proxy-mysql-0 -- bash                                                  11:20
+$ kubectl exec -it -n demo proxy-server-0 -- bash                                                  11:20
 root@proxy-mysql-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="ProxySQLAdmin > " 
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 1204
