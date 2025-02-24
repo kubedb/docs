@@ -127,29 +127,6 @@ With the following yaml we are going to create our desired ProxySQL server.
 `Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
 ```yaml
-apiVersion: kubedb.com/v1
-kind: ProxySQL
-metadata:
-  name: proxy-server
-  namespace: demo
-spec:
-  version: "2.3.2-debian"
-  replicas: 1
-  syncUsers: true
-  backend:
-    name: mysql-server
-  deletionPolicy: WipeOut
-```
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-proxysql-v1.yaml
-  proxysql.kubedb.com/proxysql-server created
-```
-
-
-
-
-```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: ProxySQL
 metadata:
