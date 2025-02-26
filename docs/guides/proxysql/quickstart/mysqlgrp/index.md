@@ -66,6 +66,33 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysql.kubedb.com/mysql-server created
 ```
 
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: mysql-server
+  namespace: demo
+spec:
+  version: "5.7.44"
+  replicas: 3
+  topology:
+    mode: GroupReplication
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-mysql-v1alpha2.yaml
+mysql.kubedb.com/mysql-server created
+```
+
 Let's wait for the MySQL to be Ready. 
 
 ```bash
@@ -125,6 +152,29 @@ Now we are ready to deploy and test our ProxySQL server.
 With the following yaml we are going to create our desired ProxySQL server.
 
 `Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
+
+```yaml
+apiVersion: kubedb.com/v1
+kind: ProxySQL
+metadata:
+  name: proxy-server
+  namespace: demo
+spec:
+  version: "2.3.2-debian"
+  replicas: 1
+  syncUsers: true
+  backend:
+    name: mysql-server
+  deletionPolicy: WipeOut
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-proxysql-v1.yaml
+  proxysql.kubedb.com/proxysql-server created
+```
+
+
+
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
