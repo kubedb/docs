@@ -16,7 +16,7 @@ section_menu_id: guides
 
 TLS certificate rotation in databases is essential for maintaining security, ensuring compliance, and preventing service disruptions. Regular rotation mitigates risks like certificate expiry and key compromise, adapts to evolving cryptographic standards, and maintains trust relationships with Certificate Authorities. It also enhances operational resilience by testing renewal processes and ensures smooth auditing and monitoring. To minimize risks and streamline the process, KubeDB provides ReconfigureTLS OpsRequest support. KubeDB Ops-manager generates Recommendation to rotate TLS certificates via this OpsRequest when their expiry is near.
 
-`Recommendation` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative recommendation for KubeDB managed databases like [MongoDB](https://www.mongo.co/products/mongodb) in a Kubernetes native way. KubeDB generates MongoDB/Opensearch Rotate TLS recommendation regarding if:
+`Recommendation` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative recommendation for KubeDB managed databases like [MongoDB](https://www.mongodb.com/) in a Kubernetes native way. KubeDB generates MongoDB/Opensearch Rotate TLS recommendation regarding if:
 
 - At least one of its certificate’s lifespan is more than one month and less than one month remaining till expiry
 
@@ -337,7 +337,7 @@ recommendation.supervisor.appscode.com/mongo-x-mongodb-x-rotate-tls-6ujvez patch
 ## Next Steps
 
 - Learn about [backup & restore](/docs/guides/mongodb/backup/stash/overview/index.md) MongoDB database using Stash.
-- Learn how to configure [MongoDB Topology Cluster](/docs/guides/mongodb/clustering/topology-cluster/simple-dedicated-cluster/index.md).
+- Learn how to configure [MongoDB Cluster](/docs/guides/mongodb/clustering/replicaset.md).
 - Monitor your MongoDB database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
