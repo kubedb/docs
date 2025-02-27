@@ -16,7 +16,7 @@ section_menu_id: guides
 
 Rotating authentication secrets in database management is vital to mitigate security risks, such as credential leakage or unauthorized access, and to comply with regulatory requirements. Regular rotation limits the exposure of compromised credentials, reduces the risk of insider threats, and enforces updated security policies like stronger passwords or algorithms. It also ensures operational resilience by testing the rotation process and revoking stale or unused credentials. KubeDB provides `RotateAuth` which reduces manual errors, and strengthens database security with minimal effort. KubeDB Ops-manager generates Recommendation for rotating authentication secrets via this OpsRequest.
 
-`Recommendation` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative recommendation for KubeDB managed databases like [MongoDB](https://www.elastic.co/products/mongodb) in a Kubernetes native way. The recommendation will only be created if `.spec.authSecret.rotateAfter` is set. KubeDB generates MongoDB Rotate Auth recommendation regarding two particular cases.
+`Recommendation` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative recommendation for KubeDB managed databases like [MongoDB](https://www.mongodb.com/) in a Kubernetes native way. The recommendation will only be created if `.spec.authSecret.rotateAfter` is set. KubeDB generates MongoDB Rotate Auth recommendation regarding two particular cases.
 
 1. AuthSecret lifespan is more than one month and, less than one month remaining till expiry
 2. AuthSecret lifespan is less than one month and, less than one third of lifespan remaining till expiry
@@ -325,77 +325,3 @@ recommendation.supervisor.appscode.com/mongo-x-mongodb-x-rotate-auth-441xqs patc
 - Monitor your MongoDB database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
-
-
-apiVersion: kubedb.com/v1
-kind: Postgres
-metadata:
-  labels:
-    app.kubernetes.io/instance: postgres
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: postgreses.kubedb.com
-  name: postgres
-  namespace: pg
-spec:
-  deletionPolicy: WipeOut
-  authSecret:
-    rotateAfter: 1h
-  podTemplate:
-    spec:
-      containers:
-      - name: postgres
-        resources:
-          limits:
-            cpu: 500m
-            memory: 1Gi
-          requests:
-            cpu: 500m
-            memory: 1Gi
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          runAsGroup: 70
-          runAsNonRoot: true
-          runAsUser: 70
-          seccompProfile:
-            type: RuntimeDefault
-      - name: pg-coordinator
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          runAsGroup: 70
-          runAsNonRoot: true
-          runAsUser: 70
-          seccompProfile:
-            type: RuntimeDefault
-      initContainers:
-      - name: postgres-init-container
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          runAsGroup: 70
-          runAsNonRoot: true
-          runAsUser: 70
-          seccompProfile:
-            type: RuntimeDefault
-      nodeSelector:
-        kubernetes.io/os: linux
-      securityContext:
-        fsGroup: 999
-  replicas: 3
-  storage:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 4Gi
-    storageClassName: local-path
-  storageType: Durable
-  version: "16.4"
-
