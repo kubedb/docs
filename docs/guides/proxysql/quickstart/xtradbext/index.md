@@ -7,6 +7,7 @@ menu:
     parent: guides-proxysql-quickstart
     weight: 25
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
