@@ -4,8 +4,8 @@ menu:
   docs_{{ .version }}:
     identifier: arbiter-postgres-node
     name: Overview
-    parent: arbiter-postgres
-    weight: 10
+    parent: pg-clustering-postgres
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
