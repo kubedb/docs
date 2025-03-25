@@ -152,7 +152,7 @@ $ kubectl exec -it -n demo proxy-server-0 -- bash
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 18
-Server version: 8.0.35 (ProxySQL Admin Module)
+Server version: 9.1.0 (ProxySQL Admin Module)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -186,7 +186,7 @@ Let's check it with the follwing command.
 root@proxy-server-0:/# mysql -utest -ppass -h127.0.0.1 -P6033
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 914
-Server version: 8.0.35 (ProxySQL)
+Server version: 9.1.0 (ProxySQL)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -204,7 +204,7 @@ Current pager:		stdout
 Using outfile:		''
 Using delimiter:	;
 Server:			MySQL
-Server version:		8.0.35 (ProxySQL)
+Server version:		9.1.0 (ProxySQL)
 Protocol version:	10
 Connection:		127.0.0.1 via TCP/IP
 Server characterset:	latin1
@@ -338,7 +338,7 @@ The `mysql-have_ssl` variables should be true by this time.
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 22
-Server version: 8.0.35 (ProxySQL Admin Module)
+Server version: 9.1.0 (ProxySQL Admin Module)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -408,7 +408,7 @@ We can see that the connection is refused. Now try with the tls certificates.
 root@proxy-server-0:/# mysql -utest -ppass -h127.0.0.01 -P6033 --ssl-ca=/var/lib/frontend/client/ca.crt --ssl-cert=/var/lib/frontend/client/tls.crt --ssl-key=/var/lib/frontend/client/tls.key
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 107
-Server version: 8.0.35 (ProxySQL)
+Server version: 9.1.0 (ProxySQL)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -426,7 +426,7 @@ Current pager:		stdout
 Using outfile:		''
 Using delimiter:	;
 Server:			MySQL
-Server version:		8.0.35 (ProxySQL)
+Server version:		9.1.0 (ProxySQL)
 Protocol version:	10
 Connection:		127.0.0.01 via TCP/IP
 Server characterset:	latin1
@@ -762,7 +762,7 @@ Let's check the effect.
 root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 25
-Server version: 8.0.35 (ProxySQL Admin Module)
+Server version: 9.1.0 (ProxySQL Admin Module)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -793,7 +793,7 @@ MySQL [(none)]> ^DBye
 root@proxy-server-1:/# mysql -utest -ppass -h127.0.0.1 -P6033
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 267
-Server version: 8.0.35 (ProxySQL)
+Server version: 9.1.0 (ProxySQL)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
