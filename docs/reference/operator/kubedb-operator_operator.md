@@ -28,7 +28,7 @@ kubedb-operator operator [flags]
       --health-probe-bind-address string    The address the probe endpoint binds to. (default ":8081")
   -h, --help                                help for operator
       --image-pull-secrets strings          Name of image pull secret
-      --insecure-registries strings         List of registries to be used without TLS
+      --insecure-registries strings         List of registries to be used without TLS verification
       --kubeconfig string                   Path to kubeconfig file with authorization information (the master location is set by the master flag).
       --leader-elect                        Enable leader election for controller manager. Enabling this will ensure there is only one active controller manager.
       --license-file string                 Path to license file
@@ -38,6 +38,7 @@ kubedb-operator operator [flags]
       --qps float                           The maximum QPS to the master from this client (default 1e+06)
       --readiness-probe-interval duration   The time between two consecutive health checks that the operator performs to the database. (default 10s)
       --resync-period duration              If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 10m0s)
+      --shard-config string                 Shard configuration that will be used by this operator
   -v, --v int                               Number for the log level verbosity (default 3)
 ```
 
