@@ -1,0 +1,14 @@
+apiVersion: kafka.kubedb.com/v1alpha1
+kind: RestProxy
+metadata:
+  name: restproxy-external-sr
+  namespace: demo
+spec:
+  version: 3.15.0
+  replicas: 2
+  schemaRegistryRef:
+    internallyManaged: true
+  kafkaRef:
+    name: kafka-quickstart
+    namespace: demo
+  deletionPolicy: WipeOut
