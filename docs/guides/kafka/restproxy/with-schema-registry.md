@@ -3,7 +3,7 @@ title: Rest Proxy With Schema Registry
 menu:
   docs_{{ .version }}:
     identifier: kf-rest-proxy-with-schema-registry
-    name: Overview
+    name: With SchemaRegistry
     parent: kf-rest-proxy-guides
     weight: 15
 menu_name: docs_{{ .version }}
