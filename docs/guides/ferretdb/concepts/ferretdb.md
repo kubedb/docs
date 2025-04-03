@@ -29,21 +29,13 @@ metadata:
   name: ferretdb
   namespace: demo
 spec:
-  version: "1.23.0"
-  replicas: 1
+  version: "2.0.0"
   healthChecker:
     failureThreshold: 3
     periodSeconds: 20
     timeoutSeconds: 10
   authSecret:
     name: ferretdb-auth
-    externallyManaged: false
-  backend:
-    postgresRef:
-      name: ha-postgres
-      namespace: demo
-    version: "13.13"
-    linkedDB: "ferretdb"
     externallyManaged: false
   sslMode: requireSSL
   tls:
@@ -68,16 +60,31 @@ spec:
           release: prometheus
         interval: 10s
   deletionPolicy: WipeOut
-  podTemplate:
-    spec:
-      containers:
-        - name: ferretdb
-          resources:
-            limits:
-              memory: 1Gi
-            requests:
-              cpu: 200m
-              memory: 256Mi
+  server:
+    primary:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+            - name: ferretdb
+              resources:
+                limits:
+                  memory: 1Gi
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+    secondary:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+            - name: ferretdb
+              resources:
+                limits:
+                  memory: 1Gi
+                requests:
+                  cpu: 200m
+                  memory: 256Mi                  
   serviceTemplates:
     - alias: primary
       spec:
@@ -91,13 +98,7 @@ spec:
 
 `spec.version` is a required field specifying the name of the [FerretDBVersion](/docs/guides/ferretdb/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `FerretDBVersion` resources,
 
-- `1.18.0`, `1.23.0`
-
-### spec.replicas
-
-`spec.replicas` the number of members in ferretdb replicaset.
-
-KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
+- `1.18.0`, `1.23.0`, `1.24.0`, `2.0.0`
 
 ### spec.healthChecker
 It defines the attributes for the health checker.
@@ -151,13 +152,6 @@ type: Opaque
 ```
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
-
-### spec.backend
-
-- `spec.backend.externallyManaged` represents how the backend will be managed. If its false, KubeDB will automatically create a KubeDB managed postgres. Otherwise you need refer a [AppBinding](/docs/guides/ferretdb/concepts/appbinding.md) name and namespace which represents information for external Postgres.
-- `spec.backend.postgresRef` is a required field that points to the `appbinding` associated with the backend postgres. If the postgres is KubeDB managed an [AppBinding](/docs/guides/ferretdb/concepts/appbinding.md) will be created automatically upon creating the postgres. If the postgres is not KubeDB managed then you need to create an appbinding yourself. `spec.backend.postgresRef` takes the name (`spec.backend.postgresRef.Name`) of the appbinding and the namespace (`spec.backend.postgresRef.Namespace`) where the appbinding is created.
-- `spec.backend.version` represents the version of backend postgres
-- `spec.backend.linkedDB` represents in which database of backend postgres will be used by FerretDB to store data
 
 ### spec.sslMode
 
@@ -235,9 +229,29 @@ Following table show what KubeDB does when you delete FerretDB CR for different 
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` deletion policy by default.
 
-### spec.podTemplate
+### spec.server
 
-KubeDB allows providing a template for pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for FerretDB.
+After FerretDB version 2.0.0, FerretDB uses PostgreSQL + DocumentDB extension as the database storage and currently supports replication using the Write-Ahead Logging (WAL) streaming method.
+
+This field holds the necessary information about FerretDB Primary and FerretDB Secondary server. It accepts the following fields,
+
+- `spec.server.primary` : Holds the Primary sever information.
+- `spec.server.secondary` : Holds Secondary server information.
+
+Both `spec.server.primary` and `spec.server.secondary` has the following fields,
+
+- `replicas` for the number of members in ferretdb primary/secondary replicaset.
+- `podTemplate` for pod template of ferretdb primary/secondary server.
+
+#### spec.server.primary.replicas
+
+`spec.server.primary.replicas` the number of members in ferretdb primary replicaset.
+
+KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
+
+#### spec.server.primary.podTemplate
+
+KubeDB allows providing a template for pod through `spec.server.primary.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the Primary server PetSet created for FerretDB.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
