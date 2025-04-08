@@ -8,7 +8,7 @@ spec:
   databaseRef:
     name: fr-vertical
   verticalScaling:
-    node:
+    primary:
       resources:
         requests:
           memory: "2Gi"

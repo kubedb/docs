@@ -4,10 +4,7 @@ metadata:
   name: fr-horizontal
   namespace: demo
 spec:
-  version: "1.23.0"
-  replicas: 1
-  backend:
-    externallyManaged: false
+  version: "2.0.0"
   storage:
     accessModes:
       - ReadWriteOnce
@@ -15,3 +12,6 @@ spec:
       requests:
         storage: 500Mi
   deletionPolicy: WipeOut
+  server:
+    primary:
+      replicas: 1

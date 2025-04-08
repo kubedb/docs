@@ -4,16 +4,13 @@ metadata:
   name: builtin-prom-fr
   namespace: demo
 spec:
-  version: "1.23.0"
+  version: "2.0.0"
   storage:
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 500Mi
-  backend:
-    externallyManaged: false
   deletionPolicy: WipeOut
-  replicas: 2
   monitor:
     agent: prometheus.io/builtin

@@ -106,7 +106,7 @@ metadata:
   name: fr-tls
   namespace: demo
 spec:
-  version: "1.23.0"
+  version: "2.0.0"
   authSecret:
     externallyManaged: false
   storage:
@@ -115,10 +115,7 @@ spec:
     resources:
       requests:
         storage: 500Mi
-  backend:
-    externallyManaged: false
   deletionPolicy: WipeOut
-  replicas: 1
   sslMode: requireSSL
   tls:
     issuerRef:
@@ -140,7 +137,7 @@ Now, wait until `fr-tls created` has status `Ready`. i.e,
 $ watch kubectl get fr -n demo
 Every 2.0s: kubectl get ferretdb -n demo
 NAME     TYPE                  VERSION   STATUS   AGE
-fr-tls   kubedb.com/v1alpha2   1.23.0    Ready    60s
+fr-tls   kubedb.com/v1alpha2   2.0.0     Ready    60s
 ```
 
 ### Verify TLS/SSL in FerretDB
@@ -205,22 +202,21 @@ Now in another terminal
 
 ```bash
 $ mongosh 'mongodb://postgres:l*jGp8u*El8WRSDJ@localhost:27017/ferretdb?authMechanism=PLAIN&tls=true&tlsCertificateKeyFile=./client.pem&tlsCaFile=./ca.crt'
-Current Mongosh Log ID:	65efeea2a3347fff66d04c70
-Connecting to:		mongodb://<credentials>@localhost:27017/ferretdb?authMechanism=PLAIN&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.5
-Using MongoDB:		7.0.42
-Using Mongosh:		2.1.5
+Current Mongosh Log ID:	67ee22bbd9c3422c286b140a
+Connecting to:		mongodb://<credentials>@localhost:27017/ferretdb?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2
+Using MongoDB:		7.0.77
+Using Mongosh:		2.4.2
 
-For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
 
 ------
    The server generated these startup warnings when booting
-   2024-03-12T05:56:50.979Z: Powered by FerretDB v1.23.0 and PostgreSQL 13.13 on x86_64-pc-linux-musl, compiled by gcc.
-   2024-03-12T05:56:50.979Z: Please star us on GitHub: https://github.com/FerretDB/FerretDB.
-   2024-03-12T05:56:50.979Z: The telemetry state is undecided.
-   2024-03-12T05:56:50.979Z: Read more about FerretDB telemetry and how to opt out at https://beacon.ferretdb.io.
+   2025-04-03T05:55:07.528Z: Powered by FerretDB v2.0.0-1-g7fb2c9a8 and DocumentDB 0.102.0 (PostgreSQL 17.4).
+   2025-04-03T05:55:07.528Z: Please star 🌟 us on GitHub: https://github.com/FerretDB/FerretDB and https://github.com/microsoft/documentdb.
+   2025-04-03T05:55:07.528Z: The telemetry state is undecided. Read more about FerretDB telemetry and how to opt out at https://beacon.ferretdb.com.
 ------
 
-ferretdb>
+ferretdb> 
 ```
 
 So our connection is now tls encrypted.
