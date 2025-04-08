@@ -2,8 +2,8 @@
 title: MariaDB Galera Cluster Guide
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-clustering-galeracluster
-    name: MariaDB Galera Cluster Guide
+    identifier: guides-mariadb-clustering-mariadbreplication
+    name: MariaDB Standard Replication Cluster Guide
     parent: guides-mariadb-clustering
     weight: 20
 menu_name: docs_{{ .version }}
@@ -14,13 +14,13 @@ section_menu_id: guides
 
 # KubeDB - MariaDB Cluster
 
-This tutorial will show you how to use KubeDB to provision a MariaDB Galera Cluster in multi-primary mode.
+This tutorial will show you how to use KubeDB to provision a MariaDB Standard Replication in single-primary mode.
 
 ## Before You Begin
 
 Before proceeding:
 
-- Read [mariadb galera cluster concept](/docs/guides/mariadb/clustering/overview) to learn about MariaDB Galera Cluster.
+- Read [mariadb standard replication](/docs/guides/mariadb/clustering/overview) to learn about MariaDB Standard Replication.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -37,7 +37,7 @@ Before proceeding:
 
 ## Deploy MariaDB Cluster
 
-The following is an example `MariaDB` object which creates a multi-master MariaDB group with three members.
+The following is an example `MariaDB` object which creates a single-master MariaDB standard replication cluster with three members.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -46,13 +46,22 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "10.6.16"
   replicas: 3
   topology:
-    mode: GaleraCluster
+    mode: MariaDBReplication
+    maxscale:
+      replicas: 3
+      enableUI: true
+      storageType: Durable
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 50Mi
   storageType: Durable
   storage:
-    storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
     resources:
@@ -70,6 +79,10 @@ Here,
 
 - `spec.replicas` is the number of nodes in the cluster.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.topology` is the replication mode.
+- `spec.topology.maxscale` is the replication mode.
+- `spec.topology.maxscale.replicas` is the replication mode.
+- `spec.topology.maxscale.enableUI` is the replication mode.
 
 KubeDB operator watches for `MariaDB` objects using Kubernetes API. When a `MariaDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for the PetSet with the name `<mariadb-object-name>-pods`.
 
@@ -80,20 +93,90 @@ kind: MariaDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"10.5.23"}}
-  creationTimestamp: "2021-03-16T09:39:01Z"
+      {"apiVersion":"kubedb.com/v1","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"storageType":"Durable","topology":{"maxscale":{"enableUI":true,"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}}},"storageType":"Durable"},"mode":"MariaDBReplication"},"version":"10.6.16"}}
+  creationTimestamp: "2025-04-08T06:42:36Z"
   finalizers:
   - kubedb.com
   generation: 2
-  managedFields:
-    ...
   name: sample-mariadb
   namespace: demo
+  resourceVersion: "781249"
+  uid: c4ff5150-6596-4238-b6ba-09a2f6078172
 spec:
+  allowedSchemas:
+    namespaces:
+      from: Same
   authSecret:
+    activeFrom: "2025-04-08T06:42:36Z"
     name: sample-mariadb-auth
+  autoOps: {}
+  deletionPolicy: WipeOut
+  healthChecker:
+    failureThreshold: 1
+    periodSeconds: 10
+    timeoutSeconds: 10
   podTemplate:
-    ...
+    controller: {}
+    metadata: {}
+    spec:
+      containers:
+      - name: mariadb
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 999
+          runAsNonRoot: true
+          runAsUser: 999
+          seccompProfile:
+            type: RuntimeDefault
+      - name: md-coordinator
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 999
+          runAsNonRoot: true
+          runAsUser: 999
+          seccompProfile:
+            type: RuntimeDefault
+      initContainers:
+      - name: mariadb-init
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 999
+          runAsNonRoot: true
+          runAsUser: 999
+          seccompProfile:
+            type: RuntimeDefault
+      podPlacementPolicy:
+        name: default
+      securityContext:
+        fsGroup: 999
+      serviceAccountName: sample-mariadb
   replicas: 3
   storage:
     accessModes:
@@ -101,35 +184,84 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: standard
   storageType: Durable
-  deletionPolicy: WipeOut
-  version: 10.5.23
+  topology:
+    maxscale:
+      enableUI: true
+      podTemplate:
+        controller: {}
+        metadata: {}
+        spec:
+          containers:
+          - name: maxscale
+            resources: {}
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              runAsUser: 997
+              seccompProfile:
+                type: RuntimeDefault
+          initContainers:
+          - name: maxscale-init
+            resources:
+              limits:
+                memory: 512Mi
+              requests:
+                cpu: 200m
+                memory: 256Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              runAsUser: 997
+              seccompProfile:
+                type: RuntimeDefault
+          podPlacementPolicy:
+            name: default
+          securityContext:
+            fsGroup: 997
+          serviceAccountName: sample-mariadb
+      replicas: 3
+      storage:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 50Mi
+      storageType: Durable
+    mode: MariaDBReplication
+  version: 10.6.16
+  wsrepSSTMethod: rsync
 status:
   conditions:
-  - lastTransitionTime: "2021-03-16T09:39:01Z"
+  - lastTransitionTime: "2025-04-08T06:42:36Z"
     message: 'The KubeDB operator has started the provisioning of MariaDB: demo/sample-mariadb'
     reason: DatabaseProvisioningStartedSuccessfully
     status: "True"
     type: ProvisioningStarted
-  - lastTransitionTime: "2021-03-16T09:40:00Z"
+  - lastTransitionTime: "2025-04-08T06:42:56Z"
     message: All desired replicas are ready.
     reason: AllReplicasReady
     status: "True"
     type: ReplicaReady
-  - lastTransitionTime: "2021-03-16T09:39:09Z"
-    message: 'The MariaDB: demo/sample-mariadb is accepting client requests.'
+  - lastTransitionTime: "2025-04-08T06:43:38Z"
+    message: database sample-mariadb/demo is accepting connection
     observedGeneration: 2
-    reason: DatabaseAcceptingConnectionRequest
+    reason: AcceptingConnection
     status: "True"
     type: AcceptingConnection
-  - lastTransitionTime: "2021-03-16T09:39:50Z"
-    message: 'The MySQL: demo/sample-mariadb is ready.'
+  - lastTransitionTime: "2025-04-08T06:44:29Z"
+    message: database sample-mariadb/demo is ready
     observedGeneration: 2
     reason: ReadinessCheckSucceeded
     status: "True"
     type: Ready
-  - lastTransitionTime: "2021-03-16T09:40:00Z"
+  - lastTransitionTime: "2025-04-08T06:44:35Z"
     message: 'The MariaDB: demo/sample-mariadb is successfully provisioned.'
     observedGeneration: 2
     reason: DatabaseSuccessfullyProvisioned
@@ -137,6 +269,7 @@ status:
     type: Provisioned
   observedGeneration: 2
   phase: Ready
+
 
 
 $ kubectl get sts,svc,secret,pvc,pv,pod -n demo
