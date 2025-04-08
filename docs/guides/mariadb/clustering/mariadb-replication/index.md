@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # KubeDB - MariaDB Cluster
 
-This tutorial will show you how to use KubeDB to provision a MariaDB Standard Replication in single-primary mode.
+This tutorial will show you how to use KubeDB to provision a MariaDB Standard Replication in single-master mode.
 
 ## Before You Begin
 
@@ -272,33 +272,48 @@ status:
 
 
 
-$ kubectl get sts,svc,secret,pvc,pv,pod -n demo
-NAME                              READY   AGE
-petset.apps/sample-mariadb   3/3     116m
+$ kubectl get petset,svc,secret,pvc,pv,pod -n demo
+NAME                                             AGE
+petset.apps.k8s.appscode.com/sample-mariadb      53s
+petset.apps.k8s.appscode.com/sample-mariadb-mx   56s
+
 
 NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-service/sample-mariadb        ClusterIP   10.97.162.171   <none>        3306/TCP   116m
-service/sample-mariadb-pods   ClusterIP   None            <none>        3306/TCP   116m
+service/sample-mariadb           ClusterIP   10.43.110.13    <none>        3306/TCP            60s
+service/sample-mariadb-mx        ClusterIP   10.43.149.170   <none>        3306/TCP,8989/TCP   60s
+service/sample-mariadb-mx-pods   ClusterIP   None            <none>        3306/TCP            60s
+service/sample-mariadb-pods      ClusterIP   None            <none>        3306/TCP            60s
+service/sample-mariadb-standby   ClusterIP   10.43.84.224    <none>        3306/TCP            60s
 
 NAME                                TYPE                                  DATA   AGE
 secret/default-token-696cj          kubernetes.io/service-account-token   3      121m
 secret/sample-mariadb-auth          kubernetes.io/basic-auth              2      116m
 secret/sample-mariadb-token-dk4dx   kubernetes.io/service-account-token   3      116m
 
-NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-sample-mariadb-0   Bound    pvc-1e259abc-5937-421a-990c-b903a83d2d8a   1Gi        RWO            standard       116m
-persistentvolumeclaim/data-sample-mariadb-1   Bound    pvc-1d0b5bcd-2699-4b87-b57b-3072ddc1027f   1Gi        RWO            standard       116m
-persistentvolumeclaim/data-sample-mariadb-2   Bound    pvc-5b85a06e-17f5-487a-9150-e928f5cf4590   1Gi        RWO            standard       116m
+NAME                                             STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-sample-mariadb-0      Bound    pvc-ce1faccf-8e33-49c6-8520-7b8bb24bb01a   1Gi        RWO            local-path     <unset>                 3m6s
+persistentvolumeclaim/data-sample-mariadb-1      Bound    pvc-2fd2d566-0a32-45d8-af0d-88a1f755ccbc   1Gi        RWO            local-path     <unset>                 3m6s
+persistentvolumeclaim/data-sample-mariadb-2      Bound    pvc-77a2cc33-4f8b-4de7-a591-acd97ceb3dce   1Gi        RWO            local-path     <unset>                 3m6s
+persistentvolumeclaim/data-sample-mariadb-mx-0   Bound    pvc-c6b54166-9c42-4211-9439-ab63fd1aae89   50Mi       RWO            local-path     <unset>                 3m9s
+persistentvolumeclaim/data-sample-mariadb-mx-1   Bound    pvc-eaec319b-33d1-4fac-8234-7eadfbad0e61   50Mi       RWO            local-path     <unset>                 3m9s
+persistentvolumeclaim/data-sample-mariadb-mx-2   Bound    pvc-733c4cde-3756-44ab-b652-17425e0e210f   50Mi       RWO            local-path     <unset>                 3m9s
 
-NAME                                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS   REASON   AGE
-persistentvolume/pvc-1d0b5bcd-2699-4b87-b57b-3072ddc1027f   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-1   standard                116m
-persistentvolume/pvc-1e259abc-5937-421a-990c-b903a83d2d8a   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-0   standard                116m
-persistentvolume/pvc-5b85a06e-17f5-487a-9150-e928f5cf4590   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-2   standard                116m
+NAME                                                        CAPACITY    ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   REASON   AGE
+persistentvolume/pvc-1d0b5bcd-2699-4b87-b57b-3072ddc1027f   1Gi         RWO            Delete           Bound    demo/data-sample-mariadb-1      local-path              116m
+persistentvolume/pvc-1e259abc-5937-421a-990c-b903a83d2d8a   1Gi         RWO            Delete           Bound    demo/data-sample-mariadb-0      local-path              116m
+persistentvolume/pvc-5b85a06e-17f5-487a-9150-e928f5cf4590   1Gi         RWO            Delete           Bound    demo/data-sample-mariadb-2      local-path              116m
+persistentvolume/pvc-c6b54166-9c42-4211-9439-ab63fd1aae89   50Mi        RWO            Delete           Bound    demo/data-sample-mariadb-mx-0   local-path              116m
+persistentvolume/pvc-c6b54166-9c42-4211-9439-ab63fd1aae89   50Mi        RWO            Delete           Bound    demo/data-sample-mariadb-mx-1   local-path              116m
+persistentvolume/pvc-eaec319b-33d1-4fac-8234-7eadfbad0e61   50Mi        RWO            Delete           Bound    demo/data-sample-mariadb-mx-2   local-path              116m
 
 NAME                   READY   STATUS    RESTARTS   AGE
-pod/sample-mariadb-0   1/1     Running   0          116m
-pod/sample-mariadb-1   1/1     Running   0          116m
-pod/sample-mariadb-2   1/1     Running   0          116m
+pod/sample-mariadb-0      2/2     Running   0          3m6s
+pod/sample-mariadb-1      2/2     Running   0          3m6s
+pod/sample-mariadb-2      2/2     Running   0          3m6s
+pod/sample-mariadb-mx-0   1/1     Running   0          3m9s
+pod/sample-mariadb-mx-1   1/1     Running   0          3m9s
+pod/sample-mariadb-mx-2   1/1     Running   0          3m9s
+
 ```
 
 ## Connect with MariaDB database
@@ -308,7 +323,7 @@ Once the database is in running state we can conncet to each of three nodes. We 
 ```bash
 # First Node
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 26
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -331,7 +346,7 @@ Bye
 
 # Second Node
 $ kubectl exec -it -n demo sample-mariadb-1 -- bash
-root@sample-mariadb-1:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-1:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 94
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -354,7 +369,7 @@ Bye
 
 # Third Node
 $ kubectl exec -it -n demo sample-mariadb-2 -- bash
-root@sample-mariadb-2:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-2:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 78
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -381,7 +396,7 @@ Now, we are ready to check newly created cluster status. Connect and run the fol
 
 ```bash
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 137
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -407,7 +422,7 @@ In a MariaDB Galera Cluster, Each member can read and write. In this section, we
 
 ```bash
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 202
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -441,7 +456,7 @@ Bye
 root@sample-mariadb-0:/ exit
 exit
 ~ $ kubectl exec -it -n demo sample-mariadb-1 -- bash
-root@sample-mariadb-1:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-1:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 209
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -478,7 +493,7 @@ Bye
 root@sample-mariadb-1:/ exit
 exit
 ~ $ kubectl exec -it -n demo sample-mariadb-2 -- bash
-root@sample-mariadb-2:/  mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-2:/  mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 209
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -516,7 +531,7 @@ To test automatic failover, we will force the one of three pods to restart and c
 
 ```bash
 kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 11
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -547,7 +562,7 @@ pod "sample-mariadb-0" deleted
 
 # Wait for sample-mariadb-0 to restart
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 10
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
