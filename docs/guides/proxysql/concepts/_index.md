@@ -5,6 +5,6 @@ menu:
     identifier: guides-proxysql-concepts
     name: Concepts
     parent: guides-proxysql
-    weight: 20
+    weight: 10
 menu_name: docs_{{ .version }}
 ---
