@@ -4,7 +4,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.26"
+  version: "8.0.40"
   configSecret:
     name: px-configuration
   storageType: Durable

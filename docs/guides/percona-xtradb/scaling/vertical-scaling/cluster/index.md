@@ -41,7 +41,7 @@ Here, we are going to deploy a  `PerconaXtraDB` cluster using a supported versio
 
 ### Prepare PerconaXtraDB Cluster
 
-Now, we are going to deploy a `PerconaXtraDB` cluster database with version `8.0.26`.
+Now, we are going to deploy a `PerconaXtraDB` cluster database with version `8.0.40`.
 > Vertical Scaling for `PerconaXtraDB Standalone` can be performed in the same way as `PerconaXtraDB Cluster`. Only remove the `spec.replicas` field from the below yaml to deploy a PerconaXtraDB Standalone.
 
 ### Deploy PerconaXtraDB Cluster 
@@ -55,7 +55,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.26"
+  version: "8.0.40"
   replicas: 3
   storageType: Durable
   storage:
@@ -80,7 +80,7 @@ Now, wait until `sample-pxc` has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo
 NAME             VERSION    STATUS     AGE
-sample-pxc    8.0.26     Ready     3m46s
+sample-pxc    8.0.40     Ready     3m46s
 ```
 
 Let's check the Pod containers resources,
