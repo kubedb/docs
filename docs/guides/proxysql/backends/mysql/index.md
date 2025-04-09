@@ -5,7 +5,7 @@ menu:
     identifier: mysql-backend
     name: MySQL Group Replication
     parent: proxysql-backends
-    weight: 20
+    weight: 10
 menu_name: docs_{{ .version }}
 ---
 
@@ -162,7 +162,7 @@ Here in the `.spec.version` field we are saying that we want a ProxySQL-2.6.3 wi
 Let's wait for the ProxySQL to be Ready. 
 
 ```bash
-$ kubectl get proxysql -n demo
+$ kubectl get prx -n demo
 NAME          VERSION        STATUS   AGE
 mysql-proxy   2.6.3-debian   Ready    109s
 ```
@@ -358,16 +358,6 @@ ProxySQLAdmin > select hostgroup,Queries from stats_mysql_connection_pool;
 | 3         | 2       |
 +-----------+---------+
 4 rows in set (0.002 sec)
-
-ProxySQLAdmin > select * from stats_mysql_connection_pool;
-+-----------+-------------------------------------------+----------+--------+----------+----------+--------+---------+-------------+---------+-------------------+-----------------+-----------------+------------+
-| hostgroup | srv_host                                  | srv_port | status | ConnUsed | ConnFree | ConnOK | ConnERR | MaxConnUsed | Queries | Queries_GTID_sync | Bytes_data_sent | Bytes_data_recv | Latency_us |
-+-----------+-------------------------------------------+----------+--------+----------+----------+--------+---------+-------------+---------+-------------------+-----------------+-----------------+------------+
-| 2         | mysql-server-0.mysql-server-pods.demo.svc | 3306     | ONLINE | 0        | 0        | 0      | 0       | 0           | 6       | 0                 | 0               | 0               | 56         |
-| 3         | mysql-server-0.mysql-server-pods.demo.svc | 3306     | ONLINE | 0        | 0        | 0      | 0       | 0           | 0       | 0                 | 0               | 0               | 56         |
-| 3         | mysql-server-1.mysql-server-pods.demo.svc | 3306     | ONLINE | 0        | 0        | 0      | 0       | 0           | 1       | 0                 | 0               | 0               | 73         |
-| 3         | mysql-server-2.mysql-server-pods.demo.svc | 3306     | ONLINE | 0        | 0        | 0      | 0       | 0           | 2       | 0                 | 0               | 0               | 77         |
-+-----------+-------------------------------------------+----------+--------+----------+----------+--------+---------+-------------+---------+-------------------+-----------------+-----------------+------------+
 ```
 
 We can see that the read-write split is successfully executed in the ProxySQL server. So the ProxySQL server is ready to use.
