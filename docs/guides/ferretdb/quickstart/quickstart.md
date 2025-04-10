@@ -366,7 +366,7 @@ Handling connection for 27017
 Now in another terminal
 
 ```bash
-$ mongosh 'mongodb://postgres:UxV5a35kURSFE(;5@localhost:27017/ferretdb?authMechanism=PLAIN'
+$ mongosh 'mongodb://postgres:UxV5a35kURSFE(;5@localhost:27017/ferretdb'
 Current Mongosh Log ID:	67ee22bbd9c3422c286b140a
 Connecting to:		mongodb://<credentials>@localhost:27017/ferretdb?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2
 Using MongoDB:		7.0.77
