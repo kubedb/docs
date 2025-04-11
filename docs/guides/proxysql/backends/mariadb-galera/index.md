@@ -59,7 +59,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mariadb-galera/examples/sample-mariadb-galera.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mariadb-galera/examples/mariadb-galera.yaml
 mariadb.kubedb.com/mariadb-galera created
 ```
 
@@ -283,7 +283,7 @@ Lets exec into the pod and install mariadb-galera-client.
 $ kubectl exec -it -n demo ubuntu-bb47d8d6c-7wndq -- bash
 root@ubuntu-bb47d8d6c-7wndq:/# apt update
 ... ... ..
-root@ubuntu-bb47d8d6c-7wndq:/# apt install mariadb-galera-client -y
+root@ubuntu-bb47d8d6c-7wndq:/# apt install mysql-client -y
 Reading package lists... Done
 ... .. ...
 ```
