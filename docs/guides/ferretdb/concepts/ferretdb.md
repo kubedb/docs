@@ -34,6 +34,12 @@ spec:
     failureThreshold: 3
     periodSeconds: 20
     timeoutSeconds: 10
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 500Mi    
   authSecret:
     name: ferretdb-auth
     externallyManaged: false
@@ -99,6 +105,20 @@ spec:
 `spec.version` is a required field specifying the name of the [FerretDBVersion](/docs/guides/ferretdb/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `FerretDBVersion` resources,
 
 - `1.18.0`, `1.23.0`, `1.24.0`, `2.0.0`
+
+### spec.storage
+
+`spec.storage` is a required field specifying the storage specification of backend Postgres. KubeDB will create backend Postgres according to this field. 
+
+If you don't set `spec.storageType:` to `Ephemeral` then `spec.storage` field is required. This field specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+
+- `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
+- `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
+- `spec.storage.resources` can be used to request specific quantities of storage. This follows the same resource model used by PVCs.
+
+To learn how to configure `spec.storage`, please visit the links below:
+
+- https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
 
 ### spec.healthChecker
 It defines the attributes for the health checker.

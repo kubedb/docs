@@ -3,8 +3,8 @@ title: FerretDB Clustering
 menu:
   docs_{{ .version }}:
     identifier: fr-clustering-ferretdb
-    name: Concepts
+    name: FerretDB Clustering
     parent: fr-ferretdb-guides
-    weight: 15
+    weight: 16
 menu_name: docs_{{ .version }}
 ---
