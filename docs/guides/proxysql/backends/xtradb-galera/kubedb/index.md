@@ -190,25 +190,45 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 ProxySQLAdmin > 
 ```
 
-Let's check the mysql_galera_hostgroups and mysql_servers table first. We didn't set it from the yaml. The KubeDB operator will do that for us. 
-
-
-
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   
-Edit this !!!!!!!!!!!!!!!!!!   
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+Let's check the mysql_galera_hostgroups and mysql_servers table first. We didn't set it from the yaml. The KubeDB operator will do that for us.
 
 ```bash
 ProxySQLAdmin > select * from mysql_galera_hostgroups;
-Empty set (0.001 sec)
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+---------+
+| writer_hostgroup | backup_writer_hostgroup | reader_hostgroup | offline_hostgroup | active | max_writers | writer_is_also_reader | max_transactions_behind | comment |
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+---------+
+| 2                | 4                       | 3                | 1                 | 1      | 1           | 1                     | 0                       |         |
++------------------+-------------------------+------------------+-------------------+--------+-------------+-----------------------+-------------------------+---------+
+1 row in set (0.000 sec)
+
 
 ProxySQLAdmin > select * from mysql_servers;
-+--------------+------------------------+------+-----------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------+
-| hostgroup_id | hostname               | port | gtid_port | status | weight | compression | max_connections | max_replication_lag | use_ssl | max_latency_ms | comment |
-+--------------+------------------------+------+-----------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------+
-| 2            | xtradb-galera.demo.svc | 3306 | 0         | ONLINE | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
-+--------------+------------------------+------+-----------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------+
-1 row in set (0.000 sec)
++--------------+---------------------------------------------+------+-----------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------+
+| hostgroup_id | hostname                                    | port | gtid_port | status | weight | compression | max_connections | max_replication_lag | use_ssl | max_latency_ms | comment |
++--------------+---------------------------------------------+------+-----------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------+
+| 2            | xtradb-galera-0.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 3            | xtradb-galera-0.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 2            | xtradb-galera-1.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 3            | xtradb-galera-1.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 2            | xtradb-galera-2.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 3            | xtradb-galera-2.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
++--------------+---------------------------------------------+------+-----------+--------+--------+-------------+-----------------+---------------------+---------+----------------+---------+
+6 rows in set (0.001 sec)
+
+ProxySQLAdmin > select * from runtime_mysql_servers;
++--------------+---------------------------------------------+------+-----------+---------+--------+-------------+-----------------+---------------------+---------+----------------+---------+
+| hostgroup_id | hostname                                    | port | gtid_port | status  | weight | compression | max_connections | max_replication_lag | use_ssl | max_latency_ms | comment |
++--------------+---------------------------------------------+------+-----------+---------+--------+-------------+-----------------+---------------------+---------+----------------+---------+
+| 2            | xtradb-galera-0.xtradb-galera-pods.demo.svc | 3306 | 0         | SHUNNED | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 2            | xtradb-galera-1.xtradb-galera-pods.demo.svc | 3306 | 0         | SHUNNED | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 2            | xtradb-galera-2.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE  | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 3            | xtradb-galera-0.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE  | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 3            | xtradb-galera-1.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE  | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 3            | xtradb-galera-2.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE  | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 4            | xtradb-galera-0.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE  | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
+| 4            | xtradb-galera-1.xtradb-galera-pods.demo.svc | 3306 | 0         | ONLINE  | 1      | 0           | 1000            | 0                   | 0       | 0              |         |
++--------------+---------------------------------------------+------+-----------+---------+--------+-------------+-----------------+---------------------+---------+----------------+---------+
+8 rows in set (0.003 sec)
 ```
 
 Here we can see that all the nodes of our PerconaXtraDB Galera cluster has been set to the writer(hg:2) hostgroup and to the reader(hg:3) hostgroup. Since `max_writers` is set to `1`, only `xtradb-galera-2` is `ONLINE` from  hostgroup 2, other nodes are `SHUNNED`.
