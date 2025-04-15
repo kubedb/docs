@@ -2,9 +2,9 @@
 title: ProxySQL Backends
 menu:
   docs_{{ .version }}:
-    identifier: kubedb-percona-xtradb
+    identifier: proxysql-backends
     name: Backends
-    parent: proxysql-backends
+    parent: guides-proxysql
     weight: 25
 menu_name: docs_{{ .version }}
 ---
