@@ -174,17 +174,14 @@ metadata:
   name: coreos-prom-fr
   namespace: demo
 spec:
-  version: "1.18.0"
+  version: "2.0.0"
   storage:
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 500Mi
-  backend:
-    externallyManaged: false
   deletionPolicy: WipeOut
-  replicas: 2
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -212,7 +209,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get fr -n demo coreos-prom-fr
 NAME             NAMESPACE   VERSION   STATUS   AGE
-coreos-prom-fr   demo        1.18.0    Ready    111s
+coreos-prom-fr   demo        2.0.0     Ready    111s
 ```
 
 KubeDB will create a separate stats service with name `{FerretDB crd name}-stats` for monitoring purpose.

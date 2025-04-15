@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: FerretDB
 metadata:
-  name: coreos-prom-fr
+  name: ferret
   namespace: demo
 spec:
   version: "2.0.0"
@@ -10,12 +10,10 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 500Mi
+        storage: 1Gi
   deletionPolicy: WipeOut
-  monitor:
-    agent: prometheus.io/operator
-    prometheus:
-      serviceMonitor:
-        labels:
-          release: prometheus
-        interval: 10s
+  server:
+    primary:
+      replicas: 2
+    secondary:
+      replicas: 2

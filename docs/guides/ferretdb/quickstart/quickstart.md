@@ -49,17 +49,17 @@ When you have installed KubeDB, it has created `FerretDBVersion` CR for all supp
 ```bash
 $ kubectl get ferretdbversions
 NAME     VERSION   DB_IMAGE                                  DEPRECATED   AGE
-1.18.0   1.18.0    ghcr.io/appscode-images/ferretdb:1.18.0   false        7m10s
+1.18.0   1.18.0    ghcr.io/appscode-images/ferretdb:1.18.0                104m
+1.23.0   1.23.0    ghcr.io/appscode-images/ferretdb:1.23.0                104m
+1.24.0   1.24.0    ghcr.io/appscode-images/ferretdb:1.24.0                104m
+2.0.0    2.0.0     ghcr.io/appscode-images/ferretdb:2.0.0                 5d4h
 ```
 
 ## Create a FerretDB database
 
-FerretDB use Postgres as it's main backend. Currently, KubeDB supports Postgres backend as database engine for FerretDB. Users can use its own Postgres or let KubeDB create and manage backend engine with KubeDB native Postgres. 
-KubeDB implements a `FerretDB` CR to define the specification of a FerretDB database.
+FerretDB use Postgres as it's main backend. Currently, KubeDB supports Postgres backend as database engine for FerretDB. KubeDB operator will create and manage the backend Postgres for FerretDB
 
-### Create a FerretDB database with KubeDB managed Postgres
-
-To use KubeDB managed Postgres as backend engine, user need to specify that in `spec.backend.externallyManaged` section of FerretDB CRO yaml. Below is the `FerretDB` object created in this tutorial.
+Below is the `FerretDB` object created in this tutorial.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -68,7 +68,7 @@ metadata:
   name: ferret
   namespace: demo
 spec:
-  version: "1.18.0"
+  version: "2.0.0"
   authSecret:
     externallyManaged: false
   sslMode: disabled
@@ -79,8 +79,6 @@ spec:
     resources:
       requests:
         storage: 500Mi
-  backend:
-    externallyManaged: false
   deletionPolicy: WipeOut
 ```
 
@@ -95,32 +93,29 @@ Here,
 - `spec.storageType` specifies the type of storage that will be used for FerretDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create FerretDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `FerretDB` CR or which resources KubeDB should keep or delete when you delete `FerretDB` CR. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy)
-- `spec.backend` denotes the backend database information for FerretDB instance.
-- `spec.replicas` denotes the number of replicas in the replica-set.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
 KubeDB operator watches for `FerretDB` objects using Kubernetes api. When a `FerretDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching FerretDB object name. KubeDB operator will also create a governing service for PetSets with the name `<ferretdb-name>-pods`.
 
-Here `spec.backend.externallyManaged` section is `false`. So backend Postgres database will be managed by internally through KubeDB. 
 KubeDB will create a Postgres database alongside with FerretDB for FerretDB's backend engine.
 
 KubeDB operator sets the `status.phase` to Ready once the database is successfully provisioned and ready to use.
 
 ```bash
-$ kubectl get ferretdb -n demo
+$ kubectl get fr -n demo
 NAME     NAMESPACE   VERSION   STATUS   AGE
-ferret   demo        1.18.0    Ready    25m
+ferret   demo        2.0.0     Ready    5m10s
 
-$ kubectl get postgres -n demo
-NAME                VERSION   STATUS   AGE
-ferret-pg-backend   13.13     Ready    25m
+$ kubectl get pg -n demo
+NAME                VERSION           STATUS   AGE
+ferret-pg-backend   17.4-documentdb   Ready    6m10s
 ```
 
 Let’s describe FerretDB object ferret
 
 ```bash
-$ kubectl describe ferretdb ferret -n demo
+$ kubectl describe fr ferret -n demo
 Name:         ferret
 Namespace:    demo
 Labels:       <none>
@@ -128,185 +123,183 @@ Annotations:  <none>
 API Version:  kubedb.com/v1alpha2
 Kind:         FerretDB
 Metadata:
-  Creation Timestamp:  2024-03-12T05:04:34Z
+  Creation Timestamp:  2025-04-03T05:41:50Z
   Finalizers:
     kubedb.com
-  Generation:        4
-  Resource Version:  4127
-  UID:               73247297-139b-4dfe-8f9d-9baf2b092364
+  Generation:        3
+  Resource Version:  3098298
+  UID:               81a859d5-8f1f-4475-a9f7-2b2a42d9e626
 Spec:
   Auth Secret:
-    Name:  ferret-auth
-  Backend:
     Externally Managed:  false
-    Linked DB:           ferretdb
-    Postgres Ref:
-      Name:       ferret-pg-backend
-      Namespace:  demo
-    Version:      13.13
+    Name:                ferret-auth
+  Deletion Policy:       WipeOut
   Health Checker:
     Failure Threshold:  1
     Period Seconds:     10
     Timeout Seconds:    10
-  Pod Template:
-    Controller:
-    Metadata:
-    Spec:
-      Containers:
-        Name:  ferretdb
-        Resources:
-          Limits:
-            Memory:  1Gi
-          Requests:
-            Cpu:     500m
-            Memory:  1Gi
-        Security Context:
-          Allow Privilege Escalation:  false
-          Capabilities:
-            Drop:
-              ALL
-          Run As Group:     1000
-          Run As Non Root:  true
-          Run As User:      1000
-          Seccomp Profile:
-            Type:  RuntimeDefault
-      Security Context:
-        Fs Group:  1000
-  Replicas:        1
-  Ssl Mode:        disabled
+  Server:
+    Primary:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  ferretdb
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Group:     1000
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        1
+  Ssl Mode:            disabled
   Storage:
     Access Modes:
       ReadWriteOnce
     Resources:
       Requests:
-        Storage:       500Mi
-  Storage Type:        Durable
-  Deletion Policy:     WipeOut
-  Version:             1.18.0
+        Storage:  500Mi
+  Storage Type:   Durable
+  Version:        2.0.0
 Status:
   Conditions:
-    Last Transition Time:  2024-03-12T05:04:34Z
+    Last Transition Time:  2025-04-03T05:41:51Z
     Message:               The KubeDB operator has started the provisioning of FerretDB: demo/ferret
-    Observed Generation:   3
+    Observed Generation:   2
     Reason:                DatabaseProvisioningStartedSuccessfully
     Status:                True
     Type:                  ProvisioningStarted
-    Last Transition Time:  2024-03-12T05:23:58Z
+    Last Transition Time:  2025-04-03T05:42:43Z
     Message:               All replicas are ready for FerretDB demo/ferret
-    Observed Generation:   4
+    Observed Generation:   3
     Reason:                AllReplicasReady
     Status:                True
     Type:                  ReplicaReady
-    Last Transition Time:  2024-03-12T05:06:20Z
+    Last Transition Time:  2025-04-03T05:42:54Z
     Message:               The FerretDB: demo/ferret is accepting client requests.
-    Observed Generation:   4
+    Observed Generation:   3
     Reason:                DatabaseAcceptingConnectionRequest
     Status:                True
     Type:                  AcceptingConnection
-    Last Transition Time:  2024-03-12T05:06:20Z
+    Last Transition Time:  2025-04-03T05:42:54Z
     Message:               The FerretDB: demo/ferret is ready.
-    Observed Generation:   4
+    Observed Generation:   3
     Reason:                ReadinessCheckSucceeded
     Status:                True
     Type:                  Ready
-    Last Transition Time:  2024-03-12T05:06:20Z
+    Last Transition Time:  2025-04-03T05:42:54Z
     Message:               The FerretDB: demo/ferret is successfully provisioned.
-    Observed Generation:   4
+    Observed Generation:   3
     Reason:                DatabaseSuccessfullyProvisioned
     Status:                True
     Type:                  Provisioned
   Phase:                   Ready
+Events:                    <none>
 ```
 
 ```bash
 $ kubectl get petset -n demo
-NAME                        READY   AGE
-ferret                      1/1     29m
-ferret-pg-backend           2/2     30m
-ferret-pg-backend-arbiter   1/1     29m
+NAME                AGE
+ferret              2m26s
+ferret-pg-backend   3m4s
 
 $ kubectl get appbindings -n demo
-NAME                  TYPE                 VERSION   AGE
-ferret                kubedb.com/ferret    1.18.0    29m
-ferret-pg-backend     kubedb.com/postgres  13.13     30m
+NAME                TYPE                  VERSION   AGE
+ferret              kubedb.com/ferretdb   2.0.0     6m6s
+ferret-pg-backend   kubedb.com/postgres   17.4      6m54s
 
 $ kubectl get pvc -n demo
-NAME                               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-data-ferret-pg-backend-0           Bound    pvc-b887a566-2dbd-4377-8752-f31622efbb34   500Mi      RWO            standard       <unset>                 30m
-data-ferret-pg-backend-1           Bound    pvc-43de8679-7004-469d-a8a5-37363f81d839   500Mi      RWO            standard       <unset>                 29m
-data-ferret-pg-backend-arbiter-0   Bound    pvc-8ab3e7b5-4ecc-4ddd-9a9a-16b4f59f6538   2Gi        RWO            standard       <unset>                 29m
+NAME                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+data-ferret-pg-backend-0   Bound    pvc-3438b4f7-aeb0-46a6-a427-bdf593c9fb80   500Mi      RWO            local-path     <unset>                 8m30s
+data-ferret-pg-backend-1   Bound    pvc-c2ece700-864c-49c6-81ad-87d2eadb0200   500Mi      RWO            local-path     <unset>                 8m13s
+data-ferret-pg-backend-2   Bound    pvc-4c456891-c0ab-4452-82b9-453aa68bfc0c   500Mi      RWO            local-path     <unset>                 8m6s
 
 $ kubectl get pv -n demo
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                   STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-43de8679-7004-469d-a8a5-37363f81d839   500Mi      RWO            Delete           Bound    demo/data-ferret-pg-backend-1           standard       <unset>                          30m
-pvc-8ab3e7b5-4ecc-4ddd-9a9a-16b4f59f6538   2Gi        RWO            Delete           Bound    demo/data-ferret-pg-backend-arbiter-0   standard       <unset>                          29m
-pvc-b887a566-2dbd-4377-8752-f31622efbb34   500Mi      RWO            Delete           Bound    demo/data-ferret-pg-backend-0           standard       <unset>                          30m
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+pvc-3438b4f7-aeb0-46a6-a427-bdf593c9fb80   500Mi      RWO            Delete           Bound    demo/data-ferret-pg-backend-0   local-path     <unset>                          8m42s
+pvc-4c456891-c0ab-4452-82b9-453aa68bfc0c   500Mi      RWO            Delete           Bound    demo/data-ferret-pg-backend-2   local-path     <unset>                          8m17s
+pvc-c2ece700-864c-49c6-81ad-87d2eadb0200   500Mi      RWO            Delete           Bound    demo/data-ferret-pg-backend-1   local-path     <unset>                          8m23s
 
 $ kubectl get service -n demo
-NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
-ferret                      ClusterIP   10.96.234.250   <none>        27017/TCP                    30m
-ferret-pg-backend           ClusterIP   10.96.130.0     <none>        5432/TCP,2379/TCP            30m
-ferret-pg-backend-pods      ClusterIP   None            <none>        5432/TCP,2380/TCP,2379/TCP   30m
-ferret-pg-backend-standby   ClusterIP   10.96.250.98    <none>        5432/TCP                     30m
+NAME                        TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
+ferret                      ClusterIP   10.43.63.55    <none>        27017/TCP                    4m28s
+ferret-pg-backend           ClusterIP   10.43.156.60   <none>        5432/TCP,2379/TCP            4m28s
+ferret-pg-backend-pods      ClusterIP   None           <none>        5432/TCP,2380/TCP,2379/TCP   4m28s
+ferret-pg-backend-standby   ClusterIP   10.43.128.95   <none>        5432/TCP                     4m28s
+ferret-pods                 ClusterIP   None           <none>        27017/TCP                    4m28s
 ```
 
 Run the following command to see the modified FerretDB object:
 
 ```yaml
-$ kubectl get ferretdb ferret -n demo -oyaml
+$ kubectl get fr ferret -n demo -oyaml
 apiVersion: kubedb.com/v1alpha2
 kind: FerretDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"FerretDB","metadata":{"annotations":{},"name":"ferret","namespace":"demo"},"spec":{"authSecret":{"externallyManaged":false},"backend":{"externallyManaged":false},"sslMode":"disabled","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}}},"deletionPolicy":"WipeOut","version":"1.18.0"}}
-  creationTimestamp: "2024-03-12T05:04:34Z"
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"FerretDB","metadata":{"annotations":{},"name":"ferret","namespace":"demo"},"spec":{"authSecret":{"externallyManaged":false},"deletionPolicy":"WipeOut","sslMode":"disabled","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"500Mi"}}},"storageType":"Durable","version":"2.0.0"}}
+  creationTimestamp: "2025-04-03T05:41:50Z"
   finalizers:
     - kubedb.com
-  generation: 4
+  generation: 3
   name: ferret
   namespace: demo
-  resourceVersion: "5030"
-  uid: 73247297-139b-4dfe-8f9d-9baf2b092364
+  resourceVersion: "3098298"
+  uid: 81a859d5-8f1f-4475-a9f7-2b2a42d9e626
 spec:
   authSecret:
-    name: ferret-auth
-  backend:
     externallyManaged: false
-    linkedDB: ferretdb
-    postgresRef:
-        name: ferret-pg-backend
-        namespace: demo
-    version: "13.13"
+    name: ferret-auth
+  deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10
     timeoutSeconds: 10
-  podTemplate:
-    controller: {}
-    metadata: {}
-    spec:
-      containers:
-        - name: ferretdb
-          resources:
-            limits:
-              memory: 1Gi
-            requests:
-              cpu: 500m
-              memory: 1Gi
+  server:
+    primary:
+      podTemplate:
+        controller: {}
+        metadata: {}
+        spec:
+          containers:
+            - name: ferretdb
+              resources:
+                limits:
+                  memory: 1Gi
+                requests:
+                  cpu: 500m
+                  memory: 1Gi
+              securityContext:
+                allowPrivilegeEscalation: false
+                capabilities:
+                  drop:
+                    - ALL
+                runAsGroup: 1000
+                runAsNonRoot: true
+                runAsUser: 1000
+                seccompProfile:
+                  type: RuntimeDefault
+          podPlacementPolicy:
+            name: default
           securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsGroup: 1000
-            runAsNonRoot: true
-            runAsUser: 1000
-            seccompProfile:
-              type: RuntimeDefault
-      securityContext:
-        fsGroup: 1000
-  replicas: 1
+            fsGroup: 1000
+      replicas: 1
   sslMode: disabled
   storage:
     accessModes:
@@ -315,37 +308,36 @@ spec:
       requests:
         storage: 500Mi
   storageType: Durable
-  deletionPolicy: WipeOut
-  version: 1.18.0
+  version: 2.0.0
 status:
   conditions:
-    - lastTransitionTime: "2024-03-12T05:04:34Z"
+    - lastTransitionTime: "2025-04-03T05:41:51Z"
       message: 'The KubeDB operator has started the provisioning of FerretDB: demo/ferret'
-      observedGeneration: 3
+      observedGeneration: 2
       reason: DatabaseProvisioningStartedSuccessfully
       status: "True"
       type: ProvisioningStarted
-    - lastTransitionTime: "2024-03-12T05:33:58Z"
+    - lastTransitionTime: "2025-04-03T05:42:43Z"
       message: All replicas are ready for FerretDB demo/ferret
-      observedGeneration: 4
+      observedGeneration: 3
       reason: AllReplicasReady
       status: "True"
       type: ReplicaReady
-    - lastTransitionTime: "2024-03-12T05:06:20Z"
+    - lastTransitionTime: "2025-04-03T05:42:54Z"
       message: 'The FerretDB: demo/ferret is accepting client requests.'
-      observedGeneration: 4
+      observedGeneration: 3
       reason: DatabaseAcceptingConnectionRequest
       status: "True"
       type: AcceptingConnection
-    - lastTransitionTime: "2024-03-12T05:06:20Z"
+    - lastTransitionTime: "2025-04-03T05:42:54Z"
       message: 'The FerretDB: demo/ferret is ready.'
-      observedGeneration: 4
+      observedGeneration: 3
       reason: ReadinessCheckSucceeded
       status: "True"
       type: Ready
-    - lastTransitionTime: "2024-03-12T05:06:20Z"
+    - lastTransitionTime: "2025-04-03T05:42:54Z"
       message: 'The FerretDB: demo/ferret is successfully provisioned.'
-      observedGeneration: 4
+      observedGeneration: 3
       reason: DatabaseSuccessfullyProvisioned
       status: "True"
       type: Provisioned
@@ -374,23 +366,22 @@ Handling connection for 27017
 Now in another terminal
 
 ```bash
-$ mongosh 'mongodb://postgres:UxV5a35kURSFE(;5@localhost:27017/ferretdb?authMechanism=PLAIN'
-Current Mongosh Log ID:	65efeea2a3347fff66d04c70
-Connecting to:		mongodb://<credentials>@localhost:27017/ferretdb?authMechanism=PLAIN&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.5
-Using MongoDB:		7.0.42
-Using Mongosh:		2.1.5
+$ mongosh 'mongodb://postgres:UxV5a35kURSFE(;5@localhost:27017/ferretdb'
+Current Mongosh Log ID:	67ee22bbd9c3422c286b140a
+Connecting to:		mongodb://<credentials>@localhost:27017/ferretdb?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2
+Using MongoDB:		7.0.77
+Using Mongosh:		2.4.2
 
-For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
 
 ------
    The server generated these startup warnings when booting
-   2024-03-12T05:56:50.979Z: Powered by FerretDB v1.18.0 and PostgreSQL 13.13 on x86_64-pc-linux-musl, compiled by gcc.
-   2024-03-12T05:56:50.979Z: Please star us on GitHub: https://github.com/FerretDB/FerretDB.
-   2024-03-12T05:56:50.979Z: The telemetry state is undecided.
-   2024-03-12T05:56:50.979Z: Read more about FerretDB telemetry and how to opt out at https://beacon.ferretdb.io.
+   2025-04-03T05:55:07.528Z: Powered by FerretDB v2.0.0-1-g7fb2c9a8 and DocumentDB 0.102.0 (PostgreSQL 17.4).
+   2025-04-03T05:55:07.528Z: Please star 🌟 us on GitHub: https://github.com/FerretDB/FerretDB and https://github.com/microsoft/documentdb.
+   2025-04-03T05:55:07.528Z: The telemetry state is undecided. Read more about FerretDB telemetry and how to opt out at https://beacon.ferretdb.com.
 ------
 
-ferretdb>
+ferretdb> 
 
 
 ferretdb> show dbs
@@ -418,153 +409,12 @@ mydb> exit
 ```
 All these data inside FerretDB is also storing inside `ferret-pg-backend` Postgres.
 
-### Create a FerretDB database with externally managed Postgres
-
-If user wants to use its own Postgres database as backend engine, he needs to create an [AppBinding](https://kubedb.com/docs/latest/guides/mongodb/concepts/appbinding/) for his Postgres and specify it in `spec.backend.postgresRef` section. Below is the FerretDB object created in this tutorial.
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: FerretDB
-metadata:
-  name: ferretdb-external
-  namespace: demo
-spec:
-  version: "1.18.0"
-  sslMode: disabled
-  storageType: Durable
-  storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 500Mi  
-  backend:
-    externallyManaged: true
-    postgresRef:
-        name: ha-postgres
-        namespace: demo
-  deletionPolicy: WipeOut
-```
-
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ferredb/quickstart/ferretdb-external.yaml
-ferretdb.kubedb.com/ferretdb-external created
-```
-Here,
-
-- `spec.backend.postgresRef` is AppBinding information of users external postgres exist in the cluster.
-
-KubeDB will deploy a FerretDB database and connect with the users given external postgres through service.
-
-Run the following command to see the modified FerretDB object:
-
-```yaml
-$ kubectl get ferretdb ferretdb-external -n demo -oyaml
-apiVersion: kubedb.com/v1alpha2
-kind: FerretDB
-metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"FerretDB","metadata":{"annotations":{},"name":"ferretdb-external","namespace":"demo"},"spec":{"authSecret":{"externallyManaged":true,"name":"ha-postgres-auth"},"backend":{"externallyManaged":true,"postgres":{"service":{"name":"ha-postgres","namespace":"demo","pgPort":5432}}},"sslMode":"disabled","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"100Mi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"1.18.0"}}
-  creationTimestamp: "2024-03-12T06:30:22Z"
-  finalizers:
-    - kubedb.com
-  generation: 3
-  name: ferretdb-external
-  namespace: demo
-  resourceVersion: "10959"
-  uid: 8380f0a1-c8e9-42e2-8fa9-6ce5870d02f4
-spec:
-  authSecret:
-    name: ha-postgres-auth
-  backend:
-    externallyManaged: true
-    linkedDB: postgres
-    postgresRef:
-        name: ha-postgres
-        namespace: demo
-  healthChecker:
-    failureThreshold: 1
-    periodSeconds: 10
-    timeoutSeconds: 10
-  podTemplate:
-    controller: {}
-    metadata: {}
-    spec:
-      containers:
-        - name: ferretdb
-          resources:
-            limits:
-              memory: 1Gi
-            requests:
-              cpu: 500m
-              memory: 1Gi
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsGroup: 1000
-            runAsNonRoot: true
-            runAsUser: 1000
-            seccompProfile:
-              type: RuntimeDefault
-      securityContext:
-        fsGroup: 1000
-  replicas: 1
-  sslMode: disabled
-  storage:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 500Mi
-    storageClassName: standard
-  storageType: Durable
-  deletionPolicy: WipeOut
-  version: 1.18.0
-status:
-  conditions:
-    - lastTransitionTime: "2024-03-12T06:30:22Z"
-      message: 'The KubeDB operator has started the provisioning of FerretDB: demo/ferretdb-external'
-      observedGeneration: 2
-      reason: DatabaseProvisioningStartedSuccessfully
-      status: "True"
-      type: ProvisioningStarted
-    - lastTransitionTime: "2024-03-12T06:33:58Z"
-      message: All replicas are ready for FerretDB demo/ferretdb-external
-      observedGeneration: 3
-      reason: AllReplicasReady
-      status: "True"
-      type: ReplicaReady
-    - lastTransitionTime: "2024-03-12T06:30:34Z"
-      message: 'The FerretDB: demo/ferretdb-external is accepting client requests.'
-      observedGeneration: 3
-      reason: DatabaseAcceptingConnectionRequest
-      status: "True"
-      type: AcceptingConnection
-    - lastTransitionTime: "2024-03-12T06:30:34Z"
-      message: 'The FerretDB: demo/ferretdb-external is ready.'
-      observedGeneration: 3
-      reason: ReadinessCheckSucceeded
-      status: "True"
-      type: Ready
-    - lastTransitionTime: "2024-03-12T06:30:34Z"
-      message: 'The FerretDB: demo/ferretdb-external is successfully provisioned.'
-      observedGeneration: 3
-      reason: DatabaseSuccessfullyProvisioned
-      status: "True"
-      type: Provisioned
-  phase: Ready
-```
-
 ## Cleaning up
 
 If you don't set the deletionPolicy, then the kubeDB set the DeletionPolicy to `WipeOut` by-default for `FerretDB`.
 
 ### WipeOut
-If you want to cleanup each of the Kubernetes resources created by this tutorial, run:
+If you want to clean up each of the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete -n demo fr/ferret

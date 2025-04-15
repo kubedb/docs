@@ -55,21 +55,20 @@ metadata:
   name: ferretdb-autoscale
   namespace: demo
 spec:
-  version: "1.23.0"
-  replicas: 1
-  backend:
-    externallyManaged: false
-  podTemplate:
-    spec:
-      containers:
-        - name: ferretdb
-          resources:
-            requests:
-              cpu: "200m"
-              memory: "300Mi"
-            limits:
-              cpu: "200m"
-              memory: "300Mi"
+  version: "2.0.0"
+  server:
+    primary:
+      podTemplate:
+        spec:
+          containers:
+            - name: ferretdb
+              resources:
+                requests:
+                  cpu: "200m"
+                  memory: "300Mi"
+                limits:
+                  cpu: "200m"
+                  memory: "300Mi"
   storage:
     accessModes:
       - ReadWriteOnce
@@ -91,12 +90,12 @@ Now, wait until `ferretdb-autoscale` has status `Ready`. i.e,
 ```bash
 $ kubectl get fr -n demo
 NAME                 NAMESPACE   VERSION   STATUS   AGE
-ferretdb-autoscale   demo        1.23.0    Ready    6m1s
+ferretdb-autoscale   demo        2.0.0     Ready    4m9s
 ```
 
 Let's check the FerretDB resources,
 ```bash
-$ kubectl get ferretdb -n demo ferretdb-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+$ kubectl get fr -n demo ferretdb-autoscale -o json | jq '.spec.server.primary.podTemplate.spec.containers[0].resources'
 {
   "limits": {
     "cpu": "200m",
@@ -131,7 +130,7 @@ spec:
   databaseRef:
     name: ferretdb-autoscale
   compute:
-    ferretdb:
+    primary:
       trigger: "On"
       podLifeTimeThreshold: 5m
       resourceDiffPercentage: 20
@@ -148,14 +147,14 @@ spec:
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing compute resource autoscaling on `ferretdb-autoscale`.
-- `spec.compute.ferretdb.trigger` specifies that compute resource autoscaling is enabled for this ferretdb.
-- `spec.compute.ferretdb.podLifeTimeThreshold` specifies the minimum lifetime for at least one of the pod to initiate a vertical scaling.
+- `spec.compute.primary.trigger` specifies that compute resource autoscaling is enabled for this ferretdb primary server.
+- `spec.compute.primary.podLifeTimeThreshold` specifies the minimum lifetime for at least one of the pod to initiate a vertical scaling.
 - `spec.compute.replicaset.resourceDiffPercentage` specifies the minimum resource difference in percentage. The default is 10%.
   If the difference between current & recommended resource is less than ResourceDiffPercentage, Autoscaler Operator will ignore the updating.
-- `spec.compute.ferretdb.minAllowed` specifies the minimum allowed resources for this ferretdb.
-- `spec.compute.ferretdb.maxAllowed` specifies the maximum allowed resources for this ferretdb.
-- `spec.compute.ferretdb.controlledResources` specifies the resources that are controlled by the autoscaler.
-- `spec.compute.ferretdb.containerControlledValues` specifies which resource values should be controlled. The default is "RequestsAndLimits".
+- `spec.compute.primary.minAllowed` specifies the minimum allowed resources for this ferretdb primary server.
+- `spec.compute.primary.maxAllowed` specifies the maximum allowed resources for this ferretdb primary server.
+- `spec.compute.primary.controlledResources` specifies the resources that are controlled by the autoscaler.
+- `spec.compute.primary.containerControlledValues` specifies which resource values should be controlled. The default is "RequestsAndLimits".
 - `spec.opsRequestOptions` contains the options to pass to the created OpsRequest. It has 2 fields. Know more about them here :  [timeout](/docs/guides/ferretdb/concepts/opsrequest.md#spectimeout), [apply](/docs/guides/ferretdb/concepts/opsrequest.md#specapply).
 
 Let's create the `FerretDBAutoscaler` CR we have shown above,
@@ -182,13 +181,13 @@ Annotations:  <none>
 API Version:  autoscaling.kubedb.com/v1alpha1
 Kind:         FerretDBAutoscaler
 Metadata:
-  Creation Timestamp:  2024-10-14T08:30:37Z
+  Creation Timestamp:  2025-04-04T10:36:21Z
   Generation:          1
-  Resource Version:    11066
-  UID:                 62387d58-1cd2-4cb6-9d97-91515531fcea
+  Resource Version:    8109
+  UID:                 4390f7e7-4578-4798-8828-f117d14ec257
 Spec:
   Compute:
-    Ferretdb:
+    Primary:
       Container Controlled Values:  RequestsAndLimits
       Controlled Resources:
         cpu
@@ -199,39 +198,45 @@ Spec:
       Min Allowed:
         Cpu:                     400m
         Memory:                  400Mi
-      Pod Life Time Threshold:   5m
+      Pod Life Time Threshold:   5m0s
       Resource Diff Percentage:  20
       Trigger:                   On
   Database Ref:
     Name:  ferretdb-autoscale
+  Ops Request Options:
+    Apply:  IfReady
 Status:
   Checkpoints:
     Cpu Histogram:
       Bucket Weights:
         Index:              0
         Weight:             10000
-      Reference Timestamp:  2024-10-14T08:30:00Z
-      Total Weight:         0.2536082343117003
-    First Sample Start:     2024-10-14T08:31:16Z
-    Last Sample Start:      2024-10-14T08:32:08Z
-    Last Update Time:       2024-10-14T08:32:34Z
+      Reference Timestamp:  2025-04-04T10:40:00Z
+      Total Weight:         0.6481703155444596
+    First Sample Start:     2025-04-04T10:36:14Z
+    Last Sample Start:      2025-04-04T10:42:11Z
+    Last Update Time:       2025-04-04T10:42:25Z
     Memory Histogram:
-      Reference Timestamp:  2024-10-14T08:35:00Z
+      Bucket Weights:
+        Index:              0
+        Weight:             10000
+      Reference Timestamp:  2025-04-04T10:40:00Z
+      Total Weight:         1.032875715149387
     Ref:
       Container Name:     ferretdb
       Vpa Object Name:    ferretdb-autoscale
-    Total Samples Count:  2
+    Total Samples Count:  7
     Version:              v3
   Conditions:
-    Last Transition Time:  2024-10-14T08:32:29Z
-    Message:               Successfully created FerretDBOpsRequest demo/frops-ferretdb-autoscale-5eo9wo
+    Last Transition Time:  2025-04-04T10:37:25Z
+    Message:               Successfully created FerretDBOpsRequest demo/frops-ferretdb-autoscale-u3ro86
     Observed Generation:   1
     Reason:                CreateOpsRequest
     Status:                True
     Type:                  CreateOpsRequest
   Vpas:
     Conditions:
-      Last Transition Time:  2024-10-14T08:31:34Z
+      Last Transition Time:  2025-04-04T10:36:25Z
       Status:                True
       Type:                  RecommendationProvided
     Recommendation:
@@ -262,7 +267,7 @@ Let's watch the `ferretdbopsrequest` in the demo namespace to see if any `ferret
 $ watch kubectl get ferretdbopsrequest -n demo
 Every 2.0s: kubectl get ferretdbopsrequest -n demo
 NAME                               TYPE              STATUS        AGE
-frops-ferretdb-autoscale-5eo9wo    VerticalScaling   Progressing   10s
+frops-ferretdb-autoscale-u3ro86    VerticalScaling   Progressing   10s
 ```
 
 Let's wait for the ops request to become successful.
@@ -271,14 +276,14 @@ Let's wait for the ops request to become successful.
 $ watch kubectl get ferretdbopsrequest -n demo
 Every 2.0s: kubectl get ferretdbopsrequest -n demo
 NAME                              TYPE              STATUS       AGE
-frops-ferretdb-autoscale-5eo9wo   VerticalScaling   Successful   31s
+frops-ferretdb-autoscale-u3ro86   VerticalScaling   Successful   31s
 ```
 
 We can see from the above output that the `FerretDBOpsRequest` has succeeded. If we describe the `FerretDBOpsRequest` we will get an overview of the steps that were followed to scale the ferretdb.
 
 ```bash
-$ kubectl describe ferretdbopsrequest -n demo frops-ferretdb-autoscale-5eo9wo
-Name:         frops-ferretdb-autoscale-5eo9wo
+$ kubectl describe ferretdbopsrequest -n demo frops-ferretdb-autoscale-u3ro86
+Name:         frops-ferretdb-autoscale-u3ro86
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
               app.kubernetes.io/instance=ferretdb-autoscale
@@ -288,7 +293,7 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         FerretDBOpsRequest
 Metadata:
-  Creation Timestamp:  2024-10-14T08:32:29Z
+  Creation Timestamp:  2025-04-04T10:37:25Z
   Generation:          1
   Owner References:
     API Version:           autoscaling.kubedb.com/v1alpha1
@@ -296,16 +301,16 @@ Metadata:
     Controller:            true
     Kind:                  FerretDBAutoscaler
     Name:                  ferretdb-autoscale-ops
-    UID:                   62387d58-1cd2-4cb6-9d97-91515531fcea
-  Resource Version:        11153
-  UID:                     f14acbf1-bd46-4b93-9ee7-d944d9f1f8fd
+    UID:                   4390f7e7-4578-4798-8828-f117d14ec257
+  Resource Version:        8019
+  UID:                     8ec170d0-86fa-4de6-a77d-32a9a9f533e1
 Spec:
   Apply:  IfReady
   Database Ref:
     Name:  ferretdb-autoscale
   Type:    VerticalScaling
   Vertical Scaling:
-    Node:
+    Primary:
       Resources:
         Limits:
           Cpu:     400m
@@ -315,46 +320,46 @@ Spec:
           Memory:  400Mi
 Status:
   Conditions:
-    Last Transition Time:  2024-10-14T08:32:29Z
+    Last Transition Time:  2025-04-04T10:37:25Z
     Message:               FerretDB ops-request has started to vertically scaling the FerretDB nodes
     Observed Generation:   1
     Reason:                VerticalScaling
     Status:                True
     Type:                  VerticalScaling
-    Last Transition Time:  2024-10-14T08:32:32Z
+    Last Transition Time:  2025-04-04T10:37:28Z
     Message:               Successfully paused database
     Observed Generation:   1
     Reason:                DatabasePauseSucceeded
     Status:                True
     Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-10-14T08:32:32Z
+    Last Transition Time:  2025-04-04T10:37:28Z
     Message:               Successfully updated PetSets Resources
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2024-10-14T08:32:37Z
+    Last Transition Time:  2025-04-04T10:37:33Z
     Message:               get pod; ConditionStatus:True; PodName:ferretdb-autoscale-0
     Observed Generation:   1
     Status:                True
     Type:                  GetPod--ferretdb-autoscale-0
-    Last Transition Time:  2024-10-14T08:32:37Z
+    Last Transition Time:  2025-04-04T10:37:33Z
     Message:               evict pod; ConditionStatus:True; PodName:ferretdb-autoscale-0
     Observed Generation:   1
     Status:                True
     Type:                  EvictPod--ferretdb-autoscale-0
-    Last Transition Time:  2024-10-14T08:32:42Z
+    Last Transition Time:  2025-04-04T10:37:38Z
     Message:               check pod running; ConditionStatus:True; PodName:ferretdb-autoscale-0
     Observed Generation:   1
     Status:                True
     Type:                  CheckPodRunning--ferretdb-autoscale-0
-    Last Transition Time:  2024-10-14T08:32:47Z
+    Last Transition Time:  2025-04-04T10:37:43Z
     Message:               Successfully Restarted Pods With Resources
     Observed Generation:   1
     Reason:                RestartPods
     Status:                True
     Type:                  RestartPods
-    Last Transition Time:  2024-10-14T08:32:48Z
+    Last Transition Time:  2025-04-04T10:37:43Z
     Message:               Successfully completed the VerticalScaling for FerretDB
     Observed Generation:   1
     Reason:                Successful
@@ -363,18 +368,19 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                                 Age    From                         Message
-  ----     ------                                                                 ----   ----                         -------
-  Normal   Starting                                                               3m7s   KubeDB Ops-manager Operator  Start processing for FerretDBOpsRequest: demo/frops-ferretdb-autoscale-5eo9wo
-  Normal   Starting                                                               3m7s   KubeDB Ops-manager Operator  Pausing FerretDB database: demo/ferretdb-autoscale
-  Normal   Successful                                                             3m7s   KubeDB Ops-manager Operator  Successfully paused FerretDB database: demo/ferretdb-autoscale for FerretDBOpsRequest: frops-ferretdb-autoscale-5eo9wo
-  Normal   UpdatePetSets                                                          3m4s   KubeDB Ops-manager Operator  Successfully updated PetSets Resources
-  Warning  get pod; ConditionStatus:True; PodName:ferretdb-autoscale-0            2m59s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:ferretdb-autoscale-0
-  Warning  evict pod; ConditionStatus:True; PodName:ferretdb-autoscale-0          2m59s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:ferretdb-autoscale-0
-  Warning  check pod running; ConditionStatus:True; PodName:ferretdb-autoscale-0  2m54s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:ferretdb-autoscale-0
-  Normal   RestartPods                                                            2m49s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
-  Normal   Starting                                                               2m49s  KubeDB Ops-manager Operator  Resuming FerretDB database: demo/ferretdb-autoscale
-  Normal   Successful                                                             2m48s  KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/ferretdb-autoscale for FerretDBOpsRequest: frops-ferretdb-autoscale-5eo9wo
+  Type     Reason                                                                 Age   From                         Message
+  ----     ------                                                                 ----  ----                         -------
+  Normal   Starting                                                               14m   KubeDB Ops-manager Operator  Start processing for FerretDBOpsRequest: demo/frops-ferretdb-autoscale-u3ro86
+  Normal   Starting                                                               14m   KubeDB Ops-manager Operator  Pausing FerretDB database: demo/ferretdb-autoscale
+  Normal   Successful                                                             14m   KubeDB Ops-manager Operator  Successfully paused FerretDB database: demo/ferretdb-autoscale for FerretDBOpsRequest: frops-ferretdb-autoscale-u3ro86
+  Normal   UpdatePetSets                                                          14m   KubeDB Ops-manager Operator  Successfully updated PetSets Resources
+  Normal   UpdatePetSets                                                          14m   KubeDB Ops-manager Operator  Successfully updated PetSets Resources
+  Warning  get pod; ConditionStatus:True; PodName:ferretdb-autoscale-0            14m   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:ferretdb-autoscale-0
+  Warning  evict pod; ConditionStatus:True; PodName:ferretdb-autoscale-0          14m   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:ferretdb-autoscale-0
+  Warning  check pod running; ConditionStatus:True; PodName:ferretdb-autoscale-0  14m   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:ferretdb-autoscale-0
+  Normal   RestartPods                                                            14m   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
+  Normal   Starting                                                               14m   KubeDB Ops-manager Operator  Resuming FerretDB database: demo/ferretdb-autoscale
+  Normal   Successful                                                             14m   KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/ferretdb-autoscale for FerretDBOpsRequest: frops-ferretdb-autoscale-u3ro86
 ```
 
 Now, we are going to verify from the Pod, and the FerretDB yaml whether the resources of the ferretdb has updated to meet up the desired state, Let's check,

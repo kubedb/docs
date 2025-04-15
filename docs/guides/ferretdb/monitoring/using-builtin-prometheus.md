@@ -49,17 +49,14 @@ metadata:
   name: builtin-prom-fr
   namespace: demo
 spec:
-  version: "1.23.0"
+  version: "2.0.0"
   storage:
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 500Mi
-  backend:
-    externallyManaged: false
   deletionPolicy: WipeOut
-  replicas: 2
   monitor:
     agent: prometheus.io/builtin
 ```
@@ -80,7 +77,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get fr -n demo builtin-prom-fr
 NAME              NAMESPACE   VERSION   STATUS   AGE
-builtin-prom-fr   demo        1.18.0    Ready    2m41s
+builtin-prom-fr   demo        2.0.0     Ready    2m41s
 ```
 
 KubeDB will create a separate stats service with name `{FerretDB crd name}-stats` for monitoring purpose.

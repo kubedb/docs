@@ -52,9 +52,6 @@ metadata:
   namespace: demo
 spec:
   version: "1.18.0"
-  replicas: 1
-  backend:
-    externallyManaged: false
   storage:
     accessModes:
       - ReadWriteOnce

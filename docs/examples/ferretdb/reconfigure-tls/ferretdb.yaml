@@ -4,13 +4,13 @@ metadata:
   name: ferretdb
   namespace: demo
 spec:
-  version: "1.18.0"
+  version: "2.0.0"
   storage:
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 500Mi
-  backend:
-    externallyManaged: false
-  replicas: 2
+  server:
+    primary:
+      replicas: 2

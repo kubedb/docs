@@ -68,7 +68,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.26"
+  version: "8.0.40"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -116,7 +116,7 @@ Check the perconaxtradb CRD status if the database is ready
 ```bash
 $ kubectl get perconaxtradb --all-namespaces
 NAMESPACE   NAME         VERSION   STATUS   AGE
-demo        sample-pxc   8.0.26    Ready    4m8s
+demo        sample-pxc   8.0.40    Ready    4m8s
 ```
 
 Once we see `Note] mysqld: ready for connections.` in the log, the database is ready.
@@ -130,7 +130,7 @@ bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 110
-Server version: 8.0.26-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
+Server version: 8.0.40-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
 
 Copyright (c) 2009-2021 Percona LLC and/or its affiliates
 Copyright (c) 2000, 2021, Oracle and/or its affiliates.

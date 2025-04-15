@@ -36,7 +36,7 @@ spec:
   databaseRef:
     name: ferretdb
   compute:
-    ferretdb:
+    primary:
       trigger: "On"
       podLifeTimeThreshold: 24h
       minAllowed:
@@ -63,6 +63,10 @@ A `FerretDBAutoscaler` object has the following fields in the `spec` section.
 ### spec.compute
 
 `spec.compute` specifies the autoscaling configuration for the compute resources i.e. cpu and memory of FerretDB components. This field consists of the following sub-field:
+- `primary` indicates autoscaling information for ferretdb primary server.
+- `secondary` indicates autoscaling information for ferretdb secondary server.
+
+On each `spec.compute.primary` or `spec.compute.secondary` field, these are the sub-field:
 
 - `trigger` indicates if compute autoscaling is enabled for this component of the ferretdb. If "On" then compute autoscaling is enabled. If "Off" then compute autoscaling is disabled.
 - `minAllowed` specifies the minimal amount of resources that will be recommended, default is no minimum.

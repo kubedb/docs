@@ -4,7 +4,7 @@ metadata:
   name: coreos-prom-px
   namespace: demo
 spec:
-  version: "8.0.26"
+  version: "8.0.40"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
