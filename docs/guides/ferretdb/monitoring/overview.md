@@ -53,10 +53,8 @@ metadata:
   name: sample-ferretdb
   namespace: databases
 spec:
-  version: "1.23.0"
+  version: "2.0.0"
   deletionPolicy: WipeOut
-  backend:
-    externallyManaged: false
   storage:
     accessModes:
       - ReadWriteOnce

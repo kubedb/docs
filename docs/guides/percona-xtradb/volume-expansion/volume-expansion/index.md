@@ -54,7 +54,7 @@ topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsum
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install topolvm from [here](https://github.com/topolvm/topolvm).
 
-Now, we are going to deploy a `PerconaXtraDB` database of 3 replicas with version `8.0.26`.
+Now, we are going to deploy a `PerconaXtraDB` database of 3 replicas with version `8.0.40`.
 
 ### Deploy PerconaXtraDB
 
@@ -67,7 +67,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.26"
+  version: "8.0.40"
   replicas: 3
   storageType: Durable
   storage:
@@ -93,7 +93,7 @@ Now, wait until `sample-pxc` has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo
 NAME             VERSION   STATUS   AGE
-sample-pxc   8.0.26    Ready    5m4s
+sample-pxc   8.0.40    Ready    5m4s
 ```
 
 Let's check volume size from petset, and from the persistent volume,

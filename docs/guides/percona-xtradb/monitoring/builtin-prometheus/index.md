@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-px
   namespace: demo
 spec:
-  version: "8.0.26"
+  version: "8.0.40"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -78,7 +78,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get perconaxtradb -n demo builtin-prom-px
 NAME              VERSION   STATUS   AGE
-builtin-prom-px   8.0.26    Ready    76s
+builtin-prom-px   8.0.40    Ready    76s
 ```
 
 KubeDB will create a separate stats service with name `{PerconaXtraDB crd name}-stats` for monitoring purpose.
