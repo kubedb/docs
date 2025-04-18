@@ -2,8 +2,8 @@
 title: MariaDB Galera Cluster Guide
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-clustering-galeracluster
-    name: MariaDB Galera Cluster Guide
+    identifier: guides-mariadb-clustering-mariadbreplication
+    name: MariaDB Standard Replication Cluster Guide
     parent: guides-mariadb-clustering
     weight: 20
 menu_name: docs_{{ .version }}
@@ -14,13 +14,13 @@ section_menu_id: guides
 
 # KubeDB - MariaDB Cluster
 
-This tutorial will show you how to use KubeDB to provision a MariaDB Galera Cluster in multi-primary mode.
+This tutorial will show you how to use KubeDB to provision a MariaDB Standard Replication in single-master mode.
 
 ## Before You Begin
 
 Before proceeding:
 
-- Read [mariadb galera cluster concept](/docs/guides/mariadb/clustering/overview) to learn about MariaDB Galera Cluster.
+- Read [mariadb standard replication](/docs/guides/mariadb/clustering/overview) to learn about MariaDB Standard Replication.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -37,7 +37,7 @@ Before proceeding:
 
 ## Deploy MariaDB Cluster
 
-The following is an example `MariaDB` object which creates a multi-master MariaDB group with three members.
+The following is an example `MariaDB` object which creates a single-master MariaDB standard replication cluster with three members.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -46,13 +46,22 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "10.6.16"
   replicas: 3
   topology:
-    mode: GaleraCluster
+    mode: MariaDBReplication
+    maxscale:
+      replicas: 3
+      enableUI: true
+      storageType: Durable
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 50Mi
   storageType: Durable
   storage:
-    storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
     resources:
@@ -70,6 +79,10 @@ Here,
 
 - `spec.replicas` is the number of nodes in the cluster.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.topology` is the replication mode.
+- `spec.topology.maxscale` is the replication mode.
+- `spec.topology.maxscale.replicas` is the replication mode.
+- `spec.topology.maxscale.enableUI` is the replication mode.
 
 KubeDB operator watches for `MariaDB` objects using Kubernetes API. When a `MariaDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for the PetSet with the name `<mariadb-object-name>-pods`.
 
@@ -80,20 +93,90 @@ kind: MariaDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"10.5.23"}}
-  creationTimestamp: "2021-03-16T09:39:01Z"
+      {"apiVersion":"kubedb.com/v1","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"storageType":"Durable","topology":{"maxscale":{"enableUI":true,"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}}},"storageType":"Durable"},"mode":"MariaDBReplication"},"version":"10.6.16"}}
+  creationTimestamp: "2025-04-08T06:42:36Z"
   finalizers:
   - kubedb.com
   generation: 2
-  managedFields:
-    ...
   name: sample-mariadb
   namespace: demo
+  resourceVersion: "781249"
+  uid: c4ff5150-6596-4238-b6ba-09a2f6078172
 spec:
+  allowedSchemas:
+    namespaces:
+      from: Same
   authSecret:
+    activeFrom: "2025-04-08T06:42:36Z"
     name: sample-mariadb-auth
+  autoOps: {}
+  deletionPolicy: WipeOut
+  healthChecker:
+    failureThreshold: 1
+    periodSeconds: 10
+    timeoutSeconds: 10
   podTemplate:
-    ...
+    controller: {}
+    metadata: {}
+    spec:
+      containers:
+      - name: mariadb
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 999
+          runAsNonRoot: true
+          runAsUser: 999
+          seccompProfile:
+            type: RuntimeDefault
+      - name: md-coordinator
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 999
+          runAsNonRoot: true
+          runAsUser: 999
+          seccompProfile:
+            type: RuntimeDefault
+      initContainers:
+      - name: mariadb-init
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 999
+          runAsNonRoot: true
+          runAsUser: 999
+          seccompProfile:
+            type: RuntimeDefault
+      podPlacementPolicy:
+        name: default
+      securityContext:
+        fsGroup: 999
+      serviceAccountName: sample-mariadb
   replicas: 3
   storage:
     accessModes:
@@ -101,35 +184,84 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: standard
   storageType: Durable
-  deletionPolicy: WipeOut
-  version: 10.5.23
+  topology:
+    maxscale:
+      enableUI: true
+      podTemplate:
+        controller: {}
+        metadata: {}
+        spec:
+          containers:
+          - name: maxscale
+            resources: {}
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              runAsUser: 997
+              seccompProfile:
+                type: RuntimeDefault
+          initContainers:
+          - name: maxscale-init
+            resources:
+              limits:
+                memory: 512Mi
+              requests:
+                cpu: 200m
+                memory: 256Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              runAsUser: 997
+              seccompProfile:
+                type: RuntimeDefault
+          podPlacementPolicy:
+            name: default
+          securityContext:
+            fsGroup: 997
+          serviceAccountName: sample-mariadb
+      replicas: 3
+      storage:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 50Mi
+      storageType: Durable
+    mode: MariaDBReplication
+  version: 10.6.16
+  wsrepSSTMethod: rsync
 status:
   conditions:
-  - lastTransitionTime: "2021-03-16T09:39:01Z"
+  - lastTransitionTime: "2025-04-08T06:42:36Z"
     message: 'The KubeDB operator has started the provisioning of MariaDB: demo/sample-mariadb'
     reason: DatabaseProvisioningStartedSuccessfully
     status: "True"
     type: ProvisioningStarted
-  - lastTransitionTime: "2021-03-16T09:40:00Z"
+  - lastTransitionTime: "2025-04-08T06:42:56Z"
     message: All desired replicas are ready.
     reason: AllReplicasReady
     status: "True"
     type: ReplicaReady
-  - lastTransitionTime: "2021-03-16T09:39:09Z"
-    message: 'The MariaDB: demo/sample-mariadb is accepting client requests.'
+  - lastTransitionTime: "2025-04-08T06:43:38Z"
+    message: database sample-mariadb/demo is accepting connection
     observedGeneration: 2
-    reason: DatabaseAcceptingConnectionRequest
+    reason: AcceptingConnection
     status: "True"
     type: AcceptingConnection
-  - lastTransitionTime: "2021-03-16T09:39:50Z"
-    message: 'The MySQL: demo/sample-mariadb is ready.'
+  - lastTransitionTime: "2025-04-08T06:44:29Z"
+    message: database sample-mariadb/demo is ready
     observedGeneration: 2
     reason: ReadinessCheckSucceeded
     status: "True"
     type: Ready
-  - lastTransitionTime: "2021-03-16T09:40:00Z"
+  - lastTransitionTime: "2025-04-08T06:44:35Z"
     message: 'The MariaDB: demo/sample-mariadb is successfully provisioned.'
     observedGeneration: 2
     reason: DatabaseSuccessfullyProvisioned
@@ -139,33 +271,49 @@ status:
   phase: Ready
 
 
-$ kubectl get sts,svc,secret,pvc,pv,pod -n demo
-NAME                              READY   AGE
-petset.apps/sample-mariadb   3/3     116m
+
+$ kubectl get petset,svc,secret,pvc,pv,pod -n demo
+NAME                                             AGE
+petset.apps.k8s.appscode.com/sample-mariadb      53s
+petset.apps.k8s.appscode.com/sample-mariadb-mx   56s
+
 
 NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-service/sample-mariadb        ClusterIP   10.97.162.171   <none>        3306/TCP   116m
-service/sample-mariadb-pods   ClusterIP   None            <none>        3306/TCP   116m
+service/sample-mariadb           ClusterIP   10.43.110.13    <none>        3306/TCP            60s
+service/sample-mariadb-mx        ClusterIP   10.43.149.170   <none>        3306/TCP,8989/TCP   60s
+service/sample-mariadb-mx-pods   ClusterIP   None            <none>        3306/TCP            60s
+service/sample-mariadb-pods      ClusterIP   None            <none>        3306/TCP            60s
+service/sample-mariadb-standby   ClusterIP   10.43.84.224    <none>        3306/TCP            60s
 
 NAME                                TYPE                                  DATA   AGE
 secret/default-token-696cj          kubernetes.io/service-account-token   3      121m
 secret/sample-mariadb-auth          kubernetes.io/basic-auth              2      116m
 secret/sample-mariadb-token-dk4dx   kubernetes.io/service-account-token   3      116m
 
-NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-sample-mariadb-0   Bound    pvc-1e259abc-5937-421a-990c-b903a83d2d8a   1Gi        RWO            standard       116m
-persistentvolumeclaim/data-sample-mariadb-1   Bound    pvc-1d0b5bcd-2699-4b87-b57b-3072ddc1027f   1Gi        RWO            standard       116m
-persistentvolumeclaim/data-sample-mariadb-2   Bound    pvc-5b85a06e-17f5-487a-9150-e928f5cf4590   1Gi        RWO            standard       116m
+NAME                                             STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-sample-mariadb-0      Bound    pvc-ce1faccf-8e33-49c6-8520-7b8bb24bb01a   1Gi        RWO            local-path     <unset>                 3m6s
+persistentvolumeclaim/data-sample-mariadb-1      Bound    pvc-2fd2d566-0a32-45d8-af0d-88a1f755ccbc   1Gi        RWO            local-path     <unset>                 3m6s
+persistentvolumeclaim/data-sample-mariadb-2      Bound    pvc-77a2cc33-4f8b-4de7-a591-acd97ceb3dce   1Gi        RWO            local-path     <unset>                 3m6s
+persistentvolumeclaim/data-sample-mariadb-mx-0   Bound    pvc-c6b54166-9c42-4211-9439-ab63fd1aae89   50Mi       RWO            local-path     <unset>                 3m9s
+persistentvolumeclaim/data-sample-mariadb-mx-1   Bound    pvc-eaec319b-33d1-4fac-8234-7eadfbad0e61   50Mi       RWO            local-path     <unset>                 3m9s
+persistentvolumeclaim/data-sample-mariadb-mx-2   Bound    pvc-733c4cde-3756-44ab-b652-17425e0e210f   50Mi       RWO            local-path     <unset>                 3m9s
 
-NAME                                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS   REASON   AGE
-persistentvolume/pvc-1d0b5bcd-2699-4b87-b57b-3072ddc1027f   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-1   standard                116m
-persistentvolume/pvc-1e259abc-5937-421a-990c-b903a83d2d8a   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-0   standard                116m
-persistentvolume/pvc-5b85a06e-17f5-487a-9150-e928f5cf4590   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-2   standard                116m
+NAME                                                        CAPACITY    ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   REASON   AGE
+persistentvolume/pvc-1d0b5bcd-2699-4b87-b57b-3072ddc1027f   1Gi         RWO            Delete           Bound    demo/data-sample-mariadb-1      local-path              116m
+persistentvolume/pvc-1e259abc-5937-421a-990c-b903a83d2d8a   1Gi         RWO            Delete           Bound    demo/data-sample-mariadb-0      local-path              116m
+persistentvolume/pvc-5b85a06e-17f5-487a-9150-e928f5cf4590   1Gi         RWO            Delete           Bound    demo/data-sample-mariadb-2      local-path              116m
+persistentvolume/pvc-c6b54166-9c42-4211-9439-ab63fd1aae89   50Mi        RWO            Delete           Bound    demo/data-sample-mariadb-mx-0   local-path              116m
+persistentvolume/pvc-c6b54166-9c42-4211-9439-ab63fd1aae89   50Mi        RWO            Delete           Bound    demo/data-sample-mariadb-mx-1   local-path              116m
+persistentvolume/pvc-eaec319b-33d1-4fac-8234-7eadfbad0e61   50Mi        RWO            Delete           Bound    demo/data-sample-mariadb-mx-2   local-path              116m
 
 NAME                   READY   STATUS    RESTARTS   AGE
-pod/sample-mariadb-0   1/1     Running   0          116m
-pod/sample-mariadb-1   1/1     Running   0          116m
-pod/sample-mariadb-2   1/1     Running   0          116m
+pod/sample-mariadb-0      2/2     Running   0          3m6s
+pod/sample-mariadb-1      2/2     Running   0          3m6s
+pod/sample-mariadb-2      2/2     Running   0          3m6s
+pod/sample-mariadb-mx-0   1/1     Running   0          3m9s
+pod/sample-mariadb-mx-1   1/1     Running   0          3m9s
+pod/sample-mariadb-mx-2   1/1     Running   0          3m9s
+
 ```
 
 ## Connect with MariaDB database
@@ -175,7 +323,7 @@ Once the database is in running state we can conncet to each of three nodes. We 
 ```bash
 # First Node
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 26
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -198,7 +346,7 @@ Bye
 
 # Second Node
 $ kubectl exec -it -n demo sample-mariadb-1 -- bash
-root@sample-mariadb-1:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-1:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 94
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -221,7 +369,7 @@ Bye
 
 # Third Node
 $ kubectl exec -it -n demo sample-mariadb-2 -- bash
-root@sample-mariadb-2:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-2:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 78
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -248,7 +396,7 @@ Now, we are ready to check newly created cluster status. Connect and run the fol
 
 ```bash
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 137
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -274,7 +422,7 @@ In a MariaDB Galera Cluster, Each member can read and write. In this section, we
 
 ```bash
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 202
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -308,7 +456,7 @@ Bye
 root@sample-mariadb-0:/ exit
 exit
 ~ $ kubectl exec -it -n demo sample-mariadb-1 -- bash
-root@sample-mariadb-1:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-1:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 209
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -345,7 +493,7 @@ Bye
 root@sample-mariadb-1:/ exit
 exit
 ~ $ kubectl exec -it -n demo sample-mariadb-2 -- bash
-root@sample-mariadb-2:/  mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-2:/  mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 209
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -383,7 +531,7 @@ To test automatic failover, we will force the one of three pods to restart and c
 
 ```bash
 kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 11
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -414,7 +562,7 @@ pod "sample-mariadb-0" deleted
 
 # Wait for sample-mariadb-0 to restart
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 10
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
