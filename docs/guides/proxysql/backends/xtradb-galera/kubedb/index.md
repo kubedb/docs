@@ -3,7 +3,7 @@ title: Proxy KubeDB Percona XtraDB Galera Cluster With KubeDB ProxySQL
 menu:
   docs_{{ .version }}:
     identifier: kubedb-percona-xtradb
-    name: KubeDB Percona XtraDB Galera Cluster
+    name: KubeDB Managed
     parent: percona-xtradb-backend
     weight: 10
 menu_name: docs_{{ .version }}
@@ -33,9 +33,9 @@ namespace/demo created
 
 ## Prepare PerconaXtraDB Backend 
 
-In this tutorial we are going to set up ProxySQL using KubeDB for a PerconaXtraDB Galera Cluster. We will use KubeDB to set up our PerconaXtraDB servers. 
+In this tutorial, we are going to set up ProxySQL using KubeDB for a PerconaXtraDB Galera Cluster. We will use KubeDB to set up our PerconaXtraDB servers. 
 
-We need to apply the following yaml to create our PerconaXtraDB Galera Cluster
+We need to apply the following YAML to create our PerconaXtraDB Galera Cluster
 `Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `kubedb.com/v1alpha2` apiVersion.
 
 ```yaml
@@ -132,7 +132,7 @@ metadata:
 spec:
   version: "2.6.3-debian"
   replicas: 3
-  syncUsers: true
+  syncUsers: false
   backend:
     name: xtradb-galera
   deletionPolicy: WipeOut
@@ -190,7 +190,7 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 ProxySQLAdmin > 
 ```
 
-Let's check the mysql_galera_hostgroups and mysql_servers table first. We didn't set it from the yaml. The KubeDB operator will do that for us.
+Let's check the mysql_galera_hostgroups and mysql_servers table first. We didn't set it from the YAML. The KubeDB operator will do that for us.
 
 ```bash
 ProxySQLAdmin > select * from mysql_galera_hostgroups;
@@ -238,6 +238,14 @@ Here we can see that all the nodes of our PerconaXtraDB Galera cluster has been 
 Let's check the mysql_users table. 
 
 ```bash
+ProxySQLAdmin > INSERT INTO mysql_users (username, password, active, default_hostgroup, backend, frontend, transaction_persistent) 
+             VALUES ('test', 'pass', 1, 2, 1, 1, 1);
+Query OK, 1 row affected (0.001 sec)
+ProxySQLAdmin > LOAD MYSQL USERS TO RUNTIME;
+Query OK, 0 rows affected (0.001 sec)
+
+ProxySQLAdmin > SAVE MYSQL USERS TO DISK;
+Query OK, 0 rows affected (0.049 sec)
 ProxySQLAdmin > select username from mysql_users;
 +----------+
 | username |
@@ -368,4 +376,4 @@ We can see that the read-write split is successfully executed in the ProxySQL se
 
 ## Conclusion 
 
-In this tutorial we have seen basic version of KubeDB ProxySQL. KubeDB provides many more for ProxySQL. In this site we have discussed on lots of other features like `TLS Secured ProxySQL` , `Declarative Configuration` , `MySQL and MariaDB Backend` , `Reconfigure` and much more. Checkout out other docs to learn more. 
+In this tutorial, we have seen a basic version of KubeDB ProxySQL. KubeDB provides many more for ProxySQL. In this site we have discussed on lots of other features like `TLS Secured ProxySQL` , `Declarative Configuration` , `MySQL and MariaDB Backend` , `Reconfigure` and much more. Checkout out other docs to learn more. 

@@ -3,7 +3,7 @@ title: Proxy Percona XtraDB Galera cluster With KubeDB ProxySQL
 menu:
   docs_{{ .version }}:
     identifier: external-percona-xtradb-galera
-    name: External Percona XtraDB Galera Cluster
+    name: External
     parent: percona-xtradb-backend
     weight: 20
 menu_name: docs_{{ .version }}

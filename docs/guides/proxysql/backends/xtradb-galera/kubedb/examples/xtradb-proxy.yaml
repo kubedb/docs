@@ -6,7 +6,7 @@ metadata:
 spec:
   version: "2.6.3-debian"
   replicas: 3
-  syncUsers: true
+  syncUsers: false
   backend:
     name: xtradb-galera
   deletionPolicy: WipeOut
