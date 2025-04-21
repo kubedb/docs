@@ -392,31 +392,27 @@ Bye
 
 ## Check the Cluster Status
 
-Now, we are ready to check newly created cluster status. Connect and run the following commands from any of the hosts and you will get the same result, that is the cluster size is three.
+Now, we are ready to check newly created cluster status. Connect to maxscale pod and run the following commands from any of the maxscale pod and you will get the same result.
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
-Welcome to the MariaDB monitor.  Commands end with ; or \g.
-Your MariaDB connection id is 137
-Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
+$ kubectl exec -it -n demo sample-mariadb-mx-0 -- bash
+bash-4.4$ maxctrl list servers
+┌─────────┬─────────────────────────────────────────────────────────────┬──────┬─────────────┬─────────────────┬─────────┬────────────────────┐
+│ Server  │ Address                                                     │ Port │ Connections │ State           │ GTID    │ Monitor            │
+├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
+│ server1 │ sample-mariadb-0.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Master, Running │ 0-1-125 │ ReplicationMonitor │
+├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
+│ server2 │ sample-mariadb-1.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-125 │ ReplicationMonitor │
+├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
+│ server3 │ sample-mariadb-2.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-125 │ ReplicationMonitor │
+└─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴─────────┴────────────────────┘
 
-Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-MariaDB [(none)]> show status like 'wsrep_cluster_size';
-+--------------------+-------+
-| Variable_name      | Value |
-+--------------------+-------+
-| wsrep_cluster_size | 3     |
-+--------------------+-------+
-1 row in set (0.001 sec)
 ```
 
 ## Data Availability
 
-In a MariaDB Galera Cluster, Each member can read and write. In this section, we will insert data from any nodes, and we will see whether we can get the data from every other members.
+In a MariaDB Replication Cluster, Only master member can read and write, and slave member can only read. In this section, we will insert data from master node, and we will see whether we can get the data from every other slave members.
+`sample-mariadb-0` is the master node in our case.
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
@@ -473,21 +469,6 @@ MariaDB [(none)]> SELECT * FROM playground.equipment;
 |  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
 1 row in set (0.001 sec)
-
-#Insert data into node 2
-MariaDB [(none)]> INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 4, 'red');
-Query OK, 1 row affected (0.032 sec)
-
-# Read data from Node 2 after insertion
-MariaDB [(none)]> SELECT * FROM playground.equipment;
-+----+-------+-------+-------+
-| id | type  | quant | color |
-+----+-------+-------+-------+
-|  1 | slide |     2 | blue  |
-|  5 | slide |     4 | red   |
-+----+-------+-------+-------+
-2 rows in set (0.000 sec)
-
 MariaDB [(none)]> quit;
 Bye
 root@sample-mariadb-1:/ exit
@@ -512,8 +493,6 @@ MariaDB [(none)]> SELECT * FROM playground.equipment;
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
-|  5 | slide |     4 | red   |
-|  6 | slide |     4 | red   |
 +----+-------+-------+-------+
 3 rows in set (0.000 sec)
 
@@ -525,7 +504,7 @@ exit
 
 ## Automatic Failover
 
-To test automatic failover, we will force the one of three pods to restart and check if it can rejoin the cluster.
+To test automatic failover, we will force the master pods to restart and check if it can switch the master and rejoin the cluster.
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
@@ -546,8 +525,6 @@ MariaDB [(none)]> SELECT * FROM playground.equipment;
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
-|  5 | slide |     4 | red   |
-|  6 | slide |     4 | red   |
 +----+-------+-------+-------+
 3 rows in set (0.002 sec)
 
@@ -555,6 +532,8 @@ MariaDB [(none)]> quit;
 Bye
 root@sample-mariadb-0:/ exit
 exit
+
+Now exec into 
 
 # Forcefully delete Node 1
 ~ $ kubectl delete pod -n demo sample-mariadb-0
@@ -577,19 +556,8 @@ MariaDB [(none)]> SELECT * FROM playground.equipment;
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
-|  5 | slide |     4 | red   |
-|  6 | slide |     4 | red   |
 +----+-------+-------+-------+
 3 rows in set (0.002 sec)
-
-# Check cluster size
-MariaDB [(none)]> show status like 'wsrep_cluster_size';
-+--------------------+-------+
-| Variable_name      | Value |
-+--------------------+-------+
-| wsrep_cluster_size | 3     |
-+--------------------+-------+
-1 row in set (0.002 sec)
 
 MariaDB [(none)]> quit
 Bye
