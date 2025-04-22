@@ -1,5 +1,5 @@
 ---
-title: Proxy Percona XtraDB Galera cluster With KubeDB ProxySQL
+title: Proxy External Percona XtraDB Galera With KubeDB ProxySQL
 menu:
   docs_{{ .version }}:
     identifier: external-percona-xtradb-galera
@@ -20,7 +20,7 @@ This guide will show you how to use `KubeDB` operator to set up `ProxySQL` for e
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [ProxySQL](/docs/guides/proxysql/concepts/proxysql/index.md)

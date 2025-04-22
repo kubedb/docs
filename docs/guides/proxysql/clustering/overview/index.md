@@ -16,9 +16,9 @@ section_menu_id: guides
 
 Here we'll discuss some concepts about ProxySQL Cluster.
 
-## So What is Replication
+## So What is Replication?
 
-Replication means there are multiple proxy server who are doing proxy with the traffic and all necessary configuration in all the nodes are same and in sync always. Change in any server configuration will eventually propagate to all other nodes and will behave the same. One can read or write in any server of the cluster. The following figure shows a cluster of four ProxySQL servers:
+Replication means there are multiple proxy servers who are doing proxy with the traffic, and all necessary configurations in all the nodes are same and in sync always. Change in any server configuration will eventually propagate to all other nodes and will behave the same. One can read or write in any server of the cluster. The following figure shows a cluster of four ProxySQL servers:
 
 ![ProxySQL Cluster](/docs/guides/proxysql/clustering/overview/images/proxy-cluster.png)
 
@@ -29,7 +29,7 @@ Replication means there are multiple proxy server who are doing proxy with the t
 - Read and write through any cluster node
 - Cluster failover recovery
 - Enhanced in performance than standalone proxy server
-- Load balance in ProxySQL end
+- Load balance in the ProxySQL end
 
 
 ## Next Steps

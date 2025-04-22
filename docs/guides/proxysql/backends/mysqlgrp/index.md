@@ -7,6 +7,7 @@ menu:
     parent: proxysql-backends
     weight: 10
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
@@ -126,7 +127,7 @@ mysql> exit
 Bye
 ```
 
-This output is from the performance_schema.replication_group_members table in MySQL shows the status of nodes in a Group Replication (GR) setup.
+This output from the performance_schema.replication_group_members table in MySQL shows the status of nodes in a Group Replication (GR) setup.
 We have 3 nodes in your MySQL Group Replication cluster. All 3 nodes are ONLINE – they are healthy and actively participating in replication. mysql-server-0 is the PRIMARY node – it's the one accepting write queries. And mysql-server-1 and mysql-server-2 are SECONDARY – they receive updates from the primary but are read-only.
 
 Now we are ready to deploy and test our ProxySQL server. 
@@ -361,4 +362,4 @@ We can see that the read-write split is successfully executed in the ProxySQL se
 
 ## Conclusion 
 
-In this tutorial we have seen basic version of KubeDB ProxySQL. KubeDB provides many more for ProxySQL. In this site we have discussed on lots of other features like `TLS Secured ProxySQL` , `Declarative Configuration` , `MariaDB and Percona-XtraDB Backend` , `Reconfigure` and much more. Checkout out other docs to learn more. 
+In this tutorial, we have seen a basic version of KubeDB ProxySQL. KubeDB provides many more for ProxySQL. In this site we have discussed on lots of other features like `TLS Secured ProxySQL` , `Declarative Configuration` , `MariaDB and Percona-XtraDB Backend` , `Reconfigure` and much more. Checkout out other docs to learn more. 
