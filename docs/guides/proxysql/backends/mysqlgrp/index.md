@@ -19,7 +19,7 @@ This guide will show you how to use `KubeDB` operator to set up a `ProxySQL` ser
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [ProxySQL](/docs/guides/proxysql/concepts/proxysql/index.md)
@@ -293,9 +293,6 @@ Reading package lists... Done
 Now let's try to connect with the ProxySQL server through the `mysql-proxy` service as the `test` user. 
 
 ```bash
-root@ubuntu-bb47d8d6c-7wndq:/# mysql -utest -ppass -hproxy-server.demo.svc -P6033
-mysql: [Warning] Using a password on the command line interface can be insecure.
-ERROR 2005 (HY000): Unknown MySQL server host 'proxy-server.demo.svc' (-2)
 root@ubuntu-bb47d8d6c-7wndq:/# mysql -utest -ppass -hmysql-proxy.demo.svc -P6033
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.

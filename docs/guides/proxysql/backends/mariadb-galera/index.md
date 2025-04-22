@@ -19,7 +19,7 @@ This guide will show you how to use `KubeDB` operator to set up a `ProxySQL` ser
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [ProxySQL](/docs/guides/proxysql/concepts/proxysql/index.md)
@@ -225,7 +225,7 @@ ProxySQLAdmin > select * from runtime_mysql_servers;
 8 rows in set (0.002 sec)
 ```
 
-Here we can see that all the nodes of our MariaDB Galera cluster has been set to the writer(hg:2) hostgroup and to the reader(hg:3) hostgroup. Since `max_writers` is set to `1`, only `mariadb-galera-2` is `ONLINE` from  hostgroup 2, other nodes are `SHUNNED`.
+Here we can see that all the nodes of our MariaDB Galera cluster have been set to the writer(hg:2) hostgroup and to the reader(hg:3) hostgroup. Since `max_writers` is set to `1`, only `mariadb-galera-2` is `ONLINE` from hostgroup 2, other two Galera nodes are placed into the writer(hg:2) hostgroup but marked `SHUNNED` because only one writer is permitted.
 
 Let's check the mysql_users table. 
 
@@ -360,4 +360,4 @@ We can see that the read-write split is successfully executed in the ProxySQL se
 
 ## Conclusion 
 
-In this tutorial we have seen basic version of KubeDB ProxySQL. KubeDB provides many more for ProxySQL. In this site we have discussed on lots of other features like `TLS Secured ProxySQL` , `Declarative Configuration` , `MySQL and Percona-XtraDB Backend` , `Reconfigure` and much more. Checkout out other docs to learn more. 
+In this tutorial, we have seen a basic version of KubeDB ProxySQL. KubeDB provides many more for ProxySQL. In this site we have discussed on lots of other features like `TLS Secured ProxySQL` , `Declarative Configuration` , `MySQL and Percona-XtraDB Backend` , `Reconfigure` and much more. Checkout out other docs to learn more. 
