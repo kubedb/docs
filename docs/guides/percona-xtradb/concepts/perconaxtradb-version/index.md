@@ -41,14 +41,14 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2022.12.13-rc.0
     helm.sh/chart: kubedb-catalog-v2022.12.13-rc.0
-  name: 8.0.26
+  name: 8.0.40
   resourceVersion: "1611"
   uid: 38161f93-0501-4caf-98a5-4d8d168951ca
 spec:
   coordinator:
     image: kubedb/percona-xtradb-coordinator:v0.3.0-rc.0
   db:
-    image: percona/percona-xtradb-cluster:8.0.26
+    image: percona/percona-xtradb-cluster:8.0.40
   exporter:
     image: prom/mysqld-exporter:v0.13.0
   initContainer:
@@ -61,7 +61,7 @@ spec:
         name: perconaxtradb-backup-5.7
       restoreTask:
         name: perconaxtradb-restore-5.7
-  version: 8.0.26
+  version: 8.0.40
 ```
 
 ### metadata.name

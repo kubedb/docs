@@ -49,7 +49,7 @@ spec:
   secret:
     name: sample-pxc-auth
   type: kubedb.com/perconaxtradb
-  version: 8.0.26
+  version: 8.0.40
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

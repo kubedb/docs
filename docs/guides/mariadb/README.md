@@ -19,11 +19,12 @@ aliases:
 ## Supported MariaDB Features
 
 | Features                                                | Availability |
-| ------------------------------------------------------- | :----------: |
+|---------------------------------------------------------| :----------: |
 | Clustering                                              |   &#10003;   |
 | Persistent Volume                                       |   &#10003;   |
 | Instant Backup                                          |   &#10003;   |
 | Scheduled Backup                                        |   &#10003;   |
+| Continuous Archiving using `wal-g`                      |   &#10003;   |
 | Initialize using Snapshot                               |   &#10003;   |
 | Initialize using Script (\*.sql, \*sql.gz and/or \*.sh) |   &#10003;   |
 | Custom Configuration                                    |   &#10003;   |

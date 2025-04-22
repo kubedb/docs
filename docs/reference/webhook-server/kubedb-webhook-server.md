@@ -20,10 +20,8 @@ aliases:
 ### Options
 
 ```
-      --bypass-validating-webhook-xray        if true, bypasses validating webhook xray checks
       --default-seccomp-profile-type string   Default seccomp profile
   -h, --help                                  help for kubedb-webhook-server
-      --use-kubeapiserver-fqdn-for-aks        if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 (default true)
 ```
 
 ### SEE ALSO

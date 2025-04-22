@@ -7,7 +7,7 @@ spec:
   databaseRef:
     name: ferretdb-autoscale
   compute:
-    ferretdb:
+    primary:
       trigger: "On"
       podLifeTimeThreshold: 5m
       resourceDiffPercentage: 20

@@ -53,7 +53,10 @@ spec:
   databaseRef:
     name: ferretdb
   horizontalScaling:
-    node: 3
+    primary:
+      replicas: 3
+    secondary:
+      replicas: 3
 ```
 
 **Sample `FerretDBOpsRequest` Objects for Vertical Scaling:**
@@ -69,7 +72,7 @@ spec:
   databaseRef:
     name: ferretdb
   verticalScaling:
-    node:
+    primary:
       resources:
         requests:
           memory: "1200Mi"
@@ -167,13 +170,15 @@ If you want to update your FerretDB version, you have to specify the `spec.updat
 
 If you want to scale-up or scale-down your FerretDB cluster or different components of it, you have to specify `spec.horizontalScaling` section. This field consists of the following sub-field:
 
-- `spec.horizontalScaling.node` indicates the desired number of pods for FerretDB cluster after scaling. For example, if your cluster currently has 4 pods, and you want to add additional 2 pods then you have to specify 6 in `spec.horizontalScaling.node` field. Similarly, if you want to remove one pod from the cluster, you have to specify 3 in `spec.horizontalScaling.node` field.
+- `spec.horizontalScaling.primary.replicas` indicates the desired number of primary pods for FerretDB cluster after scaling. For example, if your cluster currently has 4 pods, and you want to add additional 2 pods then you have to specify 6 in `spec.horizontalScaling.node` field. Similarly, if you want to remove one pod from the cluster, you have to specify 3 in `spec.horizontalScaling.node` field.
+- `spec.horizontalScaling.secondary.replicas` indicates the desired number of secondary pods for FerretDB cluster after scaling. For example, if your cluster currently has 4 pods, and you want to add additional 2 pods then you have to specify 6 in `spec.horizontalScaling.node` field. Similarly, if you want to remove one pod from the cluster, you have to specify 3 in `spec.horizontalScaling.node` field.
 
 ### spec.verticalScaling
 
 `spec.verticalScaling` is a required field specifying the information of `FerretDB` resources like `cpu`, `memory` etc. that will be scaled. This field consists of the following sub-fields:
 
-- `spec.verticalScaling.node` indicates the desired resources for PetSet of FerretDB after scaling.
+- `spec.verticalScaling.primary` indicates the desired resources for PetSet of FerretDB primary server after scaling.
+- `spec.verticalScaling.secondary` indicates the desired resources for PetSet of FerretDB secondary server after scaling.
 
 It has the below structure:
 

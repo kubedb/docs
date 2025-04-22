@@ -29,7 +29,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 ```bash
 $ kubectl get perconaxtradbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
 NAME     VERSION   DB_IMAGE                                EXPORTER_IMAGE                 INITCONTAINER_IMAGE                DEPRECATED
-8.0.26   8.0.26    percona/percona-xtradb-cluster:8.0.26   prom/mysqld-exporter:v0.13.0   kubedb/percona-xtradb-init:0.2.0   <none>
+8.0.40   8.0.40    percona/percona-xtradb-cluster:8.0.40   prom/mysqld-exporter:v0.13.0   kubedb/percona-xtradb-init:0.2.0   <none>
 8.0.28   8.0.28    percona/percona-xtradb-cluster:8.0.28   prom/mysqld-exporter:v0.13.0   kubedb/percona-xtradb-init:0.2.0   <none>
 ```
 
@@ -45,17 +45,17 @@ Docker hub repositories:
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: PerconaXtraDBVersion
   metadata:
-    name: 8.0.26
+    name: 8.0.40
   spec:
     db:
-      image: PRIVATE_REGISTRY/mysql:8.0.26
+      image: PRIVATE_REGISTRY/mysql:8.0.40
     exporter:
       image: PRIVATE_REGISTRY/mysqld-exporter:v0.11.0
     initContainer:
       image: PRIVATE_REGISTRY/busybox
     podSecurityPolicies:
       databasePolicyName: perconaxtra-db
-    version: 8.0.26
+    version: 8.0.40
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -100,7 +100,7 @@ metadata:
   name: px-pvt-reg
   namespace: demo
 spec:
-  version: "8.0.26"
+  version: "8.0.40"
   storage:
     storageClassName: "standard"
     accessModes:

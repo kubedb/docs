@@ -484,7 +484,7 @@ persistentvolumeclaim/datadir-mgo-quickstart-2   Bound    pvc-2e6dfb71-056b-4186
 
 ## Resume Halted Database
 
-Now, to resume the database, i.e. to get the same database setup back again, you have to set the the `spec.halted` as false. You can use the below command.
+Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
 $ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"halted":false}}' --type="merge"

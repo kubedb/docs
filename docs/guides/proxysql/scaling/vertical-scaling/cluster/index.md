@@ -133,7 +133,7 @@ $ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resour
 }
 ```
 
-You can see the Pod has the default resources which is assigned by Kubedb operator.
+You can see the Pod has the default resources which is assigned by KubeDB operator.
 
 We are now ready to apply the `ProxySQLOpsRequest` CR to update the resources of this server.
 

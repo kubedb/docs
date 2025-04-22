@@ -42,7 +42,7 @@ Here, we are going to deploy a `PerconaXtraDB` Cluster using a supported version
 
 #### Deploy PerconaXtraDB Cluster
 
-In this section, we are going to deploy a PerconaXtraDB Cluster with version `8.0.26`. Then, in the next section we will set up autoscaling for this database using `PerconaXtraDBAutoscaler` CRD. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
+In this section, we are going to deploy a PerconaXtraDB Cluster with version `8.0.40`. Then, in the next section we will set up autoscaling for this database using `PerconaXtraDBAutoscaler` CRD. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
 > If you want to autoscale PerconaXtraDB `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
@@ -52,7 +52,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.26"
+  version: "8.0.40"
   replicas: 3
   storageType: Durable
   storage:
@@ -88,7 +88,7 @@ Now, wait until `sample-pxc` has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo
 NAME             VERSION   STATUS   AGE
-sample-pxc       8.0.26    Ready    14m
+sample-pxc       8.0.40    Ready    14m
 ```
 
 Let's check the Pod containers resources,
