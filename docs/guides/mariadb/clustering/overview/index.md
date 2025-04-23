@@ -56,6 +56,9 @@ MariaDB Standard Replication is a widely used mechanism for copying data from on
 
 Ref: [About MariadDB Standard Replication](https://mariadb.com/kb/en/replication-overview/#standard-replication)
 
+![MariaDB Standard Replication Cluster](/docs/guides/mariadb/clustering/overview/images/mariadb-standard-replication.png)
+
+
 ## MariaDB Standard Replication Cluster Features
 
 - Asynchronous Replication
@@ -66,15 +69,27 @@ Ref: [About MariadDB Standard Replication](https://mariadb.com/kb/en/replication
 - Binary Log-Based replication
 - Direct client connections, native MariaDB look & feel
 - Load Balance using Maxscale Proxy Server
-- Read Write Split using maxscale Proxy Server
+- Read Write Split using Maxscale Proxy Server
 
-Ref: [What is MariaDB Standard Replication Cluster?](https://mariadb.com/kb/en/what-is-mariadb-galera-cluster/#features)
+### MariaDB Maxscale Proxy Server
+MariaDB MaxScale is a tool that acts as a middleman between your applications and MariaDB Server databases. It helps improve the database's availability, ability to handle more users, and security. It also makes it easier for developers by separating the application from the database setup.
 
-### Limitations
+MaxScale has a flexible design that supports add-ons (plugins) to do more than just basic load balancing. For example, it can act as a database firewall to protect your data. It comes with built-in plugins for routing queries, filtering data, and supporting different protocols. You can set up MaxScale to direct database requests or modify responses based on your needs, such as hiding sensitive information or spreading read requests across multiple servers to handle more traffic.
 
-There are some limitations in MariaDB Galera Cluster that are listed [here](https://mariadb.com/kb/en/mariadb-galera-cluster-known-limitations/).
+One of its key features is auto failover, which ensures your database remains available even if a primary server fails. Auto failover automatically detects a failed primary node, promotes a replica to take its place, and redirects traffic to the new primary, minimizing downtime and keeping your applications running smoothly.
 
 
-## Next Steps
+### How Auto Failover Works with MaxScale
+MaxScale uses a monitor (like the MariaDB-Monitor plugin) to track the health of database nodes in a replication setup (e.g. MariaDB master-replica). If the primary node becomes unavailable—due to a crash, network issue, or maintenance—
 
+MaxScale:
+- Detects the Failure: The monitor(ReplicationMonitor) continuously checks node status (using MySQL pings or status variables).
+- Selects a New Primary: It identifies the most suitable replica based on criteria like replication lag or server state.
+- Promotes the Replica: MaxScale executes commands to promote the chosen replica to primary (e.g. STOP SLAVE; RESET SLAVE ALL;).
+- Reconfigures Replicas: Other replicas are updated to replicate from the new primary.
+- Redirects Traffic: MaxScale’s router (RW-Split-Router) seamlessly directs write queries to the new primary and read queries to replicas.
+
+This process happens automatically, typically within seconds, ensuring minimal disruption.
+
+# Next Steps 
 - [Deploy MariaDB Galera Cluster](/docs/guides/mariadb/clustering/galera-cluster) using KubeDB.

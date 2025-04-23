@@ -20,11 +20,11 @@ This tutorial will show you how to use KubeDB to provision a MariaDB Standard Re
 
 Before proceeding:
 
-- Read [mariadb standard replication](/docs/guides/mariadb/clustering/overview) to learn about MariaDB Standard Replication.
+- Read [this](/docs/guides/mariadb/clustering/overview/#mariadb-standard-replication) to learn about MariaDB Standard Replication.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
@@ -77,12 +77,12 @@ mariadb.kubedb.com/sample-mariadb created
 
 Here,
 
-- `spec.replicas` is the number of nodes in the cluster.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.topology` is the replication mode.
-- `spec.topology.maxscale` is the replication mode.
-- `spec.topology.maxscale.replicas` is the replication mode.
-- `spec.topology.maxscale.enableUI` is the replication mode.
+- `spec.replicas` Defines the number of MariaDB pods (instances) in the cluster.
+- `spec.storage` Specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.topology` Configures the database topology and associated components.
+- `spec.topology.maxscale` Specifies the Maxscale proxy server configuration.
+- `spec.topology.maxscale.replicas` Defines the number of MaxScale replicas in the petset managed by the KubeDB Operator.
+- `spec.topology.maxscale.enableUI` A boolean parameter (e.g. true or false) that controls whether the MaxScale GUI (accessible via the REST API) is enabled for the MaxScale instance.
 
 KubeDB operator watches for `MariaDB` objects using Kubernetes API. When a `MariaDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for the PetSet with the name `<mariadb-object-name>-pods`.
 
@@ -236,7 +236,6 @@ spec:
       storageType: Durable
     mode: MariaDBReplication
   version: 10.6.16
-  wsrepSSTMethod: rsync
 status:
   conditions:
   - lastTransitionTime: "2025-04-08T06:42:36Z"
@@ -320,10 +319,41 @@ pod/sample-mariadb-mx-2   1/1     Running   0          3m9s
 
 Once the database is in running state we can conncet to each of three nodes. We will use login credentials `MYSQL_ROOT_USERNAME` and `MYSQL_ROOT_PASSWORD` saved as container's environment variable.
 
+## Create a Test User
+We recommend using a non-root user for production environments. The root user has extensive privileges, which can pose security risks. Therefore, it is advisable to create a dedicated user with appropriate permissions for production use.
+
+```bash
+kubectl exec -it -n demo svc/sample-mariadb -- bash
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 11
+Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+# create user
+MariaDB [(none)]> CREATE USER 'testuser'@'%' IDENTIFIED BY 'testpassword';
+Query OK, 0 rows affected (0.001 sec)
+
+# Grant all privileges to the user on all databases
+MariaDB [(none)]> GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, SHOW DATABASES ON *.* TO 'testuser'@'%' WITH GRANT OPTION;
+Query OK, 0 rows affected (0.002 sec)
+
+MariaDB [(none)]> FLUSH PRIVILEGES;
+Query OK, 0 rows affected (0.000 sec)
+
+MariaDB [(none)]> quit;
+Bye
+root@sample-mariadb-0:/ exit
+exit
+```
+
 ```bash
 # First Node
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+$ kubectl exec -it -n demo svc/sample-mariadb -- bash
+root@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 26
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -345,8 +375,8 @@ Bye
 
 
 # Second Node
-$ kubectl exec -it -n demo sample-mariadb-1 -- bash
-root@sample-mariadb-1:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+$ kubectl exec -it -n demo svc/sample-mariadb-standby -- bash
+root@sample-mariadb-1:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 94
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -369,7 +399,7 @@ Bye
 
 # Third Node
 $ kubectl exec -it -n demo sample-mariadb-2 -- bash
-root@sample-mariadb-2:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-2:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 78
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -411,14 +441,14 @@ bash-4.4$ maxctrl list servers
 
 ## Data Availability
 
-In a MariaDB Replication Cluster, Only master member can read and write, and slave member can only read. In this section, we will insert data from master node, and we will see whether we can get the data from every other slave members.
+In a MariaDB Replication Cluster, Only master member can write, and slave member can read. In this section, we will insert data from master node, and we will see whether we can get the data from every other slave members.
 `sample-mariadb-0` is the master node in our case.
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
 ```bash
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 202
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -452,7 +482,7 @@ Bye
 root@sample-mariadb-0:/ exit
 exit
 ~ $ kubectl exec -it -n demo sample-mariadb-1 -- bash
-root@sample-mariadb-1:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-1:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 209
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -474,7 +504,7 @@ Bye
 root@sample-mariadb-1:/ exit
 exit
 ~ $ kubectl exec -it -n demo sample-mariadb-2 -- bash
-root@sample-mariadb-2:/  mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-2:/  mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 209
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -510,7 +540,7 @@ To test automatic failover, we will force the master pods to restart and check i
 
 ```bash
 kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 11
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -570,7 +600,7 @@ All replica is up and working now.
 
 # Now check `sample-mariadb-0` data
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 10
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -593,6 +623,14 @@ Bye
 
 
 ```
+
+
+
+
+## Checking proxy and read-write split of Maxscale
+
+
+
 
 ## Cleaning up
 
