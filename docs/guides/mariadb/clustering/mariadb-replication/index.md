@@ -620,17 +620,190 @@ MariaDB [(none)]> SELECT * FROM playground.equipment;
 
 MariaDB [(none)]> quit
 Bye
+```
+## Checking Proxy and Read-Write Split using Maxscale
 
 
+To test the traffic routing through the ProxySQL server let's first create a pod with ubuntu base image in it. We will use the following yaml.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ubuntu
+  name: ubuntu
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ubuntu
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: ubuntu
+    spec:
+      containers:
+        - image: ubuntu
+          imagePullPolicy: IfNotPresent
+          name: ubuntu
+          command: ["/bin/sleep", "3650d"]
+          resources: {}
 ```
 
+Let's apply the yaml.
+
+```yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/mariadb-replication/examples/ubuntu.yaml
+deployment.apps/ubuntu created
+```
+
+Let's exec into the pod and install mariadb-client.
+
+```bash
+$ kubectl exec -it -n demo pod/ubuntu-bb47d8d6c-4vhjv -- bash                12:00
+root@ubuntu-bb47d8d6c-4vhjv:/# apt update
+... ... ..
+root@ubuntu-bb47d8d6c-4vhjv:/# apt install mariadb-client -y
+Reading package lists... Done
+... .. ...
+root@ubuntu-bb47d8d6c-4vhjv:/#
+```
+
+Now let's try to connect with the Maxscale Proxy server through the `sample-mariadb-mx` service as the `testuser` user.
+
+```bash
+root@ubuntu-bb47d8d6c-4vhjv:/# mariadb -utestuser -ptestpassword -hsample-mariadb-mx.demo -P3306
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 1
+Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> 
+```
+
+We are successfully connected as the `testuser` user. Let's run some read/write query on this connection.
+
+```bash
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| kubedb_system      |
+| mysql              |
+| performance_schema |
+| playground         |
+| sys                |
++--------------------+
+5 rows in set (0.001 sec)
+
+MariaDB [(none)]> use playground;
+Database changed
+
+MariaDB [playground]> show tables;
++----------------------+
+| Tables_in_playground |
++----------------------+
+| equipment            |
++----------------------+
+1 row in set (0.001 sec)
+
+mysql> INSERT INTO equipment (type, quant, color) VALUES ('pot', 2, 'black');
+Query OK, 1 row affected (0.01 sec)
 
 
+MariaDB [playground]> select * from equipment;
++----+-------+-------+-------+
+| id | type  | quant | color |
++----+-------+-------+-------+
+|  1 | slide |     2 | blue  |
+|  2 | pot   |     2 | black |
++----+-------+-------+-------+
+2 rows in set (0.001 sec)
 
-## Checking proxy and read-write split of Maxscale
 
+#Currently our server status is-
+➤ kubectl exec -it -n demo pod/sample-mariadb-mx-0 -- bash
+Defaulted container "maxscale" out of: maxscale, maxscale-init (init)
+bash-4.4$ maxctrl list servers
+┌─────────┬─────────────────────────────────────────────────────────────┬──────┬─────────────┬─────────────────┬───────────┬────────────────────┐
+│ Server  │ Address                                                     │ Port │ Connections │ State           │ GTID      │ Monitor            │
+├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼───────────┼────────────────────┤
+│ server1 │ sample-mariadb-0.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 1           │ Slave, Running  │ 0-2-52054 │ ReplicationMonitor │
+├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼───────────┼────────────────────┤
+│ server2 │ sample-mariadb-1.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 1           │ Master, Running │ 0-2-52054 │ ReplicationMonitor │
+├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼───────────┼────────────────────┤
+│ server3 │ sample-mariadb-2.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 1           │ Slave, Running  │ 0-2-52054 │ ReplicationMonitor │
+└─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴───────────┴────────────────────┘
 
+#Now check read-write split
 
+MariaDB [playground]> SELECT NOW(),@@hostname;
++---------------------+------------------+
+| NOW()               | @@hostname       |
++---------------------+------------------+
+| 2025-04-24 13:11:06 | sample-mariadb-0 |
++---------------------+------------------+
+1 row in set (0.000 sec)
+
+MariaDB [playground]> SELECT NOW(),@@hostname;
++---------------------+------------------+
+| NOW()               | @@hostname       |
++---------------------+------------------+
+| 2025-04-24 13:11:31 | sample-mariadb-2 |
++---------------------+------------------+
+1 row in set (0.000 sec)
+
+MariaDB [playground]> SELECT NOW(),@@hostname;
++---------------------+------------------+
+| NOW()               | @@hostname       |
++---------------------+------------------+
+| 2025-04-24 13:12:00 | sample-mariadb-1 |
++---------------------+------------------+
+1 row in set (0.000 sec)
+
+#note: read/write both operation can be run on master node 
+
+#now check write split
+MariaDB [playground]> CREATE DATABASE IF NOT EXISTS test_db;
+Query OK, 1 row affected (0.001 sec)
+
+MariaDB [playground]> CREATE TABLE test_db.t1 (id INT, hostname VARCHAR(100));
+Query OK, 0 rows affected (0.009 sec)
+
+MariaDB [playground]> INSERT INTO test_db.t1 (id, hostname) VALUES (1, @@hostname);
+Query OK, 1 row affected (0.002 sec)
+
+MariaDB [playground]> INSERT INTO test_db.t1 (id, hostname) VALUES (2, @@hostname);
+Query OK, 1 row affected (0.002 sec)
+
+MariaDB [playground]> INSERT INTO test_db.t1 (id, hostname) VALUES (3, @@hostname);
+Query OK, 1 row affected (0.002 sec)
+
+MariaDB [playground]> INSERT INTO test_db.t1 (id, hostname) VALUES (4, @@hostname);
+Query OK, 1 row affected (0.002 sec)
+
+MariaDB [playground]> SELECT * FROM test_db.t1;
++------+------------------+
+| id   | hostname         |
++------+------------------+
+|    1 | sample-mariadb-1 |
+|    2 | sample-mariadb-1 |
+|    3 | sample-mariadb-1 |
+|    4 | sample-mariadb-1 |
++------+------------------+
+4 rows in set (0.001 sec)
+
+# write query is only running on master node.
+```
+
+We can see the queries are successfully executed through the Maxscale Proxy server and read write split is working as expected.
 
 ## Cleaning up
 
@@ -642,3 +815,15 @@ mariadb.kubedb.com "sample-mariadb" deleted
 $ kubectl delete ns demo
 namespace "demo" deleted
 ```
+
+
+
+
+
+
+
+
+
+
+
+
