@@ -14,13 +14,16 @@ section_menu_id: guides
 
 # MariaDB Clustering
 
-KubeDB currently supports two cluster modes: Multi-Master MariaDB Galera Cluster and Master-Slave MariaDB Standard Replication.
+KubeDB supports two primary clustering modes for MariaDB: Multi-Master MariaDB Galera Cluster and Master-Slave MariaDB Standard Replication. Below, we explore key concepts of these clustering approaches, highlighting their mechanisms, benefits, and use cases in a distributed database environment.
 
-Here we'll discuss some concepts about Cluster.
+Below, we explore key concepts of MariaDB clustering, focusing on the two clustering modes supported by KubeDB: Multi-Master MariaDB Galera Cluster and Master-Slave MariaDB Standard Replication
 
-## So What is Replication
+## What is Replication
 
-Replication involves copying data from one MariaDB server to one or more other MariaDB servers, rather than storing it on a single server. The replication mode determines read and write capabilities. In a multi-master setup, you can perform read and write operations on any server. In a master and slave architecture, read and write operations are supported on the master host, while slave hosts support only read operations.
+Replication in MariaDB involves duplicating data from one MariaDB server (the source) to one or more other MariaDB servers (replicas), rather than storing it on a single server. This process enhances data availability, scalability, and fault tolerance. The replication mode determines the read and write capabilities of each server in the cluster. MariaDB supports two primary replication architectures: multi-master and master-slave.
+
+- Multi-Master Replication: In a multi-master setup, every server in the cluster can handle both read and write operations. This architecture, exemplified by the MariaDB Galera Cluster, ensures high availability and scalability by allowing applications to distribute workloads across all nodes.
+- Master-Slave Replication: In a master-slave architecture, the master server supports both read and write operations, while slave servers are limited to read operations. This setup is ideal for read-heavy workloads, with slaves providing scalability for queries and serving as backups.
 
 The following figure shows a cluster of four MariaDB servers of multi-master replication:
 
@@ -52,7 +55,7 @@ There are some limitations in MariaDB Galera Cluster that are listed [here](http
 
 ## MariaDB Standard Replication
 
-MariaDB Standard Replication is a widely used mechanism for copying data from one MariaDB server (the master) to one or more other MariaDB servers (the slaves). This replication mode ensures data redundancy, enhances availability, and supports read scalability by distributing read operations across multiple servers. It operates in a single-master and slave architecture, where the master server handles both read and write operations, while slave servers are limited to read operations.
+MariaDB Standard Replication is a widely used mechanism for copying data from one MariaDB server (master) to one or more other MariaDB servers (slave). This replication mode ensures data redundancy, enhances availability, and supports read scalability by distributing read operations across multiple servers. It operates in a single-master and slave architecture, where the master server handles both read and write operations, while slave servers are limited to read operations.
 
 Ref: [About MariadDB Standard Replication](https://mariadb.com/kb/en/replication-overview/#standard-replication)
 
@@ -65,7 +68,7 @@ Ref: [About MariadDB Standard Replication](https://mariadb.com/kb/en/replication
 - Active-passive single-master topology
 - Read and write to master, and read only to slave node
 - Automatic node joining
-- Automatic failover using maxscale proxy
+- Automatic failover using Maxscale Proxy Server
 - Binary Log-Based replication
 - Direct client connections, native MariaDB look & feel
 - Load Balance using Maxscale Proxy Server

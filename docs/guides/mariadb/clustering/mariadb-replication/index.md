@@ -315,16 +315,38 @@ pod/sample-mariadb-mx-2   1/1     Running   0          3m9s
 
 ```
 
+## Check the Cluster Status
+
+Now, we are ready to check newly created cluster status. Connect to maxscale pod and run the following commands from any of the maxscale pod and you will get the same result.
+
+```bash
+$ kubectl exec -it -n demo svc/sample-mariadb-mx -- bash
+bash-4.4$ maxctrl list servers
+┌─────────┬─────────────────────────────────────────────────────────────┬──────┬─────────────┬─────────────────┬─────────┬────────────────────┐
+│ Server  │ Address                                                     │ Port │ Connections │ State           │ GTID    │ Monitor            │
+├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
+│ server1 │ sample-mariadb-0.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Master, Running │ 0-1-125 │ ReplicationMonitor │
+├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
+│ server2 │ sample-mariadb-1.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-125 │ ReplicationMonitor │
+├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
+│ server3 │ sample-mariadb-2.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-125 │ ReplicationMonitor │
+└─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴─────────┴────────────────────┘
+
+```
+
 ## Connect with MariaDB database
 
 Once the database is in running state we can conncet to each of three nodes. We will use login credentials `MYSQL_ROOT_USERNAME` and `MYSQL_ROOT_PASSWORD` saved as container's environment variable.
 
 ## Create a Test User
+
+Writing to a slave replica may result in a binary log (binlog) conflict issue. Initially the slave replica are in read only mode. But user with super privileges can still write the database of read only mode.  The root user possesses superuser privileges, enabling them to modify a database even in read-only mode.
+
 We recommend using a non-root user for production environments. The root user has extensive privileges, which can pose security risks. Therefore, it is advisable to create a dedicated user with appropriate permissions for production use.
 
 ```bash
-kubectl exec -it -n demo svc/sample-mariadb -- bash
-root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+$ kubectl exec -it -n demo svc/sample-mariadb -- bash
+mysql@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 11
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -346,14 +368,15 @@ Query OK, 0 rows affected (0.000 sec)
 
 MariaDB [(none)]> quit;
 Bye
-root@sample-mariadb-0:/ exit
+mysql@sample-mariadb-0:/ exit
 exit
 ```
+## Check Connectivity using Test User
 
 ```bash
-# First Node
+# Master Node
 $ kubectl exec -it -n demo svc/sample-mariadb -- bash
-root@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
+mysql@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 26
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -373,10 +396,9 @@ MariaDB [(none)]> SELECT 1;
 MariaDB [(none)]> quit;
 Bye
 
-
-# Second Node
+# Slave Node
 $ kubectl exec -it -n demo svc/sample-mariadb-standby -- bash
-root@sample-mariadb-1:/ mariadb -utestuser -ptestpassword
+mysql@sample-mariadb-1:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 94
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -396,50 +418,11 @@ MariaDB [(none)]> SELECT 1;
 MariaDB [(none)]> quit;
 Bye
 
-
-# Third Node
-$ kubectl exec -it -n demo sample-mariadb-2 -- bash
-root@sample-mariadb-2:/ mariadb -utestuser -ptestpassword
-Welcome to the MariaDB monitor.  Commands end with ; or \g.
-Your MariaDB connection id is 78
-Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
-
-Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-MariaDB [(none)]> SELECT 1;
-+---+
-| 1 |
-+---+
-| 1 |
-+---+
-1 row in set (0.000 sec)
-
 MariaDB [(none)]> quit;
 Bye
 ```
 
-## Check the Cluster Status
-
-Now, we are ready to check newly created cluster status. Connect to maxscale pod and run the following commands from any of the maxscale pod and you will get the same result.
-
-```bash
-$ kubectl exec -it -n demo sample-mariadb-mx-0 -- bash
-bash-4.4$ maxctrl list servers
-┌─────────┬─────────────────────────────────────────────────────────────┬──────┬─────────────┬─────────────────┬─────────┬────────────────────┐
-│ Server  │ Address                                                     │ Port │ Connections │ State           │ GTID    │ Monitor            │
-├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
-│ server1 │ sample-mariadb-0.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Master, Running │ 0-1-125 │ ReplicationMonitor │
-├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
-│ server2 │ sample-mariadb-1.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-125 │ ReplicationMonitor │
-├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
-│ server3 │ sample-mariadb-2.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-125 │ ReplicationMonitor │
-└─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴─────────┴────────────────────┘
-
-```
-
-## Data Availability
+## Insert Data and Check Availability
 
 In a MariaDB Replication Cluster, Only master member can write, and slave member can read. In this section, we will insert data from master node, and we will see whether we can get the data from every other slave members.
 `sample-mariadb-0` is the master node in our case.
@@ -447,8 +430,9 @@ In a MariaDB Replication Cluster, Only master member can write, and slave member
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
 ```bash
+# master node
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
+mysql@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 202
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -479,10 +463,13 @@ MariaDB [(none)]> SELECT * FROM playground.equipment;
 
 MariaDB [(none)]> quit;
 Bye
-root@sample-mariadb-0:/ exit
+mysql@sample-mariadb-0:/ exit
 exit
-~ $ kubectl exec -it -n demo sample-mariadb-1 -- bash
-root@sample-mariadb-1:/ mariadb -utestuser -ptestpassword
+
+# check slave node data
+
+$ kubectl exec -it -n demo sample-mariadb-1 -- bash
+mysql@sample-mariadb-1:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 209
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -501,10 +488,10 @@ MariaDB [(none)]> SELECT * FROM playground.equipment;
 1 row in set (0.001 sec)
 MariaDB [(none)]> quit;
 Bye
-root@sample-mariadb-1:/ exit
+mysql@sample-mariadb-1:/ exit
 exit
 ~ $ kubectl exec -it -n demo sample-mariadb-2 -- bash
-root@sample-mariadb-2:/  mariadb -utestuser -ptestpassword
+mysql@sample-mariadb-2:/  mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 209
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -512,10 +499,6 @@ Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distrib
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-# Insert data into Node 3
-MariaDB [(none)]> INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 4, 'red');
-Query OK, 1 row affected (0.005 sec)
 
 # Read data from Node 3
 MariaDB [(none)]> SELECT * FROM playground.equipment;
@@ -528,7 +511,7 @@ MariaDB [(none)]> SELECT * FROM playground.equipment;
 
 MariaDB [(none)]> quit
 Bye
-root@sample-mariadb-2:/# exit
+mysql@sample-mariadb-2:/# exit
 exit
 ```
 
@@ -539,37 +522,13 @@ To test automatic failover, we will force the master pods to restart and check i
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
 ```bash
-kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
-Welcome to the MariaDB monitor.  Commands end with ; or \g.
-Your MariaDB connection id is 11
-Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
-
-Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-# Check current data
-MariaDB [(none)]> SELECT * FROM playground.equipment;
-+----+-------+-------+-------+
-| id | type  | quant | color |
-+----+-------+-------+-------+
-|  1 | slide |     2 | blue  |
-+----+-------+-------+-------+
-3 rows in set (0.002 sec)
-
-MariaDB [(none)]> quit;
-Bye
-root@sample-mariadb-0:/ exit
-exit
-
-# Forcefully delete Node 1
+# Forcefully delete master node
 ~ $ kubectl delete pod -n demo sample-mariadb-0
 pod "sample-mariadb-0" deleted
 
-Now exec into `sample-mariadb-mx-0` and run the following command to check the server status and ensure the failover is working.
+Now exec into maxscale server and run the following command to check the server status and ensure the failover is working.
 
-$ kubectl exec -it -n demo sample-mariadb-mx-0 -- bash
+$ kubectl exec -it -n demo svc/sample-mariadb-mx -- bash
 Defaulted container "maxscale" out of: maxscale, maxscale-init (init)
 bash-4.4$ maxctrl list servers
 ┌─────────┬─────────────────────────────────────────────────────────────┬──────┬─────────────┬─────────────────┬───────────┬────────────────────┐
@@ -583,7 +542,7 @@ bash-4.4$ maxctrl list servers
 └─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴───────────┴────────────────────┘
 
 # sample-mariadb-1 is new master.
-# Wait some times to up sample-mariadb-0 and check the server list again
+# Wait some time to up sample-mariadb-0 and check the server list again
 
 bash-4.4$ maxctrl list servers
 ┌─────────┬─────────────────────────────────────────────────────────────┬──────┬─────────────┬─────────────────┬───────────┬────────────────────┐
@@ -596,11 +555,11 @@ bash-4.4$ maxctrl list servers
 │ server3 │ sample-mariadb-2.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-2-14551 │ ReplicationMonitor │
 └─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴───────────┴────────────────────┘
 
-All replica is up and working now.
+All replicas up and srunning now.
 
 # Now check `sample-mariadb-0` data
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
+mysql@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 10
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -664,18 +623,18 @@ Let's exec into the pod and install mariadb-client.
 
 ```bash
 $ kubectl exec -it -n demo pod/ubuntu-bb47d8d6c-4vhjv -- bash                12:00
-root@ubuntu-bb47d8d6c-4vhjv:/# apt update
+mysql@ubuntu-bb47d8d6c-4vhjv:/# apt update
 ... ... ..
-root@ubuntu-bb47d8d6c-4vhjv:/# apt install mariadb-client -y
+mysql@ubuntu-bb47d8d6c-4vhjv:/# apt install mariadb-client -y
 Reading package lists... Done
 ... .. ...
-root@ubuntu-bb47d8d6c-4vhjv:/#
+mysql@ubuntu-bb47d8d6c-4vhjv:/#
 ```
 
 Now let's try to connect with the Maxscale Proxy server through the `sample-mariadb-mx` service as the `testuser` user.
 
 ```bash
-root@ubuntu-bb47d8d6c-4vhjv:/# mariadb -utestuser -ptestpassword -hsample-mariadb-mx.demo -P3306
+mysql@ubuntu-bb47d8d6c-4vhjv:/# mariadb -utestuser -ptestpassword -hsample-mariadb-mx.demo -P3306
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 1
 Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
@@ -687,7 +646,7 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 MariaDB [(none)]> 
 ```
 
-We are successfully connected as the `testuser` user. Let's run some read/write query on this connection.
+We have successfully connected as the `testuser` user. Let's execute some read and write queries using this connection.
 
 ```bash
 MariaDB [(none)]> show databases;
@@ -701,7 +660,7 @@ MariaDB [(none)]> show databases;
 | playground         |
 | sys                |
 +--------------------+
-5 rows in set (0.001 sec)
+6 rows in set (0.001 sec)
 
 MariaDB [(none)]> use playground;
 Database changed
@@ -728,7 +687,7 @@ MariaDB [playground]> select * from equipment;
 2 rows in set (0.001 sec)
 
 
-#Currently our server status is-
+# Currently our server state is -
 ➤ kubectl exec -it -n demo pod/sample-mariadb-mx-0 -- bash
 Defaulted container "maxscale" out of: maxscale, maxscale-init (init)
 bash-4.4$ maxctrl list servers
@@ -742,13 +701,13 @@ bash-4.4$ maxctrl list servers
 │ server3 │ sample-mariadb-2.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 1           │ Slave, Running  │ 0-2-52054 │ ReplicationMonitor │
 └─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴───────────┴────────────────────┘
 
-#Now check read-write split
+# Now lets check read-write split
 
 MariaDB [playground]> SELECT NOW(),@@hostname;
 +---------------------+------------------+
 | NOW()               | @@hostname       |
 +---------------------+------------------+
-| 2025-04-24 13:11:06 | sample-mariadb-0 |
+| 2025-04-24 13:11:06 | sample-mariadb-2 |
 +---------------------+------------------+
 1 row in set (0.000 sec)
 
@@ -764,13 +723,15 @@ MariaDB [playground]> SELECT NOW(),@@hostname;
 +---------------------+------------------+
 | NOW()               | @@hostname       |
 +---------------------+------------------+
-| 2025-04-24 13:12:00 | sample-mariadb-1 |
+| 2025-04-24 13:12:00 | sample-mariadb-0 |
 +---------------------+------------------+
 1 row in set (0.000 sec)
 
-#note: read/write both operation can be run on master node 
+# Read queries are executed on the slave replica
+# FYI: Both read and write operations can be executed on the master node.
 
-#now check write split
+# Now, let's check the write split.
+
 MariaDB [playground]> CREATE DATABASE IF NOT EXISTS test_db;
 Query OK, 1 row affected (0.001 sec)
 
@@ -800,18 +761,39 @@ MariaDB [playground]> SELECT * FROM test_db.t1;
 +------+------------------+
 4 rows in set (0.001 sec)
 
-# write query is only running on master node.
+# Write queries are executed only on the master node.
+```
+We can see the queries are successfully executed through the Maxscale Proxy server and read write split is working as expected.
+
+## Access and Explore the MaxScale UI
+To enable the MaxScale UI, set `spec.topology.maxscale.enableUI: true` in the configuration. The MaxScale UI runs on port 8989. To access it, use the following kubectl command to forward the port:
+
+```bash
+➤ kubectl port-forward -n demo service/sample-mariadb-mx 8989:8989
+Forwarding from 127.0.0.1:8989 -> 8989
+Forwarding from [::1]:8989 -> 8989
 ```
 
-We can see the queries are successfully executed through the Maxscale Proxy server and read write split is working as expected.
+The MaxScale UI is accessible at http://127.0.0.1:8989.
+
+Use the default credentials to log in:
+- Username: admin
+- Password: mariadb
+
+After logging in, you will be greeted by an intuitive dashboard showcasing servers list and current node state.
+
+![Maxscale Dashboard](/docs/guides/mariadb/clustering/mariadb-replication/examples/maxscale-homepage.png)
+
 
 ## Cleaning up
 
-Clean what we created in this tutorial.
+Let's clean up what we created in this tutorial.
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
+$ kubectl delete mariadb.kubedb.com -n demo sample-mariadb
 mariadb.kubedb.com "sample-mariadb" deleted
+➤ kubectl delete -n demo deployment.apps/ubuntu
+deployment.apps "ubuntu" deleted
 $ kubectl delete ns demo
 namespace "demo" deleted
 ```
