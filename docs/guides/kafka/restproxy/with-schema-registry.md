@@ -44,7 +44,6 @@ When you install the KubeDB operator, it registers a CRD named [SchemaRegistryVe
 ```bash
 $ kubectl get ksrversion
 
-NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
 NAME           VERSION   DISTRIBUTION   REGISTRY_IMAGE                                     DEPRECATED   AGE
 2.5.11.final   2.5.11    Apicurio       apicurio/apicurio-registry-kafkasql:2.5.11.Final                3d
 3.15.0         3.15.0    Aiven          ghcr.io/aiven-open/karapace:3.15.0                              3d
