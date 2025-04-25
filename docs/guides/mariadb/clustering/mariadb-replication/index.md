@@ -334,7 +334,7 @@ bash-4.4$ maxctrl list servers
 
 ```
 
-## Connect with MariaDB database
+## Connecting to MariaDB Database
 
 Once the database is in running state we can conncet to each of three nodes. We will use login credentials `MYSQL_ROOT_USERNAME` and `MYSQL_ROOT_PASSWORD` saved as container's environment variable.
 
@@ -792,7 +792,7 @@ Let's clean up what we created in this tutorial.
 ```bash
 $ kubectl delete mariadb.kubedb.com -n demo sample-mariadb
 mariadb.kubedb.com "sample-mariadb" deleted
-➤ kubectl delete -n demo deployment.apps/ubuntu
+$ kubectl delete -n demo deployment.apps/ubuntu
 deployment.apps "ubuntu" deleted
 $ kubectl delete ns demo
 namespace "demo" deleted
