@@ -91,17 +91,8 @@ $ kubectl get mariadb -n demo sample-mariadb -o yaml
 apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"storageType":"Durable","topology":{"maxscale":{"enableUI":true,"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}}},"storageType":"Durable"},"mode":"MariaDBReplication"},"version":"10.6.16"}}
-  creationTimestamp: "2025-04-08T06:42:36Z"
-  finalizers:
-  - kubedb.com
-  generation: 2
   name: sample-mariadb
   namespace: demo
-  resourceVersion: "781249"
-  uid: c4ff5150-6596-4238-b6ba-09a2f6078172
 spec:
   allowedSchemas:
     namespaces:
@@ -109,15 +100,12 @@ spec:
   authSecret:
     activeFrom: "2025-04-08T06:42:36Z"
     name: sample-mariadb-auth
-  autoOps: {}
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10
     timeoutSeconds: 10
   podTemplate:
-    controller: {}
-    metadata: {}
     spec:
       containers:
       - name: mariadb
@@ -189,12 +177,9 @@ spec:
     maxscale:
       enableUI: true
       podTemplate:
-        controller: {}
-        metadata: {}
         spec:
           containers:
           - name: maxscale
-            resources: {}
             securityContext:
               allowPrivilegeEscalation: false
               capabilities:
@@ -238,34 +223,7 @@ spec:
   version: 10.6.16
 status:
   conditions:
-  - lastTransitionTime: "2025-04-08T06:42:36Z"
-    message: 'The KubeDB operator has started the provisioning of MariaDB: demo/sample-mariadb'
-    reason: DatabaseProvisioningStartedSuccessfully
-    status: "True"
-    type: ProvisioningStarted
-  - lastTransitionTime: "2025-04-08T06:42:56Z"
-    message: All desired replicas are ready.
-    reason: AllReplicasReady
-    status: "True"
-    type: ReplicaReady
-  - lastTransitionTime: "2025-04-08T06:43:38Z"
-    message: database sample-mariadb/demo is accepting connection
-    observedGeneration: 2
-    reason: AcceptingConnection
-    status: "True"
-    type: AcceptingConnection
-  - lastTransitionTime: "2025-04-08T06:44:29Z"
-    message: database sample-mariadb/demo is ready
-    observedGeneration: 2
-    reason: ReadinessCheckSucceeded
-    status: "True"
-    type: Ready
-  - lastTransitionTime: "2025-04-08T06:44:35Z"
-    message: 'The MariaDB: demo/sample-mariadb is successfully provisioned.'
-    observedGeneration: 2
-    reason: DatabaseSuccessfullyProvisioned
-    status: "True"
-    type: Provisioned
+  ...
   observedGeneration: 2
   phase: Ready
 
