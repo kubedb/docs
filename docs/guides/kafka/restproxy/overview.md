@@ -39,7 +39,7 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [examples/kafka/restproxy/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/restproxy) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Schema Registry. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/restproxy/overview.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed RestProxy. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/restproxy/overview.md#tips-for-testing).
 
 ## Find Available RestProxy Versions
 
@@ -62,7 +62,7 @@ In this tutorial, we will use `3.15.0` SchemaRegistryVersion CR to create a Kafk
 
 ## Create a Kafka RestProxy
 
-The KubeDB operator implements a RestProxy CRD to define the specification of SchemaRegistry.
+The KubeDB operator implements a RestProxy CRD to define the specification of RestProxy.
 
 The RestProxy instance used for this tutorial:
 
