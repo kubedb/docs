@@ -14,17 +14,17 @@ section_menu_id: guides
 
 # KubeDB - MariaDB Cluster
 
-This tutorial will show you how to use KubeDB to provision a MariaDB replication group in single-primary mode.
+This tutorial will show you how to use KubeDB to provision a MariaDB Galera Cluster in multi-primary mode.
 
 ## Before You Begin
 
 Before proceeding:
 
-- Read [mariadb galera cluster concept](/docs/guides/mariadb/clustering/overview) to learn about MariaDB Group Replication.
+- Read [mariadb galera cluster concept](/docs/guides/mariadb/clustering/overview) to learn about MariaDB Galera Cluster.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
@@ -48,6 +48,8 @@ metadata:
 spec:
   version: "10.5.23"
   replicas: 3
+  topology:
+    mode: GaleraCluster
   storageType: Durable
   storage:
     storageClassName: "standard"
