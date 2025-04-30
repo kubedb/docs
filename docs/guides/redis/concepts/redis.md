@@ -35,7 +35,7 @@ spec:
   mode: Cluster
   cluster:
     shards: 3
-    replicas: 1
+    replicas: 2
   disableAuth: false
   authSecret:
     name: redis1-auth

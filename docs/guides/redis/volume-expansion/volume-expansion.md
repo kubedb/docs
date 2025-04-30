@@ -71,7 +71,7 @@ spec:
   mode: Cluster
   cluster:
     shards: 3
-    replicas: 1
+    replicas: 2
   storageType: Durable
   storage:
     storageClassName: "topolvm-provisioner"
