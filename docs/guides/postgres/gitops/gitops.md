@@ -1,10 +1,10 @@
 ---
-title: Monitor PostgreSQL using Prometheus Operator
+title: GitOps PostgreSQL
 menu:
   docs_{{ .version }}:
-    identifier: pg-using-prometheus-operator-monitoring
-    name: Prometheus Operator
-    parent: pg-monitoring-postgres
+    identifier: pg-using-gitops
+    name: GitOps PostgreSQL
+    parent: pg-gitops-postgres
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,17 +12,17 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Monitoring PostgreSQL Using Prometheus operator
+# GitOps Postgres using KubeDB GitOps Operator
 
-[Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor PostgreSQL database deployed with KubeDB.
+This guide will show you how to use `KubeDB` GitOps operator to create postgres database and manage updates using GitOps workflow.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/postgres/monitoring/overview.md).
+- Install `KubeDB` operator in your cluster following the steps [here](/docs/setup/README.md).  Pass `--set kubedb-crd-manager.installGitOpsCRDs=true` in the kubedb installation process to enable `GitOps` operator. 
 
-- To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
+- You need to install GitOps tools like `ArgoCD` or `FluxCD` and configure with your Git Repository to monitor the Git repository and synchronize the state of the Kubernetes cluster with the desired state defined in Git.
 
   ```bash
   $ kubectl create ns monitoring
