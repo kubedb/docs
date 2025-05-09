@@ -15,100 +15,30 @@ section_menu_id: guides
 
 # GitOps Overview for PostgreSQL
 
-This guide will give you an overview of how KubeDB gitops operator works with PostgreSQL databases using the `gitops.kubedb.com/v1alpha1` API. It will help you understand the GitOps workflow for managing PostgreSQL databases in Kubernetes.
+This guide will give you an overview of how KubeDB `gitops` operator works with PostgreSQL databases using the `gitops.kubedb.com/v1alpha1` API. It will help you understand the GitOps workflow for managing PostgreSQL databases in Kubernetes.
 
-What is GitOps for PostgreSQL?
+## Before You Begin
 
-GitOps is a practice that uses Git as the single source of truth for managing PostgreSQL databases in Kubernetes. With KubeDB’s GitOps support, you define your PostgreSQL database configuration in a Git repository, and a GitOps operator automatically applies and maintains it in your cluster.
+- You should be familiar with the following `KubeDB` concepts:
+    - [Postgres](/docs/guides/postgres/concepts/postgres.md)
+    - [PostgresOpsRequest](/docs/guides/postgres/concepts/opsrequest.md)
+    - GitOps [Postgres](/docs/guides/postgres/concepts/postgres-gitops.md)
 
-How It Works
+## Workflow GitOps with PostgreSQL
 
+The following diagram shows how the `KubeDB` GitOps Operator used to sync with your database. Open the image in a new tab to see the enlarged version.
 
+<figure align="center">
+  <img alt="GitOps Flow" src="/docs/images/gitops/gitops.png">
+<figcaption align="center">Fig: GitOps process of Postgres</figcaption>
+</figure>
 
-
-
-Define PostgreSQL Configuration:
-
-
-
-
-
-You create a Custom Resource (CR) of kind PostgresGitOps using the gitops.kubedb.com/v1alpha1 API.
-
-
-
-This CR mirrors the specs of a standard KubeDB PostgreSQL CR (e.g., version, replicas, storage).
-
-
-
-Store in Git:
-
-
-
-
-
-Commit the PostgresGitOps CR to a Git repository managed by a GitOps tool like ArgoCD or FluxCD.
-
-
-
-Automated Deployment:
-
-
-
-
-
-The KubeDB GitOps operator detects the PostgresGitOps CR in Git.
-
-
-
-It creates a corresponding KubeDB Postgres CR in the Kubernetes cluster to deploy the database.
-
-
-
-Handle Updates:
-
-
-
-
-
-When you update the PostgresGitOps CR (e.g., change version, resources, or configs), the operator notices the change.
-
-
-
-Instead of directly modifying the Postgres CR, it generates an Ops Request to safely apply the update, ensuring stability.
-
-
-
-Continuous Sync:
-
-
-
-
-
-The GitOps tool (ArgoCD/FluxCD) continuously monitors the Git repository.
-
-
-
-It ensures the cluster’s state matches the desired state in Git, correcting any drift.
-
-Benefits
-
-
-
-
-
-Simplified Management: Update databases by editing Git files—no manual Ops Requests needed.
-
-
-
-Automation: The GitOps operator handles CR creation and Ops Requests automatically.
-
-
-
-Consistency: Git ensures versioned, auditable changes.
-
-
-
-Team Collaboration: Pull requests enable reviews and teamwork.
+1. **Define GitOps Postgres**: Create Custom Resource (CR) of kind `Postgres` using the `gitops.kubedb.com/v1alpha1` API.
+2. **Store in Git**: Push the CR to a Git repository.
+3. **Automated Deployment**: Use a GitOps tool (like `ArgoCD` or `FluxCD`) to monitor the Git repository and synchronize the state of the Kubernetes cluster with the desired state defined in Git.
+4. **Create Database**: The GitOps operator creates a corresponding KubeDB Postgres CR in the Kubernetes cluster to deploy the database.
+5. **Handle Updates**: When you update the PostgresGitOps CR, the operator generates an Ops Request to safely apply the update(e.g. `VerticalScaling`, `HorizontalScaling`, `VolumeExapnsion`, `Reconfigure`, `RotateAuth`, `ReconfigureTLS`, `VersionUpdate`, ans `Restart`.
 
 This flow makes managing PostgreSQL databases efficient, reliable, and fully integrated with GitOps practices.
+
+In the next doc, we are going to show a step by step guide on running postgres using GitOps.
