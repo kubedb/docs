@@ -12,17 +12,17 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Postgres
+# Postgres(`gitops.kubedb.com/v1alpha1`)
 
-## What is gitops.kubedb.com Postgres
+## What is `gitops.kubedb.com` Postgres
 
 `Postgres` is a Kubernetes `Custom Resource Definitions` (CRD) which is under the `gitops.kubedb.com/v1alpha1` API group. It provides the same specification as the standard KubeDB [`Postgres`](/docs/guides/postgres/concepts/postgres.md) CRD, but is designed to work with GitOps workflows. This allows you to manage your PostgreSQL databases using GitOps principles, where the desired state of your database is stored in a Git repository.
- You only need to describe the desired database configuration in a `gitops` Postgres obgitopsject through GitOps tools like ArgoCD or FluxCD. The GitOps tool will monitor the Git repository for changes, and when a change is detected, it will apply the changes to your Kubernetes cluster. This means you don't have to manually create or update the database configuration in your cluster; instead, you just update the Git repository with the desired state of your database configuration
+ You only need to describe the desired database configuration in a `gitops` Postgres object through GitOps tools like ArgoCD or FluxCD. The GitOps tool will monitor the Git repository for changes, and when a change is detected, it will apply the changes to your Kubernetes cluster and create necessary [OpsRequest](/docs/guides/postgres/concepts/opsrequest.md). This means you don't have to manually create or update the database configuration in your cluster; instead, you just update the Git repository with the desired state of your database configuration
 , and the KubeDB gitops operator will create/update standard Kubernetes database [objects](/docs/guides/postgres/concepts/postgres.md) in the desired state for you.
 
 ## Postgres Spec
 
-As with all other Kubernetes objects, a Postgres needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section.
+As with all other Kubernetes objects, a gitops `Postgres` needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section.
 This object reflects the same specification as the standard KubeDB [`Postgres`](/docs/guides/postgres/concepts/postgres.md) CRD. The `Postgres` CRD is used to create and manage PostgreSQL databases in Kubernetes.
 Below is an example Postgres object.
 
@@ -117,42 +117,74 @@ spec:
 `spec.version` is a required field that specifies the name of the [PostgresVersion](/docs/guides/postgres/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PostgresVersion` resources,
 
 ```bash
-$ kubectl get pgversion
-NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
-10.2       10.2      kubedb/postgres:10.2       true         44m
-10.2-v1    10.2      kubedb/postgres:10.2-v2    true         44m
-10.2-v2    10.2      kubedb/postgres:10.2-v3                 44m
-10.2-v3    10.2      kubedb/postgres:10.2-v4                 44m
-10.2-v4    10.2      kubedb/postgres:10.2-v5                 44m
-10.2-v5    10.2      kubedb/postgres:10.2-v6                 44m
-10.6       10.6      kubedb/postgres:10.6                    44m
-10.6-v1    10.6      kubedb/postgres:10.6-v1                 44m
-10.6-v2    10.6      kubedb/postgres:10.6-v2                 44m
-10.6-v3    10.6      kubedb/postgres:10.6-v3                 44m
-11.1       11.1      kubedb/postgres:11.1                    44m
-11.1-v1    11.1      kubedb/postgres:11.1-v1                 44m
-11.1-v2    11.1      kubedb/postgres:11.1-v2                 44m
-11.1-v3    11.1      kubedb/postgres:11.1-v3                 44m
-11.2       11.2      kubedb/postgres:11.2                    44m
-11.2-v1    11.2      kubedb/postgres:11.2-v1                 44m
-9.6        9.6       kubedb/postgres:9.6        true         44m
-9.6-v1     9.6       kubedb/postgres:9.6-v2     true         44m
-9.6-v2     9.6       kubedb/postgres:9.6-v3                  44m
-9.6-v3     9.6       kubedb/postgres:9.6-v4                  44m
-9.6-v4     9.6       kubedb/postgres:9.6-v5                  44m
-9.6-v5     9.6       kubedb/postgres:9.6-v6                  44m
-9.6.7      9.6.7     kubedb/postgres:9.6.7      true         44m
-9.6.7-v1   9.6.7     kubedb/postgres:9.6.7-v2   true         44m
-9.6.7-v2   9.6.7     kubedb/postgres:9.6.7-v3                44m
-9.6.7-v3   9.6.7     kubedb/postgres:9.6.7-v4                44m
-9.6.7-v4   9.6.7     kubedb/postgres:9.6.7-v5                44m
-9.6.7-v5   9.6.7     kubedb/postgres:9.6.7-v6                44m
+~ $ kubectl get pgversion
+NAME                      VERSION   DISTRIBUTION   DB_IMAGE                                                                DEPRECATED   AGE
+10.23                     10.23     Official       ghcr.io/appscode-images/postgres:10.23-alpine                                        35d
+10.23-bullseye            10.23     Official       ghcr.io/appscode-images/postgres:10.23-bullseye                                      35d
+11-bullseye-postgis       11.22     PostGIS        postgis/postgis:11-3.3                                                               35d
+11.22                     11.22     Official       ghcr.io/appscode-images/postgres:11.22-alpine                                        35d
+11.22-bookworm            11.22     Official       ghcr.io/appscode-images/postgres:11.22-bookworm                                      35d
+12-bullseye-postgis       12.18     PostGIS        postgis/postgis:12-3.4                                                               35d
+12.17                     12.17     Official       ghcr.io/appscode-images/postgres:12.17-alpine                                        35d
+12.17-bookworm            12.17     Official       ghcr.io/appscode-images/postgres:12.17-bookworm                                      35d
+12.22                     12.22     Official       ghcr.io/appscode-images/postgres:12.22-alpine                                        35d
+12.22-bookworm            12.22     Official       ghcr.io/appscode-images/postgres:12.22-bookworm                                      35d
+13-bullseye-postgis       13.14     PostGIS        postgis/postgis:13-3.4                                                               35d
+13.13                     13.13     Official       ghcr.io/appscode-images/postgres:13.13-alpine                                        35d
+13.13-bookworm            13.13     Official       ghcr.io/appscode-images/postgres:13.13-bookworm                                      35d
+13.18                     13.18     Official       ghcr.io/appscode-images/postgres:13.18-alpine                                        35d
+13.18-bookworm            13.18     Official       ghcr.io/appscode-images/postgres:13.18-bookworm                                      35d
+13.20                     13.20     Official       ghcr.io/appscode-images/postgres:13.20-alpine                                        35d
+13.20-bookworm            13.20     Official       ghcr.io/appscode-images/postgres:13.20-bookworm                                      35d
+14-bullseye-postgis       14.11     PostGIS        postgis/postgis:14-3.4                                                               35d
+14.10                     14.10     Official       ghcr.io/appscode-images/postgres:14.10-alpine                                        35d
+14.10-bookworm            14.10     Official       ghcr.io/appscode-images/postgres:14.10-bookworm                                      35d
+14.13                     14.13     Official       ghcr.io/appscode-images/postgres:14.13-alpine                                        35d
+14.13-bookworm            14.13     Official       ghcr.io/appscode-images/postgres:14.13-bookworm                                      35d
+14.15                     14.15     Official       ghcr.io/appscode-images/postgres:14.15-alpine                                        35d
+14.15-bookworm            14.15     Official       ghcr.io/appscode-images/postgres:14.15-bookworm                                      35d
+14.17                     14.17     Official       ghcr.io/appscode-images/postgres:14.17-alpine                                        35d
+14.17-bookworm            14.17     Official       ghcr.io/appscode-images/postgres:14.17-bookworm                                      35d
+15-bullseye-postgis       15.6      PostGIS        postgis/postgis:15-3.4                                                               35d
+15.10                     15.10     Official       ghcr.io/appscode-images/postgres:15.10-alpine                                        35d
+15.10-bookworm            15.10     Official       ghcr.io/appscode-images/postgres:15.10-bookworm                                      35d
+15.12                     15.12     Official       ghcr.io/appscode-images/postgres:15.12-alpine                                        35d
+15.12-bookworm            15.12     Official       ghcr.io/appscode-images/postgres:15.12-bookworm                                      35d
+15.12-documentdb          15.12     DocumentDB     ghcr.io/appscode-images/postgres-documentdb:15-0.102.0-ferretdb-2.0.0                35d
+15.5                      15.5      Official       ghcr.io/appscode-images/postgres:15.5-alpine                                         35d
+15.5-bookworm             15.5      Official       ghcr.io/appscode-images/postgres:15.5-bookworm                                       35d
+15.8                      15.8      Official       ghcr.io/appscode-images/postgres:15.8-alpine                                         35d
+15.8-bookworm             15.8      Official       ghcr.io/appscode-images/postgres:15.8-bookworm                                       35d
+16.1                      16.1      Official       ghcr.io/appscode-images/postgres:16.1-alpine                                         35d
+16.1-bookworm             16.1      Official       ghcr.io/appscode-images/postgres:16.1-bookworm                                       35d
+16.2-bullseye-postgis     16.2      PostGIS        postgis/postgis:16-3.4                                                               35d
+16.4                      16.4      Official       ghcr.io/appscode-images/postgres:16.4-alpine                                         35d
+16.4-bookworm             16.4      Official       ghcr.io/appscode-images/postgres:16.4-bookworm                                       35d
+16.6                      16.6      Official       ghcr.io/appscode-images/postgres:16.6-alpine                                         35d
+16.6-bookworm             16.6      Official       ghcr.io/appscode-images/postgres:16.6-bookworm                                       35d
+16.8                      16.8      Official       ghcr.io/appscode-images/postgres:16.8-alpine                                         35d
+16.8-bookworm             16.8      Official       ghcr.io/appscode-images/postgres:16.8-bookworm                                       35d
+16.8-documentdb           16.8      DocumentDB     ghcr.io/appscode-images/postgres-documentdb:16-0.102.0-ferretdb-2.0.0                35d
+17.2                      17.2      Official       ghcr.io/appscode-images/postgres:17.2-alpine                                         35d
+17.2-bookworm             17.2      Official       ghcr.io/appscode-images/postgres:17.2-bookworm                                       35d
+17.4                      17.4      Official       ghcr.io/appscode-images/postgres:17.4-alpine                                         35d
+17.4-bookworm             17.4      Official       ghcr.io/appscode-images/postgres:17.4-bookworm                                       35d
+17.4-documentdb           17.4      DocumentDB     ghcr.io/appscode-images/postgres-documentdb:17-0.102.0-ferretdb-2.0.0                35d
+timescaledb-2.14.2-pg13   13.14     TimescaleDB    timescale/timescaledb:2.14.2-pg13-oss                                                35d
+timescaledb-2.14.2-pg14   14.11     TimescaleDB    timescale/timescaledb:2.14.2-pg14-oss                                                35d
+timescaledb-2.14.2-pg15   15.6      Official       timescale/timescaledb:2.14.2-pg15-oss                                                35d
+timescaledb-2.14.2-pg16   16.2      Official       timescale/timescaledb:2.14.2-pg16-oss                                                35d
 ```
+
+> Updating this field creates a Postgres [`UpdateVersion`](/docs/guides/postgres/update-version/overview/index.md) OpsRequest by GitOps operator.
+
 ### spec.replicas
 
 `spec.replicas` specifies the total number of primary and standby nodes in Postgres database cluster configuration. One pod is selected as Primary and others act as standby replicas. KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
 
 To learn more about how to setup a HA PostgreSQL cluster in KubeDB, please visit [here](/docs/guides/postgres/clustering/ha_cluster.md).
+
+> Updating this field creates a [`HorizontalScaling`](/docs/guides/postgres/scaling/horizontal-scaling/overview/index.md) OpsRequest by GitOps operator.
 
 ### spec.standbyMode
 
@@ -204,6 +236,8 @@ metadata:
 type: Opaque
 ```
 
+> Updating this field create a `RotateAuth` OpsRequest by GitOps operator.
+
 ### spec.storageType
 
 `spec.storageType` is an optional field that specifies the type of storage to use for database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Postgres database using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume. In this case, you don't have to specify `spec.storage` field.
@@ -219,6 +253,8 @@ If you don't set `spec.storageType:` to `Ephemeral` then `spec.storage` field is
 To learn how to configure `spec.storage`, please visit the links below:
 
 - https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
+
+> Updating this field creates a [`VolumeExpansion`](/docs/guides/postgres/volume-expansion/Overview/overview.md) OpsRequest by GitOps operator.
 
 ### spec.init
 
@@ -236,7 +272,7 @@ To initialize a PostgreSQL database using a script (shell script, db migrator, e
 Below is an example showing how a script from a configMap can be used to initialize a PostgreSQL database.
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: gitops/kubedb.com/v1alpha1
 kind: Postgres
 metadata:
   name: postgres-db
@@ -258,9 +294,13 @@ PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and Promet
 - [Monitor PostgreSQL with builtin Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md)
 - [Monitor PostgreSQL with Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md)
 
+> Enabling monitoring creates a [`Restart`](/docs/guides/postgres/restart/restart.md) OpsRequest by GitOps operator.
+
 ### spec.configSecret
 
 `spec.configSecret` is an optional field that allows users to provide custom configuration for PostgreSQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/postgres/configuration/using-config-file.md).
+
+> Updating this field will create a [`Reconfigure`](/docs/guides/postgres/reconfigure/overview.md) OpsRequest by GitOps operator.
 
 ### spec.podTemplate
 
@@ -369,6 +409,9 @@ If a service account name is given, and there's an existing service account by t
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
 
+> Updating `postgres`/`pg-coordinator` containers resources will create a [`VerticalScaling`](/docs/guides/postgres/scaling/vertical-scaling/overview/index.md) OpsRequest by GitOps operator.
+
+
 ### spec.serviceTemplate
 
 KubeDB creates two different services for each Postgres instance. One of them is a master service named `<postgres-name>` and points to the Postgres `Primary` pod/node. Another one is a replica service named `<postgres-name>-replicas` and points to Postgres `replica` pods/nodes.
@@ -439,6 +482,8 @@ Following table show what KubeDB does when you delete Postgres crd for different
 | 8. Delete Snapshot data from bucket      |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy by default.
+
+> Lastly, as `kubedb.com/v1` and `gitops.kubedb.com/v1alpha1` are two different API groups, you can use both of them in the same cluster. They share exactly the same spec, if you update some fields that might need changes using `OpsRequest`s, GitOps operator will create and reflect those changes in the database. You don't need to create ops request manually. If updating some fields don't require any ops request, GitOps operator will simply patch the actual `Postgres` database CRO with these changes.
 
 ## Next Steps
 
