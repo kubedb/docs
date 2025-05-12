@@ -3,7 +3,7 @@ title: Postgres CRD
 menu:
   docs_{{ .version }}:
     identifier: pg-postgres-gitops-concepts
-    name: Postgres
+    name: Postgres(GitOps)
     parent: pg-concepts-postgres
     weight: 11
 menu_name: docs_{{ .version }}
