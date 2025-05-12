@@ -322,19 +322,29 @@ data-ha-postgres-4   Bound    pvc-8149b579-a40f-4cd8-ac37-6a2401fd7807   10Gi   
 
 ## Reconfigure Postgres
 
-At first, we will create `user.conf` file containing required configuration settings.
+At first, we will create a secret containing `user.conf` file with required configuration settings.
 To know more about this configuration file, check [here](/docs/guides/postgres/configuration/using-config-file.md)
-```ini
-$ cat user.conf
-max_connections=200
-shared_buffers=256MB
+```yaml
+apiVersion: v1
+stringData:
+  user.conf: |
+    max_connections=200
+    shared_buffers=256MB
+kind: Secret
+metadata:
+  name: pg-configuration
+  namespace: demo
+type: Opaque
 ```
 
-Now, we will create a secret with this configuration file.
+Now, we will add this file to `kubedb/pg-configuration.yaml`.
 
 ```bash
-$ kubectl create secret generic -n demo pg-configuration --from-file=./user.conf
-secret/pg-configuration created
+$ tree .
+├── kubedb
+│ ├── pg-configuration.yaml
+│ └── postgres.yaml
+1 directories, 2 files
 ```
 
 Update the `postgres.yaml` with the following, 
@@ -417,8 +427,29 @@ So we have configured custom parameters.
 ### Rotate Postgres Auth
 
 To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new username and password.
+
+We will do that using gitops, create the file `kubedb/pg-auth.yaml` with the following content,
+
+```yaml
+apiVersion: v1
+data:
+  password: cGdwYXNzd29yZA==
+  username: cG9zdGdyZXM=
+kind: Secret
+metadata:
+  name: pg-rotate-auth
+  namespace: demo
+type: kubernetes.io/basic-auth
+```
+
+File structure will look like this,
 ```bash
-$ kubectl create secret generic -n demo pg-rotate-auth --type=kubernetes.io/basic-auth --from-literal=username=postgres --from-literal=password=pgpassword
+$ tree .
+├── kubedb
+│ ├── pg-auth.yaml
+│ ├── pg-configuration.yaml
+│ └── postgres.yaml
+1 directories, 3 files
 ```
 
 Update the `postgres.yaml` with the following, 
@@ -527,19 +558,16 @@ spec:
     secretName: postgres-ca
 ```
 
-Let's apply the `YAML` file:
-
+Let's add that to our `kubedb/pg-issuer.yaml` file. File structure will look like this,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/issuer.yaml
-issuer.cert-manager.io/pg-issuer created
+$ tree .
+├── kubedb
+│ ├── pg-auth.yaml
+│ ├── pg-configuration.yaml
+│ ├── pg-issuer.yaml
+│ └── postgres.yaml
+1 directories, 4 files
 ```
-
-```bash
-$ kubectl get issuer -n demo
-NAME        READY   AGE
-pg-issuer   True    11s
-```
-Issuer is ready(true).
 
 Update the `postgres.yaml` with the following, 
 ```yaml
@@ -811,9 +839,13 @@ There are some other fields that will trigger `Restart` ops request.
 - `.spec.enforceGroup`
 - `.spec.sslMode` etc.
 
-```bash
 
 ## Next Steps
 
+- Learn Postgres [GitOps](/docs/guides/postgres/concepts/postgres-gitops.md)
+- Learn Postgres Scaling 
+  - [Horizontal Scaling](/docs/guides/postgres/scaling/horizontal-scaling/overview/index.md)
+  - [Vertical Scaling](/docs/guides/postgres/scaling/vertical-scaling/overview/index.md)
+- Learn Version Update Ops Request and Constraints [here](/docs/guides/postgres/update-version/versionupgrading/index.md)
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
