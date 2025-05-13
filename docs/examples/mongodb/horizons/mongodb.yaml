@@ -1,0 +1,39 @@
+apiVersion: kubedb.com/v1
+kind: MongoDB
+metadata:
+  name: mongodb-horizons
+  namespace: demo
+spec:
+  clusterAuthMode: x509
+  deletionPolicy: WipeOut
+  replicaSet:
+    horizons:
+      dns: kubedb.cloud
+      pods:
+        - mongo-0.kubedb.cloud
+        - mongo-1.kubedb.cloud
+        - mongo-2.kubedb.cloud
+    name: rs0
+  replicas: 3
+  sslMode: requireSSL
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  storageEngine: wiredTiger
+  storageType: Durable
+  tls:
+    certificates:
+      - alias: server
+        dnsNames:
+          - kubedb.cloud
+          - mongo-0.kubedb.cloud
+          - mongo-1.kubedb.cloud
+          - mongo-2.kubedb.cloud
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: mongo-ca-issuer
+  version: 7.0.16
