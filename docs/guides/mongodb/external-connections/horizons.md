@@ -1,9 +1,9 @@
 ---
-title: Run MongoDB with Custom RBAC resources
+title: External Connections using MongoDB Horizons Guide
 menu:
   docs_{{ .version }}:
     identifier: mg-horizons-guides
-    name: Custom RBAC
+    name: MongoDB Horizons
     parent: mg-horizons
     weight: 10
 menu_name: docs_{{ .version }}
