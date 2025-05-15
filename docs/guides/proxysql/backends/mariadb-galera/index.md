@@ -125,7 +125,7 @@ metadata:
   name: mariadb-proxy
   namespace: demo
 spec:
-  version: "2.6.3-debian"
+  version: "2.7.3-debian"
   replicas: 3
   syncUsers: true
   backend:
@@ -145,7 +145,7 @@ Let's wait for the ProxySQL to be Ready.
 ```bash
 $ kubectl get prx -n demo
 NAME            VERSION        STATUS   AGE
-mariadb-proxy   2.6.3-debian   Ready    96s
+mariadb-proxy   2.7.3-debian   Ready    96s
 ```
 
 Let's check the pods and associated kubernetes objects
