@@ -46,7 +46,7 @@ metadata:
   name: xtradb-galera
   namespace: demo
 spec:
-  version: "8.4.3"
+  version: "8.0.40"
   replicas: 3
   storageType: Durable
   storage:
@@ -120,7 +120,7 @@ Now we are ready to deploy and test our ProxySQL server.
 
 ## Deploy ProxySQL Server 
 
-With the following yaml we are going to create our desired ProxySQL server.
+With the following YAML, we are going to create our desired ProxySQL server.
 
 `Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `kubedb.com/v1alpha2` apiVersion.
 
@@ -133,7 +133,7 @@ metadata:
 spec:
   version: "2.7.3-debian"
   replicas: 3
-  syncUsers: false
+  syncUsers: true
   backend:
     name: xtradb-galera
   deletionPolicy: WipeOut
@@ -239,14 +239,6 @@ Here we can see that all the nodes of our PerconaXtraDB Galera cluster has been 
 Let's check the mysql_users table. 
 
 ```bash
-ProxySQLAdmin > INSERT INTO mysql_users (username, password, active, default_hostgroup, backend, frontend, transaction_persistent) 
-             VALUES ('test', 'pass', 1, 2, 1, 1, 1);
-Query OK, 1 row affected (0.001 sec)
-ProxySQLAdmin > LOAD MYSQL USERS TO RUNTIME;
-Query OK, 0 rows affected (0.001 sec)
-
-ProxySQLAdmin > SAVE MYSQL USERS TO DISK;
-Query OK, 0 rows affected (0.049 sec)
 ProxySQLAdmin > select username from mysql_users;
 +----------+
 | username |
@@ -254,7 +246,6 @@ ProxySQLAdmin > select username from mysql_users;
 | root     |
 | test     |
 +----------+
-2 rows in set (0.001 sec)
 ```
 
 So test user is automatically synced in proxysql and present in mysql_users, we are now ready to test our traffic proxy.
