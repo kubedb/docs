@@ -125,7 +125,7 @@ metadata:
   name: mariadb-proxy
   namespace: demo
 spec:
-  version: "2.6.3-debian"
+  version: "2.7.3-debian"
   replicas: 3
   syncUsers: true
   backend:

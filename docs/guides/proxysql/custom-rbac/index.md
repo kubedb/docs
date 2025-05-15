@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Using Custom RBAC resources
 
-KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a ProxySQL instance. This tutorial will show you how to use KubeDB to run ProxySQL instance with custom RBAC resources.
+KubeDB (version 0.13.0 and higher) supports finer user control over role-based access permissions provided to a ProxySQL instance. This tutorial will show you how to use KubeDB to run ProxySQL instance with custom RBAC resources.
 
 ## Before You Begin
 
@@ -52,8 +52,10 @@ serviceaccount/prx-custom-sa created
 
 It should create a service account.
 
-```yaml
+```bash
 $ kubectl get serviceaccount -n demo prx-custom-sa -oyaml
+```
+```yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -105,8 +107,10 @@ rolebinding.rbac.authorization.k8s.io/prx-custom-rb created
 
 It should bind `prx-custom-role` and `prx-custom-sa` successfully.
 
-```yaml
+```bash
 $ kubectl get rolebinding -n demo prx-custom-rb -o yaml
+```
+```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
