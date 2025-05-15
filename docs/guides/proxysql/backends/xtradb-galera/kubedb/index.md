@@ -69,7 +69,7 @@ Let's wait for the PerconaXtraDB to be Ready.
 ```bash
 $ kubectl get px -n demo 
 NAME            VERSION   STATUS   AGE
-xtradb-galera   8.4.3     Ready    8m
+xtradb-galera   8.0.40    Ready    8m
 ```
 
 Let's first create a user in the backend percona-xtradb server and a database to test the proxy traffic.
@@ -81,7 +81,7 @@ bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 471
-Server version: 8.4.3-3.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
+Server version: 8.0.40-31.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
 
 Copyright (c) 2009-2024 Percona LLC and/or its affiliates
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
@@ -151,7 +151,7 @@ Let's wait for the ProxySQL to be Ready.
 ```bash
 $ kubectl get prx -n demo
 NAME            VERSION        STATUS   AGE
-xtradb-proxy    2.6.3-debian   Ready    17m
+xtradb-proxy    2.7.3-debian   Ready    17m
 ```
 
 Let's check the pods and associated kubernetes objects

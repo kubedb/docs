@@ -165,7 +165,7 @@ Let's wait for the ProxySQL to be Ready.
 ```bash
 $ kubectl get prx -n demo
 NAME          VERSION        STATUS   AGE
-mysql-proxy   2.6.3-debian   Ready    109s
+mysql-proxy   2.7.3-debian   Ready    109s
 ```
 
 Let's check the pods and associated kubernetes objects
