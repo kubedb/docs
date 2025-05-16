@@ -3,9 +3,9 @@ title: Kafka Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
     identifier: kf-rotate-auth-kafka
-    name: Kafka Rotate Authentication Guide
+    name: Kafka RotateAuth Guide
     parent: kf-rotate-auth
-    weight: 10
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
