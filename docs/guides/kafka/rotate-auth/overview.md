@@ -22,12 +22,12 @@ This guide will give an overview on how KubeDB Ops-manager operator Rotate Authe
     - [Kafka](/docs/guides/kafka/concepts/kafka.md)
     - [KafkaOpsRequest](/docs/guides/kafka/concepts/kafkaopsrequest.md)
 
-## How Reconfiguring Kafka TLS Configuration Process Works
+## How Rotate Kafka Authentication Configuration Process Works
 
-The following diagram shows how KubeDB Ops-manager operator reconfigures TLS of a `Kafka`. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops-manager operator Rotate Authentication of a `Kafka`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Reconfiguring TLS process of Kafka" src="/docs/images/day-2-operation/kafka/kf-rotate-auth.svg">
+  <img alt="Rotate Authentication process of Kafka" src="/docs/images/day-2-operation/kafka/kf-rotate-auth.svg">
 <figcaption align="center">Fig: Rotate Auth process of Kafka</figcaption>
 </figure>
 
@@ -39,7 +39,7 @@ The Rotate Kafka Authentication process consists of the following steps:
 
 3. When the operator finds a `Kafka` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
-4. Then, in order to rotate the Authentication configuration of the `Kafka`, the user creates a `KafkaOpsRequest` CR with desired information.
+4. Then, in order to rotate the authentication configuration of the `Kafka`, the user creates a `KafkaOpsRequest` CR with desired information.
 
 5. `KubeDB` Ops-manager operator watches the `KafkaOpsRequest` CR.
 
@@ -47,7 +47,7 @@ The Rotate Kafka Authentication process consists of the following steps:
 
 7. Then the `KubeDB` Ops-manager operator will update necessary configuration based on the Ops Request yaml to update credentials.
 
-8. Then the `KubeDB` Ops-manager operator will restart all the Pods of the database so that they restart with the new Authentication ENVs or other configuration defined in the `KafkaOpsRequest` CR.
+8. Then the `KubeDB` Ops-manager operator will restart all the Pods of the database so that they restart with the new authentication `ENVs` or other configuration defined in the `KafkaOpsRequest` CR.
 
 9. After the successful rotating of the `Kafka` Authentication, the `KubeDB` Ops-manager operator resumes the `Kafka` object so that the `KubeDB` Provisioner  operator resumes its usual operations.
 

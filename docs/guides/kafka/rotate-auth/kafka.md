@@ -156,8 +156,6 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 kafkaopsrequest.ops.kubedb.com/kfops-rotate-auth-generated created
 ```
 
-#### Verify Password is changed
-
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CRO,
 
 ```bash
@@ -306,8 +304,10 @@ Events:
   Warning  check pod running; ConditionStatus:True; PodName:kafka-prod-broker-1       60s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:kafka-prod-broker-1
   Normal   RestartNodes                                                               55s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                                   55s    KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
-k  Normal   Successful                                                                 55s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-rotate-auth-generated
+  Normal   Successful                                                                 55s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-rotate-auth-generated
 ```
+
+#### Verify Password is changed
 
 Now, We can verify that the password has been changed. You can find the secret and its data by running the following command:
 
@@ -331,7 +331,7 @@ $ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.password.prev}'
 zvrFXkStB~9A!NTC
 ```
 
-The above output shows that the password has been changed successfully. The previous password is stored in the secret with the key `password.prev` for rollback purpose.
+The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 
 #### 2. Using user created credentials
 
@@ -378,9 +378,6 @@ Let's create the `KafkaOpsRequest` CR we have shown above,
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/rotate-auth/kafka-rotate-auth-user.yaml
 kafkaopsrequest.ops.kubedb.com/kfops-rotate-auth-user created
 ```
-
-
-#### Verify Password is changed
 
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CRO,
 
@@ -537,6 +534,8 @@ Events:
   Normal   Successful                                                                 21s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-rotate-auth-user
 ```
 
+#### Verify Password is changed
+
 Now, We can verify that the password has been changed. You can find the secret and its data by running the following command:
 
 ```bash
@@ -559,6 +558,7 @@ $ kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.password.prev}'
 al9jY2xvYW5pbmc=
 ```
 
+The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
 ## Cleaning up
 
@@ -580,6 +580,5 @@ kubectl delete ns demo
 - Kafka Schema Registry with KubeDB [here](/docs/guides/kafka/schemaregistry/overview.md).
 - Kafka RestProxy with KubeDB [here](/docs/guides/kafka/restproxy/overview.md).
 - Kafka Migration with KubeDB [here](/docs/guides/kafka/migration/overview.md).
-[//]: # (- Monitor your Kafka database with KubeDB using [out-of-the-box builtin-Prometheus]&#40;/docs/guides/kafka/monitoring/using-builtin-prometheus.md&#41;.)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
