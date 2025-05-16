@@ -15,8 +15,8 @@ section_menu_id: guides
 # Rotate Kafka Authentication
 
 KubeDB supports rotating Authentication for existing Kafka via a KafkaOpsRequest. There are two ways to do that.
-1. **User Defined**: User can create a `kubernetes.io/basic-auth` type secret with `username` and  `password` and refers this to `KafkaOpsRequest`.
-2. **Operator Generated**: User will not provide any secret. KubeDB operator will generate a random password and update the existing secret with that password.
+1. **Operator Generated**: User will not provide any secret. KubeDB operator will generate a random password and update the existing secret with that password.
+2. **User Defined**: User can create a `kubernetes.io/basic-auth` type secret with `username` and  `password` and refers this to `KafkaOpsRequest`.
 
 This tutorial will show you how to use KubeDB to rotating authentication credentials.
 
@@ -92,17 +92,12 @@ kafka-prod    kubedb.com/v1   3.9.0     Ready          2m10s
 Now, we can exec one kafka broker pod and verify configuration that authentication is enabled.
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'ssl.keystore'
-  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
-  ssl.keystore.key=null sensitive=true synonyms={}
-  ssl.keystore.location=null sensitive=false synonyms={}
-  ssl.keystore.password=null sensitive=true synonyms={}
-  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
-  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
-  ssl.keystore.key=null sensitive=true synonyms={}
-  ssl.keystore.location=null sensitive=false synonyms={}
-  ssl.keystore.password=null sensitive=true synonyms={}
-  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
+$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep sasl.enabled.mechanism
+
+  listener.name.local.sasl.enabled.mechanisms=PLAIN sensitive=false synonyms={STATIC_BROKER_CONFIG:listener.name.local.sasl.enabled.mechanisms=PLAIN, STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
+  sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256 sensitive=false synonyms={STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
+  listener.name.local.sasl.enabled.mechanisms=PLAIN sensitive=false synonyms={STATIC_BROKER_CONFIG:listener.name.local.sasl.enabled.mechanisms=PLAIN, STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
+  sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256 sensitive=false synonyms={STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
 ```
 
 We can verify from the above output that authentication is enabled for this cluster. By default, KubeDB operator create default credentials for the Kafka cluster. The default credentials are stored in a secret named `<kafka-name>-auth` in the same namespace as the Kafka cluster. You can find the secret by running the following command:
@@ -118,7 +113,16 @@ $ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.password}' | ba
 zvrFXkStB~9A!NTC
 ```
 
-### Create KafkaOpsRequest
+You will find a new field `.spec.authSecret.activeFrom` in the `Kafka` CR. This field is used to track the active credentials. The value of this field is set the time when the secret (`.spec.authSecret.name`) is active for kafka cluster. The value of this field is updated when the authentication is rotated.
+
+```bash
+$ kubectl get kf -n demo kafka-prod -ojsonpath='{.spec.authSecret.activeFrom}'
+2025-04-03T08:42:05Z
+```
+
+> **Note:** There is another field `.spec.authSecret.rotateAfter` in the `Kafka` CR. This field is used to track the time when the authentication will be rotated. When a user set this field, Recommendation Engine will generate a recommendation `RotateAuth` OpsRequest after this time from `.spec.authSecret.activeFrom`(i.e. `activeFrom + rotateAfter`). You need `Recommendation Engine` to be installed in order to use this feature.
+
+### Create RotateAuth KafkaOpsRequest
 
 #### 1. Using operator generated credentials:
 
@@ -305,23 +309,29 @@ Events:
 k  Normal   Successful                                                                 55s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-rotate-auth-generated
 ```
 
-Now, Let's exec into a kafka broker pod and verify the configuration that the TLS is enabled.
+Now, We can verify that the password has been changed. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'ssl.keystore'
-  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
-  ssl.keystore.key=null sensitive=true synonyms={}
-  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
-  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
-  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
-  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
-  ssl.keystore.key=null sensitive=true synonyms={}
-  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
-  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
-  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
+$ kubectl get kf -n demo kafka-prod -ojson | jq .spec.authSecret.name
+"kafka-prod-auth"
+
+$ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.username}' | base64 -d
+admin
+
+$ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.password}' | base64 -d
+al9jY2xvYW5pbmc=
 ```
 
-We can see from the above output that, keystore location is `/var/private/ssl/server.keystore.jks` which means that TLS is enabled.
+Also there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
+
+```bash
+$ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.username.prev}' | base64 -d
+admin
+$ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.password.prev}' | base64 -d
+zvrFXkStB~9A!NTC
+```
+
+The above output shows that the password has been changed successfully. The previous password is stored in the secret with the key `password.prev` for rollback purpose.
 
 #### 2. Using user created credentials
 
@@ -527,14 +537,37 @@ Events:
   Normal   Successful                                                                 21s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-rotate-auth-user
 ```
 
+Now, We can verify that the password has been changed. You can find the secret and its data by running the following command:
+
+```bash
+$ kubectl get kf -n demo kafka-prod -ojson | jq .spec.authSecret.name
+"kafka-user-auth"
+
+$ kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.username}' | base64 -d
+kafka
+
+$ kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.password}' | base64 -d
+kafka-secret
+```
+
+Also there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
+
+```bash
+$ kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.username.prev}' | base64 -d
+admin
+$ kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.password.prev}' | base64 -d
+al9jY2xvYW5pbmc=
+```
+
+
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete opsrequest kfops-add-tls kfops-remove kfops-rotate kfops-update-issuer
+kubectl delete kafkaopsrequest -n demo kfops-rotate-auth-generated kfops-rotate-auth-user
 kubectl delete kafka -n demo kafka-prod
-kubectl delete issuer -n demo kf-issuer kf-new-issuer
+kubectl delete secret -n demo kafka-user-auth
 kubectl delete ns demo
 ```
 
@@ -543,7 +576,10 @@ kubectl delete ns demo
 - Detail concepts of [Kafka object](/docs/guides/kafka/concepts/kafka.md).
 - Different Kafka topology clustering modes [here](/docs/guides/kafka/clustering/_index.md).
 - Monitor your Kafka database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/kafka/monitoring/using-prometheus-operator.md).
-
+- Kafka ConnectCluster with KubeDB [here](/docs/guides/kafka/connectcluster/quickstart.md).
+- Kafka Schema Registry with KubeDB [here](/docs/guides/kafka/schemaregistry/overview.md).
+- Kafka RestProxy with KubeDB [here](/docs/guides/kafka/restproxy/overview.md).
+- Kafka Migration with KubeDB [here](/docs/guides/kafka/migration/overview.md).
 [//]: # (- Monitor your Kafka database with KubeDB using [out-of-the-box builtin-Prometheus]&#40;/docs/guides/kafka/monitoring/using-builtin-prometheus.md&#41;.)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
