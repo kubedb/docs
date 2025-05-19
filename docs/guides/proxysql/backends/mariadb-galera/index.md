@@ -46,7 +46,7 @@ metadata:
   name: mariadb-galera
   namespace: demo
 spec:
-  version: "10.6.16"
+  version: "11.6.2"
   replicas: 3
   storageType: Durable
   storage:
@@ -69,7 +69,7 @@ Let's wait for the MariaDB to be Ready.
 ```bash
 $ kubectl get md -n demo 
 NAME             VERSION   STATUS   AGE
-mariadb-galera   10.6.16   Ready    4m20s
+mariadb-galera   11.6.2   Ready    4m20s
 ```
 
 Let's first create a user in the backend mariadb server and a database to test the proxy traffic.
@@ -77,10 +77,10 @@ Let's first create a user in the backend mariadb server and a database to test t
 ```bash
 $ kubectl exec -it -n demo mariadb-galera-0 -- bash
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
-mysql@mariadb-galera-0:/$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
+mysql@mariadb-galera-0:/$ mariadb -uroot -p$MYSQL_ROOT_PASSWORD
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 52
-Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004 mariadb.org binary distribution
+Server version: 11.6.2-MariaDB-1:11.6.2+maria~ubu2004 mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -125,7 +125,7 @@ metadata:
   name: mariadb-proxy
   namespace: demo
 spec:
-  version: "2.6.3-debian"
+  version: "2.7.3-debian"
   replicas: 3
   syncUsers: true
   backend:
@@ -145,7 +145,7 @@ Let's wait for the ProxySQL to be Ready.
 ```bash
 $ kubectl get prx -n demo
 NAME            VERSION        STATUS   AGE
-mariadb-proxy   2.6.3-debian   Ready    96s
+mariadb-proxy   2.7.3-debian   Ready    96s
 ```
 
 Let's check the pods and associated kubernetes objects
