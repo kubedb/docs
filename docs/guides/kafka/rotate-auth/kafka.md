@@ -18,7 +18,7 @@ KubeDB supports rotating Authentication for existing Kafka via a KafkaOpsRequest
 1. **Operator Generated**: User will not provide any secret. KubeDB operator will generate a random password and update the existing secret with that password.
 2. **User Defined**: User can create a `kubernetes.io/basic-auth` type secret with `username` and  `password` and refers this to `KafkaOpsRequest`.
 
-This tutorial will show you how to use KubeDB to rotating authentication credentials.
+This tutorial will show you how to use KubeDB to rotate authentication credentials.
 
 ## Before You Begin
 
@@ -120,7 +120,7 @@ $ kubectl get kf -n demo kafka-prod -ojsonpath='{.spec.authSecret.activeFrom}'
 2025-04-03T08:42:05Z
 ```
 
-> **Note:** There is another field `.spec.authSecret.rotateAfter` in the `Kafka` CR. This field is used to track the time when the authentication will be rotated. When a user set this field, Recommendation Engine will generate a recommendation `RotateAuth` OpsRequest after this time from `.spec.authSecret.activeFrom`(i.e. `activeFrom + rotateAfter`). You need `Recommendation Engine` to be installed in order to use this feature.
+> **Note:** There is another field `.spec.authSecret.rotateAfter` in the `Kafka` CR. This field is used to track the time when the authentication will be rotated. When a user set this field, Recommendation Engine will generate a recommendation `RotateAuth` Ops Request after this time from `.spec.authSecret.activeFrom`(i.e. `activeFrom + rotateAfter`). You need `Recommendation Engine` to be installed in order to use this feature.
 
 ### Create RotateAuth KafkaOpsRequest
 
@@ -322,7 +322,7 @@ $ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.password}' | ba
 al9jY2xvYW5pbmc=
 ```
 
-Also there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
+Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
 ```bash
 $ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.username.prev}' | base64 -d
@@ -345,7 +345,7 @@ $ kubectl create secret generic kafka-user-auth -n demo \
 secret/kafka-user-auth created
 ```
 
-Now create an OpsRequest with `RotateAuth` type. Below is the YAML of the `KafkaOpsRequest` that we are going to create,
+Now create a Kafka Ops Request with `RotateAuth` type. Below is the YAML of the `KafkaOpsRequest` that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -549,7 +549,7 @@ $ kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.password}' | ba
 kafka-secret
 ```
 
-Also there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
+Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
 ```bash
 $ kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.username.prev}' | base64 -d
@@ -562,7 +562,7 @@ The above output shows that the password has been changed successfully. The prev
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete kafkaopsrequest -n demo kfops-rotate-auth-generated kfops-rotate-auth-user
