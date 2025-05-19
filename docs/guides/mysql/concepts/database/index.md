@@ -115,9 +115,28 @@ spec:
 
 `spec.version` is a required field specifying the name of the [MySQLVersion](/docs/guides/mysql/concepts/catalog/index.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MySQLVersion` resources,
 
-- `8.0.35`, `8.0.35`, `8.0.17`, `8.0.3-v4`
+- `9.0.1`, `9.1.0`
+- `8.0.35`, `8.0.36`, `8.1.0`, `8.2.0`, `8.4.2`, `8.4.3`
 - `8.0.31-innodb`
-- `5.7.44`, `5.7.35-v1`,`5.7.25-v2`
+- `5.7.44`, `5.7.42-debian`
+
+### Handling `mbind: Operation not permitted`
+On certain platforms (e.g., when using specific security profiles), for some versions of `mysql`, you may see log messages like:   
+`mbind: Operation not permitted`
+
+This indicates that the `mysql` container needs the `SYS_NICE` kernel capability to perform CPU‐affinity or real-time scheduling operations. You can grant this capability by extending your Pod spec as follows:
+```yaml
+spec:
+  podTemplate:
+    spec:
+      containers:
+      - name: mysql
+        securityContext:
+          capabilities:
+            add: ["SYS_NICE"]
+            drop: ["ALL"]
+```
+This ensures that only the SYS_NICE capability is added—while all others are dropped—keeping your container’s security posture minimal.
 
 ### spec.topology
 
