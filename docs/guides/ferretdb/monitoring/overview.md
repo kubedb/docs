@@ -55,12 +55,13 @@ metadata:
 spec:
   version: "2.0.0"
   deletionPolicy: WipeOut
-  storage:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 500Mi
+  backend:
+    storage:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 500Mi
   monitor:
     agent: prometheus.io/operator
     prometheus:
