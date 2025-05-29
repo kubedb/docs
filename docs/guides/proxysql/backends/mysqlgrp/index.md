@@ -46,7 +46,7 @@ metadata:
   name: mysql-server
   namespace: demo
 spec:
-  version: "8.0.36"
+  version: "8.4.3"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -71,7 +71,7 @@ Let's wait for the MySQL to be Ready.
 ```bash
 $ kubectl get my -n demo 
 NAME           VERSION   STATUS   AGE
-mysql-server   8.0.36    Ready    7m6s
+mysql-server   8.4.3    Ready    7m6s
 ```
 
 Let's first create a user in the backend mysql server and a database to test the proxy traffic.
@@ -83,7 +83,7 @@ mysql@mysql-server-0:/$  mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 474
-Server version: 8.0.36 MySQL Community Server - GPL
+Server version: 8.4.3 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
@@ -117,9 +117,9 @@ mysql> select * FROM performance_schema.replication_group_members;
 +---------------------------+--------------------------------------+-------------------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                               | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
 +---------------------------+--------------------------------------+-------------------------------------------+-------------+--------------+-------------+----------------+----------------------------+
-| group_replication_applier | b7ed7a2d-1532-11f0-9b1a-5ad095e72795 | mysql-server-0.mysql-server-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.36         | XCom                       |
-| group_replication_applier | b7ed7a33-1532-11f0-9b20-6ec1a256386b | mysql-server-2.mysql-server-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.36         | XCom                       |
-| group_replication_applier | bae6c112-1532-11f0-86bb-ce260ac82c19 | mysql-server-1.mysql-server-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.36         | XCom                       |
+| group_replication_applier | b7ed7a2d-1532-11f0-9b1a-5ad095e72795 | mysql-server-0.mysql-server-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.4.3         | XCom                       |
+| group_replication_applier | b7ed7a33-1532-11f0-9b20-6ec1a256386b | mysql-server-2.mysql-server-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.4.3         | XCom                       |
+| group_replication_applier | bae6c112-1532-11f0-86bb-ce260ac82c19 | mysql-server-1.mysql-server-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.4.3         | XCom                       |
 +---------------------------+--------------------------------------+-------------------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 3 rows in set (0.00 sec)
 
@@ -145,7 +145,7 @@ metadata:
   name: mysql-proxy
   namespace: demo
 spec:
-  version: "2.6.3-debian"
+  version: "2.7.3-debian"
   replicas: 3
   syncUsers: true
   backend:
@@ -165,7 +165,7 @@ Let's wait for the ProxySQL to be Ready.
 ```bash
 $ kubectl get prx -n demo
 NAME          VERSION        STATUS   AGE
-mysql-proxy   2.6.3-debian   Ready    109s
+mysql-proxy   2.7.3-debian   Ready    109s
 ```
 
 Let's check the pods and associated kubernetes objects

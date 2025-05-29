@@ -46,7 +46,7 @@ metadata:
   name: xtradb-galera
   namespace: demo
 spec:
-  version: "8.4.3"
+  version: "8.0.40"
   replicas: 3
   storageType: Durable
   storage:
@@ -69,7 +69,7 @@ Let's wait for the PerconaXtraDB to be Ready.
 ```bash
 $ kubectl get px -n demo 
 NAME            VERSION   STATUS   AGE
-xtradb-galera   8.4.3     Ready    8m
+xtradb-galera   8.0.40    Ready    8m
 ```
 
 Let's first create a user in the backend percona-xtradb server and a database to test the proxy traffic.
@@ -81,7 +81,7 @@ bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 471
-Server version: 8.4.3-3.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
+Server version: 8.0.40-31.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
 
 Copyright (c) 2009-2024 Percona LLC and/or its affiliates
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
@@ -120,7 +120,7 @@ Now we are ready to deploy and test our ProxySQL server.
 
 ## Deploy ProxySQL Server 
 
-With the following yaml we are going to create our desired ProxySQL server.
+With the following YAML, we are going to create our desired ProxySQL server.
 
 `Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `kubedb.com/v1alpha2` apiVersion.
 
@@ -131,9 +131,9 @@ metadata:
   name: xtradb-proxy
   namespace: demo
 spec:
-  version: "2.6.3-debian"
+  version: "2.7.3-debian"
   replicas: 3
-  syncUsers: false
+  syncUsers: true
   backend:
     name: xtradb-galera
   deletionPolicy: WipeOut
@@ -151,7 +151,7 @@ Let's wait for the ProxySQL to be Ready.
 ```bash
 $ kubectl get prx -n demo
 NAME            VERSION        STATUS   AGE
-xtradb-proxy    2.6.3-debian   Ready    17m
+xtradb-proxy    2.7.3-debian   Ready    17m
 ```
 
 Let's check the pods and associated kubernetes objects
@@ -239,14 +239,6 @@ Here we can see that all the nodes of our PerconaXtraDB Galera cluster has been 
 Let's check the mysql_users table. 
 
 ```bash
-ProxySQLAdmin > INSERT INTO mysql_users (username, password, active, default_hostgroup, backend, frontend, transaction_persistent) 
-             VALUES ('test', 'pass', 1, 2, 1, 1, 1);
-Query OK, 1 row affected (0.001 sec)
-ProxySQLAdmin > LOAD MYSQL USERS TO RUNTIME;
-Query OK, 0 rows affected (0.001 sec)
-
-ProxySQLAdmin > SAVE MYSQL USERS TO DISK;
-Query OK, 0 rows affected (0.049 sec)
 ProxySQLAdmin > select username from mysql_users;
 +----------+
 | username |
@@ -254,7 +246,6 @@ ProxySQLAdmin > select username from mysql_users;
 | root     |
 | test     |
 +----------+
-2 rows in set (0.001 sec)
 ```
 
 So test user is automatically synced in proxysql and present in mysql_users, we are now ready to test our traffic proxy.
