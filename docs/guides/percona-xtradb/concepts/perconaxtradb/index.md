@@ -68,7 +68,25 @@ spec:
 
 `spec.version` is a required field specifying the name of the [PerconaXtraDBVersion](/docs/guides/percona-xtradb/concepts/perconaxtradb-version) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PerconaXtraDBVersion` resources,
 
-- `8.0.40`, `8.0.28`
+- `5.7.44`, `8.0.40`, `8.4.3`
+
+### Handling `mbind: Operation not permitted`
+On certain platforms (e.g., when using specific security profiles), for some versions of `perconaxtradb`, you may see log messages like:   
+`mbind: Operation not permitted`   
+
+This indicates that the `perconaxtradb` container needs the `SYS_NICE` kernel capability to perform CPU‐affinity or real-time scheduling operations. You can grant this capability by extending your Pod spec as follows:
+```yaml
+spec:
+  podTemplate:
+    spec:
+      containers:
+      - name: perconaxtradb
+        securityContext:
+          capabilities:
+            add: ["SYS_NICE"]
+            drop: ["ALL"]
+```
+This ensures that only the SYS_NICE capability is added—while all others are dropped—keeping your container’s security posture minimal.
 
 ### spec.replicas
 
