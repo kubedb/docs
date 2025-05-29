@@ -24,7 +24,8 @@ Microsoft SQL Server is one of the most popular relational database management s
 |--------------------------------------------------------------------|:------------:|
 | Standalone and Availability Group Cluster (HA configuration)       |   &#10003;   |
 | Synchronous Replication                                            |   &#10003;   |
-| Automatic Failover                                                 |   &#10003;   |
+| Automatic Fail over                                                |   &#10003;   |
+| Arbiter Node for quorum in even-sized clusters                     |   &#10003;   |
 | Custom Configuration                                               |   &#10003;   |
 | Authentication & Authorization                                     |   &#10003;   |
 | Externally manageable Auth Secret                                  |   &#10003;   |
@@ -41,8 +42,8 @@ Microsoft SQL Server is one of the most popular relational database management s
 | Automated Horizontal Scaling                                       |   &#10003;   |
 | Autoscaling Compute and Storage Resources                          |   &#10003;   |
 | Reconfiguration                                                    |   &#10003;   |
-| TLS                                                                |   &#10003;   |
-| Reconfigure TLS                                                    |   &#10003;   |
+| TLS configuration ([Cert Manager](https://cert-manager.io/docs/))  |   &#10003;   |
+| Reconfiguration of TLS: Add, Remove, Update, Rotate                |   &#10003;   |
 | Grafana Dashboards                                                 |   &#10003;   |
 
 

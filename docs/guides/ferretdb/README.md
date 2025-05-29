@@ -27,6 +27,7 @@ FerretDB is an open-source proxy that translates MongoDB wire protocol queries t
 | Externally manageable Backend Engine  |   &#10003;   |
 | Authentication & Authorization        |   &#10003;   |
 | TLS Support                           |   &#10003;   |
+| Replication Support                   |   &#10003;   |
 | Monitoring using Prometheus           |   &#10003;   |
 | Builtin Prometheus Discovery          |   &#10003;   |
 | Using Prometheus operator             |   &#10003;   |
@@ -37,6 +38,9 @@ FerretDB is an open-source proxy that translates MongoDB wire protocol queries t
 
 KubeDB supports the following FerretDB Versions.
 - `1.18.0`
+- `1.23.0`
+- `1.24.0`
+- `2.0.0`
 
 ## Life Cycle of a FerretDB Object
 

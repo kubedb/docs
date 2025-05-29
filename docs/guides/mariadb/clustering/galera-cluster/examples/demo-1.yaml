@@ -6,6 +6,8 @@ metadata:
 spec:
   version: "10.5.23"
   replicas: 3
+  topology:
+    mode: GaleraCluster
   storageType: Durable
   storage:
     storageClassName: "standard"

@@ -52,7 +52,7 @@ spec:
   mode: Cluster
   cluster:
     shards: 3
-    replicas: 1
+    replicas: 2
   storageType: Durable
   storage:
     resources:
@@ -145,7 +145,7 @@ spec:
   autoOps: {}
   cluster:
     shards: 3
-    replicas: 1
+    replicas: 2
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10

@@ -25,6 +25,6 @@ From here you can learn all about KubeDB's architecture and how to deploy and us
 
 - [Guides](/docs/guides/). Guides to show you how to perform tasks with KubeDB.
 
-- [Reference](/docs/reference/). Detailed exhaustive lists of command-line options, configuration options, API definitions, and procedures.
+- Detailed exhaustive lists of command-line options, configuration options, API definitions, and procedures. Specially, [CLI](/docs/reference/cli/), [operator](/docs/reference/operator/) & [webhook-server](/docs/reference/webhook-server/).
 
 We're always looking for help improving our documentation, so please don't hesitate to [file an issue](https://github.com/kubedb/project/issues/new) if you see some problem. Or better yet, submit your own [contributions](/docs/CONTRIBUTING.md) to help make our docs better.

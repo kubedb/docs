@@ -4,7 +4,7 @@ metadata:
   name: fr-tls
   namespace: demo
 spec:
-  version: "1.23.0"
+  version: "2.0.0"
   authSecret:
     externallyManaged: false
   storage:
@@ -13,10 +13,7 @@ spec:
     resources:
       requests:
         storage: 500Mi
-  backend:
-    externallyManaged: false
   deletionPolicy: WipeOut
-  replicas: 1
   sslMode: requireSSL
   tls:
     issuerRef:

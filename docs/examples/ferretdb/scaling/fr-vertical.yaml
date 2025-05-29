@@ -4,10 +4,7 @@ metadata:
   name: fr-vertical
   namespace: demo
 spec:
-  version: "1.23.0"
-  replicas: 1
-  backend:
-    externallyManaged: false
+  version: "2.0.0"
   storage:
     accessModes:
       - ReadWriteOnce

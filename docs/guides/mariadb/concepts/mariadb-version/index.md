@@ -69,6 +69,10 @@ spec:
     image: prom/mysqld-exporter:v0.13.0
   initContainer:
     image: ghcr.io/kubedb/mariadb-init:0.5.2
+  maxscale:
+    image: mariadb/maxscale:24.02.4
+    securityContext:
+      runAsUser: 995
   podSecurityPolicies:
     databasePolicyName: maria-db
   securityContext:

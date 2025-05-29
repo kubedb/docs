@@ -3,16 +3,16 @@ title: Arbiter node for PostgresSQL even node cluster
 menu:
   docs_{{ .version }}:
     identifier: arbiter-postgres-node
-    name: Overview
-    parent: arbiter-postgres
-    weight: 10
+    name: Arbiter node
+    parent: pg-clustering-postgres
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Kubedb PostgreSQL - Arbiter node for PostgreSQL cluster with even nodes
+# KubeDB PostgreSQL - Arbiter node for PostgreSQL cluster with even nodes
 
 Here we will show how to use KubeDB to provision a PostgreSQL DB with Arbiter Node.
 
@@ -86,7 +86,7 @@ ha-postgres-0           2/2     Running   0          84s
 ha-postgres-1           2/2     Running   0          78s
 ha-postgres-arbiter-0   1/1     Running   0          68s
 ```
-Get the the pvc,
+Get the pvc,
 
 ```bash
 kubectl get pvc -n demo

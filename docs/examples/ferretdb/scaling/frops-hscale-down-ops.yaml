@@ -8,4 +8,5 @@ spec:
   databaseRef:
     name: fr-horizontal
   horizontalScaling:
-    node: 2
+    primary:
+      replicas: 2

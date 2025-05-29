@@ -45,19 +45,19 @@ In this section, we are going to deploy a FerretDB without TLS. In the next few 
 apiVersion: kubedb.com/v1alpha2
 kind: FerretDB
 metadata:
-  name: ferretdb-x
+  name: ferretdb
   namespace: demo
 spec:
-  version: "1.18.0"
+  version: "2.0.0"
   storage:
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 500Mi
-  backend:
-    externallyManaged: false
-  replicas: 2
+  server:
+    primary:
+      replicas: 2
 ```
 
 Let's create the `FerretDB` CR we have shown above,
@@ -72,9 +72,9 @@ Now, wait until `ferretdb` has status `Ready`. i.e,
 ```bash
 $ kubectl get fr -n demo
 NAME       NAMESPACE   VERSION   STATUS   AGE
-ferretdb   demo        1.18.0    Ready    75s
+ferretdb   demo        2.0.0     Ready    2m6s
 
-$ kubectl dba describe ferretdb ferretdb -n demo
+$ kubectl describe fr ferretdb -n demo
 Name:         ferretdb
 Namespace:    demo
 Labels:       <none>
@@ -82,55 +82,50 @@ Annotations:  <none>
 API Version:  kubedb.com/v1alpha2
 Kind:         FerretDB
 Metadata:
-  Creation Timestamp:  2024-10-17T11:04:08Z
+  Creation Timestamp:  2025-04-08T04:51:30Z
   Finalizers:
     kubedb.com
-  Generation:        4
-  Resource Version:  158199
-  UID:               7da85335-bac0-4247-ad69-85a7c44831df
+  Generation:        3
+  Resource Version:  61420
+  UID:               0593928b-faab-42e5-b507-815db33f8656
 Spec:
   Auth Secret:
-    Name:  ferretdb-auth
-  Backend:
-    Externally Managed:  false
-    Linked DB:           ferretdb
-    Postgres Ref:
-      Name:         ferretdb-pg-backend
-      Namespace:    demo
-    Version:        13.13
+    Name:           ferretdb-auth
   Deletion Policy:  WipeOut
   Health Checker:
     Failure Threshold:  1
     Period Seconds:     10
     Timeout Seconds:    10
-  Pod Template:
-    Controller:
-    Metadata:
-    Spec:
-      Containers:
-        Name:  ferretdb
-        Resources:
-          Limits:
-            Memory:  1Gi
-          Requests:
-            Cpu:     500m
-            Memory:  1Gi
-        Security Context:
-          Allow Privilege Escalation:  false
-          Capabilities:
-            Drop:
-              ALL
-          Run As Group:     1000
-          Run As Non Root:  true
-          Run As User:      1000
-          Seccomp Profile:
-            Type:  RuntimeDefault
-      Pod Placement Policy:
-        Name:  default
-      Security Context:
-        Fs Group:  1000
-  Replicas:        2
-  Ssl Mode:        disabled
+  Server:
+    Primary:
+      Pod Template:
+        Controller:
+        Metadata:
+        Spec:
+          Containers:
+            Name:  ferretdb
+            Resources:
+              Limits:
+                Memory:  1Gi
+              Requests:
+                Cpu:     500m
+                Memory:  1Gi
+            Security Context:
+              Allow Privilege Escalation:  false
+              Capabilities:
+                Drop:
+                  ALL
+              Run As Group:     1000
+              Run As Non Root:  true
+              Run As User:      1000
+              Seccomp Profile:
+                Type:  RuntimeDefault
+          Pod Placement Policy:
+            Name:  default
+          Security Context:
+            Fs Group:  1000
+      Replicas:        2
+  Ssl Mode:            disabled
   Storage:
     Access Modes:
       ReadWriteOnce
@@ -138,36 +133,36 @@ Spec:
       Requests:
         Storage:  500Mi
   Storage Type:   Durable
-  Version:        1.18.0
+  Version:        2.0.0
 Status:
   Conditions:
-    Last Transition Time:  2024-10-17T11:04:08Z
+    Last Transition Time:  2025-04-08T04:51:30Z
     Message:               The KubeDB operator has started the provisioning of FerretDB: demo/ferretdb
     Observed Generation:   2
     Reason:                DatabaseProvisioningStartedSuccessfully
     Status:                True
     Type:                  ProvisioningStarted
-    Last Transition Time:  2024-10-17T11:05:04Z
+    Last Transition Time:  2025-04-08T04:52:11Z
     Message:               All replicas are ready for FerretDB demo/ferretdb
-    Observed Generation:   4
+    Observed Generation:   3
     Reason:                AllReplicasReady
     Status:                True
     Type:                  ReplicaReady
-    Last Transition Time:  2024-10-17T11:05:14Z
+    Last Transition Time:  2025-04-08T04:52:21Z
     Message:               The FerretDB: demo/ferretdb is accepting client requests.
-    Observed Generation:   4
+    Observed Generation:   3
     Reason:                DatabaseAcceptingConnectionRequest
     Status:                True
     Type:                  AcceptingConnection
-    Last Transition Time:  2024-10-17T11:05:14Z
+    Last Transition Time:  2025-04-08T04:52:21Z
     Message:               The FerretDB: demo/ferretdb is ready.
-    Observed Generation:   4
+    Observed Generation:   3
     Reason:                ReadinessCheckSucceeded
     Status:                True
     Type:                  Ready
-    Last Transition Time:  2024-10-17T11:05:14Z
+    Last Transition Time:  2025-04-08T04:52:21Z
     Message:               The FerretDB: demo/ferretdb is successfully provisioned.
-    Observed Generation:   4
+    Observed Generation:   3
     Reason:                DatabaseSuccessfullyProvisioned
     Status:                True
     Type:                  Provisioned
@@ -434,23 +429,22 @@ Handling connection for 27017
 Now in another terminal
 
 ```bash
-$ mongosh 'mongodb://postgres:l*jGp8u*El8WRSDJ@localhost:27017/ferretdb?authMechanism=PLAIN&tls=true&tlsCertificateKeyFile=./client.pem&tlsCaFile=./ca.crt'
-Current Mongosh Log ID:	65efeea2a3347fff66d04c70
-Connecting to:		mongodb://<credentials>@localhost:27017/ferretdb?authMechanism=PLAIN&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.5
-Using MongoDB:		7.0.42
-Using Mongosh:		2.1.5
+$ mongosh 'mongodb://postgres:l*jGp8u*El8WRSDJ@localhost:27017/ferretdb?tls=true&tlsCertificateKeyFile=./client.pem&tlsCaFile=./ca.crt'
+Current Mongosh Log ID:	67f4b15dae8697b1fa6b140a
+Connecting to:		mongodb://<credentials>@localhost:27017/ferretdb?tls=true&tlsCertificateKeyFile=.%2Fclient.pem&tlsCaFile=.%2Fca.crt&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.4.2
+Using MongoDB:		7.0.77
+Using Mongosh:		2.4.2
 
-For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+For mongosh info see: https://www.mongodb.com/docs/mongodb-shell/
 
 ------
    The server generated these startup warnings when booting
-   2024-03-12T05:56:50.979Z: Powered by FerretDB v1.23.0 and PostgreSQL 13.13 on x86_64-pc-linux-musl, compiled by gcc.
-   2024-03-12T05:56:50.979Z: Please star us on GitHub: https://github.com/FerretDB/FerretDB.
-   2024-03-12T05:56:50.979Z: The telemetry state is undecided.
-   2024-03-12T05:56:50.979Z: Read more about FerretDB telemetry and how to opt out at https://beacon.ferretdb.io.
+   2025-04-08T05:17:18.084Z: Powered by FerretDB v2.0.0-1-g7fb2c9a8 and DocumentDB 0.102.0 (PostgreSQL 17.4).
+   2025-04-08T05:17:18.084Z: Please star 🌟 us on GitHub: https://github.com/FerretDB/FerretDB and https://github.com/microsoft/documentdb.
+   2025-04-08T05:17:18.084Z: The telemetry state is undecided. Read more about FerretDB telemetry and how to opt out at https://beacon.ferretdb.com.
 ------
 
-ferretdb>
+ferretdb> 
 ```
 So, here we have connected using the client certificate and the connection is tls secured. So, we can safely assume that tls enabling was successful.
 
@@ -1031,9 +1025,9 @@ Handling connection for 27017
 Now in another terminal
 
 ```bash
-$ mongosh 'mongodb://postgres:l*jGp8u*El8WRSDJ@localhost:27017/ferretdb?authMechanism=PLAIN'
+$ mongosh 'mongodb://postgres:l*jGp8u*El8WRSDJ@localhost:27017/ferretdb'
 Current Mongosh Log ID:	65efeea2a3347fff66d04c70
-Connecting to:		mongodb://<credentials>@localhost:27017/ferretdb?authMechanism=PLAIN&directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.5
+Connecting to:		mongodb://<credentials>@localhost:27017/ferretdb?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.5
 Using MongoDB:		7.0.42
 Using Mongosh:		2.1.5
 

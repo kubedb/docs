@@ -55,10 +55,7 @@ metadata:
   name: fr-horizontal
   namespace: demo
 spec:
-  version: "1.23.0"
-  replicas: 1
-  backend:
-    externallyManaged: false
+  version: "2.0.0"
   storage:
     accessModes:
       - ReadWriteOnce
@@ -66,6 +63,9 @@ spec:
       requests:
         storage: 500Mi
   deletionPolicy: WipeOut
+  server:
+    primary:
+      replicas: 1
 ```
 
 ```bash
@@ -77,21 +77,21 @@ Now, wait until `fr-horizontal ` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get fr -n demo
-NAME            TYPE                  VERSION   STATUS   AGE
-fr-horizontal   kubedb.com/v1alpha2   1.23.0    Ready    2m
+NAME            NAMESPACE   VERSION   STATUS   AGE
+fr-horizontal   demo        2.0.0     Ready    86s
 ```
 
 Let's check the number of replicas this ferretdb has from the FerretDB object, number of pods the petset have,
 
 ```bash
-$ kubectl get ferretdb -n demo fr-horizontal -o json | jq '.spec.replicas'
+$ kubectl get fr -n demo fr-horizontal -o json | jq '.spec.server.primary.replicas'
 1
 
 $ kubectl get petset -n demo fr-horizontal -o json | jq '.spec.replicas'
 1
 ```
 
-We can see from both command that the ferretdb has 1 replicas.
+We can see from both command that the ferretdb primary server has 1 replicas.
 
 We are now ready to apply the `FerretDBOpsRequest` CR to scale this ferretdb.
 
@@ -101,7 +101,7 @@ Here, we are going to scale up the replicas of the ferretdb to meet the desired 
 
 #### Create FerretDBOpsRequest
 
-In order to scale up the replicas of the ferretdb, we have to create a `FerretDBOpsRequest` CR with our desired replicas. Below is the YAML of the `FerretDBOpsRequest` CR that we are going to create,
+In order to scale up the replicas of the ferretdb primary server, we have to create a `FerretDBOpsRequest` CR with our desired replicas. Below is the YAML of the `FerretDBOpsRequest` CR that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -114,14 +114,15 @@ spec:
   databaseRef:
     name: fr-horizontal
   horizontalScaling:
-    node: 3
+    primary:
+      replicas: 3
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling operation on `fr-horizontal` ferretdb.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our ferretdb.
-- `spec.horizontalScaling.replicas` specifies the desired replicas after scaling.
+- `spec.horizontalScaling.primary.replicas` specifies the desired primary server replicas after scaling.
 
 Let's create the `FerretDBOpsRequest` CR we have shown above,
 
@@ -154,90 +155,91 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         FerretDBOpsRequest
 Metadata:
-  Creation Timestamp:  2024-10-21T10:03:39Z
+  Creation Timestamp:  2025-04-08T06:23:50Z
   Generation:          1
-  Resource Version:    353610
-  UID:                 ce6c9e66-6196-4746-851a-ea49084eda05
+  Resource Version:    64728
+  UID:                 ba4b687c-7127-46a6-bf01-9c5d5d916555
 Spec:
   Apply:  IfReady
   Database Ref:
     Name:  fr-horizontal
   Horizontal Scaling:
-    Node:  3
-  Type:    HorizontalScaling
+    Primary:
+      Replicas:  3
+  Type:          HorizontalScaling
 Status:
   Conditions:
-    Last Transition Time:  2024-10-21T10:04:30Z
+    Last Transition Time:  2025-04-08T06:23:51Z
     Message:               FerretDB ops-request has started to horizontally scaling the nodes
     Observed Generation:   1
     Reason:                HorizontalScaling
     Status:                True
     Type:                  HorizontalScaling
-    Last Transition Time:  2024-10-21T10:04:33Z
+    Last Transition Time:  2025-04-08T06:23:54Z
     Message:               Successfully paused database
     Observed Generation:   1
     Reason:                DatabasePauseSucceeded
     Status:                True
     Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-10-21T10:04:58Z
+    Last Transition Time:  2025-04-08T06:24:19Z
     Message:               Successfully Scaled Up Node
     Observed Generation:   1
     Reason:                HorizontalScaleUp
     Status:                True
     Type:                  HorizontalScaleUp
-    Last Transition Time:  2024-10-21T10:04:38Z
+    Last Transition Time:  2025-04-08T06:23:59Z
     Message:               patch petset; ConditionStatus:True; PodName:fr-horizontal-1
     Observed Generation:   1
     Status:                True
     Type:                  PatchPetset--fr-horizontal-1
-    Last Transition Time:  2024-10-21T10:04:43Z
+    Last Transition Time:  2025-04-08T06:24:04Z
     Message:               is pod ready; ConditionStatus:True; PodName:fr-horizontal-1
     Observed Generation:   1
     Status:                True
     Type:                  IsPodReady--fr-horizontal-1
-    Last Transition Time:  2024-10-21T10:04:43Z
+    Last Transition Time:  2025-04-08T06:24:04Z
     Message:               client failure; ConditionStatus:True; PodName:fr-horizontal-1
     Observed Generation:   1
     Status:                True
     Type:                  ClientFailure--fr-horizontal-1
-    Last Transition Time:  2024-10-21T10:04:43Z
+    Last Transition Time:  2025-04-08T06:24:04Z
     Message:               is node healthy; ConditionStatus:True; PodName:fr-horizontal-1
     Observed Generation:   1
     Status:                True
     Type:                  IsNodeHealthy--fr-horizontal-1
-    Last Transition Time:  2024-10-21T10:04:48Z
+    Last Transition Time:  2025-04-08T06:24:09Z
     Message:               patch petset; ConditionStatus:True; PodName:fr-horizontal-2
     Observed Generation:   1
     Status:                True
     Type:                  PatchPetset--fr-horizontal-2
-    Last Transition Time:  2024-10-21T10:04:48Z
+    Last Transition Time:  2025-04-08T06:24:09Z
     Message:               fr-horizontal already has desired replicas
     Observed Generation:   1
     Reason:                HorizontalScale
     Status:                True
     Type:                  HorizontalScale
-    Last Transition Time:  2024-10-21T10:04:53Z
+    Last Transition Time:  2025-04-08T06:24:14Z
     Message:               is pod ready; ConditionStatus:True; PodName:fr-horizontal-2
     Observed Generation:   1
     Status:                True
     Type:                  IsPodReady--fr-horizontal-2
-    Last Transition Time:  2024-10-21T10:04:53Z
+    Last Transition Time:  2025-04-08T06:24:14Z
     Message:               client failure; ConditionStatus:True; PodName:fr-horizontal-2
     Observed Generation:   1
     Status:                True
     Type:                  ClientFailure--fr-horizontal-2
-    Last Transition Time:  2024-10-21T10:04:53Z
+    Last Transition Time:  2025-04-08T06:24:14Z
     Message:               is node healthy; ConditionStatus:True; PodName:fr-horizontal-2
     Observed Generation:   1
     Status:                True
     Type:                  IsNodeHealthy--fr-horizontal-2
-    Last Transition Time:  2024-10-21T10:04:58Z
+    Last Transition Time:  2025-04-08T06:24:19Z
     Message:               Successfully updated FerretDB
     Observed Generation:   1
     Reason:                UpdateDatabase
     Status:                True
     Type:                  UpdateDatabase
-    Last Transition Time:  2024-10-21T10:04:58Z
+    Last Transition Time:  2025-04-08T06:24:19Z
     Message:               Successfully completed the HorizontalScaling for FerretDB
     Observed Generation:   1
     Reason:                Successful
@@ -248,38 +250,38 @@ Status:
 Events:
   Type     Reason                                                          Age   From                         Message
   ----     ------                                                          ----  ----                         -------
-  Normal   Starting                                                        67s   KubeDB Ops-manager Operator  Start processing for FerretDBOpsRequest: demo/ferretdb-horizontal-scale-up
-  Normal   Starting                                                        67s   KubeDB Ops-manager Operator  Pausing FerretDB database: demo/fr-horizontal
-  Normal   Successful                                                      67s   KubeDB Ops-manager Operator  Successfully paused FerretDB database: demo/fr-horizontal for FerretDBOpsRequest: ferretdb-horizontal-scale-up
-  Warning  patch petset; ConditionStatus:True; PodName:fr-horizontal-1     59s   KubeDB Ops-manager Operator  patch petset; ConditionStatus:True; PodName:fr-horizontal-1
-  Warning  is pod ready; ConditionStatus:True; PodName:fr-horizontal-1     54s   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:True; PodName:fr-horizontal-1
-  Warning  client failure; ConditionStatus:True; PodName:fr-horizontal-1   54s   KubeDB Ops-manager Operator  client failure; ConditionStatus:True; PodName:fr-horizontal-1
-  Warning  is node healthy; ConditionStatus:True; PodName:fr-horizontal-1  54s   KubeDB Ops-manager Operator  is node healthy; ConditionStatus:True; PodName:fr-horizontal-1
-  Warning  patch petset; ConditionStatus:True; PodName:fr-horizontal-2     49s   KubeDB Ops-manager Operator  patch petset; ConditionStatus:True; PodName:fr-horizontal-2
-  Warning  is pod ready; ConditionStatus:True; PodName:fr-horizontal-2     44s   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:True; PodName:fr-horizontal-2
-  Warning  client failure; ConditionStatus:True; PodName:fr-horizontal-2   44s   KubeDB Ops-manager Operator  client failure; ConditionStatus:True; PodName:fr-horizontal-2
-  Warning  is node healthy; ConditionStatus:True; PodName:fr-horizontal-2  44s   KubeDB Ops-manager Operator  is node healthy; ConditionStatus:True; PodName:fr-horizontal-2
-  Normal   HorizontalScaleUp                                               39s   KubeDB Ops-manager Operator  Successfully Scaled Up Node
-  Normal   UpdateDatabase                                                  39s   KubeDB Ops-manager Operator  Successfully updated FerretDB
-  Normal   Starting                                                        39s   KubeDB Ops-manager Operator  Resuming FerretDB database: demo/fr-horizontal
-  Normal   Successful                                                      39s   KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/fr-horizontal for FerretDBOpsRequest: ferretdb-horizontal-scale-up
+  Normal   Starting                                                        43s   KubeDB Ops-manager Operator  Start processing for FerretDBOpsRequest: demo/ferretdb-horizontal-scale-up
+  Normal   Starting                                                        43s   KubeDB Ops-manager Operator  Pausing FerretDB database: demo/fr-horizontal
+  Normal   Successful                                                      43s   KubeDB Ops-manager Operator  Successfully paused FerretDB database: demo/fr-horizontal for FerretDBOpsRequest: ferretdb-horizontal-scale-up
+  Warning  patch petset; ConditionStatus:True; PodName:fr-horizontal-1     35s   KubeDB Ops-manager Operator  patch petset; ConditionStatus:True; PodName:fr-horizontal-1
+  Warning  is pod ready; ConditionStatus:True; PodName:fr-horizontal-1     30s   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:True; PodName:fr-horizontal-1
+  Warning  client failure; ConditionStatus:True; PodName:fr-horizontal-1   30s   KubeDB Ops-manager Operator  client failure; ConditionStatus:True; PodName:fr-horizontal-1
+  Warning  is node healthy; ConditionStatus:True; PodName:fr-horizontal-1  30s   KubeDB Ops-manager Operator  is node healthy; ConditionStatus:True; PodName:fr-horizontal-1
+  Warning  patch petset; ConditionStatus:True; PodName:fr-horizontal-2     25s   KubeDB Ops-manager Operator  patch petset; ConditionStatus:True; PodName:fr-horizontal-2
+  Warning  is pod ready; ConditionStatus:True; PodName:fr-horizontal-2     20s   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:True; PodName:fr-horizontal-2
+  Warning  client failure; ConditionStatus:True; PodName:fr-horizontal-2   20s   KubeDB Ops-manager Operator  client failure; ConditionStatus:True; PodName:fr-horizontal-2
+  Warning  is node healthy; ConditionStatus:True; PodName:fr-horizontal-2  20s   KubeDB Ops-manager Operator  is node healthy; ConditionStatus:True; PodName:fr-horizontal-2
+  Normal   HorizontalScaleUp                                               15s   KubeDB Ops-manager Operator  Successfully Scaled Up Node
+  Normal   UpdateDatabase                                                  15s   KubeDB Ops-manager Operator  Successfully updated FerretDB
+  Normal   Starting                                                        15s   KubeDB Ops-manager Operator  Resuming FerretDB database: demo/fr-horizontal
+  Normal   Successful                                                      15s   KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/fr-horizontal for FerretDBOpsRequest: ferretdb-horizontal-scale-up
 ```
 
 Now, we are going to verify the number of replicas this ferretdb has from the FerretDB object, number of pods the petset have,
 
 ```bash
-$ kubectl get fr -n demo fr-horizontal -o json | jq '.spec.replicas'
+$ kubectl get fr -n demo fr-horizontal -o json | jq '.spec.server.primary.replicas'
 3
 
 $ kubectl get petset -n demo fr-horizontal -o json | jq '.spec.replicas'
 3
 ```
-From all the above outputs we can see that the replicas of the ferretdb is `3`. That means we have successfully scaled up the replicas of the FerretDB.
+From all the above outputs we can see that the replicas of the ferretdb primary server is `3`. That means we have successfully scaled up the replicas of the FerretDB.
 
 
 ### Scale Down Replicas
 
-Here, we are going to scale down the replicas of the ferretdb to meet the desired number of replicas after scaling.
+Here, we are going to scale down the replicas of the ferretdb primary server to meet the desired number of replicas after scaling.
 
 #### Create FerretDBOpsRequest
 
@@ -296,14 +298,15 @@ spec:
   databaseRef:
     name: fr-horizontal
   horizontalScaling:
-    node: 2
+    primary:
+      replicas: 2
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling down operation on `fr-horizontal` ferretdb.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our ferretdb.
-- `spec.horizontalScaling.replicas` specifies the desired replicas after scaling.
+- `spec.horizontalScaling.primary.replicas` specifies the desired primary server replicas after scaling.
 
 Let's create the `FerretDBOpsRequest` CR we have shown above,
 
@@ -336,60 +339,61 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         FerretDBOpsRequest
 Metadata:
-  Creation Timestamp:  2024-10-21T10:06:42Z
+  Creation Timestamp:  2025-04-08T06:26:09Z
   Generation:          1
-  Resource Version:    353838
-  UID:                 69cb9e8a-ec89-41e2-9e91-ce61a68044b9
+  Resource Version:    64829
+  UID:                 369e5413-9fa3-47de-b491-f7f7568a45c1
 Spec:
   Apply:  IfReady
   Database Ref:
     Name:  fr-horizontal
   Horizontal Scaling:
-    Node:  2
-  Type:    HorizontalScaling
+    Primary:
+      Replicas:  2
+  Type:          HorizontalScaling
 Status:
   Conditions:
-    Last Transition Time:  2024-10-21T10:06:42Z
+    Last Transition Time:  2025-04-08T06:26:09Z
     Message:               FerretDB ops-request has started to horizontally scaling the nodes
     Observed Generation:   1
     Reason:                HorizontalScaling
     Status:                True
     Type:                  HorizontalScaling
-    Last Transition Time:  2024-10-21T10:06:45Z
+    Last Transition Time:  2025-04-08T06:26:12Z
     Message:               Successfully paused database
     Observed Generation:   1
     Reason:                DatabasePauseSucceeded
     Status:                True
     Type:                  DatabasePauseSucceeded
-    Last Transition Time:  2024-10-21T10:07:00Z
+    Last Transition Time:  2025-04-08T06:26:27Z
     Message:               Successfully Scaled Down Node
     Observed Generation:   1
     Reason:                HorizontalScaleDown
     Status:                True
     Type:                  HorizontalScaleDown
-    Last Transition Time:  2024-10-21T10:06:50Z
+    Last Transition Time:  2025-04-08T06:26:17Z
     Message:               patch petset; ConditionStatus:True; PodName:fr-horizontal-2
     Observed Generation:   1
     Status:                True
     Type:                  PatchPetset--fr-horizontal-2
-    Last Transition Time:  2024-10-21T10:06:51Z
+    Last Transition Time:  2025-04-08T06:26:17Z
     Message:               fr-horizontal already has desired replicas
     Observed Generation:   1
     Reason:                HorizontalScale
     Status:                True
     Type:                  HorizontalScale
-    Last Transition Time:  2024-10-21T10:06:55Z
+    Last Transition Time:  2025-04-08T06:26:22Z
     Message:               get pod; ConditionStatus:True; PodName:fr-horizontal-2
     Observed Generation:   1
     Status:                True
     Type:                  GetPod--fr-horizontal-2
-    Last Transition Time:  2024-10-21T10:07:00Z
+    Last Transition Time:  2025-04-08T06:26:27Z
     Message:               Successfully updated FerretDB
     Observed Generation:   1
     Reason:                UpdateDatabase
     Status:                True
     Type:                  UpdateDatabase
-    Last Transition Time:  2024-10-21T10:07:00Z
+    Last Transition Time:  2025-04-08T06:26:27Z
     Message:               Successfully completed the HorizontalScaling for FerretDB
     Observed Generation:   1
     Reason:                Successful
@@ -400,21 +404,21 @@ Status:
 Events:
   Type     Reason                                                       Age   From                         Message
   ----     ------                                                       ----  ----                         -------
-  Normal   Starting                                                     55s   KubeDB Ops-manager Operator  Start processing for FerretDBOpsRequest: demo/ferretdb-horizontal-scale-down
-  Normal   Starting                                                     55s   KubeDB Ops-manager Operator  Pausing FerretDB database: demo/fr-horizontal
-  Normal   Successful                                                   55s   KubeDB Ops-manager Operator  Successfully paused FerretDB database: demo/fr-horizontal for FerretDBOpsRequest: ferretdb-horizontal-scale-down
-  Warning  patch petset; ConditionStatus:True; PodName:fr-horizontal-2  47s   KubeDB Ops-manager Operator  patch petset; ConditionStatus:True; PodName:fr-horizontal-2
-  Warning  get pod; ConditionStatus:True; PodName:fr-horizontal-2       42s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:fr-horizontal-2
-  Normal   HorizontalScaleDown                                          37s   KubeDB Ops-manager Operator  Successfully Scaled Down Node
-  Normal   UpdateDatabase                                               37s   KubeDB Ops-manager Operator  Successfully updated FerretDB
-  Normal   Starting                                                     37s   KubeDB Ops-manager Operator  Resuming FerretDB database: demo/fr-horizontal
-  Normal   Successful                                                   37s   KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/fr-horizontal for FerretDBOpsRequest: ferretdb-horizontal-scale-down
+  Normal   Starting                                                     43s   KubeDB Ops-manager Operator  Start processing for FerretDBOpsRequest: demo/ferretdb-horizontal-scale-down
+  Normal   Starting                                                     43s   KubeDB Ops-manager Operator  Pausing FerretDB database: demo/fr-horizontal
+  Normal   Successful                                                   43s   KubeDB Ops-manager Operator  Successfully paused FerretDB database: demo/fr-horizontal for FerretDBOpsRequest: ferretdb-horizontal-scale-down
+  Warning  patch petset; ConditionStatus:True; PodName:fr-horizontal-2  35s   KubeDB Ops-manager Operator  patch petset; ConditionStatus:True; PodName:fr-horizontal-2
+  Warning  get pod; ConditionStatus:True; PodName:fr-horizontal-2       30s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:fr-horizontal-2
+  Normal   HorizontalScaleDown                                          25s   KubeDB Ops-manager Operator  Successfully Scaled Down Node
+  Normal   UpdateDatabase                                               25s   KubeDB Ops-manager Operator  Successfully updated FerretDB
+  Normal   Starting                                                     25s   KubeDB Ops-manager Operator  Resuming FerretDB database: demo/fr-horizontal
+  Normal   Successful                                                   25s   KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/fr-horizontal for FerretDBOpsRequest: ferretdb-horizontal-scale-down
 ```
 
 Now, we are going to verify the number of replicas this ferretdb has from the FerretDB object, number of pods the petset have,
 
 ```bash
-$ kubectl get fr -n demo fr-horizontal -o json | jq '.spec.replicas'
+$ kubectl get fr -n demo fr-horizontal -o json | jq '.spec.server.primary.replicas'
 2
 
 $ kubectl get petset -n demo fr-horizontal -o json | jq '.spec.replicas'

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: ubuntu
+  name: ubuntu
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ubuntu
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ubuntu
+    spec:
+      containers:
+        - image: ubuntu
+          imagePullPolicy: IfNotPresent
+          name: ubuntu
+          command: ["/bin/sleep", "3650d"]
+          resources: {}

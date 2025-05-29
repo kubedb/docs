@@ -25,7 +25,6 @@ KubeDB operator now comes bundled with Pgpool crd to manage all the essential fe
 
 | Features                                                    | Availability |
 |-------------------------------------------------------------|:------------:|
-| Clustering                                                  |   &#10003;   |
 | Multiple Pgpool Versions                                    |   &#10003;   |
 | Custom Configuration                                        |   &#10003;   |
 | Externally manageable Auth Secret                           |   &#10003;   |
@@ -44,7 +43,9 @@ KubeDB operator now comes bundled with Pgpool crd to manage all the essential fe
 
 KubeDB supports the following Pgpool versions:
 - `4.4.5`
+- `4.4.8`
 - `4.5.0`
+- `4.5.3`
 
 > The listed PgpoolVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [PgpoolVersion](/docs/guides/pgpool/concepts/catalog.md) object with your custom pgpool image.
 

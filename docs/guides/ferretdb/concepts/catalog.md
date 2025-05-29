@@ -34,6 +34,8 @@ metadata:
 spec:
   db:
     image: ghcr.io/appscode-images/ferretdb:1.23.0
+  postgres:
+    version: 17.4-documentdb    
   securityContext:
     runAsUser: 1000
   version: 1.23.0
@@ -60,9 +62,13 @@ We plan to modify original FerretDB docker images to support additional features
 
 The default value of this field is `false`. If `spec.deprecated` is set `true`, KubeDB operator will not create the server and other respective resources for this version.
 
-### spec.ferretdb.image
+### spec.db.image
 
-`spec.ferretdb.image` is a required field that specifies the docker image which will be used to create PetSet by KubeDB operator to create expected FerretDB server.
+`spec.db.image` is a required field that specifies the docker image which will be used to create PetSet by KubeDB operator to create expected FerretDB server.
+
+### spec.postgres.version
+
+`spec.postgres.version` is required field that specifies which KubeDB Postgres version will be used as backend of FerretDB.
 
 ### spec.securityContext
 

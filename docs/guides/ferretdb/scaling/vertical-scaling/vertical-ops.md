@@ -55,10 +55,7 @@ metadata:
   name: fr-vertical
   namespace: demo
 spec:
-  version: "1.23.0"
-  replicas: 1
-  backend:
-    externallyManaged: false
+  version: "2.0.0"
   storage:
     accessModes:
       - ReadWriteOnce
@@ -80,7 +77,7 @@ Now, wait until `fr-vertical` has status `Ready`. i.e,
 ```bash
 $ kubectl get fr -n demo
 NAME          TYPE                  VERSION   STATUS   AGE
-fr-vertical   kubedb.com/v1alpha2   1.23.0    Ready    17s
+fr-vertical   kubedb.com/v1alpha2   2.0.0     Ready    17s
 ```
 
 Let's check the Pod containers resources,
@@ -108,7 +105,7 @@ Here, we are going to update the resources of the ferretdb to meet the desired r
 
 #### Create FerretDBOpsRequest
 
-In order to update the resources of the ferretdb, we have to create a `FerretDBOpsRequest` CR with our desired resources. Below is the YAML of the `FerretDBOpsRequest` CR that we are going to create,
+In order to update the resources of the ferretdb, we have to create a `FerretDBOpsRequest` CR with our desired resources for primary server. Below is the YAML of the `FerretDBOpsRequest` CR that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -121,7 +118,7 @@ spec:
   databaseRef:
     name: fr-vertical
   verticalScaling:
-    node:
+    primary:
       resources:
         requests:
           memory: "2Gi"
@@ -137,7 +134,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `fr-vertical` ferretdb.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
-- `spec.VerticalScaling.standalone` specifies the desired resources after scaling.
+- `spec.VerticalScaling.primary` specifies the desired resources after scaling of primary server.
 - Have a look [here](/docs/guides/ferretdb/concepts/opsrequest.md) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `FerretDBOpsRequest` CR we have shown above,
@@ -254,7 +251,7 @@ Events:
   Normal   Successful                                                      39s   KubeDB Ops-manager Operator  Successfully resumed FerretDB database: demo/fr-vertical for FerretDBOpsRequest: ferretdb-scale-vertical
 ```
 
-Now, we are going to verify from the Pod yaml whether the resources of the ferretdb has updated to meet up the desired state, Let's check,
+Now, we are going to verify from the Pod yaml whether the resources of the ferretdb primary server has updated to meet up the desired state, Let's check,
 
 ```bash
 $ kubectl get pod -n demo fr-vertical-0 -o json | jq '.spec.containers[].resources'

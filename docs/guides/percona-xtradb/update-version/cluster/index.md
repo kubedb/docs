@@ -52,7 +52,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.26"
+  version: "8.0.40"
   replicas: 3
   storageType: Durable
   storage:
@@ -78,14 +78,14 @@ Now, wait until `sample-pxc` created has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo                                                                                                                                             
 NAME             VERSION    STATUS     AGE
-sample-pxc   8.0.26    Ready     3m15s
+sample-pxc   8.0.40    Ready     3m15s
 ```
 
 We are now ready to apply the `PerconaXtraDBOpsRequest` CR to update this database.
 
 ### Update PerconaXtraDB Version
 
-Here, we are going to update `PerconaXtraDB` cluster from `8.0.26` to `8.0.28`.
+Here, we are going to update `PerconaXtraDB` cluster from `8.0.40` to `8.0.28`.
 
 #### Create PerconaXtraDBOpsRequest:
 

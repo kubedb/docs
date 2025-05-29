@@ -37,7 +37,7 @@ spec:
   databaseRef:
     name: sample-pxc
   updateVersion:
-    targetVersion: 8.0.26
+    targetVersion: 8.0.40
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -124,6 +124,7 @@ spec:
   configuration:   
     applyConfig:
       my-apply.cnf: |-
+        [mysqld]
         max_connections = 300
         read_buffer_size = 1234567
 status:
