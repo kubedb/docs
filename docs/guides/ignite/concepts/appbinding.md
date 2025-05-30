@@ -2,9 +2,9 @@
 title: AppBinding CRD
 menu:
   docs_{{ .version }}:
-    identifier: mc-appbinding-concepts
+    identifier: ig-appbinding-concepts
     name: AppBinding
-    parent: mc-concepts-memcached
+    parent: ig-concepts-ignite
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -26,7 +26,7 @@ KubeDB uses [Stash](https://appscode.com/products/stash/) to perform backup/reco
 
 Like any official Kubernetes resource, an `AppBinding` has `TypeMeta`, `ObjectMeta` and `Spec` sections. However, unlike other Kubernetes resources, it does not have a `Status` section.
 
-An `AppBinding` object created by `KubeDB` for Memcached database is shown below,
+An `AppBinding` object created by `KubeDB` for Ignite database is shown below,
 
 ```yaml
   apiVersion: appcatalog.appscode.com/v1alpha1
@@ -34,29 +34,29 @@ An `AppBinding` object created by `KubeDB` for Memcached database is shown below
   metadata:
     annotations:
       kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"appcatalog.appscode.com/v1alpha1","kind":"AppBinding","metadata":{"annotations":{},"name":"memcached-appbinding","namespace":"demo"},"spec":{"appRef":{"apiGroup":"kubedb.com","kind":"Memcached","name":"mc1","namespace":"demo"},"clientConfig":{"service":{"name":"memcached","namespace":"demo","port":11211,"scheme":"tcp"}},"secret":{"name":"memcached-auth"},"type":"kubedb.com/memcached","version":"1.6.22"}}
-    creationTimestamp: "2024-08-26T09:51:57Z"
+        {"apiVersion":"appcatalog.appscode.com/v1alpha1","kind":"AppBinding","metadata":{"annotations":{},"name":"ignite-appbinding","namespace":"demo"},"spec":{"appRef":{"apiGroup":"kubedb.com","kind":"ignite","name":"mc1","namespace":"demo"},"clientConfig":{"service":{"name":"ignite","namespace":"demo","port":11211,"scheme":"tcp"}},"secret":{"name":"ignite-auth"},"type":"kubedb.com/ignite","version":"1.6.22"}}
+    creationTimestamp: "2025-04-26T09:51:57Z"
     generation: 1
-    name: memcached-appbinding
+    name: ignite-appbinding
     namespace: demo
     resourceVersion: "4172425"
     uid: 01a902e2-3de6-45de-85a3-4f115b334625
   spec:
     appRef:
       apiGroup: kubedb.com
-      kind: Memcached
-      name: mc1
+      kind: Ignite
+      name: ig
       namespace: demo
     clientConfig:
       service:
-        name: memcached
+        name: ignite
         namespace: demo
         port: 11211
         scheme: tcp
     secret:
-      name: memcached-auth
-    type: kubedb.com/memcached
-    version: 1.6.22
+      name: ignite-auth
+    type: kubedb.com/ignite
+    version: 2.17.0
 ```
 Here, we are going to describe the sections of an `AppBinding` crd.
 
@@ -76,7 +76,7 @@ This secret must contain the following keys:
 
 | Key                 | Usage                                               |
 | ------------------- | --------------------------------------------------- |
-| `Username`     | Username of the target Memcached database.                    |
+| `Username`     | Username of the target Ignite database.                    |
 | `Password` | Password for the user specified by `Username`. |
 
 
