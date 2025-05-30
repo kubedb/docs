@@ -109,12 +109,13 @@ spec:
   version: "2.0.0"
   authSecret:
     externallyManaged: false
-  storage:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 500Mi
+  backend:
+    storage:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 500Mi
   deletionPolicy: WipeOut
   sslMode: requireSSL
   tls:
