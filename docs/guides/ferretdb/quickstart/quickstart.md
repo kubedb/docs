@@ -72,13 +72,14 @@ spec:
   authSecret:
     externallyManaged: false
   sslMode: disabled
-  storageType: Durable
-  storage:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 500Mi
+  backend:
+    storageType: Durable
+    storage:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 500Mi
   deletionPolicy: WipeOut
 ```
 

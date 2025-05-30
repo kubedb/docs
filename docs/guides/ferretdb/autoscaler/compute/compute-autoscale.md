@@ -69,12 +69,13 @@ spec:
                 limits:
                   cpu: "200m"
                   memory: "300Mi"
-  storage:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 500Mi
+  backend:
+    storage:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 500Mi
   deletionPolicy: WipeOut
 ```
 

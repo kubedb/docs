@@ -49,12 +49,13 @@ metadata:
   namespace: demo
 spec:
   version: "2.0.0"
-  storage:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
+  backend:
+    storage:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
   deletionPolicy: WipeOut
   server:
     primary:
