@@ -20,15 +20,15 @@ aliases:
 | Clustering                             |   &#10003;   |
 | Persistent Volume                      |   &#10003;   |
 | Initialize using Script                |   &#10003;   |
-| Multiple Ignite Versions               |   &#10003;   |
+| Multiple Ignite Versions         |   &#10003;   |
 | Custom Configuration                   |   &#10003;   |
 | Externally manageable Auth Secret	     |   &#10003;   |
-| Reconfigurable Health Checker		       |   &#10003;   |
+| Reconfigurable Health Checker		     |   &#10003;   |
 | Using Custom docker image              |   &#10003;   |
 | Builtin Prometheus Discovery           |   &#10003;   |
 | Using Prometheus operator              |   &#10003;   |
-| Grafana Dashboard                      |   &#10003;   |
-| Alert Dashboard	                       |   &#10003;   |
+| Grafana Dashboard               |   &#10003;   |
+| Alert Dashboard	               |   &#10003;   |
 
 
 
@@ -43,5 +43,6 @@ aliases:
 - Monitor your Ignite server with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/ignite/monitoring/using-prometheus-operator.md).
 - Monitor your Ignite server with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/ignite/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/ignite/private-registry/using-private-registry.md) to deploy Ignite with KubeDB.
+- Use [kubedb cli](/docs/guides/ignite/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [Ignite object](/docs/guides/ignite/concepts/ignite.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is IgniteVersion
 
-`IgniteVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Ignite](https://ignite.apache.org/) database deployed with KubeDB in a Kubernetes native way.
+`IgniteVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Ignite](https://ignite.org) database deployed with KubeDB in a Kubernetes native way.
 
 When you install KubeDB, a `IgniteVersion` custom resource will be created automatically for every supported Ignite versions. You have to specify the name of `IgniteVersion` crd in `spec.version` field of [Ignite](/docs/guides/ignite/concepts/ignite.md) crd. Then, KubeDB will use the docker images specified in the `IgniteVersion` crd to create your expected database.
 

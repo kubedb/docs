@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is Ignite
 
-`Ignite` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Ignite](https://ignite.apache.org/) in a Kubernetes native way. You only need to describe the desired database configuration in a Ignite object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`Ignite` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Ignite](https://ignite.org/) in a Kubernetes native way. You only need to describe the desired database configuration in a Ignite object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## Ignite Spec
 
@@ -156,7 +156,7 @@ At least one of the following was changed:
     spec.podTemplate.spec.env
 ```
 
-#### spec.podTemplate.spec.containers[].resources
+##### spec.podTemplate.spec.containers[].resources
 
 `spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
@@ -229,8 +229,6 @@ Following table show what KubeDB does when you delete Ignite crd for different t
 | 4. Delete Secrets          |    &#10007;     | &#10007; | &#10003; |
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
-
-> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
 
 ## spec.helathChecker
 It defines the attributes for the health checker.
