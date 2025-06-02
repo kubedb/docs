@@ -2,9 +2,9 @@
 title: Monitor Ignite using Prometheus Operator
 menu:
   docs_{{ .version }}:
-    identifier: ig-using-prometheus-operator-monitoring
+    identifier: mc-using-prometheus-operator-monitoring
     name: Prometheus Operator
-    parent: ig-monitoring-ignite
+    parent: mc-monitoring-ignite
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -222,7 +222,7 @@ ignite.kubedb.com/ignite created
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get ig -n demo ignite
+$ kubectl get mc -n demo ignite
 NAME        VERSION   STATUS   AGE
 ignite      2.17.0    Ready    2m
 ```
@@ -344,7 +344,7 @@ Forwarding from [::1]:9090 -> 9090
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `ignite-stats` service as one of the targets.
 
 <p align="center">
-  <img alt="Prometheus Target" src="/docs/images/ignite/monitoring/ig-coreos-prom-target.png" style="padding:10px">
+  <img alt="Prometheus Target" src="/docs/images/ignite/monitoring/mc-coreos-prom-target.png" style="padding:10px">
 </p>
 
 Check the `endpoint` and `service` labels marked by red rectangle. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.

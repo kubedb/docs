@@ -70,7 +70,7 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the Ignite instance named `quick-ignite`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/ig-custom-role.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/mc-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
@@ -257,6 +257,7 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 - Monitor your Ignite database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/ignite/monitoring/using-prometheus-operator.md).
 - Monitor your Ignite database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/ignite/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/ignite/private-registry/using-private-registry.md) to deploy Ignite with KubeDB.
+- Use [kubedb cli](/docs/guides/ignite/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [Ignite object](/docs/guides/ignite/concepts/ignite.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

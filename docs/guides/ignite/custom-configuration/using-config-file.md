@@ -2,7 +2,7 @@
 title: Run Ignite with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: ig-using-config-file-configuration
+    identifier: mc-using-config-file-configuration
     name: Customize Configurations
     parent: custom-configuration
     weight: 10
@@ -97,7 +97,7 @@ type: Opaque
 Now, create Ignite crd specifying `spec.configSecret` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/configuration/custom-ignite.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/configuration/ig-custom.yaml
 ignite.kubedb.com/custom-ignite created
 ```
 
@@ -129,7 +129,7 @@ Now, wait a few minutes. KubeDB operator will create necessary petset, services 
 Check if the database is ready
 
 ```bash
-$ kubectl get ig -n demo
+$ kubectl get mc -n demo
 NAME               VERSION   STATUS   AGE
 custom-ignite      2.17.0    Ready    17m
 ```
@@ -139,6 +139,8 @@ We will connect to `custom-ignite-0` pod:
 
 ```bash
 $ kubectl exec -it -n demo ignite-quickstart-0 -c ignite -- bash
+
+// Now we will look into the configuration file.
 [ignite@ignite-quickstart-0 config]$ cat /ignite/config/node-configuration.xml
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -153,7 +155,6 @@ http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
     </bean>
 </beans>
 ```
-
 Here, we can see `authenticationEnabled's` value is `true`.
 
 ## Cleaning up
