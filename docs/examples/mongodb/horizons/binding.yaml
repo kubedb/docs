@@ -1,0 +1,9 @@
+apiVersion: catalog.appscode.com/v1alpha1
+kind: MongoDBBinding
+metadata:
+  name: mongodb-bind
+  namespace: demo
+spec:
+  sourceRef:
+    name: mongodb-horizons
+    namespace: demo
