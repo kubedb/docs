@@ -1,0 +1,13 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
+metadata:
+  name: ignite-node-selector
+  namespace: demo
+spec:
+  version: "2.17.0"
+  replicas: 1
+  podTemplate:
+    spec:
+      nodeSelector:
+        disktype: ssd
+  deletionPolicy: WipeOut

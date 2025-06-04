@@ -70,7 +70,7 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the Ignite instance named `quick-ignite`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/mc-custom-role.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/ig-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
