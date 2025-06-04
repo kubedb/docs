@@ -2,9 +2,9 @@
 title: Monitor Ignite using Builtin Prometheus Discovery
 menu:
   docs_{{ .version }}:
-    identifier: mc-using-builtin-prometheus-monitoring
+    identifier: ig-using-builtin-prometheus-monitoring
     name: Builtin Prometheus
-    parent: mc-monitoring-ignite
+    parent: ig-monitoring-ignite
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -46,37 +46,20 @@ At first, let's deploy a Ignite server with monitoring enabled. Below is the Ign
 apiVersion: kubedb.com/v1alpha2
 kind: Ignite
 metadata:
-  name: builtin-prom-ignite
+  name: ignite-quickstart
   namespace: demo
 spec:
-  replicas: 1
-  version: "2.17.0"
-  deletionPolicy: WipeOut
-  podTemplate:
-    spec:
-      containers:
-      - name: ignite
-        resources:
-          limits:
-            cpu: 500m
-            memory: 256Mi
-          requests:
-            cpu: 500m
-            memory: 256Mi
+  replicas: 3
+  version: 2.17.0
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
   monitor:
-    agent: prometheus.io/operator
-    prometheus:
-      serviceMonitor:
-        labels:
-          release: prometheus
-      exporter:
-        resources:
-          requests:
-            memory: 512Mi
-            cpu: 200m
-          limits:
-            memory: 512Mi
-            cpu: 250m
+    agent: prometheus.io/builtin
+  deletionPolicy: WipeOut
 ```
 
 Here,
@@ -337,10 +320,8 @@ Forwarding from [::1]:9090 -> 9090
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see the endpoints of `builtin-prom-ignite-stats` service as targets.
 
 <p align="center">
-  <img alt="Prometheus Target" height="100%" src="/docs/images/ignite/monitoring/mc-builtin-prom-target.png" style="padding:10px">
+  <img alt="Prometheus Target" height="100%" src="/docs/images/ignite/monitoring/ig-builtin-prom-target.png" style="padding:10px">
 </p>
-
-Check the labels marked with red rectangle. These labels confirm that the metrics are coming from `Ignite` server `builtin-prom-ignite` through stats service `builtin-prom-ignite-stats`.
 
 Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.
 
@@ -349,7 +330,7 @@ Now, you can view the collected metrics and create a graph from homepage of this
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
 ```bash
-$ kubectl delete -n demo mc/builtin-prom-ignite
+$ kubectl delete -n demo ig/builtin-prom-ignite
 
 $ kubectl delete -n monitoring deployment.apps/prometheus
 

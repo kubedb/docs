@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
+metadata:
+  name: custom-ignite
+  namespace: demo
+spec:
+  version: "2.17.0"
+  replicas: 1
+  podTemplate:
+    spec:
+      containers:
+        - name: ignite
+          env:
+            - name: "Ignite_Key"
+              value: KubeDB
+            - name: "Ignite_Value"
+              value: '123'
+  deletionPolicy: WipeOut

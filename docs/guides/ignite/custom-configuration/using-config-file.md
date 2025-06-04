@@ -2,7 +2,7 @@
 title: Run Ignite with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: mc-using-config-file-configuration
+    identifier: ig-using-config-file-configuration
     name: Customize Configurations
     parent: custom-configuration
     weight: 10
@@ -97,7 +97,7 @@ type: Opaque
 Now, create Ignite crd specifying `spec.configSecret` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/configuration/ig-custom.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/configuration/custom-ignite.yaml
 ignite.kubedb.com/custom-ignite created
 ```
 
@@ -129,7 +129,7 @@ Now, wait a few minutes. KubeDB operator will create necessary petset, services 
 Check if the database is ready
 
 ```bash
-$ kubectl get mc -n demo
+$ kubectl get ig -n demo
 NAME               VERSION   STATUS   AGE
 custom-ignite      2.17.0    Ready    17m
 ```
