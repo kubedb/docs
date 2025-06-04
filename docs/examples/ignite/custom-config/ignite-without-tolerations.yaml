@@ -1,0 +1,9 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
+metadata:
+  name: ignite-without-tolerations
+  namespace: demo
+spec:
+  version: "2.17.0"
+  replicas: 1
+  deletionPolicy: WipeOut

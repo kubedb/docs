@@ -1,0 +1,19 @@
+apiVersion: v1
+stringData:
+  node-configuration.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+    <!-- Ignite Configuration -->
+    <bean class="org.apache.ignite.configuration.IgniteConfiguration">
+        <property name="authenticationEnabled" value="true"/>
+    </bean>
+    </beans>
+
+kind: Secret
+metadata:
+  name: ignite-configuration
+  namespace: demo
+  resourceVersion: "4505"
