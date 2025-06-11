@@ -2,7 +2,7 @@
 title: MongoDB Sharding Concept
 menu:
   docs_{{ .version }}:
-    identifier: mg-clustering-sharding-concept
+    identifier: mg-clustering-sharding-concepts
     name: Sharding Concept
     parent: mg-clustering-mongodb
     weight: 20
