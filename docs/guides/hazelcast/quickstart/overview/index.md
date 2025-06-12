@@ -108,11 +108,11 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the HazelcastVersion CR. Here, a Hazelcast of version `9.4.1` will be created.
+- `spec.version` - is the name of the HazelcastVersion CR. Here, a Hazelcast of version `5.5.2` will be created.
 - `spec.replicas` - specifies the number of Hazelcast nodes.
 - `spec.licenseSecret` - specifies the license created for hazelcast enterprise version.
 - `spec.storageType` - specifies the type of storage that will be used for Hazelcast database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Hazelcast database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the Petset created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Hazelcast CR. Deletion policy `Delete` will delete the database pods, secret and PVC when the Hazelcast CR is deleted. Checkout the [link](/docs/guides/hazelcast/concepts/hazelcast.md#specdeletionpolicy) for details.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
