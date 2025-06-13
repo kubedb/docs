@@ -2,7 +2,7 @@
 title: Hazelcast TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
-    identifier: hz-tls-hazelcast
+    identifier: hz-tls-hazelcast-hz
     name: Combined Cluster
     parent: hz-tls-hazelcast
     weight: 20
