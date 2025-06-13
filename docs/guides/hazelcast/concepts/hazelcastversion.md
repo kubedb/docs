@@ -2,9 +2,9 @@
 title: HazelcastVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: sl-catalog-concepts
+    identifier: hz-catalog-concepts
     name: HazelcastVersion
-    parent: sl-concepts-hazelcast
+    parent: hz-concepts-hazelcast
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
