@@ -3,7 +3,7 @@ title: Hazelcast TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
     identifier: hz-tls-hazelcast-hz
-    name: Combined Cluster
+    name: Hazelcast TLS
     parent: hz-tls-hazelcast
     weight: 20
 menu_name: docs_{{ .version }}
@@ -22,7 +22,7 @@ KubeDB supports providing TLS/SSL encryption for `Hazelcast`. This tutorial will
 
 - Install [`cert-manger`](https://cert-manager.io/docs/installation/) v1.0.0 or later to your combined to manage your SSL/TLS certificates.
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your combined following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster combined following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
