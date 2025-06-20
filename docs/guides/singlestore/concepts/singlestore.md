@@ -154,6 +154,41 @@ spec:
   To learn how to configure `storage`, please visit the links below:
   - https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
 
+You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/39bf8b2/api/v2/types.go#L44-L279).
+Uses of some field of `spec.podTemplate` is described below,
+
+#### spec.podTemplate.spec.imagePullSecret
+
+`KubeDB` provides the flexibility of deploying Solr server from a private Docker registry.
+
+#### spec.podTemplate.spec.podPlacementPolicy
+
+`spec.podTemplate.spec.podPlacementPolicy` is an optional field. This can be used to provide the reference of the `podPlacementPolicy`. `name` of the podPlacementPolicy is referred under this attribute. This will be used by our Petset controller to place the db pods throughout the region, zone & nodes according to the policy. It utilizes kubernetes affinity & podTopologySpreadContraints feature to do so.
+```yaml
+spec:
+  podPlacementPolicy:
+    name: default
+```
+
+#### spec.podTemplate.spec.nodeSelector
+
+`spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
+
+#### spec.podTemplate.spec.serviceAccountName
+
+`serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
+
+If this field is left empty, the KubeDB operator will create a service account name matching Solr crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
+
+If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+
+If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
+
+#### spec.podTemplate.spec.resources
+
+`spec.podTemplate.spec.resources` is an optional field. This can be used to request compute resources required by the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
+
+
 ### spec.storageType
 
 `spec.storageType` is an optional field that specifies the type of storage to use for database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Kafka cluster using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume.
