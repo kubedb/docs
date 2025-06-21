@@ -1,9 +1,9 @@
 ---
-title: Postgres Failure and Disaster Recovery Scenarios
+title: Postgres Failover and DR Scenarios
 menu:
   docs_{{ .version }}:
     identifier: pg-failover
-    name: Postgres
+    name: Postgres Failover and DR Scenarios
     parent: pg-failure-disaster-recovery
     weight: 10
 menu_name: docs_{{ .version }}
