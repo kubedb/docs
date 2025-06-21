@@ -1,10 +1,10 @@
 ---
-title: Postgres CRD
+title: Postgres Failure and Disaster Recovery Scenarios
 menu:
   docs_{{ .version }}:
-    identifier: pg-postgres-concepts
+    identifier: pg-failover
     name: Postgres
-    parent: pg-concepts-postgres
+    parent: pg-failure-disaster-recovery
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -44,14 +44,14 @@ Unlike a Standalone instance, a HA cluster consists of a primary pod
 and one or more standby pods that are ready to take over if the leader
 fails.
 
-Save the following YAML as pg-ha-cluster.yaml. This manifest 
+Save the following YAML as pg-ha-demo.yaml. This manifest 
 defines a 3-node PostgreSQL cluster with streaming replication enabled.
 
 ```yaml
 apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
-  name: ha-postgres
+  name: pg-ha-demo
   namespace: demo
 spec:
   replicas: 3
@@ -80,7 +80,7 @@ Now, create the namespace and apply the manifest:
 kubectl create ns demo
 
 # Apply the manifest to deploy the cluster
-kubectl apply -f pg-ha-cluster.yaml
+kubectl apply -f pg-ha-demo.yaml
 ```
 
 You can monitor the status until all pods are ready:
