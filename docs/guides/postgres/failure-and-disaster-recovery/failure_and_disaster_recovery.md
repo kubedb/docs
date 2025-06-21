@@ -27,6 +27,7 @@ minimal disruption.
 
 This article will guide you through KubeDB's automated failover capabilities for PostgreSQL. We will set up an HA cluster and then simulate a leader failure to see KubeDB's auto-recovery mechanism in action.
 
+> You will see how fast the failover happens when it's truly necessary. Failover in KubeDB-managed PostgreSQL will generally happen within 2–10 seconds depending on your cluster networking. There is an exception scenario that we discussed later in this doc where failover might take a bit longer up to 45 seconds. But that is a bit rare though.
 
 ### Before You Start
 
@@ -158,7 +159,15 @@ postgres=# \dt
 ```
 ### Step 2: Simulating a Failover
 
-Now current running primary is `pg-ha-demo-0`. Lets open another terminal and run the command below.
+Before simulating failover, let's discuss how we handle these failover scenarios in KubeDB-managed Postgresql. 
+We use sidecar container with all db pods, and inside that sidecar container, we use [raft](https://raft.github.io/)
+protocol to detect the viable primary of the postgresql cluster. Raft will choose a db pod as a leader of the postgresql cluster, we will 
+check if that pod can really run as a leader. If everything is good with that chosen pod, we will run it as primary. This whole process of failover 
+generally takes less than 10 seconds to complete. So you can expect very rapid failover to ensure high availability of your postgresql cluster.
+
+
+
+Now current running primary is `pg-ha-demo-0`. Let's open another terminal and run the command below.
 
 
 ```shell
@@ -181,9 +190,33 @@ pod "pg-ha-demo-0" deleted
 
 ![img_1.png](img_1.png)
 
-You see almost immediately the failover happened. 
+You see almost immediately the failover happened. Here's what happened internally:
 
-Now lets check if the new primary is working.
+- Distributed raft algorithm implementation is running 24 * 7 in your each db sidecar. You can configure this behavior as shown below.
+- As soon as `pg-ha-demo-0` was being deleted and raft inside `pg-ha-demo-0` senses the termination, it immediately switches the leadership to any other viable leader before termination.
+- In our case, raft inside `pg-ha-demo-1` got the leadership.
+- Now this leader switch only means raft leader switch, not the **database leader switch(aka failover)** yet. So `pg-ha-demo-1` still running as replica. It will be primary after the next step.
+- Once raft sidecar inside `pg-ha-demo-1` see it has become leader of the cluster, it initiates the database failover process and start running as primary. 
+- So, now `pg-ha-demo-1` is running as primary.
+
+```yaml
+# You can find this part in your db yaml by running
+# kubectl get pg -n demo pg-ha-demo -oyaml
+# under db.spec section
+# vist below link for more information
+# https://github.com/kubedb/apimachinery/blob/97c18a62d4e33a112e5f887dc3ad910edf3f3c82/apis/kubedb/v1/postgres_types.go#L204
+
+leaderElection:
+  electionTick: 10
+  heartbeatTick: 1
+  maximumLagBeforeFailover: 67108864
+  period: 300ms
+  transferLeadershipInterval: 1s
+  transferLeadershipTimeout: 1m0s
+  
+```
+
+Now we know how failover is done, let's check if the new primary is working.
 
 ```shell
 ➤ kubectl exec -it -n demo pg-ha-demo-1  -- bash
