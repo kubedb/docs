@@ -3,7 +3,7 @@ title: Postgres Failover and DR Scenarios
 menu:
   docs_{{ .version }}:
     identifier: pg-failover
-    name: Postgres Failover and DR Scenarios
+    name: Overview
     parent: pg-failure-disaster-recovery
     weight: 10
 menu_name: docs_{{ .version }}
@@ -176,7 +176,7 @@ watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.na
 ```
 It will show current pg cluster roles.
 
-![img.png](img.png)
+![img.png](/docs/guides/postgres/failure-and-disaster-recovery/img.png)
 
 #### Case 1: Delete the current primary
 
@@ -188,7 +188,7 @@ pod "pg-ha-demo-0" deleted
 
 ```
 
-![img_1.png](img_1.png)
+![img_1.png](/docs/guides/postgres/failure-and-disaster-recovery/img_1.png)
 
 You see almost immediately the failover happened. Here's what happened internally:
 
@@ -235,7 +235,7 @@ postgres=#
 You will see the deleted pod (pg-ha-demo-0) is brought back by the kubedb operator and it is now assigned to standby role.
 
 
-![img_2.png](img_2.png)
+![img_2.png](/docs/guides/postgres/failure-and-disaster-recovery/img_2.png)
 
 Lets check if the standby(`pg-ha-demo-0`) got the updated data from new primary `pg-ha-demo-1`.
 
@@ -266,11 +266,11 @@ pod "pg-ha-demo-2" deleted
 ```
 Again we can see the failover happened pretty quickly.
 
-![img_3.png](img_3.png)
+![img_3.png](/docs/guides/postgres/failure-and-disaster-recovery/img_3.png)
 
 After 10-30 second, the deleted pods will be back and will have its role.
 
-![img_4.png](img_4.png)
+![img_4.png](/docs/guides/postgres/failure-and-disaster-recovery/img_4.png)
 
 Lets validate the cluster state from new primary(`pg-ha-demo-0`).
 
@@ -301,11 +301,11 @@ pod "pg-ha-demo-2" deleted
 
 ```
 
-![img_5.png](img_5.png)
+![img_5.png](/docs/guides/postgres/failure-and-disaster-recovery/img_5.png)
 
 Shortly both of the pods will be back with its role.
 
-![img_6.png](img_6.png)
+![img_6.png](/docs/guides/postgres/failure-and-disaster-recovery/img_6.png)
 
 Lets verify cluster state.
 ```shell
@@ -336,11 +336,11 @@ pod "pg-ha-demo-1" deleted
 pod "pg-ha-demo-2" deleted
 
 ```
-![img_7.png](img_7.png)
+![img_7.png](/docs/guides/postgres/failure-and-disaster-recovery/img_7.png)
 
 Within 20-30 second, all of the pod should be back.
 
-![img_8.png](img_8.png)
+![img_8.png](/docs/guides/postgres/failure-and-disaster-recovery/img_8.png)
 
 Lets verify the cluster state now.
 
