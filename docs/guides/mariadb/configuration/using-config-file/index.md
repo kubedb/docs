@@ -41,7 +41,7 @@ MariaDB allows to configure database via configuration file. The default configu
 
 At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSecret` section while creating MariaDB crd. KubeDB will mount this volume into `/etc/mysql/conf.d` directory of the database pod.
 
-In this tutorial, we will configure [max_connections](https://mariadb.com/docs/reference/mdb/system-variables/max_connections/) and [read_buffer_size](https://mariadb.com/docs/reference/mdb/system-variables/read_buffer_size/) via a custom config file. We will use Secret as volume source.
+In this tutorial, we will configure [max_connections](https://mariadb.com/docs/server/ha-and-performance/optimization-and-tuning/system-variables/server-system-variables#max_connections) and [read_buffer_size](https://mariadb.com/docs/server/ha-and-performance/optimization-and-tuning/system-variables/server-system-variables#read_buffer_size/) via a custom config file. We will use Secret as volume source.
 
 ## Custom Configuration
 
