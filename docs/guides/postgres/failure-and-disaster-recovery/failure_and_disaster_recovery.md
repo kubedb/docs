@@ -417,6 +417,35 @@ We also support autoscaling! You can configure auto-scaling your database and fo
 
 It is often possible that your database storage become full and your database has stopped working. We have got you covered. You just apply a VolumeExpansion `PostgresOpsRequest` and your your database storage will be increased, and the database will be ready to use again.
 
+#### Disaster Scenario and Recovery
+
+##### Scenario
+
+You deploy a `PostgreSQL` database. The database was running fine. Someday, your database storage becomes full. As your postgres process can't write to the filesystem,
+clients won't be able to connect to the database. Your database status will be `Not Ready`.
+
+##### Recovery
+
+In order to recover from this, you can create a `VolumeExpansion` `PostgresOpsRequest` with expanded resource requests.
+As soon as you create this, KubeDB will trigger the necessary steps to expand your volume based on your specifications on the `PostgresOpsRequest` manifest. A sample `PostgresOpsRequest` manifest for `VolumeExpansion` is given below:
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pgops-vol-exp-ha-cluster
+  namespace: demo
+spec:
+  apply: IfReady
+  databaseRef:
+    name: pg-ha-cluster
+  type: VolumeExpansion
+  volumeExpansion:
+    mode: Online # see the notes, your storageclass must support this mode
+    postgres: 12Gi # expanded resource
+```
+
+
 For more details, please check the full section [here](/docs/guides/postgres/volume-expansion/Overview/overview.md).
 
 > **Note**: There are two ways to update your volume: 1.Online 2.Offline. Which Mode to choose? 
@@ -435,7 +464,7 @@ The concept of a remote replica is as follows:
 
 - You create two data centers. Let's say one is in Singapore (client-serving) and the other is in London (disaster recovery cluster).
 - You create a client facing Postgresql Database using Kubedb in Singapore, and then create another Postgresql(as remote replica) in London. 
-- Kubedb will connect this remote replica with the primary cluster (i.e Singapore) so that in case of a disaster in the Singapore cluster, you can promote the London cluster to serve the client faster.
+- Kubedb will connect this remote replica with the primary cluster (i.e., Singapore) so that in case of a disaster in the Singapore cluster, you can promote the London cluster to serve the client faster.
 
 For more information, follow [here](/docs/guides/postgres/remote-replica/remotereplica.md)
 
