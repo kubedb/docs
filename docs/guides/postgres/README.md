@@ -101,7 +101,3 @@ Do you want to have a backup data center where you want to run your postgresql d
 
 Follow [here](/docs/guides/postgres/remote-replica/remotereplica.md).
 
-### Monitoring Postgresql Database
-
-When uninterrupted service for your application and database matters, monitoring is a must for your cluster. Follow [here](/docs/guides/postgres/monitoring/overview.md) for more.
-
