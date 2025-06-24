@@ -52,7 +52,6 @@ aliases:
 - [Streaming Replication](/docs/guides/postgres/clustering/streaming_replication.md) for PostgreSQL clustering.
 - Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
-- Check Update Version of PostgreSQL database with KubeDB using [Update Version](/docs/guides/postgres/update-version/versionupgrading)
 - Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy PostgreSQL with KubeDB.
 - Detail concepts of [Postgres object](/docs/guides/postgres/concepts/postgres.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
@@ -90,13 +89,7 @@ We also support autoscaling! You can configure auto-scaling your database and fo
 
 ### VolumeExpansion of Postgresql Database
 
-It is often possible that your database storage become full and your database has stopped working. We have got you covered. You just apply a VolumeExpansion `PostgresOpsRequest` and your your database storage will be increased, and the database will be ready to use again.
-
-For more details, please check the full section [here](/docs/guides/postgres/volume-expansion/Overview/overview.md).
-
-> **Note**: There are two ways to update your volume: 1.Online 2.Offline. Which Mode to choose?
-> It depends on your `StorageClass`. If your storageclass supports online volume expansion, you can go with it. Otherwise, you can go with `Ofline` Volume Expansion.
-
+For volume expansion, follow [this](/docs/guides/postgres/volume-expansion/Overview/overview.md) section.
 
 ### Re-configure Postgresql configuration parameters
 
@@ -106,13 +99,7 @@ Do you need to update your PostgreSQL `shared_buffers`, `max_connections`, or ot
 
 Do you want to have a backup data center where you want to run your postgresql database to recover from a data center failure as soon as possible?
 
-The concept of a remote replica is as follows:
-
-- You create two data centers. Let's say one is in Singapore (client-serving) and the other is in London (disaster recovery cluster).
-- You create a client facing Postgresql Database using Kubedb in Singapore, and then create another Postgresql(as remote replica) in London.
-- Kubedb will connect this remote replica with the primary cluster (i.e., Singapore) so that in case of a disaster in the Singapore cluster, you can promote the London cluster to serve the client faster.
-
-For more information, follow [here](/docs/guides/postgres/remote-replica/remotereplica.md)
+Follow [here](/docs/guides/postgres/remote-replica/remotereplica.md).
 
 ### Monitoring Postgresql Database
 

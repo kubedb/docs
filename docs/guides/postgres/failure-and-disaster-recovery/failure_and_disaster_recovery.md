@@ -384,7 +384,7 @@ Full Demo: [link](https://www.youtube.com/watch?v=KAl3rdd8i6k)
 
 ## A Guide to Handling Postgres Storage
 
-It is often possible that your database storage become full and your database has stopped working. We have got you covered. You just apply a VolumeExpansion `PostgresOpsRequest` and your your database storage will be increased, and the database will be ready to use again.
+It is often possible that your database storage become full and your database has stopped working. We have got you covered. You just apply a VolumeExpansion `PostgresOpsRequest` and your database storage will be increased, and the database will be ready to use again.
 
 ### Disaster Scenario and Recovery
 
@@ -405,7 +405,7 @@ metadata:
   name: pgops-vol-exp-ha-demo
   namespace: demo
 spec:
-  apply: IfReady
+  apply: Always
   databaseRef:
     name: pg-ha-demo
   type: VolumeExpansion
