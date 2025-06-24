@@ -383,6 +383,66 @@ Basic Demo: [link](https://www.youtube.com/watch?v=BdMSVjNQtCA)
 Full Demo: [link](https://www.youtube.com/watch?v=KAl3rdd8i6k)
 
 
+## A Guide to Postgres Ops Requests 
+
+Postgres ops-requests lets you manage various databases operational and day-2 features. For example managing Database TLS, custom configuration, version upgrade, Scaling and so on.
+
+### Managing Postgresql database TLS
+
+If you want to use encrypted connection or certificate-based authentication for clients, you can use `PostgresOpsRequest`. Based on your requirements, you can add, remove or rotate tls certificates. For more information, please follow the documentation section [link1](/docs/guides/postgres/tls/overview), [link2](/docs/guides/postgres/reconfigure-tls/overview.md).
+
+### Upgrade Postgresql Version
+
+Upgrading a Postgresql version can be a nightmare for the DBA's. We make this process a whole lot easier. You can just apply a `PostgresOpsRequest` and your database will be upgrade to your desired versions. For more information, check [this](/docs/guides/postgres/update-version/overview/index.md) section of documentation.
+
+> **Note**: Before Upgrading, make sure your current version and the version you want to upgrade to, has the same Base Image. Also do not try to make a major jump where the major version difference is more than 2.
+
+### Scaling Postgresql Database
+
+Being able to scale the database both horizontally and vertically is a blessing for database to handle more incoming loads. But sadly, just increasing the database replica should not work for most of the databases. Because the databases need to join the cluster and do few other db specific works before joining the cluster. Don't worry, we will take care of those for you. You will just need to create an `PostgresOpsRequest` and boom!
+
+#### Horizontal Scaling
+
+For scaling Horizontally, follow [this](/docs/guides/postgres/scaling/horizontal-scaling/overview/index.md) section of the documentation.
+
+#### Vertical Scaling
+
+For vertical scaling, follow [this](/docs/guides/postgres/scaling/vertical-scaling/_index.md) section.
+
+#### Auto Scaling
+
+Now that's what we also support! You can configure auto-scaling your database and forgot about the loads that your system might face during peak hours! To setup and configure, visit [here](/docs/guides/postgres/autoscaler/compute/overview.md) for compute autoscaling and [here](/docs/guides/postgres/autoscaler/storage/overview.md) for storage.
+
+### VolumeExpansion of Postgresql Database
+
+It is often possible that your database storage become full and your database has stopped working. We have got you covered. You just apply a VolumeExpansion `OpsRequest` and your database storage will be increased as well as the database will be ready to use again.
+
+For more details, please check the full section [here](/docs/guides/postgres/volume-expansion/Overview/overview.md).
+
+> **Note**: There are two ways to update your volume: 1.Online 2.Offline. Which Mode to choose? 
+> It depends on your `StorageClass`. If your storageclass supports online volume expansion, you can go with it. Otherwise, you can go with `Ofline` Volume Expansion.
+
+
+### Re-configure Postgresql configuration parameters
+
+You need to update your postgresql `shared_buffers`, `max_connections` etc. parameters? You can use our Reconfigure `OpsRequest`. Follow [here](/docs/guides/postgres/reconfigure/overview.md)
+
+### Remote Replica Support
+
+Do you want to have a backup data center where you want to run your postgresql database to recover from a data center failure as soon as possible?
+
+The concept of remote replica is as following:
+
+- You create two data centers. Let's say one in Singapore(client serving), one in London(disaster recovery cluster).
+- You create a client facing Postgresql Database using Kubedb in Singapore, and then create another Postgresql(as remote replica) in London. 
+- Kubedb will connect this remote replica with the primary cluster (i.e Singapore) so that in case of disaster in Singapore cluster, you can go and promote London cluster to serve the client faster.
+
+For more information, follow [here](/docs/guides/postgres/remote-replica/remotereplica.md)
+
+### Monitoring Postgresql Database
+
+When your application/database uninterrupted service matters, monitoring is a must for your cluster. Follow [here](/docs/guides/postgres/monitoring/overview.md) for more.
+
 ## CleanUp
 
 ```shell
