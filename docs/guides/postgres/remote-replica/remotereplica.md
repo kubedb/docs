@@ -340,6 +340,15 @@ $ kubectl exec -it -n demo pg-london-0 -c postgres -- psql -c "select * from tab
 
 ```
 
+## Promote Remote Replica
+
+In case your Singapore(primary) cluster goes down, you can manually promote your London(dr cluster) following below step.
+
+- Edit the `pg-london` Postgres CR and remove `.spec.remoteReplica` section entire.
+- Restart the `pg-london-0` pod.
+
+This should start your `pg-london-0` replica as primary.
+
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
