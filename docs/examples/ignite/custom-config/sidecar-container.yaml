@@ -18,7 +18,7 @@ spec:
               cpu: 500m
               memory: 500Mi
         - name: filebeat
-          image: evanraisul/custom_filebeat:latest
+          image: docker.elastic.co/beats/filebeat:9.0.3
           resources:
             limits:
               cpu: 300m

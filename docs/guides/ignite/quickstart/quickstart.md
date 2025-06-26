@@ -80,7 +80,7 @@ Here,
 
 - `spec.replicas` is an optional field that specifies the number of desired Instances/Replicas of Ignite server. It defaults to 1.
 - `spec.version` is the version of Ignite server. In this tutorial, a Ignite 2.17.0 database is going to be created.
-- `spec.resource` is an optional field that specifies how much CPU and memory (RAM) each Container needs. To learn details about Managing Compute Resources for Containers, please visit [here](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/).
+- `.spec.podTemplate.spec.containers[].resources` is an optional field that specifies how much CPU and memory (RAM) each Container needs. To learn details about Managing Compute Resources for Containers, please visit [here](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/).
 - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Ignite` crd or which resources KubeDB should keep or delete when you delete `Ignite` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/ignite/concepts/ignite.md#specdeletionpolicy)
 
 KubeDB operator watches for `Ignite` objects using Kubernetes api. When a `Ignite` object is created, KubeDB operator will create a new PetSet and a Service with the matching Ignite object name.
@@ -335,27 +335,16 @@ Here, firstly we will exec one of the running pod:
 
 ```bash
 $ kubectl exec -it -n demo ignite-quickstart-0 -c ignite -- bash
-
-// Need to go in bin file
-$ cd apache-ignite/bin
-
-// Connect to ignite's thin client using sqlline
-$ ./sqlline.sh -u jdbc:ignite:thin://127.0.0.1/ -n ignite -p 'pyX39AdZlOog!3Lt'
+ignite@ignite-quickstart-0:/# apache-ignite/bin/sqlline.sh -u jdbc:ignite:thin://127.0.0.1/ -n ignite -p 'pyX39AdZlOog!3Lt'
 sqlline version 1.9.0
-
-// Create a table named "City"
 0: jdbc:ignite:thin://127.0.0.1/> CREATE TABLE City (id LONG PRIMARY KEY, name VARCHAR);
 No rows affected (0.087 seconds)
-
-// Insert some data in "City" table
 0: jdbc:ignite:thin://127.0.0.1/> INSERT INTO City (id, name) VALUES (1, 'Forest Hill');
 . . . . . . . . . . . . . . . . > INSERT INTO City (id, name) VALUES (2, 'Denver');
 . . . . . . . . . . . . . . . . > INSERT INTO City (id, name) VALUES (3, 'St. Petersburg');
 1 row affected (0.052 seconds)
 1 row affected (0.016 seconds)
 1 row affected (0.002 seconds)
-
-// Show all data of "City" table
 0: jdbc:ignite:thin://127.0.0.1/> SELECT * FROM City;
 +----+----------------+
 | ID |      NAME      |
@@ -385,7 +374,7 @@ Learn details of all `DeletionPolicy` [here](/docs/guides/ignite/concepts/ignite
 
 If you want to delete the existing database but want to keep `secrets` then you might want to set the `Ignite` object `deletionPolicy` to `Delete`. In this setting, `PetSet` and `Services` will be deleted. 
 
-When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy) is set to `Delete` and the MySQL object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `secret` intact.
+When the [DeletionPolicy](/docs/guides/ignite/concepts/database/index.md#specdeletionpolicy) is set to `Delete` and the Ignite object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `secret` intact.
 
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 

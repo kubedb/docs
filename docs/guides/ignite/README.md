@@ -20,15 +20,15 @@ aliases:
 | Clustering                             |   &#10003;   |
 | Persistent Volume                      |   &#10003;   |
 | Initialize using Script                |   &#10003;   |
-| Multiple Ignite Versions         |   &#10003;   |
+| Multiple Ignite Versions               |   &#10003;   |
 | Custom Configuration                   |   &#10003;   |
 | Externally manageable Auth Secret	     |   &#10003;   |
-| Reconfigurable Health Checker		     |   &#10003;   |
+| Reconfigurable Health Checker		       |   &#10003;   |
 | Using Custom docker image              |   &#10003;   |
 | Builtin Prometheus Discovery           |   &#10003;   |
 | Using Prometheus operator              |   &#10003;   |
-| Grafana Dashboard               |   &#10003;   |
-| Alert Dashboard	               |   &#10003;   |
+| Grafana Dashboard                      |   &#10003;   |
+| Alert Dashboard	                       |   &#10003;   |
 
 
 
