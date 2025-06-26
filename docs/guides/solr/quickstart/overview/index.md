@@ -1,5 +1,5 @@
 ---
-title: Solr Quickstart
+title: Hazelcast Quickstart
 menu:
   docs_{{ .version }}:
     identifier: sl-overview-solr
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Solr QuickStart
+# Hazelcast QuickStart
 
-This tutorial will show you how to use KubeDB to run a Solr database.
+This tutorial will show you how to use KubeDB to run a Hazelcast database.
 
 <p align="center">
   <img alt="lifecycle"  src="./images/Lifecycle-of-a-solr-instance.png">
@@ -24,7 +24,7 @@ This tutorial will show you how to use KubeDB to run a Solr database.
 
 At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install the KubeDB operator in your cluster following the steps [here](/docs/setup/install/_index.md).  and make sure install with helm command including `--set global.featureGates.Solr=true --set global.featureGates.ZooKeeper=true` to ensure Solr and ZooKeeper crd.
+Now, install the KubeDB operator in your cluster following the steps [here](/docs/setup/install/_index.md).  and make sure install with helm command including `--set global.featureGates.Hazelcast=true --set global.featureGates.ZooKeeper=true` to ensure Hazelcast and ZooKeeper crd.
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -39,11 +39,11 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/solr/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Solr. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/solr/quickstart/overview/index.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Hazelcast. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/solr/quickstart/overview/index.md#tips-for-testing).
 
 ## Find Available StorageClass
 
-We will have to provide `StorageClass` in Solr CRD specification. Check available `StorageClass` in your cluster using the following command,
+We will have to provide `StorageClass` in Hazelcast CRD specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
 $ kubectl get storageclass
@@ -53,9 +53,9 @@ standard (default)   rancher.io/local-path   Delete          WaitForFirstConsume
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
-## Find Available SolrVersion
+## Find Available HazelcastVersion
 
-When you install the KubeDB operator, it registers a CRD named `SolrVersions`. The installation process comes with a set of tested SolrVersion objects. Let's check available SolrVersions by,
+When you install the KubeDB operator, it registers a CRD named `HazelcastVersions`. The installation process comes with a set of tested HazelcastVersion objects. Let's check available HazelcastVersions by,
 
 ```bash
 $ kubectl get solrversion
@@ -64,17 +64,17 @@ NAME     VERSION   DB_IMAGE                              DEPRECATED   AGE
 9.4.1    9.4.1     ghcr.io/appscode-images/solr:9.4.1                 9d
 ```
 
-Notice the `DEPRECATED` column. Here, `true` means that this SolrVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated SolrVersion.
+Notice the `DEPRECATED` column. Here, `true` means that this HazelcastVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated HazelcastVersion.
 
-In this tutorial, we will use `9.4.1` SolrVersion CR to create a Solr cluster.
+In this tutorial, we will use `9.4.1` HazelcastVersion CR to create a Hazelcast cluster.
 
-> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use SolrVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `9.4.1` over `8.11.2`.
+> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use HazelcastVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `9.4.1` over `8.11.2`.
 
-## Create a Solr Cluster
+## Create a Hazelcast Cluster
 
-The KubeDB operator implements a Solr CRD to define the specification of a Solr database.
+The KubeDB operator implements a Hazelcast CRD to define the specification of a Hazelcast database.
 
-The KubeDB Solr runs in `solrcloud` mode. Hence, it needs a external zookeeper to distribute replicas among pods and save configurations.
+The KubeDB Hazelcast runs in `solrcloud` mode. Hence, it needs a external zookeeper to distribute replicas among pods and save configurations.
 
 We will use KubeDB ZooKeeper for this purpose.
 
@@ -129,11 +129,11 @@ zoo-com    kubedb.com/v1alpha2   3.7.2     Ready    13m
 
 Then we can deploy solr in our cluster.
 
-The Solr instance used for this tutorial:
+The Hazelcast instance used for this tutorial:
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: Solr
+kind: Hazelcast
 metadata:
   name: solr-combined
   namespace: demo
@@ -155,31 +155,31 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the SolrVersion CR. Here, a Solr of version `9.4.1` will be created.
-- `spec.replicas` - specifies the number of Solr nodes.
-- `spec.storageType` - specifies the type of storage that will be used for Solr database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Solr database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
+- `spec.version` - is the name of the HazelcastVersion CR. Here, a Hazelcast of version `9.4.1` will be created.
+- `spec.replicas` - specifies the number of Hazelcast nodes.
+- `spec.storageType` - specifies the type of storage that will be used for Hazelcast database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Hazelcast database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the Petset created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
-- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Solr CR. Deletion policy `Delete` will delete the database pods, secret and PVC when the Solr CR is deleted. Checkout the [link](/docs/guides/solr/concepts/solr.md#specdeletionpolicy) for details.
+- `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Hazelcast CR. Deletion policy `Delete` will delete the database pods, secret and PVC when the Hazelcast CR is deleted. Checkout the [link](/docs/guides/solr/concepts/solr.md#specdeletionpolicy) for details.
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in the `storage.resources.requests` field. Don't specify `limits` here. PVC does not get resized automatically.
 
-Let's create the Solr CR that is shown above:
+Let's create the Hazelcast CR that is shown above:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/solr/solr.yaml
 solr.kubedb.com/solr-combined created
 ```
 
-The Solr's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
+The Hazelcast's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
 
 ```bash
-$ kubectl get Solr -n demo -w
+$ kubectl get Hazelcast -n demo -w
 NAME            TYPE                    VERSION     STATUS   AGE
 solr-combined   kubedb.com/v1alpha2     9.4.1       Ready    17m
 ```
 
 
-Describe the Solr object to observe the progress if something goes wrong or the status is not changing for a long period of time:
+Describe the Hazelcast object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
 $ Name:       solr-combined
@@ -187,7 +187,7 @@ Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  kubedb.com/v1alpha2
-Kind:         Solr
+Kind:         Hazelcast
 Metadata:
   Creation Timestamp:  2024-05-03T10:44:35Z
   Finalizers:
@@ -267,7 +267,7 @@ Spec:
 Status:
   Conditions:
     Last Transition Time:  2024-05-03T10:44:35Z
-    Message:               The KubeDB operator has started the provisioning of Solr: demo/solr-combined
+    Message:               The KubeDB operator has started the provisioning of Hazelcast: demo/solr-combined
     Observed Generation:   1
     Reason:                DatabaseProvisioningStartedSuccessfully
     Status:                True
@@ -279,31 +279,31 @@ Status:
     Status:                True
     Type:                  ReplicaReady
     Last Transition Time:  2024-05-03T10:45:26Z
-    Message:               The Solr: demo/solr-combined is accepting connection
+    Message:               The Hazelcast: demo/solr-combined is accepting connection
     Observed Generation:   1
     Reason:                DatabaseAcceptingConnectionRequest
     Status:                True
     Type:                  AcceptingConnection
     Last Transition Time:  2024-05-03T10:45:28Z
-    Message:               The Solr: demo/solr-combined is accepting write request.
+    Message:               The Hazelcast: demo/solr-combined is accepting write request.
     Observed Generation:   1
     Reason:                DatabaseWriteAccessCheckSucceeded
     Status:                True
     Type:                  DatabaseWriteAccess
     Last Transition Time:  2024-05-03T10:45:28Z
-    Message:               The Solr: demo/solr-combined is not accepting connection.
+    Message:               The Hazelcast: demo/solr-combined is not accepting connection.
     Observed Generation:   1
     Reason:                AllReplicasReady,AcceptingConnection,ReadinessCheckSucceeded,DatabaseWriteAccessCheckSucceeded
     Status:                True
     Type:                  Ready
     Last Transition Time:  2024-05-03T10:45:30Z
-    Message:               The Solr: demo/solr-combined is successfully provisioned.
+    Message:               The Hazelcast: demo/solr-combined is successfully provisioned.
     Observed Generation:   1
     Reason:                DatabaseSuccessfullyProvisioned
     Status:                True
     Type:                  Provisioned
     Last Transition Time:  2024-05-03T10:45:46Z
-    Message:               The Solr: demo/solr-combined is accepting read request.
+    Message:               The Hazelcast: demo/solr-combined is accepting read request.
     Observed Generation:   1
     Reason:                DatabaseReadAccessCheckSucceeded
     Status:                True
@@ -314,7 +314,7 @@ Events:                    <none>
 
 ### KubeDB Operator Generated Resources
 
-On deployment of a Solr CR, the operator creates the following resources:
+On deployment of a Hazelcast CR, the operator creates the following resources:
 
 ```bash
 $ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=solr-combined'
@@ -347,22 +347,22 @@ persistentvolumeclaim/solr-combined-data-solr-combined-1   Bound    pvc-1649cba5
 persistentvolumeclaim/solr-combined-data-solr-combined-2   Bound    pvc-dcb8c9e2-e64b-4a53-8b46-5c30301bb905   1Gi        RWO            standard       <unset>                 3m26s
 ```
 
-- `PetSet` - a PetSet(Appscode manages customized petset) named after the Solr instance. In topology mode, the operator creates 3 PetSets with name `{Solr-Name}-{Sufix}`.
-- `Services` -  2 services are generated for each Solr database.
-    - `{Solr-Name}` - the client service which is used to connect to the database. It points to the `overseer` nodes.
-    - `{Solr-Name}-pods` - the node discovery service which is used by the Solr nodes to communicate each other. It is a headless service.
+- `PetSet` - a PetSet(Appscode manages customized petset) named after the Hazelcast instance. In topology mode, the operator creates 3 PetSets with name `{Hazelcast-Name}-{Sufix}`.
+- `Services` -  2 services are generated for each Hazelcast database.
+    - `{Hazelcast-Name}` - the client service which is used to connect to the database. It points to the `overseer` nodes.
+    - `{Hazelcast-Name}-pods` - the node discovery service which is used by the Hazelcast nodes to communicate each other. It is a headless service.
 - `AppBinding` - an [AppBinding](/docs/guides/solr/concepts/appbinding.md) which hold to connect information for the database. It is also named after the solr instance.
-- `Secrets` - 3 types of secrets are generated for each Solr database.
-    - `{Solr-Name}-admin-cred` - the auth secrets which hold the `username` and `password` for the solr users. The auth secret `solr-combined-admin-cred` holds the `username` and `password` for `admin` user which lets administrative access.
-    - `{Solr-Name}-config` - the default configuration secret created by the operator.
-    - `{Solr-Name}-auth-config` - the configuration secret of admin user information created by the operator.
-    - `{Solr-Name}-zk-digest` - the auth secret which contains the `username` and `password` for zookeeper digest secret which is able to access zookeeper data.
-    - `{Solr-Name}-zk-digest-readonly` - the auth secret which contains the `username` and `password` for zookeeper readonly digest secret which is able to read zookeeper data.
+- `Secrets` - 3 types of secrets are generated for each Hazelcast database.
+    - `{Hazelcast-Name}-admin-cred` - the auth secrets which hold the `username` and `password` for the solr users. The auth secret `solr-combined-admin-cred` holds the `username` and `password` for `admin` user which lets administrative access.
+    - `{Hazelcast-Name}-config` - the default configuration secret created by the operator.
+    - `{Hazelcast-Name}-auth-config` - the configuration secret of admin user information created by the operator.
+    - `{Hazelcast-Name}-zk-digest` - the auth secret which contains the `username` and `password` for zookeeper digest secret which is able to access zookeeper data.
+    - `{Hazelcast-Name}-zk-digest-readonly` - the auth secret which contains the `username` and `password` for zookeeper readonly digest secret which is able to read zookeeper data.
 
 
-## Connect with Solr Database
+## Connect with Hazelcast Database
 
-We will use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to connect with our Solr database. Then we will use `curl` to send `HTTP` requests to check cluster health to verify that our Solr database is working well.
+We will use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to connect with our Hazelcast database. Then we will use `curl` to send `HTTP` requests to check cluster health to verify that our Hazelcast database is working well.
 
 Let's port-forward the port `8983` to local machine:
 
@@ -372,7 +372,7 @@ Forwarding from 127.0.0.1:8983 -> 8983
 Forwarding from [::1]:8983 -> 8983
 ```
 
-Now, our Solr cluster is accessible at `localhost:8983`.
+Now, our Hazelcast cluster is accessible at `localhost:8983`.
 
 **Connection information:**
 
@@ -391,7 +391,7 @@ Now, our Solr cluster is accessible at `localhost:8983`.
   Xy3ZjyU)~(9IO8_n
   ```
 
-Now let's check the health of our Solr database.
+Now let's check the health of our Hazelcast database.
 
 ```bash
 $ curl -XGET -k -u 'admin:Xy3ZjyU)~(9IO8_n' "http://localhost:8983/solr/admin/collections?action=CLUSTERSTATUS"
@@ -438,9 +438,9 @@ $ curl -XGET -k -u 'admin:Xy3ZjyU)~(9IO8_n' "http://localhost:8983/solr/admin/co
 }
 ```
 
-From the health information above, we can see that health of our collections in Solr cluster's status is `green` which means the cluster is healthy.
+From the health information above, we can see that health of our collections in Hazelcast cluster's status is `green` which means the cluster is healthy.
 
-## Halt Solr
+## Halt Hazelcast
 
 KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` deletion policy. If admission webhook is enabled, it prevents the user from deleting the database as long as the `spec.deletionPolicy` is set `DoNotTerminate`.
 
@@ -451,7 +451,7 @@ $ kubectl patch -n demo solr solr-combined -p '{"spec":{"deletionPolicy":"Halt"}
 solr.kubedb.com/solr-combined patched
 ```
 
-Now, if you delete the Solr object, the KubeDB operator will delete every resource created for this Solr CR, but leaves the auth secrets, and PVCs.
+Now, if you delete the Hazelcast object, the KubeDB operator will delete every resource created for this Hazelcast CR, but leaves the auth secrets, and PVCs.
 
 ```bash
 $  kubectl delete solr -n demo solr-combined
@@ -475,11 +475,11 @@ persistentvolumeclaim/solr-combined-data-solr-combined-2   Bound    pvc-dcb8c9e2
 
 ```
 
-## Resume Solr
+## Resume Hazelcast
 
-Say, the Solr CR was deleted with `spec.deletionPolicy` to `Halt` and you want to re-create the Solr cluster using the existing auth secrets and the PVCs.
+Say, the Hazelcast CR was deleted with `spec.deletionPolicy` to `Halt` and you want to re-create the Hazelcast cluster using the existing auth secrets and the PVCs.
 
-You can do it by simpily re-deploying the original Solr object:
+You can do it by simpily re-deploying the original Hazelcast object:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/solr/solr.yaml
@@ -506,4 +506,4 @@ namespace "demo" deleted
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if the database pod fails. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purposes, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.deletionPolicy: WipeOut`. It will clean up every resouce that was created with the Solr CR. Checkout the [link](/docs/guides/solr/concepts/solr.md#specdeletionpolicy) for details.
+2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to resume the database from the previous one. So, we preserve all your `PVCs` and auth `Secrets`. If you don't want to resume the database, you can just use `spec.deletionPolicy: WipeOut`. It will clean up every resouce that was created with the Hazelcast CR. Checkout the [link](/docs/guides/solr/concepts/solr.md#specdeletionpolicy) for details.
