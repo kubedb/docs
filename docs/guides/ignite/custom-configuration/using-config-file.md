@@ -139,8 +139,6 @@ We will connect to `custom-ignite-0` pod:
 
 ```bash
 $ kubectl exec -it -n demo ignite-quickstart-0 -c ignite -- bash
-
-// Now we will look into the configuration file.
 [ignite@ignite-quickstart-0 config]$ cat /ignite/config/node-configuration.xml
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -155,6 +153,7 @@ http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
     </bean>
 </beans>
 ```
+
 Here, we can see `authenticationEnabled's` value is `true`.
 
 ## Cleaning up

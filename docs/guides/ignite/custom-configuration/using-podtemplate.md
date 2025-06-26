@@ -104,9 +104,9 @@ Now, check if the ignite has started with the custom configuration we have provi
 
 ```bash
 $ kubectl exec -it custom-ignite-0 -n demo ignite -- sh
-~ $ echo $Ignite_Key
+$ echo $Ignite_Key
 KubeDB
-~ $ echo $Ignite_Value
+$ echo $Ignite_Value
 123
 exit
 ```
@@ -159,8 +159,8 @@ spec:
             requests:
               cpu: 500m
               memory: 500Mi
-        - name: filebeat
-          image: evanraisul/custom_filebeat:latest
+        - name: sidecar
+          image: docker.elastic.co/beats/filebeat:9.0.3
           resources:
             limits:
               cpu: 300m
@@ -235,7 +235,7 @@ spec:
           runAsUser: 70
           seccompProfile:
             type: RuntimeDefault
-      - image: evanraisul/custom_filebeat:latest
+      - image: docker.elastic.co/beats/filebeat:9.0.3
         name: filebeat
         resources:
           limits:

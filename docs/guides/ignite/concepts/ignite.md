@@ -156,7 +156,7 @@ At least one of the following was changed:
     spec.podTemplate.spec.env
 ```
 
-##### spec.podTemplate.spec.containers[].resources
+#### spec.podTemplate.spec.containers[].resources
 
 `spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
