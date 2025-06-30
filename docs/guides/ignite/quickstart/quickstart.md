@@ -374,7 +374,7 @@ Learn details of all `DeletionPolicy` [here](/docs/guides/ignite/concepts/ignite
 
 If you want to delete the existing database but want to keep `secrets` then you might want to set the `Ignite` object `deletionPolicy` to `Delete`. In this setting, `PetSet` and `Services` will be deleted. 
 
-When the [DeletionPolicy](/docs/guides/ignite/concepts/database/index.md#specdeletionpolicy) is set to `Delete` and the Ignite object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `secret` intact.
+When the [DeletionPolicy](/docs/guides/ignite/concepts/ignite.md#specdeletionpolicy) is set to `Delete` and the Ignite object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `secret` intact.
 
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
