@@ -68,9 +68,8 @@ secret/mc-configuration created
 
 Let's get the mc-configuration `secret` with custom configuration:
 
-
 ```yaml
-$ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/mc-configuration.yaml
+$ kubectl get secret -n demo mc-configuration -o yaml
 apiVersion: v1
 data:
   memcached.conf: LS1jb25uLWxpbWl0PTUwMAotLW1lbW9yeS1saW1pdD01MTIK

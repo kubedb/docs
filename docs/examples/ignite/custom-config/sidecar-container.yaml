@@ -1,0 +1,29 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
+metadata:
+  name: ignite-custom-sidecar
+  namespace: demo
+spec:
+  version: "2.17.0"
+  replicas: 1
+  podTemplate:
+    spec:
+      containers:
+        - name: ignite
+          resources:
+            limits:
+              cpu: 500m
+              memory: 500Mi
+            requests:
+              cpu: 500m
+              memory: 500Mi
+        - name: filebeat
+          image: docker.elastic.co/beats/filebeat:9.0.3
+          resources:
+            limits:
+              cpu: 300m
+              memory: 300Mi
+            requests:
+              cpu: 300m
+              memory: 300Mi
+  deletionPolicy: WipeOut
