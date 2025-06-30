@@ -27,11 +27,11 @@ This guide will give an overview on how KubeDB Ops Manager transform replication
 The following diagram shows how KubeDB Ops Manager transform replication mode of `MySQL` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-<img alt="Volume Expansion process of MySQL" src="/docs/guides/mysql/replication-mode-transform/overview/images/replication-mode-transform.svg">
+<img alt="Replication Mode Transform process of MySQL" src="/docs/guides/mysql/replication-mode-transform/overview/images/replication-mode-transform.svg">
 <figcaption align="center">Fig: Replication Mode Transform process of MySQL</figcaption>
 </figure>
 
-The Volume Expansion process consists of the following steps:
+The Replication Mode Transform process consists of the following steps:
 
 1. At first, a user creates a `MySQL` Custom Resource (CR).
 
@@ -47,8 +47,6 @@ The Volume Expansion process consists of the following steps:
 
 7. Then the `KubeDB` ops-request operator will transform replication mode to reach the expected replication mode defined in the `MySQLOpsRequest` CR.
 
-8. After the successful transformation of replication mode of the related PetSet Pods, the `KubeDB` ops-request operator updates the new replication mode in the `MySQL` object to reflect the updated state.
-
-9. After the successful transformation of replication mode of the `MySQL`, the `KubeDB` ops-request operator resumes the `MySQL` object so that the `KubeDB` provisioner operator resumes its usual operations.
+8. After the successful transformation of replication mode of the MySQL database, the `KubeDB` ops-request operator updates the new replication mode in the `MySQL` object to reflect the updated state. After that, the `KubeDB` ops-request operator resumes the `MySQL` object so that the `KubeDB` provisioner operator resumes its usual operations.
 
 In the next docs, we are going to show a step-by-step guide on transform replication mode of various MySQL database using `MySQLOpsRequest` CRD.

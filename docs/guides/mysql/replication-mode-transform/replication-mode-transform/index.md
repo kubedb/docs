@@ -171,7 +171,7 @@ $ kubectl get secrets -n demo mysql-singapore-auth -o jsonpath='{.data.\password
 pass
 ```
 
-The operator creates a standalone mysql server for the newly created `MySQL` object.
+The operator creates a Group Replication MySQL server for the newly created `MySQL` object.
 
 Now you can connect to the database using the above info. Ignore the warning message. It is happening for using password in the command.
 
@@ -244,7 +244,7 @@ mysql-singapore   nginx   mysql-singapore.something.org   172.104.37.147   80   
 Now will be able to communicate from another cluster to our source database
 
 ### Prepare for Remote Replica
-We wil use the [kubedb_plugin](/docs/setup/README.md) for generating configuration for remote replica. It will create the appbinding and and necessary secrets to connect with source server
+We will use the [KubeDB kubectl Plugin](/docs/setup/README.md) for generating configuration for remote replica. It will create the appbinding and and necessary secrets to connect with source server
 ```bash
 $ kubectl dba remote-config mysql -n demo mysql-singapore -uremote -ppass -d 172.104.37.147 -y
 home/user/go/src/kubedb.dev/yamls/mysql/mysql-singapore-remote-config.yaml
@@ -378,7 +378,7 @@ If primary cluster goes down or, you want to transform remote replica to group r
 
 #### Create MySQLOpsRequest
 
-In order to expand the transform replication mode, we have to create a `MySQLOpsRequest` CR with our desired replication mode. Below is the YAML of the `MySQLOpsRequest` CR that we are going to create,
+In order to transform the MySQL remote replica to MySQL Group Replicatioun cluster, we have to create a `MySQLOpsRequest` CR with our desired replication mode. Below is the YAML of the `MySQLOpsRequest` CR that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -412,7 +412,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing volume expansion operation on `mysql-london` database.
+- `spec.databaseRef.name` specifies that we are performing Replication Mode Transformation operation on `mysql-london` database.
 - `spec.type` specifies that we are performing `ReplicationModeTransformation` on our database.
 - `spec.replicationModeTransformation.requireSSL` or `issuerRef` specifies tls or ssl enable group replication which is a optional field.
 - `spec.replicationModeTransformation.mode` specifies the desired Group Replication Primary Mode (`Multi-Primary` or `Single-Primary`).
