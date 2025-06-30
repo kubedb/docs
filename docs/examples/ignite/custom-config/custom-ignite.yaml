@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
+metadata:
+  name: custom-ignite
+  namespace: demo
+spec:
+  replicas: 3
+  version: 2.17.0
+  configSecret: 
+    name: ignite-configuration
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut

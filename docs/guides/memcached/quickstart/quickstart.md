@@ -78,7 +78,6 @@ spec:
               cpu: 250m
               memory: 64Mi
   deletionPolicy: DoNotTerminate
-
 ```
 
 ```bash
@@ -320,7 +319,6 @@ status:
     type: Provisioned
   observedGeneration: 1
   phase: Ready
-
 ```
 ## Connect with Memcached database
 
@@ -396,7 +394,7 @@ memcached.kubedb.com "memcd-quickstart" deleted
 Now, run the following command to get all memcached resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petsets,svc,secret,pvc -n demo
 NAME                      TYPE     DATA   AGE
 auth-secret               Opaque   1      3h
 mc-configuration          Opaque   1      3h
@@ -420,7 +418,7 @@ memcached.kubedb.com "memcd-quickstart" deleted
 Now, run the following command to get all memcached resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret -n demo
+$ kubectl get petsets,svc,secret -n demo
 No resources found in demo namespace.
 ```
 
