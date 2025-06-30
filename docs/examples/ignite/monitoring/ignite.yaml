@@ -1,0 +1,27 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
+metadata:
+  name: ignite
+  namespace: demo
+spec:
+  replicas: 1
+  version: "2.17.0"
+  deletionPolicy: WipeOut
+  podTemplate:
+    spec:
+      containers:
+      - name: ignite
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 250m
+            memory: 64Mi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

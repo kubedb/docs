@@ -1,8 +1,8 @@
 ---
-title: Run Memcached with Custom Configuration
+title: Run Ignite with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: mc-using-podtemplate-configuration
+    identifier: ig-using-podtemplate-configuration
     name: Customize PodTemplate
     parent: custom-configuration
     weight: 10
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Run Memcached with Custom PodTemplate
+# Run Ignite with Custom PodTemplate
 
-KubeDB supports providing custom configuration for Memcached via [PodTemplate](/docs/guides/memcached/concepts/memcached.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a Memcached database with custom configuration using PodTemplate.
+KubeDB supports providing custom configuration for Ignite via [PodTemplate](/docs/guides/ignite/concepts/ignite.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a Ignite database with custom configuration using PodTemplate.
 
 ## Before You Begin
 
@@ -29,11 +29,11 @@ KubeDB supports providing custom configuration for Memcached via [PodTemplate](/
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/ignite](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/ignite) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for Memcached database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for Ignite database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -42,7 +42,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
     - labels (pod's labels)
 - controller:
     - annotations (petset's annotation)
-    - labels (petset's labels) 
+    - labels (petset's labels)
 - spec:
     - volumes
     - initContainers
@@ -56,57 +56,57 @@ KubeDB accept following fields to set in `spec.podTemplate:`
     - priority
     - securityContext
 
-Read about the fields in details in [PodTemplate concept](/docs/guides/memcached/concepts/memcached.md#specpodtemplate),
+Read about the fields in details in [PodTemplate concept](/docs/guides/ignite/concepts/ignite.md#specpodtemplate),
 
 ## CRD Configuration
 
-Below is the YAML for the Memcached created in this example. Here, `spec.podTemplate.spec.containers[].env` specifies additional environment variables by users.
+Below is the YAML for the Ignite created in this example. Here, `spec.podTemplate.spec.containers[].env` specifies additional environment variables by users.
 
-In this tutorial, we will register additional two users at starting time of Memcached. So, the fact is any environment variable with having `suffix: USERNAME` and `suffix: PASSWORD` will be key value pairs of username and password and will be registered in the `pool_passwd` file of Memcached. So we can use these users after Memcached initialize without even syncing them.
+In this tutorial, we will register additional two users at starting time of Ignite. So, the fact is any environment variable with having `suffix: USERNAME` and `suffix: PASSWORD` will be key value pairs of username and password and will be registered in the `pool_passwd` file of Ignite. So we can use these users after Ignite initialize without even syncing them.
 
 ```yaml
-apiVersion: kubedb.com/v1
-kind: Memcached
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
 metadata:
-  name: custom-memcached
+  name: custom-ignite
   namespace: demo
 spec:
-  version: "1.6.22"
+  version: "2.17.0"
   replicas: 1
   podTemplate:
     spec:
       containers:
-        - name: memcacded
+        - name: ignite
           env:
-            - name: "Memcached_Key"
+            - name: "Ignite_Key"
               value: KubeDB
-            - name: "Memcached_Value"
+            - name: "Ignite_Value"
               value: '123'
   deletionPolicy: WipeOut
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/custom-podtemplate.yaml
-memcached.kubedb.com/custom-memcached created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-config/custom-podtemplate.yaml
+ignite.kubedb.com/custom-ignite created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `custom-memcached-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `custom-ignite-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo
 NAME                 READY   STATUS    RESTARTS   AGE
-custom-memcached-0   1/1     Running   0          30s
+custom-ignite-0      1/1     Running   0          30s
 ```
 
-Now, check if the memcached has started with the custom configuration we have provided. First, we will exec in the pod. Then, we will check if the environment variable is set or not.
+Now, check if the ignite has started with the custom configuration we have provided. First, we will exec in the pod. Then, we will check if the environment variable is set or not.
 
 ```bash
-$ kubectl exec -it custom-memcached-0 -n demo memcached -- sh
-~ $ echo $Memcached_Key
+$ kubectl exec -it custom-ignite-0 -n demo ignite -- sh
+$ echo $Ignite_Key
 KubeDB
-~ $ echo $Memcached_Value
+$ echo $Ignite_Value
 123
 exit
 ```
@@ -114,14 +114,14 @@ So, we can see that the additional environment variables are set correctly.
 
 ## Custom Sidecar Containers
 
-Here in this example we will add an extra sidecar container with our memcached container. So, it is required to run Filebeat as a sidecar container along with the KubeDB-managed Memcached. Here’s a quick demonstration on how to accomplish it.
+Here in this example we will add an extra sidecar container with our ignite container. So, it is required to run Filebeat as a sidecar container along with the KubeDB-managed Ignite. Here’s a quick demonstration on how to accomplish it.
 
 Firstly, we are going to make our custom filebeat image with our required configuration.
 ```yaml
 filebeat.inputs:
   - type: log
     paths:
-      - /tmp/memcached_log/
+      - /tmp/ignite_log/
 output.console:
   pretty: true
 ```
@@ -138,29 +138,29 @@ Now run these following commands to build and push the docker image to your dock
 $ docker build -t repository_name/custom_filebeat:latest .
 $ docker push repository_name/custom_filebeat:latest
 ```
-Now we will deploy our memcached with custom sidecar container and will also use the `spec.initConfig` to configure the logs related settings. Here is the yaml of our memcached:
+Now we will deploy our ignite with custom sidecar container and will also use the `spec.initConfig` to configure the logs related settings. Here is the yaml of our ignite:
 ```yaml
-apiVersion: kubedb.com/v1
-kind: Memcached
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
 metadata:
-  name: memcached-custom-sidecar
+  name: ignite-custom-sidecar
   namespace: demo
 spec:
-  version: "1.6.22"
+  version: "2.17.0"
   replicas: 1
   podTemplate:
     spec:
       containers:
-        - name: memcached
+        - name: ignite
           resources:
             limits:
-              cpu: 100m
-              memory: 100Mi
+              cpu: 500m
+              memory: 500Mi
             requests:
-              cpu: 100m
-              memory: 100Mi
-        - name: filebeat
-          image: evanraisul/custom_filebeat:latest
+              cpu: 500m
+              memory: 500Mi
+        - name: sidecar
+          image: docker.elastic.co/beats/filebeat:9.0.3
           resources:
             limits:
               cpu: 300m
@@ -171,42 +171,42 @@ spec:
   deletionPolicy: WipeOut
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/sidecar-container.yaml
-memcached.kubedb.com/-custom-sidecar created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-config/sidecar-container.yaml
+ignite.kubedb.com/ignite-custom-sidecar created
 ```
-Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `memcached-custom-sidecar-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `ignite-custom-sidecar-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
 $ kubectl get pod -n demo
 NAME                         READY   STATUS    RESTARTS      AGE
-memcached-custom-sidecar-0   2/2     Running   0             33s
+ignite-custom-sidecar-0      2/2     Running   0             33s
 
 ```
 
-Now, let’s checked the memcached database with the 2 containers with their given resources:
+Now, let’s checked the ignite database with the 2 containers with their given resources:
 
 ```yaml
-kubectl get memcached -n demo memcached-custom-sidecar -oyaml
+kubectl get ignite -n demo ignite-custom-sidecar -oyaml
 
-apiVersion: kubedb.com/v1
-kind: Memcached
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"Memcached","metadata":{"annotations":{},"name":"memcached-custom-sidecar","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"memcached","resources":{"limits":{"cpu":"100m","memory":"100Mi"},"requests":{"cpu":"100m","memory":"100Mi"}}},{"image":"evanraisul/custom_filebeat:latest","name":"filebeat","resources":{"limits":{"cpu":"300m","memory":"300Mi"},"requests":{"cpu":"300m","memory":"300Mi"}}}]}},"replicas":1,"version":"1.6.22"}}
+      {"apiVersion":"kubedb.com/v1","kind":"Ignite","metadata":{"annotations":{},"name":"ignite-custom-sidecar","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"ignite","resources":{"limits":{"cpu":"500m","memory":"500Mi"},"requests":{"cpu":"500m","memory":"500Mi"}}},{"image":"evanraisul/custom_filebeat:latest","name":"filebeat","resources":{"limits":{"cpu":"300m","memory":"300Mi"},"requests":{"cpu":"300m","memory":"300Mi"}}}]}},"replicas":1,"version":"2.17.0"}}
   creationTimestamp: "2024-12-02T10:59:59Z"
   finalizers:
   - kubedb.com
   generation: 3
-  name: memcached-custom-sidecar
+  name: ignite-custom-sidecar
   namespace: demo
   resourceVersion: "680005"
   uid: 03d2b334-c5fd-4c9a-b88f-797f9630cec5
 spec:
   authSecret:
-    name: memcached-custom-sidecar-auth
+    name: ignite-custom-sidecar-auth
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 1
@@ -217,7 +217,7 @@ spec:
     metadata: {}
     spec:
       containers:
-      - name: memcached
+      - name: ignite
         resources:
           limits:
             cpu: 100m
@@ -230,12 +230,12 @@ spec:
           capabilities:
             drop:
             - ALL
-          runAsGroup: 999
+          runAsGroup: 70
           runAsNonRoot: true
-          runAsUser: 999
+          runAsUser: 70
           seccompProfile:
             type: RuntimeDefault
-      - image: evanraisul/custom_filebeat:latest
+      - image: docker.elastic.co/beats/filebeat:9.0.3
         name: filebeat
         resources:
           limits:
@@ -248,13 +248,13 @@ spec:
         name: default
       securityContext:
         fsGroup: 999
-      serviceAccountName: memcached-custom-sidecar
+      serviceAccountName: ignite-custom-sidecar
   replicas: 1
-  version: 1.6.22
+  version: 2.17.0
 status:
   conditions:
   - lastTransitionTime: "2024-12-02T10:59:59Z"
-    message: 'The KubeDB operator has started the provisioning of Memcached: demo/memcached-custom-sidecar'
+    message: 'The KubeDB operator has started the provisioning of Ignite: demo/ignite-custom-sidecar'
     reason: DatabaseProvisioningStartedSuccessfully
     status: "True"
     type: ProvisioningStarted
@@ -264,19 +264,19 @@ status:
     status: "True"
     type: ReplicaReady
   - lastTransitionTime: "2024-12-02T11:00:11Z"
-    message: 'The Memcached: demo/memcached-custom-sidecar is accepting mcClient requests.'
+    message: 'The Ignite: demo/ignite-custom-sidecar is accepting igClient requests.'
     observedGeneration: 3
     reason: DatabaseAcceptingConnectionRequest
     status: "True"
     type: AcceptingConnection
   - lastTransitionTime: "2024-12-02T11:00:11Z"
-    message: 'The Memcached: demo/memcached-custom-sidecar is ready.'
+    message: 'The Ignite: demo/ignite-custom-sidecar is ready.'
     observedGeneration: 3
     reason: ReadinessCheckSucceeded
     status: "True"
     type: Ready
   - lastTransitionTime: "2024-12-02T11:00:11Z"
-    message: 'The Memcached: demo/memcached-custom-sidecar is successfully provisioned.'
+    message: 'The Ignite: demo/ignite-custom-sidecar is successfully provisioned.'
     observedGeneration: 3
     reason: DatabaseSuccessfullyProvisioned
     status: "True"
@@ -285,11 +285,11 @@ status:
   phase: Ready
 ```
 
-So, we have successfully checked our sidecar filebeat container in Memcached database.
+So, we have successfully checked our sidecar filebeat container in Ignite database.
 
 ## Using Node Selector
 
-Here in this example we will use [node selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/) to schedule our memcached pod to a specific node. Applying nodeSelector to the Pod involves several steps. We first need to assign a label to some node that will be later used by the `nodeSelector` . Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:
+Here in this example we will use [node selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/) to schedule our ignite pod to a specific node. Applying nodeSelector to the Pod involves several steps. We first need to assign a label to some node that will be later used by the `nodeSelector` . Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:
 
 ```bash
 $ kubectl get nodes --show-labels
@@ -335,15 +335,15 @@ Labels:             beta.kubernetes.io/arch=amd64
 ```
 Along with the `disktype=ssd` label we’ve just added, you can see other labels such as `beta.kubernetes.io/arch` or `kubernetes.io/hostname`. These are all default labels attached to Kubernetes nodes.
 
-Now let's create a memcached with this new label as nodeSelector. Below is the yaml we are going to apply:
+Now let's create a ignite with this new label as nodeSelector. Below is the yaml we are going to apply:
 ```yaml
-apiVersion: kubedb.com/v1
-kind: Memcached
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
 metadata:
-  name: memcached-node-selector
+  name: ignite-node-selector
   namespace: demo
 spec:
-  version: "1.6.22"
+  version: "2.17.0"
   replicas: 1
   podTemplate:
     spec:
@@ -352,29 +352,29 @@ spec:
   deletionPolicy: WipeOut
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/node-selector.yaml
-memcached.kubedb.com/memcached-node-selector created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-config/node-selector.yaml
+ignite.kubedb.com/ignite-node-selector created
 ```
-Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `memcached-node-selector-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `ignite-node-selector-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
 $ kubectl get pods -n demo
 NAME                        READY   STATUS    RESTARTS   AGE
-memcached-node-selector-0   1/1     Running   0          60s
+ignite-node-selector-0      1/1     Running   0          60s
 ```
-As we see the pod is running, you can verify that by running `kubectl get pods -n demo memcached-node-selector-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
+As we see the pod is running, you can verify that by running `kubectl get pods -n demo ignite-node-selector-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
 ```bash
-$ kubectl get pods -n demo memcached-node-selector-0 -o wide
+$ kubectl get pods -n demo ignite-node-selector-0 -o wide
 NAME                        READY   STATUS    RESTARTS   AGE     IP         NODE                            NOMINATED NODE   READINESS GATES
-memcached-node-selector-0   1/1     Running   0          3m19s   10.2.1.7   lke212553-307295-5541798e0000   <none>           <none>
+ignite-node-selector-0      1/1     Running   0          3m19s   10.2.1.7   lke212553-307295-5541798e0000   <none>           <none>
 ```
 We can successfully verify that our pod was scheduled to our desired node.
 
 ## Using Taints and Tolerations
 
-Here in this example we will use [Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to schedule our memcached pod to a specific node and also prevent from scheduling to nodes. Applying taints and tolerations to the Pod involves several steps. Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:
+Here in this example we will use [Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to schedule our ignite pod to a specific node and also prevent from scheduling to nodes. Applying taints and tolerations to the Pod involves several steps. Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:
 
 ```bash
 $ kubectl get nodes --show-labels
@@ -424,54 +424,54 @@ lke212553-307295-5b53c5520000
   }
 ]
 ```
-We can see that our taints were successfully assigned. Now let's try to create a memcached without proper tolerations. Here is the yaml of memcached we are going to createc
+We can see that our taints were successfully assigned. Now let's try to create a ignite without proper tolerations. Here is the yaml of ignite we are going to createc
 ```yaml
-apiVersion: kubedb.com/v1
-kind: Memcached
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
 metadata:
-  name: memcached-without-tolerations
+  name: ignite-without-tolerations
   namespace: demo
 spec:
-  version: "1.6.22"
+  version: "2.17.0"
   replicas: 1
   deletionPolicy: WipeOut
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/configuration/memcached-without-tolerations.yaml
-memcached.kubedb.com/memcached-without-tolerations created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/configuration/ignite-without-tolerations.yaml
+ignite.kubedb.com/ignite-without-tolerations created
 ```
-Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `memcached-without-tolerations-0` has been created and running.
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `ignite-without-tolerations-0` has been created and running.
 
 Check that the petset's pod is running or not,
 ```bash
 $ kubectl get pods -n demo
 NAME                              READY   STATUS    RESTARTS   AGE
-memcached-without-tolerations-0   0/1     Pending   0          3m35s
+ignite-without-tolerations-0      0/1     Pending   0          3m35s
 ```
 Here we can see that the pod is not running. So let's describe the pod,
 ```bash
-$ kubectl describe pods -n demo memcached-without-tolerations-0 
-Name:             memcached-without-tolerations-0
+$ kubectl describe pods -n demo ignite-without-tolerations-0 
+Name:             ignite-without-tolerations-0
 Namespace:        demo
 Priority:         0
 Service Account:  default
 Node:             <none>
 Labels:           app.kubernetes.io/component=connection-pooler
-                  app.kubernetes.io/instance=memcached-without-tolerations
+                  app.kubernetes.io/instance=ignite-without-tolerations
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=memcacheds.kubedb.com
+                  app.kubernetes.io/name=ignites.kubedb.com
                   apps.kubernetes.io/pod-index=0
-                  controller-revision-hash=memcached-without-tolerations-5b85f9cd
-                  statefulset.kubernetes.io/pod-name=memcached-without-tolerations-0
+                  controller-revision-hash=ignite-without-tolerations-5b85f9cd
+                  statefulset.kubernetes.io/pod-name=ignite-without-tolerations-0
 Annotations:      <none>
 Status:           Pending
 IP:               
 IPs:              <none>
-Controlled By:    PetSet/memcached-without-tolerations
+Controlled By:    PetSet/ignite-without-tolerations
 Containers:
-  memcached:
-    Image:           ghcr.io/appscode-images/memcached:1.6.22-alpine
-    Ports:           11211/TCP
+  ignite:
+    Image:           ghcr.io/appscode-images/ignite:2.17.0
+    Ports:           10800/TCP
     Host Ports:      0/TCP, 0/TCP
     SeccompProfile:  RuntimeDefault
     Limits:
@@ -480,31 +480,36 @@ Containers:
       cpu:     500m
       memory:  1Gi
     volumeMounts:
-      - mountPath: /usr/config/
-        name: memcached-config
-      - mountPath: /usr/auth/
-        name: auth
-      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
-        name: kube-api-access-mj7lj
+    - mountPath: /ignite/data
+      name: ignite-quickstart-data
+    - mountPath: /tmp/config
+      name: temp-config
+    - mountPath: /ignite/config
+      name: ignite-config
+    - mountPath: /scripts
+      name: init-scripts
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-62rc6
+      readOnly: true
 Conditions:
   Type           Status
   PodScheduled   False 
 volumes:
-  - name: memcached-config
+  - name: ignite-quickstart-data
+    persistentVolumeClaim:
+      claimName: ignite-quickstart-data-ignite-quickstart-0
+  - emptyDir: {}
+    name: init-scripts
+  - emptyDir: {}
+    name: ignite-config
+  - name: temp-config
     secret:
       defaultMode: 420
       items:
-      - key: memcached.conf
-        path: memcached.conf
-      secretName: memcd-quickstart-config
-  - name: auth
-    secret:
-      defaultMode: 420
-      items:
-      - key: authData
-        path: authfile
-      secretName: mc-auth
-  - name: kube-api-access-mj7lj
+      - key: node-configuration.xml
+        path: node-configuration.xml
+      secretName: ignite-quickstart-config
+  - name: kube-api-access-62rc6
     projected:
       defaultMode: 420
       sources:
@@ -525,8 +530,8 @@ volumes:
 Node-Selectors:               <none>
 Tolerations:                  node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
                               node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-Topology Spread Constraints:  kubernetes.io/hostname:ScheduleAnyway when max skew 1 is exceeded for selector app.kubernetes.io/component=connection-pooler,app.kubernetes.io/instance=memcached-without-tolerations,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=memcacheds.kubedb.com
-                              topology.kubernetes.io/zone:ScheduleAnyway when max skew 1 is exceeded for selector app.kubernetes.io/component=connection-pooler,app.kubernetes.io/instance=memcached-without-tolerations,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=memcacheds.kubedb.com
+Topology Spread Constraints:  kubernetes.io/hostname:ScheduleAnyway when max skew 1 is exceeded for selector app.kubernetes.io/component=connection-pooler,app.kubernetes.io/instance=ignite-without-tolerations,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=ignites.kubedb.com
+                              topology.kubernetes.io/zone:ScheduleAnyway when max skew 1 is exceeded for selector app.kubernetes.io/component=connection-pooler,app.kubernetes.io/instance=ignite-without-tolerations,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=ignites.kubedb.com
 Events:
   Type     Reason             Age                   From                Message
   ----     ------             ----                  ----                -------
@@ -536,15 +541,15 @@ Events:
 ```
 Here we can see that the pod has no tolerations for the tainted nodes and because of that the pod is not able to scheduled.
 
-So, let's add proper tolerations and create another memcached. Here is the yaml we are going to apply,
+So, let's add proper tolerations and create another ignite. Here is the yaml we are going to apply,
 ```yaml
-apiVersion: kubedb.com/v1
-kind: Memcached
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
 metadata:
-  name: memcached-with-tolerations
+  name: ignite-with-tolerations
   namespace: demo
 spec:
-  version: "1.6.22"
+  version: "2.17.0"
   replicas: 1
   podTemplate:
     spec:
@@ -557,23 +562,23 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/configuration/with-tolerations.yaml
-memcached.kubedb.com/memcached-with-tolerations created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/configuration/with-tolerations.yaml
+ignite.kubedb.com/ignite-with-tolerations created
 ```
-Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `memcached-with-tolerations-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `ignite-with-tolerations-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
 $ kubectl get pods -n demo
 NAME                              READY   STATUS    RESTARTS   AGE
-memcached-with-tolerations-0      1/1     Running   0          2m
+ignite-with-tolerations-0         1/1     Running   0          2m
 ```
-As we see the pod is running, you can verify that by running `kubectl get pods -n demo memcached-with-tolerations-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
+As we see the pod is running, you can verify that by running `kubectl get pods -n demo ignite-with-tolerations-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
 ```bash
-$ kubectl get pods -n demo memcached-with-tolerations-0 -o wide
+$ kubectl get pods -n demo ignite-with-tolerations-0 -o wide
 NAME                           READY   STATUS    RESTARTS   AGE     IP         NODE                            NOMINATED NODE   READINESS GATES
-memcached-with-tolerations-0   1/1     Running   0          3m49s   10.2.0.8   lke212553-307295-339173d10000   <none>           <none>
+ignite-with-tolerations-0      1/1     Running   0          3m49s   10.2.0.8   lke212553-307295-339173d10000   <none>           <none>
 ```
 We can successfully verify that our pod was scheduled to the node which it has tolerations.
 
@@ -590,8 +595,8 @@ If you would like to uninstall KubeDB operator, please follow the steps [here](/
 
 ## Next Steps
 
-- [Quickstart Memcached](/docs/guides/memcached/quickstart/quickstart.md) with KubeDB Operator.
-- Monitor your Memcached database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md).
-- Monitor your Memcached database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md).
-- Detail concepts of [Memcached object](/docs/guides/memcached/concepts/memcached.md).
+- [Quickstart Ignite](/docs/guides/ignite/quickstart/quickstart.md) with KubeDB Operator.
+- Monitor your Ignite database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/ignite/monitoring/using-prometheus-operator.md).
+- Monitor your Ignite database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/ignite/monitoring/using-builtin-prometheus.md).
+- Detail concepts of [Ignite object](/docs/guides/ignite/concepts/ignite.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
