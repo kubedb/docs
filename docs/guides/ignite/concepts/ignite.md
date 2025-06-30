@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is Ignite
 
-`Ignite` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Ignite](https://ignite.org/) in a Kubernetes native way. You only need to describe the desired database configuration in a Ignite object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`Ignite` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Ignite](https://ignite.apache.org/) in a Kubernetes native way. You only need to describe the desired database configuration in a Ignite object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## Ignite Spec
 
