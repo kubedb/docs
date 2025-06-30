@@ -37,7 +37,7 @@ spec:
     name: pg-group
   type: UpdateVersion
   updateVersion:
-    targetVersion: 17.5
+    targetVersion: "17.5"
 status:
   conditions:
   - lastTransitionTime: "2020-06-11T09:59:05Z"
