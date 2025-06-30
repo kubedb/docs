@@ -305,7 +305,7 @@ ERROR 1045 (28000): ProxySQL Error: Access denied for user 'test' (using passwor
 root@proxy-server-0:/ mysql -utest -ppass -h127.0.0.1 -P6033 --ssl-ca=/var/lib/frontend/server/ca.crt --ssl-cert=/var/lib/frontend/server/tls.crt --ssl-key=/var/lib/frontend/server/tls.key
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 1573
-Server version: 8.0.35 (ProxySQL)
+Server version: 9.1.0 (ProxySQL)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -323,7 +323,7 @@ Current pager:		stdout
 Using outfile:		''
 Using delimiter:	;
 Server:			MySQL
-Server version:		8.0.35 (ProxySQL)
+Server version:		9.1.0 (ProxySQL)
 Protocol version:	10
 Connection:		127.0.0.1 via TCP/IP
 Server characterset:	latin1

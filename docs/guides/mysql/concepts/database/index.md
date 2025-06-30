@@ -29,7 +29,7 @@ metadata:
   name: m1
   namespace: demo
 spec:
-  version: "8.0.35"
+  version: "9.1.0"
   topology:
     mode: GroupReplication
   authSecret:
@@ -215,7 +215,7 @@ metadata:
   name: m1
   namespace: demo
 spec:
-  version: 8.0.35
+  version: 9.1.0
   init:
     script:
       configMap:

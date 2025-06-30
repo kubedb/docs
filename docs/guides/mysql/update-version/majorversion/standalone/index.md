@@ -54,10 +54,10 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED 
 5.7.35-v1       5.7.35    Official       mysql:5.7.35                             13d
 5.7.44          5.7.44    Official       mysql:5.7.44                             13d
 8.0.17          8.0.17    Official       mysql:8.0.17                             13d
-8.0.35          8.0.35    Official       mysql:8.0.35                             13d
-8.0.31-innodb   8.0.35    MySQL          mysql/mysql-server:8.0.35                13d
-8.0.35          8.0.35    Official       mysql:8.0.35                             13d
-8.0.3-v4        8.0.3     Official       mysql:8.0.3                              13d
+8.0.36          8.0.36    Official       mysql:8.0.36                             13d
+8.0.31-innodb   8.0.31    MySQL          mysql/mysql-server:8.0.31                13d
+9.1.0           9.1.0     Official       mysql:9.1.0                              13d
+8.0.3           8.0.3     Official       mysql:8.0.3                              13d
 ```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` standalone that will be possible to update from this version to another version. In the next section, we are going to verify version update constraints.
@@ -115,7 +115,7 @@ spec:
 
 ```
 
-The above `spec.updateConstraints.denylist` is showing that updating below version of `5.7.44` is not possible for both standalone and group replication. That means, it is possible to update any version above `5.7.44`. Here, we are going to create a `MySQL` standalone using MySQL  `5.7.44`. Then we are going to update this version to `8.0.35`.
+The above `spec.updateConstraints.denylist` is showing that updating below version of `5.7.44` is not possible for both standalone and group replication. That means, it is possible to update any version above `5.7.44`. Here, we are going to create a `MySQL` standalone using MySQL  `5.7.44`. Then we are going to update this version to `9.1.0`.
 
 **Deploy MySQL standalone:**
 
@@ -186,7 +186,7 @@ We are ready to apply updating on this `MySQL` standalone.
 
 #### UpdateVersion
 
-Here, we are going to update `MySQL` standalone from `5.7.44` to `8.0.35`.
+Here, we are going to update `MySQL` standalone from `5.7.44` to `9.1.0`.
 
 **Create MySQLOpsRequest:**
 
@@ -203,14 +203,14 @@ spec:
     name: my-standalone
   type: UpdateVersion
   updateVersion:
-    targetVersion: "8.0.35"
+    targetVersion: "8.0.36"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `8.0.35` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `9.1.0` after updating.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
@@ -254,7 +254,7 @@ Spec:
     Name:  my-standalone
   Type:    UpdateVersion
   UpdateVersion:
-    TargetVersion:  8.0.35
+    TargetVersion:  8.0.36
 Status:
   Conditions:
     Last Transition Time:  2022-06-30T07:55:16Z
@@ -300,13 +300,13 @@ Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have up
 
 ```bash
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
-8.0.35
+8.0.36
 
 $ kubectl get sts -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-mysql:8.0.35
+mysql:8.0.36
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mysql:8.0.35
+mysql:8.0.36
 ```
 
 You can see above that our `MySQL`standalone has been updated with the new version. It verifies that we have successfully updated our standalone.

@@ -37,7 +37,7 @@ spec:
     name: my-group
   type: UpdateVersion
   updateVersion:
-    targetVersion: 8.0.35
+    targetVersion: 9.1.0
 status:
   conditions:
   - lastTransitionTime: "2022-06-16T13:52:58Z"
