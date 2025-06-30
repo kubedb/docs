@@ -49,8 +49,8 @@ The Volume Expansion process consists of the following steps:
 
 8. Then the `KubeDB` Enterprise operator will expand the persistent volume to reach the expected size defined in the `MySQLOpsRequest` CR.
 
-9. After the successfully expansion of the volume of the related PetSet Pods, the `KubeDB` Enterprise operator updates the new volume size in the `MySQL` object to reflect the updated state.
+9. After the successful expansion of the volume of the related PetSet Pods, the `KubeDB` Enterprise operator updates the new volume size in the `MySQL` object to reflect the updated state.
 
 10. After the successful Volume Expansion of the `MySQL`, the `KubeDB` Enterprise operator resumes the `MySQL` object so that the `KubeDB` Community operator resumes its usual operations.
 
-In the next docs, we are going to show a step by step guide on Volume Expansion of various MySQL database using `MySQLOpsRequest` CRD.
+In the next docs, we are going to show a step-by-step guide on Volume Expansion of various MySQL database using `MySQLOpsRequest` CRD.

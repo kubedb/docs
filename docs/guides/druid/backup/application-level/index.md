@@ -169,7 +169,7 @@ Here, we have to use service `sample-druid-routers` and secret `sample-druid-adm
 ```bash
 kubectl get mysql,zk -n demo
 NAME                                           VERSION   STATUS   AGE
-mysql.kubedb.com/sample-druid-mysql-metadata   8.0.35    Ready    6m31s
+mysql.kubedb.com/sample-druid-mysql-metadata   9.1.0    Ready    6m31s
 
 NAME                                   TYPE                  VERSION   STATUS   AGE
 zookeeper.kubedb.com/sample-druid-zk   kubedb.com/v1alpha2   3.7.2     Ready    6m31s
@@ -184,7 +184,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 $ kubectl get appbindings -n demo
 NAME                          TYPE                   VERSION   AGE
 sample-druid                  kubedb.com/druid       30.0.1    4m7s
-sample-druid-mysql-metadata   kubedb.com/mysql       8.0.35    6m31s
+sample-druid-mysql-metadata   kubedb.com/mysql       9.1.0    6m31s
 sample-druid-zk               kubedb.com/zookeeper   3.7.2     6m34s
 ```
 
@@ -716,7 +716,7 @@ Verify the dependencies have been restored:
 ```bash
 $ kubectl get mysql,zk -n dev
 NAME                                           VERSION   STATUS   AGE
-mysql.kubedb.com/restored-druid-mysql-metadata   8.0.35    Ready    2m52s
+mysql.kubedb.com/restored-druid-mysql-metadata   9.1.0    Ready    2m52s
 
 NAME                                   TYPE                  VERSION   STATUS   AGE
 zookeeper.kubedb.com/restored-druid-zk   kubedb.com/v1alpha2   3.7.2     Ready    2m42s

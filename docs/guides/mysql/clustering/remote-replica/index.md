@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # KubeDB - MySQL Remote Replica
 
-This tutorial will show you how to use KubeDB to provision a MySQL Remote Replica from a kubedb managed mysql instance. Remote replica can used in in or across cluster
+This tutorial will show you how to use KubeDB to provision a MySQL Remote Replica from a KubeDB managed mysql instance. Remote replica can use in or across cluster
 
 
 ## Before You Begin
@@ -114,7 +114,7 @@ metadata:
 spec:
   authSecret:
     name: mysql-singapore-auth
-  version: "8.0.35"
+  version: "9.1.0"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -154,7 +154,7 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 ```bash
 $ kubectl get mysql -n demo
 NAME              VERSION   STATUS   AGE
-mysql-singapore   8.0.35    Ready    22h
+mysql-singapore   9.1.0    Ready    22h
 ```
 
 ## Connect with MySQL database
@@ -262,7 +262,7 @@ appbinding.appcatalog.appscode.com/mysql-singapore created
 
 $ kubectl get appbinding -n  demo
 NAME              TYPE               VERSION   AGE
-mysql-singapore   kubedb.com/mysql   8.0.35    4m17s
+mysql-singapore   kubedb.com/mysql   9.1.0    4m17s
 ```
 
 ### Create remote replica auth 
@@ -297,7 +297,7 @@ spec:
     periodSeconds: 10
     timeoutSeconds: 10
     disableWriteCheck: true
-  version: "8.0.35"
+  version: "9.1.0"
   replicas: 1
   topology:
     mode: RemoteReplica
@@ -332,7 +332,7 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 ```bash
 $ kubectl get mysql -n demo 
 NAME           VERSION   STATUS   AGE
-mysql-london   8.0.35    Ready    7m17s
+mysql-london   9.1.0    Ready    7m17s
 ```
 
 ##  Validate Remote Replica

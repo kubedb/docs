@@ -161,7 +161,7 @@ $ kubectl exec -it -n demo proxy-server-0 -- bash
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin > "
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 71
-Server version: 8.0.35 (ProxySQL Admin Module)
+Server version: 9.1.0 (ProxySQL Admin Module)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 

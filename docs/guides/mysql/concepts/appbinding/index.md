@@ -34,7 +34,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-group","namespace":"demo"},"spec":{"configSecret":{"name":"my-configuration"},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.35"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-group","namespace":"demo"},"spec":{"configSecret":{"name":"my-configuration"},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"9.1.0"}}
   creationTimestamp: "2022-06-28T10:08:03Z"
   generation: 1
   labels:
@@ -76,7 +76,7 @@ spec:
   secret:
     name: mysql-group-auth
   type: kubedb.com/mysql
-  version: 8.0.35
+  version: 9.1.0
 
 ```
 
