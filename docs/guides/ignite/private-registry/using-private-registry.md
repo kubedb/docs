@@ -42,10 +42,6 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   spec:
     db:
       image: PRIVATE_REGISTRY/ignite:2.17.0
-    exporter:
-      image: PRIVATE_REGISTRY/ignite-init:2.17.0-v1
-    podSecurityPolicies:
-      databasePolicyName: ignite-db
     securityContext:
       runAsUser: 70
     version: 2.17.0
