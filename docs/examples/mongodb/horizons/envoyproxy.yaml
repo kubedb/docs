@@ -1,0 +1,46 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: ace
+  namespace: ace-gw
+spec:
+  logging:
+    level:
+      default: warn
+  mergeGateways: true
+  provider:
+    kubernetes:
+      envoyDeployment:
+        container:
+          image: ghcr.io/voyagermesh/envoy:v1.33.1-ac
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            runAsNonRoot: true
+            runAsUser: 65534
+            seccompProfile:
+              type: RuntimeDefault
+        patch:
+          value:
+            spec:
+              template:
+                spec:
+                  containers:
+                    - name: shutdown-manager
+                      securityContext:
+                        allowPrivilegeEscalation: false
+                        capabilities:
+                          drop:
+                            - ALL
+                        privileged: false
+                        runAsNonRoot: true
+                        runAsUser: 65534
+                        seccompProfile:
+                          type: RuntimeDefault
+      envoyService:
+        externalTrafficPolicy: Cluster
+        type: NodePort
+    type: Kubernetes

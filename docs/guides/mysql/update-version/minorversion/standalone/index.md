@@ -54,10 +54,10 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED 
 5.7.35-v1       5.7.35    Official       mysql:5.7.35                             13d
 5.7.44          5.7.44    Official       mysql:5.7.44                             13d
 8.0.17          8.0.17    Official       mysql:8.0.17                             13d
-8.0.35          8.0.35    Official       mysql:8.0.35                             13d
-8.0.31-innodb   8.0.35    MySQL          mysql/mysql-server:8.0.35                13d
-8.0.35          8.0.35    Official       mysql:8.0.35                             13d
-8.0.3-v4        8.0.3     Official       mysql:8.0.3                              13d
+8.0.36          8.0.36    Official       mysql:8.0.36                             13d
+8.0.31-innodb   8.0.31    MySQL          mysql/mysql-server:8.0.31                13d
+9.1.0           9.1.0     Official       mysql:9.1.0                              13d
+8.0.3           8.0.3     Official       mysql:8.0.3                              13d
 
 ```
 

@@ -1,0 +1,10 @@
+apiVersion: v1
+stringData:
+  user.conf: |
+    max_connections=200
+    shared_buffers=256MB
+kind: Secret
+metadata:
+  name: pg-configuration
+  namespace: demo
+type: Opaque

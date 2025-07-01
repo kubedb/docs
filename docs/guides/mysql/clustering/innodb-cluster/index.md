@@ -202,7 +202,7 @@ AppBinding:
     Secret:
       Name:   innodb-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.35
+    Version:  9.1.0
 
 Events:
   Type    Reason         Age   From            Message
@@ -389,7 +389,7 @@ $ kubectl exec -it -n demo innodb-0 -c mysql -- mysqlsh -u root --password='ny5j
                 "replicationLag": "applier_queue_applied", 
                 "role": "HA", 
                 "status": "ONLINE", 
-                "version": "8.0.35"
+                "version": "9.1.0"
             }, 
             "innodb-1.innodb-pods.demo.svc:3306": {
                 "address": "innodb-1.innodb-pods.demo.svc:3306", 
@@ -399,7 +399,7 @@ $ kubectl exec -it -n demo innodb-0 -c mysql -- mysqlsh -u root --password='ny5j
                 "replicationLag": "applier_queue_applied", 
                 "role": "HA", 
                 "status": "ONLINE", 
-                "version": "8.0.35"
+                "version": "9.1.0"
             }, 
             "innodb-2.innodb-pods.demo.svc:3306": {
                 "address": "innodb-2.innodb-pods.demo.svc:3306", 
@@ -409,7 +409,7 @@ $ kubectl exec -it -n demo innodb-0 -c mysql -- mysqlsh -u root --password='ny5j
                 "replicationLag": "applier_queue_applied", 
                 "role": "HA", 
                 "status": "ONLINE", 
-                "version": "8.0.35"
+                "version": "9.1.0"
             }
         }, 
         "topologyMode": "Single-Primary"
@@ -515,9 +515,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+-------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                   | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
 +---------------------------+--------------------------------------+-------------------------------+-------------+--------------+-------------+----------------+----------------------------+
-| group_replication_applier | 294f333c-64c6-11ed-9893-468480005d43 | innodb-0.innodb-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.35         | MySQL                      |
-| group_replication_applier | 2b77185f-64c6-11ed-9621-e21f33a1cdb1 | innodb-1.innodb-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.35         | MySQL                      |
-| group_replication_applier | 2f0da15c-64c6-11ed-951a-fa8d12ce91a2 | innodb-2.innodb-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.35         | MySQL                      |
+| group_replication_applier | 294f333c-64c6-11ed-9893-468480005d43 | innodb-0.innodb-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 9.1.0         | MySQL                      |
+| group_replication_applier | 2b77185f-64c6-11ed-9621-e21f33a1cdb1 | innodb-1.innodb-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 9.1.0         | MySQL                      |
+| group_replication_applier | 2f0da15c-64c6-11ed-951a-fa8d12ce91a2 | innodb-2.innodb-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 9.1.0         | MySQL                      |
 +---------------------------+--------------------------------------+-------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 
 

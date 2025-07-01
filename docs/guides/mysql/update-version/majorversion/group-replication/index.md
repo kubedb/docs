@@ -54,9 +54,9 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED 
 5.7.35-v1       5.7.35    Official       mysql:5.7.35                             13d
 5.7.44          5.7.44    Official       mysql:5.7.44                             13d
 8.0.17          8.0.17    Official       mysql:8.0.17                             13d
-8.0.35          8.0.35    Official       mysql:8.0.35                             13d
-8.0.31-innodb   8.0.35    MySQL          mysql/mysql-server:8.0.35                13d
-8.0.35          8.0.35    Official       mysql:8.0.35                             13d
+9.1.0           9.1.0     Official       mysql:9.1.0                              13d
+8.0.31-innodb   9.1.0     MySQL          mysql/mysql-server:9.1.0                 13d
+9.1.0           9.1.0     Official       mysql:9.1.0                              13d
 8.0.3-v4        8.0.3     Official       mysql:8.0.3                              13d
 
 ```
@@ -116,7 +116,7 @@ spec:
 
 ```
 
-The above `spec.updateConstraints.denylist` of `5.7.44` is showing that updating below version of `5.7.44` is not possible for both group replication and standalone. That means, it is possible to update any version above `5.7.44`. Here, we are going to create a `MySQL` Group Replication using MySQL  `5.7.44`. Then we are going to update this version to `8.0.35`.
+The above `spec.updateConstraints.denylist` of `5.7.44` is showing that updating below version of `5.7.44` is not possible for both group replication and standalone. That means, it is possible to update any version above `5.7.44`. Here, we are going to create a `MySQL` Group Replication using MySQL  `5.7.44`. Then we are going to update this version to `9.1.0`.
 
 **Deploy MySQL Group Replication:**
 
@@ -215,7 +215,7 @@ We are ready to apply updating on this `MySQL` group replication.
 
 #### UpdateVesion
 
-Here, we are going to update the `MySQL` group replication from `5.7.44` to `8.0.35`.
+Here, we are going to update the `MySQL` group replication from `5.7.44` to `9.1.0`.
 
 **Create MySQLOpsRequest:**
 
@@ -232,14 +232,14 @@ spec:
   databaseRef:
     name: my-group
   updateVersion:
-    targetVersion: "8.0.35"
+    targetVersion: "8.0.36"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `8.0.35` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `9.1.0` after updating.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
@@ -289,7 +289,7 @@ Spec:
     Name:  my-group
   Type:    UpdateVersion
   UpdateVersion:
-    Target Version:  8.0.35
+    Target Version:  8.0.36
 Status:
   Conditions:
     Last Transition Time:  2022-06-30T07:55:16Z
@@ -338,15 +338,15 @@ Now, we are going to verify whether the `MySQL` and `PetSet` and it's `Pod` have
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-8.0.35
+8.0.36
 
 $ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
-"kubedb/mysql:8.0.35"
+"kubedb/mysql:8.0.36"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
-"kubedb/mysql:8.0.35"
-"kubedb/mysql:8.0.35"
-"kubedb/mysql:8.0.35"
+"kubedb/mysql:8.0.36"
+"kubedb/mysql:8.0.36"
+"kubedb/mysql:8.0.36"
 ```
 
 Let's also check the PetSet pods have joined the `MySQL` group replication,
@@ -363,9 +363,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                       | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
-| group_replication_applier | b0e71e0c-f849-11ec-a315-46392c50e39c | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.35         | XCom                       |
-| group_replication_applier | b34b16d7-f849-11ec-9362-a2f432876ee4 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.35         | XCom                       |
-| group_replication_applier | b5542a4a-f849-11ec-9a75-3e8abd17fee6 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.35         | XCom                       |
+| group_replication_applier | b0e71e0c-f849-11ec-a315-46392c50e39c | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.36         | XCom                       |
+| group_replication_applier | b34b16d7-f849-11ec-9362-a2f432876ee4 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.36         | XCom                       |
+| group_replication_applier | b5542a4a-f849-11ec-9a75-3e8abd17fee6 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.36         | XCom                       |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 
 ```

@@ -1,0 +1,11 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: appscode-charts-oci
+  namespace: kubeops
+spec:
+  interval: 30m
+  provider: generic
+  timeout: 1m
+  type: oci
+  url: oci://ghcr.io/appscode-charts
