@@ -39,7 +39,6 @@ kubedb-operator operator [flags]
       --readiness-probe-interval duration   The time between two consecutive health checks that the operator performs to the database. (default 10s)
       --resync-period duration              If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 10m0s)
       --shard-config string                 Shard configuration that will be used by this operator
-  -v, --v int                               Number for the log level verbosity (default 3)
 ```
 
 ### Options inherited from parent commands
