@@ -259,9 +259,9 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 
 `spec.replicaSet` represents the configuration for replicaset. When `spec.replicaSet` is set, KubeDB will deploy a mongodb replicaset where number of replicaset member is `spec.replicas`.
 
-`.spec.replicaset.horizons` represents the configuration for mongodb replicaset to connect with external mongodb cluster. It has the following fields:
-  - `dns` denotes the dns name for `srv` of the external mongodb cluster.
-  - `pods` denotes the list of pods of external mongodb cluster.
+`.spec.replicaSet.horizons` configures the MongoDB replica set for external connections, specifying the primary DNS (`dns`) and pod DNS names (`pods`) for SRV records used in `mongodb+srv` connection strings.  
+  - `dns` denotes the primary dns name for `srv` of the external mongodb cluster.
+  - `pods` denotes the list of pods DNS names of external mongodb cluster replicaset members.
 
 - `name` denotes the name of mongodb replicaset.
 NB. If `spec.shardTopology` is set, then `spec.replicaset` needs to be empty.
