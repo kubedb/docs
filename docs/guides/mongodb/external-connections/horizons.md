@@ -41,7 +41,7 @@ We need to have the following prerequisites to run this tutorial:
 Install voyager gateway using the following command:
 ```bash
 helm install ace oci://ghcr.io/appscode-charts/voyager-gateway \
-  --version v2025.4.30 \
+  --version v2025.6.30 \
   -n ace-gw --create-namespace \
   --set gateway-converter.enabled=false \
   --wait --burst-limit=10000 --debug
@@ -66,7 +66,7 @@ spec:
     kubernetes:
       envoyDeployment:
         container:
-          image: ghcr.io/voyagermesh/envoy:v1.33.1-ac
+          image: ghcr.io/voyagermesh/envoy:v1.34.1-ac
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -183,7 +183,7 @@ helmrelease.helm.toolkit.fluxcd.io/keda-add-ons-http created
 Install `Catalog Manager` in your cluster using the following command:
 ```bash
 helm install catalog-manager oci://ghcr.io/appscode-charts/catalog-manager \
-  --version=v2025.4.30 \
+  --version=v2025.6.30 \
   -n ace --create-namespace \
   --set helmrepo.name=appscode-charts-oci \
   --set helmrepo.namespace=kubeops \
@@ -245,14 +245,14 @@ issuer.cert-manager.io/mongo-ca-issuer created
 ## MongoDB Replicaset with Horizons
 
 ### Create DNS Records
-Create dns `A`/`CNAME` records for mongodb replicaset pods, let's say, `MongoDB` has 3replicas.
+Create dns `A`/`CNAME` records for mongodb replicaset pods, let's say, `MongoDB` has `3` replicas.
 
 Example:
-- `DNS`: kubedb.cloud
+- `DNS`: `kubedb.cloud`, this will be used to connect to the MongoDB replica set using `mongodb+srv`.
 - `A/CNAME Record` for each MongoDB replicas with exposed Envoy Gateway `LoadBalancer/NodePort` IP/Host: 
-    - mongo-0.kubedb.cloud
-    - mongo-1.kubedb.cloud
-    - mongo-2.kubedb.cloud
+    - `mongo-0.kubedb.cloud`
+    - `mongo-1.kubedb.cloud`
+    - `mongo-2.kubedb.cloud`
 
 Below is the YAML for MongoDB Replicaset Horizons. Here, [`spec.replicaSet.horizons`](/docs/guides/mongodb/concepts/mongodb.md#specreplicaset) specifies `horizons` for `replicaset`.
 
@@ -299,9 +299,11 @@ spec:
 ```
 
 Here,
-- `.spec.replicaSet.horizons.dns` specifies the DNS name for the MongoDB replica set.
-- `.spec.replicaSet.horizons.pods` specifies the DNS names for each pod in the replica set.
-- `.spec.tls.certificates` specifies the certificate details for the MongoDB replica set.
+- `.spec.replicaSet.horizons.dns` specifies the DNS `SRV` record for the MongoDB replica set. It serves as the base domain for the SRV record used in `mongodb+srv` connection strings.
+- `.spec.replicaSet.horizons.pods` specifies the DNS names for each pod in the replica set. These pod-specific DNS names are used to create `SRV` records that map to the individual MongoDB pods (e.g., `mongo-0`, `mongo-1`, `mongo-2`).
+- `.spec.tls.certificates` specifies the certificate details for the MongoDB replica set. The dnsNames field under `.spec.tls.certificates` must include the replica set’s primary DNS (e.g., `kubedb.cloud`) and the DNS names of all pods listed in `.spec.replicaSet.horizons.pods`
+
+>> **Note**: If you don't want to use `mongodb+srv` connection string, you can connect to the MongoDB replica set using the individual pod DNS names (e.g., `mongo-0.kubedb.cloud:10000`, `mongo-1.kubedb.cloud:10001`, etc.).
 
 ### Deploy MongoDB Replicaset Horizons
 
