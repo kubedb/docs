@@ -57,12 +57,12 @@ NAME        VERSION   DB_IMAGE                  DEPRECATED   AGE
 5.7.44   5.7.33    kubedb/mysql:5.7.44                 3h55m
 8.0.14-v2   8.0.14    kubedb/mysql:8.0.14-v2                 3h55m
 8.0.20-v1   8.0.20    kubedb/mysql:8.0.20-v1                 3h55m
-8.0.35   8.0.21    kubedb/mysql:8.0.35                 3h55m
-8.0.35      8.0.35    kubedb/mysql:8.0.35                    3h55m
+9.1.0   8.0.21    kubedb/mysql:9.1.0                 3h55m
+9.1.0      9.1.0    kubedb/mysql:9.1.0                    3h55m
 8.0.3-v2    8.0.3     kubedb/mysql:8.0.3-v2                  3h55m
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a standalone using non-deprecated `MySQL`  version `8.0.35`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a standalone using non-deprecated `MySQL`  version `9.1.0`.
 
 **Deploy MySQL Standalone:**
 
@@ -75,7 +75,7 @@ metadata:
   name: my-standalone
   namespace: demo
 spec:
-  version: "8.0.35"
+  version: "9.1.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -104,7 +104,7 @@ $ watch -n 3 kubectl get my -n demo my-standalone
 Every 3.0s: kubectl get my -n demo my-standalone                 suaas-appscode: Wed Jul  1 17:48:14 2020
 
 NAME            VERSION      STATUS    AGE
-my-standalone   8.0.35    Running   2m58s
+my-standalone   9.1.0    Running   2m58s
 
 $ watch -n 3 kubectl get sts -n demo my-standalone
 Every 3.0s: kubectl get sts -n demo my-standalone                suaas-appscode: Wed Jul  1 17:48:52 2020

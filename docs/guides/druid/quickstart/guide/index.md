@@ -296,7 +296,7 @@ Spec:
     Name:           druid-quickstart-mysql-metadata
     Namespace:      demo
     Type:           MySQL
-    Version:        8.0.35
+    Version:        9.1.0
   Service Templates:
     Alias:  primary
     Metadata:

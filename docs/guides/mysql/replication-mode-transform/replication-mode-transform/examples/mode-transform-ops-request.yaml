@@ -1,0 +1,27 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: mysql-replication-mode-transform
+  namespace: demo
+spec:
+  type: ReplicationModeTransformation
+  databaseRef:
+    name: mysql-london
+  replicationModeTransformation:
+    mode: Multi-Primary
+    requireSSL: true
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: mysql-issuer
+    certificates:
+      - alias: server
+        subject:
+          organizations:
+            - kubedb:server
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
+  timeout: 10m
+  apply: Always
