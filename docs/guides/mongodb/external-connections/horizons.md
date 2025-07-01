@@ -36,6 +36,20 @@ namespace/demo created
 
 We need to have the following prerequisites to run this tutorial:
 
+### Install Required CRDs
+Install the required CRDs using the following command:
+```bash
+kubectl create -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.crds.yaml
+kubectl create -f https://github.com/prometheus-operator/prometheus-operator/releases/download/v0.75.0/stripped-down-crds.yaml
+kubectl create -f https://github.com/kmodules/custom-resources/raw/release-1.25/crds/appcatalog.appscode.com_appbindings.yaml
+kubectl create -f https://github.com/kmodules/custom-resources/raw/release-1.25/crds/metrics.appscode.com_metricsconfigurations.yaml
+kubectl create -f https://github.com/stashed/installer/raw/master/crds/stash-crds.yaml
+kubectl create -f https://github.com/kubevault/installer/raw/master/crds/kubevault-crds.yaml
+kubectl create -f https://github.com/kubedb/installer/raw/master/crds/kubedb-crds.yaml
+kubectl create -f https://github.com/kubernetes-csi/external-snapshotter/raw/master/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+kubectl create -f https://github.com/kubestash/installer/raw/master/crds/kubestash-crds.yaml
+```
+
 ### Install Voyager Gateway
 
 Install voyager gateway using the following command:
