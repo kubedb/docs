@@ -1,0 +1,32 @@
+apiVersion: kubedb.com/v1
+kind: Redis
+metadata:
+  name: redis-announce
+  namespace: demo
+spec:
+  version: 7.4.0
+  mode: Cluster
+  cluster:
+    shards: 3
+    replicas: 2
+    announce:
+      type: hostname
+      shards:
+        - endpoints:
+            - "rd0-0.kubedb.appscode"
+            - "rd0-1.kubedb.appscode"
+        - endpoints:
+            - "rd1-0.kubedb.appscode"
+            - "rd1-1.kubedb.appscode"
+        - endpoints:
+            - "rd2-0.kubedb.appscode"
+            - "rd2-1.kubedb.appscode"
+  storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: 20M
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+  deletionPolicy: WipeOut

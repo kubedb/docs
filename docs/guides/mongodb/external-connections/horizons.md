@@ -170,7 +170,7 @@ Install `Keda` in your cluster using the following command:
 $ kubectl create ns kubeops
 namespace/kubeops created
 
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/helrepo.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/helmrepo.yaml
 helmrepository.source.toolkit.fluxcd.io/appscode-charts-oci created
 
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/keda.yaml
