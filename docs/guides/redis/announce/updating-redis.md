@@ -1,16 +1,14 @@
 ---
-title: Updating Redis
+title: Expose With Cluster Announce
 menu:
 docs_{{ .version }}:
-identifier: rd-update
-name: Announce
+identifier: rd-update-announce
+name: Update Announce
 parent: rd-announce
 weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
-
-
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
@@ -197,10 +195,10 @@ KubeDB uses following crd fields to enable Redis Announce:
 
 Read about the fields in details in [redis concept](/docs/guides/redis/concepts/redis.md)
 
-## Redis Replicaset with Announce
+## Redis Cluster with Announce
 
 ### Create DNS Records
-Create dns `A`/`CNAME` records for redis replicaset pods, let's say, `Redis` has `2` replicas and `3` shards.
+Create dns `A`/`CNAME` records for redis cluster pods, let's say, `Redis` has `2` replicas and `3` shards.
 
 Example:
 - `DNS`: `kubedb.appscode`, this will be used to connect to the Redis replica set using `redis+srv`.
@@ -213,7 +211,7 @@ Example:
     - "rd2-1.kubedb.appscode"
 
 
-Below is the YAML for Redis Replicaset Announce. Here, [`spec.cluster.announce`](/docs/guides/redis/concepts/redis.md#specreplicaset) specifies `announce` for `replicaset`.
+Below is the YAML for Redis Announce. 
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -257,7 +255,7 @@ Here,
 
 >> **Note**: If you don't want to use `redis+srv` connection string, you can connect to the Redis replica set using the individual pod DNS names (e.g., `rd0-0.kubedb.appscode:10000`, `rd0-1.kubedb.appscode:10001`, etc.).
 
-### Deploy Redis Replicaset Announce
+### Deploy Redis Cluster Announce
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/redis.yaml
@@ -302,13 +300,13 @@ NAME                                                       TYPE       STATUS    
 redisopsrequest.ops.kubedb.com/redis-announce-jddiql        Announce   Successful   2m58s
 ```
 
-### Connect to Redis as Replicaset
+### Connect to Redis as Cluster
 
 To connect to the Redis replica set, you can use the following command:
 
 Collect the replicas from the `redis-announce` object:
 ```bash
-$ kubectl get redis -n demo redis-horizon -ojson | jq .spec.cluster.announce.shards[0]
+$ kubectl get redis -n demo redis-announce -ojson | jq .spec.cluster.announce.shards[0]
 {
   "endpoints": [
     "rd0-0.kubedb.appscode",
