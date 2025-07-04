@@ -89,7 +89,7 @@ Here,
 - `.spec.cluster.announce.shards` specifies the DNS names for each shards in the replica set.
 - `.spec.cluster.announce.shards.endpoints`  specifies the DNS names for each pod in the specific shard.
 
-> Note: Here we need to add endpoints as <IP/DNS>:<port>@<bus-port>
+> Note: Here we need to add endpoints as <IP/DNS>:< port>@<bus-port>
 
 Now, wait until `redis-announce` has status `Ready`. i.e,
 
