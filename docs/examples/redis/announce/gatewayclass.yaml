@@ -1,0 +1,24 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  annotations:
+    catalog.appscode.com/gateway-config: |-
+      service:
+        externalTrafficPolicy: Cluster
+        nodeportRange: 30000-32767
+        portRange: 10000-12767
+        seedBackendPort: 8080
+        type: LoadBalancer
+      vaultServer:
+        name: vault
+        namespace: ace
+    catalog.appscode.com/is-default-gatewayclass: "true"
+  name: ace
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  description: Default Service GatewayClass
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: ace
+    namespace: ace-gw

@@ -1,5 +1,5 @@
 ---
-title: MongoDB Initialization
+title: Redis Initialization
 menu:
   docs_{{ .version }}:
     identifier: rd-initialization-redis
