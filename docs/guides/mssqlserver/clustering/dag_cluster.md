@@ -134,7 +134,7 @@ In this example, the SQL Server container will run the Enterprise Edition.
 
 ### Deploy Microsoft SQL Server Distributed AG's primary cluster (AG1) 
 KubeDB implements a `MSSQLServer` CRD to define the specification of a Microsoft SQL Server database. Below is the `MSSQLServer` object created in this tutorial.
-Here, our issuer `mssqlserver-ca-issuer` is ready to deploy a `MSSQLServer`. Below is the YAML of SQL Server that we are going to create,
+Here, our issuer `mssqlserver-ca-issuer` is ready to deploy a `MSSQLServer`.
 
 Now, deploy the first `MSSQLServer` resource. This will act as the **primary** site of our Distributed AG. Note the `topology.mode` and the `distributedAG` block.
 
@@ -160,12 +160,13 @@ spec:
         url: "10.2.0.236" # Replace with the reachable LoadBalancer IP/hostname of this AG
       remote:
         name: ag2
-        url: "10.2.0.181" # Replace with the reachable LoadBalancer IP/hostname of the future secondary AG
+        url: "10.2.0.181" # Replace with the reachable LoadBalancer IP/hostname of the secondary AG
   tls:
     issuerRef:
       name: mssqlserver-ca-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
+    clientTLS: false
   podTemplate:
     spec:
       containers:
@@ -190,6 +191,39 @@ spec:
 
 > **Note:** You must replace the `url` fields with the actual, mutually reachable IP addresses or hostnames of your `LoadBalancer` services. You may need to create placeholder services first to get these IPs.
 
+
+### Create placeholder services first to get these IPs
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ag1
+  namespace: demo
+spec:
+  ports:
+    - name: primary
+      port: 1433
+      protocol: TCP
+      targetPort: db
+    - name: mirror
+      port: 5022
+      protocol: TCP
+      targetPort: mirror
+  selector:
+    app.kubernetes.io/instance: ag1
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: mssqlservers.kubedb.com
+    kubedb.com/role: primary
+  type: LoadBalancer
+```
+
+Deploy `ag1` primary service to your first cluster:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/ag1-primary-svc.yaml
+service/ag1 created created
+```
+
 Deploy `ag1` to your first cluster:
 
 ```bash
@@ -201,12 +235,11 @@ mssqlserver.kubedb.com/ag1 created
 
 Here,
 
-- `spec.version` is the name of the MSSQLServerVersion CR where the docker images are specified. In this tutorial, a MSSQLServer `2022-cu12` database is going to be created.
-- `spec.replicas` denotes the number of replicas of the created availability group
-- `spec.topology` specifies the mode `AvailabilityGroup` and the list of names of the databases that we want in our availability group. 
-   KubeDB operator will create and add these databases to the created availability group automatically. User don't have to create, configure or add the database to the availability group manually. User can update this list later as well. 
+- `spec.version` is the name of the MSSQLServerVersion CR where the docker images are specified. In this tutorial, a MSSQLServer `2022-cu16` database is going to be created.
+- `spec.replicas` denotes the number of replicas of the local availability group
+- `spec.topology` specifies the mode `DistributedAG` and the list of names of the databases that we want in our availability group. 
+   KubeDB operator will create and add these databases to the created availability group automatically. Users don't have to create, configure or add the database to the availability group manually. Users can update this list later as well. 
 - `spec.tls` specifies the TLS/SSL configurations. The KubeDB operator supports TLS management by using the [cert-manager](https://cert-manager.io/). Here `tls.clientTLS: false` means tls will not be enabled for SQL Server but the Issuer will be used to configure tls enabled wal-g proxy-server which is required for SQL Server backup operation.
-- `spec.internalAuth.endpointCert` specifies the TLS/SSL configurations for internal endpoint authentication of availability replicas. The provided issuer will be used to issue the certificates used for availability group endpoints authentication.
 - `spec.storageType` specifies the type of storage that will be used for MSSQLServer database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MSSQLServer database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MSSQLServer` CR or which resources KubeDB should keep or delete when you delete `MSSQLServer` CR. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy)
@@ -220,68 +253,68 @@ Wait for `ag1` to become `Ready`:
 ```bash
 # In Cluster 1
 kubectl get mssqlserver -n demo -w
-```
 
-
-Let's see the sql server resources that are created. 
+# Let's see all the SQL server resources that are created. 
 ```bash
 $ kubectl get ms,petset,pod,svc,secret,issuer,pvc -n demo
+NAME                         VERSION     STATUS   AGE
+mssqlserver.kubedb.com/ag1   2022-cu16   Ready    6m10s
 
-NAME                                            VERSION     STATUS   AGE
-mssqlserver.kubedb.com/mssqlserver-ag-cluster   2022-cu12   Ready    178m
+NAME                               AGE
+petset.apps.k8s.appscode.com/ag1   5m6s
 
-NAME                                                  AGE
-petset.apps.k8s.appscode.com/mssqlserver-ag-cluster   177m
+NAME        READY   STATUS    RESTARTS   AGE
+pod/ag1-0   2/2     Running   0          5m5s
+pod/ag1-1   2/2     Running   0          3m41s
+pod/ag1-2   2/2     Running   0          3m20s
 
-NAME                           READY   STATUS    RESTARTS   AGE
-pod/mssqlserver-ag-cluster-0   2/2     Running   0          177m
-pod/mssqlserver-ag-cluster-1   2/2     Running   0          177m
-pod/mssqlserver-ag-cluster-2   2/2     Running   0          177m
+NAME                    TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                         AGE
+service/ag1             LoadBalancer   10.43.117.2     10.2.0.236    1433:31485/TCP,5022:32511/TCP   7m57s
+service/ag1-pods        ClusterIP      None            <none>        1433/TCP,5022/TCP               6m10s
+service/ag1-secondary   ClusterIP      10.43.169.148   <none>        1433/TCP                        6m10s
 
-NAME                                       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-service/mssqlserver-ag-cluster             ClusterIP   10.96.60.223   <none>        1433/TCP   178m
-service/mssqlserver-ag-cluster-pods        ClusterIP   None           <none>        1433/TCP   178m
-service/mssqlserver-ag-cluster-secondary   ClusterIP   10.96.9.35     <none>        1433/TCP   178m
+NAME                       TYPE                       DATA   AGE
+secret/ag1-auth            kubernetes.io/basic-auth   2      6m10s
+secret/ag1-client-cert     kubernetes.io/tls          3      6m10s
+secret/ag1-config          Opaque                     1      6m8s
+secret/ag1-dbm-login       kubernetes.io/basic-auth   1      6m8s
+secret/ag1-endpoint-cert   kubernetes.io/tls          3      6m10s
+secret/ag1-master-key      kubernetes.io/basic-auth   1      6m8s
+secret/ag1-server-cert     kubernetes.io/tls          3      6m8s
+secret/mssqlserver-ca      kubernetes.io/tls          2      8m50s
 
-NAME                                          TYPE                       DATA   AGE
-secret/mssqlserver-ag-cluster-auth            kubernetes.io/basic-auth   2      178m
-secret/mssqlserver-ag-cluster-client-cert     kubernetes.io/tls          3      178m
-secret/mssqlserver-ag-cluster-config          Opaque                     1      178m
-secret/mssqlserver-ag-cluster-dbm-login       kubernetes.io/basic-auth   1      178m
-secret/mssqlserver-ag-cluster-endpoint-cert   kubernetes.io/tls          3      178m
-secret/mssqlserver-ag-cluster-master-key      kubernetes.io/basic-auth   1      178m
-secret/mssqlserver-ag-cluster-server-cert     kubernetes.io/tls          3      178m
+NAME                                           READY   AGE
+issuer.cert-manager.io/mssqlserver-ca-issuer   True    8m39s
 
-NAME                                                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-mssqlserver-ag-cluster-0   Bound    pvc-33ae1829-c559-407b-a148-1792c22b52a6   1Gi        RWO            standard       177m
-persistentvolumeclaim/data-mssqlserver-ag-cluster-1   Bound    pvc-b697b7ad-8348-431f-b2c7-01620bec4f8d   1Gi        RWO            standard       177m
-persistentvolumeclaim/data-mssqlserver-ag-cluster-2   Bound    pvc-b486a79c-a8ae-449a-bc15-74491f062573   1Gi        RWO            standard       177m
+NAME                               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/data-ag1-0   Bound    pvc-2ef5b468-faf1-4bfe-af04-1a9c674a38b7   1Gi        RWO            local-path     <unset>                 5m5s
+persistentvolumeclaim/data-ag1-1   Bound    pvc-8bdba861-5464-4e8b-a070-6ef21fc737bc   1Gi        RWO            local-path     <unset>                 3m41s
+persistentvolumeclaim/data-ag1-2   Bound    pvc-a8b5c4b7-684e-42c8-8d72-18271801d06a   1Gi        RWO            local-path     <unset>                 3m20s
 ```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created and is able to accept client connections. Run the following command to see the modified MSSQLServer object:
 
 ```bash
-$ kubectl get ms -n demo mssqlserver-ag-cluster -o yaml
+$ kubectl get ms -n demo ag1 -o yaml
 ```
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-ag-cluster","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","internalAuth":{"endpointCert":{"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","tls":{"clientTLS":false,"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}},"topology":{"availabilityGroup":{"databases":["agdb1","agdb2"]},"mode":"AvailabilityGroup"},"version":"2022-cu12"}}
-  creationTimestamp: "2024-10-08T10:56:30Z"
+  creationTimestamp: "2025-07-04T07:01:39Z"
   finalizers:
     - kubedb.com
-  generation: 2
-  name: mssqlserver-ag-cluster
+  generation: 3
+  name: ag1
   namespace: demo
-  resourceVersion: "238146"
-  uid: 0d383530-bbb5-442f-bef0-562304539f98
+  resourceVersion: "79870"
+  uid: d371db52-17c6-49b3-8318-67bc1dae344c
 spec:
   authSecret:
-    name: mssqlserver-ag-cluster-auth
+    activeFrom: "2025-07-04T07:01:39Z"
+    name: ag1-auth
+  autoOps: {}
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 1
@@ -292,13 +325,18 @@ spec:
     metadata: {}
     spec:
       containers:
-        - name: mssql
+        - env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation
+          name: mssql
           resources:
             limits:
-              memory: 4Gi
+              memory: 2Gi
             requests:
-              cpu: 500m
-              memory: 4Gi
+              cpu: "1"
+              memory: 1536Mi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -312,12 +350,7 @@ spec:
             seccompProfile:
               type: RuntimeDefault
         - name: mssql-coordinator
-          resources:
-            limits:
-              memory: 256Mi
-            requests:
-              cpu: 200m
-              memory: 256Mi
+          resources: {}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -335,7 +368,7 @@ spec:
               memory: 512Mi
             requests:
               cpu: 200m
-              memory: 512Mi
+              memory: 256Mi
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -350,26 +383,31 @@ spec:
         name: default
       securityContext:
         fsGroup: 10001
+      serviceAccountName: ag1
   replicas: 3
+  serviceTemplates:
+    - alias: primary
+      metadata: {}
+      spec:
+        type: LoadBalancer
   storage:
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-    storageClassName: standard
   storageType: Durable
   tls:
     certificates:
       - alias: server
-        secretName: mssqlserver-ag-cluster-server-cert
+        secretName: ag1-server-cert
         subject:
           organizationalUnits:
             - server
           organizations:
             - kubedb
       - alias: client
-        secretName: mssqlserver-ag-cluster-client-cert
+        secretName: ag1-client-cert
         subject:
           organizationalUnits:
             - client
@@ -383,78 +421,141 @@ spec:
   topology:
     availabilityGroup:
       databases:
-        - agdb1
-        - agdb2
-    mode: AvailabilityGroup
-  version: 2022-cu12
+        - agdb
+      leaderElection:
+        electionTick: 10
+        heartbeatTick: 1
+        period: 300ms
+        transferLeadershipInterval: 1s
+        transferLeadershipTimeout: 1m0s
+      secondaryAccessMode: All
+    distributedAG:
+      remote:
+        name: ag2
+        url: 10.2.0.181
+      self:
+        role: Primary
+        url: 10.2.0.236
+    mode: DistributedAG
+  version: 2022-cu16
 status:
   conditions:
-    - lastTransitionTime: "2024-10-08T10:56:30Z"
-      message: 'The KubeDB operator has started the provisioning of MSSQL: demo/mssqlserver-ag-cluster'
-      observedGeneration: 2
+    - lastTransitionTime: "2025-07-04T07:01:39Z"
+      message: 'The KubeDB operator has started the provisioning of MSSQLServer: demo/ag1'
+      observedGeneration: 1
       reason: DatabaseProvisioningStartedSuccessfully
       status: "True"
       type: ProvisioningStarted
-    - lastTransitionTime: "2024-10-08T10:57:55Z"
-      message: All replicas are ready for MSSQLServer demo/mssqlserver-ag-cluster
-      observedGeneration: 2
+    - lastTransitionTime: "2025-07-04T07:04:50Z"
+      message: All replicas are ready for MSSQLServer demo/ag1
+      observedGeneration: 3
       reason: AllReplicasReady
       status: "True"
       type: ReplicaReady
-    - lastTransitionTime: "2024-10-08T10:58:14Z"
-      message: Primary replica is ready for MSSQL demo/mssqlserver-ag-cluster
-      observedGeneration: 2
+    - lastTransitionTime: "2025-07-04T07:04:43Z"
+      message: Primary replica is ready for MSSQL demo/ag1
+      observedGeneration: 3
       reason: AvailabilyGroupCreatedInPrimary
       status: "True"
       type: AGPrimaryReplicaReady
-    - lastTransitionTime: "2024-10-08T10:58:48Z"
-      message: database demo/mssqlserver-ag-cluster is accepting connection
-      observedGeneration: 2
+    - lastTransitionTime: "2025-07-04T07:05:00Z"
+      message: database demo/ag1 is accepting connection
+      observedGeneration: 3
       reason: AcceptingConnection
       status: "True"
       type: AcceptingConnection
-    - lastTransitionTime: "2024-10-08T10:58:48Z"
-      message: database demo/mssqlserver-ag-cluster is ready
-      observedGeneration: 2
+    - lastTransitionTime: "2025-07-04T07:05:00Z"
+      message: database demo/ag1 is ready
+      observedGeneration: 3
       reason: AllReplicasReady
       status: "True"
       type: Ready
-    - lastTransitionTime: "2024-10-08T10:59:18Z"
-      message: 'The MSSQL: demo/mssqlserver-ag-cluster is successfully provisioned.'
-      observedGeneration: 2
+    - lastTransitionTime: "2025-07-04T07:05:52Z"
+      message: 'The MSSQLServer: demo/ag1 is successfully provisioned.'
+      observedGeneration: 3
       reason: DatabaseSuccessfullyProvisioned
       status: "True"
       type: Provisioned
-  observedGeneration: 1
   phase: Ready
 ```
 
 
+## Configure Shared Credentials
+
+A DAG requires that both participating AGs share identical endpoint credentials. KubeDB simplifies this with a CLI command.
+
+1.  **Generate Configuration from Primary:**
+    Run the `kubectl-dba` command against your primary `MSSQLServer` instance (`ag1`). This extracts the required secrets into a YAML file.
+    ```bash
+    # In Cluster 1 context
+    kubectl-dba mssql dag-config ag1 -n demo
+    ```
+
+2.  **Apply Configuration to Secondary Cluster:**
+    Apply the generated manifest to your second cluster. This creates the identical secrets needed for authentication.
+    ```bash
+    # In Cluster 2 context
+    kubectl apply -f ./dag-config.yaml
+    ```
+
+
+
+
+
+
+
+
+
+
+here.....................
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Connect with MSSQLServer database
 
-KubeDB operator has created a new Secret called `mssqlserver-ag-cluster-auth` *(format: {mssqlserver-object-name}-auth)* for storing the sa password for `sql server`. This secret contains a `username` key which contains the *username* for MSSQLServer SA and a `password` key which contains the *password* for MSSQLServer SA user.
+KubeDB operator has created a new Secret called `ag1-auth` *(format: {mssqlserver-object-name}-auth)* for storing the sa password for `sql server`. This secret contains a `username` key which contains the *username* for MSSQLServer SA and a `password` key which contains the *password* for MSSQLServer SA user.
 
 If you want to use an existing secret please specify that when creating the MSSQLServer object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `sa` as value of `username` and a strong password for the sa user. For more details see [here](/docs/guides/mssqlserver/concepts/mssqlserver.md#specauthsecret).
 
-Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `mssqlserver-ag-cluster-auth` secret holds username and password
+Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `ag1-auth` secret holds username and password
 
 ```bash
-$ kubectl get secret -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secret -n demo ag1-auth -o jsonpath='{.data.\username}' | base64 -d
 sa
 
-$ kubectl get secret -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secret -n demo ag1-auth -o jsonpath='{.data.\password}' | base64 -d
 wFKDGnWgFP5Rdv92
 ```
-We can exec into the pod `mssqlserver-ag-cluster-0` using the following command:
+We can exec into the pod `ag1-0` using the following command:
 ```bash
-kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
-mssql@mssqlserver-ag-cluster-0:/$
+kubectl exec -it -n demo ag1-0 -c mssql -- bash
+mssql@ag1-0:/$
 ```
 
 Now, connect to the database using username and password, check the name of the created availability group, replicas of the availability group and see if databases are added to the availability group.
 ```bash
-$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
-mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+$ kubectl exec -it -n demo ag1-0 -c mssql -- bash
+mssql@ag1-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
 1> select name from sys.databases
 2> go
 name                                                  
@@ -479,9 +580,9 @@ mssqlserveragcluster
 2> go
 replica_server_name                                                                                                                                                                                                                                             
 -------------------------------------------------------------------------------------------
-mssqlserver-ag-cluster-0                                                                                                                                                                                                                                        
-mssqlserver-ag-cluster-1                                                                                                                                                                                                                                        
-mssqlserver-ag-cluster-2      
+ag1-0                                                                                                                                                                                                                                        
+ag1-1                                                                                                                                                                                                                                        
+ag1-2      
 (3 rows affected)
 1> select database_name	from sys.availability_databases_cluster;
 2> go
@@ -499,17 +600,17 @@ Now, to check the redundancy and data availability in secondary members. Let's i
 
 
 ```bash
-$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
-mssqlserver-ag-cluster-0	primary
-mssqlserver-ag-cluster-1	secondary
-mssqlserver-ag-cluster-2	secondary
+$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=ag1 -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+ag1-0	primary
+ag1-1	secondary
+ag1-2	secondary
 ```
 
-From the output above, we can see that mssqlserver-ag-cluster-0 is the primary node. To insert data, log into the primary MSSQLServer pod. Use the following command,
+From the output above, we can see that ag1-0 is the primary node. To insert data, log into the primary MSSQLServer pod. Use the following command,
 
 ```bash
-$ kubectl exec -it mssqlserver-ag-cluster-0 -c mssql -n demo -- bash
-mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+$ kubectl exec -it ag1-0 -c mssql -n demo -- bash
+mssql@ag1-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
 1> SELECT database_name FROM sys.availability_databases_cluster
 2> go
 database_name                                                                                                                   
@@ -541,8 +642,8 @@ Now, Let's verify that the data inserted into the primary node has been replicat
 Access the secondary node (Node 2) to verify that the data is present.
 
 ```bash
-$ kubectl exec -it mssqlserver-ag-cluster-1 -c mssql -n demo -- bash
-mssql@mssqlserver-ag-cluster-1:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+$ kubectl exec -it ag1-1 -c mssql -n demo -- bash
+mssql@ag1-1:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
 1> SELECT database_name FROM sys.availability_databases_cluster
 2> go
 database_name                                                                                                                   
@@ -568,8 +669,8 @@ ID    NAME                             AGE
 
 Now access the secondary node (Node 3) to verify that the data is present.
 ```bash
-$ kubectl exec -it mssqlserver-ag-cluster-2 -c mssql -n demo -- bash
-mssql@mssqlserver-ag-cluster-2:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+$ kubectl exec -it ag1-2 -c mssql -n demo -- bash
+mssql@ag1-2:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
 1> SELECT database_name FROM sys.availability_databases_cluster
 2> go
 database_name                                                                                                                   
@@ -599,18 +700,18 @@ To test automatic failover, we will force the primary member to restart. As the 
 ```bash
 $ kubectl get pods -n demo 
 NAME                       READY   STATUS    RESTARTS   AGE
-mssqlserver-ag-cluster-0   2/2     Running   0          129m
-mssqlserver-ag-cluster-1   2/2     Running   0          129m
-mssqlserver-ag-cluster-2   2/2     Running   0          129m
+ag1-0   2/2     Running   0          129m
+ag1-1   2/2     Running   0          129m
+ag1-2   2/2     Running   0          129m
 
-$ kubectl delete pod -n demo mssqlserver-ag-cluster-0 
-pod "mssqlserver-ag-cluster-0" deleted
+$ kubectl delete pod -n demo ag1-0 
+pod "ag1-0" deleted
 
 $ kubectl get pods -n demo
 NAME                       READY   STATUS    RESTARTS   AGE
-mssqlserver-ag-cluster-0   2/2     Running   0          7s
-mssqlserver-ag-cluster-1   2/2     Running   0          130m
-mssqlserver-ag-cluster-2   2/2     Running   0          130m
+ag1-0   2/2     Running   0          7s
+ag1-1   2/2     Running   0          130m
+ag1-2   2/2     Running   0          130m
 ```
 
 
@@ -847,182 +948,6 @@ If you are just testing some basic functionalities, you might want to avoid addi
 - Want to set up SQL Server Distributed Availability Group clusters? Check how to [Configure SQL Server Distributed Availability Group Cluster](/docs/guides/mssqlserver/clustering/ag_cluster.md)
 - Detail concepts of [MSSQLServer Object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
-
-
-
-
-
-
-
-
-
-Rough .............. 
-**********************************************
-
-
-
-### Step 2: Configure Shared Credentials
-
-A DAG requires that both participating AGs share identical endpoint credentials. KubeDB simplifies this with a CLI command.
-
-1.  **Generate Configuration from Primary:**
-    Run the `kubectl-dba` command against your primary `MSSQLServer` instance (`ag1`). This extracts the required secrets into a YAML file.
-    ```bash
-    # In Cluster 1 context
-    kubectl-dba mssql dag-config ag1 -n demo > dag-config.yaml
-    ```
-
-2.  **Apply Configuration to Secondary Cluster:**
-    Apply the generated manifest to your second cluster. This creates the identical secrets needed for authentication.
-    ```bash
-    # In Cluster 2 context
-    kubectl apply -f ./dag-config.yaml
-    ```
-
-### Step 3: Deploy the Secondary Availability Group (ag2)
-
-Now, deploy the second `MSSQLServer` resource in your second cluster. This will act as the **secondary** site of our DAG.
-
-Notice that `spec.topology.availabilityGroup.databases` is empty, and we now reference the secrets we just created.
-
-```yaml
-# ag2.yaml
-apiVersion: kubedb.com/v1alpha2
-kind: MSSQLServer
-metadata:
-  name: ag2
-  namespace: demo
-spec:
-  version: "2022-cu16"
-  replicas: 3
-  topology:
-    mode: DistributedAG
-    availabilityGroup:
-      # Databases field must be empty for the secondary AG.
-      secondaryAccessMode: "All"
-      # Reference the secrets you copied from the primary cluster.
-      loginSecretName: ag1-dbm-login
-      masterKeySecretName: ag1-master-key
-      endpointCertSecretName: ag1-endpoint-cert
-    distributedAG:
-      name: mydag
-      self:
-        role: Secondary
-        url: "10.2.0.181:5022" # Replace with the reachable LoadBalancer IP/hostname of this AG
-      remote:
-        name: ag1
-        url: "10.2.0.236:5022" # Replace with the reachable LoadBalancer IP/hostname of the primary AG
-  tls:
-    issuerRef:
-      name: mssqlserver-ca-issuer # An issuer with this name must also exist in the secondary cluster
-      kind: Issuer
-      apiGroup: "cert-manager.io"
-  podTemplate:
-    spec:
-      containers:
-      - name: mssql
-        env:
-        - name: ACCEPT_EULA
-          value: "Y"
-        - name: MSSQL_PID
-          value: "Developer"
-  serviceTemplates:
-  - alias: primary
-    spec:
-      type: LoadBalancer
-  storage:
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  deletionPolicy: WipeOut
-```
-
-Deploy `ag2` to your second cluster:
-```bash
-# In Cluster 2
-kubectl apply -f ag2.yaml
-```
-
-Once both `ag1` and `ag2` are `Ready`, KubeDB has established the Distributed AG.
-
-### Step 4: Verify Data Replication
-
-1.  **Insert data into the primary site (`ag1`):**
-    ```bash
-    # In Cluster 1
-    kubectl exec -it ag1-0 -n demo -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$(kubectl get secret -n demo ag1-auth -o jsonpath='{.data.password}' | base64 -d)" -Q "USE agdb; INSERT INTO inventory (name, quantity) VALUES ('apples', 100);"
-    ```
-
-2.  **Verify the data exists on the secondary site (`ag2`):**
-    ```bash
-    # In Cluster 2
-    kubectl exec -it ag2-0 -n demo -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$(kubectl get secret -n demo ag2-auth -o jsonpath='{.data.password}' | base64 -d)" -Q "USE agdb; SELECT * FROM inventory;"
-    ```
-    You should see the "apples" row, confirming that data is replicating correctly.
-
-## Performing a Manual Failover
-
-The following steps show how to fail over the primary role from `ag1` to `ag2`.
-
-#### 1. Prepare for Zero Data Loss (If `ag1` is Online)
-To prevent data loss, switch the DAG to synchronous replication. Execute this command on the primary replicas of **both `ag1` and `ag2`**:
-```sql
-ALTER AVAILABILITY GROUP [mydag]
-MODIFY AVAILABILITY GROUP ON
-  'ag1' WITH (AVAILABILITY_MODE = SYNCHRONOUS_COMMIT),
-  'ag2' WITH (AVAILABILITY_MODE = SYNCHRONOUS_COMMIT);
-GO
-```
-If the primary site is completely down, skip this step.
-
-#### 2. Change Primary Role to Secondary
-On the primary replica of the **current primary AG (`ag1`)**, take the DAG offline by changing its role:
-```sql
-ALTER AVAILABILITY GROUP [mydag] SET (ROLE = SECONDARY);
-GO
-```
-
-#### 3. Promote the New Primary
-On the primary replica of the **current secondary AG (`ag2`)**, execute the failover. This promotes `ag2` to be the new primary for the entire DAG:
-```sql
-ALTER AVAILABILITY GROUP [mydag] FORCE_FAILOVER_ALLOW_DATA_LOSS;
-GO
-```
-
-#### 4. Update KubeDB CRDs
-This is a **critical step**. You must update the `MSSQLServer` YAMLs for both `ag1` and `ag2` to reflect the new reality.
--   In `ag2.yaml`, change `spec.topology.distributedAG.self.role` to `Primary`.
--   In `ag1.yaml`, change `spec.topology.distributedAG.self.role` to `Secondary`.
-
-Apply the updated YAMLs to their respective clusters. This ensures the KubeDB operator's state matches the database state and prevents it from trying to revert the failover.
-
-## Cleaning up
-
-To clean up the Kubernetes resources created by this tutorial, run the following commands in their respective clusters:
-
-```bash
-# In Cluster 1
-kubectl patch -n demo mssqlserver/ag1 -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete mssqlserver -n demo ag1
-
-# In Cluster 2
-kubectl patch -n demo mssqlserver/ag2 -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete mssqlserver -n demo ag2
-
-# In both clusters
-kubectl delete ns demo
-```
-
-## Next Steps
-
-- Learn about [backup and restore](/docs/guides/mssqlserver/backup/overview/index.md) SQL Server using KubeStash.
-- Detail concepts of the [MSSQLServer Object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
-
-
-
 
 
 
