@@ -61,7 +61,8 @@ The process involves deploying a primary Availability Group (AG) in the first cl
 
 ### Create Issuer/ClusterIssuer on Both Clusters
 
-First, create an `Issuer` in your primary cluster's `demo` namespace. This will be used to generate the necessary certificates for endpoint authentication, and even if TLS is not enabled for SQL Server. The issuer will be used to configure the TLS-enabled Wal-G proxy server, which is required for the SQL Server backup and restore operations.
+First, create an `Issuer` in your both cluster's `demo` namespace. 
+> This Issuer serves two essential purposes. First, it generates the necessary certificates for the database mirroring endpoints, which is a mandatory requirement for authenticating communication within the Availability Group cluster. Second, it is used to secure the Wal-G proxy server with TLS, which is required for KubeDB's backup and restore functionality.
 
 Now, we are going to create an example `Issuer` that will be used throughout the duration of this tutorial. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
 
@@ -863,7 +864,9 @@ ag1-2	primary
 
 The following steps show how to fail over the primary role from `ag1` to `ag2`.
 
-#### 1. Prepare for Zero Data Loss (If `ag1` is Online)
+> IMPORTANT: If your primary site is down or ag1 is not available or accessible, then skip step 1 and 2. But make sure to change its role to 'SECONDARY' following step 2 when ag1 will be available to reconnect it with the new 'GLOBAL PRIMARY'
+
+#### Step 1. Prepare for Zero Data Loss (If `ag1` is Online)
 
 To prevent data loss, switch the DAG to synchronous replication. Execute this command on the primary replicas of **both `ag1` and `ag2`** (the 'GLOBAL PRIMARY' and the 'FORWARDER'.
 
@@ -977,19 +980,22 @@ ag2                                                                             
 (3 rows affected)
 ```
 
-#### 2. Change Primary Role to Secondary
+#### Step 2. Change Primary Role to Secondary (If/When `ag1` is Online)
 
 On the primary replica of the **current primary AG (`ag1`)**, take the DAG offline by changing its role:
 
 ```bash
-$ kubectl exec -it ag2-0 -c mssql -n demo -- bash
+$ kubectl exec -it ag1-2 -c mssql -n demo -- bash
 mssql@ag1-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
 ALTER AVAILABILITY GROUP [DAG] SET (ROLE = SECONDARY);
 "
 ```
 
 
-#### 3. Promote the New Primary
+
+
+
+#### Step 3. Promote the New Primary
 On the primary replica of the **current secondary AG (`ag2`, the dag forwarder)**, execute the failover. This promotes `ag2` to be the new primary for the entire DAG:
 ```bash
 $ kubectl exec -it ag2-0 -c mssql -n demo -- bash
@@ -999,7 +1005,7 @@ ALTER AVAILABILITY GROUP [DAG] FORCE_FAILOVER_ALLOW_DATA_LOSS;
 ```
 
 
-#### 4. Update KubeDB CRDs
+#### Step 4. Update KubeDB CRs
 This is a **critical step**. You must update the `MSSQLServer` YAMLs for both `ag1` and `ag2` to reflect the new reality.
 -   In `ag2.yaml`, change `spec.topology.distributedAG.self.role` to `Primary`.
 -   In `ag1.yaml`, change `spec.topology.distributedAG.self.role` to `Secondary`.
@@ -1109,6 +1115,53 @@ id          name
 ```
 
 
+### Switch to SYNCHRONOUS_COMMIT to ASYNCHRONOUS_COMMIT
+If you have switched the DAG to synchronous replication, following step 1. You can configure back to `ASYNCHRONOUS_COMMIT` following below commands.
+
+```bash
+mssql@ag2-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+ALTER AVAILABILITY GROUP dag 
+MODIFY AVAILABILITY GROUP ON 
+  'ag1' WITH ( AVAILABILITY_MODE = ASYNCHRONOUS_COMMIT ),
+  'ag2' WITH ( AVAILABILITY_MODE = ASYNCHRONOUS_COMMIT);
+"
+
+mssql@ag2-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+SELECT g.name, r.replica_server_name, r.availability_mode_desc, r.failover_mode_desc
+FROM sys.availability_groups AS g JOIN sys.availability_replicas AS r ON g.group_id = r.group_id
+"
+name                                                                                                                             replica_server_name                                                                                                                                                                                                                                              availability_mode_desc                                       failover_mode_desc                                          
+-------------------------------------------------------------------------------------------------------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ------------------------------------------------------------ ------------------------------------------------------------
+ag2                                                                                                                              ag2-0                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag2                                                                                                                              ag2-1                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag2                                                                                                                              ag2-2                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+dag                                                                                                                              ag1                                                                                                                                                                                                                                                              ASYNCHRONOUS_COMMIT                                          MANUAL                                                      
+dag                                                                                                                              ag2                                                                                                                                                                                                                                                              ASYNCHRONOUS_COMMIT                                          MANUAL                                                      
+
+(5 rows affected)
+
+
+
+mssql@ag1-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+ALTER AVAILABILITY GROUP dag 
+MODIFY AVAILABILITY GROUP ON 
+  'ag1' WITH ( AVAILABILITY_MODE = ASYNCHRONOUS_COMMIT ),
+  'ag2' WITH ( AVAILABILITY_MODE = ASYNCHRONOUS_COMMIT);
+"
+mssql@ag1-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+SELECT g.name, r.replica_server_name, r.availability_mode_desc, r.failover_mode_desc
+FROM sys.availability_groups AS g JOIN sys.availability_replicas AS r ON g.group_id = r.group_id
+"
+name                                                                                                                             replica_server_name                                                                                                                                                                                                                                              availability_mode_desc                                       failover_mode_desc                                          
+-------------------------------------------------------------------------------------------------------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ------------------------------------------------------------ ------------------------------------------------------------
+ag1                                                                                                                              ag1-0                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag1                                                                                                                              ag1-1                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag1                                                                                                                              ag1-2                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+dag                                                                                                                              ag1                                                                                                                                                                                                                                                              ASYNCHRONOUS_COMMIT                                          MANUAL                                                      
+dag                                                                                                                              ag2                                                                                                                                                                                                                                                              ASYNCHRONOUS_COMMIT                                          MANUAL                                                      
+
+(5 rows affected)
+```
 
 
 
