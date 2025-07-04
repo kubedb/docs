@@ -36,6 +36,18 @@ spec:
   cluster:
     shards: 3
     replicas: 2
+    announce:
+      type: hostname
+      shards:
+        - endpoints:
+            - "rd0-0.kubedb.appscode"
+            - "rd0-1.kubedb.appscode"
+        - endpoints:
+            - "rd1-0.kubedb.appscode"
+            - "rd1-1.kubedb.appscode"
+        - endpoints:
+            - "rd2-0.kubedb.appscode"
+            - "rd2-1.kubedb.appscode"
   disableAuth: false
   authSecret:
     name: redis1-auth
@@ -147,9 +159,11 @@ When `spec.mode` is set to `Sentinel`, `spec.sentinelRef.name` and `spec.sentine
 ### spec.cluster
 
 If `spec.mode` is set to `"Cluster"`, users can optionally provide a cluster specification. Currently, the following two parameters can be configured:
-
 - `spec.cluster.shards`: specifies the number of Redis shard nodes. It must be greater or equal to 3. If not set, the operator set it to 3.
 - `spec.cluster.replicas`: specifies the number of replica nodes per shard. It must be greater than 1. If not set, the operator set it to 2.
+- `spec.cluster.announce.type` specifies preferred dns type. It can be hostname or ip.
+- `spec.cluster.announce.shards` specifies the DNS names for each shards in the replica set.
+- `spec.cluster.announce.shards.endpoints`  specifies the DNS names for each pod in the specific shard.
 
 KubeDB uses `PodDisruptionBudget` to ensure that majority of these cluster replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained and no data loss is occurred.
 
