@@ -182,7 +182,6 @@ Here,
 - `spec.topology` specifies the mode `AvailabilityGroup` and the list of names of the databases that we want in our availability group. 
    KubeDB operator will create and add these databases to the created availability group automatically. User don't have to create, configure or add the database to the availability group manually. User can update this list later as well. 
 - `spec.tls` specifies the TLS/SSL configurations. The KubeDB operator supports TLS management by using the [cert-manager](https://cert-manager.io/). Here `tls.clientTLS: false` means tls will not be enabled for SQL Server but the Issuer will be used to configure tls enabled wal-g proxy-server which is required for SQL Server backup operation.
-- `spec.internalAuth.endpointCert` specifies the TLS/SSL configurations for internal endpoint authentication of availability replicas. The provided issuer will be used to issue the certificates used for availability group endpoints authentication.
 - `spec.storageType` specifies the type of storage that will be used for MSSQLServer database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MSSQLServer database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MSSQLServer` CR or which resources KubeDB should keep or delete when you delete `MSSQLServer` CR. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy)
@@ -236,9 +235,6 @@ $ kubectl get ms -n demo mssqlserver-ag-cluster -o yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-ag-cluster","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","internalAuth":{"endpointCert":{"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","tls":{"clientTLS":false,"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}},"topology":{"availabilityGroup":{"databases":["agdb1","agdb2"]},"mode":"AvailabilityGroup"},"version":"2022-cu12"}}
   creationTimestamp: "2024-10-08T10:56:30Z"
   finalizers:
     - kubedb.com
@@ -664,9 +660,6 @@ items:
   - apiVersion: appcatalog.appscode.com/v1alpha1
     kind: AppBinding
     metadata:
-      annotations:
-        kubectl.kubernetes.io/last-applied-configuration: |
-          {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-ag-cluster","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","internalAuth":{"endpointCert":{"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","tls":{"clientTLS":false,"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}},"topology":{"availabilityGroup":{"databases":["agdb1","agdb2"]},"mode":"AvailabilityGroup"},"version":"2022-cu12"}}
       creationTimestamp: "2024-10-08T10:57:14Z"
       generation: 1
       labels:
