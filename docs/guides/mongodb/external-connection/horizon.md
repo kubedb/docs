@@ -1,9 +1,9 @@
 ---
-title: External Connections using MongoDB Horizons Guide
+title: External Connection using MongoDB Horizon
 menu:
   docs_{{ .version }}:
     identifier: mg-horizons-guides
-    name: MongoDB Horizons
+    name: MongoDB Horizon
     parent: mg-horizons
     weight: 10
 menu_name: docs_{{ .version }}

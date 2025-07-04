@@ -1,9 +1,9 @@
 ---
-title: Expose With Cluster Announce
+title: Redis External Connection Exposure
 menu:
   docs_{{ .version }}:
     identifier: rd-update-announce
-    name: Update Announce
+    name: Connection Exposure
     parent: rd-announce
     weight: 20
 menu_name: docs_{{ .version }}
@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Redis External Connections Outside Kubernetes using Redis Announce
+# Redis External Connection Exposure using Redis Announce
 
 Redis Announce is a feature in Redis that enables external connections to Redis replica sets deployed within Kubernetes. It allows applications or clients outside the Kubernetes cluster to connect to individual replica set members by mapping internal Kubernetes DNS names to externally accessible hostnames or IP addresses. This is useful for scenarios where external access is needed, such as hybrid deployments or connecting from outside the cluster.
 
