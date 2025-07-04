@@ -201,7 +201,6 @@ Read about the fields in details in [redis concept](/docs/guides/redis/concepts/
 Create dns `A`/`CNAME` records for redis cluster pods, let's say, `Redis` has `2` replicas and `3` shards.
 
 Example:
-- `DNS`: `kubedb.appscode`, this will be used to connect to the Redis replica set using `redis+srv`.
 - `A/CNAME Record` for each Redis replicas with exposed Envoy Gateway `LoadBalancer/NodePort` IP/Host:
     - "rd0-0.kubedb.appscode"
     - "rd0-1.kubedb.appscode"
@@ -252,8 +251,6 @@ Here,
 - `.spec.cluster.announce.type` specifies preferred dns type. It can be hostname or ip.
 - `.spec.cluster.announce.shards` specifies the DNS names for each shards in the replica set.
 - `.spec.cluster.announce.shards.endpoints`  specifies the DNS names for each pod in the specific shard.
-
->> **Note**: If you don't want to use `redis+srv` connection string, you can connect to the Redis replica set using the individual pod DNS names (e.g., `rd0-0.kubedb.appscode:10000`, `rd0-1.kubedb.appscode:10001`, etc.).
 
 ### Deploy Redis Cluster Announce
 
