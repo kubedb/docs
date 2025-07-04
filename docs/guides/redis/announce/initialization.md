@@ -178,7 +178,6 @@ kubectl delete rd -n demo redis
 kubectl delete rd -n demo redis-announce
 ```
 
-
 If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
