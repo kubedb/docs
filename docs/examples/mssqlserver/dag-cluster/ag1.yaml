@@ -1,0 +1,48 @@
+# ag1.yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MSSQLServer
+metadata:
+  name: ag1
+  namespace: demo
+spec:
+  version: "2022-cu16"
+  replicas: 3
+  topology:
+    mode: DistributedAG
+    availabilityGroup:
+      databases:
+        - agdb
+      secondaryAccessMode: "All"
+    distributedAG:
+      self:
+        role: Primary
+        url: "10.2.0.236" # Replace with the reachable LoadBalancer IP/hostname of this AG
+      remote:
+        name: ag2
+        url: "10.2.0.181" # Replace with the reachable LoadBalancer IP/hostname of the secondary AG
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation
+  serviceTemplates:
+    - alias: primary
+      spec:
+        type: LoadBalancer # Exposes the primary replica via a LoadBalancer
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
