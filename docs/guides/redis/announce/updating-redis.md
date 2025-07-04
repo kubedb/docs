@@ -186,12 +186,13 @@ helm install catalog-manager oci://ghcr.io/appscode-charts/catalog-manager \
 ## Overview
 
 KubeDB uses following crd fields to enable Redis Announce:
-
+```yaml
 - `spec:`
     - `announce:`
         - `type`
         - `shards`
             - `endpoints`
+```
 
 Read about the fields in details in [redis concept](/docs/guides/redis/concepts/redis.md)
 
@@ -301,21 +302,46 @@ redisopsrequest.ops.kubedb.com/redis-announce-jddiql        Announce   Successfu
 
 To connect to the Redis replica set, you can use the following command:
 
-Collect the replicas from the `redis-announce` object:
+Collect the announces from the `redis` object:
 ```bash
-$ kubectl get redis -n demo redis-announce -ojson | jq .spec.cluster.announce.shards[0]
+$ kubectl get redis -n demo redis-announce -ojson | jq .spec.cluster.announce
 {
-  "endpoints": [
-    "rd0-0.kubedb.appscode",
-    "rd0-1.kubedb.appscode"
-  ]
+  "shards": [
+    {
+      "endpoints": [
+        "rd0-0.kubedb.appscode:10050@10056",
+        "rd0-1.kubedb.appscode:10051@10057"
+      ]
+    },
+    {
+      "endpoints": [
+        "rd1-0.kubedb.appscode:10052@10058",
+        "rd1-1.kubedb.appscode:10053@10059"
+      ]
+    },
+    {
+      "endpoints": [
+        "rd2-0.kubedb.appscode:10054@10060",
+        "rd2-1.kubedb.appscode:10055@10061"
+      ]
+    }
+  ],
 }
+```
 
 Connect with the database:
-
+```bash
 $ redis-cli -h rd0-0.kubedb.appscode -p 10050 -a <password> -c ping
 PONG
 ```
+
+Set data in different shards:
+
+```bash
+$ redis-cli -h rd1-0.kubedb.appscode -p 10051 -a <password> -c set batman appscode
+-> Redirected to slot [13947] located at rd0-0.kubedb.appscode:10050
+```
+
 
 ## Cleaning up
 
