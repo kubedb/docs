@@ -21,20 +21,20 @@ This tutorial will show you how to use KubeDB to run a Microsoft SQL Server Dist
 - Each cluster must have KubeDB installed. Follow the steps [here](/docs/setup/README.md), ensuring you enable the MSSQLServer feature gate: `--set global.featureGates.MSSQLServer=true`.
 - To configure TLS/SSL in `MSSQLServer`, `KubeDB` uses `cert-manager` to issue certificates. - Each cluster must have `cert-manager` installed. Follow the steps [here](https://cert-manager.io/docs/installation/kubernetes/).
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in both clusters.
-  ```bash
+```bash
   $ kubectl get storageclasses
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  4h48m
-  ```
+```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```bash
+```bash
   # In Cluster 1
   kubectl create ns demo
   # In Cluster 2
   kubectl create ns demo
-  ```
+```
 
 > Note: The YAML files used in this tutorial are stored in [docs/examples/mssqlserver/dag-cluster/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/) folder in the [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -51,10 +51,6 @@ NAME        VERSION   DB_IMAGE                                                DE
 2022-cu16   2022      mcr.microsoft.com/mssql/server:2022-CU16-ubuntu-22.04                161m
 2022-cu19   2022      mcr.microsoft.com/mssql/server:2022-CU19-ubuntu-22.04                161m
 ```
-
-
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mssqlserver/dag-cluster/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
-
 
 
 ## Deploy Microsoft SQL Server Distributed Availability Group Cluster 
@@ -637,7 +633,7 @@ Once both `ag1` and `ag2` are `Ready`, KubeDB has established the Distributed AG
 
 ## Verify Data Replication
 
-**Insert data into the primary site (`ag1`):**
+### Insert data into the primary site (`ag1`):
 
 
 Let's insert some data into the primary database of SQL server distributed availability group and see if data replication is working fine. First, we have to determine the primary replica, as data writes are only permitted on the primary node.
@@ -713,7 +709,7 @@ id          name
  ```
 
 
-**Verify the data exists on the secondary site (`ag2`):**
+### Verify the data exists on the secondary site (`ag2`):
 
 
 ```bash
@@ -855,9 +851,9 @@ ag2                                                                             
 We can see that new primary is `ag1-2` and the old primary `ag1-0` joined the availability group cluster as secondary. MSSQLServer status is `Ready` now. We can see the updated pod labels.
 ```bash
 $ kubectl get pods -n demo --selector=app.kubernetes.io/instance=ag1 -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
-mssqlserver-ag-cluster-0	secondary
-mssqlserver-ag-cluster-1	primary
-mssqlserver-ag-cluster-2	secondary
+ag1-0	secondary
+ag1-1	secondary
+ag1-2	primary
 ````
 
 
@@ -951,34 +947,192 @@ dag                                                                             
 (5 rows affected)
 ```
 
+Now our distributed AG in sync-commit mode.
+We should check last_hardened_lsn it has to be the same for all databases on and both AG, the state should be in “SYNCHRONIZED” status. Check by running this query on global primary and forwarder.
+
+```bash
+$ kubectl exec -it ag1-2 -c mssql -n demo -- bash
+/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+SELECT ag.name, drs.database_id, drs.group_id, drs.replica_id, drs.synchronization_state_desc, drs.end_of_log_lsn FROM sys.dm_hadr_database_replica_states drs, sys.availability_groups ag WHERE drs.group_id = ag.group_id
+"  
+name                                                                                                                             database_id group_id                             replica_id                           synchronization_state_desc                                   end_of_log_lsn             
+-------------------------------------------------------------------------------------------------------------------------------- ----------- ------------------------------------ ------------------------------------ ------------------------------------------------------------ ---------------------------
+ag1                                                                                                                                        5 BE9BE8C9-6E17-1132-BFBA-8B7D2C28AFDB DD8A151D-E851-4D62-8E04-DB4224B2A5A7 SYNCHRONIZED                                                           42000000155200001
+ag1                                                                                                                                        5 BE9BE8C9-6E17-1132-BFBA-8B7D2C28AFDB AB19A923-FDFB-436D-9B16-4556961CF015 SYNCHRONIZED                                                           42000000155200001
+ag1                                                                                                                                        5 BE9BE8C9-6E17-1132-BFBA-8B7D2C28AFDB 1A5379EF-4058-4F34-A091-D2F18AD05FAB SYNCHRONIZED                                                           42000000155200001
+dag                                                                                                                                        5 6BC05A51-AA36-A196-09BD-481D7A0973C0 0EAC444F-1CF1-8D21-0178-B43D2842ACF5 SYNCHRONIZED                                                           42000000155200001
+
+(4 rows affected)
+
+$ kubectl exec -it ag2-0 -c mssql -n demo -- bash
+/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+SELECT ag.name, drs.database_id, drs.group_id, drs.replica_id, drs.synchronization_state_desc, drs.end_of_log_lsn FROM sys.dm_hadr_database_replica_states drs, sys.availability_groups ag WHERE drs.group_id = ag.group_id
+"
+name                                                                                                                             database_id group_id                             replica_id                           synchronization_state_desc                                   end_of_log_lsn             
+-------------------------------------------------------------------------------------------------------------------------------- ----------- ------------------------------------ ------------------------------------ ------------------------------------------------------------ ---------------------------
+ag2                                                                                                                                        5 04539685-21FA-DFF2-D990-B45A6BCDD4CD FC54D6DC-88C3-4107-A996-7B2E9C0C07B1 SYNCHRONIZED                                                           42000000155200001
+ag2                                                                                                                                        5 04539685-21FA-DFF2-D990-B45A6BCDD4CD E989DD35-3F99-4E72-89A9-D21ACE041099 SYNCHRONIZED                                                           42000000155200001
+ag2                                                                                                                                        5 04539685-21FA-DFF2-D990-B45A6BCDD4CD C3411DB7-8A80-41F3-A6D4-FCCCCC85D8ED SYNCHRONIZED                                                           42000000155200001
+
+(3 rows affected)
+```
+
+#### 2. Change Primary Role to Secondary
+
+On the primary replica of the **current primary AG (`ag1`)**, take the DAG offline by changing its role:
+
+```bash
+$ kubectl exec -it ag2-0 -c mssql -n demo -- bash
+mssql@ag1-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+ALTER AVAILABILITY GROUP [DAG] SET (ROLE = SECONDARY);
+"
+```
+
+
+#### 3. Promote the New Primary
+On the primary replica of the **current secondary AG (`ag2`, the dag forwarder)**, execute the failover. This promotes `ag2` to be the new primary for the entire DAG:
+```bash
+$ kubectl exec -it ag2-0 -c mssql -n demo -- bash
+mssql@ag2-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+ALTER AVAILABILITY GROUP [DAG] FORCE_FAILOVER_ALLOW_DATA_LOSS;
+"
+```
+
+
+#### 4. Update KubeDB CRDs
+This is a **critical step**. You must update the `MSSQLServer` YAMLs for both `ag1` and `ag2` to reflect the new reality.
+-   In `ag2.yaml`, change `spec.topology.distributedAG.self.role` to `Primary`.
+-   In `ag1.yaml`, change `spec.topology.distributedAG.self.role` to `Secondary`.
+
+
+
+
+Now, the role should change successfully, check on now global primary (ag2-0) and now forwarder (ag1-2)
+```bash
+$ kubectl exec -it ag2-0 -c mssql -n demo -- bash
+mssql@ag2-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+SELECT is_local, role_desc, replica_id, group_id, synchronization_health_desc, connected_state_desc, operational_state_desc from sys.dm_hadr_availability_replica_states
+"
+is_local role_desc                                                    replica_id                           group_id                             synchronization_health_desc                                  connected_state_desc                                         operational_state_desc                                      
+-------- ------------------------------------------------------------ ------------------------------------ ------------------------------------ ------------------------------------------------------------ ------------------------------------------------------------ ------------------------------------------------------------
+       1 PRIMARY                                                      C3411DB7-8A80-41F3-A6D4-FCCCCC85D8ED 04539685-21FA-DFF2-D990-B45A6BCDD4CD HEALTHY                                                      CONNECTED                                                    ONLINE                                                      
+       0 SECONDARY                                                    E989DD35-3F99-4E72-89A9-D21ACE041099 04539685-21FA-DFF2-D990-B45A6BCDD4CD HEALTHY                                                      CONNECTED                                                    NULL                                                        
+       0 SECONDARY                                                    FC54D6DC-88C3-4107-A996-7B2E9C0C07B1 04539685-21FA-DFF2-D990-B45A6BCDD4CD HEALTHY                                                      CONNECTED                                                    NULL                                                        
+       0 SECONDARY                                                    6CD38135-9FFF-24A2-9401-E9833DBDC2D1 6BC05A51-AA36-A196-09BD-481D7A0973C0 HEALTHY                                                      CONNECTED                                                    NULL                                                        
+       1 PRIMARY                                                      0EAC444F-1CF1-8D21-0178-B43D2842ACF5 6BC05A51-AA36-A196-09BD-481D7A0973C0 HEALTHY                                                      CONNECTED                                                    ONLINE                                                      
+
+(5 rows affected)
+
+$ kubectl exec -it ag1-2 -c mssql -n demo -- bash
+mssql@ag1-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+SELECT is_local, role_desc, replica_id, group_id, synchronization_health_desc, connected_state_desc, operational_state_desc from sys.dm_hadr_availability_replica_states
+"
+is_local role_desc                                                    replica_id                           group_id                             synchronization_health_desc                                  connected_state_desc                                         operational_state_desc                                      
+-------- ------------------------------------------------------------ ------------------------------------ ------------------------------------ ------------------------------------------------------------ ------------------------------------------------------------ ------------------------------------------------------------
+       0 SECONDARY                                                    AB19A923-FDFB-436D-9B16-4556961CF015 BE9BE8C9-6E17-1132-BFBA-8B7D2C28AFDB HEALTHY                                                      CONNECTED                                                    NULL                                                        
+       0 SECONDARY                                                    DD8A151D-E851-4D62-8E04-DB4224B2A5A7 BE9BE8C9-6E17-1132-BFBA-8B7D2C28AFDB HEALTHY                                                      CONNECTED                                                    NULL                                                        
+       1 PRIMARY                                                      1A5379EF-4058-4F34-A091-D2F18AD05FAB BE9BE8C9-6E17-1132-BFBA-8B7D2C28AFDB HEALTHY                                                      CONNECTED                                                    ONLINE                                                      
+       1 SECONDARY                                                    6CD38135-9FFF-24A2-9401-E9833DBDC2D1 6BC05A51-AA36-A196-09BD-481D7A0973C0 HEALTHY                                                      CONNECTED                                                    ONLINE                                                      
+
+(4 rows affected)
+```
+
+Let's insert some data, again. to confirm replication after data center failover. 
+```bash 
+$ kubectl exec -it ag2-0 -c mssql -n demo -- bash
+mssql@ag2-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+use agdb;
+INSERT INTO test_table VALUES (2, 'DAG FailOver'); 
+SELECT * FROM test_table;
+"
+Changed database context to 'agdb'.
+
+(1 rows affected)
+id          name                                              
+----------- --------------------------------------------------
+          1 DAG Setup                                         
+          2 DAG FailOver                                         
+
+(2 rows affected)
+
+ ```
+
+
+**Verify the data exists on the secondary site (`ag1`):**
+
+
+```bash
+# In Cluster 1
+kubectl exec -it ag1-2 -n demo -c mssql -- bash 
+mssql@ag1-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+use agdb;
+SELECT * FROM test_table;
+"
+Changed database context to 'agdb'.
+id          name                                              
+----------- --------------------------------------------------
+          1 DAG Setup                                         
+          2 DAG FailOver                                         
+
+(2 rows affected)
+```
+
+You should see the "2 DAG FailOver" row, confirming that data is replicating correctly.
+
+
+You can check on other nodes of ag1 and ag2, you should get the desired data, and confirm data replicating correcly.
+
+```bash
+mssql@ag1-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+use agdb;
+SELECT * FROM test_table;
+"
+Changed database context to 'agdb'.
+id          name                                              
+----------- --------------------------------------------------
+          1 DAG Setup                                         
+          2 DAG FailOver                                         
+
+(2 rows affected)
+mssql@ag2-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q " 
+use agdb;
+SELECT * FROM test_table;
+"
+Changed database context to 'agdb'.
+id          name                                              
+----------- --------------------------------------------------
+          1 DAG Setup                                         
+          2 DAG FailOver                                         
+
+(2 rows affected)
+
+```
+
+
+
+
 
 ## Cleaning up
 
-> Be careful when you set the `deletionPolicy` to `WipeOut`. Because there is no option to trace the database resources if once deleted the database.
+To clean up the Kubernetes resources created by this tutorial, run the following commands in their respective clusters:
+
+> Be careful when you set the `deletionPolicy` to `WipeOut`. Because there is no option to trace the database resources if once the database is deleted.
 
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mssqlserver/mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete mssqlserver -n demo mssqlserver-ag-cluster
+kubectl patch -n demo mssqlserver/ag1 -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete mssqlserver -n demo ag1
 kubectl delete issuer -n demo mssqlserver-ca-issuer
 kubectl delete secret -n demo mssqlserver-ca
 kubectl delete ns demo
 ```
 
-## Tips for Testing
-
-If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
-
-1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `deletionPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular MSSQLServer crd when you delete the crd. For more details about deletion policy, please visit [here](/docs/guides/mssqlserver/concepts/mssqlserver.md#specdeletionpolicy).
-
 ## Next Steps
-
-- Learn about [backup and restore](/docs/guides/mssqlserver/backup/overview/index.md) SQL Server using KubeStash.
-- Want to set up SQL Server Distributed Availability Group clusters? Check how to [Configure SQL Server Distributed Availability Group Cluster](/docs/guides/mssqlserver/clustering/ag_cluster.md)
 - Detail concepts of [MSSQLServer Object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
+- Learn about [backup and restore](/docs/guides/mssqlserver/backup/overview/index.md) SQL Server using KubeStash.
+- Want to set up SQL Server Availability Group clusters? Check how to [Configure SQL Server Availability Group Cluster](/docs/guides/mssqlserver/clustering/ag_cluster.md)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
 
