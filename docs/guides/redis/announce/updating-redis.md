@@ -1,12 +1,13 @@
 ---
 title: Expose With Cluster Announce
 menu:
-docs_{{ .version }}:
-identifier: rd-update-announce
-name: Update Announce
-parent: rd-announce
-weight: 20
+  docs_{{ .version }}:
+    identifier: rd-update-announce
+    name: Update Announce
+    parent: rd-announce
+    weight: 20
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).

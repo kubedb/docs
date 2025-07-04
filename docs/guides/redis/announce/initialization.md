@@ -1,13 +1,15 @@
 ---
 title: Initialization With Cluster Announce
 menu:
-docs_{{ .version }}:
-identifier: rd-announce-initialization
-name: Announce Initialization
-parent: rd-announce
-weight: 10
+  docs_{{ .version }}:
+    identifier: rd-announce-initialization
+    name: Announce Initialization
+    parent: rd-announce
+    weight: 10
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
+
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
