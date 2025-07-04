@@ -62,9 +62,8 @@ NAME        VERSION   DB_IMAGE                                                DE
 The process involves deploying a primary Availability Group (AG) in the first cluster, exporting its critical credentials, and then deploying a secondary AG in the second cluster that uses those credentials to join the DAG.
 
 
-## Step 1: Deploy the Primary Availability Group (ag1)
 
-### Create Issuer/ClusterIssuer
+### Create Issuer/ClusterIssuer on Both Clusters
 
 First, create an `Issuer` in your primary cluster's `demo` namespace. This will be used to generate the necessary certificates for endpoint authentication, and even if TLS is not enabled for SQL Server. The issuer will be used to configure the TLS-enabled Wal-G proxy server, which is required for the SQL Server backup and restore operations.
 
@@ -129,6 +128,8 @@ spec:
           value: Enterprise
 ```
 In this example, the SQL Server container will run the Enterprise Edition.
+
+
 
 
 
@@ -222,6 +223,10 @@ Deploy `ag1` primary service to your first cluster:
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/ag1-primary-svc.yaml
 service/ag1 created created
+
+$ kubectl get svc -n demo ag1
+NAME   TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)                         AGE
+ag1    LoadBalancer   10.43.117.2   10.2.0.236    1433:31485/TCP,5022:32511/TCP   122m
 ```
 
 Deploy `ag1` to your first cluster:
@@ -484,119 +489,158 @@ status:
 
 A DAG requires that both participating AGs share identical endpoint credentials. KubeDB simplifies this with a CLI command.
 
-1.  **Generate Configuration from Primary:**
-    Run the `kubectl-dba` command against your primary `MSSQLServer` instance (`ag1`). This extracts the required secrets into a YAML file.
-    ```bash
-    # In Cluster 1 context
-    kubectl-dba mssql dag-config ag1 -n demo
-    ```
+**Generate Configuration from Primary:**
 
-2.  **Apply Configuration to Secondary Cluster:**
-    Apply the generated manifest to your second cluster. This creates the identical secrets needed for authentication.
-    ```bash
-    # In Cluster 2 context
-    kubectl apply -f ./dag-config.yaml
-    ```
-
-
-
-
-
-
-
-
-
-
-here.....................
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Connect with MSSQLServer database
-
-KubeDB operator has created a new Secret called `ag1-auth` *(format: {mssqlserver-object-name}-auth)* for storing the sa password for `sql server`. This secret contains a `username` key which contains the *username* for MSSQLServer SA and a `password` key which contains the *password* for MSSQLServer SA user.
-
-If you want to use an existing secret please specify that when creating the MSSQLServer object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `sa` as value of `username` and a strong password for the sa user. For more details see [here](/docs/guides/mssqlserver/concepts/mssqlserver.md#specauthsecret).
-
-Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `ag1-auth` secret holds username and password
-
+Run the `kubectl-dba` command against your primary `MSSQLServer` instance (`ag1`). This extracts the required secrets into a YAML file.
 ```bash
-$ kubectl get secret -n demo ag1-auth -o jsonpath='{.data.\username}' | base64 -d
-sa
-
-$ kubectl get secret -n demo ag1-auth -o jsonpath='{.data.\password}' | base64 -d
-wFKDGnWgFP5Rdv92
+# In Cluster 1 context
+$ kubectl-dba mssql dag-config ag1 -n demo
 ```
-We can exec into the pod `ag1-0` using the following command:
+Generating DAG configuration for MSSQLServer 'ag1' in namespace 'demo'...
+- Fetching secret 'ag1-dbm-login'...
+- Fetching secret 'ag1-master-key'...
+- Fetching secret 'ag1-endpoint-cert'...
+- Fetching AppBinding 'ag1'...
+  Successfully generated DAG configuration.
+  Apply this file in your remote cluster: kubectl apply -f ./ag1-dag-config.yaml
+
+
+
+**Apply Configuration to Secondary Cluster:**
+Apply the generated manifest to your second cluster. This creates the identical secrets needed for authentication.
 ```bash
-kubectl exec -it -n demo ag1-0 -c mssql -- bash
-mssql@ag1-0:/$
+# In Cluster 2 context
+kubectl apply -f ./ag1-dag-config.yaml
 ```
+secret/ag1-dbm-login created
+secret/ag1-master-key created
+secret/ag1-endpoint-cert created
+appbinding.appcatalog.appscode.com/ag1 created
 
-Now, connect to the database using username and password, check the name of the created availability group, replicas of the availability group and see if databases are added to the availability group.
-```bash
-$ kubectl exec -it -n demo ag1-0 -c mssql -- bash
-mssql@ag1-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
-1> select name from sys.databases
-2> go
-name                                                  
-----------------------------------------------------------------------------------
-master                                                                                                                          
-tempdb                                                                                                                          
-model                                                                                                                           
-msdb                                                                                                                            
-agdb1                                                                                                                           
-agdb2                                                                                                                           
-kubedb_system                                                                                                                   
 
-(5 rows affected)
-1> SELECT name FROM sys.availability_groups
-2> go
-name                                                                                                                            
-----------------------------------------------------------------------------
-mssqlserveragcluster                                                                                                            
 
-(1 rows affected)
-1> select replica_server_name from sys.availability_replicas;
-2> go
-replica_server_name                                                                                                                                                                                                                                             
--------------------------------------------------------------------------------------------
-ag1-0                                                                                                                                                                                                                                        
-ag1-1                                                                                                                                                                                                                                        
-ag1-2      
-(3 rows affected)
-1> select database_name	from sys.availability_databases_cluster;
-2> go
-database_name                                                                                                                   
-------------------------------------------------------------------------------------------
-agdb1                                                                                                                           
-agdb2                                                                                                                           
 
-(2 rows affected)
+## Deploy the Secondary Availability Group (ag2)
 
+Now, deploy the second `MSSQLServer` resource in your second cluster. This will act as the **secondary** site of our DAG.
+Notice that `spec.topology.availabilityGroup.databases` is empty, and we now reference the secrets we just created.
+
+
+```yaml
+# ag2.yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MSSQLServer
+metadata:
+  name: ag2
+  namespace: demo
+spec:
+  version: "2022-cu16"
+  replicas: 3
+  topology:
+    mode: DistributedAG
+    availabilityGroup:
+      # Databases field must be empty for the secondary AG.
+      secondaryAccessMode: "All"
+      # Reference the secrets you copied from the primary cluster.
+      loginSecretName: ag1-dbm-login
+      masterKeySecretName: ag1-master-key
+      endpointCertSecretName: ag1-endpoint-cert
+    distributedAG:
+      self:
+        role: Secondary
+        url: "10.2.0.181" # Replace with the reachable LoadBalancer IP/hostname of this AG
+      remote:
+        name: ag1
+        url: "10.2.0.236" # Replace with the reachable LoadBalancer IP/hostname of the primary AG
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer # An issuer with this name must also exist in the secondary cluster
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation
+  serviceTemplates:
+  - alias: primary
+    spec:
+      type: LoadBalancer
+  storage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
 ```
 
 
-Now, to check the redundancy and data availability in secondary members. Let's insert some data into the primary database of sql server availability group and see if data replication is working fine. First we have to determine the primary replica, as data writes are only permitted on the primary node.
+> **Note:** You must replace the `url` fields with the actual, mutually reachable IP addresses or hostnames of your `LoadBalancer` services. You may need to create placeholder services first to get these IPs.
+
+
+### Create placeholder services first to get these IPs
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ag2
+  namespace: demo
+spec:
+  ports:
+    - name: primary
+      port: 1433
+      protocol: TCP
+      targetPort: db
+    - name: mirror
+      port: 5022
+      protocol: TCP
+      targetPort: mirror
+  selector:
+    app.kubernetes.io/instance: ag2
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: mssqlservers.kubedb.com
+    kubedb.com/role: primary
+  type: LoadBalancer
+```
+
+Deploy `ag2` primary service to your first cluster:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/ag1-primary-svc.yaml
+service/ag1 created created
+
+$ kubectl get svc -n demo ag2 
+NAME   TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                         AGE
+ag2    LoadBalancer   10.43.169.101   10.2.0.181    1433:31686/TCP,5022:32633/TCP   3m10s
+```
+
+
+
+Deploy `ag2` to your second cluster:
+
+```bash
+# In Cluster 2
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/ag2.yaml
+mssqlserver.kubedb.com/ag2 created
+```
+
+
+
+Once both `ag1` and `ag2` are `Ready`, KubeDB has established the Distributed AG.
+
+
+## Verify Data Replication
+
+**Insert data into the primary site (`ag1`):**
+
+
+Let's insert some data into the primary database of SQL server distributed availability group and see if data replication is working fine. First, we have to determine the primary replica, as data writes are only permitted on the primary node.
 
 
 ```bash
@@ -606,324 +650,312 @@ ag1-1	secondary
 ag1-2	secondary
 ```
 
-From the output above, we can see that ag1-0 is the primary node. To insert data, log into the primary MSSQLServer pod. Use the following command,
+From the output above, we can see that ag1-0 is the primary node. Which is actually the 'GLOBAL PRIMARY' of our 'Distributed Availability Group.'
+
 
 ```bash
-$ kubectl exec -it ag1-0 -c mssql -n demo -- bash
-mssql@ag1-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
-1> SELECT database_name FROM sys.availability_databases_cluster
-2> go
+# In Cluster 1
+kubectl exec -it ag1-0 -c mssql -n demo -- bash
+# See AG, DAG, and database status 
+mssql@ag1-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+select database_name from sys.availability_databases_cluster;
+SELECT name FROM sys.availability_groups;
+SELECT replica_server_name FROM sys.availability_replicas;
+SELECT is_local, role_desc, replica_id, group_id, synchronization_health_desc, connected_state_desc, operational_state_desc from sys.dm_hadr_availability_replica_states
+"
+
+
 database_name                                                                                                                   
-----------------------------------------------------------------------------------------------
-agdb1                                                                                                                           
-agdb2                                                                                                                           
+--------------------------------------------------------------------------------------------------------------------------------
+agdb                                                                                                                            
+
+(1 rows affected)
+name                                                                                                                            
+--------------------------------------------------------------------------------------------------------------------------------
+ag1                                                                                                                             
+dag                                                                                                                             
 
 (2 rows affected)
-1> use agdb1
-2> go
-Changed database context to 'agdb1'.
-1> CREATE TABLE Data (ID INT, NAME NVARCHAR(255), AGE INT);
-2> go
-1> INSERT INTO Data(ID, Name, Age) VALUES (1, 'John Doe', 25), (2, 'Jane Smith', 30);                                                                                              
-2> go
-(2 rows affected)
-1> Select * from data
-2> go
-ID    NAME                             AGE                                  
---------------------------------------------------------
-1     John Doe                         25                                                                
-2     Jane Smith                       30
+replica_server_name                                                                                                                                                                                                                                             
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ag1-0                                                                                                                                                                                                                                                           
+ag1-1                                                                                                                                                                                                                                                           
+ag1-2                                                                                                                                                                                                                                                           
+ag1                                                                                                                                                                                                                                                             
+ag2                                                                                                                                                                                                                                                             
 
-(2 rows affected)
-1> 
-```
-Now, Let's verify that the data inserted into the primary node has been replicated to the secondary nodes.
-### Access the inserted data from secondaries
-Access the secondary node (Node 2) to verify that the data is present.
+(5 rows affected)
+is_local role_desc                                                    replica_id                           group_id                             synchronization_health_desc                                  connected_state_desc                                         operational_state_desc                                      
+-------- ------------------------------------------------------------ ------------------------------------ ------------------------------------ ------------------------------------------------------------ ------------------------------------------------------------ ------------------------------------------------------------
+       1 PRIMARY                                                      AB19A923-FDFB-436D-9B16-4556961CF015 BE9BE8C9-6E17-1132-BFBA-8B7D2C28AFDB HEALTHY                                                      CONNECTED                                                    ONLINE                                                      
+       0 SECONDARY                                                    DD8A151D-E851-4D62-8E04-DB4224B2A5A7 BE9BE8C9-6E17-1132-BFBA-8B7D2C28AFDB HEALTHY                                                      CONNECTED                                                    NULL                                                        
+       0 SECONDARY                                                    1A5379EF-4058-4F34-A091-D2F18AD05FAB BE9BE8C9-6E17-1132-BFBA-8B7D2C28AFDB HEALTHY                                                      CONNECTED                                                    NULL                                                        
+       1 PRIMARY                                                      6CD38135-9FFF-24A2-9401-E9833DBDC2D1 6BC05A51-AA36-A196-09BD-481D7A0973C0 HEALTHY                                                      CONNECTED                                                    ONLINE                                                      
+       0 SECONDARY                                                    0EAC444F-1CF1-8D21-0178-B43D2842ACF5 6BC05A51-AA36-A196-09BD-481D7A0973C0 HEALTHY                                                      CONNECTED                                                    NULL                                                        
+
+(5 rows affected)
+
+
+mssql@ag1-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+use agdb;
+CREATE TABLE test_table (id INT, name NVARCHAR(50));
+INSERT INTO test_table VALUES (1, 'DAG Setup'); 
+SELECT * FROM test_table;
+"
+Changed database context to 'agdb'.
+
+(1 rows affected)
+id          name                                              
+----------- --------------------------------------------------
+          1 DAG Setup                                         
+
+(1 rows affected)
+ ```
+
+
+**Verify the data exists on the secondary site (`ag2`):**
+
 
 ```bash
-$ kubectl exec -it ag1-1 -c mssql -n demo -- bash
-mssql@ag1-1:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
-1> SELECT database_name FROM sys.availability_databases_cluster
-2> go
+# In Cluster 2
+kubectl exec -it ag2-0 -n demo -c mssql -- bash 
+# See AG, DAG, and database status 
+mssql@ag2-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+select database_name from sys.availability_databases_cluster;
+SELECT name FROM sys.availability_groups;
+SELECT replica_server_name FROM sys.availability_replicas;
+SELECT is_local, role_desc, replica_id, group_id, synchronization_health_desc, connected_state_desc, operational_state_desc from sys.dm_hadr_availability_replica_states
+"
 database_name                                                                                                                   
--------------------------------------------------
-agdb1                                                                                                                           
-agdb2                                                                                                                           
+--------------------------------------------------------------------------------------------------------------------------------
+agdb                                                                                                                            
+
+(1 rows affected)
+name                                                                                                                            
+--------------------------------------------------------------------------------------------------------------------------------
+ag2                                                                                                                             
+dag                                                                                                                             
 
 (2 rows affected)
-1> use agdb1
-2> go
-Changed database context to 'agdb1'.
-1> select * from data
-2> go
-ID    NAME                             AGE                                  
---------------------------------------------------------
-1     John Doe                         25                                                                
-2     Jane Smith                       30
+replica_server_name                                                                                                                                                                                                                                             
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ag2-0                                                                                                                                                                                                                                                           
+ag2-1                                                                                                                                                                                                                                                           
+ag2-2                                                                                                                                                                                                                                                           
+ag1                                                                                                                                                                                                                                                             
+ag2                                                                                                                                                                                                                                                             
 
-(2 rows affected)
-1> 
+(5 rows affected)
+is_local role_desc                                                    replica_id                           group_id                             synchronization_health_desc                                  connected_state_desc                                         operational_state_desc                                      
+-------- ------------------------------------------------------------ ------------------------------------ ------------------------------------ ------------------------------------------------------------ ------------------------------------------------------------ ------------------------------------------------------------
+       1 PRIMARY                                                      C3411DB7-8A80-41F3-A6D4-FCCCCC85D8ED 04539685-21FA-DFF2-D990-B45A6BCDD4CD HEALTHY                                                      CONNECTED                                                    ONLINE                                                      
+       0 SECONDARY                                                    E989DD35-3F99-4E72-89A9-D21ACE041099 04539685-21FA-DFF2-D990-B45A6BCDD4CD HEALTHY                                                      CONNECTED                                                    NULL                                                        
+       0 SECONDARY                                                    FC54D6DC-88C3-4107-A996-7B2E9C0C07B1 04539685-21FA-DFF2-D990-B45A6BCDD4CD HEALTHY                                                      CONNECTED                                                    NULL                                                        
+       1 SECONDARY                                                    0EAC444F-1CF1-8D21-0178-B43D2842ACF5 6BC05A51-AA36-A196-09BD-481D7A0973C0 HEALTHY                                                      CONNECTED                                                    ONLINE                                                      
+
+(4 rows affected)
+mssql@ag2-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+use agdb;
+SELECT * FROM test_table;
+"
+Changed database context to 'agdb'.
+id          name                                              
+----------- --------------------------------------------------
+          1 DAG Setup                                         
+
+(1 rows affected)
 ```
 
+You should see the "1 DAG Setup" row, confirming that data is replicating correctly.
 
-Now access the secondary node (Node 3) to verify that the data is present.
+
+You can check on other nodes of ag1 and ag2, you should get the desired data, and confirm data replicating correcly. 
+
 ```bash
-$ kubectl exec -it ag1-2 -c mssql -n demo -- bash
-mssql@ag1-2:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
-1> SELECT database_name FROM sys.availability_databases_cluster
-2> go
-database_name                                                                                                                   
--------------------------------------------------
-agdb1                                                                                                                           
-agdb2                                                                                                                           
+kubectl exec -it ag1-2 -n demo -c mssql -- bash
+mssql@ag1-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+use agdb;
+SELECT * FROM test_table;
+"
+Changed database context to 'agdb'.
+id          name                                              
+----------- --------------------------------------------------
+          1 DAG Setup                                         
 
-(2 rows affected)
-1> use agdb1
-2> go
-Changed database context to 'agdb1'.
-1> select * from data
-2> go
-ID    NAME                             AGE                                  
---------------------------------------------------------
-1     John Doe                         25                                                                
-2     Jane Smith                       30
+(1 rows affected)
 
-(2 rows affected)
-1> 
+
+
+kubectl exec -it ag2-2 -n demo -c mssql -- bash
+mssql@ag2-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q " 
+use agdb;
+SELECT * FROM test_table;
+"
+Changed database context to 'agdb'.
+id          name                                              
+----------- --------------------------------------------------
+          1 DAG Setup                                         
+
+(1 rows affected)
 ```
 
 
-## Automatic Failover
+## Perform In Cluster Failover: Automatically handled by KubeDB
+
 To test automatic failover, we will force the primary member to restart. As the primary member (pod) becomes unavailable, the rest of the members will elect a primary member by election.
 
 ```bash
 $ kubectl get pods -n demo 
-NAME                       READY   STATUS    RESTARTS   AGE
-ag1-0   2/2     Running   0          129m
-ag1-1   2/2     Running   0          129m
-ag1-2   2/2     Running   0          129m
+NAME    READY   STATUS    RESTARTS   AGE
+ag1-0   2/2     Running   0          157m
+ag1-1   2/2     Running   0          155m
+ag1-2   2/2     Running   0          155m
+
 
 $ kubectl delete pod -n demo ag1-0 
 pod "ag1-0" deleted
 
 $ kubectl get pods -n demo
-NAME                       READY   STATUS    RESTARTS   AGE
-ag1-0   2/2     Running   0          7s
-ag1-1   2/2     Running   0          130m
-ag1-2   2/2     Running   0          130m
+NAME    READY   STATUS    RESTARTS   AGE
+ag1-0   2/2     Running   0          18s
+ag1-1   2/2     Running   0          158m
+ag1-2   2/2     Running   0          157m
 ```
 
 
-Now find the new primary pod by running this command. 
+Now find the new primary pod by running this command.
 ```bash
-$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
-mssqlserver-ag-cluster-0	
-mssqlserver-ag-cluster-1	primary
-mssqlserver-ag-cluster-2	secondary
+$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=ag1 -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+ag1-0	
+ag1-1	secondary
+ag1-2	primary
 ```
 
-We can see that, the primary node is now is `mssqlserver-ag-cluster-1`. The old primary pod `mssqlserver-ag-cluster-0` role is still pending. It will be set when old primary joins with the new primary as secondary.  
-Lets exec into this new primary and see the availability replica role.
+We can see that, the primary node is now is `ag1-2`. The old primary pod `ag1-0` role will be set when old primary joins with the new primary as secondary.  
+Lets exec into this new primary and see the availability replica's role.
 ```bash
-$ kubectl exec -it mssqlserver-ag-cluster-1 -c mssql -n demo -- bash
-mssql@mssqlserver-ag-cluster-1:/$ opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
-1> SELECT ar.replica_server_name, ars.role_desc
-2> FROM sys.dm_hadr_availability_replica_states ars
-3> INNER JOIN sys.availability_replicas ar ON ars.replica_id = ar.replica_id;
-4> go
+$ kubectl exec -it ag1-2 -c mssql -n demo -- bash
+mssql@ag1-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q " 
+SELECT ar.replica_server_name, ars.role_desc
+FROM sys.dm_hadr_availability_replica_states ars
+INNER JOIN sys.availability_replicas ar ON ars.replica_id = ar.replica_id;
+go
+"
 replica_server_name                                                                                                                                                                                                                                              role_desc                                                   
--------------------------------------------------------------------------------------------------------
-mssqlserver-ag-cluster-0                                                                                                                                                                                                                                         SECONDARY                                                   
-mssqlserver-ag-cluster-1                                                                                                                                                                                                                                         PRIMARY                                                     
-mssqlserver-ag-cluster-2                                                                                                                                                                                                                                         SECONDARY                                                   
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ------------------------------------------------------------
+ag1-0                                                                                                                                                                                                                                                            SECONDARY                                                   
+ag1-1                                                                                                                                                                                                                                                            SECONDARY                                                   
+ag1-2                                                                                                                                                                                                                                                            PRIMARY                                                     
+ag1                                                                                                                                                                                                                                                              PRIMARY                                                     
+ag2                                                                                                                                                                                                                                                              SECONDARY                                                   
 
-(3 rows affected)
-
+(5 rows affected)
 ```
 
-We can see that new primary is `mssqlserver-ag-cluster-1` and the old primary `mssqlserver-ag-cluster-0` joined the availability group cluster as secondary. MSSQLServer status is `Ready` now. We can see the updated pod labels. 
+We can see that new primary is `ag1-2` and the old primary `ag1-0` joined the availability group cluster as secondary. MSSQLServer status is `Ready` now. We can see the updated pod labels.
 ```bash
-$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=ag1 -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
 mssqlserver-ag-cluster-0	secondary
 mssqlserver-ag-cluster-1	primary
 mssqlserver-ag-cluster-2	secondary
 ````
 
 
-Run the following command to see the created appbinding object:
-```bash
-$ kubectl get appbinding -n demo -oyaml
-```
-
-```yaml
-apiVersion: v1
-items:
-  - apiVersion: appcatalog.appscode.com/v1alpha1
-    kind: AppBinding
-    metadata:
-      annotations:
-        kubectl.kubernetes.io/last-applied-configuration: |
-          {"apiVersion":"kubedb.com/v1alpha2","kind":"MSSQLServer","metadata":{"annotations":{},"name":"mssqlserver-ag-cluster","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","internalAuth":{"endpointCert":{"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","tls":{"clientTLS":false,"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"mssqlserver-ca-issuer"}},"topology":{"availabilityGroup":{"databases":["agdb1","agdb2"]},"mode":"AvailabilityGroup"},"version":"2022-cu12"}}
-      creationTimestamp: "2024-10-08T10:57:14Z"
-      generation: 1
-      labels:
-        app.kubernetes.io/component: database
-        app.kubernetes.io/instance: mssqlserver-ag-cluster
-        app.kubernetes.io/managed-by: kubedb.com
-        app.kubernetes.io/name: mssqlservers.kubedb.com
-      name: mssqlserver-ag-cluster
-      namespace: demo
-      ownerReferences:
-        - apiVersion: kubedb.com/v1alpha2
-          blockOwnerDeletion: true
-          controller: true
-          kind: MSSQLServer
-          name: mssqlserver-ag-cluster
-          uid: 0d383530-bbb5-442f-bef0-562304539f98
-      resourceVersion: "237817"
-      uid: d7f2f0fc-251f-4ea4-824b-6eb3c96897b4
-    spec:
-      appRef:
-        apiGroup: kubedb.com
-        kind: MSSQLServer
-        name: mssqlserver-ag-cluster
-        namespace: demo
-      clientConfig:
-        service:
-          name: mssqlserver-ag-cluster
-          path: /
-          port: 1433
-          scheme: tcp
-      secret:
-        name: mssqlserver-ag-cluster-auth
-      type: kubedb.com/mssqlserver
-      version: "2022"
-kind: List
-metadata:
-  resourceVersion: ""
-```
-
-You can use this appbinding to connect with the mssql server from external
 
 
+## Performing Data Center Failover: Change DAG replica's primary role from ag1 to ag2
 
-## Database DeletionPolicy
+The following steps show how to fail over the primary role from `ag1` to `ag2`.
 
-This field is used to regulate the deletion process of the related resources when `MSSQLServer` object is deleted. User can set the value of this field according to their needs. The available options and their use case scenario is described below:
+#### 1. Prepare for Zero Data Loss (If `ag1` is Online)
 
-**DoNotTerminate:**
-
-When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
+To prevent data loss, switch the DAG to synchronous replication. Execute this command on the primary replicas of **both `ag1` and `ag2`** (the 'GLOBAL PRIMARY' and the 'FORWARDER'.
 
 ```bash
-$ kubectl patch -n demo ms mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"DoNotTerminate"}}' --type="merge"
-mssqlserver.kubedb.com/mssqlserver-ag-cluster patched
+$ kubectl exec -it ag1-2 -c mssql -n demo -- bash
 
-$ kubectl delete ms -n demo mssqlserver-ag-cluster
-The MSSQLServer "mssqlserver-ag-cluster" is invalid: spec.deletionPolicy: Invalid value: "mssqlserver-ag-cluster": Can not delete as deletionPolicy is set to "DoNotTerminate"
+mssql@ag1-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+SELECT g.name, r.replica_server_name, r.availability_mode_desc, r.failover_mode_desc
+FROM sys.availability_groups AS g JOIN sys.availability_replicas AS r ON g.group_id = r.group_id
+"
+name                                                                                                                             replica_server_name                                                                                                                                                                                                                                              availability_mode_desc                                       failover_mode_desc                                          
+-------------------------------------------------------------------------------------------------------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ------------------------------------------------------------ ------------------------------------------------------------
+ag1                                                                                                                              ag1-0                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag1                                                                                                                              ag1-1                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag1                                                                                                                              ag1-2                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+dag                                                                                                                              ag1                                                                                                                                                                                                                                                              ASYNCHRONOUS_COMMIT                                          MANUAL                                                      
+dag                                                                                                                              ag2                                                                                                                                                                                                                                                              ASYNCHRONOUS_COMMIT                                          MANUAL                                                      
+
+(5 rows affected)
+
+
+
+
+mssql@ag1-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+ALTER AVAILABILITY GROUP dag 
+MODIFY AVAILABILITY GROUP ON 
+  'ag1' WITH ( AVAILABILITY_MODE = SYNCHRONOUS_COMMIT ),
+  'ag2' WITH ( AVAILABILITY_MODE = SYNCHRONOUS_COMMIT);
+"
+
+ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+SELECT g.name, r.replica_server_name, r.availability_mode_desc, r.failover_mode_desc
+FROM sys.availability_groups AS g JOIN sys.availability_replicas AS r ON g.group_id = r.group_id
+"
+name                                                                                                                             replica_server_name                                                                                                                                                                                                                                              availability_mode_desc                                       failover_mode_desc                                          
+-------------------------------------------------------------------------------------------------------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ------------------------------------------------------------ ------------------------------------------------------------
+ag1                                                                                                                              ag1-0                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag1                                                                                                                              ag1-1                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag1                                                                                                                              ag1-2                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+dag                                                                                                                              ag1                                                                                                                                                                                                                                                              SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+dag                                                                                                                              ag2                                                                                                                                                                                                                                                              SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+
+(5 rows affected)
 ```
 
-Now, run `kubectl patch -n demo ms mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"` to set `spec.deletionPolicy` to `Halt` (which deletes the mssqlserver object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
-Learn details of all `DeletionPolicy` [here](/docs/guides/mssqlserver/concepts/mssqlserver.md#specdeletionpolicy).
-
-**Halt:**
-
-Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MSSQLServer` object `deletionPolicy` to `Halt`.
-
-When the [DeletionPolicy](/docs/guides/mssqlserver/concepts/mssqlserver.md#specdeletionpolicy) is set to `halt` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `deletionPolicy` to `halt` in existing database using `patch` command for testing.
-
-At first, run `kubectl patch -n demo ms mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"`. Then delete the mssqlserver object,
 
 ```bash
-$ kubectl delete ms -n demo mssqlserver-ag-cluster
-mssqlserver.kubedb.com "mssqlserver-ag-cluster" deleted
+$ kubectl exec -it ag2-0 -c mssql -n demo -- bash
+mssql@ag2-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+SELECT g.name, r.replica_server_name, r.availability_mode_desc, r.failover_mode_desc
+FROM sys.availability_groups AS g JOIN sys.availability_replicas AS r ON g.group_id = r.group_id
+"
+name                                                                                                                             replica_server_name                                                                                                                                                                                                                                              availability_mode_desc                                       failover_mode_desc                                          
+-------------------------------------------------------------------------------------------------------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ------------------------------------------------------------ ------------------------------------------------------------
+ag2                                                                                                                              ag2-0                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag2                                                                                                                              ag2-1                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag2                                                                                                                              ag2-2                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+dag                                                                                                                              ag1                                                                                                                                                                                                                                                              ASYNCHRONOUS_COMMIT                                          MANUAL                                                      
+dag                                                                                                                              ag2                                                                                                                                                                                                                                                              ASYNCHRONOUS_COMMIT                                          MANUAL                                                      
+
+(5 rows affected)
+mssql@ag2-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+ALTER AVAILABILITY GROUP dag 
+MODIFY AVAILABILITY GROUP ON 
+  'ag1' WITH ( AVAILABILITY_MODE = SYNCHRONOUS_COMMIT ),
+  'ag2' WITH ( AVAILABILITY_MODE = SYNCHRONOUS_COMMIT);
+"
+mssql@ag2-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P $MSSQL_SA_PASSWORD -No -Q "
+SELECT g.name, r.replica_server_name, r.availability_mode_desc, r.failover_mode_desc
+FROM sys.availability_groups AS g JOIN sys.availability_replicas AS r ON g.group_id = r.group_id
+"
+name                                                                                                                             replica_server_name                                                                                                                                                                                                                                              availability_mode_desc                                       failover_mode_desc                                          
+-------------------------------------------------------------------------------------------------------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- ------------------------------------------------------------ ------------------------------------------------------------
+ag2                                                                                                                              ag2-0                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag2                                                                                                                              ag2-1                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+ag2                                                                                                                              ag2-2                                                                                                                                                                                                                                                            SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+dag                                                                                                                              ag1                                                                                                                                                                                                                                                              SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+dag                                                                                                                              ag2                                                                                                                                                                                                                                                              SYNCHRONOUS_COMMIT                                           MANUAL                                                      
+
+(5 rows affected)
 ```
 
-Now, run the following command to get mssqlserver resources in `demo` namespaces,
-
-```bash
-$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
-NAME                                          TYPE                       DATA   AGE
-secret/mssqlserver-ag-cluster-auth            kubernetes.io/basic-auth   2      3h6m
-secret/mssqlserver-ag-cluster-client-cert     kubernetes.io/tls          3      3h6m
-secret/mssqlserver-ag-cluster-config          Opaque                     1      3h6m
-secret/mssqlserver-ag-cluster-dbm-login       kubernetes.io/basic-auth   1      3h6m
-secret/mssqlserver-ag-cluster-endpoint-cert   kubernetes.io/tls          3      3h6m
-secret/mssqlserver-ag-cluster-master-key      kubernetes.io/basic-auth   1      3h6m
-secret/mssqlserver-ag-cluster-server-cert     kubernetes.io/tls          3      3h6m
-secret/mssqlserver-ca                         kubernetes.io/tls          2      3h8m
-
-NAME                                                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-mssqlserver-ag-cluster-0   Bound    pvc-33ae1829-c559-407b-a148-1792c22b52a6   1Gi        RWO            standard       3h6m
-persistentvolumeclaim/data-mssqlserver-ag-cluster-1   Bound    pvc-b697b7ad-8348-431f-b2c7-01620bec4f8d   1Gi        RWO            standard       3h6m
-persistentvolumeclaim/data-mssqlserver-ag-cluster-2   Bound    pvc-b486a79c-a8ae-449a-bc15-74491f062573   1Gi        RWO            standard       3h5m
-```
-
-From the above output, you can see that all mssqlserver resources(`MSSQLServer`, `PetSet`, `Pod`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mssqlserver again using these resources.
-
-**Delete:**
-
-If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `MSSQLServer` object `deletionPolicy` to `Delete`. In this setting, `PetSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
-
-When the [DeletionPolicy](/docs/guides/mssqlserver/concepts/mssqlserver.md#specdeletionpolicy) is set to `Delete` and the MSSQLServer object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
-
-Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
-
-```bash
-$ kubectl patch -n demo ms mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
-mssqlserver.kubedb.com/mssqlserver-ag-cluster patched
-$ kubectl delete ms -n demo mssqlserver-ag-cluster 
-mssqlserver.kubedb.com "mssqlserver-ag-cluster" deleted
-```
-
-Now, run the following command to get all mssqlserver resources in `demo` namespaces,
-
-```bash
-$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
-NAME                                          TYPE                       DATA   AGE
-secret/mssqlserver-ag-cluster-auth            kubernetes.io/basic-auth   2      3h6m
-secret/mssqlserver-ag-cluster-client-cert     kubernetes.io/tls          3      3h6m
-secret/mssqlserver-ag-cluster-config          Opaque                     1      3h6m
-secret/mssqlserver-ag-cluster-dbm-login       kubernetes.io/basic-auth   1      3h6m
-secret/mssqlserver-ag-cluster-endpoint-cert   kubernetes.io/tls          3      3h6m
-secret/mssqlserver-ag-cluster-master-key      kubernetes.io/basic-auth   1      3h6m
-secret/mssqlserver-ag-cluster-server-cert     kubernetes.io/tls          3      3h6m
-secret/mssqlserver-ca                         kubernetes.io/tls          2      3h8m
-```
-
-From the above output, you can see that all mssqlserver resources(`MSSQLServer`, `PetSet`, `Pod`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mssqlserver using `snapshots`(if previously taken) and `Secrets`.
-
->If you don't set the deletionPolicy then the kubeDB set the DeletionPolicy to Delete by-default.
-
-**WipeOut:**
-
-You can totally delete the `MSSQLServer` database and relevant resources without any tracking by setting `deletionPolicy` to `WipeOut`. KubeDB operator will delete all relevant resources of this `MSSQLServer` database (i.e, `PVCs`, `Secrets`, `Snapshots`) when the `deletionPolicy` is set to `WipeOut`.
-
-Let's set `deletionPolicy` set to `WipeOut` and delete the database using the following command:
-
-```yaml
-$ kubectl patch -n demo ms mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-mssqlserver.kubedb.com/mssqlserver-ag-cluster patched
-
-$ kubectl delete ms -n demo mssqlserver-ag-cluster
-mssqlserver.kubedb.com "mssqlserver-ag-cluster" deleted
-```
-
-Now, run the following command to get all mssqlserver resources in `demo` namespaces,
-
-```bash
-$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
-NAME                       TYPE                       DATA   AGE
-secret/mssqlserver-ca      kubernetes.io/tls          2      3h8m
-```
-
-From the above output, you can see that all mssqlserver resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `WipeOut`.
-
->Be careful when you set the `deletionPolicy` to `WipeOut`. Because there is no option to trace the database resources if once deleted the database.
 
 ## Cleaning up
+
+> Be careful when you set the `deletionPolicy` to `WipeOut`. Because there is no option to trace the database resources if once deleted the database.
+
 
 To clean up the Kubernetes resources created by this tutorial, run:
 

@@ -1,0 +1,51 @@
+# ag2.yaml
+apiVersion: kubedb.com/v1alpha2
+kind: MSSQLServer
+metadata:
+  name: ag2
+  namespace: demo
+spec:
+  version: "2022-cu16"
+  replicas: 3
+  topology:
+    mode: DistributedAG
+    availabilityGroup:
+      # Databases field must be empty for the secondary AG.
+      secondaryAccessMode: "All"
+      # Reference the secrets you copied from the primary cluster.
+      loginSecretName: ag1-dbm-login
+      masterKeySecretName: ag1-master-key
+      endpointCertSecretName: ag1-endpoint-cert
+    distributedAG:
+      self:
+        role: Secondary
+        url: "10.2.0.181" # Replace with the reachable LoadBalancer IP/hostname of this AG
+      remote:
+        name: ag1
+        url: "10.2.0.236" # Replace with the reachable LoadBalancer IP/hostname of the primary AG
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer # An issuer with this name must also exist in the secondary cluster
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation
+  serviceTemplates:
+    - alias: primary
+      spec:
+        type: LoadBalancer
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
