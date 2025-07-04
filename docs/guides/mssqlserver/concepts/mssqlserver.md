@@ -259,32 +259,66 @@ MSSQLServer managed by KubeDB can be monitored with Prometheus operator out-of-t
 
 ### spec.topology
 
-The `spec.topology` field specifies the operational mode and configuration of the SQL Server cluster. It defines how the cluster should behave, including the databases that should be included in the setup, and the leader election process for managing the primary-secondary roles.
-
+The spec.topology field is the core of configuring your SQL Server cluster's architecture. It defines the operational mode, high-availability settings, and disaster recovery configurations of the SQL Server cluster. It defines how the cluster should behave, including the databases that should be included in the setup, and the leader election process for managing the primary-secondary roles.
+```yaml
+spec:
+  topology:
+    mode: DistributedAG
+    availabilityGroup:
+      # ... local AG settings ...
+    distributedAG:
+      # ... DAG settings ...
+```
 #### spec.topology.mode
 
-The `spec.topology.mode` field determines the mode in which the SQL Server cluster operates. Currently, the supported mode is `AvailabilityGroup`, which configures the cluster as an SQL Server Availability Group (AG). 
+The `spec.topology.mode` field determines the mode in which the SQL Server cluster operates. Currently, the supported mode is:  
 
-- **`AvailabilityGroup` Mode**:  
-  In this mode, the KubeDB operator sets up an Availability Group with one primary replica and multiple secondary replicas for high availability. The databases specified in `spec.topology.availabilityGroup.databases` are automatically created and added to the Availability Group. Users do not need to perform these tasks manually.
+`AvailabilityGroup`: Configures a standard SQL Server Always On Availability Group within a single Kubernetes cluster. This provides high availability and automatic failover for your databases. In this mode, the KubeDB operator sets up an Availability Group with one primary replica and multiple secondary replicas for high availability. The databases specified in `spec.topology.availabilityGroup.databases` are automatically created and added to the Availability Group. Users do not need to perform these tasks manually.   
+
+`DistributedAG`: Configures a Distributed Availability Group. This mode links two separate AvailabilityGroup clusters, typically in different geographic locations or Kubernetes clusters, to provide a robust disaster recovery solution.
+
+
 
 #### spec.topology.availabilityGroup
 
-The `spec.topology.availabilityGroup` section defines the configuration for SQL Server Availability Group (AG) when the mode is set to `AvailabilityGroup`. It includes details about the databases to be added to the group and the leader election process.
-
+This section defines the configuration for the local SQL Server Availability Group (AG). It is required for both AvailabilityGroup and DistributedAG modes. It includes details about the databases to be added to the group and the leader election configurations.
 
 ##### spec.topology.availabilityGroup.databases
 
-This field specifies the list of database names to be included in the Availability Group. The KubeDB operator creates and adds these databases to the Availability Group automatically during cluster initialization. Users can modify this list later to add or remove databases as needed.
+(string[]) An array of database names to be included in the Availability Group. KubeDB will automatically create these databases (if they don't exist) and add them to the AG during cluster initialization. For a DistributedAG in the Secondary role, this field must be empty, as databases will be seeded from the primary site. Users can modify this list later to add databases as needed.
 
 Example:
 
 ```yaml
-databases:
-  - agdb1
-  - agdb2
+availabilityGroup:
+  databases:
+    - "sales_db"
+    - "inventory_db"
 ```  
 In this example: agdb1 and agdb2 are added to the Availability Group upon cluster setup.
+
+##### spec.topology.availabilityGroup.secondaryAccessMode
+(string) Controls how secondary replicas handle incoming connections. Default is Passive.   
+We have support for active and passive secondary replicas in Microsoft SQL Server Availability Groups, enabling cost-efficient deployments by supporting passive replicas that avoid licensing costs.
+
+Active/Passive Secondary Replicas:
+The secondaryAccessMode field in the MSSQLServer CRD under spec.topology.availabilityGroup allows control over secondary replica connection modes:
+- Passive: No client connections (default, ideal for DR or failover without licensing costs).
+- ReadOnly: Accepts read-intent connections only.
+- All: Allows all read-only connections.
+
+```yaml
+spec:
+topology:
+availabilityGroup:
+secondaryAccessMode: Passive | ReadOnly | All
+```
+
+T-SQL Mapping:   
+- Passive: `SECONDARY_ROLE (ALLOW_CONNECTIONS = NO)`
+- ReadOnly: `SECONDARY_ROLE (ALLOW_CONNECTIONS = READ_ONLY)`
+- All: `SECONDARY_ROLE (ALLOW_CONNECTIONS = ALL)`
+
 
 ### spec.topology.availabilityGroup.leaderElection
 
@@ -301,6 +335,21 @@ There are five fields under MSSQLServer CRD's `spec.leaderElection`. These value
 - `TransferLeadershipTimeout`: This specifies the  retry timeout for transferring leadership to the healthiest node. Default is `60s`.
 
 You can increase the period and the electionTick if the system has high network latency.
+
+
+### spec.topology.distributedAG
+This section is required when spec.topology.mode is set to DistributedAG. It defines the configuration for the Distributed Availability Group.   
+
+`spec.topology.distributedAG.self`
+This object defines the configuration for the local Availability Group's participation in the DAG.
+- role: (string) Specifies whether this local AG is the Primary or Secondary in the Distributed AG.
+- url: (string) The listener endpoint URL of this local AG (e.g., a LoadBalancer IP and port). This URL must be reachable from the remote site.   
+
+`spec.topology.distributedAG.remote`   
+This object defines the connection details for the remote Availability Group that this cluster will connect to.
+- name: (string) The actual name of the Availability Group on the remote cluster.
+- url: (string) The listener endpoint URL of the remote AG. This URL must be reachable from the SQL Server instances in the local cluster.
+
 
 ### spec.podTemplate
 
