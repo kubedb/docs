@@ -7,7 +7,6 @@ name: Update Announce
 parent: rd-announce
 weight: 20
 menu_name: docs_{{ .version }}
-section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
