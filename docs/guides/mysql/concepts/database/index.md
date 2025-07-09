@@ -437,6 +437,8 @@ Following table show what KubeDB does when you delete MySQL crd for different te
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
 
+> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
+
 ## Next Steps
 
 - Learn how to use KubeDB to run a MySQL database [here](/docs/guides/mysql/README.md).

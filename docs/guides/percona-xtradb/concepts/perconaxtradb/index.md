@@ -367,3 +367,5 @@ Following table show what KubeDB does when you delete PerconaXtraDB crd for diff
 | 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
+
+> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)

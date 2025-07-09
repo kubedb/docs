@@ -511,6 +511,8 @@ The `spec.<node-name>.podTemplate.spec.containers[].name` field used to specify 
 
 When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
+> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
+
 ## spec.healthChecker
 It defines the attributes for the health checker.
 - `spec.healthChecker.periodSeconds` specifies how often to perform the health check.
