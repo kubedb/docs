@@ -357,6 +357,33 @@ The `spec.podTemplate.spec.containers[].name` field used to specify the name of 
  If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
+### spec.deletionPolicy
+
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Postgres` crd or which resources KubeDB should keep or delete when you delete `Postgres` crd. KubeDB provides following four termination policies:
+
+- DoNotTerminate
+- Halt
+- Delete (`Default`)
+- WipeOut
+
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
+
+Following table show what KubeDB does when you delete Postgres crd for different termination policies,
+
+| Behavior                                 | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
+| ---------------------------------------- | :------------: | :------: | :------: | :------: |
+| 1. Block Delete operation                |    &#10003;    | &#10007; | &#10007; | &#10007; |
+| 2. Create Dormant Database               |    &#10007;    | &#10003; | &#10007; | &#10007; |
+| 3. Delete PetSet                    |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 4. Delete Services                       |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 5. Delete PVCs                           |    &#10007;    | &#10007; | &#10003; | &#10003; |
+| 6. Delete Secrets                        |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 7. Delete Snapshots                      |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 8. Delete Snapshot data from bucket      |    &#10007;    | &#10007; | &#10007; | &#10003; |
+
+If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy by default.
+
+> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
 
 ### .spec.serviceTemplate
 
