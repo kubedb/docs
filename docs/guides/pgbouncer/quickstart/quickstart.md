@@ -267,6 +267,7 @@ Following table show what KubeDB does when you delete Postgres crd for different
 
 Now that we've been introduced to the pgBouncer crd, let's create it,
 
+> For more details visit [here](https://appscode.com/blog/post/deletion-policy/)
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server.yaml
 
