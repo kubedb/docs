@@ -67,7 +67,7 @@ postgres.kubedb.com/quick-postgres created
 Or, you can deploy by using command:
 
 ```shell
-$ kubectl create -f https://github.com/kubedb/docs/raw/v2025.6.30/docs/examples/postgres/quickstart/quick-postgres-v1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/postgres/quickstart/quick-postgres-v1.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 
@@ -130,7 +130,7 @@ Here,
 
 Let's create the `PostgresOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/v2025.6.30/docs/examples/postgres/rotate-auth/postgres-rotate-auth-generated.yaml
+ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/postgres/rotate-auth/postgres-rotate-auth-generated.yaml
  postgresopsrequest.ops.kubedb.com/pgops-rotate-auth-generated created
 ```
 Let's wait for `PostgresOpsrequest` to be `Successful`. Run the following command to watch `PostgresOpsrequest` CRO
@@ -280,7 +280,7 @@ Here,
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v2025.6.30/docs/examples/postgres/rotate-auth/rotate-auth-user.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/postgres/rotate-auth/rotate-auth-user.yaml
 postgresopsrequest.ops.kubedb.com/pgops-rotate-auth-user created
 ```
 Let’s wait for `PostgresOpsRequest` to be Successful. Run the following command to watch `PostgresOpsRequest` CRO:
