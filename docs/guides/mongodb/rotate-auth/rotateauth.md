@@ -2,9 +2,9 @@
 title: Rotate Authentication MongoDB
 menu:
   docs_{{ .version }}:
-    identifier: mg-rotate-auth
-    name: Rotate Authentication
-    parent: mg-mongodb-guides
+    identifier: mg-rotate-auth-details
+    name: Rotate Authentication MongoDB
+    parent: mg-rotate-auth
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -70,7 +70,7 @@ mongodb.kubedb.com/mgo-quickstart created
 Or, you can deploy by using command:
 
 ```shell
-$  kubectl create -f https://github.com/kubedb/docs/raw/v2025.6.30/docs/examples/mongodb/quickstart/replicaset-v1alpha2.yaml
+$  kubectl create -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mongodb/quickstart/replicaset-v1alpha2.yaml
 mongodb.kubedb.com/mgo-quickstart created
 ```
 
@@ -141,7 +141,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/v2025.6.30/docs/examples/mongodb/rotate-auth/mongodb-rotate-auth-generated.yaml
+ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mongodb/rotate-auth/mongodb-rotate-auth-generated.yaml
  mongodbopsrequest.ops.kubedb.com/mgops-rotate-auth-generated created
 ```
 Let's wait for `MongoDBOpsrequest` to be `Successful`. Run the following command to watch `MongoDBOpsrequest` CRO
