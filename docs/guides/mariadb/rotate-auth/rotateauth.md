@@ -67,7 +67,7 @@ mariadb.kubedb.com/sample-mariadb created
 Or, you can deploy by using command:
 
 ```shell
-$  kubectl create -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb-v1.yaml
+$ kubectl create -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb-v1.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 
@@ -114,6 +114,20 @@ MariaDB [(none)]> show databases;
 
 MariaDB [(none)]> CREATE DATABASE Bharatnaityam;
 Query OK, 1 row affected (0.000 sec)
+
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| Bharatnaityam      |
+| information_schema |
+| kubedb_system      |
+| mysql              |
+| performance_schema |
++--------------------+
+5 rows in set (0.000 sec)
+
+
 ```
 If you can access the data table and run queries, it means the secrets are working correctly.
 ## Create RotateAuth MariaDBOpsRequest
@@ -234,7 +248,7 @@ Events:
 ```
 **Verify Auth is rotated**
 ```shell
-$ kubectl get mg -n demo sample-mariadb -ojson | jq .spec.authSecret.name
+$ kubectl get mariadb -n demo sample-mariadb -ojson | jq .spec.authSecret.name
 "sample-mariadb-auth"
 $ kubectl get secret -n demo sample-mariadb-auth -o=jsonpath='{.data.username}' | base64 -d
 root⏎                                                               
@@ -254,11 +268,13 @@ The above output shows that the password has been changed successfully. The prev
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 
+> Note: You cannot change the database `username`, but you can update the `password` while keeping the existing `username`.
+
 ```shell
-$  kubectl create secret generic sample-mariadb-auth-user -n demo \
-                                                                                                                            --type=kubernetes.io/basic-auth \
-                                                                                                                            --from-literal=username=md-admin \
-                                                                                                                            --from-literal=password=Mariadb-secret
+$ kubectl create secret generic sample-mariadb-auth-user -n demo \
+   --type=kubernetes.io/basic-auth \
+   --from-literal=username=root \
+   --from-literal=password=testpassword
 secret/sample-mariadb-auth-user created
 ```
 Now create a `MariaDBOpsRequest` with `RotateAuth` type. Below is the YAML of the `MariaDBOpsRequest` that we are going to create,
@@ -301,70 +317,65 @@ mdops-rotate-auth-user        RotateAuth   Successful   62s
 ```
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. If we describe the `MariaDBOpsRequest` we will get an overview of the steps that were followed.
 ```shell
-$ kubectl describe postgresopsrequest -n demo pgops-rotate-auth-user 
-Name:         pgops-rotate-auth-user
+$  kubectl describe Mariadbopsrequest -n demo mdops-rotate-auth-user
+Name:         mdops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
-Kind:         PostgresOpsRequest
+Kind:         MariaDBOpsRequest
 Metadata:
-  Creation Timestamp:  2025-07-09T06:45:44Z
+  Creation Timestamp:  2025-07-14T06:56:25Z
   Generation:          1
-  Resource Version:    562328
-  UID:                 d25c3d36-cc15-4c82-8fe4-64e5ffc1467c
+  Resource Version:    665963
+  UID:                 6c30dc56-6ca9-4707-8b7c-5d4da6a1b585
 Spec:
   Apply:  IfReady
   Authentication:
     Secret Ref:
-      Name:  quick-postgres-user-auth
+      Name:  sample-mariadb-auth-user
   Database Ref:
-    Name:   quick-postgres
+    Name:   sample-mariadb
   Timeout:  5m
   Type:     RotateAuth
 Status:
   Conditions:
-    Last Transition Time:  2025-07-09T06:45:44Z
-    Message:               Postgres ops request has started to rotate auth for postgres
+    Last Transition Time:  2025-07-14T06:56:25Z
+    Message:               Controller has started to Progress the MariaDBOpsRequest: demo/mdops-rotate-auth-user
     Observed Generation:   1
-    Reason:                RotateAuth
+    Reason:                Running
     Status:                True
-    Type:                  RotateAuth
-    Last Transition Time:  2025-07-09T06:45:47Z
+    Type:                  Running
+    Last Transition Time:  2025-07-14T06:56:28Z
     Message:               Successfully referenced the user provided authSecret
+    Observed Generation:   1
+    Reason:                patchedSecret
+    Status:                True
+    Type:                  UpdateCredential
+    Last Transition Time:  2025-07-14T06:56:35Z
+    Message:               evict pod; ConditionStatus:True; PodName:sample-mariadb-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--sample-mariadb-0
+    Last Transition Time:  2025-07-14T06:56:35Z
+    Message:               get pod; ConditionStatus:True; PodName:sample-mariadb-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--sample-mariadb-0
+    Last Transition Time:  2025-07-14T06:56:40Z
+    Message:               Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-rotate-auth-user
+    Observed Generation:   1
+    Reason:                UpdatePetSetsSucceeded
+    Status:                True
+    Type:                  UpdatePetSets
+    Last Transition Time:  2025-07-14T06:56:45Z
+    Message:               Successfully rotate MariaDB auth for MariaDBOpsRequest: demo/mdops-rotate-auth-user
     Observed Generation:   1
     Reason:                UpdateCredential
     Status:                True
-    Type:                  UpdateCredential
-    Last Transition Time:  2025-07-09T06:45:50Z
-    Message:               Successfully updated petsets for rotate auth type
-    Observed Generation:   1
-    Reason:                UpdatePetSets
-    Status:                True
-    Type:                  UpdatePetSets
-    Last Transition Time:  2025-07-09T06:46:30Z
-    Message:               Successfully restarted all the nodes
-    Observed Generation:   1
-    Reason:                RestartNodes
-    Status:                True
-    Type:                  RestartNodes
-    Last Transition Time:  2025-07-09T06:45:55Z
-    Message:               evict pod; ConditionStatus:True
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod
-    Last Transition Time:  2025-07-09T06:45:55Z
-    Message:               check pod ready; ConditionStatus:False; PodName:quick-postgres-0
-    Observed Generation:   1
-    Status:                False
-    Type:                  CheckPodReady--quick-postgres-0
-    Last Transition Time:  2025-07-09T06:46:30Z
-    Message:               check pod ready; ConditionStatus:True
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodReady
-    Last Transition Time:  2025-07-09T06:46:30Z
-    Message:               Successfully Rotated Postgres Auth Secret
+    Type:                  RotateAuth
+    Last Transition Time:  2025-07-14T06:56:45Z
+    Message:               Controller has successfully rotate MariaDB auth secret demo/mdops-rotate-auth-user
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -372,26 +383,27 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                            Age    From                         Message
-  ----     ------                                                            ----   ----                         -------
-  Normal   PauseDatabase                                                     10m    KubeDB Ops-manager Operator  Pausing Postgres demo/quick-postgres
-  Normal   PauseDatabase                                                     10m    KubeDB Ops-manager Operator  Successfully paused Postgres demo/quick-postgres
-  Normal   VersionUpdate                                                     10m    KubeDB Ops-manager Operator  Updating PetSets
-  Normal   VersionUpdate                                                     10m    KubeDB Ops-manager Operator  Successfully Updated PetSets
-  Warning  evict pod; ConditionStatus:True                                   10m    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True
-  Warning  check pod ready; ConditionStatus:False; PodName:quick-postgres-0  10m    KubeDB Ops-manager Operator  check pod ready; ConditionStatus:False; PodName:quick-postgres-0
-  Warning  check pod ready; ConditionStatus:True                             9m58s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True
-  Normal   RestartNodes                                                      9m58s  KubeDB Ops-manager Operator  Successfully restarted all the nodes
-  Normal   ResumeDatabase                                                    9m58s  KubeDB Ops-manager Operator  Resuming PostgreSQL demo/quick-postgres
-  Normal   ResumeDatabase                                                    9m58s  KubeDB Ops-manager Operator  Successfully resumed PostgreSQL demo/quick-postgres
-  Normal   Successful                                                        9m58s  KubeDB Ops-manager Operator  Successfully Rotated Postgres Auth Secret for demo/quick-postgres
+  Type     Reason                                                     Age   From                         Message
+  ----     ------                                                     ----  ----                         -------
+  Normal   Starting                                                   83s   KubeDB Ops-manager Operator  Start processing for MariaDBOpsRequest: demo/mdops-rotate-auth-user
+  Normal   Starting                                                   83s   KubeDB Ops-manager Operator  Pausing MariaDB databse: demo/sample-mariadb
+  Normal   Successful                                                 83s   KubeDB Ops-manager Operator  Successfully paused MariaDB database: demo/sample-mariadb for MariaDBOpsRequest: mdops-rotate-auth-user
+  Normal   Starting                                                   73s   KubeDB Ops-manager Operator  Restarting Pod: demo/sample-mariadb-0
+  Warning  evict pod; ConditionStatus:True; PodName:sample-mariadb-0  73s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:sample-mariadb-0
+  Warning  get pod; ConditionStatus:True; PodName:sample-mariadb-0    73s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:sample-mariadb-0
+  Warning  get pod; ConditionStatus:True; PodName:sample-mariadb-0    68s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:sample-mariadb-0
+  Normal   Successful                                                 68s   KubeDB Ops-manager Operator  Successfully restarted MariaDB pods for MariaDBOpsRequest: demo/mdops-rotate-auth-user
+  Normal   Successful                                                 63s   KubeDB Ops-manager Operator  Successfully rotate MariaDB auth for MariaDBOpsRequest: demo/mdops-rotate-auth-user
+  Normal   Starting                                                   63s   KubeDB Ops-manager Operator  Resuming MariaDB database: demo/sample-mariadb
+  Normal   Successful                                                 63s   KubeDB Ops-manager Operator  Successfully resumed MariaDB database: demo/sample-mariadb
+  Normal   Successful                                                 63s   KubeDB Ops-manager Operator  Controller has successfully rotate MariaDB auth secret
 
 ```
 **Verify auth is rotate**
 ```shell
-$  kubectl get mariadb -n demo sample-mariadb -ojson | jq .spec.authSecret.name
+$ kubectl get mariadb -n demo sample-mariadb -ojson | jq .spec.authSecret.name
 "sample-mariadb-auth-user"
-$  kubectl get secret -n demo sample-mariadb-auth-user -o=jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo sample-mariadb-auth-user -o=jsonpath='{.data.username}' | base64 -d
 root⏎                                                                    
 $ kubectl get secret -n demo sample-mariadb-auth-user -o=jsonpath='{.data.password}' | base64 -d
 testpassword⏎                                                                                    
@@ -412,10 +424,11 @@ To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
 ```shell
-$ kubectl delete Mariadbopsrequest mgops-rotate-auth-generated mgops-rotate-auth-user -n demo
-Mariadbopsrequest.ops.kubedb.com "mgops-rotate-auth-generated" "mgops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo  quick-mg-user-auth
-secret "quick-mg-user-auth" deleted
+$ kubectl delete Mariadbopsrequest mdops-rotate-auth-generated mdops-rotate-auth-user -n demo
+mariadbopsrequest.ops.kubedb.com "mdops-rotate-auth-generated" deleted
+mariadbopsrequest.ops.kubedb.com "mdops-rotate-auth-user" deleted
+$ kubectl delete secret -n demo  sample-mariadb-auth-user
+secret "sample-mariadb-auth-user" deleted
 $ kubectl delete secret -n demo  sample-mariadb-auth
 secret "sample-mariadb-auth" deleted
 ```
