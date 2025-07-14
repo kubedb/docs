@@ -2,10 +2,10 @@
 title: CassandraAutoscaler CRD
 menu:
   docs_{{ .version }}:
-    identifier: guides-cassandra-concepts-cassandraautoscaler
+    identifier: cas-autoscaler-concepts
     name: CassandraAutoscaler
-    parent: guides-cassandra-concepts
-    weight: 50
+    parent: cas-concepts-cassandra
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

@@ -2,10 +2,10 @@
 title: CassandraVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: guides-cassandra-concepts-cassandraversion
+    identifier: cas-catalog-concepts
     name: CassandraVersion
-    parent: guides-cassandra-concepts
-    weight: 30
+    parent: cas-concepts-cassandra
+    weight: 45
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

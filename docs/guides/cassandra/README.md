@@ -2,9 +2,9 @@
 title: Cassandra
 menu:
   docs_{{ .version }}:
-    identifier: cas-guides-readme
+    identifier: cas-readme-cassandra
     name: Cassandra
-    parent: cas-guides
+    parent: cas-cassandra-guides
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,12 +12,12 @@ url: /docs/{{ .version }}/guides/cassandra/
 aliases:
   - /docs/{{ .version }}/guides/cassandra/README/
 ---
+
 > New to KubeDB? Please start [here](/docs/README.md).
 
 # Overview 
 
-Cassandra is a robust and flexible open-source message broker software that facilitates communication between distributed applications. It implements the Advanced Message Queuing Protocol (AMQP) standard, ensuring reliable messaging across various platforms and languages. With its support for multiple messaging protocols (MQTT, STOMP etc.) and delivery patterns (Fanout, Direct, Exchange etc.), Cassandra enables seamless integration and scalability for modern microservices architectures. It provides features such as message persistence, clustering, and high availability, making it a preferred choice for handling asynchronous communication and decoupling components in enterprise systems.
-
+Apache Cassandra is a highly scalable, distributed NoSQL database designed to handle large amounts of data across many servers, offering high availability and no single point of failure. It's known for its ability to handle massive data loads with high performance, making it suitable for applications like social media, financial services, and IoT platforms.
 ## Supported Cassandra Features
 
 | Features                                                      | Availability |
@@ -32,9 +32,6 @@ Cassandra is a robust and flexible open-source message broker software that faci
 | Externally manageable Auth Secret                             |   &#10003;   |
 | Persistent volume                                             |   &#10003;   |
 | Grafana Dashboards (Alerts and Monitoring)                    |   &#10003;   |
-| Pre-Enabled Dashboard ( Management UI )                       |   &#10003;   |
-| Pre-Enabled utility plugins ( Shovel, Federation )            |   &#10003;   |
-| Pre-Enabled Protocols with web dispatch ( AMQP, MQTT, STOMP ) |   &#10003;   |
 | Automated Version Update                                      |   &#10003;   |
 | Automated Vertical Scaling                                    |   &#10003;   |
 | Automated Horizontal Scaling                                  |   &#10003;   |
@@ -60,5 +57,5 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 
 ## User Guide
 
-- [Quickstart Cassandra](/docs/guides/cassandra/quickstart/quickstart.md) with KubeDB Operator.
+- [Quickstart Cassandra](/docs/guides/cassandra/quickstart/guide/index.md) with KubeDB Operator.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

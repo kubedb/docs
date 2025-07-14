@@ -2,7 +2,7 @@
 title: Cassandra
 menu:
   docs_{{ .version }}:
-    identifier: cas-guides
+    identifier: cas-cassandra-guides
     name: Cassandra
     parent: guides
     weight: 10

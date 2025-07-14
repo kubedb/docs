@@ -2,9 +2,9 @@
 title: Cassandra CRD
 menu:
   docs_{{ .version }}:
-    identifier: guides-cassandra-concepts-cassandra
+    identifier: cas-cassandra-concepts
     name: Cassandra
-    parent: guides-cassandra-concepts
+    parent: cas-concepts-cassandra
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

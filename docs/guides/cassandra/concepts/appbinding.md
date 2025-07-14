@@ -2,10 +2,10 @@
 title: AppBinding CRD
 menu:
   docs_{{ .version }}:
-    identifier: guides-cassandra-concepts-appbinding
+    identifier: cas-appbinding-concepts
     name: AppBinding
-    parent: guides-cassandra-concepts
-    weight: 20
+    parent: cas-concepts-cassandra
+    weight: 60
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

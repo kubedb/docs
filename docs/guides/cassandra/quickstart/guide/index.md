@@ -2,9 +2,9 @@
 title: Cassandra Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: guides-cassandra-quickstart-guide
-    name: Cassandra Quickstart
-    parent: guides-cassandra-quickstart
+    identifier: cas-cassandra-quickstart-cassandra
+    name: Cassandra
+    parent: cas-quickstart-cassandra
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -256,7 +256,7 @@ petset.apps.k8s.appscode.com/cassandra-quickstart-rack-r0   108m
 
 - `PetSet` - In topology mode, the operator creates 1 PetSet for each rack with name `{Cassandra-Name}-rack-{Rack-Name}`.
 - `Services` -  For topology mode, 1 headless service for each PetSet with name `{PetSet-Name}-{pods}` is created. Other than that, 1 more service  with name `{Cassandra-Name}-{Sufix}` is created.
-- `AppBinding` - an [AppBinding](/docs/guides/kafka/concepts/appbinding.md) which hold to connect information for the Cassandra. Like other resources, it is named after the Cassandra instance.
+- `AppBinding` - an [AppBinding](/docs/guides/cassandra/concepts/appbinding.md) which hold to connect information for the Cassandra. Like other resources, it is named after the Cassandra instance.
 - `Secrets` - A secret is generated for each Cassandra cluster.
     - `{Cassandra-Name}-auth` - the auth secrets which hold the `username` and `password` for the Cassandra users. Operator generates credentials for `admin` user and creates a secret for authentication.
 
@@ -296,7 +296,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl patch -n demo cassandra cassandra-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kafka.kubedb.com/cassandra-quickstart patched
+cassandra.kubedb.com/cassandra-quickstart patched
 
 $ kubectl delete cas cassandra-quickstart  -n demo
 cassandra.kubedb.com "cassandra-quickstart" deleted
@@ -309,10 +309,10 @@ namespace "demo" deleted
 
 [//]: # (- Cassandra Clustering supported by KubeDB)
 
-[//]: # (  - [Combined Clustering]&#40;/docs/guides/kafka/clustering/combined-cluster/index.md&#41;)
+[//]: # (  - [Combined Clustering]&#40;/docs/guides/cassandra/clustering/combined-cluster/index.md&#41;)
 
-[//]: # (  - [Topology Clustering]&#40;/docs/guides/kafka/clustering/topology-cluster/index.md&#41;)
-- Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
+[//]: # (  - [Topology Clustering]&#40;/docs/guides/cassandra/clustering/topology-cluster/index.md&#41;)
+- Use [kubedb cli](/docs/guides/cassandra/cli/cli.md) to manage databases like kubectl for Kubernetes.
 
-[//]: # (- Detail concepts of [Kafka object]&#40;/docs/guides/kafka/concepts/kafka.md&#41;.)
+[//]: # (- Detail concepts of [Cassandra object]&#40;/docs/guides/cassandra/concepts/cassandra.md&#41;.)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

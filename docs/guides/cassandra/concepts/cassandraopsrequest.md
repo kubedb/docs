@@ -1,11 +1,11 @@
 ---
-title: CassandraOpsRequest CRD
+title: CassandraOpsRequests CRD
 menu:
   docs_{{ .version }}:
-    identifier: guides-cassandra-concepts-cassandraopsrequest
+    identifier: cas-opsrequest-concepts
     name: CassandraOpsRequest
-    parent: guides-cassandra-concepts
-    weight: 40
+    parent: cas-concepts-cassandra
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -336,15 +336,7 @@ This will expand the volume size of all the combined nodes to 2 GB.
 
 If you want to reconfigure your Running Cassandra cluster or different components of it with new custom configuration, you have to specify `spec.configuration` section. This field consists of the following sub-field:
 
-- `spec.configuration.configSecret` points to a secret in the same namespace of a Cassandra resource, which contains the new custom configurations. If there are any configSecret set before in the database, this secret will replace it. The value of the field `spec.stringData` of the secret like below:
-```yaml
-common.runtime.properties: |
-  cassandra.storage.archiveBucket="my-cassandra-archive-bucket"
-middleManagers.properties: |
-  cassandra.worker.capacity=5
-```
-
-- `applyConfig` contains the new custom config as a string which will be merged with the previous configuration.
+- `spec.configuration.configSecret` points to a secret in the same namespace of a Cassandra resource, which contains the new custom configurations. If there are any configSecret set before in the database, this secret will replace it.
 
 - `applyConfig` is a map where key supports 3 values, namely `server.properties`, `broker.properties`, `controller.properties`. And value represents the corresponding configurations.
 
