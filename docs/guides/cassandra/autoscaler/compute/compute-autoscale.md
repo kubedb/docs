@@ -1,8 +1,8 @@
 ---
-title: Cassandra Topology Autoscaling
+title: Cassandra Compute Autoscaling
 menu:
   docs_{{ .version }}:
-    identifier: cas-auto-scaling-topology
+    identifier: cas-auto-scaling-compute-autoscale
     name: Topology Cluster
     parent: cas-compute-auto-scaling
     weight: 20

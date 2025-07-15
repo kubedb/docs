@@ -1,8 +1,8 @@
 ---
-title: Cassandra Topology Autoscaling
+title: Cassandra Storage Autoscaling
 menu:
   docs_{{ .version }}:
-    identifier: cas-storage-auto-scaling-topology
+    identifier: cas-auto-scaling-storage-autoscale
     name: Topology Cluster
     parent: cas-storage-auto-scaling
     weight: 20
@@ -72,12 +72,6 @@ metadata:
   namespace: demo
 spec:
   version: 5.0.3
-  #  enableSSL: true
-  #  tls:
-  #    issuerRef:
-  #      apiGroup: "cert-manager.io"
-  #      kind: Issuer
-  #      name: cassandra-ca-issuer
   topology:
     rack:
       - name: r0
