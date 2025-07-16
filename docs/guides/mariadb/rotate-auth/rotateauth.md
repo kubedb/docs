@@ -304,7 +304,7 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/rotate-auth/overview/examples/Mariadb-rotate-auth-generated.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/rotate-auth/overview/examples/rotate-auth-user.yaml
 mariadbopsrequest.ops.kubedb.com/mdops-rotate-auth-user created
 ```
 Let’s wait for `MariaDBOpsRequest` to be Successful. Run the following command to watch `MariaDBOpsRequest` CRO:
@@ -410,9 +410,9 @@ testpassword⏎
 ```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 ```shell
-$ kubectl get secret -n demo quick-mg-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
+$ kubectl get secret -n demo sample-mariadb-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
 root⏎                                                                                                          
-$ kubectl get secret -n demo quick-mg-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+$ kubectl get secret -n demo sample-mariadb-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
 gTJJMdgpKy9U(Eqi⏎                                             
 ```
 
@@ -433,3 +433,6 @@ $ kubectl delete secret -n demo  sample-mariadb-auth
 secret "sample-mariadb-auth" deleted
 ```
 
+## Next Steps
+
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

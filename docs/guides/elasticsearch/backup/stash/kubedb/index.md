@@ -92,7 +92,7 @@ spec:
 Let's create the above `Elasticsearch` object,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubedb/examples/elasticsearch/sample_es.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/elasticsearch/sample_es.yaml
 elasticsearch.kubedb.com/sample-es created
 ```
 

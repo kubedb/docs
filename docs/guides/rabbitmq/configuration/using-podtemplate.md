@@ -429,7 +429,7 @@ Containers:
       memory:  1Gi
     Mounts:
       /config from rabbitmq-config (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-69qx2 (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-69qx2 (rotateauth)
 Conditions:
   Type           Status
   PodScheduled   False 

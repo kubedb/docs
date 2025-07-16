@@ -114,7 +114,8 @@ Let's create the `Druid` CR we have shown above,
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-quickstart.yaml
 druid.kubedb.com/druid-quickstart created
 ```
-Verify whether the `Druid CRD` is ready:
+Now, wait until `druid-quickstart` has status Ready. i.e,
+
 ```shell
 $ kubectl get druid -n demo
 NAME               TYPE                  VERSION   STATUS   AGE
@@ -158,7 +159,7 @@ Here,
 
 Let's create the `DruidOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Druid/rotate-auth/yamls/Druid-rotate-auth-generated.yaml
+ $ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/rotate-auth/yamls/Druid-rotate-auth-generated.yaml
  Druidopsrequest.ops.kubedb.com/druidops-rotate-auth-generated created
 ```
 Let's wait for `DruidOpsrequest` to be `Successful`. Run the following command to watch `DruidOpsrequest` CRO
@@ -386,7 +387,7 @@ Here,
 Let's create the `DruidOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Druid/quickstart/overview/examples/Druid-rotate-auth-user.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/rotate-auth/yamls/Druid-rotate-auth-user.yaml
 Druidopsrequest.ops.kubedb.com/drops-rotate-auth-user created
 ```
 Let’s wait for `DruidOpsRequest` to be Successful. Run the following command to watch `DruidOpsRequest` CRO:
