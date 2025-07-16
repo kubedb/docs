@@ -571,7 +571,7 @@ Init Containers:
     Mounts:
       /scripts from init-scripts (rw)
       /var/lib/memsql from data (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-htm2z (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-htm2z (rotateauth)
 Containers:
   singlestore:
     Container ID:    containerd://b52ae6c34300ea23b60ce91fbbc6a01a1fd71bb7a3de6fea97d9a726ca280e55
@@ -600,7 +600,7 @@ Containers:
     Mounts:
       /scripts from init-scripts (rw)
       /var/lib/memsql from data (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-htm2z (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-htm2z (rotateauth)
 Conditions:
   Type                        Status
   PodReadyToStartContainers   True 

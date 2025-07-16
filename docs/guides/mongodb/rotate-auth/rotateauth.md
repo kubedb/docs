@@ -141,7 +141,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mongodb/rotate-auth/mongodb-rotate-auth-generated.yaml
+ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mongodb/rotate-auth/rotate-auth-generated.yaml
  mongodbopsrequest.ops.kubedb.com/mgops-rotate-auth-generated created
 ```
 Let's wait for `MongoDBOpsrequest` to be `Successful`. Run the following command to watch `MongoDBOpsrequest` CRO
@@ -312,12 +312,12 @@ The above output shows that the password has been changed successfully. The prev
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
-
+> Note: `Username` must be `root`
 ```shell
 $  kubectl create secret generic quick-mg-user-auth -n demo \
-                                                                                          --type=kubernetes.io/basic-auth \
-                                                                                          --from-literal=username=mg-admin \
-                                                                                          --from-literal=password=mongodb-secret
+            --type=kubernetes.io/basic-auth \
+            --from-literal=username=root \
+            --from-literal=password=mongodb-secret
 secret/quick-mg-user-auth created
 ```
 Now create a `MongoDBOpsRequest` with `RotateAuth` type. Below is the YAML of the `MongoDBOpsRequest` that we are going to create,
@@ -356,74 +356,109 @@ Let’s wait for `MongoDBOpsRequest` to be Successful. Run the following command
 $ kubectl get mongodbopsrequest -n demo
 NAME                          TYPE         STATUS       AGE
 mgops-rotate-auth-generated   RotateAuth   Successful   153m
-mgops-rotate-auth-user        RotateAuth   Failed       59m
+mgops-rotate-auth-user        RotateAuth   Successful   59m
 ```
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed.
 ```shell
-$ kubectl describe postgresopsrequest -n demo pgops-rotate-auth-user 
-Name:         pgops-rotate-auth-user
+$ kubectl describe mgops -n demo mgops-rotate-auth-user
+Name:         mgops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
-Kind:         PostgresOpsRequest
+Kind:         MongoDBOpsRequest
 Metadata:
-  Creation Timestamp:  2025-07-09T06:45:44Z
+  Creation Timestamp:  2025-07-16T11:46:29Z
   Generation:          1
-  Resource Version:    562328
-  UID:                 d25c3d36-cc15-4c82-8fe4-64e5ffc1467c
+  Resource Version:    810101
+  UID:                 eec4365a-cc3d-4e40-b603-7d41b9fbe781
 Spec:
   Apply:  IfReady
   Authentication:
     Secret Ref:
-      Name:  quick-postgres-user-auth
+      Name:  quick-mg-user-auth
   Database Ref:
-    Name:   quick-postgres
+    Name:   mgo-quickstart
   Timeout:  5m
   Type:     RotateAuth
 Status:
   Conditions:
-    Last Transition Time:  2025-07-09T06:45:44Z
-    Message:               Postgres ops request has started to rotate auth for postgres
+    Last Transition Time:  2025-07-16T11:46:29Z
+    Message:               MongoDB ops request has started to rotate auth for mongodb
     Observed Generation:   1
     Reason:                RotateAuth
     Status:                True
     Type:                  RotateAuth
-    Last Transition Time:  2025-07-09T06:45:47Z
+    Last Transition Time:  2025-07-16T11:46:33Z
     Message:               Successfully referenced the user provided authSecret
     Observed Generation:   1
     Reason:                UpdateCredential
     Status:                True
     Type:                  UpdateCredential
-    Last Transition Time:  2025-07-09T06:45:50Z
-    Message:               Successfully updated petsets for rotate auth type
+    Last Transition Time:  2025-07-16T11:46:38Z
+    Message:               Successfully updated petsets rotate auth type
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2025-07-09T06:46:30Z
-    Message:               Successfully restarted all the nodes
-    Observed Generation:   1
-    Reason:                RestartNodes
-    Status:                True
-    Type:                  RestartNodes
-    Last Transition Time:  2025-07-09T06:45:55Z
-    Message:               evict pod; ConditionStatus:True
+    Last Transition Time:  2025-07-16T11:46:43Z
+    Message:               check is master; ConditionStatus:True; PodName:mgo-quickstart-1
     Observed Generation:   1
     Status:                True
-    Type:                  EvictPod
-    Last Transition Time:  2025-07-09T06:45:55Z
-    Message:               check pod ready; ConditionStatus:False; PodName:quick-postgres-0
-    Observed Generation:   1
-    Status:                False
-    Type:                  CheckPodReady--quick-postgres-0
-    Last Transition Time:  2025-07-09T06:46:30Z
-    Message:               check pod ready; ConditionStatus:True
+    Type:                  CheckIsMaster--mgo-quickstart-1
+    Last Transition Time:  2025-07-16T11:46:43Z
+    Message:               evict pod; ConditionStatus:True; PodName:mgo-quickstart-1
     Observed Generation:   1
     Status:                True
-    Type:                  CheckPodReady
-    Last Transition Time:  2025-07-09T06:46:30Z
-    Message:               Successfully Rotated Postgres Auth Secret
+    Type:                  EvictPod--mgo-quickstart-1
+    Last Transition Time:  2025-07-16T11:46:58Z
+    Message:               check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodReady--mgo-quickstart-1
+    Last Transition Time:  2025-07-16T11:46:58Z
+    Message:               check is master; ConditionStatus:True; PodName:mgo-quickstart-2
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckIsMaster--mgo-quickstart-2
+    Last Transition Time:  2025-07-16T11:46:58Z
+    Message:               evict pod; ConditionStatus:True; PodName:mgo-quickstart-2
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--mgo-quickstart-2
+    Last Transition Time:  2025-07-16T11:47:13Z
+    Message:               check pod ready; ConditionStatus:True; PodName:mgo-quickstart-2
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodReady--mgo-quickstart-2
+    Last Transition Time:  2025-07-16T11:47:13Z
+    Message:               check is master; ConditionStatus:True; PodName:mgo-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckIsMaster--mgo-quickstart-0
+    Last Transition Time:  2025-07-16T11:47:13Z
+    Message:               step down; ConditionStatus:True; PodName:mgo-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  StepDown--mgo-quickstart-0
+    Last Transition Time:  2025-07-16T11:47:13Z
+    Message:               evict pod; ConditionStatus:True; PodName:mgo-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--mgo-quickstart-0
+    Last Transition Time:  2025-07-16T11:47:28Z
+    Message:               check pod ready; ConditionStatus:True; PodName:mgo-quickstart-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CheckPodReady--mgo-quickstart-0
+    Last Transition Time:  2025-07-16T11:47:28Z
+    Message:               Successfully Restarted ReplicaSet nodes
+    Observed Generation:   1
+    Reason:                RestartReplicaSet
+    Status:                True
+    Type:                  RestartReplicaSet
+    Last Transition Time:  2025-07-16T11:47:28Z
+    Message:               Successfully Rotate Auth
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -433,25 +468,44 @@ Status:
 Events:
   Type     Reason                                                            Age    From                         Message
   ----     ------                                                            ----   ----                         -------
-  Normal   PauseDatabase                                                     10m    KubeDB Ops-manager Operator  Pausing Postgres demo/quick-postgres
-  Normal   PauseDatabase                                                     10m    KubeDB Ops-manager Operator  Successfully paused Postgres demo/quick-postgres
-  Normal   VersionUpdate                                                     10m    KubeDB Ops-manager Operator  Updating PetSets
-  Normal   VersionUpdate                                                     10m    KubeDB Ops-manager Operator  Successfully Updated PetSets
-  Warning  evict pod; ConditionStatus:True                                   10m    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True
-  Warning  check pod ready; ConditionStatus:False; PodName:quick-postgres-0  10m    KubeDB Ops-manager Operator  check pod ready; ConditionStatus:False; PodName:quick-postgres-0
-  Warning  check pod ready; ConditionStatus:True                             9m58s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True
-  Normal   RestartNodes                                                      9m58s  KubeDB Ops-manager Operator  Successfully restarted all the nodes
-  Normal   ResumeDatabase                                                    9m58s  KubeDB Ops-manager Operator  Resuming PostgreSQL demo/quick-postgres
-  Normal   ResumeDatabase                                                    9m58s  KubeDB Ops-manager Operator  Successfully resumed PostgreSQL demo/quick-postgres
-  Normal   Successful                                                        9m58s  KubeDB Ops-manager Operator  Successfully Rotated Postgres Auth Secret for demo/quick-postgres
+  Normal   PauseDatabase                                                     6m20s  KubeDB Ops-manager Operator  Pausing MongoDB demo/mgo-quickstart
+  Normal   PauseDatabase                                                     6m20s  KubeDB Ops-manager Operator  Successfully paused MongoDB demo/mgo-quickstart
+  Normal   VersionUpdate                                                     6m16s  KubeDB Ops-manager Operator  Updating PetSets
+  Normal   VersionUpdate                                                     6m11s  KubeDB Ops-manager Operator  Successfully Updated PetSets
+  Warning  check is master; ConditionStatus:True; PodName:mgo-quickstart-1   6m6s   KubeDB Ops-manager Operator  check is master; ConditionStatus:True; PodName:mgo-quickstart-1
+  Warning  evict pod; ConditionStatus:True; PodName:mgo-quickstart-1         6m6s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:mgo-quickstart-1
+  Warning  check pod ready; ConditionStatus:False; PodName:mgo-quickstart-1  6m6s   KubeDB Ops-manager Operator  check pod ready; ConditionStatus:False; PodName:mgo-quickstart-1
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1   5m51s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1
+  Warning  check is master; ConditionStatus:True; PodName:mgo-quickstart-2   5m51s  KubeDB Ops-manager Operator  check is master; ConditionStatus:True; PodName:mgo-quickstart-2
+  Warning  evict pod; ConditionStatus:True; PodName:mgo-quickstart-2         5m51s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:mgo-quickstart-2
+  Warning  check pod ready; ConditionStatus:False; PodName:mgo-quickstart-2  5m51s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:False; PodName:mgo-quickstart-2
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1   5m46s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1   5m41s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1   5m36s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-2   5m36s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-2
+  Warning  check is master; ConditionStatus:True; PodName:mgo-quickstart-0   5m36s  KubeDB Ops-manager Operator  check is master; ConditionStatus:True; PodName:mgo-quickstart-0
+  Warning  step down; ConditionStatus:True; PodName:mgo-quickstart-0         5m36s  KubeDB Ops-manager Operator  step down; ConditionStatus:True; PodName:mgo-quickstart-0
+  Warning  evict pod; ConditionStatus:True; PodName:mgo-quickstart-0         5m36s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:mgo-quickstart-0
+  Warning  check pod ready; ConditionStatus:False; PodName:mgo-quickstart-0  5m36s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:False; PodName:mgo-quickstart-0
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1   5m31s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-2   5m31s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-2
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1   5m26s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-2   5m26s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-2
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1   5m21s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-1
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-2   5m21s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-2
+  Warning  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-0   5m21s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:mgo-quickstart-0
+  Normal   RestartReplicaSet                                                 5m21s  KubeDB Ops-manager Operator  Successfully Restarted ReplicaSet nodes
+  Normal   ResumeDatabase                                                    5m21s  KubeDB Ops-manager Operator  Resuming MongoDB demo/mgo-quickstart
+  Normal   ResumeDatabase                                                    5m21s  KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mgo-quickstart
+  Normal   Successful                                                        5m21s  KubeDB Ops-manager Operator  Successfully Rotate Auth
 
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get pg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
+$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
 "quick-mg-user-auth"
 $ kubectl get secret -n demo quick-mg-user-auth -o=jsonpath='{.data.username}' | base64 -d
-mg-admin⏎                                                                    
+root⏎                                                                    
 $ kubectl get secret -n demo quick-mg-user-auth -o=jsonpath='{.data.password}' | base64 -d
 mongodb-secret⏎                                                                                    
 ```
@@ -460,7 +514,7 @@ Also, there will be two more new keys in the secret that stores the previous cre
 $ kubectl get secret -n demo quick-mg-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 root⏎                                                                                                          
 $ kubectl get secret -n demo quick-mg-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-09wZM.)t8kpwKF5z⏎                                             
+09wZM.)t8kpwKF5z⏎                                              
 ```
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.

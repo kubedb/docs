@@ -303,12 +303,12 @@ The above output shows that the password has been changed successfully. The prev
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
-> Note: The `username` is fixed as `sa`. The `password` must include uppercase letters, lowercase letters, and numbers
+> Note: The `username` must be fixed as `sa`. The `password` must include uppercase letters, lowercase letters, and numbers
 ```shell
 $ kubectl create secret generic quick-mssql-user-auth -n demo \
-                                                                                      --type=kubernetes.io/basic-auth \
-                                                                                      --from-literal=username=sa \
-                                                                                      --from-literal=password=Mssqlserver2
+         --type=kubernetes.io/basic-auth \
+         --from-literal=username=sa \
+         --from-literal=password=Mssqlserver2
 secret/quick-mssql-user-auth created
 ```
 Now create a `MSSQLServerOpsRequest` with `RotateAuth` type. Below is the YAML of the `MSSQLServerOpsRequest` that we are going to create,
