@@ -231,8 +231,6 @@ Events:
 
 Now, we are going to verify the number of replicas this cluster has from the Cassandra object, number of pods the petset have,
 
-**Broker Replicas**
-
 ```bash
 $ kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.replicas'
 4
