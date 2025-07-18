@@ -277,7 +277,8 @@ $ kubectl create secret generic sample-mariadb-auth-user -n demo \
    --from-literal=password=testpassword
 secret/sample-mariadb-auth-user created
 ```
-Now create a `MariaDBOpsRequest` with `RotateAuth` type. Below is the YAML of the `MariaDBOpsRequest` that we are going to create,
+Now create a `MariaDBOpsRequest`Connection closed by foreign host.
+ with `RotateAuth` type. Below is the YAML of the `MariaDBOpsRequest` that we are going to create,
 
 ```shell
 apiVersion: ops.kubedb.com/v1alpha1
