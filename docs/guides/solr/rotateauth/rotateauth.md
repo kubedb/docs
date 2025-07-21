@@ -19,7 +19,7 @@ section_menu_id: guides
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/solr/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> This tutorial demonstrates how to rotate authentication credentials for Solr managed by KubeDB. Before you begin, ensure that the Solr CRD is installed and running. If not, follow [this guide](docs/guides/solr/quickstart/overview/index.md) to set it up.
+> This tutorial demonstrates how to rotate authentication credentials for Solr managed by KubeDB. Before you begin, ensure that the Solr CRD is installed and running. If not, follow [this guide](/docs/guides/solr/quickstart/overview/index.md) to set it up.
 
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.

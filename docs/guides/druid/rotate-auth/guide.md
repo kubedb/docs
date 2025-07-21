@@ -123,7 +123,6 @@ druid-quickstart   kubedb.com/v1alpha2   28.0.1    Ready    5m3s
 ```
 
 ## Verify authentication
-The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
 
 ````shell
 $ kubectl get druid -n demo druid-quickstart -ojson | jq .spec.authSecret.name
@@ -598,12 +597,10 @@ secret "druid-quickstart-auth" deleted
 
 ## Next Steps
 
-- Detail concepts of [Druid object](/docs/guides/Druid/concepts/Druid.md).
-- Initialize [Druid with Script](/docs/guides/Druid/initialization/using-script.md).
-- Monitor your Druid database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/Druid/monitoring/using-prometheus-operator.md).
-- Monitor your Druid database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/Druid/monitoring/using-builtin-prometheus.md).
-- Use [private Docker registry](/docs/guides/Druid/private-registry/using-private-registry.md) to deploy Druid with KubeDB.
-- Use [kubedb cli](/docs/guides/Druid/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Druid object](/docs/guides/Druid/concepts/Druid.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+- Learn how to use KubeDB to run Apache Druid cluster [here](/docs/guides/druid/README.md).
+- Deploy [dedicated topology cluster](/docs/guides/druid/clustering/guide/index.md) for Apache Druid
+- Monitor your Druid cluster with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/druid/monitoring/using-prometheus-operator.md).
+- Detail concepts of [DruidVersion object](/docs/guides/druid/concepts/druidversion.md).
 
+[//]: # (- Learn to use KubeDB managed Druid objects using [CLIs]&#40;/docs/guides/druid/cli/cli.md&#41;.)
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
