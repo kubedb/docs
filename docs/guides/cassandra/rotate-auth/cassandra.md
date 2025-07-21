@@ -101,7 +101,7 @@ $ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.username}' 
 admin
 
 $ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.password}' | base64 -d
-bT1qvxvpXWgnmDzu
+UajtzLlDwiizuHoV
 ```
 
 ### Create RotateAuth CassandraOpsRequest
@@ -131,8 +131,6 @@ Here,
 
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
-> **Note:** For combined cassandra, you just need to refer cassandra combined object in `databaseRef` field. To learn more about combined cassandra, please visit [here](/docs/guides/cassandra/clustering/combined-cluster/index.md).
-
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/rotate-auth/cassandra-rotate-auth-generated.yaml
 cassandraopsrequest.ops.kubedb.com/casops-rotate-auth-generated created
@@ -157,10 +155,10 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         CassandraOpsRequest
 Metadata:
-  Creation Timestamp:  2025-05-15T11:11:04Z
+  Creation Timestamp:  2025-07-21T05:30:38Z
   Generation:          1
-  Resource Version:    290550
-  UID:                 71ff7cec-f895-424c-b14f-9b957ccf9ccd
+  Resource Version:    76198
+  UID:                 d20026ed-ca6c-442f-add8-10122a3b317b
 Spec:
   Apply:  IfReady
   Database Ref:
@@ -169,91 +167,56 @@ Spec:
   Type:     RotateAuth
 Status:
   Conditions:
-    Last Transition Time:  2025-05-15T11:11:04Z
+    Last Transition Time:  2025-07-21T05:30:38Z
     Message:               Cassandra ops-request has started to rotate auth for cassandra nodes
     Observed Generation:   1
     Reason:                RotateAuth
     Status:                True
     Type:                  RotateAuth
-    Last Transition Time:  2025-05-15T11:11:07Z
+    Last Transition Time:  2025-07-21T05:30:41Z
     Message:               Successfully generated new credentials
     Observed Generation:   1
     Reason:                UpdateCredential
     Status:                True
     Type:                  UpdateCredential
-    Last Transition Time:  2025-05-15T11:11:15Z
-    Message:               successfully reconciled the Cassandra with new auth credentials and configuration
+    Last Transition Time:  2025-07-21T05:30:46Z
+    Message:               successfully reconciled the Cassandra with updated version
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2025-05-15T11:11:20Z
-    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-controller-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--cassandra-prod-controller-0
-    Last Transition Time:  2025-05-15T11:11:20Z
-    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--cassandra-prod-controller-0
-    Last Transition Time:  2025-05-15T11:11:55Z
-    Message:               check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--cassandra-prod-controller-0
-    Last Transition Time:  2025-05-15T11:12:00Z
-    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-controller-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--cassandra-prod-controller-1
-    Last Transition Time:  2025-05-15T11:12:00Z
-    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--cassandra-prod-controller-1
-    Last Transition Time:  2025-05-15T11:12:35Z
-    Message:               check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--cassandra-prod-controller-1
-    Last Transition Time:  2025-05-15T11:12:40Z
-    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-broker-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--cassandra-prod-broker-0
-    Last Transition Time:  2025-05-15T11:12:40Z
-    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--cassandra-prod-broker-0
-    Last Transition Time:  2025-05-15T11:13:15Z
-    Message:               check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--cassandra-prod-broker-0
-    Last Transition Time:  2025-05-15T11:13:20Z
-    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-broker-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--cassandra-prod-broker-1
-    Last Transition Time:  2025-05-15T11:13:20Z
-    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--cassandra-prod-broker-1
-    Last Transition Time:  2025-05-15T11:13:55Z
-    Message:               check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--cassandra-prod-broker-1
-    Last Transition Time:  2025-05-15T11:14:00Z
+    Last Transition Time:  2025-07-21T05:33:36Z
     Message:               Successfully restarted all nodes
     Observed Generation:   1
     Reason:                RestartNodes
     Status:                True
     Type:                  RestartNodes
-    Last Transition Time:  2025-05-15T11:14:00Z
+    Last Transition Time:  2025-07-21T05:30:51Z
+    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--cassandra-prod-rack-r0-0
+    Last Transition Time:  2025-07-21T05:30:51Z
+    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--cassandra-prod-rack-r0-0
+    Last Transition Time:  2025-07-21T05:30:56Z
+    Message:               running pod; ConditionStatus:False
+    Observed Generation:   1
+    Status:                False
+    Type:                  RunningPod
+    Last Transition Time:  2025-07-21T05:31:36Z
+    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--cassandra-prod-rack-r0-1
+    Last Transition Time:  2025-07-21T05:31:36Z
+    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--cassandra-prod-rack-r0-1
+    Last Transition Time:  2025-07-21T05:33:36Z
     Message:               Successfully completed reconfigure cassandra
     Observed Generation:   1
     Reason:                Successful
@@ -262,31 +225,24 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                                     Age    From                         Message
-  ----     ------                                                                     ----   ----                         -------
-  Normal   Starting                                                                   3m51s  KubeDB Ops-manager Operator  Start processing for CassandraOpsRequest: demo/casops-rotate-auth-generated
-  Normal   Starting                                                                   3m51s  KubeDB Ops-manager Operator  Pausing Cassandra databse: demo/cassandra-prod
-  Normal   Successful                                                                 3m51s  KubeDB Ops-manager Operator  Successfully paused Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-rotate-auth-generated
-  Normal   UpdatePetSets                                                              3m40s  KubeDB Ops-manager Operator  successfully reconciled the Cassandra with new auth credentials and configuration
-  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-controller-0             3m35s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-controller-0
-  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-0           3m35s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-0
-  Warning  check pod running; ConditionStatus:False; PodName:cassandra-prod-controller-0  3m30s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:cassandra-prod-controller-0
-  Warning  check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-0   3m     KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-0
-  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-controller-1             2m55s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-controller-1
-  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-1           2m55s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-1
-  Warning  check pod running; ConditionStatus:False; PodName:cassandra-prod-controller-1  2m50s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:cassandra-prod-controller-1
-  Warning  check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-1   2m20s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-1
-  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-broker-0                 2m15s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-broker-0
-  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-0               2m15s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-0
-  Warning  check pod running; ConditionStatus:False; PodName:cassandra-prod-broker-0      2m10s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:cassandra-prod-broker-0
-  Warning  check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-0       100s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-0
-  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-broker-1                 95s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-broker-1
-  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-1               95s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-1
-  Warning  check pod running; ConditionStatus:False; PodName:cassandra-prod-broker-1      90s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:cassandra-prod-broker-1
-  Warning  check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-1       60s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-1
-  Normal   RestartNodes                                                               55s    KubeDB Ops-manager Operator  Successfully restarted all nodes
-  Normal   Starting                                                                   55s    KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
-  Normal   Successful                                                                 55s    KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-rotate-auth-generated
+  Type     Reason                                                             Age    From                         Message
+  ----     ------                                                             ----   ----                         -------
+  Normal   Starting                                                           6m11s  KubeDB Ops-manager Operator  Start processing for CassandraOpsRequest: demo/casops-rotate-auth-generated
+  Normal   Starting                                                           6m11s  KubeDB Ops-manager Operator  Pausing Cassandra databse: demo/cassandra-prod
+  Normal   Successful                                                         6m11s  KubeDB Ops-manager Operator  Successfully paused Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-rotate-auth-generated
+  Normal   UpdatePetSets                                                      6m3s   KubeDB Ops-manager Operator  successfully reconciled the Cassandra with updated version
+  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0    5m58s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0
+  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0  5m58s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0
+  Warning  running pod; ConditionStatus:False                                 5m53s  KubeDB Ops-manager Operator  running pod; ConditionStatus:False
+  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1    5m13s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1
+  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1  5m13s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1
+  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0    4m33s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0
+  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0  4m33s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0
+  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1    3m53s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1
+  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1  3m53s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1
+  Normal   RestartNodes                                                       3m13s  KubeDB Ops-manager Operator  Successfully restarted all nodes
+  Normal   Starting                                                           3m13s  KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
+  Normal   Successful                                                         3m13s  KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-rotate-auth-generated
 ```
 
 #### Verify Password is changed
@@ -301,16 +257,16 @@ $ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.username}' 
 admin
 
 $ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.password}' | base64 -d
-al9jY2xvYW5pbmc=
+t0jL7;5CFWhqn~3o
 ```
 
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.username.prev}' | base64 -d
+$ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath="{.data.username\.prev}" | base64 -d
 admin
-$ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.password.prev}' | base64 -d
-zvrFXkStB~9A!NTC
+$ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath="{.data.password\.prev}" | base64 -d
+UajtzLlDwiizuHoV
 ```
 
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
@@ -366,7 +322,7 @@ Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following comm
 ```bash
 $ kubectl get cassandraopsrequest -n demo
 NAME                          TYPE         STATUS       AGE
-casops-rotate-auth-generated   RotateAuth   Successful   83m
+casops-rotate-auth-generated   RotateAuth   Successful   53m
 casops-rotate-auth-user        RotateAuth   Successful   2m58s
 ```
 
@@ -381,10 +337,10 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         CassandraOpsRequest
 Metadata:
-  Creation Timestamp:  2025-05-15T12:31:13Z
+  Creation Timestamp:  2025-07-21T05:47:56Z
   Generation:          1
-  Resource Version:    310786
-  UID:                 13513a65-ac25-4667-8a11-80e356500c53
+  Resource Version:    78421
+  UID:                 63a3baf4-f0da-4b74-a883-0d374168bf92
 Spec:
   Apply:  IfReady
   Authentication:
@@ -396,91 +352,56 @@ Spec:
   Type:     RotateAuth
 Status:
   Conditions:
-    Last Transition Time:  2025-05-15T12:31:13Z
+    Last Transition Time:  2025-07-21T05:49:26Z
     Message:               Cassandra ops-request has started to rotate auth for cassandra nodes
     Observed Generation:   1
     Reason:                RotateAuth
     Status:                True
     Type:                  RotateAuth
-    Last Transition Time:  2025-05-15T12:31:16Z
+    Last Transition Time:  2025-07-21T05:49:29Z
     Message:               Successfully referenced the user provided authSecret
     Observed Generation:   1
     Reason:                UpdateCredential
     Status:                True
     Type:                  UpdateCredential
-    Last Transition Time:  2025-05-15T12:31:24Z
-    Message:               successfully reconciled the Cassandra with new auth credentials and configuration
+    Last Transition Time:  2025-07-21T05:49:34Z
+    Message:               successfully reconciled the Cassandra with updated version
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2025-05-15T12:31:29Z
-    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-controller-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--cassandra-prod-controller-0
-    Last Transition Time:  2025-05-15T12:31:29Z
-    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--cassandra-prod-controller-0
-    Last Transition Time:  2025-05-15T12:32:04Z
-    Message:               check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--cassandra-prod-controller-0
-    Last Transition Time:  2025-05-15T12:32:09Z
-    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-controller-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--cassandra-prod-controller-1
-    Last Transition Time:  2025-05-15T12:32:09Z
-    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--cassandra-prod-controller-1
-    Last Transition Time:  2025-05-15T12:32:44Z
-    Message:               check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--cassandra-prod-controller-1
-    Last Transition Time:  2025-05-15T12:32:49Z
-    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-broker-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--cassandra-prod-broker-0
-    Last Transition Time:  2025-05-15T12:32:49Z
-    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--cassandra-prod-broker-0
-    Last Transition Time:  2025-05-15T12:33:24Z
-    Message:               check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--cassandra-prod-broker-0
-    Last Transition Time:  2025-05-15T12:33:29Z
-    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-broker-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--cassandra-prod-broker-1
-    Last Transition Time:  2025-05-15T12:33:29Z
-    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--cassandra-prod-broker-1
-    Last Transition Time:  2025-05-15T12:34:04Z
-    Message:               check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--cassandra-prod-broker-1
-    Last Transition Time:  2025-05-15T12:34:09Z
+    Last Transition Time:  2025-07-21T05:52:19Z
     Message:               Successfully restarted all nodes
     Observed Generation:   1
     Reason:                RestartNodes
     Status:                True
     Type:                  RestartNodes
-    Last Transition Time:  2025-05-15T12:34:09Z
+    Last Transition Time:  2025-07-21T05:49:39Z
+    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--cassandra-prod-rack-r0-0
+    Last Transition Time:  2025-07-21T05:49:39Z
+    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--cassandra-prod-rack-r0-0
+    Last Transition Time:  2025-07-21T05:49:44Z
+    Message:               running pod; ConditionStatus:False
+    Observed Generation:   1
+    Status:                False
+    Type:                  RunningPod
+    Last Transition Time:  2025-07-21T05:50:19Z
+    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--cassandra-prod-rack-r0-1
+    Last Transition Time:  2025-07-21T05:50:19Z
+    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--cassandra-prod-rack-r0-1
+    Last Transition Time:  2025-07-21T05:52:19Z
     Message:               Successfully completed reconfigure cassandra
     Observed Generation:   1
     Reason:                Successful
@@ -488,32 +409,93 @@ Status:
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-Events:
-  Type     Reason                                                                     Age    From                         Message
-  ----     ------                                                                     ----   ----                         -------
-  Normal   Starting                                                                   3m17s  KubeDB Ops-manager Operator  Start processing for CassandraOpsRequest: demo/casops-rotate-auth-user
-  Normal   Starting                                                                   3m17s  KubeDB Ops-manager Operator  Pausing Cassandra databse: demo/cassandra-prod
-  Normal   Successful                                                                 3m17s  KubeDB Ops-manager Operator  Successfully paused Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-rotate-auth-user
-  Normal   UpdatePetSets                                                              3m6s   KubeDB Ops-manager Operator  successfully reconciled the Cassandra with new auth credentials and configuration
-  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-controller-0             3m1s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-controller-0
-  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-0           3m1s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-0
-  Warning  check pod running; ConditionStatus:False; PodName:cassandra-prod-controller-0  2m56s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:cassandra-prod-controller-0
-  Warning  check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-0   2m26s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-0
-  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-controller-1             2m21s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-controller-1
-  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-1           2m21s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-controller-1
-  Warning  check pod running; ConditionStatus:False; PodName:cassandra-prod-controller-1  2m16s  KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:cassandra-prod-controller-1
-  Warning  check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-1   106s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:cassandra-prod-controller-1
-  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-broker-0                 101s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-broker-0
-  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-0               101s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-0
-  Warning  check pod running; ConditionStatus:False; PodName:cassandra-prod-broker-0      96s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:cassandra-prod-broker-0
-  Warning  check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-0       66s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-0
-  Warning  get pod; ConditionStatus:True; PodName:cassandra-prod-broker-1                 61s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:cassandra-prod-broker-1
-  Warning  evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-1               61s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:cassandra-prod-broker-1
-  Warning  check pod running; ConditionStatus:False; PodName:cassandra-prod-broker-1      56s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:cassandra-prod-broker-1
-  Warning  check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-1       26s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:cassandra-prod-broker-1
-  Normal   RestartNodes                                                               21s    KubeDB Ops-manager Operator  Successfully restarted all nodes
-  Normal   Starting                                                                   21s    KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
-  Normal   Successful                                                                 21s    KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-rotate-auth-user
+Events:                    <none>
+sabbir@sabbir-pc ~/g/s/k/docs (cas)> kubectl get cassandraopsrequest
+No resources found in default namespace.
+sabbir@sabbir-pc ~/g/s/k/docs (cas)> kubectl get cassandraopsrequest -n demo
+NAME                      TYPE         STATUS       AGE
+casops-rotate-auth-user   RotateAuth   Successful   6h5m
+sabbir@sabbir-pc ~/g/s/k/docs (cas)> kubectl describe cassandraopsrequest -n demo casops-rotate-auth-user 
+Name:         casops-rotate-auth-user
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         CassandraOpsRequest
+Metadata:
+  Creation Timestamp:  2025-07-21T05:47:56Z
+  Generation:          1
+  Resource Version:    78421
+  UID:                 63a3baf4-f0da-4b74-a883-0d374168bf92
+Spec:
+  Apply:  IfReady
+  Authentication:
+    Secret Ref:
+      Name:  cassandra-user-auth
+  Database Ref:
+    Name:   cassandra-prod
+  Timeout:  5m
+  Type:     RotateAuth
+Status:
+  Conditions:
+    Last Transition Time:  2025-07-21T05:49:26Z
+    Message:               Cassandra ops-request has started to rotate auth for cassandra nodes
+    Observed Generation:   1
+    Reason:                RotateAuth
+    Status:                True
+    Type:                  RotateAuth
+    Last Transition Time:  2025-07-21T05:49:29Z
+    Message:               Successfully referenced the user provided authSecret
+    Observed Generation:   1
+    Reason:                UpdateCredential
+    Status:                True
+    Type:                  UpdateCredential
+    Last Transition Time:  2025-07-21T05:49:34Z
+    Message:               successfully reconciled the Cassandra with updated version
+    Observed Generation:   1
+    Reason:                UpdatePetSets
+    Status:                True
+    Type:                  UpdatePetSets
+    Last Transition Time:  2025-07-21T05:52:19Z
+    Message:               Successfully restarted all nodes
+    Observed Generation:   1
+    Reason:                RestartNodes
+    Status:                True
+    Type:                  RestartNodes
+    Last Transition Time:  2025-07-21T05:49:39Z
+    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--cassandra-prod-rack-r0-0
+    Last Transition Time:  2025-07-21T05:49:39Z
+    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--cassandra-prod-rack-r0-0
+    Last Transition Time:  2025-07-21T05:49:44Z
+    Message:               running pod; ConditionStatus:False
+    Observed Generation:   1
+    Status:                False
+    Type:                  RunningPod
+    Last Transition Time:  2025-07-21T05:50:19Z
+    Message:               get pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPod--cassandra-prod-rack-r0-1
+    Last Transition Time:  2025-07-21T05:50:19Z
+    Message:               evict pod; ConditionStatus:True; PodName:cassandra-prod-rack-r0-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--cassandra-prod-rack-r0-1
+    Last Transition Time:  2025-07-21T05:52:19Z
+    Message:               Successfully completed reconfigure cassandra
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:                    <none>
 ```
 
 #### Verify Password is changed
@@ -534,10 +516,10 @@ cassandra-secret
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get secret -n demo cassandra-user-auth -o=jsonpath='{.data.username.prev}' | base64 -d
+$ kubectl get secret -n demo cassandra-user-auth -o=jsonpath="{.data.username\.prev}" | base64 -d
 admin
-$ kubectl get secret -n demo cassandra-user-auth -o=jsonpath='{.data.password.prev}' | base64 -d
-al9jY2xvYW5pbmc=
+$ kubectl get secret -n demo cassandra-user-auth -o=jsonpath="{.data.password\.prev}" | base64 -d
+rM4OJfqoTzvKMAx8
 ```
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
