@@ -18,7 +18,7 @@ section_menu_id: guides
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the existing secret with the new credential, and does not provide the secret details directly to the user.
 2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password`, and then reference this Secret in the `PgpoolOpsRequest`.
 
-> Note: Before you begin, you have to create `Pgpool` CRD with the help of [this](docs/examples/pgpool/quickstart/quickstart.md).
+> Note: Before you begin, you have to create `Pgpool` CRD with the help of [this](docs/guides/pgpool/quickstart/quickstart.md).
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
 
