@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is Cassandra
 
-`Cassandra` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Cassandra](https://cassandra.apache.org/) in a Kubernetes native way. You only need to describe the desired database configuration in a `Cassandra`object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`Cassandra` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Cassandra](https://cassandra.apache.org/) in a Kubernetes native way. You only need to describe the desired database configuration in a `Cassandra` object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## Cassandra Spec
 

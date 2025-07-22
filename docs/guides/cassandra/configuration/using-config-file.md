@@ -124,7 +124,7 @@ Now, we will check if the cassandra has started with the custom configuration we
 Now, you can exec into the cassandra pod and find if the custom configuration is there,
 
 ```bash
-$kubectl exec -it -n demo cas-custom-config-rack-r0-0 -- bash
+$ kubectl exec -it -n demo cas-custom-config-rack-r0-0 -- bash
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 [cassandra@cas-custom-config-rack-r0-0 /]$ cat /etc/cassandra/cassandra.yaml | grep request_timeout
 read_request_timeout: 6000ms

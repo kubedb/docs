@@ -3,7 +3,7 @@ title: Update Version of Cassandra
 menu:
   docs_{{ .version }}:
     identifier: cas-update-version-cassandra
-    name: Cassandra
+    name: Cassandra Update Version
     parent: cas-update-version
     weight: 30
 menu_name: docs_{{ .version }}
@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Update version of Cassandra
 
-This guide will show you how to use `KubeDB` Ops-manager operator to update the version of `Cassandra` Combined or Topology.
+This guide will show you how to use `KubeDB` Ops-manager operator to update the version of `Cassandra` Topology.
 
 ## Before You Begin
 
