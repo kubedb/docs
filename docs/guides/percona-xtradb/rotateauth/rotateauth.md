@@ -535,7 +535,7 @@ secret "quick-pcx-user-auth " deleted
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/PerconaXtraDB/backup/overview/index.md) SQL Server using KubeStash.
-- Want to set up SQL Server Availability Group clusters? Check how to [Configure SQL Server Availability Gruop Cluster](/docs/guides/PerconaXtraDB/clustering/ag_cluster.md)
-- Detail concepts of [PerconaXtraDB object](/docs/guides/PerconaXtraDB/concepts/PerconaXtraDB.md).
+- Learn about [backup and restore](/docs/guides/perconaXtraDB/backup/overview/index.md) SQL Server using KubeStash.
+- Want to set up SQL Server Availability Group clusters? Check how to [Configure SQL Server Availability Gruop Cluster](/docs/guides/perconaXtraDB/clustering/ag_cluster.md)
+- Detail concepts of [PerconaXtraDB object](/docs/guides/perconaXtraDB/concepts/perconaXtraDB.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
