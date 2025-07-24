@@ -1,5 +1,5 @@
 ---
-title: Postgres Failover and DR Scenarios
+title: mysql Failover and DR Scenarios
 menu:
   docs_{{ .version }}:
     identifier: guides-mysql-failure-and-disaster-recovery
@@ -16,7 +16,14 @@ section_menu_id: guides
 
 ## A Guide to KubeDB's High Availability and Auto-Failover
 
-In today’s always-on digital landscape, database downtime can lead to significant business disruption, data loss, or degraded user experience. Ensuring continuous database availability is especially important for mission-critical applications running in dynamic environments like Kubernetes. KubeDB addresses this need by offering built-in support for high availability and automated failover for MySQL. It continuously monitors the health of database nodes and automatically detects failures. When a primary node becomes unavailable, the system quickly promotes a healthy replica to maintain service continuity — all without manual intervention. This seamless failover mechanism ensures that your MySQL workloads remain highly available, resilient, and ready to scale in production environments.
+In today’s always-on digital landscape, database downtime can lead to significant business disruption,
+data loss, or degraded user experience. Ensuring continuous database availability is especially important
+for mission-critical applications running in dynamic environments like Kubernetes. KubeDB addresses this 
+need by offering built-in support for high availability and automated failover for MySQL. It continuously
+monitors the health of database nodes and automatically detects failures. When a primary node becomes 
+unavailable, the system quickly promotes a healthy replica to maintain service continuity — all without 
+manual intervention. This seamless failover mechanism ensures that your MySQL workloads remain highly 
+available, resilient, and ready to scale in production environments.
 This article will guide you through KubeDB's automated failover capabilities for MySQL. We will set up an HA cluster and then simulate a leader failure to see KubeDB's auto-recovery mechanism in action.
 
 > You will see how fast the failover happens when it's truly necessary. Failover in KubeDB-managed MySQL will generally happen within 2–10 seconds depending on your cluster networking. There is an exception scenario that we discussed later in this doc where failover might take a bit longer up to 45 seconds. But that is a bit rare though.
@@ -77,22 +84,23 @@ mysql.kubedb.com/restore-mysql created
 
 You can monitor on another terminal the status until all pods are ready:
 ```shell
-watch kubectl get pg,petset,pods -n demo
+watch kubectl get my,petset,pods -n demo
 ```
 See the database is ready.
 
 ```shell
-➤ kubectl get pg,petset,pods -n demo
+➤ kubectl get my,petset,pods -n demo
 NAME                             VERSION   STATUS   AGE
-postgres.kubedb.com/pg-ha-demo   17.2      Ready    4m45s
+mysql.kubedb.com/restore-mysql   8.2.0     Ready    19h
 
-NAME                                      AGE
-petset.apps.k8s.appscode.com/pg-ha-demo   4m41s
+NAME                                         AGE
+petset.apps.k8s.appscode.com/restore-mysql   19h
 
-NAME               READY   STATUS    RESTARTS   AGE
-pod/restore-mysql-0   2/2     Running   0          4m41s
-pod/restore-mysql-1   2/2     Running   0          2m45s
-pod/restore-mysql-2   2/2     Running   0          2m39s
+NAME                  READY   STATUS    RESTARTS      AGE
+pod/restore-mysql-0   2/2     Running   3 (24m ago)   16h
+pod/restore-mysql-1   2/2     Running   2 (24m ago)   16h
+pod/restore-mysql-2   2/2     Running   3 (24m ago)   16h
+
 ```
 
 Inspect who is primary and who is standby.
@@ -152,7 +160,8 @@ mysql> show Databases;
 
 ```
 
-Verify that the table has been created on the standby nodes. Note that standby pods have read-only access, so you won't be able to perform any write operations.
+Verify that the table has been created on the standby nodes. Note that standby pods have read-only access, 
+so you won't be able to perform any write operations.
 
 ```shell
 ➤  kubectl exec -it -n demo restore-mysql-1  -- bash
@@ -206,9 +215,13 @@ Now current running primary is `restore-mysql-0`. Let's open another terminal an
 watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
 
 ```
-It will show current pg cluster roles.
+It will show current mysql cluster roles like that:
 
-![img.png](/docs/guides/postgres/failure-and-disaster-recovery/img.png)
+```shell
+restore-mysql-0 primary
+restore-mysql-1 standby
+restore-mysql-2 standby
+```
 
 #### Case 1: Delete the current primary
 
@@ -217,12 +230,16 @@ Lets delete the current primary and see how the role change happens almost immed
 ```shell
 ➤  kubectl delete pods -n demo restore-mysql-0 
 pod "restore-mysql-0" deleted
+```
+You see almost immediately the failover happened. 
+```shell
+restore-mysql-0 
+restore-mysql-1 primary
+restore-mysql-2 standby
 
 ```
 
-![img_1.png](/docs/guides/postgres/failure-and-disaster-recovery/img_1.png)
-
-You see almost immediately the failover happened. Here's what happened internallyis mainly managed by
+Here's what happened internally is mainly managed by
 MySQL group Replication like this steps:
 
 1.Cluster Formation
@@ -273,14 +290,17 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 mysql> CREATE DATABASE hi;
 Query OK, 1 row affected (0.16 sec)
 
-
 ```
-
 
 You will see the deleted pod (restore-mysql-0) is brought back by the kubedb operator and it is now assigned to standby role.
 
 
-![img_2.png](/docs/guides/postgres/failure-and-disaster-recovery/img_2.png)
+```shell
+restore-mysql-0 standby
+restore-mysql-1 primary
+restore-mysql-2 standby
+
+```
 
 Lets check if the standby(`restore-mysql-0`) got the updated data from new primary `restore-mysql-1`.
 
@@ -316,7 +336,6 @@ mysql> Show Databases;
 +--------------------+
 7 rows in set (0.12 sec)
 
-
 ```
 
 #### Case 2: Delete the current primary and One replica
@@ -329,12 +348,21 @@ pod "restore-mysql-2" deleted
 ```
 Again we can see the failover happened pretty quickly.
 
-![img_3.png](/docs/guides/postgres/failure-and-disaster-recovery/img_3.png)
+```shell
+restore-mysql-0 primary
+restore-mysql-1 
+restore-mysql-2
+
+```
 
 After 10-30 second, the deleted pods will be back and will have its role.
 
-![img_4.png](/docs/guides/postgres/failure-and-disaster-recovery/img_4.png)
+```shell
+restore-mysql-0 primary
+restore-mysql-1 standby
+restore-mysql-2 standby
 
+```
 Lets validate the cluster state from new primary(`restore-mysql-0`).
 
 ```shell
@@ -378,11 +406,20 @@ pod "restore-mysql-2" deleted
 
 ```
 
-![img_5.png](/docs/guides/postgres/failure-and-disaster-recovery/img_5.png)
+```shell
+restore-mysql-0 primary
+restore-mysql-1 
+restore-mysql-2
+```
 
 Shortly both of the pods will be back with its role.
 
-![img_6.png](/docs/guides/postgres/failure-and-disaster-recovery/img_6.png)
+```shell
+restore-mysql-0 primary
+restore-mysql-1 standby
+restore-mysql-2 standby
+
+```
 
 Lets verify cluster state.
 ```shell
@@ -412,7 +449,6 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 +---------------------------------------------+-------------+--------------+-------------+
 3 rows in set (0.01 sec)
 
-
 ```
 
 #### Case 4: Delete both primary and all replicas
@@ -426,16 +462,24 @@ pod "restore-mysql-1" deleted
 pod "restore-mysql-2" deleted
 
 ```
-![img_7.png](/docs/guides/postgres/failure-and-disaster-recovery/img_7.png)
+```bash
+restore-mysql-0 
+restore-mysql-1
+restore-mysql-2
+```
 
 Within 20-30 second, all of the pod should be back.
 
-![img_8.png](/docs/guides/postgres/failure-and-disaster-recovery/img_8.png)
+```shell
+restore-mysql-0 primary
+restore-mysql-1 standby
+restore-mysql-2 standby
+```
 
 Lets verify the cluster state now.
 
 ```shell
-➤kubectl exec -it -n demo restore-mysql-0  -- bash
+➤ kubectl exec -it -n demo restore-mysql-0  -- bash
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -464,122 +508,77 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 ```
 
 
-## A Guide to Postgres Backup And Restore
+## A Guide to mysql Backup And Restore
 
 You can configure Backup and Restore following the below documentation.
 
-[Backup and Restore](/docs/guides/postgres/backup)
+[Backup and Restore](/docs/guides/mysql/backup)
 
-Youtube video Links: [link](https://www.youtube.com/watch?v=j9y5MsB-guQ)
 
-[//]: # ()
-[//]: # (## A Guide to Postgres PITR)
+## A Guide to mysql PITR
 
-[//]: # (Documentaion Link: [PITR]&#40;/docs/guides/postgres/pitr&#41;)
+Documentaion Link: [PITR](/docs/guides/mysql/pitr)
 
-[//]: # ()
-[//]: # (Concepts and Demo: [link]&#40;https://www.youtube.com/watch?v=gR5UdN6Y99c&#41;)
 
-[//]: # ()
-[//]: # (Basic Demo: [link]&#40;https://www.youtube.com/watch?v=BdMSVjNQtCA&#41;)
+## A Guide to Handling mysql Storage
 
-[//]: # ()
-[//]: # (Full Demo: [link]&#40;https://www.youtube.com/watch?v=KAl3rdd8i6k&#41;)
 
-[//]: # ()
-[//]: # (## A Guide to Handling Postgres Storage)
+It is often possible that your database storage become full and your database has stopped working. We have got you covered. You just apply a VolumeExpansion `mysqlOpsRequest` and your database storage will be increased, and the database will be ready to use again.
 
-[//]: # ()
-[//]: # (It is often possible that your database storage become full and your database has stopped working. We have got you covered. You just apply a VolumeExpansion `PostgresOpsRequest` and your database storage will be increased, and the database will be ready to use again.)
 
-[//]: # ()
-[//]: # (### Disaster Scenario and Recovery)
+### Disaster Scenario and Recovery
 
-[//]: # ()
-[//]: # (#### Scenario)
 
-[//]: # ()
-[//]: # (You deploy a `MySQL` database. The database was running fine. Someday, your database storage becomes full. As your postgres process can't write to the filesystem,)
+#### Scenario
 
-[//]: # (clients won't be able to connect to the database. Your database status will be `Not Ready`.)
 
-[//]: # ()
-[//]: # (#### Recovery)
+You deploy a `MySQL` database. The database was running fine. Someday, your database storage becomes full. As your mysql process can't write to the filesystem,
 
-[//]: # ()
-[//]: # (In order to recover from this, you can create a `VolumeExpansion` `PostgresOpsRequest` with expanded resource requests.)
+clients won't be able to connect to the database. Your database status will be `Not Ready`.
 
-[//]: # (As soon as you create this, KubeDB will trigger the necessary steps to expand your volume based on your specifications on the `PostgresOpsRequest` manifest. A sample `PostgresOpsRequest` manifest for `VolumeExpansion` is given below:)
 
-[//]: # ()
-[//]: # (```yaml)
+#### Recovery
 
-[//]: # (apiVersion: ops.kubedb.com/v1alpha1)
 
-[//]: # (kind: PostgresOpsRequest)
+In order to recover from this, you can create a `VolumeExpansion` `mysqlOpsRequest` with expanded resource requests.
 
-[//]: # (metadata:)
+As soon as you create this, KubeDB will trigger the necessary steps to expand your volume based on your specifications 
+on the `mysqlOpsRequest` manifest. A sample `mysqlOpsRequest` manifest for `VolumeExpansion` is given below:
 
-[//]: # (  name: pgops-vol-exp-ha-demo)
 
-[//]: # (  namespace: demo)
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: my-online-volume-expansion
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: restore-mysql
+  volumeExpansion:
+    mode: "Offline"
+    mysql: 2Gi
 
-[//]: # (spec:)
+```
 
-[//]: # (  apply: Always)
+For more details, please check the full section [here](/docs/guides/mysql/volume-expansion/overview/index.md).
 
-[//]: # (  databaseRef:)
 
-[//]: # (    name: pg-ha-demo)
+> **Note**: There are two ways to update your volume: 1.Online 2.Offline. Which Mode to choose?
 
-[//]: # (  type: VolumeExpansion)
+> It depends on your `StorageClass`. If your storageclass supports online volume expansion, you can go with it. Otherwise, you can go with `Ofline` Volume Expansion.
 
-[//]: # (  volumeExpansion:)
 
-[//]: # (    mode: Online # see the notes, your storageclass must support this mode)
+## CleanUp
 
-[//]: # (    postgres: 20Gi # expanded resource)
 
-[//]: # (```)
+```shell
+➤ kubectl delete my -n demo restore-mysql
+```
 
-[//]: # ()
-[//]: # ()
-[//]: # (For more details, please check the full section [here]&#40;/docs/guides/postgres/volume-expansion/Overview/overview.md&#41;.)
+### Next Steps
 
-[//]: # ()
-[//]: # (> **Note**: There are two ways to update your volume: 1.Online 2.Offline. Which Mode to choose?)
-
-[//]: # (> It depends on your `StorageClass`. If your storageclass supports online volume expansion, you can go with it. Otherwise, you can go with `Ofline` Volume Expansion.)
-
-[//]: # ()
-[//]: # (## CleanUp)
-
-[//]: # ()
-[//]: # (```shell)
-
-[//]: # (kubectl delete pg -n demo pg-ha-demo)
-
-[//]: # (```)
-
-[//]: # ()
-[//]: # ()
-[//]: # (## Next Steps)
-
-[//]: # ()
-[//]: # (- Learn about [backup and restore]&#40;/docs/guides/postgres/backup/stash/overview/index.md&#41; MySQL database using Stash.)
-
-[//]: # (- Learn about initializing [MySQL with Script]&#40;/docs/guides/postgres/initialization/script_source.md&#41;.)
-
-[//]: # (- Learn about [custom PostgresVersions]&#40;/docs/guides/postgres/custom-versions/setup.md&#41;.)
-
-[//]: # (- Want to setup MySQL cluster? Check how to [configure Highly Available MySQL Cluster]&#40;/docs/guides/postgres/clustering/ha_cluster.md&#41;)
-
-[//]: # (- Monitor your MySQL database with KubeDB using [built-in Prometheus]&#40;/docs/guides/postgres/monitoring/using-builtin-prometheus.md&#41;.)
-
-[//]: # (- Monitor your MySQL database with KubeDB using [Prometheus operator]&#40;/docs/guides/postgres/monitoring/using-prometheus-operator.md&#41;.)
-
-[//]: # (- Detail concepts of [Postgres object]&#40;/docs/guides/postgres/concepts/postgres.md&#41;.)
-
-[//]: # (- Use [private Docker registry]&#40;/docs/guides/postgres/private-registry/using-private-registry.md&#41; to deploy MySQL with KubeDB.)
-
-[//]: # (- Want to hack on KubeDB? Check our [contribution guidelines]&#40;/docs/CONTRIBUTING.md&#41;.)
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
+- Detail concepts of [MySQLDBVersion object](/docs/guides/mysql/concepts/catalog/index.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
