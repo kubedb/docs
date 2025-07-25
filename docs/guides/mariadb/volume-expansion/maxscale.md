@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # MaxScale Volume Expansion
 
-This guide will show you how to use `KubeDB` Enterprise operator to expand the volume of a MaxScale.
+This guide will show you how to use `KubeDB` Enterprise operator to expand the volume of MaxScale server.
 
 ## Before You Begin
 
@@ -299,4 +299,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 ```bash
 $ kubectl delete mariadb -n demo md-replication
 $ kubectl delete mariadbopsrequest -n demo maxscale-volume-expansion
+$ kubectl delete ns demo
 ```
