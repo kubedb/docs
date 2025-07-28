@@ -1,5 +1,5 @@
 ---
-title: Rotate Authentication MariaDB
+title: Rotate Authentication MariaDB 
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-rotate-authentication
@@ -34,9 +34,10 @@ section_menu_id: guides
   ```
 
 ## Create a MariaDB database
-KubeDB implements a MariaDB CRD to define the specification of a MariaDB database.
 
-You can apply this yaml file:
+KubeDB implements a `MariaDB` CRD to define the specification of a MariaDB database. Below is the `MariaDB` object created in this tutorial.
+
+`Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -57,17 +58,8 @@ spec:
   deletionPolicy: Delete
 ```
 
-Command:
-
-```shell
-$ kubectl apply -f mariabd.yaml 
-mariadb.kubedb.com/sample-mariadb created
-```
-
-Or, you can deploy by using command:
-
-```shell
-$ kubectl create -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb-v1.yaml
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb-v1.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 
@@ -134,7 +126,9 @@ If you can access the data table and run queries, it means the secrets are worki
 
 #### 1. Using operator generated credentials:
 
-In order to rotate authentication to the Postgres using operator generated, we have to create a `MariaDBOpsRequest` CRO with `RotateAuth` type. Below is the YAML of the `MariaDBOpsRequest` CRO that we are going to create,
+In order to rotate authentication to the `MariaDB` using operator generated, we have to create a 
+`MariaDBOpsRequest` CRO with `RotateAuth` type. Below is the YAML of the `MariaDBOpsRequest` CRO that we
+are going to create,
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MariaDBOpsRequest
@@ -150,7 +144,8 @@ spec:
 ```
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `sample-mariadb` cluster.
+- `spec.databaseRef.name` specifies that we are performing rotate authentication operation on 
+`sample-mariadb` database.
 - `spec.type` specifies that we are performing `RotateAuth` on MariaDB.
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
@@ -277,8 +272,7 @@ $ kubectl create secret generic sample-mariadb-auth-user -n demo \
    --from-literal=password=testpassword
 secret/sample-mariadb-auth-user created
 ```
-Now create a `MariaDBOpsRequest`Connection closed by foreign host.
- with `RotateAuth` type. Below is the YAML of the `MariaDBOpsRequest` that we are going to create,
+Now create a `MariaDBOpsRequest` with `RotateAuth` type. Below is the YAML of the `MariaDBOpsRequest` that we are going to create,
 
 ```shell
 apiVersion: ops.kubedb.com/v1alpha1
@@ -299,7 +293,7 @@ spec:
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `sample-mariadb`cluster.
-- `spec.type` specifies that we are performing `RotateAuth` on postgres.
+- `spec.type` specifies that we are performing `RotateAuth` on `MariaDB`.
 - `spec.authentication.secretRef.name` specifies that we are using `sample-mariadb-auth-user` as `spec.authSecret.name` for authentication.
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,

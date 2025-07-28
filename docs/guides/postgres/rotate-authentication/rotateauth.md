@@ -253,7 +253,8 @@ $ kubectl create secret generic quick-postgres-user-auth -n demo \
                                                 --from-literal=password=postgres-secret
  secret/quick-postgres-user-auth created
 ```
-Now create a `PostgresOpsRequest` with `RotateAuth` type. Below is the YAML of the `PostgresOpsRequest` that we are going to create,
+Now create a `PostgresOpsRequest` with `RotateAuth` type. Below is the YAML of the `PostgresOpsRequest` 
+that we are going to create,
 
 ```shell
 apiVersion: ops.kubedb.com/v1alpha1
