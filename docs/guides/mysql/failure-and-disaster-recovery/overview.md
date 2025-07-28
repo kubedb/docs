@@ -215,7 +215,6 @@ Now current running primary is `restore-mysql-0`. Let's open another terminal an
 
 ```shell
 watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
-
 ```
 It will show current mysql cluster roles like that:
 
@@ -230,7 +229,7 @@ restore-mysql-2 standby
 Lets delete the current primary and see how the role change happens almost immediately.
 
 ```shell
-➤  kubectl delete pods -n demo restore-mysql-0 
+➤ kubectl delete pods -n demo restore-mysql-0 
 pod "restore-mysql-0" deleted
 ```
 You see almost immediately the failover happened. 
@@ -238,7 +237,6 @@ You see almost immediately the failover happened.
 restore-mysql-0 
 restore-mysql-1 primary
 restore-mysql-2 standby
-
 ```
 
 Here's what happened internally is mainly managed by
@@ -281,7 +279,7 @@ A healthy replica is promoted as the new primary, and it resumes accepting write
 Now we know how failover is done, let's check if the new primary is working.
 
 ```shell
-➤  kubectl exec -it -n demo restore-mysql-1  -- bash
+➤ kubectl exec -it -n demo restore-mysql-1  -- bash
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -299,7 +297,6 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 mysql> CREATE DATABASE hi;
 Query OK, 1 row affected (0.16 sec)
-
 ```
 
 You will see the deleted pod (restore-mysql-0) is brought back by the kubedb operator and it is now assigned to standby role.
@@ -309,13 +306,12 @@ You will see the deleted pod (restore-mysql-0) is brought back by the kubedb ope
 restore-mysql-0 standby
 restore-mysql-1 primary
 restore-mysql-2 standby
-
 ```
 
 Lets check if the standby(`restore-mysql-0`) got the updated data from new primary `restore-mysql-1`.
 
 ```shell
-➤kubectl exec -it -n demo restore-mysql-1  -- bash
+➤ kubectl exec -it -n demo restore-mysql-1  -- bash
 
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
@@ -354,7 +350,6 @@ mysql> Show Databases;
 ➤ kubectl delete pods -n demo restore-mysql-1 restore-mysql-2
 pod "restore-mysql-1" deleted
 pod "restore-mysql-2" deleted
-
 ```
 Again we can see the failover happened pretty quickly.
 
@@ -364,7 +359,7 @@ restore-mysql-1
 restore-mysql-2
 ```
 
-After 10-30 second, the deleted pods will be back and will have its role.
+After 10-40 second, the deleted pods will be back and will have its role.
 
 ```shell
 restore-mysql-0 primary
@@ -374,7 +369,7 @@ restore-mysql-2 standby
 Lets validate the cluster state from new primary(`restore-mysql-0`).
 
 ```shell
-➤  kubectl exec -it -n demo restore-mysql-0  -- bash
+➤ kubectl exec -it -n demo restore-mysql-0  -- bash
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -408,7 +403,7 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 Let's delete both of the standby's.
 
 ```shell
-kubectl delete pods -n demo restore-mysql-1 restore-mysql-2
+➤ kubectl delete pods -n demo restore-mysql-1 restore-mysql-2
 pod "restore-mysql-1" deleted
 pod "restore-mysql-2" deleted
 
@@ -455,7 +450,6 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 | restore-mysql-2.restore-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
 +---------------------------------------------+-------------+--------------+-------------+
 3 rows in set (0.01 sec)
-
 ```
 
 #### Case 4: Delete both primary and all replicas
@@ -510,7 +504,6 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 | restore-mysql-2.restore-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
 +---------------------------------------------+-------------+--------------+-------------+
 3 rows in set (0.00 sec)
-
 ```
 
 
@@ -565,7 +558,6 @@ spec:
   volumeExpansion:
     mode: "Offline"
     mysql: 2Gi
-
 ```
 
 For more details, please check the full section [here](/docs/guides/mysql/volume-expansion/overview/index.md).
@@ -580,8 +572,9 @@ For more details, please check the full section [here](/docs/guides/mysql/volume
 
 
 ```shell
+# delete restore-mysql DB
 ➤ kubectl delete my -n demo restore-mysql
-# or you can delete the demo
+# or, you can delete the demo
 ➤ kubectl delete ns demo
 ```
 
