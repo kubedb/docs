@@ -2,7 +2,7 @@
 title: Rotate Authentication PgBouncer
 menu:
   docs_{{ .version }}:
-    identifier: pb-rotateauth
+    identifier: pb-rotateauthentication
     name: Rotate Authentication PgBouncer
     parent: pb-rotateauth
     weight: 10

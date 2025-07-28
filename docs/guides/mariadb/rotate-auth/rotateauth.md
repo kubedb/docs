@@ -2,7 +2,7 @@
 title: Rotate Authentication MariaDB
 menu:
   docs_{{ .version }}:
-    identifier: guides-mariadb-rotate-auth
+    identifier: guides-mariadb-rotate-authentication
     name: Rotate Authentication MariaDB
     parent: guides-mariadb-rotate-auth
     weight: 10

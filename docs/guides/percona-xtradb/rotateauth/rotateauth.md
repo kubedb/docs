@@ -2,7 +2,7 @@
 title: Rotate Authentication PerconaXtraDB
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-rotateauth
+    identifier: guides-perconaxtradb-rotateauthentiocation
     name: Rotate Authentication
     parent: guides-perconaxtradb-rotateauth
     weight: 10
