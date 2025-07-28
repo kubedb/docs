@@ -102,7 +102,7 @@ Here,
 Let's create the Cassandra CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/quickstart/cassandra-with-monitoring.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/quickstart/cassandra-quickstart.yaml
 cassandra.kubedb.com/cassandra-quickstart created
 ```
 

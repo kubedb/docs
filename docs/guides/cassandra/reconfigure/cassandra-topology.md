@@ -71,11 +71,10 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-topology-custom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-topology-custom-config-secret.yaml
 secret/cas-topology-custom-config created
 ```
 
-> **Note:** 
 
 In this section, we are going to create a Cassandra object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Cassandra` CR that we are going to create,
 
@@ -178,7 +177,7 @@ secret/new-cas-topology-custom-config created
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/new-cassandra-topology-custom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/new-cassandra-topology-custom-config-secret.yaml
 secret/new-cas-topology-custom-config created
 ```
 
@@ -212,7 +211,7 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-reconfigure-update-topology.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-reconfigure-update-topology-ops.yaml
 cassandraopsrequest.ops.kubedb.com/casops-reconfigure-topology created
 ```
 

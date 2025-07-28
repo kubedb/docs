@@ -1,0 +1,32 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Cassandra
+metadata:
+  name: cassandra-prod
+  namespace: demo
+spec:
+  version: 5.0.3
+  configSecret:
+    name: cas-topology-custom-config
+  topology:
+    rack:
+      - name: r0
+        replicas: 2
+        podTemplate:
+          spec:
+            containers:
+              - name: cassandra
+                resources:
+                  limits:
+                    memory: 2Gi
+                    cpu: 2
+                  requests:
+                    memory: 1Gi
+                    cpu: 1
+        storage:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+        storageType: Durable
+  deletionPolicy: WipeOut

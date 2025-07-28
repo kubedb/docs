@@ -173,7 +173,7 @@ Here,
 Let's create the `CassandraAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/compute/cassandra-autoscaler.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/compute/cassandra-autoscaler-ops.yaml
 cassandraautoscaler.autoscaling.kubedb.com/cassandra-autoscaler-ops created
 ```
 

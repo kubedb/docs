@@ -103,7 +103,7 @@ spec:
 Let's create the `Cassandra` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/autoscaler/storage/cluster/examples/sample-cassandra.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/examples/cassandra/autoscaling/storage/cassandra-autoscale.yaml
 cassandra.kubedb.com/cassandra-autoscale created
 ```
 
@@ -172,7 +172,7 @@ Here,
 Let's create the `cassandraAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/autoscaler/storage/cluster/examples/rm-storage-autoscale-ops.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/storage/cassandra-autoscaler-ops.yaml
 cassandraautoscaler.autoscaling.kubedb.com/cassandra-storage-autosclaer created
 ```
 
