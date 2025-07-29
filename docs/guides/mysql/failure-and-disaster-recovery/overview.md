@@ -502,19 +502,19 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 ```
 
 
-## A Guide to mysql Backup And Restore
+## A Guide to MySQL Backup And Restore
 
 You can configure Backup and Restore following the below documentation.
 
 [Backup and Restore](/docs/guides/mysql/backup)
 
 
-## A Guide to mysql PITR
+## A Guide to MySQL PITR
 
 Documentaion Link: [PITR](/docs/guides/mysql/pitr)
 
 
-## A Guide to Handling mysql Storage
+## A Guide to Handling MySQL Storage
 
 It is often possible that your database storage become full and your database has stopped working. We have got you covered. You just apply a VolumeExpansion `mysqlOpsRequest` and your database storage will be increased, and the database will be ready to use again.
 
