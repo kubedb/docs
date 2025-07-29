@@ -186,99 +186,97 @@ Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following comm
 
 ```bash
 $ kubectl get cassandraopsrequest -n demo
-NAME                     TYPE              STATUS       AGE
-cas-volume-exp-topology   VolumeExpansion   Successful   3m1s
+NAME                   TYPE              STATUS       AGE
+cas-volume-expansion   VolumeExpansion   Successful   5m49s
 ```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed to expand the volume of cassandra.
 
 ```bash
-$ kubectl describe cassandraopsrequest -n demo cas-volume-exp-topology   
-Name:         cas-volume-exp-topology
+$ kubectl describe cassandraopsrequest -n demo cas-volume-expansion
+Name:         cas-volume-expansion
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         CassandraOpsRequest
 Metadata:
-  Creation Timestamp:  2024-07-31T04:44:17Z
+  Creation Timestamp:  2025-07-29T10:07:19Z
   Generation:          1
-  Resource Version:    149682
-  UID:                 e0e19d97-7150-463c-9a7d-53eff05ea6c4
+  Resource Version:    306444
+  UID:                 ccc1253b-b69f-4242-a270-fd36c2a15daa
 Spec:
   Apply:  IfReady
   Database Ref:
     Name:  cassandra-prod
   Type:    VolumeExpansion
   Volume Expansion:
-    Broker:      3Gi
-    Controller:  2Gi
-    Mode:        Online
+    Mode:  Online
+    Node:  2Gi
 Status:
   Conditions:
-    Last Transition Time:  2024-07-31T04:44:17Z
+    Last Transition Time:  2025-07-29T10:08:29Z
     Message:               Cassandra ops-request has started to expand volume of cassandra nodes.
     Observed Generation:   1
     Reason:                VolumeExpansion
     Status:                True
     Type:                  VolumeExpansion
-    Last Transition Time:  2024-07-31T04:44:25Z
-    Message:               get pet set; ConditionStatus:True
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPetSet
-    Last Transition Time:  2024-07-31T04:44:25Z
-    Message:               is petset deleted; ConditionStatus:True
-    Observed Generation:   1
-    Status:                True
-    Type:                  IsPetsetDeleted
-    Last Transition Time:  2024-07-31T04:44:45Z
+    Last Transition Time:  2025-07-29T10:08:56Z
     Message:               successfully deleted the petSets with orphan propagation policy
     Observed Generation:   1
     Reason:                OrphanPetSetPods
     Status:                True
     Type:                  OrphanPetSetPods
-    Last Transition Time:  2024-07-31T04:44:50Z
+    Last Transition Time:  2025-07-29T10:08:46Z
+    Message:               get petset; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPetset
+    Last Transition Time:  2025-07-29T10:08:46Z
+    Message:               delete petset; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  DeletePetset
+    Last Transition Time:  2025-07-29T10:10:56Z
+    Message:               successfully updated PVC sizes
+    Observed Generation:   1
+    Reason:                UpdateNodePVCs
+    Status:                True
+    Type:                  UpdateNodePVCs
+    Last Transition Time:  2025-07-29T10:09:01Z
     Message:               get pvc; ConditionStatus:True
     Observed Generation:   1
     Status:                True
     Type:                  GetPvc
-    Last Transition Time:  2024-07-31T04:44:50Z
-    Message:               is pvc patched; ConditionStatus:True
+    Last Transition Time:  2025-07-29T10:09:01Z
+    Message:               patch pvc; ConditionStatus:True
     Observed Generation:   1
     Status:                True
-    Type:                  IsPvcPatched
-    Last Transition Time:  2024-07-31T04:44:55Z
+    Type:                  PatchPvc
+    Last Transition Time:  2025-07-29T10:10:51Z
     Message:               compare storage; ConditionStatus:True
     Observed Generation:   1
     Status:                True
     Type:                  CompareStorage
-    Last Transition Time:  2024-07-31T04:45:10Z
-    Message:               successfully updated controller node PVC sizes
-    Observed Generation:   1
-    Reason:                UpdateControllerNodePVCs
-    Status:                True
-    Type:                  UpdateControllerNodePVCs
-    Last Transition Time:  2024-07-31T04:45:35Z
-    Message:               successfully updated broker node PVC sizes
-    Observed Generation:   1
-    Reason:                UpdateBrokerNodePVCs
-    Status:                True
-    Type:                  UpdateBrokerNodePVCs
-    Last Transition Time:  2024-07-31T04:45:42Z
+    Last Transition Time:  2025-07-29T10:11:09Z
     Message:               successfully reconciled the Cassandra resources
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2024-07-31T04:45:47Z
+    Last Transition Time:  2025-07-29T10:11:19Z
     Message:               PetSet is recreated
     Observed Generation:   1
     Reason:                ReadyPetSets
     Status:                True
     Type:                  ReadyPetSets
-    Last Transition Time:  2024-07-31T04:45:47Z
-    Message:               Successfully completed volumeExpansion for cassandra
+    Last Transition Time:  2025-07-29T10:11:14Z
+    Message:               get pet set; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPetSet
+    Last Transition Time:  2025-07-29T10:11:14Z
+    Message:               Successfully completed volumeExpansion for Cassandra
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -286,69 +284,82 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                   Age   From                         Message
-  ----     ------                                   ----  ----                         -------
-  Normal   Starting                                 116s  KubeDB Ops-manager Operator  Start processing for CassandraOpsRequest: demo/cas-volume-exp-topology
-  Normal   Starting                                 116s  KubeDB Ops-manager Operator  Pausing Cassandra databse: demo/cassandra-prod
-  Normal   Successful                               116s  KubeDB Ops-manager Operator  Successfully paused Cassandra database: demo/cassandra-prod for CassandraOpsRequest: cas-volume-exp-topology
-  Warning  get pet set; ConditionStatus:True        108s  KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Warning  is petset deleted; ConditionStatus:True  108s  KubeDB Ops-manager Operator  is petset deleted; ConditionStatus:True
-  Warning  get pet set; ConditionStatus:True        103s  KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Warning  get pet set; ConditionStatus:True        98s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Warning  is petset deleted; ConditionStatus:True  98s   KubeDB Ops-manager Operator  is petset deleted; ConditionStatus:True
-  Warning  get pet set; ConditionStatus:True        93s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Normal   OrphanPetSetPods                         88s   KubeDB Ops-manager Operator  successfully deleted the petSets with orphan propagation policy
-  Warning  get pvc; ConditionStatus:True            83s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  is pvc patched; ConditionStatus:True     83s   KubeDB Ops-manager Operator  is pvc patched; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            78s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  compare storage; ConditionStatus:True    78s   KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            73s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  is pvc patched; ConditionStatus:True     73s   KubeDB Ops-manager Operator  is pvc patched; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            68s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  compare storage; ConditionStatus:True    68s   KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
-  Normal   UpdateControllerNodePVCs                 63s   KubeDB Ops-manager Operator  successfully updated controller node PVC sizes
-  Warning  get pvc; ConditionStatus:True            58s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  is pvc patched; ConditionStatus:True     58s   KubeDB Ops-manager Operator  is pvc patched; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            53s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  compare storage; ConditionStatus:True    53s   KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            48s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  is pvc patched; ConditionStatus:True     48s   KubeDB Ops-manager Operator  is pvc patched; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True            43s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  compare storage; ConditionStatus:True    43s   KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
-  Normal   UpdateBrokerNodePVCs                     38s   KubeDB Ops-manager Operator  successfully updated broker node PVC sizes
-  Normal   UpdatePetSets                            31s   KubeDB Ops-manager Operator  successfully reconciled the Cassandra resources
-  Warning  get pet set; ConditionStatus:True        26s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Warning  get pet set; ConditionStatus:True        26s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Normal   ReadyPetSets                             26s   KubeDB Ops-manager Operator  PetSet is recreated
-  Normal   Starting                                 26s   KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
-  Normal   Successful                               26s   KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: cas-volume-exp-topology
+  Type     Reason                                  Age    From                         Message
+  ----     ------                                  ----   ----                         -------
+  Normal   Starting                                7m56s  KubeDB Ops-manager Operator  Start processing for CassandraOpsRequest: demo/cas-volume-expansion
+  Normal   Starting                                7m56s  KubeDB Ops-manager Operator  Pausing Cassandra databse: demo/cassandra-prod
+  Normal   Successful                              7m56s  KubeDB Ops-manager Operator  Successfully paused Cassandra database: demo/cassandra-prod for CassandraOpsRequest: cas-volume-expansion
+  Warning  get petset; ConditionStatus:True        7m39s  KubeDB Ops-manager Operator  get petset; ConditionStatus:True
+  Warning  delete petset; ConditionStatus:True     7m39s  KubeDB Ops-manager Operator  delete petset; ConditionStatus:True
+  Warning  get petset; ConditionStatus:True        7m34s  KubeDB Ops-manager Operator  get petset; ConditionStatus:True
+  Normal   OrphanPetSetPods                        7m29s  KubeDB Ops-manager Operator  successfully deleted the petSets with orphan propagation policy
+  Warning  get pvc; ConditionStatus:True           7m24s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  patch pvc; ConditionStatus:True         7m24s  KubeDB Ops-manager Operator  patch pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           7m19s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  compare storage; ConditionStatus:False  7m19s  KubeDB Ops-manager Operator  compare storage; ConditionStatus:False
+  Warning  get pvc; ConditionStatus:True           7m14s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           7m9s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           7m4s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           6m59s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           6m54s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           6m49s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           6m44s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           6m39s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           6m34s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           6m29s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           6m24s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  compare storage; ConditionStatus:True   6m24s  KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           6m19s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  patch pvc; ConditionStatus:True         6m19s  KubeDB Ops-manager Operator  patch pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           6m14s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  compare storage; ConditionStatus:False  6m14s  KubeDB Ops-manager Operator  compare storage; ConditionStatus:False
+  Warning  get pvc; ConditionStatus:True           6m9s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           6m4s   KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           5m59s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           5m54s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           5m49s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           5m44s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           5m39s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  get pvc; ConditionStatus:True           5m34s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
+  Warning  compare storage; ConditionStatus:True   5m34s  KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
+  Normal   UpdateNodePVCs                          5m29s  KubeDB Ops-manager Operator  successfully updated PVC sizes
+  Normal   UpdatePetSets                           5m16s  KubeDB Ops-manager Operator  successfully reconciled the Cassandra resources
+  Normal   UpdatePetSets                           5m13s  KubeDB Ops-manager Operator  successfully reconciled the Cassandra resources
+  Warning  get pet set; ConditionStatus:True       5m11s  KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
+  Normal   ReadyPetSets                            5m11s  KubeDB Ops-manager Operator  PetSet is recreated
+  Normal   Starting                                5m11s  KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
+  Normal   Successful                              5m11s  KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: cas-volume-expansion
+  Normal   Starting                                5m11s  KubeDB Ops-manager Operator  Pausing Cassandra databse: demo/cassandra-prod
+  Normal   Successful                              5m11s  KubeDB Ops-manager Operator  Successfully paused Cassandra database: demo/cassandra-prod for CassandraOpsRequest: cas-volume-expansion
+  Warning  get pet set; ConditionStatus:True       5m6s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
+  Normal   ReadyPetSets                            5m6s   KubeDB Ops-manager Operator  PetSet is recreated
 ```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo cassandra-prod-broker -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
-"3Gi"
-
-$ kubectl get petset -n demo cassandra-prod-controller -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.volumeClaimTemplates[0].spec.resources.requests.storage'
 "2Gi"
 
-$ kubectl get pv -n demo                                       
-NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                           STORAGECLASS   REASON   AGE
-pvc-3f177a92721440bb   1Gi        RWO            Delete           Bound      demo/cassandra-prod-data-cassandra-prod-controller-0    standard                5m25s
-pvc-86ff354122324b1c   1Gi        RWO            Delete           Bound      demo/cassandra-prod-data-cassandra-prod-broker-1        standard                4m51s
-pvc-9fa35d773aa74bd0   1Gi        RWO            Delete           Bound      demo/cassandra-prod-data-cassandra-prod-controller-1    standard                5m1s
-pvc-ccf50adf179e4162   1Gi        RWO            Delete           Bound      demo/cassandra-prod-data-cassandra-prod-broker-0        standard                5m30s
+
+$  kubectl get pv -n demo 
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                              STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+pvc-7efa007f-5fb2-4e64-aea0-233ec456703f   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-1   longhorn       <unset>                          11m
+pvc-88f8ec55-ae5b-48dd-9b3a-0dc113cdaa43   2Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-1                 longhorn       <unset>                          11m
+pvc-c455344e-0f17-42d2-8fd9-062fa2f1b0a1   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-0   longhorn       <unset>                          11m
+pvc-d19d62ac-b37b-406e-a7d6-a10f4f74d929   2Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-0                 longhorn       <unset>                          11m
+pvc-df152a7a-12ea-4690-b64e-ccb2decce8cd   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-1             longhorn       <unset>                          11m
+pvc-f8420d54-05f8-4ea2-b70c-11a3737e04e4   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-0             longhorn       <unset>                          11m
 ```
 
-The above output verifies that we have successfully expanded the volume of the Cassandra.
+The above output verifies that we have successfully expanded the data related volume of the Cassandra.
 
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete cassandraopsrequest -n demo cas-volume-exp-topology
+kubectl delete cassandraopsrequest -n demo cas-volume-expansion
 kubectl delete cas -n demo cassandra-prod
 kubectl delete ns demo
 ```
