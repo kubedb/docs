@@ -40,7 +40,7 @@ Read about the fields in details from [cassandra concept](/docs/guides/cassandra
 The following figure shows how `KubeDB` enterprise used to configure TLS/SSL in Cassandra. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-<img alt="Deploy Cassandra with TLS/SSL" src="/docs/images/cassandra/cas-tls.svg">
+<img alt="Deploy Cassandra with TLS/SSL" src="/docs/images/cassandra/TLS.svg">
 <figcaption align="center">Fig: Deploy Cassandra with TLS/SSL</figcaption>
 </figure>
 

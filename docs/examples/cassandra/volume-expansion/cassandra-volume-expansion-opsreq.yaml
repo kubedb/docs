@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: CassandraOpsRequest
+metadata:
+  name: cas-volume-expansion
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: cassandra-prod
+  volumeExpansion:
+    node: 2Gi
+    mode: Online

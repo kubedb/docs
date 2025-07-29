@@ -25,6 +25,11 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 
 ## How Compute Autoscaling Works
 
+<figure align="center">
+  <img alt="Compute AutoScale process of Cassandra" src="/docs/images/day-2-operation/cassandra/computeAutoScale.svg">
+<figcaption align="center">Fig: Compute Auto Scale process of Cassandra</figcaption>
+</figure>
+
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `Cassandra` database components. Open the image in a new tab to see the enlarged version.
 
 

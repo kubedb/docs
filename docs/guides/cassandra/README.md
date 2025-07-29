@@ -52,7 +52,7 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 --->
 
 <p text-align="center">
-    <img alt="lifecycle"  src="/docs/guides/cassandra/images/cassandra-lifecycle.png" >
+    <img alt="lifecycle"  src="/docs/images/cassandra/lifecycle.png" >
 </p>
 
 ## User Guide

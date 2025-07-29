@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator scales up or
 The following diagram shows how KubeDB Ops-manager operator scales up or down `Cassandra` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Horizontal scaling process of Cassandra" src="/docs/images/day-2-operation/cassandra/cas-horizontal-scaling.svg">
+  <img alt="Horizontal scaling process of Cassandra" src="/docs/images/day-2-operation/cassandra/horizontalScale.svg">
 <figcaption align="center">Fig: Horizontal scaling process of Cassandra</figcaption>
 </figure>
 

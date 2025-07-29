@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator updates the 
 The following diagram shows how KubeDB Ops-manager operator updates the resources of the `Cassandra`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Vertical scaling process of Cassandra" src="/docs/images/day-2-operation/cassandra/cas-vertical-scaling.svg">
+  <img alt="Vertical scaling process of Cassandra" src="/docs/images/day-2-operation/cassandra/verticalScale.svg">
 <figcaption align="center">Fig: Vertical scaling process of Cassandra</figcaption>
 </figure>
 

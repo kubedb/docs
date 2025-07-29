@@ -22,7 +22,7 @@ KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/
 KubeDB uses Prometheus [exporter](https://prometheus.io/docs/instrumenting/exporters/#databases) images to export Prometheus metrics for respective databases. As KubeDB supports Cassandra versions in KRaft mode, and the officially recognized exporter image doesn't expose metrics for them yet - KubeDB managed Cassandra instances use [JMX Exporter](https://github.com/prometheus/jmx_exporter) instead. This exporter is intended to be run as a Java Agent inside Cassandra container, exposing a HTTP server and serving metrics of the local JVM. To Following diagram shows the logical flow of database monitoring with KubeDB.
 
 <p align="center">
-  <img alt="Database Monitoring Flow"  src="/docs/images/cassandra/Monitoring-cassandra-with-prometheus-grafana-using-jmx-exporter.png">
+  <img alt="Database Monitoring Flow"  src="/docs/images/concepts/monitoring/database-monitoring-overview.svg">
 </p>
 
 When a user creates a Cassandra crd with `spec.monitor` section configured, KubeDB operator provisions the respective Cassandra cluster while running the exporter as a Java agent inside the cassandra containers. It also creates a dedicated stats service with name `{database-crd-name}-stats` for monitoring. Prometheus server can scrape metrics using this stats service.

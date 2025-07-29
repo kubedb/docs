@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 The following diagram shows how KubeDB Ops-manager operator reconfigures `Cassandra` components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Reconfiguring process of Cassandra" src="/docs/images/day-2-operation/cassandra/cas-reconfigure.svg">
+  <img alt="Reconfiguring process of Cassandra" src="/docs/images/day-2-operation/cassandra/reconfigure.svg">
 <figcaption align="center">Fig: Reconfiguring process of Cassandra</figcaption>
 </figure>
 
