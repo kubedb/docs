@@ -5,7 +5,7 @@ menu:
     identifier: guides-mysql-failure-and-disaster-recovery-overview
     name: Overview
     parent: guides-mysql-failure-and-disaster-recovery
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -37,9 +37,8 @@ But that is a bit rare though.
 To follow along with this tutorial, you will need:
 
 1. A running Kubernetes cluster.
-2. KubeDB [installed](https://kubedb.com/docs/v2025.5.30/setup/install/kubedb/) in your cluster.
+2. KubeDB [installed](https://kubedb.com/docs/{{<param "info.version">}}/setup/install/kubedb/) in your cluster.
 3. kubectl command-line tool configured to communicate with your cluster.
-
 
 ### Step 1: Create a High-Availability MySQL Cluster
 
@@ -274,8 +273,6 @@ The group reconfigures itself to exclude the failed node and triggers a new prim
 
 A healthy replica is promoted as the new primary, and it resumes accepting writes. The group continues processing transactions without manual intervention.
 
-
-
 Now we know how failover is done, let's check if the new primary is working.
 
 ```shell
@@ -300,7 +297,6 @@ Query OK, 1 row affected (0.16 sec)
 ```
 
 You will see the deleted pod (restore-mysql-0) is brought back by the kubedb operator and it is now assigned to standby role.
-
 
 ```shell
 restore-mysql-0 standby
@@ -394,7 +390,6 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 | restore-mysql-2.restore-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
 +---------------------------------------------+-------------+--------------+-------------+
 3 rows in set (0.00 sec)
-
 
 ```
 
@@ -521,23 +516,17 @@ Documentaion Link: [PITR](/docs/guides/mysql/pitr)
 
 ## A Guide to Handling mysql Storage
 
-
 It is often possible that your database storage become full and your database has stopped working. We have got you covered. You just apply a VolumeExpansion `mysqlOpsRequest` and your database storage will be increased, and the database will be ready to use again.
-
 
 ### Disaster Scenario and Recovery
 
 
 #### Scenario
-
-
-You deploy a `MySQL` database. The database was running fine. Someday, your database storage becomes full. As your mysql process can't write to the filesystem,
-
+You deploy a `MySQL` database. The database was running fine. Someday, your database storage becomes full. As your mysql 
+process can't write to the filesystem,
 clients won't be able to connect to the database. Your database status will be `Not Ready`.
 
-
 #### Recovery
-
 
 In order to recover from this, you can create a `VolumeExpansion` `mysqlOpsRequest` with expanded resource requests.
 
@@ -563,18 +552,15 @@ spec:
 For more details, please check the full section [here](/docs/guides/mysql/volume-expansion/overview/index.md).
 
 
-> **Note**: There are two ways to update your volume: 1.Online 2.Offline. Which Mode to choose?
-
-> It depends on your `StorageClass`. If your storageclass supports online volume expansion, you can go with it. Otherwise, you can go with `Offline` Volume Expansion.
+> **Note**: There are two ways to update your volume: 1.Online 2.Offline. Which Mode to choose? <br>
+It depends on your `StorageClass`. If your storageclass supports online volume expansion, you can go with it. Otherwise, you can go with `Offline` Volume Expansion.
 
 
 ## CleanUp
 
-
+To clean up the Kubernetes resources created by this tutorial, run:
 ```shell
-# delete restore-mysql DB
 ➤ kubectl delete my -n demo restore-mysql
-# or, you can delete the demo
 ➤ kubectl delete ns demo
 ```
 
