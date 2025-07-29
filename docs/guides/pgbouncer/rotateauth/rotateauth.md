@@ -3,7 +3,7 @@ title: Rotate Authentication PgBouncer
 menu:
   docs_{{ .version }}:
     identifier: pb-rotateauthentication
-    name: Rotate Authentication PgBouncer
+    name: Rotate Authentication Guide
     parent: pb-rotateauth
     weight: 10
 menu_name: docs_{{ .version }}
@@ -280,7 +280,7 @@ The above output shows that the password has been changed successfully. The prev
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
-> Note: The `username` must be fixed as `sa`. The `password` must include uppercase letters, lowercase letters, and numbers
+
 ```shell
 $  kubectl create secret generic quick-pb-user-auth -n demo \
         --type=kubernetes.io/basic-auth \

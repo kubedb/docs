@@ -1,9 +1,9 @@
 ---
-title: Rotate Authentication MongoDB
+title: Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
     identifier: mg-rotate-auth-details
-    name: Rotate Authentication MongoDB
+    name: Rotate Authentication Guide
     parent: mg-rotate-auth
     weight: 10
 menu_name: docs_{{ .version }}
@@ -13,8 +13,10 @@ section_menu_id: guides
 
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `MongoDB` user's authentication credentials using a `MongoDBOpsRequest`. There are two ways to perform this rotation.
 
-1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the existing secret with the new credential, and does not provide the secret details directly to the user.
-2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password`, and then reference this Secret in the `MongoDBOpsRequest`.
+1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the 
+existing secret with the new credential, and does not provide the secret details directly to the user.
+2. **User Defined:** The user can create their own credentials by defining a Secret of type 
+`kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in the `MongoDBOpsRequest`.
 
 ## Before You Begin
 

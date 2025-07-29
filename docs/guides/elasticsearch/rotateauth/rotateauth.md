@@ -1,9 +1,9 @@
 ---
-title: Rotate Authentication Elasticsearch
+title: Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
     identifier: es-rotateauth
-    name: Rotate Authentication
+    name: Rotate Authentication Guide
     parent: es-rotateauth-elasticsearch
     weight: 10
 menu_name: docs_{{ .version }}

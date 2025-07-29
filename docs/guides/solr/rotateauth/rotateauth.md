@@ -1,9 +1,9 @@
 ---
-title: Rotate Authentication Solr
+title: Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
     identifier: sl-rotateauth-details
-    name: Rotate Authentication Solr
+    name: Rotate Authentication Guide
     parent: sl-rotateauth
     weight: 10
 menu_name: docs_{{ .version }}
