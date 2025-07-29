@@ -48,7 +48,7 @@ Here, we are going to deploy a `Cassandra` topology using a supported version by
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$  kubectl get storageclass
+$ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  5d22h
 longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   6s

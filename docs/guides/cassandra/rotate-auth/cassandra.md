@@ -310,8 +310,6 @@ Here,
 
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
-> **Note:** For combined cassandra, you just need to refer cassandra combined object in `databaseRef` field. To learn more about combined cassandra, please visit [here](/docs/guides/cassandra/clustering/combined-cluster/index.md).
-
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/rotate-auth/cassandra-rotate-auth-user.yaml
 cassandraopsrequest.ops.kubedb.com/casops-rotate-auth-user created

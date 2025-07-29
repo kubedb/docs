@@ -17,7 +17,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to run an [Apache Cassandra](https://cassandra.apache.org//).
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/images/cassandra/Cassandra-CRD-Lifecycle.png">
+  <img alt="lifecycle"  src="/docs/images/cassandra/lifecycle.png">
 </p>
 
 ## Before You Begin
@@ -260,7 +260,7 @@ petset.apps.k8s.appscode.com/cassandra-quickstart-rack-r0   108m
 - `Secrets` - A secret is generated for each Cassandra cluster.
     - `{Cassandra-Name}-auth` - the auth secrets which hold the `username` and `password` for the Cassandra users. Operator generates credentials for `admin` user and creates a secret for authentication.
 
-## Connect with Ignite database
+## Connect with Cassandra database
 
 Now, you can connect to this database using `cqlsh`. You will need `username` and `password` to connect to this database from `kubeclt exec` command. In this example, `cassandra-quickstart-auth`  secret holds username and password.
 

@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Cassandra Volume Expansion
 
-This guide will give an overview on how KubeDB Ops-manager operator expand the volume of various component of `Cassandra` like:. (Combined and Topology).
+This guide will give an overview on how KubeDB Ops-manager operator expand the volume of various component of `Cassandra`.
 
 ## Before You Begin
 

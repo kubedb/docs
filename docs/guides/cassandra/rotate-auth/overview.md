@@ -24,13 +24,6 @@ This guide will give an overview on how KubeDB Ops-manager operator Rotate Authe
 
 ## How Rotate Cassandra Authentication Configuration Process Works
 
-The following diagram shows how KubeDB Ops-manager operator Rotate Authentication of a `Cassandra`. Open the image in a new tab to see the enlarged version.
-
-<figure align="center">
-  <img alt="Rotate Authentication process of Cassandra" src="/docs/images/day-2-operation/cassandra/cas-rotate-auth.svg">
-<figcaption align="center">Fig: Rotate Auth process of Cassandra</figcaption>
-</figure>
-
 The Rotate Cassandra Authentication process consists of the following steps:
 
 1. At first, a user creates a `Cassandra` Custom Resource Object (CRO).

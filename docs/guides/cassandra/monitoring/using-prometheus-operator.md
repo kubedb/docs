@@ -368,10 +368,6 @@ Forwarding from [::1]:9090 -> 9090
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `metrics` endpoint of `cassandra-stats` service as one of the targets.
 
-<p align="center">
-  <img alt="Prometheus Target" src="/docs/images/cassandra/cassandra-promethues.png" style="padding:10px">
-</p>
-
 Check the `endpoint` and `service` labels. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create a beautiful dashboard with collected metrics.
 
 ## Cleaning up
@@ -386,8 +382,5 @@ kubectl delete ns demo
 ## Next Steps
 
 - Learn how to use KubeDB to run a Apache Cassandra cluster [here](/docs/guides/cassandra/README.md).
-- Deploy [dedicated topology cluster](/docs/guides/cassandra/clustering/topology-cluster/index.md) for Apache Cassandra
-- Deploy [combined cluster](/docs/guides/cassandra/clustering/combined-cluster/index.md) for Apache Cassandra
 - Detail concepts of [CassandraVersion object](/docs/guides/cassandra/concepts/cassandraversion.md).
-- Learn to use KubeDB managed Cassandra objects using [CLIs](/docs/guides/cassandra/cli/cli.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

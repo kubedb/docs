@@ -74,19 +74,26 @@ We use official Apache Cassandra release tar files to build docker images for su
 
 `spec.version` is a required field that specifies the original version of Cassandra database that has been used to build the docker image specified in `spec.db.image` field.
 
-### spec.deprecated
-
-`spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator.
-
-The default value of this field is `false`. If `spec.deprecated` is set to `true`, KubeDB operator will skip processing this CRD object and will add a event to the CRD object specifying that the DB version is deprecated.
 
 ### spec.db.image
 
 `spec.db.image` is a required field that specifies the docker image which will be used to create PetSet by KubeDB operator to create expected Cassandra database.
 
+### spec.exporter.image
+
+`spec.exporter.image` specifies the image which will export matrices needed for monitoring.
+
 ### spec.initContainer.image
 
-`spec.initContainer.image` is a required field that specifies the image which will be used to remove `lost+found` directory and mount an `EmptyDir` data volume.
+`spec.initContainer.image` is a required field that specifies the image which will be used to mount some scripts in database container.
+
+### spec.medusa.image
+
+`spec.medusa.image` specifies the image required for backup process of Cassandra.
+
+### spec.medusa.init.image
+
+`spec.medusa.init.image` specifies the image required for restore process of Cassandra.
 
 ### spec.podSecurityPolicies.databasePolicyName
 
