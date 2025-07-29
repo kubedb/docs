@@ -45,7 +45,7 @@ While these features require multiple MongoDB nodes, understanding how replica s
 To follow along with this tutorial, you will need:
 
 1. A running Kubernetes cluster.
-2. KubeDB [installed](https://kubedb.com/docs/v2025.5.30/setup/install/kubedb/) in your cluster.
+2. KubeDB [installed](https://kubedb.com/docs/{{< param "info.version" >}}/setup/install/kubedb/) in your cluster.
 3. kubectl command-line tool configured to communicate with your cluster.
 
 
@@ -187,16 +187,108 @@ kubedb-system  0.000GB
 local          0.000GB
 
 ```
-### Step 2: Simulating a Failover
-Before simulating failover, let's understand how KubeDB handles failover scenarios in a `MongoDB` 
-replica set.
-Each `MongoDB` pod is part of a replica set where one pod acts as the primary, handling all write 
-operations, and the others act as secondaries, replicating data from the primary.
 
-KubeDB continuously monitors the health of the MongoDB replica set. If the current primary 
-(e.g., `mg-ha-demo-0`) becomes unavailable, the remaining voting members automatically initiate an 
-election to choose a new primary. This election process is typically completed within seconds,
-minimizing downtime and ensuring continued availability.
+Now, connect to a secondary node to inspect how the data reflects changes from the primary, and
+observe any visible differences between their states.
+
+```shell
+kubectl exec -it -n demo mg-ha-demo-1  -- bash
+Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
+mongodb@mg-ha-demo-1:/$ mongo admin
+MongoDB shell version v4.4.26
+connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
+Implicit session: session { "id" : UUID("9ec7b2cc-8972-4f07-996f-f6c9573acc36") }
+MongoDB server version: 4.4.26
+Welcome to the MongoDB shell.
+For interactive help, type "help".
+For more comprehensive documentation, see
+	https://docs.mongodb.com/
+Questions? Try the MongoDB Developer Community Forums
+	https://community.mongodb.com
+rs1:PRIMARY> db.auth("root","JUIevJ)ISh!Srg4y")
+1
+
+rs1:SECONDARY> rs.slaveOk()
+WARNING: slaveOk() is deprecated and may be removed in the next major release. Please use secondaryOk() instead.
+rs1:SECONDARY> show dbs
+Ballet         0.000GB
+Kathak         0.000GB
+admin          0.000GB
+config         0.000GB
+kubedb-system  0.000GB
+local          0.000GB
+rs1:SECONDARY> use new_db
+switched to db new_db
+rs1:SECONDARY> db.performances.insertMany([
+... ... ...   {
+... ... ...     title: "Swan Lake",
+... ... ...     composer: "Tchaikovsky",
+... ... ...     venue: "Royal Opera House",
+... ... ...     date: ISODate("2025-08-01T19:00:00Z"),
+... ... ...     leadDancer: "Anna Pavlova"
+... ... ...   }
+... ... ])
+uncaught exception: WriteCommandError({
+	"topologyVersion" : {
+		"processId" : ObjectId("68884ca04453725f9ae4b166"),
+		"counter" : NumberLong(3)
+	},
+	"operationTime" : Timestamp(1753777717, 1),
+	"ok" : 0,
+	"errmsg" : "not master",
+	"code" : 10107,
+	"codeName" : "NotWritablePrimary",
+	"$clusterTime" : {
+		"clusterTime" : Timestamp(1753777717, 1),
+		"signature" : {
+			"hash" : BinData(0,"feVYdK9HiGlqlKF5dLbcpWrbOTs="),
+			"keyId" : NumberLong("7532089958085951493")
+		}
+	}
+}) :
+WriteCommandError({
+	"topologyVersion" : {
+		"processId" : ObjectId("68884ca04453725f9ae4b166"),
+		"counter" : NumberLong(3)
+	},
+	"operationTime" : Timestamp(1753777717, 1),
+	"ok" : 0,
+	"errmsg" : "not master",
+	"code" : 10107,
+	"codeName" : "NotWritablePrimary",
+	"$clusterTime" : {
+		"clusterTime" : Timestamp(1753777717, 1),
+		"signature" : {
+			"hash" : BinData(0,"feVYdK9HiGlqlKF5dLbcpWrbOTs="),
+			"keyId" : NumberLong("7532089958085951493")
+		}
+	}
+})
+WriteCommandError@src/mongo/shell/bulk_api.js:417:48
+executeBatch@src/mongo/shell/bulk_api.js:915:23
+Bulk/this.execute@src/mongo/shell/bulk_api.js:1163:21
+DBCollection.prototype.insertMany@src/mongo/shell/crud_api.js:326:5
+@(shell):1:1
+
+```
+
+### Step 2: Simulating a Failover
+#### Replica set elections
+You will see almost immediately the failover happened. Before simulating failover, let's understand how 
+KubeDB handles failover scenarios in a `MongoDB` replica set. Here's what happened internally:
+
+- MongoDB replica sets support automatic failover to ensure high availability.
+- All replica set members continuously exchange heartbeats every 2 seconds to monitor each other’s status.
+- If the primary becomes unreachable (e.g., crash, network issue), secondaries detect the failure based on missed heartbeats.
+- Once a majority of voting members agree the primary is down, an election is triggered.
+- Any eligible secondary can declare itself a candidate and request votes from other members.
+- A new primary is elected if a candidate receives majority votes (e.g., 2 out of 3 in a 3-node setup).
+- The election considers oplog freshness, priority settings, and election term history to prevent stale nodes from taking over.
+- Once elected, the new primary begins accepting write operations.
+- MongoDB clients using replica set URIs automatically reroute traffic to the new primary.
+- The old primary, when it rejoins, steps down to secondary and syncs missed operations if necessary.
+- During the election, writes are paused, but reads can still occur if the read preference is set to allow secondaries.
+- A majority quorum must be present to elect a new primary; otherwise, the replica set becomes read-only until quorum is restored.
 
 Now, the current primary is `mg-ha-demo-0`. Let’s open another terminal and run the following command to simulate a failover.
 
@@ -207,8 +299,8 @@ watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.na
 It will show current mg cluster roles.
 
 ```shell
-mg-ha-demo-0 standby
-mg-ha-demo-1 primary
+mg-ha-demo-0 primary
+mg-ha-demo-1 standby
 mg-ha-demo-2 standby
 ```
 
@@ -227,70 +319,81 @@ mg-ha-demo-1 primary
 mg-ha-demo-2 standby
 ```
 
-You see almost immediately the failover happened. Here's what happened internally:
-
-- Distributed raft algorithm implementation is running 24 * 7 in your each db sidecar. You can configure this behavior as shown below.
-- As soon as `mg-ha-demo-0` was being deleted and raft inside `mg-ha-demo-0` senses the termination, it immediately switches the leadership to any other viable leader before termination.
-- In our case, raft inside `mg-ha-demo-1` got the leadership.
-- Now this leader switch only means raft leader switch, not the **database leader switch(aka failover)** yet. So `mg-ha-demo-1` still running as replica. It will be primary after the next step.
-- Once raft sidecar inside `mg-ha-demo-1` see it has become leader of the cluster, it initiates the database failover process and start running as primary.
-- So, now `mg-ha-demo-1` is running as primary.
-
-```yaml
-# You can find this part in your db yaml by running
-# kubectl get mg -n demo mg-ha-demo -oyaml
-# under db.spec section
-# vist below link for more information
-# https://github.com/kubedb/apimachinery/blob/97c18a62d4e33a112e5f887dc3ad910edf3f3c82/apis/kubedb/v1/MongoDB_types.go#L204
-
-leaderElection:
-  electionTick: 10
-  heartbeatTick: 1
-  maximumLagBeforeFailover: 67108864
-  period: 300ms
-  transferLeadershipInterval: 1s
-  transferLeadershipTimeout: 1m0s
-  
-```
-
 Now we know how failover is done, let's check if the new primary is working.
 
 ```shell
-➤ kubectl exec -it -n demo mg-ha-demo-1  -- bash
-Defaulted container "MongoDB" out of: MongoDB, mg-coordinator, MongoDB-init-container (init)
-mg-ha-demo-1:/$ psql
-psql (17.2)
-Type "help" for help.
+➤ `kubectl exec -it -n demo mg-ha-demo-1  -- bash
+Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
+mongodb@mg-ha-demo-1:/$ mongo admin
+MongoDB shell version v4.4.26
+connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
+Implicit session: session { "id" : UUID("9ec7b2cc-8972-4f07-996f-f6c9573acc36") }
+MongoDB server version: 4.4.26
+Welcome to the MongoDB shell.
+For interactive help, type "help".
+For more comprehensive documentation, see
+	https://docs.mongodb.com/
+Questions? Try the MongoDB Developer Community Forums
+	https://community.mongodb.com
+rs1:PRIMARY> db.auth("root","JUIevJ)ISh!Srg4y")
+1
+rs1:PRIMARY> show dbs
+Ballet         0.000GB
+admin          0.000GB
+config         0.000GB
+kubedb-system  0.000GB
+local          0.000GB`
+rs1:PRIMARY> use Kathak
+switched to db Kathak
 
-MongoDB=# create table hi(id int);
-CREATE TABLE # See we were able to create the database. so failover was successful.
-MongoDB=# 
+rs1:PRIMARY> db.performances.insertMany([
+... ...   {
+... ...     title: "Swan Lake",
+... ...     composer: "Tchaikovsky",
+... ...     venue: "Royal Opera House",
+... ...     date: ISODate("2025-08-01T19:00:00Z"),
+... ...     leadDancer: "Anna Pavlova"
+... ...   }
+... ])
+{
+	"acknowledged" : true,
+	"insertedIds" : [
+		ObjectId("68887a44f9b3c13aeffdcff1")
+	]
+}
+rs1:PRIMARY> show dbs
+Ballet         0.000GB
+Kathak         0.000GB
+admin          0.000GB
+config         0.000GB
+kubedb-system  0.000GB
+local          0.000GB
 
 ```
 
-
-You will see the deleted pod (mg-ha-demo-0) is brought back by the kubedb operator and it is now assigned to standby role.
-
-
-![img_2.png](/docs/guides/MongoDB/failure-and-disaster-recovery/img_2.png)
-
-Lets check if the standby(`mg-ha-demo-0`) got the updated data from new primary `mg-ha-demo-1`.
+You will see the deleted pod `mg-ha-demo-0` is brought back by the kubedb operator and it is now assigned to standby role.
+Lets check if the standby `mg-ha-demo-0` got the updated data from new primary `mg-ha-demo-1`.
 
 ```shell
 ➤ kubectl exec -it -n demo mg-ha-demo-0  -- bash
-Defaulted container "MongoDB" out of: MongoDB, mg-coordinator, MongoDB-init-container (init)
-mg-ha-demo-0:/$ psql
-psql (17.2)
-Type "help" for help.
-
-MongoDB=# \dt
-               List of relations
- Schema |        Name        | Type  |  Owner   
---------+--------------------+-------+----------
- public | hello              | table | MongoDB
- public | hi                 | table | MongoDB # this was created in the new primary
- public | kubedb_write_check | table | MongoDB
-(3 rows)
+Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
+mongodb@mg-ha-demo-0:/$ mongo admin
+MongoDB shell version v4.4.26
+connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
+Implicit session: session { "id" : UUID("8c1a76f9-61cf-4105-b3b1-d82190640c87") }
+MongoDB server version: 4.4.26
+rs1:SECONDARY> db.auth("root","JUIevJ)ISh!Srg4y")
+1
+rs1:SECONDARY> rs.slaveOk()
+WARNING: slaveOk() is deprecated and may be removed in the next major release. Please use secondaryOk() instead.
+rs1:SECONDARY> show dbs
+Ballet         0.000GB
+Kathak         0.000GB
+admin          0.000GB
+config         0.000GB
+kubedb-system  0.000GB
+local          0.000GB
+rs1:SECONDARY> 
 
 ```
 
@@ -302,28 +405,195 @@ pod "mg-ha-demo-1" deleted
 pod "mg-ha-demo-2" deleted
 ```
 Again we can see the failover happened pretty quickly.
-
-![img_3.png](/docs/guides/MongoDB/failure-and-disaster-recovery/img_3.png)
-
+```shell
+mg-ha-demo-0 primary
+mg-ha-demo-1 
+mg-ha-demo-2 
+```
 After 10-30 second, the deleted pods will be back and will have its role.
-
-![img_4.png](/docs/guides/MongoDB/failure-and-disaster-recovery/img_4.png)
-
-Lets validate the cluster state from new primary(`mg-ha-demo-0`).
-
+```shell
+mg-ha-demo-0 primary
+mg-ha-demo-1 standby
+mg-ha-demo-2 standby
+```
+You can validate the replica set status from the new primary `mg-ha-demo-0` by checking the role, state, and health of each member.
 ```shell
 ➤ kubectl exec -it -n demo mg-ha-demo-0  -- bash
-Defaulted container "MongoDB" out of: MongoDB, mg-coordinator, MongoDB-init-container (init)
-mg-ha-demo-0:/$ psql
-psql (17.2)
-Type "help" for help.
-
-MongoDB=# select * from mg_stat_replication;
- pid  | usesysid | usename  | application_name | client_addr | client_hostname | client_port |         backend_start         | backend_xmin |   state   | sent_lsn  | write_lsn | flush_lsn | replay_lsn |    write_lag    |    flush_lag    |   replay_lag    | sync_priority | sync_state |          reply_time           
-------+----------+----------+------------------+-------------+-----------------+-------------+-------------------------------+--------------+-----------+-----------+-----------+-----------+------------+-----------------+-----------------+-----------------+---------------+------------+-------------------------------
- 1098 |       10 | MongoDB | mg-ha-demo-1     | 10.42.0.191 |                 |       49410 | 2025-06-20 09:56:36.989448+00 |              | streaming | 0/70016A8 | 0/70016A8 | 0/70016A8 | 0/70016A8  | 00:00:00.000142 | 00:00:00.00066  | 00:00:00.000703 |             0 | async      | 2025-06-20 09:59:40.217223+00
- 1129 |       10 | MongoDB | mg-ha-demo-2     | 10.42.0.192 |                 |       35216 | 2025-06-20 09:56:39.042789+00 |              | streaming | 0/70016A8 | 0/70016A8 | 0/70016A8 | 0/70016A8  | 00:00:00.000219 | 00:00:00.000745 | 00:00:00.00079  |             0 | async      | 2025-06-20 09:59:40.217308+00
-(2 rows)
+Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
+mongodb@mg-ha-demo-0:/$ mongo admin
+MongoDB shell version v4.4.26
+connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
+Implicit session: session { "id" : UUID("8c1a76f9-61cf-4105-b3b1-d82190640c87") }
+MongoDB server version: 4.4.26
+rs1:SECONDARY> db.auth("root","JUIevJ)ISh!Srg4y")
+1
+rs1:PRIMARY> rs.status()
+{
+	"set" : "rs1",
+	"date" : ISODate("2025-07-29T09:03:41.332Z"),
+	"myState" : 1,
+	"term" : NumberLong(4),
+	"syncSourceHost" : "",
+	"syncSourceId" : -1,
+	"heartbeatIntervalMillis" : NumberLong(2000),
+	"majorityVoteCount" : 2,
+	"writeMajorityCount" : 2,
+	"votingMembersCount" : 3,
+	"writableVotingMembersCount" : 3,
+	"optimes" : {
+		"lastCommittedOpTime" : {
+			"ts" : Timestamp(1753779817, 1),
+			"t" : NumberLong(4)
+		},
+		"lastCommittedWallTime" : ISODate("2025-07-29T09:03:37.338Z"),
+		"readConcernMajorityOpTime" : {
+			"ts" : Timestamp(1753779817, 1),
+			"t" : NumberLong(4)
+		},
+		"readConcernMajorityWallTime" : ISODate("2025-07-29T09:03:37.338Z"),
+		"appliedOpTime" : {
+			"ts" : Timestamp(1753779817, 1),
+			"t" : NumberLong(4)
+		},
+		"durableOpTime" : {
+			"ts" : Timestamp(1753779817, 1),
+			"t" : NumberLong(4)
+		},
+		"lastAppliedWallTime" : ISODate("2025-07-29T09:03:37.338Z"),
+		"lastDurableWallTime" : ISODate("2025-07-29T09:03:37.338Z")
+	},
+	"lastStableRecoveryTimestamp" : Timestamp(1753779787, 1),
+	"electionCandidateMetrics" : {
+		"lastElectionReason" : "stepUpRequestSkipDryRun",
+		"lastElectionDate" : ISODate("2025-07-29T08:38:57.291Z"),
+		"electionTerm" : NumberLong(4),
+		"lastCommittedOpTimeAtElection" : {
+			"ts" : Timestamp(1753778337, 1),
+			"t" : NumberLong(3)
+		},
+		"lastSeenOpTimeAtElection" : {
+			"ts" : Timestamp(1753778337, 1),
+			"t" : NumberLong(3)
+		},
+		"numVotesNeeded" : 2,
+		"priorityAtElection" : 1,
+		"electionTimeoutMillis" : NumberLong(10000),
+		"priorPrimaryMemberId" : 1,
+		"numCatchUpOps" : NumberLong(0),
+		"newTermStartDate" : ISODate("2025-07-29T08:38:57.312Z"),
+		"wMajorityWriteAvailabilityDate" : ISODate("2025-07-29T08:39:03.560Z")
+	},
+	"members" : [
+		{
+			"_id" : 0,
+			"name" : "mg-ha-demo-0.mg-ha-demo-pods.demo.svc.cluster.local:27017",
+			"health" : 1,
+			"state" : 1,
+			"stateStr" : "PRIMARY",
+			"uptime" : 16845,
+			"optime" : {
+				"ts" : Timestamp(1753779817, 1),
+				"t" : NumberLong(4)
+			},
+			"optimeDate" : ISODate("2025-07-29T09:03:37Z"),
+			"lastAppliedWallTime" : ISODate("2025-07-29T09:03:37.338Z"),
+			"lastDurableWallTime" : ISODate("2025-07-29T09:03:37.338Z"),
+			"syncSourceHost" : "",
+			"syncSourceId" : -1,
+			"infoMessage" : "",
+			"electionTime" : Timestamp(1753778337, 2),
+			"electionDate" : ISODate("2025-07-29T08:38:57Z"),
+			"configVersion" : 3,
+			"configTerm" : 4,
+			"self" : true,
+			"lastHeartbeatMessage" : ""
+		},
+		{
+			"_id" : 1,
+			"name" : "mg-ha-demo-1.mg-ha-demo-pods.demo.svc.cluster.local:27017",
+			"health" : 1,
+			"state" : 2,
+			"stateStr" : "SECONDARY",
+			"uptime" : 1442,
+			"optime" : {
+				"ts" : Timestamp(1753779817, 1),
+				"t" : NumberLong(4)
+			},
+			"optimeDurable" : {
+				"ts" : Timestamp(1753779817, 1),
+				"t" : NumberLong(4)
+			},
+			"optimeDate" : ISODate("2025-07-29T09:03:37Z"),
+			"optimeDurableDate" : ISODate("2025-07-29T09:03:37Z"),
+			"lastAppliedWallTime" : ISODate("2025-07-29T09:03:37.338Z"),
+			"lastDurableWallTime" : ISODate("2025-07-29T09:03:37.338Z"),
+			"lastHeartbeat" : ISODate("2025-07-29T09:03:39.341Z"),
+			"lastHeartbeatRecv" : ISODate("2025-07-29T09:03:39.569Z"),
+			"pingMs" : NumberLong(0),
+			"lastHeartbeatMessage" : "",
+			"syncSourceHost" : "mg-ha-demo-0.mg-ha-demo-pods.demo.svc.cluster.local:27017",
+			"syncSourceId" : 0,
+			"infoMessage" : "",
+			"configVersion" : 3,
+			"configTerm" : 4
+		},
+		{
+			"_id" : 2,
+			"name" : "mg-ha-demo-2.mg-ha-demo-pods.demo.svc.cluster.local:27017",
+			"health" : 1,
+			"state" : 2,
+			"stateStr" : "SECONDARY",
+			"uptime" : 1442,
+			"optime" : {
+				"ts" : Timestamp(1753779817, 1),
+				"t" : NumberLong(4)
+			},
+			"optimeDurable" : {
+				"ts" : Timestamp(1753779817, 1),
+				"t" : NumberLong(4)
+			},
+			"optimeDate" : ISODate("2025-07-29T09:03:37Z"),
+			"optimeDurableDate" : ISODate("2025-07-29T09:03:37Z"),
+			"lastAppliedWallTime" : ISODate("2025-07-29T09:03:37.338Z"),
+			"lastDurableWallTime" : ISODate("2025-07-29T09:03:37.338Z"),
+			"lastHeartbeat" : ISODate("2025-07-29T09:03:39.341Z"),
+			"lastHeartbeatRecv" : ISODate("2025-07-29T09:03:40.606Z"),
+			"pingMs" : NumberLong(0),
+			"lastHeartbeatMessage" : "",
+			"syncSourceHost" : "mg-ha-demo-0.mg-ha-demo-pods.demo.svc.cluster.local:27017",
+			"syncSourceId" : 0,
+			"infoMessage" : "",
+			"configVersion" : 3,
+			"configTerm" : 4
+		}
+	],
+	"ok" : 1,
+	"$clusterTime" : {
+		"clusterTime" : Timestamp(1753779817, 1),
+		"signature" : {
+			"hash" : BinData(0,"8AgSQtGZAjbr4NWOcFl7R7ia1ZU="),
+			"keyId" : NumberLong("7532089958085951493")
+		}
+	},
+	"operationTime" : Timestamp(1753779817, 1)
+}
+# Here "stateStr" field shows if the node is primary or secondary.
+rs1:PRIMARY> rs.status().members.forEach(function(member) {
+...   const hostParts = member.name.split(":");
+...   const host = hostParts[0];
+...   const port = hostParts[1];
+...   const state = member.stateStr;
+...   const role = state === "PRIMARY" ? "PRIMARY" : "SECONDARY";
+...   print(
+...     host.padEnd(45) + "\t" +
+...     port.padEnd(8) + "\t" +
+...     "ONLINE".padEnd(10) + "\t" +
+...     role
+...   );
+... });
+mg-ha-demo-0.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	PRIMARY
+mg-ha-demo-1.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
+mg-ha-demo-2.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
 
 ```
 
@@ -337,28 +607,46 @@ pod "mg-ha-demo-1" deleted
 pod "mg-ha-demo-2" deleted
 
 ```
-
-![img_5.png](/docs/guides/MongoDB/failure-and-disaster-recovery/img_5.png)
+```shell
+mg-ha-demo-0 primary
+mg-ha-demo-1 
+```
 
 Shortly both of the pods will be back with its role.
+```shell
+mg-ha-demo-0 primary
+mg-ha-demo-1 standby
+mg-ha-demo-2 standby
 
-![img_6.png](/docs/guides/MongoDB/failure-and-disaster-recovery/img_6.png)
-
+```
 Lets verify cluster state.
 ```shell
 ➤ kubectl exec -it -n demo mg-ha-demo-0  -- bash
-Defaulted container "MongoDB" out of: MongoDB, mg-coordinator, MongoDB-init-container (init)
-mg-ha-demo-0:/$ psql
-psql (17.2)
-Type "help" for help.
+Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
+mongodb@mg-ha-demo-0:/$ mongo admin
+MongoDB shell version v4.4.26
+connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
+Implicit session: session { "id" : UUID("8c1a76f9-61cf-4105-b3b1-d82190640c87") }
+MongoDB server version: 4.4.26
+rs1:SECONDARY> db.auth("root","JUIevJ)ISh!Srg4y")
+1
 
-MongoDB=# select * from mg_stat_replication;
- pid  | usesysid | usename  | application_name | client_addr | client_hostname | client_port |         backend_start         | backend_xmin |   state   | sent_lsn  | write_lsn | flush_lsn | replay_lsn |    write_lag    |    flush_lag    |   replay_lag    | sync_priority | sync_state |          reply_time           
-------+----------+----------+------------------+-------------+-----------------+-------------+-------------------------------+--------------+-----------+-----------+-----------+-----------+------------+-----------------+-----------------+-----------------+---------------+------------+-------------------------------
- 5564 |       10 | MongoDB | mg-ha-demo-2     | 10.42.0.194 |                 |       51560 | 2025-06-20 10:06:26.988807+00 |              | streaming | 0/7014A58 | 0/7014A58 | 0/7014A58 | 0/7014A58  | 00:00:00.000178 | 00:00:00.000811 | 00:00:00.000848 |             0 | async      | 2025-06-20 10:07:50.218299+00
- 5572 |       10 | MongoDB | mg-ha-demo-1     | 10.42.0.193 |                 |       36158 | 2025-06-20 10:06:27.980841+00 |              | streaming | 0/7014A58 | 0/7014A58 | 0/7014A58 | 0/7014A58  | 00:00:00.000194 | 00:00:00.000818 | 00:00:00.000895 |             0 | async      | 2025-06-20 10:07:50.218337+00
-(2 rows)
-
+rs1:PRIMARY> rs.status().members.forEach(function(member) {
+...   const hostParts = member.name.split(":");
+...   const host = hostParts[0];
+...   const port = hostParts[1];
+...   const state = member.stateStr;
+...   const role = state === "PRIMARY" ? "PRIMARY" : "SECONDARY";
+...   print(
+...     host.padEnd(45) + "\t" +
+...     port.padEnd(8) + "\t" +
+...     "ONLINE".padEnd(10) + "\t" +
+...     role
+...   );
+... });
+mg-ha-demo-0.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	PRIMARY
+mg-ha-demo-1.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
+mg-ha-demo-2.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
 
 ```
 
@@ -373,92 +661,78 @@ pod "mg-ha-demo-1" deleted
 pod "mg-ha-demo-2" deleted
 
 ```
-![img_7.png](/docs/guides/MongoDB/failure-and-disaster-recovery/img_7.png)
+
+```shell
+mg-ha-demo-0 standby
+mg-ha-demo-1
+mg-ha-demo-2
+```
 
 Within 20-30 second, all of the pod should be back.
 
-![img_8.png](/docs/guides/MongoDB/failure-and-disaster-recovery/img_8.png)
+```shell
+mg-ha-demo-0 standby
+mg-ha-demo-1 primary
+mg-ha-demo-2 standby
+
+```
 
 Lets verify the cluster state now.
 
 ```shell
-➤ kubectl exec -it -n demo mg-ha-demo-0  -- bash
-Defaulted container "MongoDB" out of: MongoDB, mg-coordinator, MongoDB-init-container (init)
-mg-ha-demo-0:/$ psql
-psql (17.2)
-Type "help" for help.
-
-MongoDB=# select * from mg_stat_replication;
- pid | usesysid | usename  | application_name | client_addr | client_hostname | client_port |         backend_start         | backend_xmin |   state   | sent_lsn  | write_lsn | flush_lsn | replay_lsn |    write_lag    |    flush_lag    |   replay_lag    | sync_priority | sync_state |          reply_time           
------+----------+----------+------------------+-------------+-----------------+-------------+-------------------------------+--------------+-----------+-----------+-----------+-----------+------------+-----------------+-----------------+-----------------+---------------+------------+-------------------------------
- 132 |       10 | MongoDB | mg-ha-demo-2     | 10.42.0.197 |                 |       34244 | 2025-06-20 10:09:20.27726+00  |              | streaming | 0/9001848 | 0/9001848 | 0/9001848 | 0/9001848  | 00:00:00.00021  | 00:00:00.000841 | 00:00:00.000894 |             0 | async      | 2025-06-20 10:11:02.527633+00
- 133 |       10 | MongoDB | mg-ha-demo-1     | 10.42.0.196 |                 |       40102 | 2025-06-20 10:09:20.279987+00 |              | streaming | 0/9001848 | 0/9001848 | 0/9001848 | 0/9001848  | 00:00:00.000225 | 00:00:00.000848 | 00:00:00.000905 |             0 | async      | 2025-06-20 10:11:02.527653+00
-(2 rows)
-
-
+➤  kubectl exec -it -n demo mg-ha-demo-1  -- bash
+Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
+mongodb@mg-ha-demo-1:/$ mongo admin
+MongoDB shell version v4.4.26
+connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
+Implicit session: session { "id" : UUID("f99795f2-9fb1-4221-bf2c-916f0e92d152") }
+MongoDB server version: 4.4.26
+rs1:PRIMARY> db.auth("root","JUIevJ)ISh!Srg4y")
+1
+rs1:PRIMARY> rs.status().members.forEach(function(member) {
+... ...   const hostParts = member.name.split(":");
+... ...   const host = hostParts[0];
+... ...   const port = hostParts[1];
+... ...   const state = member.stateStr;
+... ...   const role = state === "PRIMARY" ? "PRIMARY" : "SECONDARY";
+... ...   print(
+... ...     host.padEnd(45) + "\t" +
+... ...     port.padEnd(8) + "\t" +
+... ...     "ONLINE".padEnd(10) + "\t" +
+... ...     role
+... ...   );
+... ... });
+mg-ha-demo-0.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
+mg-ha-demo-1.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	PRIMARY
+mg-ha-demo-2.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
 ```
+#### Retryable Writes
+Retryable writes allow MongoDB drivers to safely retry certain write operations 
+(like insert, update, delete) once automatically if a network error or primary failover occurs.
 
-> **We make sure the pod with highest lsn (you can think lsn as the highest data point available in your cluster) always run as primary, so if a case occur where the pod with highest lsn is being terminated, we will not perform the failover until the highest lsn pod is back online. So in a case, where that highest lsn primary is not recoverable, read [this](https://appscode.com/blog/post/kubedb-v2025.2.19/#forcefailover) to do a force failover.**
+Operational Details: 
+- Each retryable write includes a unique transaction identifier.
+- If a write fails due to network issues, failover, or not acknowledging, the driver retries the operation once.
+- `MongoDB` ensures that even if retried, the operation is only executed once (idempotent behavior).
+- The server uses the transaction ID to recognize duplicate attempts and suppress duplicates.
 
+#### Rollback in MongoDB
+A `rollback` in `MongoDB` occurs when a node that was previously acting as the primary performs write 
+operations but then loses its primary status before those writes are replicated to a majority of the
+replica set members.
 
-## A Guide to MongoDB Backup And Restore
-
-You can configure Backup and Restore following the below documentation.
-
-[Backup and Restore](/docs/guides/MongoDB/backup)
-
-Youtube video Links: [link](https://www.youtube.com/watch?v=j9y5MsB-guQ)
-
-
-## A Guide to MongoDB PITR
-Documentaion Link: [PITR](/docs/guides/MongoDB/pitr)
-
-Concepts and Demo: [link](https://www.youtube.com/watch?v=gR5UdN6Y99c)
-
-Basic Demo: [link](https://www.youtube.com/watch?v=BdMSVjNQtCA)
-
-Full Demo: [link](https://www.youtube.com/watch?v=KAl3rdd8i6k)
-
-## A Guide to Handling MongoDB Storage
-
-It is often possible that your database storage become full and your database has stopped working. We have got you covered. You just apply a VolumeExpansion `MongoDBOpsRequest` and your database storage will be increased, and the database will be ready to use again.
-
-### Disaster Scenario and Recovery
-
-#### Scenario
-
-You deploy a `MongoDBQL` database. The database was running fine. Someday, your database storage becomes full. As your MongoDB process can't write to the filesystem,
-clients won't be able to connect to the database. Your database status will be `Not Ready`.
-
-#### Recovery
-
-In order to recover from this, you can create a `VolumeExpansion` `MongoDBOpsRequest` with expanded resource requests.
-As soon as you create this, KubeDB will trigger the necessary steps to expand your volume based on your specifications on the `MongoDBOpsRequest` manifest. A sample `MongoDBOpsRequest` manifest for `VolumeExpansion` is given below:
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mgops-vol-exp-ha-demo
-  namespace: demo
-spec:
-  apply: Always
-  databaseRef:
-    name: mg-ha-demo
-  type: VolumeExpansion
-  volumeExpansion:
-    mode: Online # see the notes, your storageclass must support this mode
-    MongoDB: 20Gi # expanded resource
-```
-
-
-For more details, please check the full section [here](/docs/guides/MongoDB/volume-expansion/Overview/overview.md).
-
-> **Note**: There are two ways to update your volume: 1.Online 2.Offline. Which Mode to choose?
-> It depends on your `StorageClass`. If your storageclass supports online volume expansion, you can go with it. Otherwise, you can go with `Ofline` Volume Expansion.
+This typically happens during a `network partition`, where the isolated primary continues accepting writes,
+unaware that it no longer holds the majority. Meanwhile, the remaining members elect a new primary. 
+When the original primary rejoins the replica set, `MongoDB` detects a divergence between its data and the new
+primary’s state. To resolve this, MongoDB rolls back the unreplicated writes from the old primary,
+restoring consistency with the current primary.
 
 ## CleanUp
-
+Run the following command for cleanup:
 ```shell
+# delete the cluster of MongoDB
 kubectl delete mg -n demo mg-ha-demo
+
+# or delete the namespace
+kubectl delete ns demo
 ```
