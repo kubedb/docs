@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-failure-and-disaster-recovery
     name: Failure and DR Scenarios
     parent: guides-mysql
-    weight: 20
+    weight: 27
 menu_name: docs_{{ .version }}
 ---
