@@ -137,7 +137,7 @@ e4qcqnS.tt_zFQDa⏎
 
 #### 1. Using operator generated credentials:
 
-In order to rotate authentication to the Postgres using operator generated, we have to create a `DruidOpsRequest` CRO with `RotateAuth` type. Below is the YAML of the `DruidOpsRequest` CRO that we are going to create,
+In order to rotate authentication to the Druid using operator generated, we have to create a `DruidOpsRequest` CRO with `RotateAuth` type. Below is the YAML of the `DruidOpsRequest` CRO that we are going to create,
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: DruidOpsRequest
@@ -380,7 +380,7 @@ spec:
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `druid-quickstart`cluster.
-- `spec.type` specifies that we are performing `RotateAuth` on postgres.
+- `spec.type` specifies that we are performing `RotateAuth` on Druid.
 - `spec.authentication.secretRef.name` specifies that we are using `druid-quickstart-auth-user` as `spec.authSecret.name` for authentication.
 
 Let's create the `DruidOpsRequest` CR we have shown above,

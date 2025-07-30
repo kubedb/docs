@@ -122,7 +122,7 @@ If you can access the data table and run queries, it means the secrets are worki
 
 #### 1. Using operator generated credentials:
 
-In order to rotate authentication to the Postgres using operator generated, we have to create a `MongoDBOpsRequest` CRO with `RotateAuth` type. Below is the YAML of the `MongoDBOpsRequest` CRO that we are going to create,
+In order to rotate authentication to the MongoDB using operator generated, we have to create a `MongoDBOpsRequest` CRO with `RotateAuth` type. Below is the YAML of the `MongoDBOpsRequest` CRO that we are going to create,
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MongoDBOpsRequest
@@ -343,7 +343,7 @@ spec:
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `mgo-quickstart`cluster.
-- `spec.type` specifies that we are performing `RotateAuth` on postgres.
+- `spec.type` specifies that we are performing `RotateAuth` on MongoDB.
 - `spec.authentication.secretRef.name` specifies that we are using `quick-mg-user-auth` as `spec.authSecret.name` for authentication.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,

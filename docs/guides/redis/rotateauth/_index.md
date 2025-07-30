@@ -5,6 +5,6 @@ menu:
     identifier: rd-rotateauth-redis
     name: Rotate Authentication
     parent: rd-redis-guides
-    weight: 15
+    weight: 48
 menu_name: docs_{{ .version }}
 ---

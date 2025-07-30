@@ -121,7 +121,7 @@ spec:
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/quickstart/mssqlserver-quickstart.yaml
 mssqlserver.kubedb.com/mssqlserver-quickstart created
 ```
-Now, wait until quick-postgres has status Ready. i.e,
+Now, wait until quick-MongoDB has status Ready. i.e,
 
 ```shell
 $  kubectl get ms -n demo -w

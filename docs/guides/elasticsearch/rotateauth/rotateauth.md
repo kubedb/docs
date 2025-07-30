@@ -111,6 +111,7 @@ l;)1knmenzgH0c2M⏎
 Now, you can exec into the pod `sample-es` and connect to database using `username` and `password`.
 
 **Port-forward the Service**
+
 At first, let’s port-forward the `sample-es` Service. Run the following command into a separate terminal.
 ```shell
 $ kubectl port-forward -n demo service/sample-es 9200
@@ -118,7 +119,7 @@ Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
 ```
 
-**Insert dat**
+**Insert database**
 
 ```shell
 $ curl -XPOST --user "elastic:l;)1knmenzgH0c2M" "http://localhost:9200/products/_doc?pretty" -H 'Content-Type: application/json' -d'
@@ -150,7 +151,7 @@ If you can access the data table and run queries, it means the secrets are worki
 
 #### 1. Using operator generated credentials:
 
-In order to rotate authentication to the Postgres using operator generated, we have to create a `ElasticsearchOpsRequest` CRO with `RotateAuth` type. Below is the YAML of the `ElasticsearchOpsRequest` CRO that we are going to create,
+In order to rotate authentication to the Elasticsearch using operator generated, we have to create a `ElasticsearchOpsRequest` CRO with `RotateAuth` type. Below is the YAML of the `ElasticsearchOpsRequest` CRO that we are going to create,
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ElasticsearchOpsRequest
@@ -179,7 +180,6 @@ Let's wait for `ElasticsearchOpsrequest` to be `Successful`. Run the following c
 $ kubectl get esops -n demo
 NAME                           TYPE         STATUS       AGE
 essops-rotate-auth-generated   RotateAuth   Successful   7m12s
-
 ```
 If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed.
 ```shell
@@ -352,8 +352,8 @@ Events:
 
 ```
 **Verify Auth is rotated**
+
 ```shell
-````shell
 $ kubectl get es -n demo sample-es -ojson | jq .spec.authSecret.name
 "sample-es-auth"
 $ kubectl get secret -n demo sample-es-auth -o jsonpath='{.data.username}' | base64 -d
@@ -404,7 +404,7 @@ spec:
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `sample-es`cluster.
-- `spec.type` specifies that we are performing `RotateAuth` on postgres.
+- `spec.type` specifies that we are performing `RotateAuth` on Elasticsearch.
 - `spec.authentication.secretRef.name` specifies that we are using `sample-es-auth-user` as `spec.authSecret.name` for authentication.
 
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
