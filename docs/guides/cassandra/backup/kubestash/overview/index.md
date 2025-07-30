@@ -28,7 +28,7 @@ KubeDB also uses [KubeStash](https://kubestash.com) to backup and restore databa
 The following diagram shows how KubeStash takes backup of a `Cassandra` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Cassandra Backup Overview" src="/docs/guides/cassandra/backup/kubestash/overview/images/backup_overview.svg">
+  <img alt="Cassandra Backup Overview" src="/docs/guides/cassandra/backup/kubestash/overview/images/backup_overview.png">
   <figcaption align="center">Fig: Cassandra Backup Overview</figcaption>
 </figure>
 
@@ -71,7 +71,7 @@ The backup process consists of the following steps:
 The following diagram shows how KubeStash restores backed up data into a `Cassandra` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Database Restore Overview" src="/docs/guides/cassandra/backup/kubestash/overview/images/restore_overview.svg">
+  <img alt="Database Restore Overview" src="/docs/guides/cassandra/backup/kubestash/overview/images/restore_overview.png">
   <figcaption align="center">Fig: Cassandra Restore Process Overview</figcaption>
 </figure>
 
