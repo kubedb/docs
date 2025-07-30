@@ -42,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/cassandra/backup/kubestash/logical/examples](/docs/guides/cassandra/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/cassandra/backup/kubestash/logical/examples](https://github.com/kubedb/docs/tree/master/docs/guides/cassandra/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Backup Cassandra
 
@@ -123,7 +123,7 @@ Here,
 - `spec.topology.aggregator.replicas` or `spec.topology.leaf.replicas` specifies that the number replicas that will be used for aggregator or leaf.
 - `spec.storageType` specifies the type of storage that will be used for Cassandra database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Cassandra database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.topology.aggregator.storage` or `spec.topology.leaf.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Cassandra` crd or which resources KubeDB should keep or delete when you delete `Cassandra` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy)
+- `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Cassandra` crd or which resources KubeDB should keep or delete when you delete `Cassandra` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/cassandra/concepts/cassandra.md#specdeletionpolicy)
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in `storage.resources.requests` field. Don't specify limits here. PVC does not get resized automatically.
 
@@ -158,7 +158,7 @@ cas-sample                ClusterIP   10.96.77.149   <none>        9042/TCP,7000
 cas-sample-rack-r0-pods   ClusterIP   None           <none>        9042/TCP,7000/TCP,7199/TCP,7001/TCP   3m57s
 ```
 
-Here, we have to use service `cas-sample` and secret `cas-sample-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/mysql/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
+Here, we have to use service `cas-sample` and secret `cas-sample-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/cassandra/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
 
 **Verify AppBinding:**
 
@@ -217,7 +217,6 @@ spec:
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
 
-- `.spec.parameters.masterAggregator` specifies the dns of master aggregator node that we have to mention in mysqldump command when taken backup or restore.
 - `.spec.clientConfig.service.name` specifies the name of the Service that connects to the database.
 - `.spec.secret` specifies the name of the Secret that holds necessary credentials to access the database.
 - `spec.type` specifies the types of the app that this AppBinding is pointing to. KubeDB generated AppBinding follows the following format: `<app group>/<app resource type>`.
@@ -242,7 +241,7 @@ admin⏎
 gkebeP3HJbxubvCM⏎                     
 ```
 
-Now, Lets exec into the any aggregator `Pod` to enter into `cqlsh` shell and create a database and a table,
+Now, Lets exec into any `Pod` to enter into `cqlsh` shell to create a keyspace and a table,
 
 ```bash
 $ kubectl exec -it -n demo cas-sample-rack-r0-0 -- cqlsh -u admin -p gkebeP3HJbxubvCM
@@ -652,10 +651,10 @@ admin⏎
 gkebeP3HJbxubvCM⏎    
 ```
 
-Now, Lets exec into the any aggregator `Pod` to enter into `mysql` shell and create a database and a table,
+Now, Lets exec into any `Pod` to enter into `cqlsh` shell and access the previously created table,
 
 ```bash
-$  kubectl exec -it -n demo cas-sample-rack-r0-0 -- cqlsh -u admin -p gkebeP3HJbxubvCM
+$ kubectl exec -it -n demo cas-sample-rack-r0-0 -- cqlsh -u admin -p gkebeP3HJbxubvCM
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 
 Warning: Using a password on the command line interface can be insecure.

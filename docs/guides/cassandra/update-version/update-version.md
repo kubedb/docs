@@ -38,7 +38,7 @@ namespace/demo created
 
 ## Prepare Cassandra
 
-Now, we are going to deploy a `Cassandra` replicaset database with version `3.6.8`.
+Now, we are going to deploy a `Cassandra` replicaset database with version `4.1.8`.
 
 ### Deploy Cassandra
 
@@ -146,7 +146,7 @@ Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following comm
 
 ```bash
 $ kubectl get cassandraopsrequest -n demo
-NAME                   TYPE            STATUS        AGE
+NAME                       TYPE            STATUS        AGE
 cassandra-update-version   UpdateVersion   Successful    2m6s
 ```
 

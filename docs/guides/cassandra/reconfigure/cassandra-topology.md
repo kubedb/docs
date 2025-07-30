@@ -389,7 +389,7 @@ Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following comm
 
 ```bash
 $ kubectl get cassandraopsrequests -n demo casops-reconfigure-apply-topology 
-NAME                               TYPE          STATUS       AGE
+NAME                                TYPE          STATUS       AGE
 casops-reconfigure-apply-topology   Reconfigure   Successful   55s
 ```
 

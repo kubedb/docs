@@ -335,7 +335,7 @@ The `spec.podTemplate.spec.containers[].name` field used to specify the name of 
 
 ##### spec.podTemplate.spec.containers[].env
 
-`spec.podTemplate.spec.containers[].env` is an optional field that specifies the environment variables to pass to the Redis containers.
+`spec.podTemplate.spec.containers[].env` is an optional field that specifies the environment variables to pass to the Cassandra containers.
 
 ##### spec.podTemplate.spec.containers[].resources
 
@@ -351,6 +351,20 @@ The `spec.podTemplate.spec.containers[].name` field used to specify the name of 
 - Delete
 
 When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
+
+Following table show what KubeDB does when you delete Cassandra crd for different termination policies,
+
+| Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
+| ----------------------------------- | :------------: | :------: | :------: | :------: |
+| 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
+| 2. Delete PetSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
+| 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
+
+If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
+
 
 ## spec.healthChecker
 It defines the attributes for the health checker.

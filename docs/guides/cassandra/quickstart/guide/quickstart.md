@@ -110,7 +110,7 @@ The Cassandra's `STATUS` will go from `Provisioning` to `Ready` state within few
 
 ```bash
 $ kubectl get cassandra -n demo -w
-NAME               TYPE                  VERSION   STATUS         AGE
+NAME                   TYPE                 VERSION   STATUS         AGE
 cassandra-quickstart   kubedb.com/v1alpha2   5.0.3    Provisioning   17s
 cassandra-quickstart   kubedb.com/v1alpha2   5.0.3    Provisioning   28s
 .

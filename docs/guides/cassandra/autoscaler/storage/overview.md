@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Cassandra Vertical Autoscaling
 
-This guide will give an overview on how KubeDB Autoscaler operator autoscales the database storage using `Cassandraautoscaler` crd.
+This guide will give an overview on how KubeDB Autoscaler operator autoscales the database storage using `CassandraAutoscaler` crd.
 
 ## Before You Begin
 

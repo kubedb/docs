@@ -43,7 +43,7 @@ Here, we are going to deploy a `Cassandra` topology cluster using a supported ve
 
 ### Prepare Cassandra Topology Cluster
 
-Now, we are going to deploy a `Cassandra` topology cluster database with version `3.9.0`.
+Now, we are going to deploy a `Cassandra` topology cluster database with version `5.0.3`.
 
 ### Deploy Cassandra Topology Cluster
 

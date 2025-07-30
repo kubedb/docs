@@ -25,7 +25,7 @@ Like any official Kubernetes resource, a `CassandraOpsRequest` has `TypeMeta`, `
 
 Here, some sample `CassandraOpsRequest` CRs for different administrative operations is given below:
 
-**Sample `CassandraOpsRequest` for updating database:**
+Sample `CassandraOpsRequest` for updating database:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -51,7 +51,7 @@ status:
   phase: Successful
 ```
 
-**Sample `CassandraOpsRequest` Objects for Horizontal Scaling of different component of the database:**
+Sample `CassandraOpsRequest` Objects for Horizontal Scaling of different component of the database:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -77,7 +77,7 @@ status:
   phase: Successful
 ```
 
-**Sample `CassandraOpsRequest` Objects for Vertical Scaling of different component of the database:**
+Sample `CassandraOpsRequest` Objects for Vertical Scaling of different component of the database:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -110,7 +110,7 @@ status:
   phase: Successful
 ```
 
-**Sample `CassandraOpsRequest` Objects for Reconfiguring different cassandra mode:**
+Sample `CassandraOpsRequest` Objects for Reconfiguring different cassandra mode:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -163,7 +163,7 @@ status:
   phase: Successful
 ```
 
-**Sample `CassandraOpsRequest` Objects for Volume Expansion of different database components:**
+Sample `CassandraOpsRequest` Objects for Volume Expansion of different database components:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -190,7 +190,7 @@ status:
   phase: Successful
 ```
 
-**Sample `CassandraOpsRequest` Objects for Reconfiguring TLS of the database:**
+Sample `CassandraOpsRequest` Objects for Reconfiguring TLS of the database:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
