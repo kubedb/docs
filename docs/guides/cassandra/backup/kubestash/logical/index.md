@@ -70,59 +70,38 @@ metadata:
   name: cas-sample
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: 5.0.3
+  configuration:
   topology:
-    aggregator:
-      replicas: 2
-      podTemplate:
-        spec:
-          containers:
-          - name: cassandra
-            resources:
-              limits:
-                memory: "2Gi"
-                cpu: "600m"
-              requests:
-                memory: "2Gi"
-                cpu: "600m"
-      storage:
-        accessModes:
-        - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-    leaf:
-      replicas: 3
-      podTemplate:
-        spec:
-          containers:
-            - name: cassandra
-              resources:
-                limits:
-                  memory: "2Gi"
-                  cpu: "600m"
-                requests:
-                  memory: "2Gi"
-                  cpu: "600m"                      
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 10Gi
-  licenseSecret:
-    name: license-secret
-  storageType: Durable
+    rack:
+      - name: r0
+        replicas: 2
+        podTemplate:
+          spec:
+            containers:
+              - name: cassandra
+                resources:
+                  limits:
+                    memory: 2Gi
+                    cpu: 2
+                  requests:
+                    memory: 1Gi
+                    cpu: 1
+        storage:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+        storageType: Durable
   deletionPolicy: WipeOut
 ```
 
 Here,
 
-- `spec.version` is the name of the CassandraVersion CRD where the docker images are specified. In this tutorial, a Cassandra `8.7.10` database is going to be created.
+- `spec.version` is the name of the CassandraVersion CRD where the docker images are specified. In this tutorial, a Cassandra `5.0.3` database is going to be created.
 - `spec.topology` specifies that it will be used as cluster mode. If this field is nil it will be work as standalone mode.
-- `spec.topology.aggregator.replicas` or `spec.topology.leaf.replicas` specifies that the number replicas that will be used for aggregator or leaf.
 - `spec.storageType` specifies the type of storage that will be used for Cassandra database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Cassandra database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.topology.aggregator.storage` or `spec.topology.leaf.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Cassandra` crd or which resources KubeDB should keep or delete when you delete `Cassandra` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/cassandra/concepts/cassandra.md#specdeletionpolicy)
 
 > Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified in `storage.resources.requests` field. Don't specify limits here. PVC does not get resized automatically.
