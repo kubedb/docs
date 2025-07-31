@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is RedisVersion
 
-`RedisVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Redis](https://redis.io/) database deployed with KubeDB in a Kubernetes native way.
+`RedisVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for `Redis/Valkey` database deployed with KubeDB in a Kubernetes native way.
 
 When you install KubeDB, a `RedisVersion` custom resource will be created automatically for every supported Redis versions. You have to specify the name of `RedisVersion` crd in `spec.version` field of [Redis](/docs/guides/redis/concepts/redis.md) crd. Then, KubeDB will use the docker images specified in the `RedisVersion` crd to create your expected database.
 
@@ -37,27 +37,33 @@ metadata:
     app.kubernetes.io/instance: kubedb
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kubedb-catalog
-    app.kubernetes.io/version: v2023.01.17
-    helm.sh/chart: kubedb-catalog-v2023.01.17
-  name: 6.2.14
+    app.kubernetes.io/version: v2025.6.30
+    helm.sh/chart: kubedb-catalog-v2025.6.30
+  name: 7.2.4
 spec:
   coordinator:
-    image: kubedb/redis-coordinator:v0.9.1
+    image: ghcr.io/kubedb/redis-coordinator:v0.35.0
   db:
-    image: redis:6.2.14
+    image: ghcr.io/appscode-images/redis:7.2.4-bookworm
+  distribution: Official
   exporter:
-    image: kubedb/redis_exporter:1.9.0
+    image: ghcr.io/kubedb/redis_exporter:1.66.0
   initContainer:
-    image: kubedb/redis-init:0.7.0
+    image: ghcr.io/kubedb/redis-init:0.12.0
   podSecurityPolicies:
-    databasePolicyName: redis-db
+    databasePolicyName: ""
+  securityContext:
+    runAsUser: 999
   stash:
     addon:
       backupTask:
-        name: redis-backup-6.2.5
+        name: redis-backup-7.0.5
       restoreTask:
-        name: redis-restore-6.2.5
-  version: 6.2.14
+        name: redis-restore-7.0.5
+  updateConstraints:
+    allowlist:
+      - '>= 7.2.4, < 7.4.2'
+  version: 7.2.4
 ```
 
 ### metadata.name
@@ -67,6 +73,8 @@ spec:
 We follow this convention for naming RedisVersion crd:
 
 - Name format: `{Original Redis image verion}-{modification tag}`
+
+`Note`: If you want to use Valkey instead of Redis, you can add a prefix on the name `valkey`
 
 We modify original Redis docker image to support Redis clustering and re-tag the image with v1, v2 etc. modification tag. An image with higher modification tag will have more features than the images with lower modification tag. Hence, it is recommended to use RedisVersion crd with highest modification tag to enjoy the latest features.
 
