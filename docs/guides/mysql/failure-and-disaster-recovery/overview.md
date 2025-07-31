@@ -506,12 +506,12 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 
 You can configure Backup and Restore following the below documentation.
 
-[Backup and Restore](/docs/guides/mysql/backup)
+[Backup and Restore](/docs/guides/mysql/backup/kubestash/overview/index.md)
 
 
 ## A Guide to MySQL PITR
 
-Documentaion Link: [PITR](/docs/guides/mysql/pitr)
+Documentaion Link: [PITR](/docs/guides/mysql/pitr/volumesnapshot/archiver.md)
 
 
 ## A Guide to Handling MySQL Storage
