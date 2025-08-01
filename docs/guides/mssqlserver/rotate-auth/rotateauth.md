@@ -3,7 +3,7 @@ title: Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
     identifier: ms-rotate-auth-guide
-    name: Rotate Authentication Guide
+    name: Guide
     parent: ms-rotate-auth
     weight: 10
 menu_name: docs_{{ .version }}
@@ -457,7 +457,7 @@ Also, there will be two more new keys in the secret that stores the previous cre
 ```shell
 $ kubectl get secret -n demo quick-mssql-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 sa⏎                                                                                         
-$ kubectl get secret -n demo quick-MSSQLServer-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+$ kubectl get secret -n demo quick-mssqlserver-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
 zTBVvzgoEb2qUe3X⏎ 
 ```
 
@@ -471,7 +471,7 @@ Or, you can delete one by one resource by their name by this tutorial, run:
 ```shell
 $ kubectl delete MSSQLServeropsrequest msops-rotate-auth-generated msops-rotate-auth-user -n demo
 MSSQLServeropsrequest.ops.kubedb.com "msops-rotate-auth-generated" "msops-rotate-auth-user" deleted
-$ kubectl delete secret -n demoquick-MSSQLServer-user-auth
+$ kubectl delete secret -n demoquick-mssqlserver-user-auth
 secret "quick-mssqlserver-user-auth" deleted
 $ kubectl delete secret -n demo   mssqlserver-quickstart-auth 
 secret "mssqlserver-quickstart-auth " deleted

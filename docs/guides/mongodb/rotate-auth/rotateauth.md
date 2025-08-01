@@ -3,7 +3,7 @@ title: Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
     identifier: mg-rotate-auth-details
-    name: Rotate Authentication Guide
+    name: Guide
     parent: mg-rotate-auth
     weight: 10
 menu_name: docs_{{ .version }}

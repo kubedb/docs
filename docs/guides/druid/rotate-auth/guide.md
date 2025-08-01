@@ -3,7 +3,7 @@ title: Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
     identifier: guides-druid-rotate-auth-guide
-    name: Rotate Authentication Guide
+    name: Guide
     parent: guides-druid-rotate-auth
     weight: 10
 menu_name: docs_{{ .version }}

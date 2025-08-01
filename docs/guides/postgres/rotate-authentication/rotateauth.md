@@ -3,7 +3,7 @@ title: Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
     identifier: pg-rotate-auth-details
-    name: Rotate Authentication Guide
+    name: Guide
     parent: pg-rotate-authentication
     weight: 30
 menu_name: docs_{{ .version }}

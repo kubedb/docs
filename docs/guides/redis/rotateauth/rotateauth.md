@@ -3,7 +3,7 @@ title: Redis Rotate Authentication
 menu:
   docs_{{ .version }}:
     identifier: rd-rotateauth
-    name: Rotate Authentication
+    name: Guide
     parent: rd-rotateauth-redis
     weight: 10
 menu_name: docs_{{ .version }}

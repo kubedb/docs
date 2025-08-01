@@ -3,7 +3,7 @@ title: Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
     identifier: es-rotateauth
-    name: Rotate Authentication Guide
+    name: Guide
     parent: es-rotateauth-elasticsearch
     weight: 10
 menu_name: docs_{{ .version }}
@@ -605,7 +605,7 @@ Also, there will be two more new keys in the secret that stores the previous cre
 ```shell
 $ kubectl get secret -n demo sample-es-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
 elastic                                                        
-$ kubectl get secret -n demo quick-mg-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+$ kubectl get secret -n demo sample-es-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
 k3pcRRtJi8iMhlVy⏎                                             
 ```
 

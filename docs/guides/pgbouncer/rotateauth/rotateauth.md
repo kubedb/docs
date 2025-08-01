@@ -3,7 +3,7 @@ title: Rotate Authentication PgBouncer
 menu:
   docs_{{ .version }}:
     identifier: pb-rotateauthentication
-    name: Rotate Authentication Guide
+    name: Guide
     parent: pb-rotateauth
     weight: 10
 menu_name: docs_{{ .version }}
@@ -32,50 +32,11 @@ namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed PgBouncer. If you just want to try out KubeDB, you can bypass some of the safety features following the tips [here](/docs/guides/pgbouncer/quickstart/quickstart.md#tips-for-testing).
+**We have designed this tutorial to demonstrate a production setup of KubeDB managed PgBouncer.**
+**If you just want to try out KubeDB, you can bypass some of the safety features following the tips [here](/docs/guides/pgbouncer/quickstart/quickstart.md#tips-for-testing).**
 
-## Create a PgBouncer database
+> Note: Before you begin, you have to create `PgBouncer` CRD with the help of [this](/docs/guides/pgbouncer/quickstart/quickstart.md).
 
-KubeDB implements a `PgBouncer` CRD to define the specification of a PgBouncer database. Below is the `PgBouncer` object created in this tutorial.
-
-
-```yaml
-apiVersion: kubedb.com/v1
-kind: PgBouncer
-metadata:
-  name: pgbouncer-server
-  namespace: demo
-spec:
-  version: "1.18.0"
-  replicas: 1
-  database:
-    syncUsers: true
-    databaseName: "postgres"
-    databaseRef:
-      name: "quick-postgres"
-      namespace: demo
-  connectionPool:
-    maxClientConnections: 20
-    reservePoolSize: 5
-  monitor:
-    agent: prometheus.io/operator
-    prometheus:
-      serviceMonitor:
-        labels:
-          release: prometheus
-        interval: 10s
-```
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-v1.yaml
-pgbouncer.kubedb.com/pgbouncer-server created
-```
-Now, wait until pgbouncer-server has status Ready. i.e,
-
-```shell
-$ kubectl get pgbouncer -n demo
-NAME               VERSION   STATUS   AGE
-pgbouncer-server   1.18.0    Ready    7m56s
-```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
 

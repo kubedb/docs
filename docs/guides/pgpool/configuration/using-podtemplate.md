@@ -507,7 +507,7 @@ Containers:
       PGPOOL_SKIP_PASSWORD_ENCRYPTION:    false
     Mounts:
       /config from pgpool-config (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-69qx2 (rotateauth)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-69qx2 (ro)
 Conditions:
   Type           Status
   PodScheduled   False 
