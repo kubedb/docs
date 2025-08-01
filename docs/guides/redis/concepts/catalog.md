@@ -82,6 +82,10 @@ We modify original Redis docker image to support Redis clustering and re-tag the
 
 `spec.version` is a required field that specifies the original version of Redis server that has been used to build the docker image specified in `spec.db.image` field.
 
+### spec.distribution
+
+`spec.distribution` is a required field that specifies distribution of the database. Only two values are supported in this field `valkey` and `official`(Redis).
+
 ### spec.deprecated
 
 `spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator.
