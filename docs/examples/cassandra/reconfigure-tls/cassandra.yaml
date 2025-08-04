@@ -1,27 +1,30 @@
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: Cassandra
 metadata:
   name: cassandra-prod
   namespace: demo
 spec:
-  version: 3.9.0
+  version: 5.0.3
   topology:
-    broker:
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
-    controller:
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: standard
-  storageType: Durable
+    rack:
+      - name: r0
+        replicas: 2
+        storage:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+        storageType: Durable
+        podTemplate:
+          spec:
+            containers:
+              - name: cassandra
+                resources:
+                  limits:
+                    memory: 3Gi
+                    cpu: 2
+                  requests:
+                    memory: 1Gi
+                    cpu: 1
+  deletionPolicy: WipeOut
