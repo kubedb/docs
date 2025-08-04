@@ -39,8 +39,6 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [guides/cassandra/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/cassandra/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Cassandra. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/cassandra/quickstart/guide/index.md#tips-for-testing).
-
 ## Find Available StorageClass
 
 We will have to provide `StorageClass` in Cassandra CRD specification. Check available `StorageClass` in your cluster using the following command,
@@ -308,11 +306,6 @@ namespace "demo" deleted
 ## Next Steps
 
 [//]: # (- Cassandra Clustering supported by KubeDB)
-
-[//]: # (  - [Combined Clustering]&#40;/docs/guides/cassandra/clustering/combined-cluster/index.md&#41;)
-
-[//]: # (  - [Topology Clustering]&#40;/docs/guides/cassandra/clustering/topology-cluster/index.md&#41;)
-- Use [kubedb cli](/docs/guides/cassandra/cli/cli.md) to manage databases like kubectl for Kubernetes.
 
 [//]: # (- Detail concepts of [Cassandra object]&#40;/docs/guides/cassandra/concepts/cassandra.md&#41;.)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

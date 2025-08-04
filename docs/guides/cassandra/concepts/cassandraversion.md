@@ -110,4 +110,4 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 ## Next Steps
 
 - Learn about Cassandra CRD [here](/docs/guides/cassandra/concepts/cassandra.md).
-- Deploy your first Cassandra database with KubeDB by following the guide [here](/docs/guides/cassandra/quickstart/guide/index.md).
+- Deploy your first Cassandra database with KubeDB by following the guide [here](/docs/guides/cassandra/quickstart/guide/quickstart.md).

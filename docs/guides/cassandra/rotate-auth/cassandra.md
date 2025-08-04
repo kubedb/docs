@@ -536,11 +536,6 @@ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [Cassandra object](/docs/guides/cassandra/concepts/cassandra.md).
-- Different Cassandra topology clustering modes [here](/docs/guides/cassandra/clustering/_index.md).
 - Monitor your Cassandra database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/cassandra/monitoring/using-prometheus-operator.md).
-- Cassandra ConnectCluster with KubeDB [here](/docs/guides/cassandra/connectcluster/quickstart.md).
-- Cassandra Schema Registry with KubeDB [here](/docs/guides/cassandra/schemaregistry/overview.md).
-- Cassandra RestProxy with KubeDB [here](/docs/guides/cassandra/restproxy/overview.md).
-- Cassandra Migration with KubeDB [here](/docs/guides/cassandra/migration/overview.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

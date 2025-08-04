@@ -57,5 +57,5 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 
 ## User Guide
 
-- [Quickstart Cassandra](/docs/guides/cassandra/quickstart/guide/index.md) with KubeDB Operator.
+- [Quickstart Cassandra](/docs/guides/cassandra/quickstart/guide/quickstart.md) with KubeDB Operator.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

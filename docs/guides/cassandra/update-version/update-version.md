@@ -129,8 +129,6 @@ Here,
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
 - `spec.updateVersion.targetVersion` specifies the expected version of the database `5.0.3`.
 
-> **Note:** If you want to update combined Cassandra, you just refer to the `Cassandra` combined object name in `spec.databaseRef.name`. To create a combined Cassandra, you can refer to the [Cassandra Combined](/docs/guides/cassandra/clustering/combined-cluster/index.md) guide.
-
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
@@ -276,7 +274,6 @@ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [Cassandra object](/docs/guides/cassandra/concepts/cassandra.md).
-- Different Cassandra topology clustering modes [here](/docs/guides/cassandra/clustering/_index.md).
 - Monitor your Cassandra database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/cassandra/monitoring/using-prometheus-operator.md).
 
 [//]: # (- Monitor your Cassandra database with KubeDB using [out-of-the-box builtin-Prometheus]&#40;/docs/guides/cassandra/monitoring/using-builtin-prometheus.md&#41;.)

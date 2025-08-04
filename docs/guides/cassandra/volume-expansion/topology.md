@@ -26,7 +26,6 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 
 - You should be familiar with the following `KubeDB` concepts:
     - [Cassandra](/docs/guides/cassandra/concepts/cassandra.md)
-    - [Topology](/docs/guides/cassandra/clustering/topology-cluster/index.md)
     - [CassandraOpsRequest](/docs/guides/cassandra/concepts/cassandraopsrequest.md)
     - [Volume Expansion Overview](/docs/guides/cassandra/volume-expansion/overview.md)
 
@@ -367,7 +366,6 @@ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [Cassandra object](/docs/guides/cassandra/concepts/cassandra.md).
-- Different Cassandra topology clustering modes [here](/docs/guides/cassandra/clustering/_index.md).
 - Monitor your Cassandra database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/cassandra/monitoring/using-prometheus-operator.md).
 - 
 [//]: # (- Monitor your Cassandra database with KubeDB using [out-of-the-box builtin-Prometheus]&#40;/docs/guides/cassandra/monitoring/using-builtin-prometheus.md&#41;.)

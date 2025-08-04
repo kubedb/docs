@@ -379,6 +379,5 @@ kubectl delete ns monitoring
 
 ## Next Steps
 
-- Learn how to configure [Cassandra Topology](/docs/guides/cassandra/clustering/topology-cluster/index.md).
 - Monitor your Cassandra database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/cassandra/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

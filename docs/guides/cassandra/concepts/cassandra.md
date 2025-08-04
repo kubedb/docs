@@ -378,7 +378,6 @@ Know details about KubeDB Health checking from this [blog post](https://appscode
 ## Next Steps
 
 - Learn how to use KubeDB to run Apache Cassandra cluster [here](/docs/guides/cassandra/README.md).
-- Deploy [dedicated topology cluster](/docs/guides/cassandra/clustering/guide/index.md) for Apache Cassandra
 - Monitor your Cassandra cluster with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/cassandra/monitoring/using-prometheus-operator.md).
 - Detail concepts of [CassandraVersion object](/docs/guides/cassandra/concepts/cassandraversion.md).
 

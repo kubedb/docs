@@ -216,6 +216,5 @@ kubectl delete ns demo
 - Detail concepts of [Cassandra object](/docs/guides/cassandra/concepts/cassandra.md).
 - Monitor your Cassandra cluster with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/cassandra/monitoring/using-prometheus-operator.md).
 - Monitor your Cassandra cluster with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/cassandra/monitoring/using-builtin-prometheus.md).
-- Use [kubedb cli](/docs/guides/cassandra/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [Cassandra object](/docs/guides/cassandra/concepts/cassandra.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

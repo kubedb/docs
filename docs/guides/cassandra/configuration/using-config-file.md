@@ -154,5 +154,5 @@ kubectl delete ns demo
 - Monitor your cassandra database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/cassandra/monitoring/using-prometheus-operator.md).
 - Monitor your Pgpool database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/cassandra/monitoring/using-builtin-prometheus.md).
 - Detail concepts of [Cassandra object](/docs/guides/cassandra/concepts/cassandra.md).
-- Detail concepts of [CassandraVersion object](/docs/guides/cassandra/concepts/catalog.md).
+- Detail concepts of [CassandraVersion object](/docs/guides/cassandra/concepts/cassandraversion.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

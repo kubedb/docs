@@ -99,8 +99,5 @@ Here, we have specified that we are going to monitor this server using Prometheu
 ## Next Steps
 
 - Learn how to use KubeDB to run a Apache Cassandra cluster [here](/docs/guides/cassandra/README.md).
-- Deploy [dedicated topology cluster](/docs/guides/cassandra/clustering/topology-cluster/index.md) for Apache Cassandra
-- Deploy [combined cluster](/docs/guides/cassandra/clustering/combined-cluster/index.md) for Apache Cassandra
 - Detail concepts of [CassandraVersion object](/docs/guides/cassandra/concepts/cassandraversion.md).
-- Learn to use KubeDB managed Cassandra objects using [CLIs](/docs/guides/cassandra/cli/cli.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -168,7 +168,7 @@ Here,
 - `spec.compute.cassandra.maxAllowed` specifies the maximum allowed resources for this cassandra.
 - `spec.compute.cassandra.controlledResources` specifies the resources that are controlled by the autoscaler.
 - `spec.compute.cassandra.containerControlledValues` specifies which resource values should be controlled. The default is "RequestsAndLimits".
-- `spec.opsRequestOptions` contains the options to pass to the created OpsRequest. It has 2 fields. Know more about them here :  [timeout](/docs/guides/cassandra/concepts/opsrequest.md#spectimeout), [apply](/docs/guides/cassandra/concepts/opsrequest.md#specapply).
+- `spec.opsRequestOptions` contains the options to pass to the created OpsRequest. It has 2 fields. Know more about them here :  [timeout](/docs/guides/cassandra/concepts/cassandraopsrequest.md#spectimeout), [apply](/docs/guides/cassandra/concepts/cassandraopsrequest.md#specapply).
 
 Let's create the `CassandraAutoscaler` CR we have shown above,
 
