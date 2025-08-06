@@ -25,7 +25,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 
 ## How Compute Autoscaling Works
 
-The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `Redis` database components. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `Redis/Valkey` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Compute Auto Scaling process of Redis" src="/docs/images/redis/rd-compute-autoscaling.svg">
