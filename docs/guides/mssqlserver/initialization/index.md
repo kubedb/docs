@@ -15,7 +15,7 @@ section_menu_id: guides
 
 # Initialize Microsoft SQL Server using Script
 
-This tutorial will show you how to use KubeDB to initialize a MSSQLServer database with \*.sql, \*.sh and/or \*.sql.gz script.
+This tutorial will show you how to use KubeDB to initialize a MSSQLServer database with `*.sql`, `*.sh` or `*.sql.gz` script.
 
 In this tutorial, we will use .sql script stored in GitHub repository [kubedb/mssqlserver-init-scripts](https://github.com/kubedb/mssqlserver-init-scripts).
 
@@ -39,13 +39,13 @@ In this tutorial, we will use .sql script stored in GitHub repository [kubedb/ms
   
 ## Prepare Initialization Scripts
 
-MSSQLServer supports initialization with `.sh`, `.sql` and `.sql.gz` files. In this tutorial, we will use `init.sql` script from [mssqlserver-init-scripts](https://github.com/kubedb/mssqlserver-init-scripts) git repository to create a TABLE `kubedb_init` in `mssql` database.
+MSSQLServer supports initialization with `.sh`, `.sql` and `.sql.gz` files. In this tutorial, we will use `init.sql` script from [mssqlserver-init-scripts](https://github.com/kubedb/mssqlserver-init-scripts) git repository to create a database named `mssql` and a table named `kubedb_init` in that database. 
 
-We will use a ConfigMap as a script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as a script source.
+We will use a ConfigMap as a script source. You can use any Kubernetes supported [volumes](https://kubernetes.io/docs/concepts/storage/volumes) as a script source.
 
-At first, we will create a ConfigMap from `init.sql` file. Then, we will provide this ConfigMap as script source in `init.script` of MSSQLServer CR spec.
+At first, we will create a ConfigMap with `init.sql` file. Then, we will provide this ConfigMap as script source in `init.script` of the MSSQLServer CR spec.
 
-Let's create a ConfigMap with initialization script,
+Let's create a ConfigMap with the `init.sql` initialization script,
 
 ```bash
 $ kubectl create configmap -n demo mssql-init-scripts \
@@ -73,24 +73,42 @@ Below is the `MSSQLServer` object created in this tutorial.
   <li class="nav-item">
     <a class="nav-link" id="sc-tab" data-toggle="tab" href="#semisync" role="tab" aria-controls="semisync" aria-selected="false">Semi sync </a>
   </li>
-
 </ul>
 
 
 <div class="tab-content" id="definationTabContent">
+
+
   <div class="tab-pane fade show active" id="groupReplication" role="tabpanel" aria-labelledby="gr-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
-  name: MSSQLServer-init-script
+  name: ms-init
   namespace: demo
 spec:
-  version: "9.1.0"
-  topology:
-    mode: GroupReplication
-  replicas: 3
+  version: "2022-cu19"
+  storageType: Durable
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation
+  init:
+    script:
+      configMap:
+        name: mssql-init-scripts
   storage:
     storageClassName: "standard"
     accessModes:
@@ -98,36 +116,57 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  init:
-    script:
-      configMap:
-        name: mssql-init-scripts
-
+  deletionPolicy: WipeOut
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/MSSQLServer/initialization/yamls/initialize-gr.yaml
-MSSQLServer.kubedb.com/MSSQLServer-init-script created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/initialization/yamls/initialize-gr.yaml
+mssqlserver.kubedb.com/ms-init created
 ```
-
   </div>
+
+  
+
+
 
   <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
 metadata:
-  name: MSSQLServer-init-script
+  name: ms-ag-init
   namespace: demo
 spec:
-  version: "8.0.31-innodb"
+  version: "2022-cu19"
   replicas: 3
   topology:
-    mode: InnoDBCluster
-    innoDBCluster:
-      router:
-        replicas: 1
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb
+        - mssql
+      secondaryAccessMode: "All"
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation
+  init:
+    script:
+      configMap:
+        name: mssql-init-scripts
+  storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
@@ -135,102 +174,33 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  init:
-    script:
-      configMap:
-        name: mssql-init-scripts
-
+  deletionPolicy: WipeOut
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/MSSQLServer/initialization/yamls/initialize-innodb.yaml
-MSSQLServer.kubedb.com/MSSQLServer-init-script created
-```
-  </div>
-
-  <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
-
-```yaml
-apiVersion: kubedb.com/v1
-kind: MSSQLServer
-metadata:
-  name: MSSQLServer-init-script
-  namespace: demo
-spec:
-  version: "9.1.0"
-  replicas: 3
-  topology:
-    mode: SemiSync
-    semiSync:
-      sourceWaitForReplicaCount: 1
-      sourceTimeout: 23h
-      errantTransactionRecoveryPolicy: PseudoTransaction
-  storage:
-    storageClassName: "standard"
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  init:
-    script:
-      configMap:
-        name: mssql-init-scripts
-
-```
-
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/MSSQLServer/initialization/yamls/initialize-MSSQLServer.yaml
-MSSQLServer.kubedb.com/MSSQLServer-init-script created
-```
-
-  </div>
-
-  <div class="tab-pane fade" id="standAlone" role="tabpanel" aria-labelledby="st-tab">
-
-```yaml
-apiVersion: kubedb.com/v1
-kind: MSSQLServer
-metadata:
-  name: MSSQLServer-init-script
-  namespace: demo
-spec:
-  version: "9.1.0"
-  storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  init:
-    script:
-      configMap:
-        name: mssql-init-scripts
-```
-
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/MSSQLServer/initialization/yamls/initialize-MSSQLServer.yaml
-MSSQLServer.kubedb.com/MSSQLServer-init-script created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/initialization/yamls/initialize-innodb.yaml
+mssqlsever.kubedb.com/ms-ag-init created
 ```
   </div>
 
 </div>
 
 
+
+
+
 Here,
+- `spec.init.script` specifies a script source used to initialize the database. The scripts will be executed alphabetically. In this tutorial, a sample .sql script from the git repository `https://github.com/kubedb/mssqlserver-init-scripts.git` is used to create a test database named `mssql`. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes) instead of `ConfigMap`.  The \*.sql, \*sql.gz and/or \*.sh scripts that are stored inside the folder will be executed alphabetically. The scripts inside child folders will be skipped.
 
-- `spec.init.script` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabetically. In this tutorial, a sample .sql script from the git repository `https://github.com/kubedb/mssqlserver-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes) instead of `ConfigMap`.  The \*.sql, \*sql.gz and/or \*.sh sripts that are stored inside the root folder will be executed alphabetically. The scripts inside child folders will be skipped.
-
-KubeDB operator watches for `MSSQLServer` objects using Kubernetes api. When a `MSSQLServer` object is created, KubeDB operator will create a new PetSet and a Service with the matching MSSQLServer object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present. No MSSQLServer specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
+KubeDB operator watches for `MSSQLServer` objects using Kubernetes API. When a `MSSQLServer` object is created, KubeDB operator will create a PetSet and Services, Secrets, and other necessary resouces for this `MSSQLServer` Database.
 
 ```bash
 $ kubectl dba describe my -n demo MSSQLServer-init-scrip
-Name:               MSSQLServer-init-script
+Name:               ms-init
 Namespace:          demo
 CreationTimestamp:  Thu, 30 Jun 2022 12:21:15 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MSSQLServer","metadata":{"annotations":{},"name":"MSSQLServer-init-script","namespace":"demo"},"spec":{"init":{"script"...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"MSSQLServer","metadata":{"annotations":{},"name":"ms-init","namespace":"demo"},"spec":{"init":{"script"...
 Replicas:           1  total
 Status:             Provisioning
 StorageType:        Durable
@@ -243,10 +213,10 @@ Halted:              false
 Termination Policy:  Delete
 
 PetSet:          
-  Name:               MSSQLServer-init-script
+  Name:               ms-init
   CreationTimestamp:  Thu, 30 Jun 2022 12:21:15 +0600
   Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=MSSQLServer-init-script
+                        app.kubernetes.io/instance=ms-init
                         app.kubernetes.io/managed-by=kubedb.com
                         app.kubernetes.io/name=MSSQLServers.kubedb.com
   Annotations:        <none>
@@ -254,9 +224,9 @@ PetSet:
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:        
-  Name:         MSSQLServer-init-script
+  Name:         ms-init
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=MSSQLServer-init-script
+                  app.kubernetes.io/instance=ms-init
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=MSSQLServers.kubedb.com
   Annotations:  <none>
@@ -267,9 +237,9 @@ Service:
   Endpoints:    10.244.0.23:3306
 
 Service:        
-  Name:         MSSQLServer-init-script-pods
+  Name:         ms-init-pods
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=MSSQLServer-init-script
+                  app.kubernetes.io/instance=ms-init
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=MSSQLServers.kubedb.com
   Annotations:  <none>
@@ -280,9 +250,9 @@ Service:
   Endpoints:    10.244.0.23:3306
 
 Auth Secret:
-  Name:         MSSQLServer-init-script-auth
+  Name:         ms-init-auth
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=MSSQLServer-init-script
+                  app.kubernetes.io/instance=ms-init
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=MSSQLServers.kubedb.com
   Annotations:  <none>
@@ -301,24 +271,24 @@ Init:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MSSQLServer","metadata":{"annotations":{},"name":"MSSQLServer-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mssql-init-scripts"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"9.1.0"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MSSQLServer","metadata":{"annotations":{},"name":"ms-init","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mssql-init-scripts"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"9.1.0"}}
 
     Creation Timestamp:  2022-06-30T06:21:15Z
     Labels:
       app.kubernetes.io/component:   database
-      app.kubernetes.io/instance:    MSSQLServer-init-script
+      app.kubernetes.io/instance:    ms-init
       app.kubernetes.io/managed-by:  kubedb.com
       app.kubernetes.io/name:        MSSQLServers.kubedb.com
-    Name:                            MSSQLServer-init-script
+    Name:                            ms-init
     Namespace:                       demo
   Spec:
     Client Config:
       Service:
-        Name:    MSSQLServer-init-script
+        Name:    ms-init
         Path:    /
         Port:    3306
         Scheme:  MSSQLServer
-      URL:       tcp(MSSQLServer-init-script.demo.svc:3306)/
+      URL:       tcp(ms-init.demo.svc:3306)/
     Parameters:
       API Version:  appcatalog.appscode.com/v1alpha1
       Kind:         StashAddon
@@ -332,7 +302,7 @@ AppBinding:
           Restore Task:
             Name:  MSSQLServer-restore-8.0.21
     Secret:
-      Name:   MSSQLServer-init-script-auth
+      Name:   ms-init-auth
     Type:     kubedb.com/MSSQLServer
     Version:  9.1.0
 
@@ -349,38 +319,38 @@ Events:
 
 $ kubectl get petset -n demo
 NAME                READY   AGE
-MSSQLServer-init-script   1/1     2m24s
+ms-init   1/1     2m24s
 
 $ kubectl get pvc -n demo
 NAME                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-data-MSSQLServer-init-script-0   Bound    pvc-32a59975-2972-4122-9635-22fe19483145   1Gi        RWO            standard       3m
+data-ms-init-0   Bound    pvc-32a59975-2972-4122-9635-22fe19483145   1Gi        RWO            standard       3m
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   REASON   AGE
-pvc-32a59975-2972-4122-9635-22fe19483145   1Gi        RWO            Delete           Bound    demo/data-MSSQLServer-init-script-0   standard                3m25s
+pvc-32a59975-2972-4122-9635-22fe19483145   1Gi        RWO            Delete           Bound    demo/data-ms-init-0   standard                3m25s
 
 $ kubectl get service -n demo
 NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
 myadmin                 LoadBalancer   10.104.142.213   <pending>     80:31529/TCP   23m
-MSSQLServer-init-script       ClusterIP      10.103.202.117   <none>        3306/TCP       3m49s
-MSSQLServer-init-script-pods   ClusterIP      None             <none>        3306/TCP       3m49s
+ms-init       ClusterIP      10.103.202.117   <none>        3306/TCP       3m49s
+ms-init-pods   ClusterIP      None             <none>        3306/TCP       3m49s
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MSSQLServer object:
 
 ```yaml
-$ kubectl get my -n demo MSSQLServer-init-script -o yaml
+$ kubectl get my -n demo ms-init -o yaml
 apiVersion: kubedb.com/v1
 kind: MSSQLServer
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"MSSQLServer","metadata":{"annotations":{},"name":"MSSQLServer-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mssql-init-scripts"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"9.1.0"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MSSQLServer","metadata":{"annotations":{},"name":"ms-init","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mssql-init-scripts"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"9.1.0"}}
   creationTimestamp: "2022-06-30T06:21:15Z"
   finalizers:
   - kubedb.com
   generation: 3
-  name: MSSQLServer-init-script
+  name: ms-init
   namespace: demo
   resourceVersion: "1697522"
   uid: 932c1fe3-6692-4ddc-b4cd-fe34e0d5ebc8
@@ -392,7 +362,7 @@ spec:
     namespaces:
       from: Same
   authSecret:
-    name: MSSQLServer-init-script-auth
+    name: ms-init-auth
   init:
     initialized: true
     script:
@@ -408,7 +378,7 @@ spec:
         requests:
           cpu: 500m
           memory: 1Gi
-      serviceAccountName: MSSQLServer-init-script
+      serviceAccountName: ms-init
   replicas: 1
   storage:
     accessModes:
@@ -433,20 +403,20 @@ status:
 
 ```
 
-KubeDB operator has created a new Secret called `MSSQLServer-init-script-auth` *(format: {MSSQLServer-object-name}-auth)* for storing the password for MSSQLServer superuser. This secret contains a `username` key which contains the *username* for MSSQLServer superuser and a `password` key which contains the *password* for MSSQLServer superuser.
+KubeDB operator has created a new Secret called `ms-init-auth` *(format: {MSSQLServer-object-name}-auth)* for storing the password for MSSQLServer superuser. This secret contains a `username` key which contains the *username* for MSSQLServer superuser and a `password` key which contains the *password* for MSSQLServer superuser.
 If you want to use an existing secret please specify that when creating the MSSQLServer object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`.
 
 Now, you can connect to this database from the phpMyAdmin dashboard using the database pod IP and `MSSQLServer` user password.
 
 ```bash
-$ kubectl get pods MSSQLServer-init-script-0 -n demo -o yaml | grep IP
+$ kubectl get pods ms-init-0 -n demo -o yaml | grep IP
   hostIP: 10.0.2.15
   podIP: 10.244.2.9
 
-$ kubectl get secrets -n demo MSSQLServer-init-script-auth -o jsonpath='{.data.\user}' | base64 -d
+$ kubectl get secrets -n demo ms-init-auth -o jsonpath='{.data.\user}' | base64 -d
 root
 
-$ kubectl get secrets -n demo MSSQLServer-init-script-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo ms-init-auth -o jsonpath='{.data.\password}' | base64 -d
 1Pc7bwSygrv1MX1Q
 ```
 
@@ -468,18 +438,18 @@ As you can see here, the initial script has successfully created a table named `
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo MSSQLServer/MSSQLServer-init-script -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo MSSQLServer/MSSQLServer-init-script
+kubectl patch -n demo MSSQLServer/ms-init -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo MSSQLServer/ms-init
 
 kubectl delete ns demo
 ```
 
 ## Next Steps
 
-- Initialize [MSSQLServer with Script](/docs/guides/MSSQLServer/initialization/index.md).
-- Monitor your MSSQLServer database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/MSSQLServer/monitoring/prometheus-operator/index.md).
-- Monitor your MSSQLServer database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/MSSQLServer/monitoring/builtin-prometheus/index.md).
-- Use [private Docker registry](/docs/guides/MSSQLServer/private-registry/index.md) to deploy MSSQLServer with KubeDB.
-- Detail concepts of [MSSQLServer object](/docs/guides/MSSQLServer/concepts/database/index.md).
-- Detail concepts of [MSSQLServerVersion object](/docs/guides/MSSQLServer/concepts/catalog/index.md).
+- Initialize [MSSQLServer with Script](/docs/guides/mssqlserver/initialization/index.md).
+- Monitor your MSSQLServer database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mssqlserver/monitoring/prometheus-operator/index.md).
+- Monitor your MSSQLServer database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mssqlserver/monitoring/builtin-prometheus/index.md).
+- Use [private Docker registry](/docs/guides/mssqlserver/private-registry/index.md) to deploy MSSQLServer with KubeDB.
+- Detail concepts of [MSSQLServer object](/docs/guides/mssqlserver/concepts/database/index.md).
+- Detail concepts of [MSSQLServerVersion object](/docs/guides/mssqlserver/concepts/catalog/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
