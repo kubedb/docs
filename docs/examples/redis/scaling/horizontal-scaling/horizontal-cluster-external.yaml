@@ -1,0 +1,24 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisOpsRequest
+metadata:
+  name: redisops-horizontal-external
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: redis-announce
+  horizontalScaling:
+    replicas: 3
+    shards: 4
+    announce:
+      shards:
+        - endpoints:
+            - rd0-0.kubedb.appscode
+        - endpoints:
+            - rd0-0.kubedb.appscode
+        - endpoints:
+            - rd0-0.kubedb.appscode
+        - endpoints:
+            - rd0-0.kubedb.appscode
+            - rd0-0.kubedb.appscode
+            - rd0-0.kubedb.appscode
