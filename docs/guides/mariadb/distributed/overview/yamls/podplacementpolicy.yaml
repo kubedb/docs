@@ -1,0 +1,26 @@
+apiVersion: apps.k8s.appscode.com/v1
+kind: PlacementPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: distributed-mariadb
+spec:
+  nodeSpreadConstraint:
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
+  ocm:
+    distributionRules:
+      - clusterName: demo-controller
+        replicas:
+          - 0
+          - 2
+          - 4
+      - clusterName: demo-worker
+        replicas:
+          - 1
+          - 3
+          - 5
+    sliceName: demo-slice
+  zoneSpreadConstraint:
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway

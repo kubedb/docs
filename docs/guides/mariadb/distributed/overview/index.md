@@ -486,12 +486,12 @@ spire-install-crds-cnbjh             0/1     Completed   0          4m50s
 
 We have successfully registered `demo-controller` as worker.
 
-lets create a SliceConfig for the demo-controller to onboard the demo, kubedb, and kubeops namespaces. 
+Lets create a SliceConfig for the demo-controller to onboard the demo, kubedb, and kubeops namespaces. 
 Ensure that the configuration includes the namespace where the application will be deployed and the namespace from which the application will be accessed. 
 Here demo is our application namespace where the database pod will be deployed.
-The kubedb namespace runs KubeDB operator, requiring onboarding to allow the provisioner, ops-manager, and other KubeDB operators to access the database.
+The kubedb namespace runs KubeDB operator, requiring onboarding to allow the provisioner, ops-manager, and other KubeDB operators to access the database of demo namespace.
 
-create sliceconfig.yaml file with the following contents.
+Create sliceconfig.yaml file with the following contents.
 ```yaml
 apiVersion: controller.kubeslice.io/v1alpha1
 kind: SliceConfig
@@ -561,7 +561,7 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 ```
 
 ### Define a PodPlacementPolicy:
-Create a PodPlacementPolicy custom resource in the hub cluster(demo-controller) to specify which clusters should host MariaDB pods. 
+Create a PodPlacementPolicy custom resource in the hub cluster(demo-controller) to specify which cluster should host which MariaDB pod. 
 
 Create pod-placement-policy.yaml file with the following yaml and deploy it.
 ```yaml
@@ -582,19 +582,29 @@ spec:
         replicas:
           - 0
           - 2
-          - 4
       - clusterName: demo-worker
         replicas:
           - 1
-          - 3
-          - 5
     sliceName: demo-slice
   zoneSpreadConstraint:
     maxSkew: 1
     whenUnsatisfiable: ScheduleAnyway
 
 ```
+Here,
+clusterName specifies the cluster where the pod will be schedule. and replicas define which pod will schedule in this cluster.
+In the above config,
+mariadb pod with ordinal 0,2 will be scheduled on `demo-controller` and  pod with ordinal 1 will be scheduled on `demo-worker` cluster.
 
+````text
+mariadb-0 -> demo-controller
+mariadb-1 -> demo-worker
+mariadb-2 -> demo-controller
+````
+
+
+
+Lets deploy the PodPlacementPolicy.
 ```bash
 
 kubectl apply -f pod-placement-policy.yaml --context demo-controller --kubeconfig $HOME/.kube/config

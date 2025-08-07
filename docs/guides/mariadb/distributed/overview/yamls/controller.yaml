@@ -1,0 +1,6 @@
+kubeslice:
+  controller:
+    loglevel: info
+    rbacResourcePrefix: kubeslice-rbac
+    projectnsPrefix: kubeslice
+    endpoint: https://10.2.0.56:6443
