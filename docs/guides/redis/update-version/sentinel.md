@@ -254,7 +254,7 @@ redis:7.0.4@sha256:091a7b5de688f283b30a4942280b64cf822bbdab0abfb2d2ce6db989f2d3c
 
 You can see from above, our `Redis` standalone database has been updated with the new version. So, the UpdateVersion process is successfully completed.
 
-> If you are a current `Redis` user and want to switch to `Valkey`, just make sure that both `Redis` and `Valkey` versions are 7.\*.\* and RedisSentinel [Distribution](/docs/guides/redis/concepts/catalog.md) and Redis [Distribution](/docs/guides/redis/concepts/catalog.md) are same.
+> If you are a current `Redis` user and want to switch to `Valkey`, make sure to update `Redis` 7.\*.\* to `Valkey` 7.\*.\* and RedisSentinel [Distribution](/docs/guides/redis/concepts/catalog.md) and Redis [Distribution](/docs/guides/redis/concepts/catalog.md) are same.
 
 ## Cleaning Up
 

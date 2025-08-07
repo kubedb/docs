@@ -2,10 +2,10 @@
 title: Redis Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: valkey-overview
+    identifier: redis-overview
     name: Redis
-    parent: rd-quickstart
-    weight: 20
+    parent: rd-overview
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -71,11 +71,11 @@ valkey-7.2.9   7.2.9     ghcr.io/appscode-images/valkey:7.2.9                   
 valkey-8.0.3   8.0.3     ghcr.io/appscode-images/valkey:8.0.3                         14d
 valkey-8.1.1   8.1.1     ghcr.io/appscode-images/valkey:8.1.1                         14d
 ```
-`Note`: RedisVersion which contains valkey database image, will have `spec.distribution` as `valkey`
+`Note`: RedisVersion which contains redis database image, will have `spec.distribution` as `Official`
 
-## Create a Valkey server
+## Create a Redis server
 
-KubeDB implements a `Redis` CRD to define the specification of a Valkey server. Below is the `Redis` object created in this tutorial.
+KubeDB implements a `Redis` CRD to define the specification of a Redis server. Below is the `Redis` object created in this tutorial.
 
 `Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
 
@@ -86,7 +86,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: valkey-8.1.1
+  version: 6.2.14
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -95,11 +95,11 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: WipeOut
+  deletionPolicy: DoNotTerminate
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-valkey-v1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-v1.yaml
 redis.kubedb.com/redis-quickstart created
 ```
 
@@ -110,7 +110,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: valkey-8.1.1
+  version: 6.2.14
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -119,18 +119,18 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: WipeOut
+  terminationPolicy: DoNotTerminate
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-valkey-v1alpha2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-v1alpha2.yaml
 redis.kubedb.com/redis-quickstart created
 ```
 
 Here,
 
-- `spec.version` is name of the RedisVersion crd where the docker images are specified. In this tutorial, a valkey 8.1.1 database is created.
-- `spec.storageType` specifies the type of storage that will be used for Valkey server. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Valkey server using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
+- `spec.version` is name of the RedisVersion crd where the docker images are specified. In this tutorial, a Redis 6.2.14 database is created.
+- `spec.storageType` specifies the type of storage that will be used for Redis server. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Redis server using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Redis` crd or which resources KubeDB should keep or delete when you delete `Redis` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy)
 
@@ -140,129 +140,117 @@ KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis`
 
 ```bash
 $ kubectl get rd -n demo
-NAME               VERSION        STATUS   AGE
-redis-quickstart   valkey-8.1.1   Ready    6m16s
+NAME               VERSION   STATUS    AGE
+redis-quickstart   6.2.14     Running   1m
 
 $ kubectl describe rd -n demo redis-quickstart
-Name:         redis-quickstart
-Namespace:    demo
-Labels:       <none>
-Annotations:  <none>
-API Version:  kubedb.com/v1
-Kind:         Redis
-Metadata:
-  Creation Timestamp:  2025-07-31T10:51:06Z
-  Finalizers:
-    kubedb.com
-  Generation:        2
-  Resource Version:  1029811
-  UID:               536a75e8-4d57-4475-9bf1-94bf61d967d2
-Spec:
-  Allowed Schemas:
-    Namespaces:
-      From:  Same
-  Auth Secret:
-    Name:  redis-quickstart-auth
-  Auto Ops:
-  Deletion Policy:  WipeOut
-  Health Checker:
-    Failure Threshold:  1
-    Period Seconds:     10
-    Timeout Seconds:    10
-  Mode:                 Standalone
-  Pod Template:
-    Controller:
-    Metadata:
-    Spec:
-      Containers:
-        Name:  redis
-        Resources:
-          Limits:
-            Memory:  1Gi
-          Requests:
-            Cpu:     500m
-            Memory:  1Gi
-        Security Context:
-          Allow Privilege Escalation:  false
-          Capabilities:
-            Drop:
-              ALL
-          Run As Group:     1000
-          Run As Non Root:  true
-          Run As User:      1000
-          Seccomp Profile:
-            Type:  RuntimeDefault
-      Init Containers:
-        Name:  redis-init
-        Resources:
-          Limits:
-            Memory:  512Mi
-          Requests:
-            Cpu:     200m
-            Memory:  256Mi
-        Security Context:
-          Allow Privilege Escalation:  false
-          Capabilities:
-            Drop:
-              ALL
-          Run As Group:     1000
-          Run As Non Root:  true
-          Run As User:      1000
-          Seccomp Profile:
-            Type:  RuntimeDefault
-      Pod Placement Policy:
-        Name:  default
-      Security Context:
-        Fs Group:            1000
-      Service Account Name:  redis-quickstart
-  Replicas:                  1
-  Storage:
-    Access Modes:
-      ReadWriteOnce
-    Resources:
-      Requests:
-        Storage:         1Gi
-    Storage Class Name:  standard
-  Storage Type:          Durable
-  Version:               valkey-8.1.1
-Status:
-  Conditions:
-    Last Transition Time:  2025-07-31T10:51:06Z
-    Message:               The KubeDB operator has started the provisioning of Redis: demo/redis-quickstart
-    Reason:                DatabaseProvisioningStartedSuccessfully
-    Status:                True
-    Type:                  ProvisioningStarted
-    Last Transition Time:  2025-07-31T10:51:16Z
-    Message:               All desired replicas are ready.
-    Reason:                AllReplicasReady
-    Status:                True
-    Type:                  ReplicaReady
-    Last Transition Time:  2025-07-31T10:51:26Z
-    Message:               The Redis: demo/redis-quickstart is ready.
-    Observed Generation:   2
-    Reason:                ReadinessCheckSucceeded
-    Status:                True
-    Type:                  Ready
-    Last Transition Time:  2025-07-31T10:51:36Z
-    Message:               The Redis: demo/redis-quickstart is accepting rdClient requests.
-    Observed Generation:   2
-    Reason:                DatabaseAcceptingConnectionRequest
-    Status:                True
-    Type:                  AcceptingConnection
-    Last Transition Time:  2025-07-31T10:51:38Z
-    Message:               The Redis: demo/redis-quickstart is successfully provisioned.
-    Observed Generation:   2
-    Reason:                DatabaseSuccessfullyProvisioned
-    Status:                True
-    Type:                  Provisioned
-  Observed Generation:     2
-  Phase:                   Ready
+Name:               redis-quickstart
+Namespace:          demo
+CreationTimestamp:  Tue, 31 May 2022 10:31:38 +0600
+Labels:             <none>
+Annotations:        <none>
+Replicas:           1  total
+Status:             Ready
+StorageType:        Durable
+Volume:
+  StorageClass:      standard
+  Capacity:          1Gi
+  Access Modes:      RWO
+Paused:              false
+Halted:              false
+Termination Policy:  DoNotTerminate
+
+PetSet:          
+  Name:               redis-quickstart
+  CreationTimestamp:  Tue, 31 May 2022 10:31:38 +0600
+  Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=redis-quickstart
+                        app.kubernetes.io/managed-by=kubedb.com
+                        app.kubernetes.io/name=redises.kubedb.com
+  Annotations:        <none>
+  Replicas:           824644335612 desired | 1 total
+  Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
+
+Service:        
+  Name:         redis-quickstart
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=redis-quickstart
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=redises.kubedb.com
+  Annotations:  <none>
+  Type:         ClusterIP
+  IP:           10.96.216.57
+  Port:         primary  6379/TCP
+  TargetPort:   db/TCP
+  Endpoints:    10.244.0.58:6379
+
+Service:        
+  Name:         redis-quickstart-pods
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=redis-quickstart
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=redises.kubedb.com
+  Annotations:  <none>
+  Type:         ClusterIP
+  IP:           None
+  Port:         db  6379/TCP
+  TargetPort:   db/TCP
+  Endpoints:    10.244.0.58:6379
+
+AppBinding:
+  Metadata:
+    Creation Timestamp:  2022-05-31T04:31:38Z
+    Labels:
+      app.kubernetes.io/component:   database
+      app.kubernetes.io/instance:    redis-quickstart
+      app.kubernetes.io/managed-by:  kubedb.com
+      app.kubernetes.io/name:        redises.kubedb.com
+    Name:                            redis-quickstart
+    Namespace:                       demo
+  Spec:
+    Client Config:
+      Service:
+        Name:    redis-quickstart
+        Port:    6379
+        Scheme:  redis
+    Parameters:
+      API Version:  config.kubedb.com/v1alpha1
+      Kind:         RedisConfiguration
+      Stash:
+        Addon:
+          Backup Task:
+            Name:  redis-backup-6.2.5
+          Restore Task:
+            Name:  redis-restore-6.2.5
+    Secret:
+      Name:   redis-quickstart-auth
+    Type:     kubedb.com/redis
+    Version:  6.2.14
+
 Events:
-  Type    Reason      Age    From             Message
-  ----    ------      ----   ----             -------
-  Normal  Successful  6m29s  KubeDB Operator  Successfully created governing service
-  Normal  Successful  6m29s  KubeDB Operator  Successfully created Service
-  Normal  Successful  6m27s  KubeDB Operator  Successfully created appbinding
+  Type    Reason      Age   From            Message
+  ----    ------      ----  ----            -------
+  Normal  Successful  2m    Redis Operator  Successfully created governing service
+  Normal  Successful  2m    Redis Operator  Successfully created Service
+  Normal  Successful  2m    Redis Operator  Successfully created appbinding
+
+
+$ kubectl get petset -n demo
+NAME               READY   AGE
+redis-quickstart    1/1    1m
+
+$ kubectl get pvc -n demo
+NAME                      STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+data-redis-quickstart-0   Bound     pvc-6e457226-c53f-11e8-9ba7-0800274bef12   1Gi        RWO            standard       2m
+
+$ kubectl get pv -n demo
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS    CLAIM                          STORAGECLASS   REASON    AGE
+pvc-6e457226-c53f-11e8-9ba7-0800274bef12   1Gi        RWO            Delete           Bound     demo/data-redis-quickstart-0   standard                 2m
+
+$ kubectl get service -n demo
+NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+redis-quickstart-pods   ClusterIP       None             <none>        <none>     2m
+redis-quickstart        ClusterIP   10.108.149.205       <none>        6379/TCP   2m
 ```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified Redis object:
@@ -272,138 +260,115 @@ $ kubectl get rd -n demo redis-quickstart -o yaml
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"Redis","metadata":{"annotations":{},"name":"redis-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","version":"valkey-8.1.1"}}
-  creationTimestamp: "2025-07-31T10:51:06Z"
+  creationTimestamp: "2022-05-31T04:31:38Z"
   finalizers:
-  - kubedb.com
+    - kubedb.com
   generation: 2
   name: redis-quickstart
   namespace: demo
-  resourceVersion: "1029811"
-  uid: 536a75e8-4d57-4475-9bf1-94bf61d967d2
+  resourceVersion: "63624"
+  uid: 7ffc9d73-94df-4475-9656-a382f380c293
 spec:
   allowedSchemas:
     namespaces:
       from: Same
   authSecret:
     name: redis-quickstart-auth
-  autoOps: {}
-  deletionPolicy: WipeOut
-  healthChecker:
-    failureThreshold: 1
-    periodSeconds: 10
-    timeoutSeconds: 10
+  coordinator:
+    resources: {}
   mode: Standalone
   podTemplate:
     controller: {}
     metadata: {}
     spec:
-      containers:
-      - name: redis
-        resources:
-          limits:
-            memory: 1Gi
-          requests:
-            cpu: 500m
-            memory: 1Gi
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          runAsGroup: 1000
-          runAsNonRoot: true
-          runAsUser: 1000
-          seccompProfile:
-            type: RuntimeDefault
-      initContainers:
-      - name: redis-init
-        resources:
-          limits:
-            memory: 512Mi
-          requests:
-            cpu: 200m
-            memory: 256Mi
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          runAsGroup: 1000
-          runAsNonRoot: true
-          runAsUser: 1000
-          seccompProfile:
-            type: RuntimeDefault
-      podPlacementPolicy:
-        name: default
-      securityContext:
-        fsGroup: 1000
+      resources:
+        limits:
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 1Gi
       serviceAccountName: redis-quickstart
   replicas: 1
   storage:
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: valkey-8.1.1
+  deletionPolicy: Delete
+  version: 6.2.14
 status:
   conditions:
-  - lastTransitionTime: "2025-07-31T10:51:06Z"
-    message: 'The KubeDB operator has started the provisioning of Redis: demo/redis-quickstart'
-    reason: DatabaseProvisioningStartedSuccessfully
-    status: "True"
-    type: ProvisioningStarted
-  - lastTransitionTime: "2025-07-31T10:51:16Z"
-    message: All desired replicas are ready.
-    reason: AllReplicasReady
-    status: "True"
-    type: ReplicaReady
-  - lastTransitionTime: "2025-07-31T10:51:26Z"
-    message: 'The Redis: demo/redis-quickstart is ready.'
-    observedGeneration: 2
-    reason: ReadinessCheckSucceeded
-    status: "True"
-    type: Ready
-  - lastTransitionTime: "2025-07-31T10:51:36Z"
-    message: 'The Redis: demo/redis-quickstart is accepting rdClient requests.'
-    observedGeneration: 2
-    reason: DatabaseAcceptingConnectionRequest
-    status: "True"
-    type: AcceptingConnection
-  - lastTransitionTime: "2025-07-31T10:51:38Z"
-    message: 'The Redis: demo/redis-quickstart is successfully provisioned.'
-    observedGeneration: 2
-    reason: DatabaseSuccessfullyProvisioned
-    status: "True"
-    type: Provisioned
+    - lastTransitionTime: "2022-05-31T04:31:38Z"
+      message: 'The KubeDB operator has started the provisioning of Redis: demo/redis-quickstart'
+      reason: DatabaseProvisioningStartedSuccessfully
+      status: "True"
+      type: ProvisioningStarted
+    - lastTransitionTime: "2022-05-31T04:31:43Z"
+      message: All desired replicas are ready.
+      reason: AllReplicasReady
+      status: "True"
+      type: ReplicaReady
+    - lastTransitionTime: "2022-05-31T04:31:48Z"
+      message: 'The Redis: demo/redis-quickstart is accepting rdClient requests.'
+      observedGeneration: 2
+      reason: DatabaseAcceptingConnectionRequest
+      status: "True"
+      type: AcceptingConnection
+    - lastTransitionTime: "2022-05-31T04:31:48Z"
+      message: 'The Redis: demo/redis-quickstart is ready.'
+      observedGeneration: 2
+      reason: ReadinessCheckSucceeded
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-05-31T04:31:48Z"
+      message: 'The Redis: demo/redis-quickstart is successfully provisioned.'
+      observedGeneration: 2
+      reason: DatabaseSuccessfullyProvisioned
+      status: "True"
+      type: Provisioned
   observedGeneration: 2
   phase: Ready
+
 ```
 
 Now, you can connect to this database through [redis-cli](https://redis.io/topics/rediscli). In this tutorial, we are connecting to the Redis server from inside of pod.
 
 ```bash
 $ kubectl exec -it -n demo redis-quickstart-0 -- sh
-/data $ valkey-cli
+
+/data > redis-cli
+
 127.0.0.1:6379> ping
 PONG
-127.0.0.1:6379> set mykey "hello"
+
+#save data
+127.0.0.1:6379> SET mykey "Hello"
 OK
-127.0.0.1:6379> get mykey
-"hello"
+
+# view data
+127.0.0.1:6379> GET mykey
+"Hello"
+
 127.0.0.1:6379> exit
-/data $ exit
+
+/data > exit
 ```
 
 ## DoNotTerminate Property
-Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy)
+
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
+
+```bash
+$ kubectl delete rd redis-quickstart -n demo
+Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be halted. To delete, change spec.deletionPolicy
+```
 
 Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` . Then you will be able to delete/halt the database.
+
+Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy)
 
 ## Halt Database
 
@@ -429,15 +394,20 @@ After that, kubedb will delete the petsets and services, and you can see the dat
 Now, you can run the following command to get all redis resources in demo namespaces,
 ```bash
 $ kubectl get redis,secret,pvc -n demo
-NAME                                VERSION        STATUS   AGE
-redis.kubedb.com/redis-quickstart   valkey-8.1.1   Halted   19m
+NAME                                VERSION   STATUS   AGE
+redis.kubedb.com/redis-quickstart   6.2.14     Halted   5m26s
 
-NAME                             TYPE                       DATA   AGE
-secret/redis-quickstart-auth     kubernetes.io/basic-auth   2      19m
-secret/redis-quickstart-config   Opaque                     1      19m
+NAME                                 TYPE                                  DATA   AGE
+secret/default-token-rs764           kubernetes.io/service-account-token   3      6h54m
+secret/redis-quickstart-auth         kubernetes.io/basic-auth              2      5m26s
+secret/redis-quickstart-config       Opaque                                1      5m26s
+secret/root-secret                   kubernetes.io/tls                     3      6h19m
+secret/sh.helm.release.v1.vault.v1   helm.sh/release.v1                    1      176m
+secret/vault-client-certs            kubernetes.io/tls                     3      22s
+secret/vault-server-certs            kubernetes.io/tls                     3      22s
 
-NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-persistentvolumeclaim/data-redis-quickstart-0   Bound    pvc-c7d0fc32-c863-42eb-a7db-23a7852fbfac   1Gi        RWO            standard       <unset>                 19m
+NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-redis-quickstart-0   Bound    pvc-ee1c2fd3-4c0e-4dad-812b-8f83e20284f8   1Gi        RWO            standard       5m24s
 ```
 
 ## Resume Halted Redis
@@ -453,15 +423,15 @@ When the database is resumed successfully, you can see the database Status is se
 
 ```bash
 $ kubectl get rd -n demo
-NAME               VERSION        STATUS   AGE
-redis-quickstart   valkey-8.1.1   Ready    20m
+NAME               VERSION   STATUS   AGE
+redis-quickstart   6.2.14     Ready    7m52s
 ```
 
 Now, If you again exec into the `pod` and look for previous data, you will see that, all the data persists.
 ```bash
 $ kubectl exec -it -n demo redis-quickstart-0 -- sh
 
-/data > valkey-cli
+/data > redis-cli
 
 127.0.0.1:6379> ping
 PONG

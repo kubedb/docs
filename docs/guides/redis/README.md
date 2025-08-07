@@ -21,7 +21,7 @@ aliases:
 | Clustering (Sharding, Replication)                                |   &#10003;   |
 | Redis in Sentinel Mode (Use separate Sentinel Cluster for Redis)  |   &#10003;   |
 | Standalone Mode                                                   |   &#10003;   |
-| External Client Connection in Cluster Mode                        |   &#10003;   |
+| External Client Connection                                        |   &#10003;   |
 | Custom Configuration                                              |   &#10003;   |
 | Using Custom Docker Image                                         |   &#10003;   |
 | Initialization From Script (shell or lua script)                  |   &#10003;   |

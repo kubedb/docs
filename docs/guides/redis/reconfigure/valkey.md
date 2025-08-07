@@ -3,7 +3,7 @@ title: Reconfigure Valkey Database
 menu:
   docs_{{ .version }}:
     identifier: rd-database-reconfigure-valkey
-    name: Redis
+    name: Valkey
     parent: rd-reconfigure
     weight: 40
 menu_name: docs_{{ .version }}
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Reconfigure Redis Database
+# Reconfigure Valkey Database
 
-This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure a Redis database.
+This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure a Valkey database.
 
 ## Before You Begin
 
@@ -36,13 +36,13 @@ namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/redis](/docs/examples/redis) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-Now, we are going to deploy a  `Redis` database using a supported version by `KubeDB` operator. Then we are going to apply `RedisOpsRequest` to reconfigure its configuration.
+Now, we are going to deploy a `Redis` database using a supported version by `KubeDB` operator. Then we are going to apply `RedisOpsRequest` to reconfigure its configuration.
 
 ### Prepare Valkey Database
 
-Now, we are going to deploy a `Redis` database with version `valkey-8.1.1`.
+Now, we are going to deploy a `Valkey` database with version `valkey-8.1.1`.
 
-### Deploy Redis
+### Deploy Valkey
 
 At first, we will create `valkey.conf` file containing required configuration settings.
 
@@ -98,7 +98,7 @@ sample-redis    valkey-8.1.1      Ready     23s
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
-First we need to get the username and password to connect to a redis instance,
+First we need to get the username and password to connect to a Valkey instance,
 ```bash
 $ kubectl get secrets -n demo sample-redis-auth -o jsonpath='{.data.\username}' | base64 -d
 default
@@ -107,15 +107,15 @@ $ kubectl get secrets -n demo sample-redis-auth -o jsonpath='{.data.\password}' 
 0PI1tYTyzp;YaXOh
 ```
 
-Now let's connect to a redis instance and run a redis internal command to check the configuration we have provided.
+Now let's connect to a Valkey instance and run a Valkey internal command to check the configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  sample-redis-0  -- redis-cli config get maxclients
+$ kubectl exec -n demo  sample-redis-0  -- valkey-cli config get maxclients
 maxclients
 500
 ```
 
-As we can see from the configuration of running redis, the value of `maxclients` has been set to `500`.
+As we can see from the configuration of running Valkey, the value of `maxclients` has been set to `500`.
 
 ### Reconfigure using new secret
 
@@ -247,16 +247,16 @@ Events:
   Normal  Successful      88s   KubeDB Ops-manager Operator  Successfully Reconfigured Database
 ```
 
-Now let's connect to a redis instance and run a redis internal command to check the new configuration we have provided.
+Now let's connect to a Valkey instance and run a Valkey internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  sample-redis-0  -- redis-cli config get maxclients
+$ kubectl exec -n demo  sample-redis-0  -- valkey-cli config get maxclients
 maxclients
 2000
 
 ```
 
-As we can see from the configuration of running redis, the value of `maxclients` has been changed from `500` to `2000`. So the reconfiguration of the database is successful.
+As we can see from the configuration of running Valkey, the value of `maxclients` has been changed from `500` to `2000`. So the reconfiguration of the database is successful.
 
 
 ### Reconfigure using apply config
@@ -375,15 +375,15 @@ Events:
   Normal  Successful      14s   KubeDB Ops-manager Operator  Successfully Reconfigured Database
 ```
 
-Now let's connect to a redis instance and run a redis internal command to check the new configuration we have provided.
+Now let's connect to a Valkey instance and run a Valkey internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  sample-redis-0  -- redis-cli config get maxclients
+$ kubectl exec -n demo  sample-redis-0  -- valkey-cli config get maxclients
 maxclients
 3000
 ```
 
-As we can see from the configuration of running redis, the value of `maxclients` has been changed from `2000` to `3000`. So the reconfiguration of the database using the `applyConfig` field is successful.
+As we can see from the configuration of running Valkey, the value of `maxclients` has been changed from `2000` to `3000`. So the reconfiguration of the database using the `applyConfig` field is successful.
 
 
 ## Cleaning Up
