@@ -129,4 +129,4 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 ## Next Steps
 
 - Learn about Redis crd [here](/docs/guides/redis/concepts/redis.md).
-- Deploy your first Redis server with KubeDB by following the guide [here](/docs/guides/redis/quickstart/quickstart.md).
+- Deploy your first Redis server with KubeDB by following the guide [here](/docs/guides/redis/quickstart/overview/redis.md).
