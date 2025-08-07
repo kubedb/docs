@@ -54,7 +54,7 @@ Initialize the OCM hub cluster by executing the clusteradm init command.
 clusteradm init --wait
 ```
 
-Check the deployment 
+Verify the deployment 
 ```bash
 kubectl get ns
 kubectl get pods -n open-cluster-management-hub
@@ -79,7 +79,7 @@ Switched to context "demo-worker".
 
 ```
 
-Now get back to the hub cluster('demo-controller') and accept the spoke cluster('demo-worker').
+Now get back to the hub cluster(demo-controller) and accept the spoke cluster(demo-worker).
 ```bash
 ➤ kubectl config use-context demo-controller
 Switched to context "demo-controller".
@@ -126,7 +126,7 @@ Accept the `demo-controller cluster`
 clusteradm accept --clusters demo-controller
 ```
 
-Check the namespce if  `demo-controller` is created or not
+Check the namespace if  `demo-controller` is created or not
 
 ```bash
 
@@ -146,16 +146,16 @@ open-cluster-management-hub           Active   10m
 
 ### Configure KubeSlice for Network Connectivity:
 
-You can follow the installation process described [here](https://kubeslice.io/documentation/open-source/1.4.0/install-kubeslice/yaml/yaml-controller-install)
+You can follow the installation process described [here](https://kubeslice.io/documentation/open-source/1.4.0/install-kubeslice/yaml/yaml-controller-install).
+We will deploy kubeslice controller on `demo-controller`.
+As we will deploy MariaDB pods both `demo-controller` and `demo-worker` cluster. So kubeslice worker operator will be deployed on both cluster.
 
-We will deploy kubeslice controller on `demo-controller`
-
-As MariaDB pods will be deployed both `demo-controller` and `demo-worker` cluster. So kubeslice worker controller will be deployed on both cluster.
-
-Install kubeslice controller on `demo-controller`
+Install kubeslice controller operator on `demo-controller`
 
 Get the cluster info
 ```bash
+➤ kubectl config use-context demo-controller
+Switched to context "demo-controller".
 
 ➤ kubectl cluster-info
 Kubernetes control plane is running at https://10.2.0.56:6443
@@ -164,7 +164,8 @@ CoreDNS is running at https://10.2.0.56:6443/api/v1/namespaces/kube-system/servi
 To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 
 ```
-create a controller.yaml file with the following content.
+
+The endpoint for `demo-controller` cluster is `https://10.2.0.56:6443`. Now, create a controller.yaml file with the following content.
 ```yaml
 kubeslice:
   controller:
@@ -177,7 +178,7 @@ kubeslice:
 Deploy controller using helm chart
 ```bash
 
-➤ helm install kubeslice-controller ./charts/kubeslice-controller  -f /home/arman/go/src/github.com/sheikh-arman/my-library/poc/kubeslice/demo/k3s/yaml-deploy/controller.yaml --namespace kubeslice-controller --create-namespace
+➤ helm install kubeslice-controller kubeslice/kubeslice-controller  -f controller.yaml --namespace kubeslice-controller --create-namespace
 
 NAME: kubeslice-controller
 LAST DEPLOYED: Wed Aug  6 14:10:54 2025
@@ -188,11 +189,6 @@ TEST SUITE: None
 NOTES:
 kubeslice controller installation successful!
 
-```
-
-```bash
-
-helm install kubeslice-controller kubeslice/kubeslice-controller -f controller.yaml --namespace kubeslice-controller --create-namespace
 ```
 
 Verify the installation
@@ -237,7 +233,7 @@ default                   0         69s
 kubeslice-rbac-rw-admin   1         68s
 ```
 
-Set `kubeslice.io/node-type=gateway` labels on the nodes where the worker controller schedule. Do this for all worker cluster.
+Now, set `kubeslice.io/node-type=gateway` labels on the nodes where the worker controller will be scheduled. Do this for all worker cluster.
 
 Run the following command on `demo-controller` cluster
 ```bash
@@ -267,6 +263,14 @@ demo-worker   Ready    control-plane,master   152m   v1.33.3+k3s1
 node/demo-worker labeled
 ```
 
+lets get networkInterface by running the following command on your node.
+```bash
+
+ubuntu@demo-controller:~$ ip route get 8.8.8.8 | awk '{ print $5 }'
+enp1s0
+
+```
+
 Create registration.yaml file with the following content and deploy it on `demo-controller`.
 
 ```bash
@@ -291,14 +295,6 @@ spec:
   networkInterface: enp1s0
   clusterProperty: {}
 ---
-
-```
-
-To get networkInterface run this command on your node.
-```bash
-
-ubuntu@demo-controller:~$ ip route get 8.8.8.8 | awk '{ print $5 }'
-enp1s0
 
 ```
 
@@ -332,7 +328,54 @@ kubeslice-rbac-worker-demo-controller   kubernetes.io/service-account-token   5 
 kubeslice-rbac-worker-demo-worker       kubernetes.io/service-account-token   5      5m8s
 ```
 
-To get cluster endpoints, run the following command on `demo-worker` cluster . 
+Create a script file `secrets.sh` with the following content.
+```shell
+# The script returns a kubeconfig for the service account given
+# you need to have kubectl on PATH with the context set to the cluster you want to create the config for
+
+# Cosmetics for the created config
+firstWorkerSecretName=$1
+
+# cluster name what you given in clusters registration
+clusterName=$2
+
+# the Namespace and ServiceAccount name that is used for the config
+namespace=$3
+
+# Need to give correct network interface value like ens160, eth0 etc
+networkInterface=$4
+
+# kubectl cluster-info of respective worker-cluster
+worker_endpoint=$5
+
+
+######################
+# actual script starts
+set -o errexit
+
+### Fetch Worker cluster Secrets ###
+PROJECT_NAMESPACE=$(kubectl get secrets $firstWorkerSecretName -n $namespace  -o jsonpath={.data.namespace})
+CONTROLLER_ENDPOINT=$(kubectl get secrets $firstWorkerSecretName -n $namespace  -o jsonpath={.data.controllerEndpoint})
+CA_CRT=$(kubectl get secrets $firstWorkerSecretName -n $namespace  -o jsonpath='{.data.ca\.crt}')
+TOKEN=$(kubectl get secrets $firstWorkerSecretName -n $namespace  -o jsonpath={.data.token})
+
+echo "
+---
+## Base64 encoded secret values from controller cluster
+controllerSecret:
+  namespace: ${PROJECT_NAMESPACE}
+  endpoint: ${CONTROLLER_ENDPOINT}
+  ca.crt: ${CA_CRT}
+  token: ${TOKEN}
+cluster:
+  name: ${clusterName}
+  endpoint: ${worker_endpoint}
+netop:
+  networkInterface: ${networkInterface}
+"
+```
+
+Get the cluster endpoints by running the following command on `demo-worker` cluster . 
 ```bash
 
 ➤ kubectl cluster-info --context demo-worker --kubeconfig $HOME/.kube/config
@@ -344,7 +387,7 @@ To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
 ```
 Here the endpoint is `https://10.2.0.60:6443`
 
-Now run this script on `demo-controller` and create sliceoperator-worker.yaml with the following script output
+Now run this script on `demo-controller` and create sliceoperator-worker.yaml using script output.
 ```bash
 kubectl config use-context demo-controller
 Switched to context "demo-controller".
@@ -366,12 +409,12 @@ netop:
 
 ```
 
-Now install worker by the helm command on `demo-worker` cluster
+Now register worker cluster by installing worker operator on `demo-worker` cluster
 ```bash
 ➤ kubectl config use-context demo-worker
 Switched to context "demo-worker".
 
-➤ helm install kubeslice-worker ./charts/kubeslice-worker -f /home/arman/go/src/github.com/sheikh-arman/my-library/poc/kubeslice/demo/k3s/yaml-deploy/sliceoperator-worker.yaml -n kubeslice-system --create-namespace
+➤ helm install kubeslice-worker  kubeslice/kubeslice-worker -f sliceoperator-worker.yaml -n kubeslice-system --create-namespace
 
 NAME: kubeslice-worker
 LAST DEPLOYED: Wed Aug  6 14:53:04 2025
@@ -386,7 +429,7 @@ Kubeslice Operator installation successful!
 
 Now register `demo-controller` cluster as worker cluster
 
-Run the following script on `demo-controller`, and create sliceoperator-controller.yaml  with the following script output
+Run secrets.sh script on `demo-controller`, and create sliceoperator-controller.yaml using script output
 ```bash
 ➤ kubectl config use-context demo-controller
 Switched to context "demo-controller".
@@ -410,7 +453,7 @@ netop:
 
 ```bash
 
-➤ helm install kubeslice-worker ./charts/kubeslice-worker -f /home/arman/go/src/github.com/sheikh-arman/my-library/poc/kubeslice/demo/k3s/yaml-deploy/sliceoperator-controller.yaml -n kubeslice-system --create-namespace
+➤ helm install kubeslice-worker kubeslice/kubeslice-worker -f sliceoperator-controller.yaml -n kubeslice-system --create-namespace
 
 NAME: kubeslice-worker
 LAST DEPLOYED: Wed Aug  6 15:08:26 2025
@@ -420,11 +463,6 @@ REVISION: 1
 TEST SUITE: None
 NOTES:
 Kubeslice Operator installation successful!
-
-```
-```bash
-
-➤ helm install kubeslice-worker kubeslice/kubeslice-worker -f /home/arman/go/src/github.com/sheikh-arman/my-library/poc/kubeslice/demo/k3s/yaml-deploy/sliceoperator-controller.yaml -n kubeslice-system --create-namespace
 
 ```
 
@@ -446,11 +484,14 @@ spire-install-clusterid-cr-qwqlr     0/1     Completed   0          4m47s
 spire-install-crds-cnbjh             0/1     Completed   0          4m50s
 ```
 
-We have successfully registered worker.
+We have successfully registered `demo-controller` as worker.
 
-Now create sliceconfig on `demo-controller` to onboard namespace
+lets create a SliceConfig for the demo-controller to onboard the demo, kubedb, and kubeops namespaces. 
+Ensure that the configuration includes the namespace where the application will be deployed and the namespace from which the application will be accessed. 
+Here demo is our application namespace where the database pod will be deployed.
+The kubedb namespace runs KubeDB operator, requiring onboarding to allow the provisioner, ops-manager, and other KubeDB operators to access the database.
 
-create sliceconfig.yaml filw with the following contents.
+create sliceconfig.yaml file with the following contents.
 ```yaml
 apiVersion: controller.kubeslice.io/v1alpha1
 kind: SliceConfig
@@ -509,10 +550,9 @@ sliceconfig.controller.kubeslice.io/demo-slice created
 
 ### Install the KubeDB Operator:
 
-Install KubeDB operator
+You can follow the instruction [here](https://kubedb.com/docs/v2025.6.30/setup/install/kubedb/) to install KubeDB.
 
 ```bash
-You can follow the instruction [here](https://kubedb.com/docs/v2025.6.30/setup/install/kubedb/)
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
     --version v2025.7.30-rc.0 \
     --namespace kubedb --create-namespace \
@@ -521,7 +561,7 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 ```
 
 ### Define a PodPlacementPolicy:
-Create a PodPlacementPolicy custom resource in the hub cluster to specify which clusters should host MariaDB pods. 
+Create a PodPlacementPolicy custom resource in the hub cluster(demo-controller) to specify which clusters should host MariaDB pods. 
 
 Create pod-placement-policy.yaml file with the following yaml and deploy it.
 ```yaml
@@ -564,7 +604,7 @@ kubectl apply -f pod-placement-policy.yaml --context demo-controller --kubeconfi
 
 ### Create a Distributed MariaDB Instance:
 
-Define a MariaDB custom resource with spec.distributed set to true and reference the PodPlacementPolicy by name in spec.podTemplate.spec.podPlacementPolicy.name.
+Define a MariaDB custom resource with `spec.distributed` set to true and reference the PodPlacementPolicy by name in `spec.podTemplate.spec.podPlacementPolicy.name`.
 
 ```yaml
 
@@ -624,6 +664,107 @@ mariadb-1   3/3     Running   0          95s
 
 NAME                  TYPE                       DATA   AGE
 secret/mariadb-auth   kubernetes.io/basic-auth   2      95s
+
+```
+
+```bash
+
+➤ kubectl exec -it -n demo pod/mariadb-0 -- bash
+Defaulted container "mariadb" out of: mariadb, md-coordinator, cmd-nsc, cmd-nsc-init (init), mariadb-init (init)
+mysql@mariadb-0:/$ mariadb -uroot -p$MYSQL_ROOT_PASSWORD
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 29511
+Server version: 11.5.2-MariaDB-ubu2404 mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> SHOW STATUS LIKE 'wsrep%';
++-------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| Variable_name                 | Value                                                                                                                                          |
++-------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| wsrep_local_state_uuid        | d590d154-72b7-11f0-a85e-8a05969eae6c                                                                                                           |
+| wsrep_protocol_version        | 11                                                                                                                                             |
+| wsrep_last_committed          | 13056                                                                                                                                          |
+| wsrep_replicated              | 11211                                                                                                                                          |
+| wsrep_replicated_bytes        | 6233136                                                                                                                                        |
+| wsrep_repl_keys               | 28029                                                                                                                                          |
+| wsrep_repl_keys_bytes         | 493296                                                                                                                                         |
+| wsrep_repl_data_bytes         | 4960681                                                                                                                                        |
+| wsrep_repl_other_bytes        | 0                                                                                                                                              |
+| wsrep_received                | 1953                                                                                                                                           |
+| wsrep_received_bytes          | 1025822                                                                                                                                        |
+| wsrep_local_commits           | 1                                                                                                                                              |
+| wsrep_local_cert_failures     | 0                                                                                                                                              |
+| wsrep_local_replays           | 0                                                                                                                                              |
+| wsrep_local_send_queue        | 0                                                                                                                                              |
+| wsrep_local_send_queue_max    | 1                                                                                                                                              |
+| wsrep_local_send_queue_min    | 0                                                                                                                                              |
+| wsrep_local_send_queue_avg    | 0                                                                                                                                              |
+| wsrep_local_recv_queue        | 0                                                                                                                                              |
+| wsrep_local_recv_queue_max    | 2                                                                                                                                              |
+| wsrep_local_recv_queue_min    | 0                                                                                                                                              |
+| wsrep_local_recv_queue_avg    | 0.00102407                                                                                                                                     |
+| wsrep_local_cached_downto     | 1                                                                                                                                              |
+| wsrep_flow_control_paused_ns  | 0                                                                                                                                              |
+| wsrep_flow_control_paused     | 0                                                                                                                                              |
+| wsrep_flow_control_sent       | 0                                                                                                                                              |
+| wsrep_flow_control_recv       | 0                                                                                                                                              |
+| wsrep_flow_control_active     | false                                                                                                                                          |
+| wsrep_flow_control_requested  | false                                                                                                                                          |
+| wsrep_cert_deps_distance      | 1                                                                                                                                              |
+| wsrep_apply_oooe              | 0                                                                                                                                              |
+| wsrep_apply_oool              | 0                                                                                                                                              |
+| wsrep_apply_window            | 1                                                                                                                                              |
+| wsrep_apply_waits             | 0                                                                                                                                              |
+| wsrep_commit_oooe             | 0                                                                                                                                              |
+| wsrep_commit_oool             | 0                                                                                                                                              |
+| wsrep_commit_window           | 1                                                                                                                                              |
+| wsrep_local_state             | 4                                                                                                                                              |
+| wsrep_local_state_comment     | Synced                                                                                                                                         |
+| wsrep_cert_index_size         | 3                                                                                                                                              |
+| wsrep_causal_reads            | 0                                                                                                                                              |
+| wsrep_cert_interval           | 0                                                                                                                                              |
+| wsrep_open_transactions       | 0                                                                                                                                              |
+| wsrep_open_connections        | 0                                                                                                                                              |
+| wsrep_incoming_addresses      | 10.1.0.3:0,10.1.0.4:0,10.1.16.4:0                                                                                                              |
+| wsrep_cluster_weight          | 3                                                                                                                                              |
+| wsrep_desync_count            | 0                                                                                                                                              |
+| wsrep_evs_delayed             |                                                                                                                                                |
+| wsrep_evs_evict_list          |                                                                                                                                                |
+| wsrep_evs_repl_latency        | 0/0/0/0/0                                                                                                                                      |
+| wsrep_evs_state               | OPERATIONAL                                                                                                                                    |
+| wsrep_gcomm_uuid              | d58f2d39-72b7-11f0-becb-ae4dab6c439c                                                                                                           |
+| wsrep_gmcast_segment          | 0                                                                                                                                              |
+| wsrep_applier_thread_count    | 1                                                                                                                                              |
+| wsrep_cluster_capabilities    |                                                                                                                                                |
+| wsrep_cluster_conf_id         | 3                                                                                                                                              |
+| wsrep_cluster_size            | 3                                                                                                                                              |
+| wsrep_cluster_state_uuid      | d590d154-72b7-11f0-a85e-8a05969eae6c                                                                                                           |
+| wsrep_cluster_status          | Primary                                                                                                                                        |
+| wsrep_connected               | ON                                                                                                                                             |
+| wsrep_local_bf_aborts         | 0                                                                                                                                              |
+| wsrep_local_index             | 0                                                                                                                                              |
+| wsrep_provider_capabilities   | :MULTI_MASTER:CERTIFICATION:PARALLEL_APPLYING:TRX_REPLAY:ISOLATION:PAUSE:CAUSAL_READS:INCREMENTAL_WRITESET:UNORDERED:PREORDERED:STREAMING:NBO: |
+| wsrep_provider_name           | Galera                                                                                                                                         |
+| wsrep_provider_vendor         | Codership Oy <info@codership.com>                                                                                                              |
+| wsrep_provider_version        | 26.4.19(r5db72dad)                                                                                                                             |
+| wsrep_ready                   | ON                                                                                                                                             |
+| wsrep_rollbacker_thread_count | 1                                                                                                                                              |
+| wsrep_thread_count            | 2                                                                                                                                              |
++-------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+69 rows in set (0.001 sec)
+
+MariaDB [(none)]> SHOW STATUS LIKE 'wsrep_cluster_status';
++----------------------+---------+
+| Variable_name        | Value   |
++----------------------+---------+
+| wsrep_cluster_status | Primary |
++----------------------+---------+
+1 row in set (0.001 sec)
+
+MariaDB [(none)]> 
 
 ```
 
