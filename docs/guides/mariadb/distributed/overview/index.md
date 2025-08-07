@@ -38,7 +38,7 @@ Before deploying a distributed MariaDB instance, ensure the following are in pla
 
 Follow these steps to deploy a distributed MariaDB instance across multiple clusters:
 
-### Set Up OCM for Multi-Cluster Management:
+### Set Up OCM for Multi-Cluster Management
 
 In this demonstration, we will utilize two clusters: `demo-controller` and `demo-worker`. The demo-controller will serve as the hub cluster, while the demo-worker will function as the spoke cluster. Additionally, the demo-controller hub cluster will also be configured to operate as a spoke cluster.
 ```bash
@@ -144,7 +144,7 @@ open-cluster-management-agent-addon   Active   34s
 open-cluster-management-hub           Active   10m
 ```
 
-### Configure KubeSlice for Network Connectivity:
+### Configure KubeSlice for Network Connectivity
 
 You can follow the installation process described [here](https://kubeslice.io/documentation/open-source/1.4.0/install-kubeslice/yaml/yaml-controller-install).
 We will deploy kubeslice controller on `demo-controller`.
@@ -176,19 +176,14 @@ kubeslice:
 
 ```
 Deploy controller using helm chart
+
 ```bash
-
-➤ helm install kubeslice-controller kubeslice/kubeslice-controller  -f controller.yaml --namespace kubeslice-controller --create-namespace
-
-NAME: kubeslice-controller
-LAST DEPLOYED: Wed Aug  6 14:10:54 2025
-NAMESPACE: kubeslice-controller
-STATUS: deployed
-REVISION: 1
-TEST SUITE: None
-NOTES:
-kubeslice controller installation successful!
-
+helm upgrade -i kubeslice-controller oci://ghcr.io/appscode-charts/kubeslice-controller \
+    --version v2025.7.31 \
+    -f controller.yaml \
+    --namespace kubeslice-controller \
+    --create-namespace \
+    --wait --burst-limit=10000 --debug
 ```
 
 Verify the installation
@@ -247,8 +242,6 @@ demo-master   Ready    control-plane,master   143m   v1.33.3+k3s1
 ➤ kubectl label node demo-master kubeslice.io/node-type=gateway
 node/demo-master labeled
 ```
-
-
 
 run the following command on `demo-worker` cluster
 ```bash
@@ -413,18 +406,15 @@ Now register worker cluster by installing worker operator on `demo-worker` clust
 ```bash
 ➤ kubectl config use-context demo-worker
 Switched to context "demo-worker".
-
-➤ helm install kubeslice-worker  kubeslice/kubeslice-worker -f sliceoperator-worker.yaml -n kubeslice-system --create-namespace
-
-NAME: kubeslice-worker
-LAST DEPLOYED: Wed Aug  6 14:53:04 2025
-NAMESPACE: kubeslice-system
-STATUS: deployed
-REVISION: 1
-TEST SUITE: None
-NOTES:
-Kubeslice Operator installation successful!
-
+````
+```bash
+helm upgrade -i kubeslice-worker oci://ghcr.io/appscode-charts/kubeslice-worker \
+    --version v2025.7.31 \
+    -f sliceoperator-worker.yaml \
+    --namespace kubeslice-system \
+    --create-namespace \
+    --wait --burst-limit=10000 --debug
+    
 ```
 
 Now register `demo-controller` cluster as worker cluster
@@ -452,18 +442,12 @@ netop:
 ```
 
 ```bash
-
-➤ helm install kubeslice-worker kubeslice/kubeslice-worker -f sliceoperator-controller.yaml -n kubeslice-system --create-namespace
-
-NAME: kubeslice-worker
-LAST DEPLOYED: Wed Aug  6 15:08:26 2025
-NAMESPACE: kubeslice-system
-STATUS: deployed
-REVISION: 1
-TEST SUITE: None
-NOTES:
-Kubeslice Operator installation successful!
-
+helm upgrade -i kubeslice-worker oci://ghcr.io/appscode-charts/kubeslice-worker \
+    --version v2025.7.31 \
+    -f sliceoperator-controller.yaml \
+    --namespace kubeslice-system \
+    --create-namespace \
+    --wait --burst-limit=10000 --debug
 ```
 
 ```bash
@@ -548,7 +532,7 @@ spec:
 sliceconfig.controller.kubeslice.io/demo-slice created
 ```
 
-### Install the KubeDB Operator:
+### Install the KubeDB Operator
 
 You can follow the instruction [here](https://kubedb.com/docs/v2025.6.30/setup/install/kubedb/) to install KubeDB.
 
@@ -560,7 +544,7 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
     --wait --burst-limit=10000 --debug
 ```
 
-### Define a PodPlacementPolicy:
+### Define a PodPlacementPolicy
 Create a PodPlacementPolicy custom resource in the hub cluster(demo-controller) to specify which cluster should host which MariaDB pod. 
 
 Create pod-placement-policy.yaml file with the following yaml and deploy it.
@@ -591,8 +575,7 @@ spec:
     whenUnsatisfiable: ScheduleAnyway
 
 ```
-Here,
-clusterName specifies the cluster where the pod will be schedule. and replicas define which pod will schedule in this cluster.
+Here, clusterName specifies the cluster where the pod will be schedule, and replicas define which pod will schedule in this cluster.
 In the above config,
 mariadb pod with ordinal 0,2 will be scheduled on `demo-controller` and  pod with ordinal 1 will be scheduled on `demo-worker` cluster.
 
@@ -612,7 +595,7 @@ kubectl apply -f pod-placement-policy.yaml --context demo-controller --kubeconfi
 
 
 
-### Create a Distributed MariaDB Instance:
+### Create a Distributed MariaDB Instance
 
 Define a MariaDB custom resource with `spec.distributed` set to true and reference the PodPlacementPolicy by name in `spec.podTemplate.spec.podPlacementPolicy.name`.
 
@@ -648,7 +631,7 @@ Apply the MariaDB resource on `demo-controller`
 mariadb.kubedb.com/mariadb created
 ```
 
-### Verify the Deployment:
+### Verify the Deployment
 
 Check the mariadb resource and pod  on `demo-controller`
 ```bash
