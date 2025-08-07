@@ -83,7 +83,7 @@ KubeDB implements a `Redis` CRD to define the specification of a Valkey server. 
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
-  name: redis-quickstart
+  name: valkey-quickstart
   namespace: demo
 spec:
   version: valkey-8.1.1
@@ -100,14 +100,14 @@ spec:
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-valkey-v1.yaml
-redis.kubedb.com/redis-quickstart created
+redis.kubedb.com/valkey-quickstart created
 ```
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Redis
 metadata:
-  name: redis-quickstart
+  name: valkey-quickstart
   namespace: demo
 spec:
   version: valkey-8.1.1
@@ -124,7 +124,7 @@ spec:
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-valkey-v1alpha2.yaml
-redis.kubedb.com/redis-quickstart created
+redis.kubedb.com/valkey-quickstart created
 ```
 
 Here,
@@ -141,10 +141,10 @@ KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis`
 ```bash
 $ kubectl get rd -n demo
 NAME               VERSION        STATUS   AGE
-redis-quickstart   valkey-8.1.1   Ready    6m16s
+valkey-quickstart  valkey-8.1.1   Ready    6m16s
 
-$ kubectl describe rd -n demo redis-quickstart
-Name:         redis-quickstart
+$ kubectl describe rd -n demo valkey-quickstart
+Name:         valkey-quickstart
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -162,7 +162,7 @@ Spec:
     Namespaces:
       From:  Same
   Auth Secret:
-    Name:  redis-quickstart-auth
+    Name:  valkey-quickstart-auth
   Auto Ops:
   Deletion Policy:  WipeOut
   Health Checker:
@@ -214,7 +214,7 @@ Spec:
         Name:  default
       Security Context:
         Fs Group:            1000
-      Service Account Name:  redis-quickstart
+      Service Account Name:  valkey-quickstart
   Replicas:                  1
   Storage:
     Access Modes:
@@ -228,7 +228,7 @@ Spec:
 Status:
   Conditions:
     Last Transition Time:  2025-07-31T10:51:06Z
-    Message:               The KubeDB operator has started the provisioning of Redis: demo/redis-quickstart
+    Message:               The KubeDB operator has started the provisioning of Redis: demo/valkey-quickstart
     Reason:                DatabaseProvisioningStartedSuccessfully
     Status:                True
     Type:                  ProvisioningStarted
@@ -238,19 +238,19 @@ Status:
     Status:                True
     Type:                  ReplicaReady
     Last Transition Time:  2025-07-31T10:51:26Z
-    Message:               The Redis: demo/redis-quickstart is ready.
+    Message:               The Redis: demo/valkey-quickstart is ready.
     Observed Generation:   2
     Reason:                ReadinessCheckSucceeded
     Status:                True
     Type:                  Ready
     Last Transition Time:  2025-07-31T10:51:36Z
-    Message:               The Redis: demo/redis-quickstart is accepting rdClient requests.
+    Message:               The Redis: demo/valkey-quickstart is accepting rdClient requests.
     Observed Generation:   2
     Reason:                DatabaseAcceptingConnectionRequest
     Status:                True
     Type:                  AcceptingConnection
     Last Transition Time:  2025-07-31T10:51:38Z
-    Message:               The Redis: demo/redis-quickstart is successfully provisioned.
+    Message:               The Redis: demo/valkey-quickstart is successfully provisioned.
     Observed Generation:   2
     Reason:                DatabaseSuccessfullyProvisioned
     Status:                True
@@ -268,18 +268,18 @@ Events:
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified Redis object:
 
 ```bash
-$ kubectl get rd -n demo redis-quickstart -o yaml
+$ kubectl get rd -n demo valkey-quickstart -o yaml
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"Redis","metadata":{"annotations":{},"name":"redis-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","version":"valkey-8.1.1"}}
+      {"apiVersion":"kubedb.com/v1","kind":"Redis","metadata":{"annotations":{},"name":"valkey-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","version":"valkey-8.1.1"}}
   creationTimestamp: "2025-07-31T10:51:06Z"
   finalizers:
   - kubedb.com
   generation: 2
-  name: redis-quickstart
+  name: valkey-quickstart
   namespace: demo
   resourceVersion: "1029811"
   uid: 536a75e8-4d57-4475-9bf1-94bf61d967d2
@@ -288,7 +288,7 @@ spec:
     namespaces:
       from: Same
   authSecret:
-    name: redis-quickstart-auth
+    name: valkey-quickstart-auth
   autoOps: {}
   deletionPolicy: WipeOut
   healthChecker:
@@ -340,7 +340,7 @@ spec:
         name: default
       securityContext:
         fsGroup: 1000
-      serviceAccountName: redis-quickstart
+      serviceAccountName: valkey-quickstart
   replicas: 1
   storage:
     accessModes:
@@ -354,7 +354,7 @@ spec:
 status:
   conditions:
   - lastTransitionTime: "2025-07-31T10:51:06Z"
-    message: 'The KubeDB operator has started the provisioning of Redis: demo/redis-quickstart'
+    message: 'The KubeDB operator has started the provisioning of Redis: demo/valkey-quickstart'
     reason: DatabaseProvisioningStartedSuccessfully
     status: "True"
     type: ProvisioningStarted
@@ -364,19 +364,19 @@ status:
     status: "True"
     type: ReplicaReady
   - lastTransitionTime: "2025-07-31T10:51:26Z"
-    message: 'The Redis: demo/redis-quickstart is ready.'
+    message: 'The Redis: demo/valkey-quickstart is ready.'
     observedGeneration: 2
     reason: ReadinessCheckSucceeded
     status: "True"
     type: Ready
   - lastTransitionTime: "2025-07-31T10:51:36Z"
-    message: 'The Redis: demo/redis-quickstart is accepting rdClient requests.'
+    message: 'The Redis: demo/valkey-quickstart is accepting rdClient requests.'
     observedGeneration: 2
     reason: DatabaseAcceptingConnectionRequest
     status: "True"
     type: AcceptingConnection
   - lastTransitionTime: "2025-07-31T10:51:38Z"
-    message: 'The Redis: demo/redis-quickstart is successfully provisioned.'
+    message: 'The Redis: demo/valkey-quickstart is successfully provisioned.'
     observedGeneration: 2
     reason: DatabaseSuccessfullyProvisioned
     status: "True"
@@ -388,7 +388,7 @@ status:
 Now, you can connect to this database through [redis-cli](https://redis.io/topics/rediscli). In this tutorial, we are connecting to the Redis server from inside of pod.
 
 ```bash
-$ kubectl exec -it -n demo redis-quickstart-0 -- sh
+$ kubectl exec -it -n demo valkey-quickstart-0 -- sh
 /data $ valkey-cli
 127.0.0.1:6379> ping
 PONG
@@ -403,7 +403,7 @@ OK
 ## DoNotTerminate Property
 Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy)
 
-Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` . Then you will be able to delete/halt the database.
+Now, run `kubectl edit rd valkey-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` . Then you will be able to delete/halt the database.
 
 ## Halt Database
 
@@ -414,15 +414,15 @@ You can also keep the redis object and halt the database to resume it again late
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
-redis.kubedb.com/redis-quickstart patched
+$ kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
+redis.kubedb.com/valkey-quickstart patched
 ```
 
 Then, you have to set the `spec.halted` as true to set the database in a `Halted` state. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"halted":true}}' --type="merge"
-redis.kubedb.com/redis-quickstart patched
+$ kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"halted":true}}' --type="merge"
+redis.kubedb.com/valkey-quickstart patched
 ```
 After that, kubedb will delete the petsets and services, and you can see the database Phase as `Halted`.
 
@@ -430,14 +430,14 @@ Now, you can run the following command to get all redis resources in demo namesp
 ```bash
 $ kubectl get redis,secret,pvc -n demo
 NAME                                VERSION        STATUS   AGE
-redis.kubedb.com/redis-quickstart   valkey-8.1.1   Halted   19m
+redis.kubedb.com/valkey-quickstart  valkey-8.1.1   Halted   19m
 
-NAME                             TYPE                       DATA   AGE
-secret/redis-quickstart-auth     kubernetes.io/basic-auth   2      19m
-secret/redis-quickstart-config   Opaque                     1      19m
+NAME                              TYPE                       DATA   AGE
+secret/valkey-quickstart-auth     kubernetes.io/basic-auth   2      19m
+secret/valkey-quickstart-config   Opaque                     1      19m
 
 NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-persistentvolumeclaim/data-redis-quickstart-0   Bound    pvc-c7d0fc32-c863-42eb-a7db-23a7852fbfac   1Gi        RWO            standard       <unset>                 19m
+persistentvolumeclaim/data-valkey-quickstart-0   Bound    pvc-c7d0fc32-c863-42eb-a7db-23a7852fbfac   1Gi        RWO            standard       <unset>                 19m
 ```
 
 ## Resume Halted Redis
@@ -445,21 +445,21 @@ persistentvolumeclaim/data-redis-quickstart-0   Bound    pvc-c7d0fc32-c863-42eb-
 Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"halted":false}}' --type="merge"
-redis.kubedb.com/redis-quickstart patched
+$ kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"halted":false}}' --type="merge"
+redis.kubedb.com/valkey-quickstart patched
 ```
 
 When the database is resumed successfully, you can see the database Status is set to `Ready`.
 
 ```bash
 $ kubectl get rd -n demo
-NAME               VERSION        STATUS   AGE
-redis-quickstart   valkey-8.1.1   Ready    20m
+NAME                VERSION        STATUS   AGE
+valkey-quickstart   valkey-8.1.1   Ready    20m
 ```
 
 Now, If you again exec into the `pod` and look for previous data, you will see that, all the data persists.
 ```bash
-$ kubectl exec -it -n demo redis-quickstart-0 -- sh
+$ kubectl exec -it -n demo valkey-quickstart-0 -- sh
 
 /data > valkey-cli
 
@@ -480,11 +480,11 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-redis.kubedb.com/redis-quickstart patched
+$ kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+redis.kubedb.com/valkey-quickstart patched
 
-$ kubectl delete -n demo rd/redis-quickstart
-redis.kubedb.com "redis-quickstart" deleted
+$ kubectl delete -n demo rd/valkey-quickstart
+redis.kubedb.com "valkey-quickstart" deleted
 
 $ kubectl delete ns demo
 namespace "demo" deleted

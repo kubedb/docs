@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
-  name: redis-quickstart
+  name: valkey-quickstart
   namespace: demo
 spec:
   version: valkey-8.1.1
