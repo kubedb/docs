@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Cassandra
+metadata:
+  name: cassandra-quickstart
+  namespace: demo
+spec:
+  version: 5.0.3
+  topology:
+    rack:
+      - name: r0
+        replicas: 2
+        storage:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 600Mi
+  deletionPolicy: Delete
