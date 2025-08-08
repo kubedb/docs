@@ -1,0 +1,102 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: appscode-charts-oci
+  namespace: kubeops
+spec:
+  interval: 30m
+  provider: generic
+  timeout: 1m
+  type: oci
+  url: oci://ghcr.io/appscode-charts
+  hiranmoy@hiranmoy-pc ~/g/s/v/db> cat keda.yaml
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: keda
+  namespace: kubeops
+spec:
+  chart:
+    spec:
+      chart: keda
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: appscode-charts-oci
+        namespace: kubeops
+      version: 2.16.1
+  install:
+    crds: CreateReplace
+    createNamespace: true
+    remediation:
+      retries: -1
+  interval: 5m
+  releaseName: keda
+  storageNamespace: keda
+  targetNamespace: keda
+  timeout: 30m
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: -1
+  values:
+    image:
+      keda:
+        registry: ghcr.io
+      metricsApiServer:
+        registry: ghcr.io
+      webhooks:
+        registry: ghcr.io
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: keda-add-ons-http
+  namespace: kubeops
+spec:
+  chart:
+    spec:
+      chart: keda-add-ons-http
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: appscode-charts-oci
+        namespace: kubeops
+      version: 0.10.0
+  dependsOn:
+    - name: keda
+  install:
+    crds: CreateReplace
+    createNamespace: true
+    remediation:
+      retries: -1
+  interval: 5m
+  releaseName: keda-add-ons-http
+  storageNamespace: keda
+  targetNamespace: keda
+  timeout: 30m
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: -1
+  values:
+    images:
+      interceptor: ghcr.io/kedacore/http-add-on-interceptor
+      kubeRbacProxy:
+        name: ghcr.io/appscode/kube-rbac-proxy
+      operator: ghcr.io/kedacore/http-add-on-operator
+      scaler: ghcr.io/kedacore/http-add-on-scaler
+    interceptor:
+      responseHeaderTimeout: 1s
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      privileged: false
+      readOnlyRootFilesystem: true
+      runAsGroup: 1000
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault

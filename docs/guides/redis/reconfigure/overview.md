@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Reconfiguring Redis
 
-This guide will give an overview on how KubeDB Ops-manager operator reconfigures `Redis` database.
+This guide will give an overview on how KubeDB Ops-manager operator reconfigures `Redis/Valkey` database.
 
 ## Before You Begin
 

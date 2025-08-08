@@ -1,0 +1,29 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Cassandra
+metadata:
+  name: cassandra-autoscale
+  namespace: demo
+spec:
+  version: "5.0.3"
+  topology:
+    rack:
+      - name: r0
+        replicas: 2
+        storage:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 600Mi
+        podTemplate:
+          spec:
+            containers:
+              - name: cassandra
+                resources:
+                  limits:
+                    memory: 2Gi
+                    cpu: 1000m
+                  requests:
+                    memory: 600Mi
+                    cpu: 500m
+  deletionPolicy: WipeOut

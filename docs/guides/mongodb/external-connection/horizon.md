@@ -1,9 +1,9 @@
 ---
-title: External Connections using MongoDB Horizons Guide
+title: External Connection using MongoDB Horizon
 menu:
   docs_{{ .version }}:
     identifier: mg-horizons-guides
-    name: MongoDB Horizons
+    name: MongoDB Horizon
     parent: mg-horizons
     weight: 10
 menu_name: docs_{{ .version }}
@@ -170,7 +170,7 @@ Install `Keda` in your cluster using the following command:
 $ kubectl create ns kubeops
 namespace/kubeops created
 
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/helrepo.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/helmrepo.yaml
 helmrepository.source.toolkit.fluxcd.io/appscode-charts-oci created
 
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/keda.yaml

@@ -56,7 +56,9 @@ If you don't open both TCP ports, your cluster will not work as expected.
 
 The cluster bus uses a different, binary protocol, for node to node data exchange, which is more suited to exchange information between nodes using little bandwidth and processing time.
 
-Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
+Redis Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
+
+Valkey Reference: https://valkey.io/topics/cluster-tutorial/
 
 ## Redis Cluster data sharding
 
@@ -74,7 +76,9 @@ This allows to add and remove nodes in the cluster easily. For example if one wa
 
 Because moving hash slots from a node to another does not require to stop operations, adding and removing nodes, or changing the percentage of hash slots hold by nodes, does not require any downtime.
 
-Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
+Redis Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
+
+Valkey Reference: https://valkey.io/topics/cluster-tutorial/
 
 ## Redis Cluster master-slave model
 
@@ -88,7 +92,9 @@ Node B1 replicates B, and B fails, the cluster will promote node B1 as the new m
 
 However, note that if nodes B and B1 fail at the same time Redis Cluster is not able to continue to operate.
 
-Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
+Redis Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
+
+Valkey Reference: https://valkey.io/topics/cluster-tutorial/
 
 ## Redis Cluster consistency guarantees
 
@@ -116,7 +122,9 @@ After a partition occurs, it is possible that on one side of the partition we ha
 
 Z1 is still able to write to B, that will accept its writes. If the partition heals in a very short time, the cluster will continue normally. However, if the partition lasts enough time for B1 to be promoted to master in the majority side of the partition, the writes that Z1 is sending to B will be lost.
 
-Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
+Redis Reference: https://redis.io/docs/management/scaling/#redis-cluster-101
+
+Valkey Reference: https://valkey.io/topics/cluster-tutorial/
 
 ## Redis Cluster configuration parameters
 
@@ -129,9 +137,13 @@ Let's introduce the configuration parameters that Redis Cluster introduces in th
 - **cluster-migration-barrier <count>**: Minimum number of replicas a master will remain connected with, for another slave to migrate to a master which is no longer covered by any slave. See the appropriate section about replica migration in this tutorial for more information.
 - **cluster-require-full-coverage <yes/no>**: If this is set to yes, as it is by default, the cluster stops accepting writes if some percentage of the key space is not covered by any node. If the option is set to no, the cluster will still serve queries even if only requests about a subset of keys can be processed.
 
-Reference: https://redis.io/docs/management/scaling/#redis-cluster-configuration-parameters
+Redis Reference: https://redis.io/docs/management/scaling/#redis-cluster-configuration-parameters
 
-For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf).
+Valkey Reference: https://valkey.io/topics/cluster-tutorial/#valkey-cluster-configuration-parameters
+
+For more Redis parameters, see [here](http://download.redis.io/redis-stable/redis.conf).
+
+For more Valkey parameters, see [here](https://github.com/valkey-io/valkey/blob/unstable/valkey.conf).
 
 ## Redis Cluster main components
 
@@ -139,11 +151,15 @@ For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf
 
   Each master node in a cluster handles a subset of the 16384 hash slots. The cluster is **stable** when there is no cluster reconfiguration in progress (i.e. where hash slots are being moved from one node to another). When the cluster is stable, a single hash slot will be served by a single node (however the serving node can have one or more replicas that will replace it in the case of net splits or failures, and that can be used in order to scale read operations where reading stale data is acceptable).
 
-  Reference: https://redis.io/docs/management/scaling/
+  Redis Reference: https://redis.io/docs/management/scaling/
+
+  Valkey Reference: https://valkey.io/topics/cluster-tutorial/
 
 - **Keys hash tags**: There is an exception for the computation of the hash slot that is used in order to implement **hash tags**. Hash tags are a way to ensure that multiple keys are allocated in the same hash slot. This is used in order to implement multi-key operations in Redis Cluster.
 
   Reference:https://redis.io/docs/management/scaling/
+
+  Valkey Reference: https://valkey.io/topics/cluster-tutorial/
 
 - **Cluster nodes' attributes**: Every node has a unique name in the cluster. The node name is the hex representation of a 160 bit random number, obtained the first time a node is started (usually using /dev/urandom). The node will save its ID in the node configuration file, and will use the same ID forever, or at least as long as the node configuration file is not deleted by the system administrator, or a *hard reset* is requested via the [CLUSTER RESET](https://redis.io/commands/cluster-reset) command.
 
@@ -160,9 +176,13 @@ For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf
 
   Reference: https://redis.io/docs/management/scaling/
 
+  Valkey Reference: https://valkey.io/topics/cluster-tutorial/
+
 - **The Cluster bus**: Every Redis Cluster node has an additional TCP port for receiving incoming connections from other Redis Cluster nodes. This port is at a fixed offset from the normal TCP port used to receive incoming connections from clients. To obtain the Redis Cluster port, 10000 should be added to the normal commands port. For example, if a Redis node is listening for client connections on port 6379, the Cluster bus port 16379 will also be opened.
 
   Reference: https://redis.io/docs/management/scaling/
+
+  Valkey Reference: https://valkey.io/topics/cluster-tutorial/
 
 - **Cluster topology**: Redis Cluster is a full mesh where every node is connected with every other node using a TCP connection.
 
@@ -171,6 +191,8 @@ For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf
   These TCP connections are kept alive all the time and are not created on demand. When a node expects a pong reply in response to a ping in the cluster bus, before waiting long enough to mark the node as unreachable, it will try to refresh the connection with the node by reconnecting from scratch.
 
   Reference: https://redis.io/docs/management/scaling/
+
+  Valkey Reference: https://valkey.io/topics/cluster-tutorial/
 
 - **Nodes handshake**: Nodes always accept connections on the cluster bus port, and even reply to pings when received, even if the pinging node is not trusted. However, all other packets will be discarded by the receiving node if the sending node is not considered part of the cluster.
 
@@ -185,6 +207,8 @@ For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf
   - A node will also register another node as part of the cluster if a node that is already trusted will gossip about this other node. So if A knows B, and B knows C, eventually B will send gossip messages to A about C. When this happens, A will register C as part of the network, and will try to connect with C.
 
   Reference: https://redis.io/docs/management/scaling/
+
+  Valkey Reference: https://valkey.io/topics/cluster-tutorial/
 
 ## Next Steps
 

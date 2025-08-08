@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: CassandraOpsRequest
+metadata:
+  name:  casops-reconfigure-apply-topology
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: cassandra-prod
+  configuration:
+    applyConfig:
+      cassandra.yaml: |-
+        read_request_timeout=5500ms
+  timeout: 5m
+  apply: IfReady

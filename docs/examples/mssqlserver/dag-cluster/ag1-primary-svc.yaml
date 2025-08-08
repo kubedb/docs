@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ag1
+  namespace: demo
+spec:
+  ports:
+    - name: primary
+      port: 1433
+      protocol: TCP
+      targetPort: db
+    - name: mirror
+      port: 5022
+      protocol: TCP
+      targetPort: mirror
+  selector:
+    app.kubernetes.io/instance: ag1
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: mssqlservers.kubedb.com
+    kubedb.com/role: primary
+  type: LoadBalancer

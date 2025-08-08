@@ -1,0 +1,18 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: restore-sample-cassandra
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Cassandra
+    namespace: demo
+    name: cas-sample
+  dataSource:
+    repository: s3-cassandra-repo
+    snapshot: latest
+  addon:
+    name: cassandra-addon
+    tasks:
+      - name: logical-backup-restore

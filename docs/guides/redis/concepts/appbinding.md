@@ -81,7 +81,6 @@ spec:
     name: redis1-client-cert
   type: kubedb.com/redis
   version: 6.2.14
-
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

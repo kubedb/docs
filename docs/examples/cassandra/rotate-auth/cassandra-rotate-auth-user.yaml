@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: CassandraOpsRequest
+metadata:
+  name: casops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: cassandra-prod
+  authentication:
+    secretRef:
+      name: cassandra-user-auth
+  timeout: 5m
+  apply: IfReady

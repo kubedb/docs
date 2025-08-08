@@ -201,6 +201,8 @@ The above output verifies that we have successfully expanded the volume of the R
 The volume expansion process is same for all the Redis modes. The `RedisOpsRequest` CR has the sample fields. The database needs to refer to a redis database 
 in standalone or sentinel mode.
 
+> For Valkey you can apply the OpsRequest just like in Redis.
+
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:

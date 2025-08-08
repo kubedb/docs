@@ -1,0 +1,23 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: CassandraOpsRequest
+metadata:
+  name: casops-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: cassandra-prod
+  tls:
+    issuerRef:
+      name: cas-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    certificates:
+      - alias: client
+        subject:
+          organizations:
+            - cassandra
+          organizationalUnits:
+            - client
+  timeout: 5m
+  apply: IfReady

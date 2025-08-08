@@ -64,6 +64,7 @@ kubectl-dba [flags]
 * [kubectl-dba describe](/docs/reference/cli/kubectl-dba_describe.md)	 - Show details of a specific resource or group of resources
 * [kubectl-dba exec](/docs/reference/cli/kubectl-dba_exec.md)	 - Execute script or command to a database.
 * [kubectl-dba monitor](/docs/reference/cli/kubectl-dba_monitor.md)	 - Monitoring related commands for a database
+* [kubectl-dba mssql](/docs/reference/cli/kubectl-dba_mssql.md)	 - MSSQLServer database commands
 * [kubectl-dba options](/docs/reference/cli/kubectl-dba_options.md)	 - Print the list of flags inherited by all commands
 * [kubectl-dba pause](/docs/reference/cli/kubectl-dba_pause.md)	 - Pause the processing of an object.
 * [kubectl-dba remote-config](/docs/reference/cli/kubectl-dba_remote-config.md)	 - generate appbinding , secrets for remote replica

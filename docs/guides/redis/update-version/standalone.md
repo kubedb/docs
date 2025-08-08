@@ -142,6 +142,8 @@ $ kubectl get pods -n demo redis-quickstart-0 -o=jsonpath='{.spec.containers[0].
 redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 ```
 
+> If you are a current `Redis` user and want to switch to `Valkey`, just make sure that both `Redis` and `Valkey` versions are 7.\*.\*
+
 You can see from above, our `Redis` standalone database has been updated with the new version. So, the UpdateVersion process is successfully completed.
 
 ## Cleaning Up

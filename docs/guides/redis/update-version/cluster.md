@@ -150,6 +150,8 @@ redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57
 
 You can see from above, our `Redis` cluster database has been updated with the new version. So, the update process is successfully completed.
 
+> If you are a current `Redis` user and want to switch to `Valkey`, just make sure that both `Redis` and `Valkey` versions are 7.\*.\*
+
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
