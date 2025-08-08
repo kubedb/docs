@@ -1,0 +1,21 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: CassandraAutoscaler
+metadata:
+  name: cassandra-autoscale-ops
+  namespace: demo
+spec:
+  databaseRef:
+    name: cassandra-autoscale
+  compute:
+    cassandra:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 600m
+        memory: 1.2Gi
+      maxAllowed:
+        cpu: 1
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"

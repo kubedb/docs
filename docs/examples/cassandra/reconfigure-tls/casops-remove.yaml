@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: CassandraOpsRequest
+metadata:
+  name: casops-remove
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: cassandra-prod
+  tls:
+    remove: true
