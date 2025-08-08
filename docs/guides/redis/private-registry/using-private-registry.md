@@ -35,18 +35,23 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 ```bash
 $ kubectl get redisversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,INITCONTAINER_IMAGE:.spec.initContainer.image,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image
-NAME       VERSION   INITCONTAINER_IMAGE       DB_IMAGE                EXPORTER_IMAGE
-4.0.11     4.0.11    kubedb/redis-init:0.7.0   kubedb/redis:4.0.11     kubedb/redis_exporter:v0.21.1
-4.0.6-v2   4.0.6     kubedb/redis-init:0.7.0   kubedb/redis:4.0.6-v2   kubedb/redis_exporter:v0.21.1
-5.0.14     5.0.14    kubedb/redis-init:0.7.0   redis:5.0.14            kubedb/redis_exporter:1.9.0
-6.2.14   5.0.3     kubedb/redis-init:0.7.0   kubedb/redis:6.2.14   kubedb/redis_exporter:v0.21.1
-6.0.20      6.0.20     kubedb/redis-init:0.7.0   kubedb/redis:6.0.20      kubedb/redis_exporter:1.9.0
-6.2.14      6.2.14     kubedb/redis-init:0.7.0   redis:6.2.14             kubedb/redis_exporter:1.9.0
-6.2.14      6.2.14     kubedb/redis-init:0.7.0   redis:6.2.14             kubedb/redis_exporter:1.9.0
-6.2.14      6.2.14     kubedb/redis-init:0.7.0   redis:6.2.14             kubedb/redis_exporter:1.9.0
-7.0.4      7.0.4     kubedb/redis-init:0.7.0   redis:7.0.4             kubedb/redis_exporter:1.9.0
-7.0.14      7.0.14     kubedb/redis-init:0.7.0   redis:7.0.14             kubedb/redis_exporter:1.9.0
-7.0.6      7.0.6     kubedb/redis-init:0.7.0   redis:7.0.6             kubedb/redis_exporter:1.9.0
+NAME           VERSION   INITCONTAINER_IMAGE                DB_IMAGE                                        EXPORTER_IMAGE
+4.0.11         4.0.11    ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/kubedb/redis:4.0.11                     ghcr.io/kubedb/redis_exporter:1.66.0
+5.0.14         5.0.14    ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:5.0.14-bullseye   ghcr.io/kubedb/redis_exporter:1.66.0
+6.0.20         6.0.20    ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:6.0.20-bookworm   ghcr.io/kubedb/redis_exporter:1.66.0
+6.2.14         6.2.14    ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:6.2.14-bookworm   ghcr.io/kubedb/redis_exporter:1.66.0
+6.2.16         6.2.16    ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:6.2.16-bookworm   ghcr.io/kubedb/redis_exporter:1.66.0
+7.0.14         7.0.14    ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:7.0.14-bookworm   ghcr.io/kubedb/redis_exporter:1.66.0
+7.0.15         7.0.15    ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:7.0.15-bookworm   ghcr.io/kubedb/redis_exporter:1.66.0
+7.2.3          7.2.3     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:7.2.3-bookworm    ghcr.io/kubedb/redis_exporter:1.66.0
+7.2.4          7.2.4     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:7.2.4-bookworm    ghcr.io/kubedb/redis_exporter:1.66.0
+7.2.6          7.2.6     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:7.2.6-bookworm    ghcr.io/kubedb/redis_exporter:1.66.0
+7.4.0          7.4.0     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:7.4.0-bookworm    ghcr.io/kubedb/redis_exporter:1.66.0
+7.4.1          7.4.1     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:7.4.1-bookworm    ghcr.io/kubedb/redis_exporter:1.66.0
+valkey-7.2.5   7.2.5     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/valkey:7.2.5            ghcr.io/kubedb/redis_exporter:1.66.0
+valkey-7.2.9   7.2.9     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/valkey:7.2.9            ghcr.io/kubedb/redis_exporter:1.66.0
+valkey-8.0.3   8.0.3     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/valkey:8.0.3            ghcr.io/kubedb/redis_exporter:1.66.0
+valkey-8.1.1   8.1.1     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/valkey:8.1.1            ghcr.io/kubedb/redis_exporter:1.66.0
 ```
 
   Docker hub repositories:
@@ -54,6 +59,8 @@ NAME       VERSION   INITCONTAINER_IMAGE       DB_IMAGE                EXPORTER_
   - [kubedb/operator](https://hub.docker.com/r/kubedb/operator)
   - [kubedb/redis](https://hub.docker.com/r/kubedb/redis)
   - [kubedb/redis_exporter](https://hub.docker.com/r/kubedb/redis_exporter)
+
+`Note`: While using Valkey as the DB image, take initContainer version greater than or equal to 0.10.0
 
 - Update KubeDB catalog for private Docker registry. Ex:
 
@@ -67,6 +74,8 @@ NAME       VERSION   INITCONTAINER_IMAGE       DB_IMAGE                EXPORTER_
       image: PRIVATE_DOCKER_REGISTRY:6.0.20
     exporter:
       image: PRIVATE_DOCKER_REGISTRY:1.9.0
+    initContainer:
+      image: PRIVATE_DOCKER_REGISTRY:0.12.0
     podSecurityPolicies:
       databasePolicyName: redis-db
     version: 6.0.20

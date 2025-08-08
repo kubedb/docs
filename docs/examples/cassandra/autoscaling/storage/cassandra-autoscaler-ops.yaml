@@ -1,0 +1,14 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: CassandraAutoscaler
+metadata:
+  name: cassandra-storage-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: cassandra-autoscale
+  storage:
+    cassandra:
+      trigger: "On"
+      usageThreshold: 20
+      scalingThreshold: 100
+      expansionMode: "Offline"

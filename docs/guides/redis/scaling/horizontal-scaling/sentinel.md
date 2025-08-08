@@ -5,7 +5,7 @@ menu:
     identifier: rd-horizontal-scaling-sentinel
     name: Sentinel
     parent: rd-horizontal-scaling
-    weight: 20
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

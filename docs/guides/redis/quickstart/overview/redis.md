@@ -2,9 +2,9 @@
 title: Redis Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: rd-quickstart-quickstart
-    name: Overview
-    parent: rd-quickstart-redis
+    identifier: redis-overview
+    name: Redis
+    parent: rd-overview
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -53,19 +53,25 @@ When you have installed KubeDB, it has created `RedisVersion` crd for all suppor
 
 ```bash
 $ kubectl get redisversions
-NAME       VERSION   DB_IMAGE                DEPRECATED   AGE
-4.0.11     4.0.11    kubedb/redis:4.0.11                  7h31m
-4.0.6-v2   4.0.6     kubedb/redis:4.0.6-v2                7h31m
-5.0.14     5.0.14    redis:5.0.14                         7h31m
-6.2.14   5.0.3     kubedb/redis:6.2.14                7h31m
-6.0.20      6.0.20     kubedb/redis:6.0.20                   7h31m
-6.2.14      6.2.14     redis:6.2.14                          7h31m
-6.2.14      6.2.14     redis:6.2.14                          7h31m
-6.2.14      6.2.14     redis:6.2.14                          7h31m
-7.0.4      7.0.4     redis:7.0.4                          7h31m
-7.0.14      7.0.14     redis:7.0.14                          7h31m
-7.0.6      7.0.6     redis:7.0.6                          7h31m
+NAME           VERSION   DB_IMAGE                                        DEPRECATED   AGE
+4.0.11         4.0.11    ghcr.io/kubedb/redis:4.0.11                                  14d
+5.0.14         5.0.14    ghcr.io/appscode-images/redis:5.0.14-bullseye                14d
+6.0.20         6.0.20    ghcr.io/appscode-images/redis:6.0.20-bookworm                14d
+6.2.14         6.2.14    ghcr.io/appscode-images/redis:6.2.14-bookworm                14d
+6.2.16         6.2.16    ghcr.io/appscode-images/redis:6.2.16-bookworm                14d
+7.0.14         7.0.14    ghcr.io/appscode-images/redis:7.0.14-bookworm                14d
+7.0.15         7.0.15    ghcr.io/appscode-images/redis:7.0.15-bookworm                14d
+7.2.3          7.2.3     ghcr.io/appscode-images/redis:7.2.3-bookworm                 14d
+7.2.4          7.2.4     ghcr.io/appscode-images/redis:7.2.4-bookworm                 14d
+7.2.6          7.2.6     ghcr.io/appscode-images/redis:7.2.6-bookworm                 14d
+7.4.0          7.4.0     ghcr.io/appscode-images/redis:7.4.0-bookworm                 14d
+7.4.1          7.4.1     ghcr.io/appscode-images/redis:7.4.1-bookworm                 14d
+valkey-7.2.5   7.2.5     ghcr.io/appscode-images/valkey:7.2.5                         14d
+valkey-7.2.9   7.2.9     ghcr.io/appscode-images/valkey:7.2.9                         14d
+valkey-8.0.3   8.0.3     ghcr.io/appscode-images/valkey:8.0.3                         14d
+valkey-8.1.1   8.1.1     ghcr.io/appscode-images/valkey:8.1.1                         14d
 ```
+`Note`: RedisVersion which contains redis database image, will have `spec.distribution` as `Official`
 
 ## Create a Redis server
 
@@ -247,7 +253,7 @@ redis-quickstart-pods   ClusterIP       None             <none>        <none>   
 redis-quickstart        ClusterIP   10.108.149.205       <none>        6379/TCP   2m
 ```
 
-KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Redis object:
+KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified Redis object:
 
 ```bash
 $ kubectl get rd -n demo redis-quickstart -o yaml
@@ -360,7 +366,7 @@ $ kubectl delete rd redis-quickstart -n demo
 Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be halted. To delete, change spec.deletionPolicy
 ```
 
-Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` . Then you will be able to delete/halt the database. 
+Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` . Then you will be able to delete/halt the database.
 
 Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy)
 

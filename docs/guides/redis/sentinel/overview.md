@@ -84,6 +84,8 @@ These are just a few of the many configuration parameters that can be set for Re
 
 To learn more about Redis Sentinel , head over to [Official Documentation](https://redis.io/docs/management/sentinel/)
 
+To learn more about Valkey Sentinel , head over to [Official Documentation](https://valkey.io/topics/sentinel/)
+
 ## Next Steps
 
 - [Deploy Redis Sentinel](/docs/guides/redis/sentinel/redis-sentinel.md) using KubeDB.

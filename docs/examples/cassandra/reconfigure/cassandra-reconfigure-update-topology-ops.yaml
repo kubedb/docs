@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: CassandraOpsRequest
+metadata:
+  name:  casops-reconfigure-topology
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: cassandra-prod
+  configuration:
+    configSecret:
+      name: new-cas-topology-custom-config
+  timeout: 5m
+  apply: IfReady
