@@ -343,8 +343,7 @@ mssqlserver-ag-cluster-1   2/2     Running   0          11m   app.kubernetes.io/
 mssqlserver-ag-cluster-2   2/2     Running   0          10m   app.kubernetes.io/component=database,app.kubernetes.io/instance=mssqlserver-ag-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mssqlservers.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=mssqlserver-ag-cluster-5c944b9596,kubedb.com/role=secondary,statefulset.kubernetes.io/pod-name=mssqlserver-ag-cluster-2
 
 ```
-The pod having `kubedb.com/role=primary` is the primary and `kubedb.com/role=standby` are the
-standby's.
+The pod having `kubedb.com/role=primary` is the primary and `kubedb.com/role=standby` are the secondaries.
 
 
 Lets create a table in the primary.
@@ -358,7 +357,7 @@ sa⏎
 $ kubectl get secret -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
 tZQpzrowQQ20xbCf⏎         
 $ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
-mssql@mssqlserver-ag-cluster-0:/$ localhost -U sa -P "tZQpzrowQQ20xbCf"
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf"
 1> select name from sys.databases
 2> go
 name                                                                                                                            
@@ -495,8 +494,6 @@ Now we know how failover is done, let's check if the new primary `mssqlserver-ag
 
 ```shell
 $ kubectl exec -it -n demo mssqlserver-ag-cluster-2 -c mssql -- bash
-mssql@mssqlserver-ag-cluster-2:/$ ^[[200~/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf"
-bash: /opt/mssql-tools/bin/sqlcmd: No such file or directory
 mssql@mssqlserver-ag-cluster-2:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf"
 1> use agdb1
 2> go
@@ -532,7 +529,7 @@ mssqlserver-ag-cluster-2 primary
 
 ```
 
-Lets check if the standby(`mssqlserver-ag-cluster-0`) got the updated data from new primary `mssqlserver-ag-cluster-1`.
+Lets check if the standby(`mssqlserver-ag-cluster-0`) got the updated data from new primary `mssqlserver-ag-cluster-2`.
 
 ```shell
 $ kubectl exec -it -n demo mssqlserver-ag-cluster-1 -c mssql -- bash
@@ -573,7 +570,7 @@ Lets validate the cluster state from new primary(`mssqlserver-ag-cluster-0`).
 
 ```shell
 $ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
-mssql@mssqlserver-ag-cluster-1:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf"
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf"
 1> use agdb1
 2> go
 Changed database context to 'agdb1'.
@@ -680,10 +677,10 @@ where that highest lsn primary is not recoverable, read [this](https://appscode.
 
 You can configure Backup and Restore following the below documentation.
 
-[Backup and Restore](/docs/guides/mssqlServer/backup/overview/index.md)
+[Backup and Restore](/docs/guides/mssqlserver/backup/overview/index.md)
 
 ## A Guide to MSSQLServer PITR
-Documentaion Link: [PITR](/docs/guides/mssqlServer/pitr/archiver.md)
+Documentation Link: [PITR](/docs/guides/mssqlserver/pitr/archiver.md)
 
 ## A Guide to Handling MSSQLServer Storage
 
@@ -718,7 +715,7 @@ spec:
 ```
 
 
-For more details, please check the full section [here](/docs/guides/MSSQLServer/volume-expansion/Overview/overview.md).
+For more details, please check the full section [here](/docs/guides/mssqlserver/volume-expansion/Overview/overview.md).
 
 > **Note**: There are two ways to update your volume: 1.Online 2.Offline. Which Mode to choose? <br>
 It depends on your `StorageClass`. If your storageclass supports online volume expansion, you can go with it. Otherwise, you can go with `Ofline` Volume Expansion.
@@ -734,7 +731,7 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/massqlserver/backup/stash/overview/index.md) MSSQLServer database using Stash.
+- Learn about [backup and restore](/docs/guides/mssqlserver/backup/stash/overview/index.md) MSSQLServer database using Stash.
 - Learn about initializing [MSSQLServer with Script](/docs/guides/mssqlserver/initialization/script_source.md).
 - Learn about [custom MSSQLServerVersions](/docs/guides/mssqlserver/custom-versions/setup.md).
 - Want to setup MSSQLServer cluster? Check how to [configure Highly Available MSSQLServer Cluster](/docs/guides/mssqlserver/clustering/ha_cluster.md)
