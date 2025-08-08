@@ -18,6 +18,14 @@ KubeDB Supports distributed MariaDB deployments across multiple Kubernetes clust
 
 This guide walks you through the prerequisites, configuration steps, and an example for deploying a distributed MariaDB instance with these technologies.
 
+# Understanding OCM Hub and Spoke Clusters
+In an Open Cluster Management (OCM) setup, you have two main types of clusters:
+
+- Hub Cluster: This is your central control plane. It's where you define policies and manage the lifecycle of applications that will be distributed to other clusters.
+- Spoke Cluster: These are the managed clusters that are registered with the hub. They receive instructions from the hub and run the actual workloads, such as your MariaDB pods.
+
+A key behavior of OCM is its namespace management. When you join a spoke cluster to the hub using the clusteradm join command, OCM automatically creates a namespace on the hub cluster that matches the name of the spoke cluster. For example, joining a cluster named demo-worker will create a demo-worker namespace on the hub. This namespace is used to manage resources specific to that spoke cluster from the central hub.
+
 # Prerequisites
 
 Before deploying a distributed MariaDB instance, ensure the following are in place:
@@ -39,7 +47,7 @@ Before deploying a distributed MariaDB instance, ensure the following are in pla
 Follow these steps to deploy a distributed MariaDB instance across multiple clusters:
 
 ### Set Up OCM for Multi-Cluster Management
-
+Setup your KUBECONFIG so that you can switch between clusters.
 In this demonstration, we will utilize two fresh clusters: `demo-controller` and `demo-worker`. The demo-controller will serve as the hub cluster, while the demo-worker will function as the spoke cluster. Additionally, the demo-controller hub cluster will also be configured to operate as a spoke cluster.
 ```bash
 ➤ kubectl config get-contexts
@@ -50,6 +58,8 @@ CURRENT   NAME              CLUSTER           AUTHINFO          NAMESPACE
 
 Initialize the OCM hub cluster by executing the clusteradm init command.
 ```bash 
+➤ kubectl config use-context demo-controller
+Switched to context "demo-worker".
 
 clusteradm init --wait --feature-gates=ManifestWorkReplicaSet=true
 ```
@@ -65,9 +75,9 @@ Obtain the token required to register the spoke cluster.
 ```bash
 
 ➤ clusteradm get token
-token=eyJhbGciOiJSUzI1NiIsImtpZCI6Ikg2NlF2cDJVVFRyNUR5TTI3N0k4NG1aWVR3b015SnpRSjlLMTAzSkdIRGMifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWwiLCJrM3MiXSwiZXhwIjoxNzU0NDY2NTYyLCJpYXQiOjE3NTQ0NjI5NjIsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwianRpIjoiOTJkNzFhNjMtMGVlYS00MDYzLWI0ZjEtZTk4ODRhYzAxNmEyIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJvcGVuLWNsdXN0ZXItbWFuYWdlbWVudCIsInNlcnZpY2VhY2NvdW50Ijp7Im5hbWUiOiJhZ2VudC1yZWdpc3RyYXRpb24tYm9vdHN0cmFwIiwidWlkIjoiNDhmMjhkNDktMTM3OC00ZTFjLTk0NDMtNjQzNTMyOGZhNmJmIn19LCJuYmYiOjE3NTQ0NjI5NjIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpvcGVuLWNsdXN0ZXItbWFuYWdlbWVudDphZ2VudC1yZWdpc3RyYXRpb24tYm9vdHN0cmFwIn0.ANuDWLhvJ3mvxdSJjBQ4naBPgf8l--hr55JiQa2AXIeO8Ohb-nW9szNHp9KlmyKFBDcII7oS0QT2bt4Ldr-Vc79MLS_RnyhSJ6bS4_cJ_NfMSzpPUmpF5E3kkdBEmlVKdGfHYiVrXQbm7B_xCDkoSIs7avyMv6eZUzdljqp9ajGdQjRXmzYeqAHEObL5DaafZRJ8pk3rYdOfNSZRuzNZsgc7rOtFwE24LNormVwpLDdReAcEg-_pR1_55vlnfaiNJ6yCxKCRZ9S-Ht469U5DPS3DY0_qwR8SPc2vcds13gfMsJ04RSAIikHZaEZpp9QHHSH3HYXch8OFXtJ0Vs3Iig
+token=<Your_Clusteradm_Join_Token>
 please log on spoke and run:
-clusteradm join --hub-token eyJhbGciOiJSUzI1NiIsImtpZCI6Ikg2NlF2cDJVVFRyNUR5TTI3N0k4NG1aWVR3b015SnpRSjlLMTAzSkdIRGMifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWwiLCJrM3MiXSwiZXhwIjoxNzU0NDY2NTYyLCJpYXQiOjE3NTQ0NjI5NjIsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwianRpIjoiOTJkNzFhNjMtMGVlYS00MDYzLWI0ZjEtZTk4ODRhYzAxNmEyIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJvcGVuLWNsdXN0ZXItbWFuYWdlbWVudCIsInNlcnZpY2VhY2NvdW50Ijp7Im5hbWUiOiJhZ2VudC1yZWdpc3RyYXRpb24tYm9vdHN0cmFwIiwidWlkIjoiNDhmMjhkNDktMTM3OC00ZTFjLTk0NDMtNjQzNTMyOGZhNmJmIn19LCJuYmYiOjE3NTQ0NjI5NjIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpvcGVuLWNsdXN0ZXItbWFuYWdlbWVudDphZ2VudC1yZWdpc3RyYXRpb24tYm9vdHN0cmFwIn0.ANuDWLhvJ3mvxdSJjBQ4naBPgf8l--hr55JiQa2AXIeO8Ohb-nW9szNHp9KlmyKFBDcII7oS0QT2bt4Ldr-Vc79MLS_RnyhSJ6bS4_cJ_NfMSzpPUmpF5E3kkdBEmlVKdGfHYiVrXQbm7B_xCDkoSIs7avyMv6eZUzdljqp9ajGdQjRXmzYeqAHEObL5DaafZRJ8pk3rYdOfNSZRuzNZsgc7rOtFwE24LNormVwpLDdReAcEg-_pR1_55vlnfaiNJ6yCxKCRZ9S-Ht469U5DPS3DY0_qwR8SPc2vcds13gfMsJ04RSAIikHZaEZpp9QHHSH3HYXch8OFXtJ0Vs3Iig --hub-apiserver https://10.2.0.56:6443 --cluster-name <cluster_name>
+clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name <cluster_name>
 ```
 
 Replace <cluster_name> with your cluster name(`demo-worker`) and add `--feature-gates=RawFeedbackJsonString=true` this flag to the clusteradm join command we got. Note: `--feature-gates=RawFeedbackJsonString=true` adding this flag is important to get the spoke clusters resource feedback. 
@@ -77,7 +87,7 @@ Now let's execute the prepared command.
 ➤ kubectl config use-context demo-worker
 Switched to context "demo-worker".
 
-➤ clusteradm join --hub-token eyJhbGciOiJSUzI1NiIsImtpZCI6Ikg2NlF2cDJVVFRyNUR5TTI3N0k4NG1aWVR3b015SnpRSjlLMTAzSkdIRGMifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWwiLCJrM3MiXSwiZXhwIjoxNzU0NDY2NTYyLCJpYXQiOjE3NTQ0NjI5NjIsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwianRpIjoiOTJkNzFhNjMtMGVlYS00MDYzLWI0ZjEtZTk4ODRhYzAxNmEyIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJvcGVuLWNsdXN0ZXItbWFuYWdlbWVudCIsInNlcnZpY2VhY2NvdW50Ijp7Im5hbWUiOiJhZ2VudC1yZWdpc3RyYXRpb24tYm9vdHN0cmFwIiwidWlkIjoiNDhmMjhkNDktMTM3OC00ZTFjLTk0NDMtNjQzNTMyOGZhNmJmIn19LCJuYmYiOjE3NTQ0NjI5NjIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpvcGVuLWNsdXN0ZXItbWFuYWdlbWVudDphZ2VudC1yZWdpc3RyYXRpb24tYm9vdHN0cmFwIn0.ANuDWLhvJ3mvxdSJjBQ4naBPgf8l--hr55JiQa2AXIeO8Ohb-nW9szNHp9KlmyKFBDcII7oS0QT2bt4Ldr-Vc79MLS_RnyhSJ6bS4_cJ_NfMSzpPUmpF5E3kkdBEmlVKdGfHYiVrXQbm7B_xCDkoSIs7avyMv6eZUzdljqp9ajGdQjRXmzYeqAHEObL5DaafZRJ8pk3rYdOfNSZRuzNZsgc7rOtFwE24LNormVwpLDdReAcEg-_pR1_55vlnfaiNJ6yCxKCRZ9S-Ht469U5DPS3DY0_qwR8SPc2vcds13gfMsJ04RSAIikHZaEZpp9QHHSH3HYXch8OFXtJ0Vs3Iig --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-worker --feature-gates=RawFeedbackJsonString=true
+➤ clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-worker --feature-gates=RawFeedbackJsonString=true
 
 ```
 
@@ -123,18 +133,18 @@ Run the following command on `demo-controller` cluster
 
 ```bash
 
-clusteradm join --hub-token eyJhbGciOiJSUzI1NiIsImtpZCI6Ikg2NlF2cDJVVFRyNUR5TTI3N0k4NG1aWVR3b015SnpRSjlLMTAzSkdIRGMifQ.eyJhdWQiOlsiaHR0cHM6Ly9rdWJlcm5ldGVzLmRlZmF1bHQuc3ZjLmNsdXN0ZXIubG9jYWwiLCJrM3MiXSwiZXhwIjoxNzU0NDY2NTYyLCJpYXQiOjE3NTQ0NjI5NjIsImlzcyI6Imh0dHBzOi8va3ViZXJuZXRlcy5kZWZhdWx0LnN2Yy5jbHVzdGVyLmxvY2FsIiwianRpIjoiOTJkNzFhNjMtMGVlYS00MDYzLWI0ZjEtZTk4ODRhYzAxNmEyIiwia3ViZXJuZXRlcy5pbyI6eyJuYW1lc3BhY2UiOiJvcGVuLWNsdXN0ZXItbWFuYWdlbWVudCIsInNlcnZpY2VhY2NvdW50Ijp7Im5hbWUiOiJhZ2VudC1yZWdpc3RyYXRpb24tYm9vdHN0cmFwIiwidWlkIjoiNDhmMjhkNDktMTM3OC00ZTFjLTk0NDMtNjQzNTMyOGZhNmJmIn19LCJuYmYiOjE3NTQ0NjI5NjIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDpvcGVuLWNsdXN0ZXItbWFuYWdlbWVudDphZ2VudC1yZWdpc3RyYXRpb24tYm9vdHN0cmFwIn0.ANuDWLhvJ3mvxdSJjBQ4naBPgf8l--hr55JiQa2AXIeO8Ohb-nW9szNHp9KlmyKFBDcII7oS0QT2bt4Ldr-Vc79MLS_RnyhSJ6bS4_cJ_NfMSzpPUmpF5E3kkdBEmlVKdGfHYiVrXQbm7B_xCDkoSIs7avyMv6eZUzdljqp9ajGdQjRXmzYeqAHEObL5DaafZRJ8pk3rYdOfNSZRuzNZsgc7rOtFwE24LNormVwpLDdReAcEg-_pR1_55vlnfaiNJ6yCxKCRZ9S-Ht469U5DPS3DY0_qwR8SPc2vcds13gfMsJ04RSAIikHZaEZpp9QHHSH3HYXch8OFXtJ0Vs3Iig --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-controller --feature-gates=RawFeedbackJsonString=true
+clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-controller --feature-gates=RawFeedbackJsonString=true
 
 ```
 
-Accept the `demo-controller cluster`
+Accept the `demo-controller cluster`.
 
 ```bash
 
 clusteradm accept --clusters demo-controller
 ```
 
-Check the namespace if  `demo-controller` is created or not
+Check the namespace if  `demo-controller` is created or not.
 
 ```bash
 
@@ -220,12 +230,16 @@ spec:
 ### Configure KubeSlice for Network Connectivity
 
 You can follow the installation process described [here](https://kubeslice.io/documentation/open-source/1.4.0/install-kubeslice/yaml/yaml-controller-install).
-We will deploy kubeslice controller on `demo-controller`.
-As we will deploy MariaDB pods both `demo-controller` and `demo-worker` cluster. So kubeslice worker operator will be deployed on both cluster.
 
+For this specific guide, our setup will distribute the KubeSlice components across our clusters like this:
+
+- The KubeSlice Controller will be installed on the demo-controller cluster, as it acts as the central control plane.
+- The KubeSlice Worker will be installed on both the demo-controller and demo-worker clusters. This is necessary because our MariaDB application pods will run on both clusters, and the worker operator is required on every cluster that participates in the slice.
+
+Now, let's proceed with the first installation step.
 Install kubeslice controller operator on `demo-controller`
 
-Get the cluster info
+Lets get the cluster information.
 ```bash
 ➤ kubectl config use-context demo-controller
 Switched to context "demo-controller".
@@ -548,11 +562,11 @@ You can follow the instruction [here](https://kubedb.com/docs/v2025.6.30/setup/i
 
 ```bash
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
-    --version v2025.7.31 \
-    --namespace kubedb --create-namespace \
-    --set-file global.license=$HOME/Downloads/kubedb-license-dfdbcc6a-2f0d-4e97-94aa-7da9bacb0e7c.txt \
-    --set kubedb-petset.features.ocm.enabled=true \
-    --wait --burst-limit=10000 --debug
+  --version v2025.7.31 \
+  --namespace kubedb --create-namespace \
+  --set-file global.license=$HOME/Downloads/kubedb-license-dfdbcc6a-2f0d-4e97-94aa-7da9bacb0e7c.txt \
+  --set petset.features.ocm.enabled=true \
+  --wait --burst-limit=10000 --debug
 ```
 
 ### Define a PodPlacementPolicy
