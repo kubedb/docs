@@ -1,0 +1,18 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: s3-storage
+  namespace: demo
+spec:
+  storage:
+    provider: s3
+    s3:
+      bucket: anisur
+      prefix: medusa-jul
+      secretName: medusa-cred
+      region: us-east-1
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  default: true
+  deletionPolicy: Delete
