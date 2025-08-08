@@ -104,7 +104,7 @@ a70923f477d7b37ce3c0beb7ed891f6501ac48ef 10.244.0.165:6379@16379 master - 0 1675
 94ee446e08494f1c5c826e03151dd1889585140e 10.244.0.162:6379@16379 master - 0 1675770134813 2 connected 5461-10922
 
 $ kubectl exec -it -n demo redis-cluster-shard0-0 -c redis -- redis-cli -c cluster nodes | grep slave | wc -l
-6
+3
 ```
 
 We can see from above output that there are 3 masters and each master has 2 replicas. So, total 6 replicas in the cluster. Each master and its two replicas belongs to a shard.

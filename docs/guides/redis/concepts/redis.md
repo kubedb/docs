@@ -143,15 +143,16 @@ AutoOps is an optional field to control the generation of version update & TLS-r
 - `4.0.11`, `5.0.14`
 - `6.0.20`, `6.2.14`
 - `7.0.14`, `7.0.15`, `7.2.3`, `7.2.4`
+- `valkey-7.2.5`, `valkey-7.2.9`, `valkey-8.0.3`, `valkey-8.1.1`
 ### spec.mode
 
 `spec.mode` specifies the mode in which Redis server instance(s) will be deployed. The possible values are either `"Standalone"`, `"Cluster"` and `"Sentinel""`. The default value is `"Standalone"`.
 
-- ***Standalone***: In this mode, the operator to starts a standalone Redis server.
+- ***Standalone***: In this mode, the operator to starts a standalone Redis/Valkey server.
 
-- ***Cluster***: In this mode, the operator will deploy Redis cluster.
+- ***Cluster***: In this mode, the operator will deploy Redis/Valkey cluster.
 
-- ***Sentinel***: In this mode, the operator will deploy a Redis Sentinel Cluster. The `RedisSentinel` instances need exist before deploying Redis in Sentinel mode. 
+- ***Sentinel***: In this mode, the operator will deploy a Redis/Valkey Sentinel Cluster. The `RedisSentinel` instances need exist before deploying Redis in Sentinel mode. 
 
 When `spec.mode` is set to `Sentinel`, `spec.sentinelRef.name` and `spec.sentinelRef.namespace` fields needs to be set to give reference to Sentinel instance
 
@@ -287,7 +288,7 @@ Redis managed by KubeDB can be monitored with builtin-Prometheus and Prometheus 
 
 ### spec.configSecret
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Redis. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/redis/configuration/using-config-file.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for Redis. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/redis/configuration/redis.md).
 
 ### spec.podTemplate
 
