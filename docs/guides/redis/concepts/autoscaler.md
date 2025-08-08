@@ -142,4 +142,4 @@ All of them has the following sub-fields:
 ## Next Steps
 
 - Learn about Redis crd [here](/docs/guides/redis/concepts/redis.md).
-- Deploy your first Redis database with Redis by following the guide [here](/docs/guides/redis/quickstart/quickstart.md).
+- Deploy your first Redis database with Redis by following the guide [here](/docs/guides/redis/quickstart/overview/redis.md).

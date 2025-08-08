@@ -263,7 +263,7 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 
 ## Next Steps
 
-- [Quickstart Redis](/docs/guides/redis/quickstart/quickstart.md) with KubeDB Operator.
+- [Quickstart Redis](/docs/guides/redis/quickstart/overview/redis.md) with KubeDB Operator.
 - Monitor your Redis instance with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
 - Monitor your Redis instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/redis/private-registry/using-private-registry.md) to deploy Redis with KubeDB.
