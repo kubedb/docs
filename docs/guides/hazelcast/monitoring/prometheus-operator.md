@@ -17,7 +17,7 @@ section_menu_id: guides
 [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor Hazelcast database deployed with KubeDB.
 
 <p align="center">
-  <img alt="Database Monitoring Flow"  src="/docs/images/solr/monitoring/database-monitoring-overview.png">
+  <img alt="Database Monitoring Flow"  src="/docs/images/hazelcast/monitoring/database-monitoring-overview.png">
 </p>
 
 ## Before You Begin

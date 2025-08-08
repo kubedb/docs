@@ -17,7 +17,7 @@ section_menu_id: guides
 This tutorial will show you how to monitor Hazelcast database using builtin [Prometheus](https://github.com/prometheus/prometheus) scraper.
 
 <p align="center">
-  <img alt="Database Monitoring Flow"  src="/docs/images/solr/monitoring/database-monitoring-overview.png">
+  <img alt="Database Monitoring Flow"  src="/docs/images/hazelcast/monitoring/database-monitoring-overview.png">
 </p>
 
 ## Before You Begin
