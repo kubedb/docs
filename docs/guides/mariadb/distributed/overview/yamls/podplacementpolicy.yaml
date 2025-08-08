@@ -14,12 +14,9 @@ spec:
         replicas:
           - 0
           - 2
-          - 4
       - clusterName: demo-worker
         replicas:
           - 1
-          - 3
-          - 5
     sliceName: demo-slice
   zoneSpreadConstraint:
     maxSkew: 1

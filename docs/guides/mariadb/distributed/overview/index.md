@@ -1,5 +1,5 @@
 ---
-title: MariaDB Galera Cluster Overview
+title: Distributed MariaDB Galera Cluster Overview
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-distributed-overview
@@ -9,166 +9,183 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+# Distributed MariaDB Galera Cluster Overview
 
-> New to KubeDB? Please start [here](/docs/README.md).
+## Introduction
 
-# Distributed MariaDB
+KubeDB enables distributed MariaDB deployments using the Galera clustering technology across multiple Kubernetes clusters, providing a scalable, highly available, and resilient database solution. By integrating **Open Cluster Management (OCM)** for multi-cluster orchestration and **KubeSlice** for seamless pod-to-pod network connectivity, KubeDB simplifies the deployment and management of MariaDB instances across clusters. A **PodPlacementPolicy** ensures precise control over pod scheduling, allowing you to distribute MariaDB pods across clusters for optimal resource utilization and fault tolerance.
 
-KubeDB Supports distributed MariaDB deployments across multiple Kubernetes clusters, enabling scalable and resilient database architectures. By leveraging Open Cluster Management (OCM) for streamlined multi-cluster management and KubeSlice for seamless pod-to-pod network connectivity, you can deploy MariaDB instances across clusters with high availability and efficient resource utilization. The deployment uses a PodPlacementPolicy to control pod scheduling on specific clusters, ensuring precise workload distribution.
+This guide provides a step-by-step process to deploy a distributed MariaDB Galera cluster, including prerequisites, configuration, and verification steps. It assumes familiarity with Kubernetes and basic database concepts.
 
-This guide walks you through the prerequisites, configuration steps, and an example for deploying a distributed MariaDB instance with these technologies.
+> **New to KubeDB?** Start with the [KubeDB documentation](https://kubedb.com/docs/v2025.7.31/welcome/) for an introduction.
 
-# Understanding OCM Hub and Spoke Clusters
-In an Open Cluster Management (OCM) setup, you have two main types of clusters:
+## Understanding OCM Hub and Spoke Clusters
 
-- Hub Cluster: This is your central control plane. It's where you define policies and manage the lifecycle of applications that will be distributed to other clusters.
-- Spoke Cluster: These are the managed clusters that are registered with the hub. They receive instructions from the hub and run the actual workloads, such as your MariaDB pods.
+In an **Open Cluster Management (OCM)** setup, clusters are categorized as:
 
-A key behavior of OCM is its namespace management. When you join a spoke cluster to the hub using the clusteradm join command, OCM automatically creates a namespace on the hub cluster that matches the name of the spoke cluster. For example, joining a cluster named demo-worker will create a demo-worker namespace on the hub. This namespace is used to manage resources specific to that spoke cluster from the central hub.
+- **Hub Cluster**: The central control plane where policies, applications, and resources are defined and managed. It orchestrates the lifecycle of applications deployed across spoke clusters.
+- **Spoke Cluster**: Managed clusters registered with the hub, running the actual workloads (e.g., MariaDB pods).
 
-# Prerequisites
+When a spoke cluster (e.g., `demo-worker`) is joined to the hub using the `clusteradm join` command, OCM creates a namespace on the hub cluster matching the spoke cluster's name (e.g., `demo-worker`). This namespace is used to manage resources specific to the spoke cluster from the hub.
 
-Before deploying a distributed MariaDB instance, ensure the following are in place:
+## Prerequisites
 
-- Kubernetes Clusters: Multiple Kubernetes clusters (version 1.26 or higher) configured and accessible.
+Before deploying a distributed MariaDB Galera cluster, ensure the following:
 
-- Kubernetes node with minimum of 4 vCPUs and 16GB of RAM.
+- **Kubernetes Clusters**: Multiple Kubernetes clusters (version 1.26 or higher) configured and accessible.
+- **Node Requirements**: Each Kubernetes node should have at least 4 vCPUs and 16GB of RAM.
+- **Open Cluster Management (OCM)**: Install `clusteradm` as per the [OCM Quick Start Guide](https://open-cluster-management.io/docs/getting-started/quick-start/).
+- **kubectl**: Installed and configured to interact with all clusters.
+- **Helm**: Installed for deploying the KubeDB Operator and KubeSlice components.
+- **Persistent Storage**: A storage class (e.g., `local-path` or cloud provider-specific) configured for persistent volumes.
 
-- Open Cluster Management (OCM): Clusteradm should be installed. See the [documentaion](https://open-cluster-management.io/docs/getting-started/quick-start/)
+## Configuration Steps
 
-- kubectl: Installed and configured to interact with your Kubernetes clusters.
+Follow these steps to deploy a distributed MariaDB Galera cluster across multiple Kubernetes clusters.
 
-- Helm: Installed for deploying the KubeDB Operator and related resources.
+### Step 1: Set Up Open Cluster Management (OCM)
 
-- Persistent Storage: A storage class configured for persistent volumes (e.g., local-path or cloud provider-specific storage).
+1. **Configure KUBECONFIG**:
+   Ensure your `KUBECONFIG` is set up to switch between clusters. This guide uses two clusters: `demo-controller` (hub and spoke) and `demo-worker` (spoke).
 
-# Configuration Steps
+   ```bash
+   kubectl config get-contexts
+   ```
 
-Follow these steps to deploy a distributed MariaDB instance across multiple clusters:
+   **Output**:
+   ```
+   CURRENT   NAME              CLUSTER           AUTHINFO          NAMESPACE
+   *         demo-controller   demo-controller   demo-controller   
+             demo-worker       demo-worker       demo-worker
+   ```
 
-### Set Up OCM for Multi-Cluster Management
-Setup your KUBECONFIG so that you can switch between clusters.
-In this demonstration, we will utilize two fresh clusters: `demo-controller` and `demo-worker`. The demo-controller will serve as the hub cluster, while the demo-worker will function as the spoke cluster. Additionally, the demo-controller hub cluster will also be configured to operate as a spoke cluster.
+2. **Initialize the OCM Hub**:
+   On the `demo-controller` cluster, initialize the OCM hub.
+
+   ```bash
+   kubectl config use-context demo-controller
+   clusteradm init --wait --feature-gates=ManifestWorkReplicaSet=true
+   ```
+
+3. **Verify Hub Deployment**:
+   Check the pods in the `open-cluster-management-hub` namespace to ensure all components are running.
+
+   ```bash
+   kubectl get pods -n open-cluster-management-hub
+   ```
+
+   **Output**:
+   ```
+   NAME                                                        READY   STATUS    RESTARTS   AGE
+   cluster-manager-addon-manager-controller-5f99f56896-qpzj8   1/1     Running   0          7m2s
+   cluster-manager-placement-controller-597d5ff644-wqjq2       1/1     Running   0          7m2s
+   cluster-manager-registration-controller-6d79d7dcc6-b8h9p    1/1     Running   0          7m2s
+   cluster-manager-registration-webhook-5d88cf97c7-2sq5m       1/1     Running   0          7m2s
+   cluster-manager-work-controller-7468bf4dc-5qn6q             1/1     Running   0          7m2s
+   cluster-manager-work-webhook-c5875947-d272b                 1/1     Running   0          7m2s
+   ```
+
+   All pods should be in the `Running` state with `1/1` readiness and no restarts, indicating a successful hub deployment.
+
+4. **Register Spoke Cluster (`demo-worker`)**:
+   Obtain the join token from the hub cluster.
+
+   ```bash
+   clusteradm get token
+   ```
+
+   **Output**:
+   ```
+   token=<Your_Clusteradm_Join_Token>
+   please log on spoke and run:
+   clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name <cluster_name>
+   ```
+
+   On the `demo-worker` cluster, join it to the hub, including the `RawFeedbackJsonString` feature gate for resource feedback.
+
+   ```bash
+   kubectl config use-context demo-worker
+   clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-worker --feature-gates=RawFeedbackJsonString=true
+   ```
+
+5. **Accept Spoke Cluster**:
+   On the `demo-controller` cluster, accept the `demo-worker` cluster.
+
+   ```bash
+   kubectl config use-context demo-controller
+   clusteradm accept --clusters demo-worker
+   ```
+
+   **Note**: It may take a few attempts (e.g., retry every 10 seconds) if the cluster is not immediately available.
+
+   **Output** (on success):
+   ```
+   Starting approve csrs for the cluster demo-worker
+   CSR demo-worker-2p2pb approved
+   set hubAcceptsClient to true for managed cluster demo-worker
+   Your managed cluster demo-worker has joined the Hub successfully.
+   ```
+
+6. **Verify Namespace Creation**:
+   Confirm that a namespace for `demo-worker` was created on the hub cluster.
+
+   ```bash
+   kubectl get ns
+   ```
+
+   **Output**:
+   ```
+   NAME                          STATUS   AGE
+   default                       Active   99m
+   demo-worker                   Active   58s
+   kube-node-lease               Active   99m
+   kube-public                   Active   99m
+   kube-system                   Active   99m
+   open-cluster-management       Active   6m7s
+   open-cluster-management-hub   Active   5m32s
+   ```
+
+7. **Register `demo-controller` as a Spoke Cluster**:
+   Repeat the join and accept process for `demo-controller` to also act as a spoke cluster.
+
+   ```bash
+   kubectl config use-context demo-controller
+   clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-controller --feature-gates=RawFeedbackJsonString=true
+   clusteradm accept --clusters demo-controller
+   ```
+
+   Verify the namespace for `demo-controller`.
+
+   ```bash
+   kubectl get ns
+   ```
+
+   **Output**:
+   ```
+   NAME                                  STATUS   AGE
+   default                               Active   104m
+   demo-controller                       Active   3s
+   demo-worker                           Active   6m7s
+   kube-node-lease                       Active   104m
+   kube-public                           Active   104m
+   kube-system                           Active   104m
+   open-cluster-management               Active   11m
+   open-cluster-management-agent         Active   37s
+   open-cluster-management-agent-addon   Active   34s
+   open-cluster-management-hub           Active   10m
+   ```
+
+### Step 2: Configure OCM WorkConfiguration (Optional)
+
+If you did not follow the provided OCM installation steps, update the `klusterlet` resource to enable feedback retrieval.
+
 ```bash
-➤ kubectl config get-contexts
-CURRENT   NAME              CLUSTER           AUTHINFO          NAMESPACE
-*         demo-controller   demo-controller   demo-controller   
-          demo-worker       demo-worker       demo-worker
+kubectl edit klusterlet klusterlet
 ```
 
-Initialize the OCM hub cluster by executing the clusteradm init command.
-```bash 
-➤ kubectl config use-context demo-controller
-Switched to context "demo-worker".
+Add the following under the `spec` field:
 
-clusteradm init --wait --feature-gates=ManifestWorkReplicaSet=true
-```
-
-Verify the deployment 
-```bash
-kubectl get ns
-kubectl get pods -n open-cluster-management-hub
-```
-
-Obtain the token required to register the spoke cluster.
-
-```bash
-
-➤ clusteradm get token
-token=<Your_Clusteradm_Join_Token>
-please log on spoke and run:
-clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name <cluster_name>
-```
-
-Replace <cluster_name> with your cluster name(`demo-worker`) and add `--feature-gates=RawFeedbackJsonString=true` this flag to the clusteradm join command we got. Note: `--feature-gates=RawFeedbackJsonString=true` adding this flag is important to get the spoke clusters resource feedback. 
-
-Now let's execute the prepared command.
-```bash
-➤ kubectl config use-context demo-worker
-Switched to context "demo-worker".
-
-➤ clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-worker --feature-gates=RawFeedbackJsonString=true
-
-```
-
-Now get back to the hub cluster(demo-controller) and accept the spoke cluster(demo-worker).
-
-note: It may take some time to accept the cluster. 
-```bash
-➤ kubectl config use-context demo-controller
-Switched to context "demo-controller".
-
-➤ clusteradm accept --clusters demo-worker
-Error: [fail to get managedcluster demo-worker: managedclusters.cluster.open-cluster-management.io "demo-worker" not found, no csr is approved yet for cluster demo-worker]
-
-try the same command after some time(10s). And keep trying with 10s interval till it accept the worker.
-
-➤ clusteradm accept --clusters demo-worker
-Starting approve csrs for the cluster demo-worker
-CSR demo-worker-2p2pb approved
-set hubAcceptsClient to true for managed cluster demo-worker
-
- Your managed cluster demo-worker has joined the Hub successfully. Visit https://open-cluster-management.io/scenarios or https://github.com/open-cluster-management-io/OCM/tree/main/solutions for next steps.
-
-```
-
-Verify the namespace on the hub cluster. A namespace corresponding to the cluster name (demo-worker) should have been created.
-
-```bash
-
-➤ kubectl get ns
-NAME                          STATUS   AGE
-default                       Active   99m
-demo-worker                   Active   58s
-kube-node-lease               Active   99m
-kube-public                   Active   99m
-kube-system                   Active   99m
-open-cluster-management       Active   6m7s
-open-cluster-management-hub   Active   5m32s
-
-```
-So, The `demo-worker` is successfully registered as spoke cluster. Now time to register the `demo-controller` as spoke cluster. Process is same as previous. Just replace the name with `demo-controller` and add `--feature-gates=RawFeedbackJsonString=true` this flag.
-
-Run the following command on `demo-controller` cluster
-
-```bash
-
-clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-controller --feature-gates=RawFeedbackJsonString=true
-
-```
-
-Accept the `demo-controller cluster`.
-
-```bash
-
-clusteradm accept --clusters demo-controller
-```
-
-Check the namespace if  `demo-controller` is created or not.
-
-```bash
-
-➤ kubectl get ns
-NAME                                  STATUS   AGE
-default                               Active   104m
-demo-controller                       Active   3s
-demo-worker                           Active   6m7s
-kube-node-lease                       Active   104m
-kube-public                           Active   104m
-kube-system                           Active   104m
-open-cluster-management               Active   11m
-open-cluster-management-agent         Active   37s
-open-cluster-management-agent-addon   Active   34s
-open-cluster-management-hub           Active   10m
-```
-### Configure OCM WorkConfiguration
-`Skip this part if you followed our instruction to install OCM.`
-
-If Open Cluster Management (OCM) is already installed in your cluster without following the provided installation guidelines, you must update the klusterlet resource by adding a section to enable feedback retrieval from the worker cluster. This step is essential to ensure proper feedback collection.
-```bash
-➤ kubectl edit klusterlet klusterlet
-add the following content under spec field.
-
+```yaml
 workConfiguration:
   featureGates:
     - feature: RawFeedbackJsonString
@@ -178,44 +195,21 @@ workConfiguration:
   kubeAPIBurst: 100
   kubeAPIQPS: 50
 ```
+
+Verify the configuration:
+
 ```bash
-➤ kubectl get klusterlet klusterlet -oyaml
+kubectl get klusterlet klusterlet -oyaml
+```
+
+**Sample Output** (abridged):
+```yaml
 apiVersion: operator.open-cluster-management.io/v1
 kind: Klusterlet
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: ""
-  creationTimestamp: "2025-08-08T05:58:49Z"
-  finalizers:
-  - operator.open-cluster-management.io/klusterlet-cleanup
-  generation: 1
   name: klusterlet
-  resourceVersion: "1069"
-  uid: 1f6ef411-cdd8-4df9-a348-07f19bdfacab
 spec:
   clusterName: demo-worker
-  deployOption:
-    mode: Default
-  externalServerURLs:
-  - url: ""
-  imagePullSpec: quay.io/open-cluster-management/registration-operator:v1.0.0
-  namespace: open-cluster-management-agent
-  registrationConfiguration:
-    bootstrapKubeConfigs:
-      type: None
-    clientCertExpirationSeconds: 31536000
-    featureGates:
-    - feature: AddonManagement
-      mode: Enable
-    - feature: ClusterClaim
-      mode: Enable
-    kubeAPIBurst: 100
-    kubeAPIQPS: 50
-    registrationDriver:
-      authType: csr
-  registrationImagePullSpec: quay.io/open-cluster-management/registration:v1.0.0
-  resourceRequirement:
-    type: Default
   workConfiguration:
     featureGates:
     - feature: RawFeedbackJsonString
@@ -224,201 +218,180 @@ spec:
     hubKubeAPIQPS: 50
     kubeAPIBurst: 100
     kubeAPIQPS: 50
-  workImagePullSpec: quay.io/open-cluster-management/work:v1.0.0
 ```
 
-### Configure KubeSlice for Network Connectivity
+### Step 3: Configure KubeSlice for Network Connectivity
 
-You can follow the installation process described [here](https://kubeslice.io/documentation/open-source/1.4.0/install-kubeslice/yaml/yaml-controller-install).
+KubeSlice enables pod-to-pod communication across clusters. Install the KubeSlice Controller on the `demo-controller` cluster and the KubeSlice Worker on both `demo-controller` and `demo-worker` clusters.
 
-For this specific guide, our setup will distribute the KubeSlice components across our clusters like this:
+1. **Install KubeSlice Controller**:
+   On `demo-controller`, create a `controller.yaml` file:
 
-- The KubeSlice Controller will be installed on the demo-controller cluster, as it acts as the central control plane.
-- The KubeSlice Worker will be installed on both the demo-controller and demo-worker clusters. This is necessary because our MariaDB application pods will run on both clusters, and the worker operator is required on every cluster that participates in the slice.
+   ```yaml
+   kubeslice:
+     controller:
+       loglevel: info
+       rbacResourcePrefix: kubeslice-rbac
+       projectnsPrefix: kubeslice
+       endpoint: https://10.2.0.56:6443
+   ```
 
-Now, let's proceed with the first installation step.
-Install kubeslice controller operator on `demo-controller`
+   Deploy the controller using Helm:
 
-Lets get the cluster information.
+   ```bash
+   helm upgrade -i kubeslice-controller oci://ghcr.io/appscode-charts/kubeslice-controller \
+       --version v2025.7.31 \
+       -f controller.yaml \
+       --namespace kubeslice-controller \
+       --create-namespace \
+       --wait --burst-limit=10000 --debug
+   ```
+
+   Verify the installation:
+
+   ```bash
+   kubectl get pods -n kubeslice-controller
+   ```
+
+   **Output**:
+   ```
+   NAME                                            READY   STATUS    RESTARTS   AGE
+   kubeslice-controller-manager-7fd756fff6-5kddd   2/2     Running   0          98s
+   ```
+
+2. **Create a KubeSlice Project**:
+   Create a `project.yaml` file:
+
+   ```yaml
+   apiVersion: controller.kubeslice.io/v1alpha1
+   kind: Project
+   metadata:
+     name: demo-distributed-mariadb
+     namespace: kubeslice-controller
+   spec:
+     serviceAccount:
+       readWrite:
+         - admin
+   ```
+
+   Apply the project:
+
+   ```bash
+   kubectl apply -f project.yaml
+   ```
+
+   Verify:
+
+   ```bash
+   kubectl get project -n kubeslice-controller
+   ```
+
+   **Output**:
+   ```
+   NAME                       AGE
+   demo-distributed-mariadb   31s
+   ```
+
+   Check service accounts:
+
+   ```bash
+   kubectl get sa -n kubeslice-demo-distributed-mariadb
+   ```
+
+   **Output**:
+   ```
+   NAME                      SECRETS   AGE
+   default                   0         69s
+   kubeslice-rbac-rw-admin   1         68s
+   ```
+
+3. **Label Nodes for KubeSlice**:
+   Assign the `kubeslice.io/node-type=gateway` label to node(where worker operator will deploy) in both clusters.
+
+   On `demo-controller`:
+
+   ```bash
+   kubectl get nodes
+   kubectl label node demo-master kubeslice.io/node-type=gateway
+   ```
+
+   On `demo-worker`:
+
+   ```bash
+   kubectl config use-context demo-worker
+   kubectl get nodes
+   kubectl label node demo-worker kubeslice.io/node-type=gateway
+   ```
+
+4. **Register Clusters with KubeSlice**:
+   Identify the network interface for both clusters by running the command on the node.
+
+   ```bash
+   ip route get 8.8.8.8 | awk '{ print $5 }'
+   ```
+
+   **Output** (example):
+   ```
+   enp1s0
+   ```
+
+   Create a `registration.yaml` file:
+
+   ```yaml
+   apiVersion: controller.kubeslice.io/v1alpha1
+   kind: Cluster
+   metadata:
+     name: demo-controller
+     namespace: kubeslice-demo-distributed-mariadb
+   spec:
+     networkInterface: enp1s0
+     clusterProperty: {}
+   ---
+   apiVersion: controller.kubeslice.io/v1alpha1
+   kind: Cluster
+   metadata:
+     name: demo-worker
+     namespace: kubeslice-demo-distributed-mariadb
+   spec:
+     networkInterface: enp1s0
+     clusterProperty: {}
+   ```
+
+   Apply on `demo-controller`:
+
+   ```bash
+   kubectl apply -f registration.yaml
+   ```
+
+   Verify:
+
+   ```bash
+   kubectl get clusters -n kubeslice-demo-distributed-mariadb
+   ```
+
+   **Output**:
+   ```
+   NAME              AGE
+   demo-controller   9s
+   demo-worker       9s
+   ```
+
+5. **Register KubeSlice Worker Clusters**:
+   Create a `secrets.sh` script to generate worker configuration:
+
 ```bash
-➤ kubectl config use-context demo-controller
-Switched to context "demo-controller".
-
-➤ kubectl cluster-info
-Kubernetes control plane is running at https://10.2.0.56:6443
-CoreDNS is running at https://10.2.0.56:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
-
-To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
-
-```
-
-The endpoint for `demo-controller` cluster is `https://10.2.0.56:6443`. Now, create a controller.yaml file with the following content.
-```yaml
-kubeslice:
-  controller:
-    loglevel: info
-    rbacResourcePrefix: kubeslice-rbac
-    projectnsPrefix: kubeslice
-    endpoint: https://10.2.0.56:6443
-
-```
-Deploy controller using helm chart
-
-```bash
-helm upgrade -i kubeslice-controller oci://ghcr.io/appscode-charts/kubeslice-controller \
-    --version v2025.7.31 \
-    -f controller.yaml \
-    --namespace kubeslice-controller \
-    --create-namespace \
-    --wait --burst-limit=10000 --debug
-```
-
-Verify the installation
-```bash
-
-➤ kubectl get pods -n kubeslice-controller 
-
-NAME                                            READY   STATUS    RESTARTS   AGE
-kubeslice-controller-manager-7fd756fff6-5kddd   2/2     Running   0          98s
-```
-
-Create project.yaml file with the following content and deploy it.
-```yaml
-
-apiVersion: controller.kubeslice.io/v1alpha1
-kind: Project
-metadata:
-  name: demo-distributed-mariadb
-  namespace: kubeslice-controller
-spec:
-  serviceAccount:
-    readWrite: 
-      - admin
-```
-
-```bash
-➤ kubectl apply -f project.yaml 
-project.controller.kubeslice.io/demo-distributed-mariadb created
-```
-
-```bash
-
-➤ kubectl get project -n kubeslice-controller
-NAME                       AGE
-demo-distributed-mariadb   31s
-```
-
-```bash
-
-➤ kubectl get sa -n kubeslice-demo-distributed-mariadb
-NAME                      SECRETS   AGE
-default                   0         69s
-kubeslice-rbac-rw-admin   1         68s
-```
-
-Now, For each cluster you intend to designate as a worker cluster, assign the label `kubeslice.io/node-type=gateway` to the nodes where the worker controller will be scheduled.
-
-Lets do that by following command. Add the labels on `demo-controller` cluster
-```bash
-
-➤ kubectl get nodes 
-NAME          STATUS   ROLES                  AGE    VERSION
-demo-master   Ready    control-plane,master   143m   v1.33.3+k3s1
-
-➤ kubectl label node demo-master kubeslice.io/node-type=gateway
-node/demo-master labeled
-```
-
-run the following command on `demo-worker` cluster
-```bash
-➤ kubectl config use-context demo-worker
-Switched to context "demo-worker".
-
-➤ kubectl get nodes
-NAME          STATUS   ROLES                  AGE    VERSION
-demo-worker   Ready    control-plane,master   152m   v1.33.3+k3s1
-
-➤ kubectl label node demo-worker kubeslice.io/node-type=gateway
-node/demo-worker labeled
-```
-
-lets get networkInterface by running the following command on your node.
-```bash
-
-ubuntu@demo-controller:~$ ip route get 8.8.8.8 | awk '{ print $5 }'
-enp1s0
-
-```
-
-Create registration.yaml file with the following content and deploy it on `demo-controller`.
-
-```bash
-
-
-apiVersion: controller.kubeslice.io/v1alpha1
-kind: Cluster
-metadata:
-  name: demo-controller
-  namespace: kubeslice-demo-distributed-mariadb
-spec:
-  networkInterface: enp1s0
-  clusterProperty: {}
----
-
-apiVersion: controller.kubeslice.io/v1alpha1
-kind: Cluster
-metadata:
-  name: demo-worker
-  namespace: kubeslice-demo-distributed-mariadb
-spec:
-  networkInterface: enp1s0
-  clusterProperty: {}
----
-
-```
-
-```bash
-➤ kubectl config use-context demo-controller
-Switched to context "demo-controller".
-
-➤ kubectl apply -f registration.yaml 
-cluster.controller.kubeslice.io/demo-controller created
-cluster.controller.kubeslice.io/demo-worker created
-
-```
-
-Verify the clusters
-```bash
-
-➤ kubectl get clusters -n kubeslice-demo-distributed-mariadb 
-NAME              AGE
-demo-controller   9s
-demo-worker       9s
-```
-
-### Lets register the kubeslice worker cluster to kubeslice controller
-
-Create a script file `secrets.sh` with the following content.
-```shell
-# The script returns a kubeconfig for the service account given
+   # The script returns a kubeconfig for the service account given
 # you need to have kubectl on PATH with the context set to the cluster you want to create the config for
-
 # Cosmetics for the created config
 firstWorkerSecretName=$1
-
 # cluster name what you given in clusters registration
 clusterName=$2
-
 # the Namespace and ServiceAccount name that is used for the config
 namespace=$3
-
 # Need to give correct network interface value like ens160, eth0 etc
 networkInterface=$4
-
 # kubectl cluster-info of respective worker-cluster
 worker_endpoint=$5
-
-
 ######################
 # actual script starts
 set -o errexit
@@ -433,148 +406,125 @@ echo "
 ---
 ## Base64 encoded secret values from controller cluster
 controllerSecret:
-  namespace: ${PROJECT_NAMESPACE}
-  endpoint: ${CONTROLLER_ENDPOINT}
-  ca.crt: ${CA_CRT}
-  token: ${TOKEN}
+namespace: ${PROJECT_NAMESPACE}
+endpoint: ${CONTROLLER_ENDPOINT}
+ca.crt: ${CA_CRT}
+token: ${TOKEN}
 cluster:
-  name: ${clusterName}
-  endpoint: ${worker_endpoint}
+name: ${clusterName}
+endpoint: ${worker_endpoint}
 netop:
-  networkInterface: ${networkInterface}
+networkInterface: ${networkInterface}
 "
 ```
-
-Get the secrets of project namespace `kubeslice-demo-distributed-mariadb`.
+   Command to generate the worker configuration:
 ```bash
-➤ kubectl get secrets -n kubeslice-demo-distributed-mariadb
-NAME                                    TYPE                                  DATA   AGE
-kubeslice-rbac-rw-admin                 kubernetes.io/service-account-token   3      17m
-kubeslice-rbac-worker-demo-controller   kubernetes.io/service-account-token   5      5m8s
-kubeslice-rbac-worker-demo-worker       kubernetes.io/service-account-token   5      5m8s
-```
-Secret for demo-controller cluster is `kubeslice-rbac-worker-demo-controller` and secret for demo-worker cluster is `kubeslice-rbac-worker-demo-worker`.
-
-
-Get the cluster endpoints by running the following command on `demo-worker` cluster . 
-```bash
-
-➤ kubectl cluster-info --context demo-worker --kubeconfig $HOME/.kube/config
-Kubernetes control plane is running at https://10.2.0.60:6443
-CoreDNS is running at https://10.2.0.60:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
-
-To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
-
-```
-Here the endpoint for `demo-worker` cluster is `https://10.2.0.60:6443`. Now run this script on `demo-controller` and create sliceoperator-worker.yaml using the script output.
-
-`sh secrets.sh <worker-secret-name> <worker-cluster-name> <kubeslice-projectname> <network-interface> <worker-api-endpoint>`
-```bash
-kubectl config use-context demo-controller
-Switched to context "demo-controller".
-
-➤ sh secrets.sh kubeslice-rbac-worker-demo-worker demo-worker kubeslice-demo-distributed-mariadb enp1s0 https://10.2.0.60:6443
-
----
-## Base64 encoded secret values from controller cluster
-controllerSecret:
-  namespace: a3ViZXNsaWNlLWRlbW8tZGlzdHJpYnV0ZWQtbWFyaWFkYg==
-  endpoint: aHR0cHM6Ly8xMC4yLjAuNTY6NjQ0Mw==
-  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJkekNDQVIyZ0F3SUJBZ0lCQURBS0JnZ3Foa2pPUFFRREFqQWpNU0V3SHdZRFZRUUREQmhyTTNNdGMyVnkKZG1WeUxXTmhRREUzTlRRME5UY3lOVEV3SGhjTk1qVXdPREEyTURVeE5ERXhXaGNOTXpVd09EQTBNRFV4TkRFeApXakFqTVNFd0h3WURWUVFEREJock0zTXRjMlZ5ZG1WeUxXTmhRREUzTlRRME5UY3lOVEV3V1RBVEJnY3Foa2pPClBRSUJCZ2dxaGtqT1BRTUJCd05DQUFRZ0d0VVc3bFA5aWZLajNzN01rZmFwU1NxZFptYXJaN0tsYjBzZmIxUksKU2tkMkR5YVB2Q01BQkZoZ2EvRlJSd3pIZGxCL3kxMHEvcUtGNm85VXBKMjdvMEl3UURBT0JnTlZIUThCQWY4RQpCQU1DQXFRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFRmdRVWlRNkxlekFRbERGSHF3SndxVHpFClpnNGxzTTh3Q2dZSUtvWkl6ajBFQXdJRFNBQXdSUUloQUlEUjlwZmZYcWFqd0VXd3U2cWpYVkFmNkNvVGZaRXEKa0NUN1dMOXZ1NjErQWlBOHhFTFVxSXNHSXc1eTlQM21rRnVHdDQzNGJDYkhraDF6OHJQT3RsZ2tDUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
-  token: ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklrZzJObEYyY0RKVlZGUnlOVVI1VFRJM04wazRORzFhV1ZSM2IwMTVTbnBSU2psTE1UQXpTa2RJUkdNaWZRLmV5SnBjM01pT2lKcmRXSmxjbTVsZEdWekwzTmxjblpwWTJWaFkyTnZkVzUwSWl3aWEzVmlaWEp1WlhSbGN5NXBieTl6WlhKMmFXTmxZV05qYjNWdWRDOXVZVzFsYzNCaFkyVWlPaUpyZFdKbGMyeHBZMlV0WkdWdGJ5MWthWE4wY21saWRYUmxaQzF0WVhKcFlXUmlJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5elpXTnlaWFF1Ym1GdFpTSTZJbXQxWW1WemJHbGpaUzF5WW1GakxYZHZjbXRsY2kxa1pXMXZMWGR2Y210bGNpSXNJbXQxWW1WeWJtVjBaWE11YVc4dmMyVnlkbWxqWldGalkyOTFiblF2YzJWeWRtbGpaUzFoWTJOdmRXNTBMbTVoYldVaU9pSnJkV0psYzJ4cFkyVXRjbUpoWXkxM2IzSnJaWEl0WkdWdGJ5MTNiM0pyWlhJaUxDSnJkV0psY201bGRHVnpMbWx2TDNObGNuWnBZMlZoWTJOdmRXNTBMM05sY25acFkyVXRZV05qYjNWdWRDNTFhV1FpT2lJMU9URmxNR0UyWlMwd01EWmpMVFJrWkdZdFlqVmhNQzA0TkRsbVpqQTBOalkzTTJFaUxDSnpkV0lpT2lKemVYTjBaVzA2YzJWeWRtbGpaV0ZqWTI5MWJuUTZhM1ZpWlhOc2FXTmxMV1JsYlc4dFpHbHpkSEpwWW5WMFpXUXRiV0Z5YVdGa1lqcHJkV0psYzJ4cFkyVXRjbUpoWXkxM2IzSnJaWEl0WkdWdGJ5MTNiM0pyWlhJaWZRLkhmaE5Ba1J5VmZCQ0pVV1lLTDN3MXhRdVVNakJzMUZFLVotelNRX3pPNTU3NWttUkczUzhyMUlZV1FJdzNOLWZydzhvUlpTRURwWWhsdnhVVTlxYUFsXzJuZkczVDE5OUZZc2hMNEt4U0JWZlhaT0puaGdaS1ZuOW40MTY2VHAwV0NRVTZ1WE1MZE80TTgwV21neGVORWRzVUtYU05iekVHRWRFY3oteWg3dkRteThQUmwyVFZjUFFTamJkQ0l0UWxBMTQ0STVraWMxSGRCNVdiTHR1WDZ0N2hIaHNOYzlNZkYwZXBBZkd4a0YwVDFTWHdNcDBHY3c5cW52OVEzSk91d2liemdXTGF0aUIyWHQtVEdnNWtSZTlCMzduelBlQi1uTmtRY3FGeWEzb2x2Q01QNDRMcW9CbGdqMTJlRGhjOFB6dEFseXRiQ3Z1S1l3Y0lsYk9PUQ==
-cluster:
-  name: demo-worker
-  endpoint: https://10.2.0.60:6443
-netop:
-  networkInterface: enp1s0
+sh secrets.sh <worker-secret-name> <worker-cluster-name> <kubeslice-projectname> <network-interface> <worker-api-endpoint> 
 ```
 
-Now register worker cluster by installing worker operator on `demo-worker` cluster
-```bash
-➤ kubectl config use-context demo-worker
-Switched to context "demo-worker".
-```
-```bash
-helm upgrade -i kubeslice-worker oci://ghcr.io/appscode-charts/kubeslice-worker \
-    --version v2025.7.31 \
-    -f sliceoperator-worker.yaml \
-    --namespace kubeslice-system \
-    --create-namespace \
-    --wait --burst-limit=10000 --debug
-```
+   Get secrets for the project namespace:
 
-Now register `demo-controller` cluster as worker cluster
+   ```bash
+   kubectl get secrets -n kubeslice-demo-distributed-mariadb
+   ```
 
-Run secrets.sh script on `demo-controller`, and create sliceoperator-controller.yaml using script output
-```bash
-➤ kubectl config use-context demo-controller
-Switched to context "demo-controller".
+   **Output**:
+   ```
+   NAME                                    TYPE                                  DATA   AGE
+   kubeslice-rbac-rw-admin                 kubernetes.io/service-account-token   3      17m
+   kubeslice-rbac-worker-demo-controller   kubernetes.io/service-account-token   5      5m8s
+   kubeslice-rbac-worker-demo-worker       kubernetes.io/service-account-token   5      5m8s
+   ```
 
-➤ sh secrets.sh kubeslice-rbac-worker-demo-controller demo-controller kubeslice-demo-distributed-mariadb enp1s0 https://10.2.0.56:6443
+   Get the `demo-worker` cluster endpoint:
 
----
-## Base64 encoded secret values from controller cluster
-controllerSecret:
-  namespace: a3ViZXNsaWNlLWRlbW8tZGlzdHJpYnV0ZWQtbWFyaWFkYg==
-  endpoint: aHR0cHM6Ly8xMC4yLjAuNTY6NjQ0Mw==
-  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUJkekNDQVIyZ0F3SUJBZ0lCQURBS0JnZ3Foa2pPUFFRREFqQWpNU0V3SHdZRFZRUUREQmhyTTNNdGMyVnkKZG1WeUxXTmhRREUzTlRRME5UY3lOVEV3SGhjTk1qVXdPREEyTURVeE5ERXhXaGNOTXpVd09EQTBNRFV4TkRFeApXakFqTVNFd0h3WURWUVFEREJock0zTXRjMlZ5ZG1WeUxXTmhRREUzTlRRME5UY3lOVEV3V1RBVEJnY3Foa2pPClBRSUJCZ2dxaGtqT1BRTUJCd05DQUFRZ0d0VVc3bFA5aWZLajNzN01rZmFwU1NxZFptYXJaN0tsYjBzZmIxUksKU2tkMkR5YVB2Q01BQkZoZ2EvRlJSd3pIZGxCL3kxMHEvcUtGNm85VXBKMjdvMEl3UURBT0JnTlZIUThCQWY4RQpCQU1DQXFRd0R3WURWUjBUQVFIL0JBVXdBd0VCL3pBZEJnTlZIUTRFRmdRVWlRNkxlekFRbERGSHF3SndxVHpFClpnNGxzTTh3Q2dZSUtvWkl6ajBFQXdJRFNBQXdSUUloQUlEUjlwZmZYcWFqd0VXd3U2cWpYVkFmNkNvVGZaRXEKa0NUN1dMOXZ1NjErQWlBOHhFTFVxSXNHSXc1eTlQM21rRnVHdDQzNGJDYkhraDF6OHJQT3RsZ2tDUT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
-  token: ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklrZzJObEYyY0RKVlZGUnlOVVI1VFRJM04wazRORzFhV1ZSM2IwMTVTbnBSU2psTE1UQXpTa2RJUkdNaWZRLmV5SnBjM01pT2lKcmRXSmxjbTVsZEdWekwzTmxjblpwWTJWaFkyTnZkVzUwSWl3aWEzVmlaWEp1WlhSbGN5NXBieTl6WlhKMmFXTmxZV05qYjNWdWRDOXVZVzFsYzNCaFkyVWlPaUpyZFdKbGMyeHBZMlV0WkdWdGJ5MWthWE4wY21saWRYUmxaQzF0WVhKcFlXUmlJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5elpXTnlaWFF1Ym1GdFpTSTZJbXQxWW1WemJHbGpaUzF5WW1GakxYZHZjbXRsY2kxa1pXMXZMV052Ym5SeWIyeHNaWElpTENKcmRXSmxjbTVsZEdWekxtbHZMM05sY25acFkyVmhZMk52ZFc1MEwzTmxjblpwWTJVdFlXTmpiM1Z1ZEM1dVlXMWxJam9pYTNWaVpYTnNhV05sTFhKaVlXTXRkMjl5YTJWeUxXUmxiVzh0WTI5dWRISnZiR3hsY2lJc0ltdDFZbVZ5Ym1WMFpYTXVhVzh2YzJWeWRtbGpaV0ZqWTI5MWJuUXZjMlZ5ZG1salpTMWhZMk52ZFc1MExuVnBaQ0k2SWpJeE9UTmtNamd4TFRRMVl6Z3RORGcxTlMwNU56QXdMVEF4T1RJM04yRmhaakpqWlNJc0luTjFZaUk2SW5ONWMzUmxiVHB6WlhKMmFXTmxZV05qYjNWdWREcHJkV0psYzJ4cFkyVXRaR1Z0Ynkxa2FYTjBjbWxpZFhSbFpDMXRZWEpwWVdSaU9tdDFZbVZ6YkdsalpTMXlZbUZqTFhkdmNtdGxjaTFrWlcxdkxXTnZiblJ5YjJ4c1pYSWlmUS5ZU1c3Sjl1N2NtUjVBTWhmMHY1ZVFtdmVpTUh5VlVJelBfTXBqV1NfY0pwcG0yWXJUOWZSNHRqejR4MGx3OHlSR2hrb1JuUGJXLXVMU1pDOExWNm0zX2Zxa0dHN3l3MFhQM3hCOWJsOEdxaGNVaG1rd0JCWHEtbEEybkZ6T0MtVTRqMEhOMnlRS0EtdzJQRUE4dnFGUlByUWVLckJwN0pLRXFUOFExbHMtTUNiUWNYZHJ0UDVNN255QXhSTHVsNnZJRlFkM0cwZU1RMzMwU3JNVlVsV2FaZ0NSbmJHZ2FGbnlwdks2RnlLZG9XUzg2ZzR6Sk1hZ0NRY2N3QnNibEN2anJEUHR4X1h6cVo2RWwwblpYanZTTFEyOGJGdU5DdmJ1QlI1T1JGSzI2aVZyQ3MxNnJYUlpSM2NTQXh3MTN0NDRGQVBraWg3ZlRJUEV6bjhnN0RTV0E=
-cluster:
-  name: demo-controller
-  endpoint: https://10.2.0.56:6443
-netop:
-  networkInterface: enp1s0
+   ```bash
+   kubectl cluster-info --context demo-worker --kubeconfig $HOME/.kube/config
+   ```
 
-```
+   **Output**:
+   ```
+   Kubernetes control plane is running at https://10.2.0.60:6443
+   ```
 
-```bash
-helm upgrade -i kubeslice-worker oci://ghcr.io/appscode-charts/kubeslice-worker \
-    --version v2025.7.31 \
-    -f sliceoperator-controller.yaml \
-    --namespace kubeslice-system \
-    --create-namespace \
-    --wait --burst-limit=10000 --debug
-```
+   Run the script for `demo-worker`:
 
-```bash
+   ```bash
+   sh secrets.sh kubeslice-rbac-worker-demo-worker demo-worker kubeslice-demo-distributed-mariadb enp1s0 https://10.2.0.60:6443 > sliceoperator-worker.yaml
+   ```
 
-➤ kubectl get pods -n kubeslice-system 
-NAME                                 READY   STATUS      RESTARTS   AGE
-forwarder-kernel-bw5l4               1/1     Running     0          4m43s
-kubeslice-dns-6bd9749f4d-pvh7g       1/1     Running     0          4m43s
-kubeslice-install-crds-szhvc         0/1     Completed   0          4m56s
-kubeslice-netop-g4dfn                1/1     Running     0          4m43s
-kubeslice-operator-949b7d6f7-9wj7h   2/2     Running     0          4m43s
-kubeslice-postdelete-job-ctlzt       0/1     Completed   0          20m
-nsm-delete-webhooks-ndksl            0/1     Completed   0          20m
-nsm-install-crds-5z4j9               0/1     Completed   0          4m53s
-nsmgr-zzwgh                          2/2     Running     0          4m43s
-registry-k8s-979455d6d-q2j8x         1/1     Running     0          4m43s
-spire-install-clusterid-cr-qwqlr     0/1     Completed   0          4m47s
-spire-install-crds-cnbjh             0/1     Completed   0          4m50s
-```
+   Install the KubeSlice worker on `demo-worker`:
 
-We have successfully registered `demo-controller` as worker.
+   ```bash
+   kubectl config use-context demo-worker
+   helm upgrade -i kubeslice-worker oci://ghcr.io/appscode-charts/kubeslice-worker \
+       --version v2025.7.31 \
+       -f sliceoperator-worker.yaml \
+       --namespace kubeslice-system \
+       --create-namespace \
+       --wait --burst-limit=10000 --debug
+   ```
 
-### Install the KubeDB Operator
+   Repeat for `demo-controller`:
 
-You can follow the instruction [here](https://kubedb.com/docs/v2025.6.30/setup/install/kubedb/) to install KubeDB.
+   ```bash
+   kubectl config use-context demo-controller
+   sh secrets.sh kubeslice-rbac-worker-demo-controller demo-controller kubeslice-demo-distributed-mariadb enp1s0 https://10.2.0.56:6443 > sliceoperator-controller.yaml
+   helm upgrade -i kubeslice-worker oci://ghcr.io/appscode-charts/kubeslice-worker \
+       --version v2025.7.31 \
+       -f sliceoperator-controller.yaml \
+       --namespace kubeslice-system \
+       --create-namespace \
+       --wait --burst-limit=10000 --debug
+   ```
+
+   Verify the worker installation:
+
+   ```bash
+   kubectl get pods -n kubeslice-system
+   ```
+
+   **Output**:
+   ```
+   NAME                                 READY   STATUS      RESTARTS   AGE
+   forwarder-kernel-bw5l4               1/1     Running     0          4m43s
+   kubeslice-dns-6bd9749f4d-pvh7g       1/1     Running     0          4m43s
+   kubeslice-install-crds-szhvc         0/1     Completed   0          4m56s
+   kubeslice-netop-g4dfn                1/1     Running     0          4m43s
+   kubeslice-operator-949b7d6f7-9wj7h   2/2     Running     0          4m43s
+   kubeslice-postdelete-job-ctlzt       0/1     Completed   0          20m
+   nsm-delete-webhooks-ndksl            0/1     Completed   0          20m
+   nsm-install-crds-5z4j9               0/1     Completed   0          4m53s
+   nsmgr-zzwgh                          2/2     Running     0          4m43s
+   registry-k8s-979455d6d-q2j8x         1/1     Running     0          4m43s
+   spire-install-clusterid-cr-qwqlr     0/1     Completed   0          4m47s
+   spire-install-crds-cnbjh             0/1     Completed   0          4m50s
+   ```
+
+### Step 4: Install the KubeDB Operator
+
+Install the KubeDB Operator on the `demo-controller` cluster to manage the MariaDB instance.
+
+#### Get a Free License
+Download a FREE license from [AppsCode License Server](https://appscode.com/issue-license?p=kubedb). Get the license for `demo-controller` cluster.
 
 ```bash
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
-  --version v2025.7.31 \
-  --namespace kubedb --create-namespace \
-  --set-file global.license=$HOME/Downloads/kubedb-license-dfdbcc6a-2f0d-4e97-94aa-7da9bacb0e7c.txt \
-  --set petset.features.ocm.enabled=true \
-  --wait --burst-limit=10000 --debug
+    --version v2025.7.31 \
+    --namespace kubedb --create-namespace \
+    --set-file global.license=$HOME/Downloads/kubedb-license-cd548cce-5141-4ed3-9276-6d9578707f12.txt \
+    --set petset.features.ocm.enabled=true \
+    --wait --burst-limit=10000 --debug
 ```
+Note: `--set petset.features.ocm.enabled=true` must be set to enable MariaDB Distributed feature.
 
-### Define a PodPlacementPolicy
-Create a PodPlacementPolicy custom resource in the hub cluster(demo-controller) to specify which cluster should host which MariaDB pod. 
+Follow the [KubeDB Installation Guide](https://kubedb.com/docs/v2025.6.30/setup/install/kubedb/) for additional details.
 
-Create pod-placement-policy.yaml file with the following yaml and deploy it.
+### Step 5: Define a PodPlacementPolicy
+
+Create a `PodPlacementPolicy` to control pod distribution across clusters. Create a `pod-placement-policy.yaml` file:
+
 ```yaml
-
 apiVersion: apps.k8s.appscode.com/v1
 kind: PlacementPolicy
 metadata:
@@ -598,31 +548,22 @@ spec:
   zoneSpreadConstraint:
     maxSkew: 1
     whenUnsatisfiable: ScheduleAnyway
-
 ```
-Here, clusterName specifies the cluster where the pod will be schedule, and replicas define which pod will schedule in this cluster.
-In the above config,
-mariadb pod with ordinal 0,2 will be scheduled on `demo-controller` and  pod with ordinal 1 will be scheduled on `demo-worker` cluster.
 
-````text
-mariadb-0 -> demo-controller
-mariadb-1 -> demo-worker
-mariadb-2 -> demo-controller
-````
+This policy schedules:
+- `mariadb-0` and `mariadb-2` on `demo-controller`.
+- `mariadb-1` on `demo-worker`.
 
-Lets deploy the PodPlacementPolicy.
+Apply the policy on `demo-controller`:
+
 ```bash
-
 kubectl apply -f pod-placement-policy.yaml --context demo-controller --kubeconfig $HOME/.kube/config
 ```
 
-### Onboard Apllication Namespace
-Lets create a SliceConfig for the demo-controller to onboard the demo, kubedb namespaces.
-Ensure that the configuration includes the namespace where the application will be deployed and the namespace from which the application will be accessed.
-Here demo is our application namespace where the database pod will be deployed.
-The kubedb namespace runs KubeDB operator, requiring onboarding to allow the provisioner, ops-manager, and other KubeDB operators to access the database of demo namespace.
+### Step 6: Onboard Application Namespace
 
-Create sliceconfig.yaml file with the following contents.
+Create a `SliceConfig` to onboard the `demo` (application) and `kubedb` (operator) namespaces for network connectivity. Create a `sliceconfig.yaml` file:
+
 ```yaml
 apiVersion: controller.kubeslice.io/v1alpha1
 kind: SliceConfig
@@ -631,65 +572,73 @@ metadata:
   namespace: kubeslice-demo-distributed-mariadb
 spec:
   sliceSubnet: 10.1.0.0/16
-  maxClusters: 16       #Ex: 5. By default, the maxClusters value is set to 16
+  maxClusters: 16
   sliceType: Application
   sliceGatewayProvider:
-#    sliceGatewayType: OpenVPN
     sliceGatewayType: Wireguard
     sliceCaType: Local
   sliceIpamType: Local
-  rotationInterval: 60    # If not provided, by default key rotation interval is 30 days
+  rotationInterval: 60
   vpnConfig:
-     cipher: AES-128-CBC       # If not provided, by default cipher is AES-256-CBC
+    cipher: AES-128-CBC
   clusters:
     - demo-controller
     - demo-worker
   qosProfileDetails:
     queueType: HTB
-    priority: 1                      #keep integer values from 0 to 3
+    priority: 1
     tcType: BANDWIDTH_CONTROL
     bandwidthCeilingKbps: 5120
     bandwidthGuaranteedKbps: 2560
     dscpClass: AF11
   namespaceIsolationProfile:
     applicationNamespaces:
-     - namespace: demo
-       clusters:
-       - '*'
-     - namespace: kubedb
-       clusters:
-         - '*'
-    isolationEnabled: false                   #make this true in case you want to enable isolation
+      - namespace: demo
+        clusters:
+          - '*'
+      - namespace: kubedb
+        clusters:
+          - '*'
+    isolationEnabled: false
     allowedNamespaces:
-     - namespace: kube-system
-       clusters:
-       - '*'
+      - namespace: kube-system
+        clusters:
+          - '*'
 ```
+
+Apply the `SliceConfig`:
 
 ```bash
-
-➤ kubectl apply -f sliceconfig.yaml 
-sliceconfig.controller.kubeslice.io/demo-slice created
+kubectl apply -f sliceconfig.yaml
 ```
 
-Now restarts all pods of `kubedb` namespace so that extra sidekar container pushed by kubeslice can run on the pods of KubeDB operator.
+Restart all pods in the `kubedb` namespace to inject KubeSlice sidecar containers:
+
 ```bash
-
-➤ kubectl delete -n kubedb pod --all
-pod "kubedb-kubedb-autoscaler-0" deleted
-pod "kubedb-kubedb-ops-manager-0" deleted
-pod "kubedb-kubedb-provisioner-0" deleted
-pod "kubedb-kubedb-webhook-server-799dcf8cb4-bmx6z" deleted
-pod "kubedb-petset-6867b6f7b6-lcnbb" deleted
-pod "kubedb-sidekick-579bff8786-8s8d4" deleted
-
+kubectl delete -n kubedb pod --all
 ```
-### Create a Distributed MariaDB Instance
 
-Define a MariaDB custom resource with `spec.distributed` set to true and reference the PodPlacementPolicy by name in `spec.podTemplate.spec.podPlacementPolicy.name`.
+Verify the pods restart and are running:
+
+```bash
+kubectl get pods -n kubedb
+```
+**Output**:
+   ```
+   NAME                                           READY   STATUS    RESTARTS   AGE
+kubedb-kubedb-autoscaler-0                     1/2     Running   0          44s
+kubedb-kubedb-ops-manager-0                    1/2     Running   0          43s
+kubedb-kubedb-provisioner-0                    1/2     Running   0          43s
+kubedb-kubedb-webhook-server-df667cd85-tjdp9   2/2     Running   0          44s
+kubedb-petset-cf9f5b6f4-d9558                  2/2     Running   0          44s
+kubedb-sidekick-5dbf7bcf64-4b8cw               2/2     Running   0          44s
+   ```
+
+### Step 7: Create a Distributed MariaDB Instance
+
+Define a MariaDB custom resource with `spec.distributed` set to `true` and reference the `PodPlacementPolicy`. Create a `mariadb.yaml` file:
 
 ```yaml
-
 apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
@@ -713,144 +662,96 @@ spec:
         name: distributed-mariadb
 ```
 
-Apply the MariaDB resource on `demo-controller`
-```bash
-
-➤ kubectl apply -f mariadb.yaml --context demo-controller --kubeconfig $HOME/.kube/config
-mariadb.kubedb.com/mariadb created
-```
-
-### Verify the Deployment
-
-Check the mariadb resource and pod  on `demo-controller`
-```bash
-
-➤ kubectl get md,pods,secret -n demo --context demo-controller --kubeconfig $HOME/.kube/config
-NAME                         VERSION   STATUS   AGE
-mariadb.kubedb.com/mariadb   11.5.2    Ready    99s
-
-NAME            READY   STATUS    RESTARTS   AGE
-pod/mariadb-0   3/3     Running   0          95s
-pod/mariadb-2   3/3     Running   0          95s
-
-NAME                  TYPE                       DATA   AGE
-secret/mariadb-auth   kubernetes.io/basic-auth   2      95s
-```
-
-Verify pod,secret on `demo-worker`
-```bash
-
-➤ kubectl get pods,secrets -n demo --context demo-worker --kubeconfig $HOME/.kube/config
-NAME        READY   STATUS    RESTARTS   AGE
-mariadb-1   3/3     Running   0          95s
-
-NAME                  TYPE                       DATA   AGE
-secret/mariadb-auth   kubernetes.io/basic-auth   2      95s
-
-```
+Apply the resource on `demo-controller`:
 
 ```bash
-
-➤ kubectl exec -it -n demo pod/mariadb-0 -- bash
-Defaulted container "mariadb" out of: mariadb, md-coordinator, cmd-nsc, cmd-nsc-init (init), mariadb-init (init)
-mysql@mariadb-0:/$ mariadb -uroot -p$MYSQL_ROOT_PASSWORD
-Welcome to the MariaDB monitor.  Commands end with ; or \g.
-Your MariaDB connection id is 29511
-Server version: 11.5.2-MariaDB-ubu2404 mariadb.org binary distribution
-
-Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-MariaDB [(none)]> SHOW STATUS LIKE 'wsrep%';
-+-------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
-| Variable_name                 | Value                                                                                                                                          |
-+-------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
-| wsrep_local_state_uuid        | d590d154-72b7-11f0-a85e-8a05969eae6c                                                                                                           |
-| wsrep_protocol_version        | 11                                                                                                                                             |
-| wsrep_last_committed          | 13056                                                                                                                                          |
-| wsrep_replicated              | 11211                                                                                                                                          |
-| wsrep_replicated_bytes        | 6233136                                                                                                                                        |
-| wsrep_repl_keys               | 28029                                                                                                                                          |
-| wsrep_repl_keys_bytes         | 493296                                                                                                                                         |
-| wsrep_repl_data_bytes         | 4960681                                                                                                                                        |
-| wsrep_repl_other_bytes        | 0                                                                                                                                              |
-| wsrep_received                | 1953                                                                                                                                           |
-| wsrep_received_bytes          | 1025822                                                                                                                                        |
-| wsrep_local_commits           | 1                                                                                                                                              |
-| wsrep_local_cert_failures     | 0                                                                                                                                              |
-| wsrep_local_replays           | 0                                                                                                                                              |
-| wsrep_local_send_queue        | 0                                                                                                                                              |
-| wsrep_local_send_queue_max    | 1                                                                                                                                              |
-| wsrep_local_send_queue_min    | 0                                                                                                                                              |
-| wsrep_local_send_queue_avg    | 0                                                                                                                                              |
-| wsrep_local_recv_queue        | 0                                                                                                                                              |
-| wsrep_local_recv_queue_max    | 2                                                                                                                                              |
-| wsrep_local_recv_queue_min    | 0                                                                                                                                              |
-| wsrep_local_recv_queue_avg    | 0.00102407                                                                                                                                     |
-| wsrep_local_cached_downto     | 1                                                                                                                                              |
-| wsrep_flow_control_paused_ns  | 0                                                                                                                                              |
-| wsrep_flow_control_paused     | 0                                                                                                                                              |
-| wsrep_flow_control_sent       | 0                                                                                                                                              |
-| wsrep_flow_control_recv       | 0                                                                                                                                              |
-| wsrep_flow_control_active     | false                                                                                                                                          |
-| wsrep_flow_control_requested  | false                                                                                                                                          |
-| wsrep_cert_deps_distance      | 1                                                                                                                                              |
-| wsrep_apply_oooe              | 0                                                                                                                                              |
-| wsrep_apply_oool              | 0                                                                                                                                              |
-| wsrep_apply_window            | 1                                                                                                                                              |
-| wsrep_apply_waits             | 0                                                                                                                                              |
-| wsrep_commit_oooe             | 0                                                                                                                                              |
-| wsrep_commit_oool             | 0                                                                                                                                              |
-| wsrep_commit_window           | 1                                                                                                                                              |
-| wsrep_local_state             | 4                                                                                                                                              |
-| wsrep_local_state_comment     | Synced                                                                                                                                         |
-| wsrep_cert_index_size         | 3                                                                                                                                              |
-| wsrep_causal_reads            | 0                                                                                                                                              |
-| wsrep_cert_interval           | 0                                                                                                                                              |
-| wsrep_open_transactions       | 0                                                                                                                                              |
-| wsrep_open_connections        | 0                                                                                                                                              |
-| wsrep_incoming_addresses      | 10.1.0.3:0,10.1.0.4:0,10.1.16.4:0                                                                                                              |
-| wsrep_cluster_weight          | 3                                                                                                                                              |
-| wsrep_desync_count            | 0                                                                                                                                              |
-| wsrep_evs_delayed             |                                                                                                                                                |
-| wsrep_evs_evict_list          |                                                                                                                                                |
-| wsrep_evs_repl_latency        | 0/0/0/0/0                                                                                                                                      |
-| wsrep_evs_state               | OPERATIONAL                                                                                                                                    |
-| wsrep_gcomm_uuid              | d58f2d39-72b7-11f0-becb-ae4dab6c439c                                                                                                           |
-| wsrep_gmcast_segment          | 0                                                                                                                                              |
-| wsrep_applier_thread_count    | 1                                                                                                                                              |
-| wsrep_cluster_capabilities    |                                                                                                                                                |
-| wsrep_cluster_conf_id         | 3                                                                                                                                              |
-| wsrep_cluster_size            | 3                                                                                                                                              |
-| wsrep_cluster_state_uuid      | d590d154-72b7-11f0-a85e-8a05969eae6c                                                                                                           |
-| wsrep_cluster_status          | Primary                                                                                                                                        |
-| wsrep_connected               | ON                                                                                                                                             |
-| wsrep_local_bf_aborts         | 0                                                                                                                                              |
-| wsrep_local_index             | 0                                                                                                                                              |
-| wsrep_provider_capabilities   | :MULTI_MASTER:CERTIFICATION:PARALLEL_APPLYING:TRX_REPLAY:ISOLATION:PAUSE:CAUSAL_READS:INCREMENTAL_WRITESET:UNORDERED:PREORDERED:STREAMING:NBO: |
-| wsrep_provider_name           | Galera                                                                                                                                         |
-| wsrep_provider_vendor         | Codership Oy <info@codership.com>                                                                                                              |
-| wsrep_provider_version        | 26.4.19(r5db72dad)                                                                                                                             |
-| wsrep_ready                   | ON                                                                                                                                             |
-| wsrep_rollbacker_thread_count | 1                                                                                                                                              |
-| wsrep_thread_count            | 2                                                                                                                                              |
-+-------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
-69 rows in set (0.001 sec)
-
-MariaDB [(none)]> SHOW STATUS LIKE 'wsrep_cluster_status';
-+----------------------+---------+
-| Variable_name        | Value   |
-+----------------------+---------+
-| wsrep_cluster_status | Primary |
-+----------------------+---------+
-1 row in set (0.001 sec)
-
-MariaDB [(none)]> 
-
+kubectl apply -f mariadb.yaml --context demo-controller --kubeconfig $HOME/.kube/config
 ```
 
-So distributed MariaDB is up and running.
+### Step 8: Verify the Deployment
 
+1. **Check MariaDB Resource and Pods on `demo-controller`**:
 
+   ```bash
+   kubectl get md,pods,secret -n demo --context demo-controller --kubeconfig $HOME/.kube/config
+   ```
 
+   **Output**:
+   ```
+   NAME                         VERSION   STATUS   AGE
+   mariadb.kubedb.com/mariadb   11.5.2    Ready    99s
+
+   NAME            READY   STATUS    RESTARTS   AGE
+   pod/mariadb-0   3/3     Running   0          95s
+   pod/mariadb-2   3/3     Running   0          95s
+
+   NAME                  TYPE                       DATA   AGE
+   secret/mariadb-auth   kubernetes.io/basic-auth   2      95s
+   ```
+
+2. **Check Pods and Secrets on `demo-worker`**:
+
+   ```bash
+   kubectl get pods,secrets -n demo --context demo-worker --kubeconfig $HOME/.kube/config
+   ```
+
+   **Output**:
+   ```
+   NAME        READY   STATUS    RESTARTS   AGE
+   mariadb-1   3/3     Running   0          95s
+
+   NAME                  TYPE                       DATA   AGE
+   secret/mariadb-auth   kubernetes.io/basic-auth   2      95s
+   ```
+
+3. **Verify Galera Cluster Status**:
+   Connect to a MariaDB pod and check the Galera cluster status:
+
+   ```bash
+   kubectl exec -it -n demo pod/mariadb-0 --context demo-controller -- bash
+   mariadb -uroot -p$MYSQL_ROOT_PASSWORD
+   ```
+
+   Run the following query:
+
+   ```sql
+   SHOW STATUS LIKE 'wsrep_cluster_status';
+   ```
+
+   **Output**:
+   ```
+   +----------------------+---------+
+   | Variable_name        | Value   |
+   +----------------------+---------+
+   | wsrep_cluster_status | Primary |
+   +----------------------+---------+
+   1 row in set (0.001 sec)
+   ```
+
+   Check additional Galera status variables:
+
+   ```sql
+   SHOW STATUS LIKE 'wsrep%';
+   ```
+
+   **Key Indicators**:
+    - `wsrep_cluster_status: Primary`: The cluster is fully operational.
+    - `wsrep_cluster_size: 3`: All three nodes are part of the cluster.
+    - `wsrep_connected: ON`: The node is connected to the cluster.
+    - `wsrep_ready: ON`: The node is ready to accept queries.
+    - `wsrep_incoming_addresses`: Lists the IP addresses of all nodes (e.g., `10.1.0.3:0,10.1.0.4:0,10.1.16.4:0`).
+
+## Troubleshooting Tips
+
+- **Pods Not Running**: Check pod logs (`kubectl logs -n demo mariadb-0`) for errors related to storage, networking, or configuration.
+- **Cluster Not Joining**: Ensure the `RawFeedbackJsonString` feature gate is enabled and verify network connectivity between clusters.
+- **KubeSlice Issues**: Confirm that the network interface (`enp1s0`) matches your cluster's configuration and that sidecar containers are injected.
+- **MariaDB Not Synced**: Check `wsrep_local_state_comment` (should be `Synced`) and ensure all nodes have the same `wsrep_cluster_state_uuid`.
+
+## Next Steps
+
+- **Accessing the Database**: Use the `mariadb-auth` secret to retrieve credentials and connect to the MariaDB instance.
+- **Scaling**: Adjust the `PodPlacementPolicy` to add or remove replicas across clusters.
+- **Monitoring**: Integrate KubeDB with monitoring tools like Prometheus for cluster health insights.
+
+For further details, refer to the [KubeDB Documentation](https://kubedb.com/docs/v2025.7.31/) 

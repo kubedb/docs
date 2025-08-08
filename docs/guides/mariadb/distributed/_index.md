@@ -1,5 +1,5 @@
 ---
-title: MariaDB Clustering
+title: Distributed MariaDB
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-distributed
