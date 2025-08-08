@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is RedisOpsRequest
 
-`RedisOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Redis](https://www.redis.io/) administrative operations like database version updating, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
+`RedisOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for `Redis/Valkey` administrative operations like database version updating, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
 
 ## RedisOpsRequest CRD Specifications
 
@@ -60,7 +60,7 @@ spec:
 
 ## What is RedisSentinelOpsRequest
 
-`RedisSentinelOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Redis](https://www.redis.io/) administrative operations like database version updating, horizontal scaling, vertical scaling, reconfiguring TLS etc. in a Kubernetes native way.
+`RedisSentinelOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for `Redis/Valkey` administrative operations like database version updating, horizontal scaling, vertical scaling, reconfiguring TLS etc. in a Kubernetes native way.
 The spec in `RedisOpsRequest` and `RedisSentinelOpsRequest` similar which will be described below.
 
 Sample `RedisSentinelOpsRequest` for vertical scaling
@@ -109,6 +109,8 @@ A `RedisOpsRequest` object has the following fields in the `spec` section.
 - `Reconfigure`
 - `ReconfigureTLS`
 - `ReplaceSentinel` (Only in Sentinel Mode)
+- `RotateAuth`
+- `Announce`
 
 `Reconfigure` and `ReplaceSentinel` ops request can not be done in `RedisSentinelOpsRequest`
 
@@ -116,11 +118,12 @@ A `RedisOpsRequest` object has the following fields in the `spec` section.
 
 #### spec.updateVersion
 
-If you want to update your Redis version, you have to specify the `spec.updateVersion`  section that specifies the desired version information. This field consists of the following sub-field:
+If you want to update your Redis/Valkey version, you have to specify the `spec.updateVersion`  section that specifies the desired version information. This field consists of the following sub-field:
 
 - `spec.updateVersion.targetVersion` refers to a [RedisVersion](/docs/guides/redis/concepts/catalog.md) CR that contains the Redis version information where you want to update.
 
 >You can only update between Redis versions. KubeDB does not support downgrade for Redis.
+> You can update Redis to Valkey only if Redis current major version is in 7.
 
 #### spec.horizontalScaling
 
@@ -128,6 +131,7 @@ If you want to scale-up or scale-down your Redis cluster, you have to specify `s
 
 - `spec.horizontalScaling.replicas` indicates the desired number of replicas for your Redis instance after scaling. For example, if your cluster currently has 4 replicas, and you want to add additional 2 replicas then you have to specify 6 in `spec.horizontalScaling.replicas` field. Similarly, if you want to remove one replicas, you have to specify 3  in `spec.horizontalScaling.replicas` field.
 - `spec.horizontalScaling.shards` indicates the desired number of shards for your Redis cluster. It is only applicable for Cluster Mode.
+- `spec.horizontalScaling.announce` indicates the desired endpoints for new replicas.
 
 #### spec.verticalScaling
 

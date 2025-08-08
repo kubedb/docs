@@ -21,6 +21,7 @@ aliases:
 | Clustering (Sharding, Replication)                                |   &#10003;   |
 | Redis in Sentinel Mode (Use separate Sentinel Cluster for Redis)  |   &#10003;   |
 | Standalone Mode                                                   |   &#10003;   |
+| External Client Connection                                        |   &#10003;   |
 | Custom Configuration                                              |   &#10003;   |
 | Using Custom Docker Image                                         |   &#10003;   |
 | Initialization From Script (shell or lua script)                  |   &#10003;   |
@@ -41,7 +42,7 @@ aliases:
 | Autoscaling Compute and Storage Resources (vertically)            |   &#10003;   |
 | Grafana Dashboards                                                |   &#10003;   |
 
-
+`Note`: If you want to use `Valkey` you need to install KubeDB version greater than or equal to `v2025.4.30`
 
 ## Life Cycle of a Redis Object
 
@@ -51,7 +52,7 @@ aliases:
 
 ## User Guide
 
-- [Quickstart Redis](/docs/guides/redis/quickstart/quickstart.md) with KubeDB Operator.
+- [Quickstart Redis](/docs/guides/redis/quickstart/overview/redis.md) with KubeDB Operator.
 - [Deploy Redis Cluster](/docs/guides/redis/clustering/redis-cluster.md) using KubeDB.
 - Monitor your Redis server with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
 - Monitor your Redis server with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).

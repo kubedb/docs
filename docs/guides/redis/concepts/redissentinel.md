@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is RedisSentinel
 
-`RedisSentinel` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [Redis](https://redis.io/) in a Kubernetes native way. You only need to describe the desired database configuration in a Redis Sentinel object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`RedisSentinel` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for `Redis/Valkey` in a Kubernetes native way. You only need to describe the desired database configuration in a Redis Sentinel object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## RedisSentinel Spec
 
@@ -122,6 +122,7 @@ AutoOps is an optional field to control the generation of version update & TLS-r
 
 - `6.2.14`, `6.2.14` `6.2.14`
 - `7.0.4`, `7.0.14`, `7.0.6`
+- `valkey-7.2.5`, `valkey-7.2.9`, `valkey-8.0.3`, `valkey-8.1.1`
 
 ### spec.disableAuth
 

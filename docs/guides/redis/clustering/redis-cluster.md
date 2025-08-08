@@ -266,6 +266,8 @@ Now, you can connect to this database through [redis-cli](https://redis.io/topic
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
+`Note`: If you are using Valkey database image, use [valkey-cli](https://valkey.io/topics/cli/) instead.
+
 ```bash
 # here the hash slot for key 'hello' is 866 which is in 1st node
 # named 'redis-cluster-shard0-0' (0-5460)
