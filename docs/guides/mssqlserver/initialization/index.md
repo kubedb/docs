@@ -66,7 +66,6 @@ Now, we are going to create an example `Issuer` that will be used throughout the
 ```bash
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=MSSQLServer/O=kubedb"
 ```
--
 - Create a secret using the certificate files we have just generated,
 ```bash
 $ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
