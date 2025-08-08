@@ -13,7 +13,7 @@ section_menu_id: guides
 
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `MariaDB` user's authentication credentials using a `MariaDBOpsRequest`. There are two ways to perform this rotation.
 
-1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the existing secret with the new credential, and does not provide the secret details directly to the user.
+1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the existing secret with the new credential The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential..
 2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in the `MariaDBOpsRequest`.
 
 ## Before You Begin
