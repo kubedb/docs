@@ -15,7 +15,8 @@ section_menu_id: guides
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential.
 2. **User Defined:** The user can create their own credentials by defining a Secret of type 
-`kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in the `MSSQLServerOpsRequest`.
+`kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in the
+`MSSQLServerOpsRequest` CR.
 
 ## Before You Begin
 
@@ -36,7 +37,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/mssqlserver](/docs/examples/mssqlserver/update-version) directory of [kubedb/docs](https://github.com/kube/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/mssqlserver](/docs/examples/mssqlserver/rotate-auth) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
 ### Prepare MSSQLServer Standalone Database
 
@@ -121,7 +122,7 @@ spec:
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/quickstart/mssqlserver-quickstart.yaml
 mssqlserver.kubedb.com/mssqlserver-quickstart created
 ```
-Now, wait until quick-MongoDB has status Ready. i.e,
+Now, wait until mssqlserver-quickstart has status Ready. i.e,
 
 ```shell
 $  kubectl get ms -n demo -w
@@ -129,7 +130,7 @@ NAME                     VERSION     STATUS   AGE
 mssqlserver-quickstart   2022-cu12   Ready    75m
 ```
 ## Verify authentication
-The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
+The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
 
 ````shell
 $ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
@@ -141,6 +142,7 @@ $ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.pas
 ````
 Now, you can exec into the pod `mssqlserver-quickstart-0` and connect to database using `username` and `password`
 ```bash
+$ kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
 mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "9ycCSYznZpZRxs9U"
 1> select name from sys.databases
 2> go
@@ -154,6 +156,10 @@ kubedb_system
 
 (5 rows affected)
 1> 
+1> exit
+mssql@mssqlserver-quickstart-0:/$ exit
+exit
+⏎   
 ```
 
 If you can access the data table and run queries, it means the secrets are working correctly.
@@ -182,7 +188,7 @@ Here,
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mssqlserver/rotate-auth/MSSQLServer-rotate-auth-generated.yaml
+ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mssqlserver/rotate-auth/rotate-auth-generated.yaml
  MSSQLServeropsrequest.ops.kubedb.com/msops-rotate-auth-generated created
 ```
 Let's wait for `MSSQLServerOpsrequest` to be `Successful`. Run the following command to watch `MSSQLServerOpsrequest` CRO
@@ -292,6 +298,28 @@ sa⏎
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
 zTBVvzgoEb2qUe3X⏎                          
 ```
+Let's verify if we can connect to the database using the new credentials.
+
+```shell
+$ kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "zTBVvzgoEb2qUe3X"
+1> select name from sys.databases
+2> go
+name                                                                                                                            
+--------------------------------------------------------------------------------------------------------------------------------
+master                                                                                                                          
+tempdb                                                                                                                          
+model                                                                                                                           
+msdb                                                                                                                            
+kubedb_system                                                                                                                   
+
+(5 rows affected)
+1> exit
+mssql@mssqlserver-quickstart-0:/$ exit
+exit
+⏎   
+```
+
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
 ```shell
@@ -300,17 +328,26 @@ sa⏎
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
 9ycCSYznZpZRxs9U⏎                              
 ```
+Let's confirm that the previous credentials no longer work.
+```shell
+kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "9ycCSYznZpZRxs9U"
+Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Login failed for user 'sa'..
+mssql@mssqlserver-quickstart-0:/$ 
+
+```
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 > Note: The `username` must be fixed as `sa`. The `password` must include uppercase letters, lowercase letters, and numbers
 ```shell
-$ kubectl create secret generic quick-mssql-user-auth -n demo \
-         --type=kubernetes.io/basic-auth \
-         --from-literal=username=sa \
-         --from-literal=password=Mssqlserver2
-secret/quick-mssql-user-auth created
+$ kubectl create secret generic mssqlserver-quickstart-auth-user -n demo \
+                                               --type=kubernetes.io/basic-auth \
+                                               --from-literal=username=sa \
+                                               --from-literal=password=Mssqlserver2
+secret/mssqlserver-quickstart-auth-user created
+
 ```
 Now create a `MSSQLServerOpsRequest` with `RotateAuth` type. Below is the YAML of the `MSSQLServerOpsRequest` that we are going to create,
 
@@ -326,7 +363,7 @@ spec:
     name: mssqlserver-quickstart
   authentication:
     secretRef:
-      name: quick-mssql-user-auth
+      name: mssqlserver-quickstart-auth-user
   timeout: 5m
   apply: IfReady
 ```
@@ -334,7 +371,8 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `mssqlserver-quickstart`cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on MSSQLServer.
-- `spec.authentication.secretRef.name` specifies that we are using `quick-mssql-user-auth` as `spec.authSecret.name` for authentication.
+- `spec.authentication.secretRef.name` specifies that we want to use `mssqlserver-quickstart-auth` for database authentication.
+
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
@@ -368,7 +406,7 @@ Spec:
   Apply:  IfReady
   Authentication:
     Secret Ref:
-      Name:  quick-mssql-user-auth
+      Name:  mssqlserver-quickstart-auth
   Database Ref:
     Name:   mssqlserver-quickstart
   Timeout:  5m
@@ -447,20 +485,45 @@ Events:
 **Verify auth is rotate**
 ```shell
 $ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
-"quick-mssql-user-auth "
-$ kubectl get secret -n demo quick-mssql-user-auth -o=jsonpath='{.data.username}' | base64 -d
+"mssqlserver-quickstart-auth "
+$ kubectl get secret -n demo mssqlserver-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
 sa⏎                                      
-$ kubectl get secret -n demo quick-mssql-user-auth -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
 Mssqlserver2⏎                                                                  
+```
+
+Let's verify if we can connect to the database using the new credentials.
+```shell
+$ kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "Mssqlserver2"
+1> SELECT name FROM sys.databases 
+2> go
+name                                                                                                                            
+--------------------------------------------------------------------------------------------------------------------------------
+master                                                                                                                          
+tempdb                                                                                                                          
+model                                                                                                                           
+msdb                                                                                                                            
+kubedb_system                                                                                                                   
+
+(5 rows affected)
+1> 
 ```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 ```shell
-$ kubectl get secret -n demo quick-mssql-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
+$ kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 sa⏎                                                                                         
 $ kubectl get secret -n demo quick-mssqlserver-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
 zTBVvzgoEb2qUe3X⏎ 
 ```
+Let's confirm that the previous credentials no longer work.
+```shell
+kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "zTBVvzgoEb2qUe3X"
+Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Login failed for user 'sa'..
+mssql@mssqlserver-quickstart-0:/$ 
 
+```
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
 ## Cleaning up
@@ -475,6 +538,7 @@ $ kubectl delete secret -n demoquick-mssqlserver-user-auth
 secret "quick-mssqlserver-user-auth" deleted
 $ kubectl delete secret -n demo   mssqlserver-quickstart-auth 
 secret "mssqlserver-quickstart-auth " deleted
+
 ```
 
 ## Next Steps
