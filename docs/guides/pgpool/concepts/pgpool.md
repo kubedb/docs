@@ -284,6 +284,8 @@ Following table show what KubeDB does when you delete Pgpool CR for different de
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` deletion policy by default.
 
+> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
+
 ### spec.syncUsers
 
 `spec.syncUsers` is an optional field by default its value is false. If it is true, you can provide a secret with username and password as key and with some desired labels to sync PostgreSQL users to Pgpool in runtime.

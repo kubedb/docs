@@ -448,6 +448,8 @@ Following table show what KubeDB does when you delete Solr crd for different del
 | 7. Delete Snapshot data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` deletion policy by default.
 
+> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
+
 ### spec.halted
 Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
 

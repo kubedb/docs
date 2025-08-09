@@ -442,6 +442,8 @@ Following table show what KubeDB does when you delete Postgres crd for different
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy by default.
 
+> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
+
 ## Next Steps
 
 - Learn how to use KubeDB to run a PostgreSQL database [here](/docs/guides/postgres/README.md).
