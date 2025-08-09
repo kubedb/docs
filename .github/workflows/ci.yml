@@ -67,6 +67,12 @@ jobs:
           kubectl create -f https://github.com/fluxcd/helm-controller/raw/main/config/crd/bases/helm.toolkit.fluxcd.io_helmreleases.yaml
           kubectl create -f https://github.com/fluxcd/source-controller/raw/main/config/crd/bases/source.toolkit.fluxcd.io_helmrepositories.yaml
           kubectl create -f https://github.com/appscode-cloud/catalog/raw/master/crds/catalog.appscode.com_redisbindings.yaml
+          # distributed crds
+          kubectl create -f https://github.com/kube-slice/apis/raw/release-v2025.7.31/crd/controller.kubeslice.io_clusters.yaml
+          kubectl create -f https://github.com/kube-slice/apis/raw/release-v2025.7.31/crd/controller.kubeslice.io_projects.yaml
+          kubectl create -f https://github.com/kube-slice/apis/raw/release-v2025.7.31/crd/controller.kubeslice.io_sliceconfigs.yaml
+          kubectl create -f https://github.com/kubeops/petset/raw/master/crds/apps.k8s.appscode.com_placementpolicies.yaml
+          kubectl create -f https://github.com/open-cluster-management-io/api/raw/main/operator/v1/0000_00_operator.open-cluster-management.io_klusterlets.crd.yaml
 
       - name: Check codespan schema
         run: |

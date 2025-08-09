@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1
+kind: MariaDB
+metadata:
+  name: mariadb
+  namespace: demo
+spec:
+  distributed: true
+  deletionPolicy: WipeOut
+  replicas: 3
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 500Mi
+  storageType: Durable
+  version: 11.5.2
+  podTemplate:
+    spec:
+      podPlacementPolicy:
+        name: distributed-mariadb
+---

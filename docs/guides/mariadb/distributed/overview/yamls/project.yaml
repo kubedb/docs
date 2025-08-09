@@ -1,0 +1,10 @@
+apiVersion: controller.kubeslice.io/v1alpha1
+kind: Project
+metadata:
+  name: demo-distributed-mariadb
+  namespace: kubeslice-controller
+spec:
+  serviceAccount:
+    readWrite: 
+      - admin
+
