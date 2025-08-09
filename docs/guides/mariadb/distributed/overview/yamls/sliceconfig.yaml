@@ -1,0 +1,46 @@
+apiVersion: controller.kubeslice.io/v1alpha1
+kind: SliceConfig
+metadata:
+  name: demo-slice
+  namespace: kubeslice-demo-distributed-mariadb
+spec:
+  sliceSubnet: 10.1.0.0/16
+  maxClusters: 16       #Ex: 5. By default, the maxClusters value is set to 16
+  sliceType: Application
+  sliceGatewayProvider:
+    #    sliceGatewayType: OpenVPN
+    sliceGatewayType: Wireguard
+    sliceCaType: Local
+  sliceIpamType: Local
+  rotationInterval: 60    # If not provided, by default key rotation interval is 30 days
+  vpnConfig:
+    cipher: AES-128-CBC       # If not provided, by default cipher is AES-256-CBC
+  clusters:
+    - demo-controller
+    - demo-worker
+  qosProfileDetails:
+    queueType: HTB
+    priority: 1                      #keep integer values from 0 to 3
+    tcType: BANDWIDTH_CONTROL
+    bandwidthCeilingKbps: 5120
+    bandwidthGuaranteedKbps: 2560
+    dscpClass: AF11
+  namespaceIsolationProfile:
+    applicationNamespaces:
+      - namespace: demo
+        clusters:
+          - '*'
+      - namespace: kubedb
+        clusters:
+          - '*'
+      - namespace: kubeops
+        clusters:
+          - '*'
+      - namespace: monitoring
+        clusters:
+          - '*'
+    isolationEnabled: false                   #make this true in case you want to enable isolation
+    allowedNamespaces:
+      - namespace: kube-system
+        clusters:
+          - '*'
