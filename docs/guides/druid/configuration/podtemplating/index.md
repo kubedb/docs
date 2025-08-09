@@ -440,7 +440,7 @@ Init Containers:
       /opt/druid/extensions/mysql-metadata-storage from mysql-metadata-storage (rw)
       /tmp/config/custom-config from custom-config (rw)
       /tmp/config/operator-config from operator-config-volume (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9t5kp (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9t5kp (rotateauth)
 Containers:
   druid:
     Container ID:  containerd://3a52f120ca09f90fcdc062c94bf404964add7a5b6ded4a372400267a9d0fd598
@@ -468,7 +468,7 @@ Containers:
     Mounts:
       /opt/druid/conf from main-config-volume (rw)
       /opt/druid/extensions/mysql-metadata-storage from mysql-metadata-storage (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9t5kp (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-9t5kp (rotateauth)
 
 Conditions:
   Type                        Status

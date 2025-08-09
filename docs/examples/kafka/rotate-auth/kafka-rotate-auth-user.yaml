@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+  name: kfops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: kafka-prod
+  authentication:
+    secretRef:
+      name: kafka-user-auth
+  timeout: 5m
+  apply: IfReady
