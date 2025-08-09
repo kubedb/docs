@@ -1,0 +1,21 @@
+
+apiVersion: controller.kubeslice.io/v1alpha1
+kind: Cluster
+metadata:
+  name: demo-controller
+  namespace: kubeslice-demo-distributed-mariadb
+spec:
+  networkInterface: enp1s0
+  clusterProperty: {}
+---
+
+apiVersion: controller.kubeslice.io/v1alpha1
+kind: Cluster
+metadata:
+  name: demo-worker
+  namespace: kubeslice-demo-distributed-mariadb
+spec:
+  networkInterface: enp1s0
+  clusterProperty: {}
+---
+
