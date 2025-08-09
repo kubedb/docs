@@ -514,7 +514,7 @@ Init Containers:
       SOLR_ZK_CREDS_AND_ACLS:  -DzkACLProvider=org.apache.solr.common.cloud.DigestZkACLProvider -DzkCredentialsInjector=org.apache.solr.common.cloud.VMParamsZkCredentialsInjector -DzkCredentialsProvider=org.apache.solr.common.cloud.DigestZkCredentialsProvider -DzkDigestPassword=nwbnmVwBoJhW)eft -DzkDigestReadonlyPassword=7PxFSc)z~DWLL)Tt -DzkDigestReadonlyUsername=zk-digest-readonly -DzkDigestUsername=zk-digest
     Mounts:
       /temp-config from default-config (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-n9nxh (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-n9nxh (rotateauth)
       /var/security from auth-config (rw)
       /var/solr from slconfig (rw)
 Containers:
@@ -556,7 +556,7 @@ Containers:
       ZK_CREDS_AND_ACLS:       -DzkACLProvider=org.apache.solr.common.cloud.DigestZkACLProvider -DzkCredentialsInjector=org.apache.solr.common.cloud.VMParamsZkCredentialsInjector -DzkCredentialsProvider=org.apache.solr.common.cloud.DigestZkCredentialsProvider -DzkDigestPassword=nwbnmVwBoJhW)eft -DzkDigestReadonlyPassword=7PxFSc)z~DWLL)Tt -DzkDigestReadonlyUsername=zk-digest-readonly -DzkDigestUsername=zk-digest
       SOLR_ZK_CREDS_AND_ACLS:  -DzkACLProvider=org.apache.solr.common.cloud.DigestZkACLProvider -DzkCredentialsInjector=org.apache.solr.common.cloud.VMParamsZkCredentialsInjector -DzkCredentialsProvider=org.apache.solr.common.cloud.DigestZkCredentialsProvider -DzkDigestPassword=nwbnmVwBoJhW)eft -DzkDigestReadonlyPassword=7PxFSc)z~DWLL)Tt -DzkDigestReadonlyUsername=zk-digest-readonly -DzkDigestUsername=zk-digest
     Mounts:
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-n9nxh (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-n9nxh (rotateauth)
       /var/solr from slconfig (rw)
       /var/solr/data from solr-without-toleration-data (rw)
 Conditions:
