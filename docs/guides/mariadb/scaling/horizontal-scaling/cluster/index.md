@@ -256,11 +256,11 @@ root@sample-mariadb-0:/ mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like
 +--------------------+-------+
 | Variable_name      | Value |
 +--------------------+-------+
-| wsrep_cluster_size | 5     |
+| wsrep_cluster_size | 3     |
 +--------------------+-------+
 ```
 
-From all the above outputs we can see that the replicas of the cluster is `5`. That means we have successfully scaled down the replicas of the MariaDB replicaset.
+From all the above outputs we can see that the replicas of the cluster is `3`. That means we have successfully scaled down the replicas of the MariaDB replicaset.
 
 ## Cleaning Up
 

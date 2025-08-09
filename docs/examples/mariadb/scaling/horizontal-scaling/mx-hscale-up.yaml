@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MariaDBOpsRequest
+metadata:
+  name: maxscale-horizontal-scale-up
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: md-replication
+  horizontalScaling:
+    maxscale: true
+    member: 4

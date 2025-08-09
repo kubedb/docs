@@ -5,7 +5,7 @@ menu:
     identifier: guides-mariadb-scaling-vertical-cluster
     name: Cluster
     parent: guides-mariadb-scaling-vertical
-    weight: 30
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
