@@ -14,13 +14,13 @@ section_menu_id: guides
 
 # Vertical Scale MaxScale Server
 
-This guide will show you how to use `KubeDB` Enterprise operator to update the resources of a MaxScale server.
+This guide will show you how to use `KubeDB` Ops-manager operator to update the resources of a MaxScale server.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
     - [MariaDB](/docs/guides/mariadb/concepts/mariadb)
@@ -41,7 +41,7 @@ Here, we are going to deploy a  `MariaDB` cluster in replication mode using a su
 
 ### Deploy MariaDB Cluster
 
-In this section, we are going to deploy a MariaDB cluster database in replication mode. Then, in the next section we will update the resources of the `MaxScale` server using `MariaDBOpsRequest` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
+In this section, we are going to deploy a MariaDB database in replication mode. Then, in the next section we will update the resources of the `MaxScale` server using `MariaDBOpsRequest` CR. Below is the YAML of the `MariaDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -151,7 +151,7 @@ mariadbopsrequest.ops.kubedb.com/maxscale-vertical-scale created
 
 #### Verify MaxScale server resources updated successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the resources of `MariaDB` object and related `PetSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the resources of `MariaDB` object and related `PetSets` and `Pods`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 

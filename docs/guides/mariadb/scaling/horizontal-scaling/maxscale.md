@@ -14,13 +14,13 @@ section_menu_id: guides
 
 # Horizontal Scale MaxScale
 
-This guide will show you how to use `KubeDB` Enterprise operator to scale MaxScale server.
+This guide will show you how to use `KubeDB` Ops-manager operator to scale MaxScale server.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB`  operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
     - [MariaDB](/docs/guides/mariadb/concepts/mariadb/)
@@ -139,7 +139,7 @@ mariadbopsrequest.ops.kubedb.com/maxscale-horizontal-scale-up created
 
 #### Verify Cluster replicas scaled up successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MaxScale` object and related `PetSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the replicas of `MaxScale` object and related `PetSets` and `Pods`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
@@ -159,7 +159,7 @@ $ kubectl get petset -n demo md-replication-mx -o json | jq '.spec.replicas'
 4 
 ```
 
-From all the above outputs we can see that the replicas of the `MaxScale` server is `4`. That means we have successfully scaled up the replicas of the MariaDB replicaset.
+From all the above outputs we can see that the replicas of the `MaxScale` server is `4`. That means we have successfully scaled up the replicas of the MaxScale server.
 
 ### Scale Down Replicas
 
@@ -200,7 +200,7 @@ mariadbopsrequest.ops.kubedb.com/maxscale-horizontal-scale-down created
 
 #### Verify Cluster replicas scaled down successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the replicas of `MaxScale` object and related `PetSets` and `Pods`.
+If everything goes well, `KubeDB` Ops-manager operator will update the replicas of `MaxScale` object and related `PetSets` and `Pods`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
@@ -220,7 +220,7 @@ $ kubectl get petset -n demo md-replication-mx -o json | jq '.spec.replicas'
 3
 ```
 
-From all the above outputs we can see that the replicas of the cluster is `3`. That means we have successfully scaled down the replicas of the MariaDB replicaset.
+From all the above outputs we can see that the replicas of the cluster is `3`. That means we have successfully scaled down the replicas of the MaxScale server.
 
 ## Cleaning Up
 

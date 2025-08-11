@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # MaxScale Volume Expansion
 
-This guide will show you how to use `KubeDB` Enterprise operator to expand the volume of MaxScale server.
+This guide will show you how to use `KubeDB` Ops-manager operator to expand the volume of MaxScale server.
 
 ## Before You Begin
 
@@ -22,7 +22,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to expand the v
 
 - You must have a `StorageClass` that supports volume expansion.
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install `KubeDB` operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
     - [MariaDB](/docs/guides/mariadb/concepts/mariadb)
@@ -171,7 +171,7 @@ mariadbopsrequest.ops.kubedb.com/maxscale-volume-expansion created
 
 #### Verify MaxScale volume expanded successfully
 
-If everything goes well, `KubeDB` Enterprise operator will update the volume size of `MaxScale` object and related `PetSets` and `Persistent Volumes`.
+If everything goes well, `KubeDB` Ops-manager operator will update the volume size of `MaxScale` object and related `PetSets` and `Persistent Volumes`.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
