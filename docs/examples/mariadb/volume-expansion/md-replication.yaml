@@ -1,0 +1,30 @@
+apiVersion: kubedb.com/v1
+kind: MariaDB
+metadata:
+  name: md-replication
+  namespace: demo
+spec:
+  version: "10.5.23"
+  replicas: 3
+  topology:
+    mode: MariaDBReplication
+    maxscale:
+      replicas: 3
+      enableUI: true
+      storageType: Durable
+      storage:
+        storageClassName: "longhorn"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 50Mi
+  storageType: Durable
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
