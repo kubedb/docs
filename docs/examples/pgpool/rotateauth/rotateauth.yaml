@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind:  PgpoolOpsRequest
+metadata:
+  name: pgpops-rotate-auth-generated
+  namespace: pool
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: quick-pgpool
+  timeout: 5m
+  apply: IfReady
