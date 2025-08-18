@@ -2,9 +2,9 @@
 title: RabbitMQ Rotateauth Guide
 menu:
 docs_{{ .version }}:
-identifier: ig-rotateauth-guide
+identifier: rm-rotateauth-guide
 name: Guide
-parent: ig-quickstart-RabbitMQ
+parent: rm-rotateauth
 weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,20 +12,28 @@ section_menu_id: guides
 
 # Rotate Authentication of RabbitMQ
 
-**Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `RabbitMQ` user's authentication credentials using a `RabbitMQOpsRequest`. There are two ways to perform this rotation.
+**Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a 
+`RabbitMQ` user's authentication credentials using a `RabbitMQOpsRequest`. There are two ways to 
+perform this rotation.
 
-1. **Operator Generated:** The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential.
+1. **Operator Generated:** The KubeDB operator automatically generates a random credential and 
+updates the existing secret with the new credential.
 2. **User Defined:** The user can create their own credentials by defining a Secret of type
-   `kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in the
-   `RabbitMQOpsRequest` CR.
+   `kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in 
+the `RabbitMQOpsRequest` CR.
 
 ## Before You Begin
 
-- At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+- At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be 
+configured to communicate with your cluster. If you do not already have a cluster, you can create 
+one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB in your cluster following the steps [here](/docs/setup/README.md) and make sure install with helm command including `--set global.featureGates.RabbitMQ=true` to ensure RabbitMQ CRDs.
+- Now, install KubeDB in your cluster following the steps [here](/docs/setup/README.md) and make 
+sure install with helm command including `--set global.featureGates.RabbitMQ=true` to ensure 
+RabbitMQ CRDs.
 
-- [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
+- [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run 
+KubeDB. Check the available StorageClass in cluster.
 
   ```bash
   $ kubectl get storageclasses
@@ -33,7 +41,8 @@ section_menu_id: guides
   standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
   ```
 
-- To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
+- To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this 
+tutorial.
 
   ```bash
   $ kubectl create ns demo
@@ -60,37 +69,39 @@ KubeDB implements a `RabbitMQ` CRD to define the specification of a RabbitMQ ser
 apiVersion: kubedb.com/v1alpha2
 kind: RabbitMQ
 metadata:
-  name: RabbitMQ-quickstart
+  name: rabbitmq
   namespace: demo
 spec:
+  deletionPolicy: Delete
   replicas: 3
-  version: 2.17.0
   storage:
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: WipeOut
+    storageClassName: standard
+  storageType: Durable
+  version: 3.12.12
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/quickstart/demo.yaml
-RabbitMQ.kubedb.com/RabbitMQ-quickstart created
+$ kubectl apply -f rabbit.yaml
+RabbitMQ.kubedb.com/rabbitmq created
 ```
 
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
 
 ````shell
-$ kubectl get rm -n demo rm-quickstart -ojson | jq .spec.authSecret.name
-"rm-quickstart-auth"
-$ kubectl get secret -n demo rm-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
+"rabbitmq-auth"
+$ kubectl get secret -n demo rabbitmq-auth -o jsonpath='{.data.username}' | base64 -d
 admin⏎          
-$ kubectl get secret -n demo rm-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
-aIYTn)qH6UpFy.AO⏎                        
+$ kubectl get secret -n demo rabbitmq-auth -o jsonpath='{.data.password}' | base64 -d
+4TC.R7hXc1g;kA)P⏎                        
 ````
-Now, you can exec into the pod `RabbitMQ-quickstart-0` and connect to database using `username` and `password`
+Now, you can exec into the pod `rabbitmq-0` and connect to database using `username` and `password`
 ```bash
 $ kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
 rabbitmq-0:/$ rabbitmqadmin -u admin -p '4TC.R7hXc1g;kA)P' list queues
@@ -108,31 +119,31 @@ If you can access the data table and run queries, it means the secrets are worki
 
 #### 1. Using operator generated credentials:
 
-In order to rotate authentication to the RabbitMQ using operator generated, we have to create a `RabbitMQOpsRequest` CRO with `RotateAuth` type. Below is the YAML of the `RabbitMQOpsRequest` CRO that we are going to create,
+In order to rotate authentication to the RabbitMQ using operator generated, we have to create a `RabbitMQOpsRequest` CR with `RotateAuth` type. Below is the YAML of the `RabbitMQOpsRequest` CR that we are going to create,
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: RabbitMQOpsRequest
 metadata:
-  name: msops-rotate-auth-generated
+  name: rm-rotate-auth-generated
   namespace: demo
 spec:
   type: RotateAuth
   databaseRef:
-    name: RabbitMQ-quickstart
+    name: rabbitmq
   timeout: 5m
   apply: IfReady
 ```
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `RabbitMQ-quickstart` cluster.
+- `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `rabbitmq` cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on RabbitMQ.
 
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 ```shell
  $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/rabbitmq/rotate-auth/rotate-auth-generated.yaml
- RabbitMQopsrequest.ops.kubedb.com/msops-rotate-auth-generated created
+ RabbitMQopsrequest.ops.kubedb.com/rm-rotate-auth-generated created
 ```
-Let's wait for `RabbitMQOpsrequest` to be `Successful`. Run the following command to watch `RabbitMQOpsrequest` CRO
+Let's wait for `RabbitMQOpsrequest` to be `Successful`. Run the following command to watch `RabbitMQOpsrequest` CR
 ```shell
  $ kubectl get RabbitMQopsrequest -n demo
 NAME                       TYPE         STATUS       AGE
@@ -290,9 +301,6 @@ Let's verify if we can connect to the database using the new credentials.
 
 ```shell
 $ kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
-# Previous credential does not work
-rabbitmq-0:/$ rabbitmqadmin -u admin -p '4TC.R7hXc1g;kA)P' list queues
-*** Access refused: /api/queues?columns=name,messages
 
 rabbitmq-0:/$ rabbitmqadmin -u admin -p 'tB7;0ATxvhxeau15' list queues
 +---------------+----------+
@@ -312,18 +320,25 @@ admin⏎
 $ kubectl get secret -n demo rabbitmq-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
 4TC.R7hXc1g;kA)P⏎                                             
 ```
+Now verify whether the previous credential is workable or not 
 
+```shell
+$ kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
+
+rabbitmq-0:/$ rabbitmqadmin -u admin -p '4TC.R7hXc1g;kA)P' list queues
+*** Access refused: /api/queues?columns=name,messages
+```
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
-> Note: The `username` must be fixed as `sa`. The `password` must include uppercase letters, lowercase letters, and numbers
+
 ```shell
-$ kubectl create secret generic RabbitMQ-quickstart-auth-user -n demo \
+$ kubectl create secret generic rm-auth-user -n demo \
                                                --type=kubernetes.io/basic-auth \
-                                               --from-literal=username=sa \
+                                               --from-literal=username=rabbit \
                                                --from-literal=password=RabbitMQ2
-secret/RabbitMQ-quickstart-auth-user created
+secret/rm-auth-user created
 
 ```
 Now create a `RabbitMQOpsRequest` with `RotateAuth` type. Below is the YAML of the `RabbitMQOpsRequest` that we are going to create,
@@ -346,18 +361,18 @@ spec:
 ```
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `RabbitMQ-quickstart`cluster.
+- `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `rabbitmq`cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on RabbitMQ.
-- `spec.authentication.secretRef.name` specifies that we want to use `RabbitMQ-quickstart-auth` for database authentication.
+- `spec.authentication.secretRef.name` specifies that we used `rm-auth-user` for database authentication.
 
 
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```shell
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/rabbitmq/rotate-auth/rotate-auth-user.yaml
-RabbitMQopsrequest.ops.kubedb.com/msops-rotate-auth-user created
+RabbitMQopsrequest.ops.kubedb.com/rmops-rotate-auth-user created
 ```
-Let’s wait for `RabbitMQOpsRequest` to be Successful. Run the following command to watch `RabbitMQOpsRequest` CRO:
+Let’s wait for `RabbitMQOpsRequest` to be Successful. Run the following command to watch `RabbitMQOpsRequest` CR:
 
 ```shell
 $ kubectl get RabbitMQopsrequest -n demo
@@ -511,8 +526,9 @@ Events:
 ```shell
 $ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
 "rm-auth-user"
-bohni@bohni-HP-ProBook-450-G4 ~> kubectl get secret -n demo rm-auth-user -o=jsonpath='{.data.username}' | base64 -d
-rabbit⏎                                                        bohni@bohni-HP-ProBook-450-G4 ~> kubectl get secret -n demo rm-auth-user -o=jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo rm-auth-user -o=jsonpath='{.data.username}' | base64 -d
+rabbit⏎                              
+$ kubectl get secret -n demo rm-auth-user -o=jsonpath='{.data.password}' | base64 -d
 RabbitMQ2⏎                                                                                         
 ```
 
@@ -543,7 +559,7 @@ rabbitmq-0:/$ rabbitmqadmin -u admin -p 'tB7;0ATxvhxeau15' list queues
 *** Access refused: /api/queues?columns=name,messages
 
 ```
-The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
+The above output shows that the credential has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
 ## Cleaning up
 
@@ -551,12 +567,12 @@ To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
 ```shell
-$ kubectl delete RabbitMQopsrequest msops-rotate-auth-generated msops-rotate-auth-user -n demo
-RabbitMQopsrequest.ops.kubedb.com "msops-rotate-auth-generated" "msops-rotate-auth-user" deleted
-$ kubectl delete secret -n demoquick-RabbitMQ-user-auth
-secret "quick-RabbitMQ-user-auth" deleted
-$ kubectl delete secret -n demo   RabbitMQ-quickstart-auth 
-secret "RabbitMQ-quickstart-auth " deleted
+$ kubectl delete RabbitMQopsrequest rm-rotate-auth-generated rmops-rotate-auth-user -n demo
+RabbitMQopsrequest.ops.kubedb.com "rm-rotate-auth-generated" "rmops-rotate-auth-user" deleted
+$ kubectl delete secret -n rm-auth-user
+secret "rm-auth-user" deleted
+$ kubectl delete secret -n demo   rabbitmq-auth 
+secret "rabbitmq-auth " deleted
 
 ```
 
