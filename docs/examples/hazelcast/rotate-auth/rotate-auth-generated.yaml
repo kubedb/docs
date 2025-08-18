@@ -1,0 +1,10 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HazelcastOpsRequest
+metadata:
+  name: hzops-rotate-auth-generated
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: hazelcast-quickstart
+  apply: IfReady
