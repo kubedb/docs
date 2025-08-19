@@ -1,0 +1,30 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ClickHouse
+metadata:
+  name: ch
+  namespace: demo
+spec:
+  version: 24.4.1
+  replicas: 1
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  sslVerificationMode: relaxed
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: ch-issuer
+    certificates:
+      - alias: server
+        subject:
+          organizations:
+            - kubedb:server
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
+  deletionPolicy: WipeOut
