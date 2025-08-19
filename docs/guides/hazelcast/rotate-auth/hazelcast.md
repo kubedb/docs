@@ -1,3 +1,14 @@
+---
+title: Hazelcast Rotate Authentication Guide
+menu:
+  docs_{{ .version }}:
+    identifier: hz-rotate-auth-kafka
+    name: Hazelcast RotateAuth Guide
+    parent: hz-rotate-auth
+    weight: 15
+menu_name: docs_{{ .version }}
+section_menu_id: guides
+---
 # Rotate Authentication of Hazelcast
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `Hazelcast` user's authentication credentials using a `HazelcastOpsRequest`. There are two ways to perform this rotation.
 

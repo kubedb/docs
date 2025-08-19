@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HazelcastOpsRequest
+metadata:
+  name: hzops-update-issuer
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: hz-prod
+  tls:
+    issuerRef:
+      name: hz-new-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
