@@ -182,8 +182,6 @@ Here,
 
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
-> **Note:** For combined hazelcast, you just need to refer hazelcast combined object in `databaseRef` field. To learn more about combined hazelcast, please visit [here](/docs/guides/hazelcast/clustering/combined-cluster/index.md).
-
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-add-tls.yaml
 hazelcastopsrequest.ops.kubedb.com/hzops-add-tls created

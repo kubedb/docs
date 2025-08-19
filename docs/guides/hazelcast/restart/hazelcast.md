@@ -88,7 +88,7 @@ spec:
 
 - `spec.type` specifies the Type of the ops Request
 - `spec.databaseRef` holds the name of the Hazelcast CR. It should be available in the same namespace as the opsRequest
-- The meaning of `spec.apply` fields will be found [here](/docs/guides/hazelcast/concepts/hazelcastopsrequest.md#spectimeout)
+- The meaning of `spec.apply` fields will be found [here](/docs/guides/hazelcast/concepts/hazelcast-opsrequest.md#spectimeout)
 
 > Note: The method of restarting the combined node is exactly same as above. All you need, is to specify the corresponding Hazelcast name in `spec.databaseRef.name` section.
 

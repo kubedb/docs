@@ -175,7 +175,7 @@ A `HazelcastOpsRequest` object has the following fields in the `spec` section.
 
 If you want to update your Hazelcast version, you have to specify the `spec.updateVersion` section that specifies the desired version information. This field consists of the following sub-field:
 
-- `spec.updateVersion.targetVersion` refers to a [HazelcastVersion](/docs/guides/hazelcast/concepts/catalog.md) CR that contains the Hazelcast version information where you want to update.
+- `spec.updateVersion.targetVersion` refers to a [HazelcastVersion](/docs/guides/hazelcast/concepts/hazelcastversion.md) CR that contains the Hazelcast version information where you want to update.
 
 > You can only update between Hazelcast versions. KubeDB does not support downgrade for Hazelcast.
 
@@ -305,4 +305,4 @@ Use `IfReady` if you want to process the opsRequest only when the database is Re
 ## Next Steps
 
 - Learn about [Hazelcast CRD](/docs/guides/hazelcast/concepts/hazelcast.md).
-- Deploy your first Hazelcast database with KubeDB by following the guide [here](/docs/guides/hazelcast/quickstart/quickstart.md).
+- Deploy your first Hazelcast database with KubeDB by following the guide [here](/docs/guides/hazelcast/quickstart/overview/index.md).
