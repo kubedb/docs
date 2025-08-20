@@ -2,9 +2,9 @@
 title: Updating Hazelcast Database
 menu:
   docs_{{ .version }}:
-    identifier: hz-update-version
+    identifier: hazelcast-version-update
     name: Update Version
-    parent: update-version
+    parent: hz-update-version
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

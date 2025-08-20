@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: hz-horizontal-scaling-overview
     name: Overview
-    parent: horizontal-scaling
+    parent: hz-horizontal-scaling
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

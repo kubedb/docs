@@ -2,9 +2,9 @@
 title: Vertical Scaling Hazelcast
 menu:
   docs_{{ .version }}:
-    identifier: hz-vertical-scaling
+    identifier: hazelcast-vertical-scaling
     name: Vertical Scaling
-    parent: vertical-scaling
+    parent: hz-vertical-scaling
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

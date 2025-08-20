@@ -2,7 +2,7 @@
 title: Scaling Memcached
 menu:
   docs_{{ .version }}:
-    identifier: scaling
+    identifier: hz-scaling
     name: Scaling
     parent: hz-guides
     weight: 60

@@ -2,9 +2,9 @@
 title: Horizontal Scaling Hazelcast
 menu:
   docs_{{ .version }}:
-    identifier: hz-horizontal-scaling
+    identifier: hazelcast-horizontal-scaling
     name: Horizontal Scaling
-    parent: horizontal-scaling
+    parent: hz-horizontal-scaling
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

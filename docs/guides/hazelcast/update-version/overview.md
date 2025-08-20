@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: hz-update-version-overview
     name: Overview
-    parent: update-version
+    parent: hz-update-version
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -2,7 +2,7 @@
 title: UpdateVersion Hazelcast
 menu:
   docs_{{ .version }}:
-    identifier: update-version
+    identifier: hz-update-version
     name: UpdateVersion
     parent: hz-guides
     weight: 50
