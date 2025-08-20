@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: hz-monitoring-hazelcast
     name: Monitoring
-    parent: hz-hazelcast-guides
+    parent: hz-guides
     weight: 36
 menu_name: docs_{{ .version }}
 ---

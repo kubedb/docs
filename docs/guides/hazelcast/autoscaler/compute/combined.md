@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: hz-auto-scaling-combined
     name: Combined Cluster
-    parent: hz-auto-scaling
+    parent: hz-compute-auto-scaling
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

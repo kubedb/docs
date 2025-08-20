@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: hz-readme-hazelcast
     name: Hazelcast
-    parent: hz-hazelcast-guides
+    parent: hz-guides
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
