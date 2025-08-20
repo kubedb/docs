@@ -3,7 +3,7 @@ title: MySQL Failover and DR Scenarios
 menu:
   docs_{{ .version }}:
     identifier: guides-mysql-failure-and-disaster-recovery-overview
-    name: Overview
+    name: Guide
     parent: guides-mysql-failure-and-disaster-recovery
     weight: 20
 menu_name: docs_{{ .version }}
@@ -48,12 +48,12 @@ Unlike a standalone MySQL instance, an HA cluster includes:
 - One or more standby pods that are ready to take over automatically if the primary node fails.
 
 The following YAML manifest defines a 3-node MySQL cluster with streaming replication enabled.
-Save it as restore-mysql.yaml:
+Save it as ha-mysql.yaml:
 ```yaml
 apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
-  name: restore-mysql
+  name: ha-mysql
   namespace: demo
 spec:
   version: "8.2.0"
@@ -79,28 +79,28 @@ $ kubectl create ns demo
 namespace/demo created
 
 # Apply the manifest to deploy the cluster
-$ kubectl apply -f restore-mysql.yaml
-mysql.kubedb.com/restore-mysql created
+$ kubectl apply -f ha-mysql.yaml
+mysql.kubedb.com/ha-mysql created
 ```
 
 You can monitor on another terminal the status until all pods are ready:
 ```shell
-➤ watch kubectl get my,petset,pods -n demo
+$ watch kubectl get my,petset,pods -n demo
 ```
 See the database is ready.
 
 ```shell
-➤ kubectl get my,petset,pods -n demo
+$ kubectl get my,petset,pods -n demo
 NAME                             VERSION   STATUS   AGE
-mysql.kubedb.com/restore-mysql   8.2.0     Ready    19h
+mysql.kubedb.com/ha-mysql   8.2.0     Ready    19h
 
 NAME                                         AGE
-petset.apps.k8s.appscode.com/restore-mysql   19h
+petset.apps.k8s.appscode.com/ha-mysql   19h
 
 NAME                  READY   STATUS    RESTARTS      AGE
-pod/restore-mysql-0   2/2     Running   3 (24m ago)   16h
-pod/restore-mysql-1   2/2     Running   2 (24m ago)   16h
-pod/restore-mysql-2   2/2     Running   3 (24m ago)   16h
+pod/ha-mysql-0   2/2     Running   3 (24m ago)   16h
+pod/ha-mysql-1   2/2     Running   2 (24m ago)   16h
+pod/ha-mysql-2   2/2     Running   3 (24m ago)   16h
 
 ```
 
@@ -110,10 +110,10 @@ Inspect who is primary and who is standby.
 # you can inspect who is primary
 # and who is secondary like below
 
-➤ kubectl get pods -n demo --show-labels | grep role
-restore-mysql-0   2/2     Running   0          34m   app.kubernetes.io/component=database,app.kubernetes.io/instance=restore-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=restore-mysql-7f595bb48b,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=restore-mysql-0
-restore-mysql-1   2/2     Running   0          34m   app.kubernetes.io/component=database,app.kubernetes.io/instance=restore-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=restore-mysql-7f595bb48b,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=restore-mysql-1
-restore-mysql-2   2/2     Running   0          34m   app.kubernetes.io/component=database,app.kubernetes.io/instance=restore-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=restore-mysql-7f595bb48b,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=restore-mysql-2
+$ kubectl get pods -n demo --show-labels | grep role
+ha-mysql-0   2/2     Running   0          34m   app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=ha-mysql-7f595bb48b,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=ha-mysql-0
+ha-mysql-1   2/2     Running   0          34m   app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=ha-mysql-7f595bb48b,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=ha-mysql-1
+ha-mysql-2   2/2     Running   0          34m   app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=ha-mysql-7f595bb48b,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=ha-mysql-2
 
 ```
 The pod having `kubedb.com/role=primary` is the primary and `kubedb.com/role=standby` are the standby's.
@@ -123,11 +123,11 @@ Lets create a table in the primary.
 
 ```shell
 # find the primary pod
-➤ kubectl get pods -n demo --show-labels | grep primary | awk '{ print $1 }'
-restore-mysql-0
+$ kubectl get pods -n demo --show-labels | grep primary | awk '{ print $1 }'
+ha-mysql-0
 
 # exec into the primary pod
-➤ kubectl exec -it -n demo restore-mysql-0  -- bash
+$ kubectl exec -it -n demo ha-mysql-0  -- bash
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$  mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -165,7 +165,7 @@ Verify that the table has been created on the standby nodes. Note that standby p
 so you won't be able to perform any write operations.
 
 ```shell
-➤ kubectl exec -it -n demo restore-mysql-1  -- bash
+$ kubectl exec -it -n demo ha-mysql-1  -- bash
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -209,7 +209,7 @@ minimal disruption. The failover process is fast, coordinated, and typically com
 a few seconds, allowing your MySQL database to remain highly available and resilient in dynamic 
 Kubernetes environments.
 
-Now current running primary is `restore-mysql-0`. Let's open another terminal and run the command below.
+Now current running primary is `ha-mysql-0`. Let's open another terminal and run the command below.
 
 
 ```shell
@@ -218,9 +218,9 @@ watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.na
 It will show current mysql cluster roles like that:
 
 ```shell
-restore-mysql-0 primary
-restore-mysql-1 standby
-restore-mysql-2 standby
+ha-mysql-0 primary
+ha-mysql-1 standby
+ha-mysql-2 standby
 ```
 
 #### Case 1: Delete the current primary
@@ -228,14 +228,14 @@ restore-mysql-2 standby
 Lets delete the current primary and see how the role change happens almost immediately.
 
 ```shell
-➤ kubectl delete pods -n demo restore-mysql-0 
-pod "restore-mysql-0" deleted
+$ kubectl delete pods -n demo ha-mysql-0 
+pod "ha-mysql-0" deleted
 ```
 You see almost immediately the failover happened. 
 ```shell
-restore-mysql-0 
-restore-mysql-1 primary
-restore-mysql-2 standby
+ha-mysql-0 
+ha-mysql-1 primary
+ha-mysql-2 standby
 ```
 
 Here's what happened internally is mainly managed by
@@ -276,7 +276,7 @@ A healthy replica is promoted as the new primary, and it resumes accepting write
 Now we know how failover is done, let's check if the new primary is working.
 
 ```shell
-➤ kubectl exec -it -n demo restore-mysql-1  -- bash
+$ kubectl exec -it -n demo ha-mysql-1  -- bash
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -296,18 +296,18 @@ mysql> CREATE DATABASE hi;
 Query OK, 1 row affected (0.16 sec)
 ```
 
-You will see the deleted pod (restore-mysql-0) is brought back by the kubedb operator and it is now assigned to standby role.
+You will see the deleted pod (ha-mysql-0) is brought back by the kubedb operator and it is now assigned to standby role.
 
 ```shell
-restore-mysql-0 standby
-restore-mysql-1 primary
-restore-mysql-2 standby
+ha-mysql-0 standby
+ha-mysql-1 primary
+ha-mysql-2 standby
 ```
 
-Lets check if the standby(`restore-mysql-0`) got the updated data from new primary `restore-mysql-1`.
+Lets check if the standby(`ha-mysql-0`) got the updated data from new primary `ha-mysql-1`.
 
 ```shell
-➤ kubectl exec -it -n demo restore-mysql-1  -- bash
+$ kubectl exec -it -n demo ha-mysql-1  -- bash
 
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
@@ -343,29 +343,29 @@ mysql> Show Databases;
 #### Case 2: Delete the current primary and One replica
 
 ```shell
-➤ kubectl delete pods -n demo restore-mysql-1 restore-mysql-2
-pod "restore-mysql-1" deleted
-pod "restore-mysql-2" deleted
+$ kubectl delete pods -n demo ha-mysql-1 ha-mysql-2
+pod "ha-mysql-1" deleted
+pod "ha-mysql-2" deleted
 ```
 Again we can see the failover happened pretty quickly.
 
 ```shell
-restore-mysql-0 primary
-restore-mysql-1 
-restore-mysql-2
+ha-mysql-0 primary
+ha-mysql-1 
+ha-mysql-2
 ```
 
 After 10-40 second, the deleted pods will be back and will have its role.
 
 ```shell
-restore-mysql-0 primary
-restore-mysql-1 standby
-restore-mysql-2 standby
+ha-mysql-0 primary
+ha-mysql-1 standby
+ha-mysql-2 standby
 ```
-Lets validate the cluster state from new primary(`restore-mysql-0`).
+Lets validate the cluster state from new primary(`ha-mysql-0`).
 
 ```shell
-➤ kubectl exec -it -n demo restore-mysql-0  -- bash
+$ kubectl exec -it -n demo ha-mysql-0  -- bash
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -385,9 +385,9 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 +---------------------------------------------+-------------+--------------+-------------+
 | MEMBER_HOST                                 | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE |
 +---------------------------------------------+-------------+--------------+-------------+
-| restore-mysql-1.restore-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
-| restore-mysql-0.restore-mysql-pods.demo.svc |        3306 | ONLINE       | PRIMARY     |
-| restore-mysql-2.restore-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
+| ha-mysql-1.ha-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
+| ha-mysql-0.ha-mysql-pods.demo.svc |        3306 | ONLINE       | PRIMARY     |
+| ha-mysql-2.ha-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
 +---------------------------------------------+-------------+--------------+-------------+
 3 rows in set (0.00 sec)
 
@@ -398,29 +398,29 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 Let's delete both of the standby's.
 
 ```shell
-➤ kubectl delete pods -n demo restore-mysql-1 restore-mysql-2
-pod "restore-mysql-1" deleted
-pod "restore-mysql-2" deleted
+$ kubectl delete pods -n demo ha-mysql-1 ha-mysql-2
+pod "ha-mysql-1" deleted
+pod "ha-mysql-2" deleted
 
 ```
 
 ```shell
-restore-mysql-0 primary
-restore-mysql-1 
-restore-mysql-2
+ha-mysql-0 primary
+ha-mysql-1 
+ha-mysql-2
 ```
 
 Shortly both of the pods will be back with its role.
 
 ```shell
-restore-mysql-0 primary
-restore-mysql-1 standby
-restore-mysql-2 standby
+ha-mysql-0 primary
+ha-mysql-1 standby
+ha-mysql-2 standby
 ```
 
 Lets verify cluster state.
 ```shell
-➤ kubectl exec -it -n demo restore-mysql-0  -- bash
+$ kubectl exec -it -n demo ha-mysql-0  -- bash
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -440,9 +440,9 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 +---------------------------------------------+-------------+--------------+-------------+
 | MEMBER_HOST                                 | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE |
 +---------------------------------------------+-------------+--------------+-------------+
-| restore-mysql-1.restore-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
-| restore-mysql-0.restore-mysql-pods.demo.svc |        3306 | ONLINE       | PRIMARY     |
-| restore-mysql-2.restore-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
+| ha-mysql-1.ha-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
+| ha-mysql-0.ha-mysql-pods.demo.svc |        3306 | ONLINE       | PRIMARY     |
+| ha-mysql-2.ha-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
 +---------------------------------------------+-------------+--------------+-------------+
 3 rows in set (0.01 sec)
 ```
@@ -452,29 +452,29 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 Let's delete all the pods.
 
 ```shell
-➤ kubectl delete pods -n demo restore-mysql-0 restore-mysql-1 restore-mysql-2
-pod "restore-mysql-0" deleted
-pod "restore-mysql-1" deleted
-pod "restore-mysql-2" deleted
+$ kubectl delete pods -n demo ha-mysql-0 ha-mysql-1 ha-mysql-2
+pod "ha-mysql-0" deleted
+pod "ha-mysql-1" deleted
+pod "ha-mysql-2" deleted
 ```
 ```bash
-restore-mysql-0 
-restore-mysql-1
-restore-mysql-2
+ha-mysql-0 
+ha-mysql-1
+ha-mysql-2
 ```
 
 Within 20-30 second, all of the pod should be back.
 
 ```shell
-restore-mysql-0 primary
-restore-mysql-1 standby
-restore-mysql-2 standby
+ha-mysql-0 primary
+ha-mysql-1 standby
+ha-mysql-2 standby
 ```
 
 Lets verify the cluster state now.
 
 ```shell
-➤ kubectl exec -it -n demo restore-mysql-0  -- bash
+$ kubectl exec -it -n demo ha-mysql-0  -- bash
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -494,25 +494,12 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 +---------------------------------------------+-------------+--------------+-------------+
 | MEMBER_HOST                                 | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE |
 +---------------------------------------------+-------------+--------------+-------------+
-| restore-mysql-1.restore-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
-| restore-mysql-0.restore-mysql-pods.demo.svc |        3306 | ONLINE       | PRIMARY     |
-| restore-mysql-2.restore-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
+| ha-mysql-1.ha-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
+| ha-mysql-0.ha-mysql-pods.demo.svc |        3306 | ONLINE       | PRIMARY     |
+| ha-mysql-2.ha-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
 +---------------------------------------------+-------------+--------------+-------------+
 3 rows in set (0.00 sec)
 ```
-
-
-## A Guide to MySQL Backup And Restore
-
-You can configure Backup and Restore following the below documentation.
-
-[Backup and Restore](/docs/guides/mysql/backup/kubestash/overview/index.md)
-
-
-## A Guide to MySQL PITR
-
-Documentaion Link: [PITR](/docs/guides/mysql/pitr/volumesnapshot/archiver.md)
-
 
 ## A Guide to Handling MySQL Storage
 
@@ -543,7 +530,7 @@ metadata:
 spec:
   type: VolumeExpansion
   databaseRef:
-    name: restore-mysql
+    name: ha-mysql
   volumeExpansion:
     mode: "Offline"
     mysql: 2Gi
@@ -560,12 +547,14 @@ It depends on your `StorageClass`. If your storageclass supports online volume e
 
 To clean up the Kubernetes resources created by this tutorial, run:
 ```shell
-➤ kubectl delete my -n demo restore-mysql
-➤ kubectl delete ns demo
+$ kubectl delete my -n demo ha-mysql
+$ kubectl delete ns demo
 ```
 
 ### Next Steps
 
+- You can configure [Backup and Restore](/docs/guides/mysql/backup/kubestash/overview/index.md)
+- Learn about [PITR](/docs/guides/mysql/pitr/volumesnapshot/archiver.md)
 - Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
 - Detail concepts of [MySQLDBVersion object](/docs/guides/mysql/concepts/catalog/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
