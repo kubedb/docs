@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: ch-configuration
     name: Custom Configuration
-    parent: ch-cassandra-guides
+    parent: ch-clickhouse-guides
     weight: 30
 menu_name: docs_{{ .version }}
 ---

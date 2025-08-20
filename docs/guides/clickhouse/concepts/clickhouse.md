@@ -367,7 +367,6 @@ Know details about KubeDB Health checking from this [blog post](https://appscode
 ## Next Steps
 
 - Learn how to use KubeDB to run Apache ClickHouse cluster [here](/docs/guides/clickhouse/README.md).
-- Monitor your ClickHouse cluster with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/clickhouse/monitoring/using-prometheus-operator.md).
 - Detail concepts of [ClickHouseVersion object](/docs/guides/clickhouse/concepts/clickhouseversion.md).
 
 [//]: # (- Learn to use KubeDB managed ClickHouse objects using [CLIs]&#40;/docs/guides/clickhouse/cli/cli.md&#41;.)

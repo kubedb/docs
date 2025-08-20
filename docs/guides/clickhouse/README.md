@@ -43,9 +43,4 @@ KubeDB supports the following ClickHouse Versions.
 ## User Guide
 
 - [Quickstart ClickHouse](/docs/guides/clickhouse/quickstart/index.md) with KubeDB Operator.
-- Monitor your ClickHouse database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
-- Monitor your ClickHouse database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).
-- Use [kubedb cli](/docs/guides/mysql/cli/index.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [ClickHouse object](/docs/guides/mysql/concepts/database/index.md).
-- Detail concepts of [ClickHouseVersion object](/docs/guides/mysql/concepts/catalog/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
