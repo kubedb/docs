@@ -1,0 +1,17 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: HazelcastAutoscaler
+metadata:
+  name: hz-storage-autoscaler-combined
+  namespace: demo
+spec:
+  databaseRef:
+    name: hazelcast-dev
+  opsRequestOptions:
+      timeout: 5m
+      apply: IfReady
+  storage:
+    hazelcast:
+      trigger: "On"
+      expansionMode: "Online"
+      usageThreshold: 1
+      scalingThreshold: 50

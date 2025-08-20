@@ -56,7 +56,7 @@ spec:
   deletionPolicy: WipeOut
   licenseSecret:
     name: hz-license-key
-  replicas: 3
+  replicas: 2
   version: 5.5.2
   storage:
     accessModes:
@@ -89,7 +89,6 @@ $ kubectl get statefulset -n demo hz-prod -o json | jq '.spec.volumeClaimTemplat
 "1Gi"
 
 $ kubectl get pv -o json | jq '.items[].spec.capacity.storage'
-"1Gi"
 "1Gi"
 "1Gi"
 ```
@@ -150,7 +149,96 @@ We can see from the above output that the `HazelcastOpsRequest` has succeeded. I
 
 ```bash
 $ kubectl describe hazelcastopsrequest -n demo hz-volume-expansion
-
+Name:         hz-volume-expansion
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         HazelcastOpsRequest
+Metadata:
+  Creation Timestamp:  2025-08-19T13:11:56Z
+  Generation:          1
+  Resource Version:    5498537
+  UID:                 1141abd1-aa25-4beb-837b-69a6d577920f
+Spec:
+  Apply:  IfReady
+  Database Ref:
+    Name:  hz-prod
+  Type:    VolumeExpansion
+  Volume Expansion:
+    Hazelcast:  2Gi
+    Mode:       Online
+Status:
+  Conditions:
+    Last Transition Time:  2025-08-19T13:11:56Z
+    Message:               Hazelcast ops-request has started to expand volume of hazelcast nodes.
+    Observed Generation:   1
+    Reason:                VolumeExpansion
+    Status:                True
+    Type:                  VolumeExpansion
+    Last Transition Time:  2025-08-19T13:12:29Z
+    Message:               successfully deleted the statefulSets with orphan propagation policy
+    Observed Generation:   1
+    Reason:                OrphanStatefulSetPods
+    Status:                True
+    Type:                  OrphanStatefulSetPods
+    Last Transition Time:  2025-08-19T13:12:09Z
+    Message:               get statefulset; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetStatefulset
+    Last Transition Time:  2025-08-19T13:12:09Z
+    Message:               delete statefulset; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  DeleteStatefulset
+    Last Transition Time:  2025-08-19T13:15:39Z
+    Message:               successfully updated PVC sizes
+    Observed Generation:   1
+    Reason:                VolumeExpansionSucceeded
+    Status:                True
+    Type:                  VolumeExpansionSucceeded
+    Last Transition Time:  2025-08-19T13:12:39Z
+    Message:               get pvc; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetPvc
+    Last Transition Time:  2025-08-19T13:12:39Z
+    Message:               patch pvc; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  PatchPvc
+    Last Transition Time:  2025-08-19T13:15:29Z
+    Message:               compare storage; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  CompareStorage
+    Last Transition Time:  2025-08-19T13:15:49Z
+    Message:               successfully reconciled the Hazelcast resources
+    Observed Generation:   1
+    Reason:                UpdateStatefulSets
+    Status:                True
+    Type:                  UpdateStatefulSets
+    Last Transition Time:  2025-08-19T13:16:09Z
+    Message:               StatefulSet is recreated
+    Observed Generation:   1
+    Reason:                ReadyStatefulSets
+    Status:                True
+    Type:                  ReadyStatefulSets
+    Last Transition Time:  2025-08-19T13:15:59Z
+    Message:               get stateful set; ConditionStatus:True
+    Observed Generation:   1
+    Status:                True
+    Type:                  GetStatefulSet
+    Last Transition Time:  2025-08-19T13:15:59Z
+    Message:               Successfully completed volumeExpansion for Hazelcast
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:                    <none>
 ```
 
 Now, we are going to verify from the `statefulset`, and the `PersistentVolume` whether the volume of the database has expanded to meet the desired state, Let's check,
@@ -160,7 +248,6 @@ $ kubectl get statefulset -n demo hz-prod -o json | jq '.spec.volumeClaimTemplat
 "2Gi"
 
 $ kubectl get pv -o json | jq '.items[].spec.capacity.storage'
-"2Gi"
 "2Gi"
 "2Gi"
 ```

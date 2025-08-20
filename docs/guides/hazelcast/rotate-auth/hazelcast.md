@@ -2,7 +2,7 @@
 title: Hazelcast Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
-    identifier: hz-rotate-auth-kafka
+    identifier: hz-rotate-auth
     name: Hazelcast RotateAuth Guide
     parent: hz-rotate-auth
     weight: 15

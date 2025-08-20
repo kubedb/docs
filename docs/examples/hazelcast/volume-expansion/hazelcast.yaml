@@ -7,7 +7,7 @@ spec:
   deletionPolicy: WipeOut
   licenseSecret:
     name: hz-license-key
-  replicas: 3
+  replicas: 2
   version: 5.5.2
   storage:
     accessModes:

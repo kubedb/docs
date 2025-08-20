@@ -2,7 +2,7 @@
 title: Hazelcast
 menu:
   docs_{{ .version }}:
-    identifier: hz-hazelcast-guides
+    identifier: hz-guides
     name: Hazelcast
     parent: guides
     weight: 10

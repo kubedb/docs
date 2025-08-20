@@ -1,9 +1,9 @@
 ---
-title: Reconfigure TLS/SSL
+title: Autoscaling
 menu:
   docs_{{ .version }}:
-    identifier: hz-reconfigure-tls
-    name: Reconfigure TLS/SSL
+    identifier: hz-auto-scaling
+    name: Autoscaling
     parent: hz-guides
     weight: 46
 menu_name: docs_{{ .version }}

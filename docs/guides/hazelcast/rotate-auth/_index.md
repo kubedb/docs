@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: hz-rotate-auth
     name: Rotate Authentication
-    parent: guides
+    parent: hz-guides
     weight: 45
 menu_name: docs_{{ .version }}
 ---
