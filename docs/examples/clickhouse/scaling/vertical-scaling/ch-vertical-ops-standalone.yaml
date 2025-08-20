@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ClickHouseOpsRequest
+metadata:
+  name: ch-vertical-scale-standalone
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: ch
+  verticalScaling:
+    standalone:
+      resources:
+        requests:
+          memory: "3Gi"
+          cpu: "3"
+        limits:
+          memory: "3Gi"
+          cpu: "3"

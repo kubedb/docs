@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ClickHouseOpsRequest
+metadata:
+  name: chops-cluster-reconfiugre-with-config
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: ch
+  configuration:
+    applyConfig:
+      config.yaml: |
+        profiles:
+          default:
+            max_query_size: 180000

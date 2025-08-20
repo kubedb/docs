@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ClickHouseOpsRequest
+metadata:
+  name: ch-offline-volume-expansion
+  namespace: demo
+spec:
+  apply: "IfReady"
+  type: VolumeExpansion
+  databaseRef:
+    name: ch
+  volumeExpansion:
+    mode: "Offline"
+    node: 2Gi
