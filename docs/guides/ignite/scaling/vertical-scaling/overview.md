@@ -24,7 +24,13 @@ This guide will give an overview on how KubeDB Ops-manager operator updates the 
 
 ## How Vertical Scaling Process Works
 
-The following diagram shows how KubeDB Ops-manager operator updates the resources of the `Ignite` database. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeDB Ops-manager operator updates the resources of the `Ignite`. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Vertical scaling process of Ignite" src="/docs">
+<figcaption align="center">Fig: Vertical scaling process of Ignite</figcaption>
+</figure>
+
 
 The vertical scaling process consists of the following steps:
 
