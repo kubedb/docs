@@ -317,6 +317,7 @@ Following table show what KubeDB does when you delete Pgpool CR for different de
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` deletion policy by default.
 
+> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
 
 ## spec.healthChecker
 It defines the attributes for the health checker. 

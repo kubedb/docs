@@ -898,6 +898,8 @@ Following table show what KubeDB does when you delete Elasticsearch CRD for diff
 
 If the `spec.deletionPolicy` is not specified, the KubeDB operator defaults it to `Delete`.
 
+> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
+
 ## spec.healthChecker
 It defines the attributes for the health checker.
 - `spec.healthChecker.periodSeconds` specifies how often to perform the health check.

@@ -550,6 +550,8 @@ Following table show what KubeDB does when you delete MSSQLServer crd for differ
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
 
+> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
+
 ### spec.halted
 Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
 
