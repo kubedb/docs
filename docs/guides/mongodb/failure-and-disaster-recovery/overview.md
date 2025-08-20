@@ -45,7 +45,7 @@ While these features require multiple MongoDB nodes, understanding how replica s
 To follow along with this tutorial, you will need:
 
 1. A running Kubernetes cluster.
-2. KubeDB [installed](https://kubedb.com/docs/{{< param "info.version" >}}/setup/install/kubedb/) in your cluster.
+2. KubeDB [installed](/docs/setup/README.md) in your cluster.
 3. kubectl command-line tool configured to communicate with your cluster.
 
 
