@@ -22,10 +22,11 @@ infrastructure where downtime can lead to major disruptions.
 
 When running `MariaDB` on Kubernetes using KubeDB, failover becomes more seamless. KubeDB supports two types of MariaDB clustering strategies:
 
-- **Standard Replication (`Master`-Replica):**
-This is a traditional setup where one pod acts as the `Master` (read/write) node, and others are replicas
-(read-only). If the `Master` fails, KubeDB detects it and automatically promotes a healthy replica from `Slave` nodes to become 
-the new `Master`. This mode supports automatic failover.
+- **Standard Replication (Master-Slave):**
+ Standard Replication is a mechanism where one server (master) handles both read and write operations,
+while one or more servers (slaves) replicate data asynchronously and serve read-only queries. 
+This setup improves data redundancy, availability, and read scalability, with automatic failover and
+load balancing supported through `MariaDB MaxScale Server`.
 
 >note: Writing to a slave replica may result in a binary log (binlog) conflict issue.
 
@@ -67,7 +68,7 @@ The following is an example `MariaDB` object which creates a single-master Maria
 apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
-  name: sample-mariadb
+  name: ha-mariadb
   namespace: demo
 spec:
   version: "10.6.16"
@@ -96,7 +97,7 @@ spec:
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/galera-cluster/examples/demo-1.yaml
-mariadb.kubedb.com/sample-mariadb created
+mariadb.kubedb.com/ha-mariadb created
 ```
 
 Here,
@@ -119,19 +120,19 @@ See the database is ready.
 ```shell
 $ kubectl get mariadb,petset,pods -n demo
 NAME                                VERSION   STATUS   AGE
-mariadb.kubedb.com/sample-mariadb   10.6.16   Ready    3m27s
+mariadb.kubedb.com/ha-mariadb   10.6.16   Ready    3m27s
 
 NAME                                             AGE
-petset.apps.k8s.appscode.com/sample-mariadb      3m20s
-petset.apps.k8s.appscode.com/sample-mariadb-mx   3m23s
+petset.apps.k8s.appscode.com/ha-mariadb      3m20s
+petset.apps.k8s.appscode.com/ha-mariadb-mx   3m23s
 
 NAME                      READY   STATUS    RESTARTS   AGE
-pod/sample-mariadb-0      2/2     Running   0          3m20s
-pod/sample-mariadb-1      2/2     Running   0          3m20s
-pod/sample-mariadb-2      2/2     Running   0          3m20s
-pod/sample-mariadb-mx-0   1/1     Running   0          3m23s
-pod/sample-mariadb-mx-1   1/1     Running   0          3m23s
-pod/sample-mariadb-mx-2   1/1     Running   0          3m23s
+pod/ha-mariadb-0      2/2     Running   0          3m20s
+pod/ha-mariadb-1      2/2     Running   0          3m20s
+pod/ha-mariadb-2      2/2     Running   0          3m20s
+pod/ha-mariadb-mx-0   1/1     Running   0          3m23s
+pod/ha-mariadb-mx-1   1/1     Running   0          3m23s
+pod/ha-mariadb-mx-2   1/1     Running   0          3m23s
 
 ```
 
@@ -141,25 +142,25 @@ Inspect who is `Master` and who is `slave`.
 # you can inspect the role of the pods 
 
 $ kubectl get pods -n demo --show-labels | grep role
-sample-mariadb-0      2/2     Running   0          4m9s    app.kubernetes.io/component=database,app.kubernetes.io/instance=sample-mariadb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mariadbs.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=sample-mariadb-598cd56869,kubedb.com/role=Master,statefulset.kubernetes.io/pod-name=sample-mariadb-0
-sample-mariadb-1      2/2     Running   0          4m9s    app.kubernetes.io/component=database,app.kubernetes.io/instance=sample-mariadb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mariadbs.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=sample-mariadb-598cd56869,kubedb.com/role=Slave,statefulset.kubernetes.io/pod-name=sample-mariadb-1
-sample-mariadb-2      2/2     Running   0          4m9s    app.kubernetes.io/component=database,app.kubernetes.io/instance=sample-mariadb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mariadbs.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=sample-mariadb-598cd56869,kubedb.com/role=Slave,statefulset.kubernetes.io/pod-name=sample-mariadb-2
+ha-mariadb-0      2/2     Running   0          4m9s    app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mariadb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mariadbs.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=ha-mariadb-598cd56869,kubedb.com/role=Master,statefulset.kubernetes.io/pod-name=ha-mariadb-0
+ha-mariadb-1      2/2     Running   0          4m9s    app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mariadb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mariadbs.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=ha-mariadb-598cd56869,kubedb.com/role=Slave,statefulset.kubernetes.io/pod-name=ha-mariadb-1
+ha-mariadb-2      2/2     Running   0          4m9s    app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mariadb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mariadbs.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=ha-mariadb-598cd56869,kubedb.com/role=Slave,statefulset.kubernetes.io/pod-name=ha-mariadb-2
 
 ```
 The pod having `kubedb.com/role=Master` is the `Master` and `kubedb.com/role=Slave` are the slaves.
 You can also check it on the cluster status:
 ```shell
-$ kubectl exec -it -n demo svc/sample-mariadb-mx -- bash
+$ kubectl exec -it -n demo svc/ha-mariadb-mx -- bash
 Defaulted container "maxscale" out of: maxscale, maxscale-init (init)
 bash-4.4$ maxctrl list servers
 ┌─────────┬─────────────────────────────────────────────────────────────┬──────┬─────────────┬─────────────────┬─────────┬────────────────────┐
 │ Server  │ Address                                                     │ Port │ Connections │ State           │ GTID    │ Monitor            │
 ├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
-│ server1 │ sample-mariadb-0.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Master, Running │ 0-1-217 │ ReplicationMonitor │
+│ server1 │ ha-mariadb-0.ha-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Master, Running │ 0-1-217 │ ReplicationMonitor │
 ├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
-│ server2 │ sample-mariadb-1.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-217 │ ReplicationMonitor │
+│ server2 │ ha-mariadb-1.ha-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-217 │ ReplicationMonitor │
 ├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
-│ server3 │ sample-mariadb-2.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-217 │ ReplicationMonitor │
+│ server3 │ ha-mariadb-2.ha-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-217 │ ReplicationMonitor │
 └─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴─────────┴────────────────────┘
 
 ```
@@ -168,13 +169,13 @@ Once the database is in running state we can connect to each of three nodes.
 We will use login credentials `MYSQL_ROOT_USERNAME` and `MYSQL_ROOT_PASSWORD` saved as container's environment variable.
 
 ### Create a Test User
-Writing to a slave replica can cause binlog conflicts. By default, replicas are read-only, but a 
+Writing to a slave replica can cause binlog conflicts. By default, slave-replicas are read-only, but a 
 root user (with super privileges) can still make changes. For security, avoid using the root user
 in production and create a dedicated user with only the needed permissions instead.
 ```bash
-$ kubectl exec -it -n demo svc/sample-mariadb -- bash
+$ kubectl exec -it -n demo svc/ha-mariadb -- bash
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
-mysql@sample-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql@ha-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 443
 Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
@@ -194,7 +195,7 @@ Query OK, 0 rows affected (0.001 sec)
 
 MariaDB [(none)]> quit
 Bye
-mysql@sample-mariadb-0:/$ exit
+mysql@ha-mariadb-0:/$ exit
 exit
 
 ```
@@ -202,8 +203,8 @@ exit
 
 ```bash
 # Master Node
-$ kubectl exec -it -n demo svc/sample-mariadb -- bash
-mysql@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
+$ kubectl exec -it -n demo svc/ha-mariadb -- bash
+mysql@ha-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 26
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -224,8 +225,8 @@ MariaDB [(none)]> quit;
 Bye
 
 # Slave Node
-$ kubectl exec -it -n demo svc/sample-mariadb-slave -- bash
-mysql@sample-mariadb-1:/ mariadb -utestuser -ptestpassword
+$ kubectl exec -it -n demo svc/ha-mariadb-slave -- bash
+mysql@ha-mariadb-1:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 94
 Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
@@ -255,14 +256,14 @@ In a MariaDB Replication Cluster, Only master member can write, and slave member
 **Check which is the master pod**
 ```shell
 $ kubectl get pods -n demo --show-labels | grep Master | awk '{ print $1 }'
-sample-mariadb-0
+ha-mariadb-0
 
 ```
 let's insert data in the master node
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+$ kubectl exec -it -n demo ha-mariadb-0 -- bash
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
-mysql@sample-mariadb-0:/$ mariadb -utestuser -ptestpassword
+mysql@ha-mariadb-0:/$ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 3459
 Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
@@ -290,14 +291,14 @@ MariaDB [(none)]> SELECT * FROM playground.equipment;
 
 MariaDB [(none)]> exit
 Bye
-mysql@sample-mariadb-0:/$ exit
+mysql@ha-mariadb-0:/$ exit
 exit
 ```
 You can read data from the slave nodes
 ```shell
-kubectl exec -it -n demo sample-mariadb-1 -- bash
+kubectl exec -it -n demo ha-mariadb-1 -- bash
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
-mysql@sample-mariadb-1:/$ mariadb -utestuser -ptestpassword
+mysql@ha-mariadb-1:/$ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 2304
 Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
@@ -316,7 +317,7 @@ MariaDB [(none)]> SELECT * FROM playground.equipment;
 
 MariaDB [(none)]> exit
 Bye
-mysql@sample-mariadb-1:/$ exit
+mysql@ha-mariadb-1:/$ exit
 exit
 
 ```
@@ -325,14 +326,14 @@ exit
 
 Before simulating failover let's know how it works with the help of maxscale.
 
-MaxScale uses a monitor (like the MariaDB-Monitor plugin) to track the health of database nodes in a replication setup (e.g. MariaDB master-replica). If the `Master` node becomes unavailable—due to a crash, network issue, or maintenance—
+MaxScale uses a monitor (like the MariaDB-Monitor plugin) to track the health of database nodes in a replication setup (e.g. MariaDB master-slave). If the `Master` node becomes unavailable—due to a crash, network issue, or maintenance—
 
 MaxScale:
 - Detects the Failure: The monitor(ReplicationMonitor) continuously checks node status (using MySQL pings or status variables).
 - Selects a New `Master`: It identifies the most suitable replica based on criteria like replication lag or server state.
-- Promotes the Replica: MaxScale executes commands to promote the chosen replica to `Master` (e.g. STOP SLAVE; RESET SLAVE ALL;).
-- Reconfigures Replicas: Other replicas are updated to replicate from the new `Master`.
-- Redirects Traffic: MaxScale’s router (RW-Split-Router) seamlessly directs write queries to the new `Master` and read queries to replicas.
+- Promotes the Replica: MaxScale executes commands to promote the chosen slave-replica to `Master` (e.g. STOP SLAVE; RESET SLAVE ALL;).
+- Reconfigures Replicas: Other slave-replicas are updated to replicate from the new `Master`.
+- Redirects Traffic: MaxScale’s router (RW-Split-Router) seamlessly directs write queries to the new `Master` and read queries to slave-replicas.
 
 This process happens automatically, typically within seconds, ensuring minimal disruption.
 Lets open another terminal and monitor the state of all the pods:
@@ -341,12 +342,12 @@ $ watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.
 ```
 You'll see:
 ```shell
-sample-mariadb-0 Master
-sample-mariadb-1 Slave
-sample-mariadb-2 Slave
-sample-mariadb-mx-0
-sample-mariadb-mx-1
-sample-mariadb-mx-2
+ha-mariadb-0 Master
+ha-mariadb-1 Slave
+ha-mariadb-2 Slave
+ha-mariadb-mx-0
+ha-mariadb-mx-1
+ha-mariadb-mx-2
 ```
 ### Hands-on Failover Testing
 
@@ -355,35 +356,35 @@ sample-mariadb-mx-2
 Let's delete the current `Master` pod and see how the role change happens almost immediately.
 
 ```shell
-$ kubectl delete pods -n demo sample-mariadb-0 
-pod "sample-mariadb-0" deleted
+$ kubectl delete pods -n demo ha-mariadb-0 
+pod "ha-mariadb-0" deleted
 ```
 You'll see the pods' status like that:
 ```
-sample-mariadb-0 Down
-sample-mariadb-1 Master
-sample-mariadb-2 Slave
-sample-mariadb-mx-0
-sample-mariadb-mx-1
-sample-mariadb-mx-2
+ha-mariadb-0 Down
+ha-mariadb-1 Master
+ha-mariadb-2 Slave
+ha-mariadb-mx-0
+ha-mariadb-mx-1
+ha-mariadb-mx-2
 
 ```
-After few minutes `sample-mariadb-0` will back as `Slave` pod 
+After few minutes `ha-mariadb-0` will back as `Slave` pod 
 ```shell
-sample-mariadb-0 Slave
-sample-mariadb-1 Master
-sample-mariadb-2 Slave
-sample-mariadb-mx-0
-sample-mariadb-mx-1
-sample-mariadb-mx-2
+ha-mariadb-0 Slave
+ha-mariadb-1 Master
+ha-mariadb-2 Slave
+ha-mariadb-mx-0
+ha-mariadb-mx-1
+ha-mariadb-mx-2
 ```
 
 Now we know how failover is done, let's check if the new `Master` is working.
 
 ```shell
-$ kubectl exec -it -n demo sample-mariadb-1 -- bash
+$ kubectl exec -it -n demo ha-mariadb-1 -- bash
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
-mysql@sample-mariadb-1:/$ mariadb -utestuser -ptestpassword
+mysql@ha-mariadb-1:/$ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 652
 Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
@@ -409,17 +410,17 @@ MariaDB [(none)]> CREATE DATABASE playground2;
 Query OK, 1 row affected (0.000 sec)
 MariaDB [(none)]> exit
 Bye
-mysql@sample-mariadb-1:/$ exit
+mysql@ha-mariadb-1:/$ exit
 exit
 
 ```
 
-Lets check if the new Slave(`sample-mariadb-0`) got the updated data from new `Master`, `sample-mariadb-1`.
+Lets check if the new Slave(`ha-mariadb-0`) got the updated data from new `Master`, `ha-mariadb-1`.
 
 ```shell
-$  kubectl exec -it -n demo sample-mariadb-0 -- bash
+$  kubectl exec -it -n demo ha-mariadb-0 -- bash
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
-mysql@sample-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql@ha-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 340
 Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
@@ -444,42 +445,42 @@ MariaDB [(none)]> SHOW DATABASES;
 
 MariaDB [(none)]> exit 
 Bye
-mysql@sample-mariadb-0:/$ exit
+mysql@ha-mariadb-0:/$ exit
 exit
 
 ```
 
-#### Case 2: Delete the current `Master` and One replica
+#### Case 2: Delete the current `Master` and One slave
 
 ```shell
-$ kubectl delete pods -n demo sample-mariadb-1 sample-mariadb-2
-pod "sample-mariadb-1" deleted
-pod "sample-mariadb-2" deleted
+$ kubectl delete pods -n demo ha-mariadb-1 ha-mariadb-2
+pod "ha-mariadb-1" deleted
+pod "ha-mariadb-2" deleted
 ```
 Again we can see the failover happened pretty quickly.
 ```shell
-sample-mariadb-0 Master
-sample-mariadb-1 Down
-sample-mariadb-2 Down
-sample-mariadb-mx-0
-sample-mariadb-mx-1
-sample-mariadb-mx-2
+ha-mariadb-0 Master
+ha-mariadb-1 Down
+ha-mariadb-2 Down
+ha-mariadb-mx-0
+ha-mariadb-mx-1
+ha-mariadb-mx-2
 ```
 After 10-30 second, the deleted pods will be back and will have its role and both will have Slave role.
 ```shell
-sample-mariadb-0 Master
-sample-mariadb-1 Slave
-sample-mariadb-2 Slave
-sample-mariadb-mx-0
-sample-mariadb-mx-1
-sample-mariadb-mx-2
+ha-mariadb-0 Master
+ha-mariadb-1 Slave
+ha-mariadb-2 Slave
+ha-mariadb-mx-0
+ha-mariadb-mx-1
+ha-mariadb-mx-2
 ```
-Lets validate the cluster state from new `Master`(`sample-mariadb-0`).
+Lets validate the cluster state from new `Master`(`ha-mariadb-0`).
 
 ```shell
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+$ kubectl exec -it -n demo ha-mariadb-0 -- bash
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
-mysql@sample-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+mysql@ha-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 377
 Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
@@ -507,15 +508,15 @@ Query OK, 1 row affected (0.000 sec)
 
 MariaDB [(none)]> exit
 Bye
-mysql@sample-mariadb-0:/$ exit
+mysql@ha-mariadb-0:/$ exit
 exit
 
 ```
-Let's check whether the Slave nodes, `sample-mariadb-2` gets all the previous data 
+Let's check whether the Slave nodes, `ha-mariadb-2` gets all the previous data 
 ```shell
-kubectl exec -it -n demo sample-mariadb-2 -- bash
+kubectl exec -it -n demo ha-mariadb-2 -- bash
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
-mysql@sample-mariadb-2:/$ mariadb -utestuser -ptestpassword
+mysql@ha-mariadb-2:/$ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 47
 Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
@@ -542,86 +543,86 @@ MariaDB [(none)]> SHOW DATABASES;
 
 ```
 
-#### Case3: Delete any of the replica's
+#### Case3: Delete any of the slave's
 
 Let's delete both of the slave nodes.
 
 ```shell
-kubectl delete pods -n demo sample-mariadb-1 sample-mariadb-2
-pod "sample-mariadb-1" deleted
-pod "sample-mariadb-2" deleted
+kubectl delete pods -n demo ha-mariadb-1 ha-mariadb-2
+pod "ha-mariadb-1" deleted
+pod "ha-mariadb-2" deleted
 
 ```
 
 ```shell
 
-sample-mariadb-0 Master
-sample-mariadb-1 Down
-sample-mariadb-2 Down
-sample-mariadb-mx-0
-sample-mariadb-mx-1
-sample-mariadb-mx-2
+ha-mariadb-0 Master
+ha-mariadb-1 Down
+ha-mariadb-2 Down
+ha-mariadb-mx-0
+ha-mariadb-mx-1
+ha-mariadb-mx-2
 ```
 
 Shortly both of the pods will be back with its role.
 
 ```shell
-sample-mariadb-0 Master
-sample-mariadb-1 Slave
-sample-mariadb-2 Slave
-sample-mariadb-mx-0
-sample-mariadb-mx-1
-sample-mariadb-mx-2
+ha-mariadb-0 Master
+ha-mariadb-1 Slave
+ha-mariadb-2 Slave
+ha-mariadb-mx-0
+ha-mariadb-mx-1
+ha-mariadb-mx-2
 ```
 
 
-#### Case 4: Delete both `Master` and all replicas
+#### Case 4: Delete both `Master` and all slave-replicas
 
 Let's delete all the pods.
 
 ```shell
-$ kubectl delete pods -n demo sample-mariadb-0 sample-mariadb-1 sample-mariadb-2
-pod "sample-mariadb-0" deleted
-pod "sample-mariadb-1" deleted
-pod "sample-mariadb-2" deleted
+$ kubectl delete pods -n demo ha-mariadb-0 ha-mariadb-1 ha-mariadb-2
+pod "ha-mariadb-0" deleted
+pod "ha-mariadb-1" deleted
+pod "ha-mariadb-2" deleted
 
 ```
 ```shell
-sample-mariadb-0 Down
-sample-mariadb-1 Down
-sample-mariadb-2 Down
-sample-mariadb-mx-0
-sample-mariadb-mx-1
-sample-mariadb-mx-2
+ha-mariadb-0 Down
+ha-mariadb-1 Down
+ha-mariadb-2 Down
+ha-mariadb-mx-0
+ha-mariadb-mx-1
+ha-mariadb-mx-2
 
 ```
 
 Within 20-30 second, all of the pod should be back.
 
 ```shell
-sample-mariadb-0 Master
-sample-mariadb-1 Slave
-sample-mariadb-2 Slave
-sample-mariadb-mx-0
-sample-mariadb-mx-1
-sample-mariadb-mx-2
+ha-mariadb-0 Master
+ha-mariadb-1 Slave
+ha-mariadb-2 Slave
+ha-mariadb-mx-0
+ha-mariadb-mx-1
+ha-mariadb-mx-2
 
 ```
 
 Lets verify the cluster state now.
 
 ```shell
-$ kubectl exec -it -n demo svc/sample-mariadb-mx -- bash
+$ kubectl exec -it -n demo svc/ha-mariadb-mx -- bash
 Defaulted container "maxscale" out of: maxscale, maxscale-init (init)
 bash-4.4$ maxctrl list servers
 ┌─────────┬─────────────────────────────────────────────────────────────┬──────┬─────────────┬─────────────────┬──────────┬────────────────────┐
 │ Server  │ Address                                                     │ Port │ Connections │ State           │ GTID     │ Monitor            │
 ├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼──────────┼────────────────────┤
-│ server1 │ sample-mariadb-0.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Master, Running │ 0-1-3297 │ ReplicationMonitor │
+│ server1 │ ha-mariadb-0.ha-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Master, Running │ 0-1-3297 │ ReplicationMonitor │
 ├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼──────────┼────────────────────┤
-│ server2 │ sample-mariadb-1.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-3297 │ ReplicationMonitor │
+│ server2 │ ha-mariadb-1.ha-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-3297 │ ReplicationMonitor │
 ├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼──────────┼────────────────────┤
-│ server3 │ sample-mariadb-2.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-3297 │ ReplicationMonitor │
+│ server3 │ ha-mariadb-2.ha-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-3297 │ ReplicationMonitor │
 └─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴──────────┴────────────────────┘
 
 ```
@@ -629,8 +630,8 @@ bash-4.4$ maxctrl list servers
 ## CleanUp
 For cleaning up what we created in this tutorial follow the following command:
 ```shell
-$ kubectl delete mariadb -n demo sample-mariadb
-mariadb.kubedb.com "sample-mariadb" deleted
+$ kubectl delete mariadb -n demo ha-mariadb
+mariadb.kubedb.com "ha-mariadb" deleted
 $ kubectl delete ns demo
 namespace "demo" deleted
 ```
