@@ -90,4 +90,3 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 ## Next Steps
 
 - Learn about ClickHouse CRD [here](/docs/guides/clickhouse/concepts/clickhouse.md).
-- Deploy your first ClickHouse database with KubeDB by following the guide [here](/docs/guides/clickhouse/quickstart/guide/quickstart.md).
