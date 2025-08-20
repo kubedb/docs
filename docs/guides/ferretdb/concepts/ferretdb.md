@@ -250,6 +250,8 @@ Following table show what KubeDB does when you delete FerretDB CR for different 
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` deletion policy by default.
 
+> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
+
 ### spec.server
 
 After FerretDB version 2.0.0, FerretDB uses PostgreSQL + DocumentDB extension as the database storage and currently supports replication using the Write-Ahead Logging (WAL) streaming method.
