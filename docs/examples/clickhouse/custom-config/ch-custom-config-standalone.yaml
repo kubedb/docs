@@ -6,12 +6,12 @@ metadata:
 spec:
   version: 24.4.1
   configSecret:
-    name: ch-configuration
+    name: clickhouse-configuration
   replicas: 1
   storage:
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 2Gi
   deletionPolicy: WipeOut

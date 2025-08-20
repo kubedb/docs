@@ -17,13 +17,22 @@ aliases:
 
 ## Supported MySQL Features
 
-| Features                                                | Availability |
-|---------------------------------------------------------|:------------:|
-| ClusterTopology                                         |   &#10003;   |
-| Initialize using Script (\*.sql, \*sql.gz and/or \*.sh) |   &#10003;   |
-| Custom Configuration                                    |   &#10003;   |
-| Builtin Prometheus Discovery                            |   &#10003;   |
-| Using Prometheus operator                               |   &#10003;   |
+| Features                                                      | Availability |
+|---------------------------------------------------------------|:------------:|
+| ClusterTopology                                               |   &#10003;   |
+| Initialize using Script (\*.sql, \*sql.gz and/or \*.sh)       |   &#10003;   |
+| Custom Configuration                                          |   &#10003;   |
+| Builtin Prometheus Discovery                                  |   &#10003;   |
+| Using Prometheus operator                                     |   &#10003;   |
+| Authentication & Authorization (TLS)                          |   &#10003;   |
+| Externally manageable Auth Secret                             |   &#10003;   |
+| Reconfigurable TLS Certificates (Add, Remove, Rotate, Update) |   &#10003;   |
+
+## Supported ClickHouse Versions
+
+KubeDB supports the following ClickHouse Versions.
+- `24.4.1`
+- `25.7.1`
 
 ## Life Cycle of a ClickHouse Object
 

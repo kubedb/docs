@@ -2,7 +2,7 @@
 title: ClickHouse
 menu:
   docs_{{ .version }}:
-    identifier: guides-clickhouse
+    identifier: ch-clickhouse-guides
     name: ClickHouse
     parent: guides
     weight: 10
