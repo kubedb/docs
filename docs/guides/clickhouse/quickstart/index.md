@@ -355,105 +355,29 @@ Query id: 12353f2c-d6d1-4dbc-a4cf-aa2f6a5e0ce4
 5 rows in set. Elapsed: 0.004 sec.
 
 ```
-## Database DeletionPolicy
+## spec.deletionPolicy
 
-This field is used to regulate the deletion process of the related resources when `ClickHouse` object is deleted. User can set the value of this field according to their needs. The available options and their use case scenario is described below:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Cassandra` crd or which resources KubeDB should keep or delete when you delete `Cassandra` crd. KubeDB provides following four deletion policies:
 
-**DoNotTerminate:**
+- DoNotTerminate
+- WipeOut
+- Halt
+- Delete
 
-When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
-```bash
-$ kubectl delete my clickhouse-quickstart -n demo
-Error from server (BadRequest): admission webhook "clickhouse.validators.kubedb.com" denied the request: clickhouse "clickhouse-quickstart" can't be halted. To delete, change spec.deletionPolicy
-```
+Following table show what KubeDB does when you delete Cassandra crd for different termination policies,
 
-Now, run `kubectl edit my clickhouse-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` (which deletes the clickhouse object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
+| Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
+| ----------------------------------- | :------------: | :------: | :------: | :------: |
+| 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
+| 2. Delete PetSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
+| 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-Learn details of all `DeletionPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specdeletionpolicy).
-
-**Halt:**
-
-Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `ClickHouse` object `deletionPolicy` to `Halt`.
-
-When the [DeletionPolicy](/docs/guides/clickhouse/concepts/database/index.md#specdeletionpolicy) is set to `halt` and the ClickHouse object is deleted, the KubeDB operator will delete the PetSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `deletionPolicy` to `halt` in existing database using `edit` command for testing.
-
-At first, run `kubectl edit ch clickhouse-quickstart -n demo` to set `spec.deletionPolicy` to `Halt`. Then delete the clickhouse object,
-
-```bash
-$ kubectl delete ch clickhouse-quickstart -n demo
-clickhouse.kubedb.com "clickhouse-quickstart" deleted
-```
-
-Now, run the following command to get all clickhouse resources in `demo` namespaces,
-
-```bash
-$ kubectl get sts,svc,secret,pvc -n demo
-NAME                           TYPE                                  DATA   AGE
-secret/default-token-lgbjm     kubernetes.io/service-account-token   3      23h
-secret/clickhouse-quickstart-auth   Opaque                                2      20h
-
-NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-clickhouse-quickstart-0   Bound    pvc-716f627c-9aa2-47b6-aa64-a547aab6f55c   1Gi        RWO            standard       20h
-```
-
-From the above output, you can see that all clickhouse resources(`PetSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your clickhouse again using this resources.
-
->You can also set the `deletionPolicy` to `Halt`(deprecated). It's behavior same as `halt` and right now `Halt` is replaced by `Halt`.
-
-**Delete:**
-
-If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `ClickHouse` object `deletionPolicy` to `Delete`. In this setting, `PetSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
-
-When the [DeletionPolicy](/docs/guides/clickhouse/concepts/database/index.md#specdeletionpolicy) is set to `Delete` and the ClickHouse object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
-
-Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
-
-```bash
-$ kubectl delete my clickhouse-quickstart -n demo
-clickhouse.kubedb.com "clickhouse-quickstart" deleted
-```
-
-Now, run the following command to get all clickhouse resources in `demo` namespaces,
-
-```bash
-$ kubectl get sts,svc,secret,pvc -n demo
-NAME                           TYPE                                  DATA   AGE
-secret/default-token-lgbjm     kubernetes.io/service-account-token   3      24h
-secret/clickhouse-quickstart-auth   Opaque
-```
-
-From the above output, you can see that all clickhouse resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your clickhouse using `snapshots`(if previously taken) and `secret`.
-
->If you don't set the deletionPolicy then the kubeDB set the DeletionPolicy to Delete by-default.
-
-**WipeOut:**
-
-You can totally delete the `ClickHouse` database and relevant resources without any tracking by setting `deletionPolicy` to `WipeOut`. KubeDB operator will delete all relevant resources of this `ClickHouse` database (i.e, `PVCs`, `Secrets`, `Snapshots`) when the `deletionPolicy` is set to `WipeOut`.
-
-Suppose, we have a database with `deletionPolicy` set to `WipeOut`. Now, are going to delete the database using the following command:
-
-```yaml
-$ kubectl delete my clickhouse-quickstart -n demo
-clickhouse.kubedb.com "clickhouse-quickstart" deleted
-```
-
-Now, run the following command to get all clickhouse resources in `demo` namespaces,
-
-```bash
-$ kubectl get sts,svc,secret,pvc -n demo
-No resources found in demo namespace.
-```
-
-From the above output, you can see that all clickhouse resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `Delete`.
-
->Be careful when you set the `deletionPolicy` to `Delete`. Because there is no option to trace the database resources if once deleted the database.
-
-## Database Halted
-
-If you want to delete ClickHouse resources(`PetSet`,`Service`, etc.) without deleting the `ClickHouse` object, `PVCs` and `Secret` you have to set the `spec.halted` to `true`. KubeDB operator will be able to delete the ClickHouse related resources except the `ClickHouse` object, `PVCs` and `Secret`.
-
-Suppose we have a database running `clickhouse-quickstart` in our cluster. Now, we are going to set `spec.halted` to `true` in `ClickHouse`  object by running `kubectl edit -n demo clickhouse-quickstart` command.
+If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
 
 Run the following command to get ClickHouse resources,
 
