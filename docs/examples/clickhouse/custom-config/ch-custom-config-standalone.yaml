@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ClickHouse
+metadata:
+  name: ch-standalone
+  namespace: demo
+spec:
+  version: 24.4.1
+  configSecret:
+    name: clickhouse-configuration
+  replicas: 1
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  deletionPolicy: WipeOut
