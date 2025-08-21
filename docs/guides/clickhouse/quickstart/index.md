@@ -419,3 +419,4 @@ If you are just testing some basic functionalities, you might want to avoid addi
 ## Next Steps
 
 
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
