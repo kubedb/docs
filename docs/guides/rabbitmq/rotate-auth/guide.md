@@ -578,7 +578,6 @@ secret "rabbitmq-auth " deleted
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/rabbitmq/backup/overview/index.md) SQL Server using KubeStash.
-- Want to set up SQL Server Availability Group clusters? Check how to [Configure SQL Server Availability Gruop Cluster](/docs/guides/rabbitmq/clustering/ag_cluster.md)
+
 - Detail concepts of [RabbitMQ object](/docs/guides/rabbitmq/concepts/rabbitmq.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
