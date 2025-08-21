@@ -1,5 +1,5 @@
 ---
-title: Failover & Disaster Recovery Microsoft SQL ServerFailover & Disaster Recovery Microsoft SQL Server Guide
+title: Failover & Disaster Recovery Overview Microsoft SQL Server
 menu:
   docs_{{ .version }}:
     identifier: ms-failover-disaster-recovery
@@ -215,7 +215,7 @@ mssqlserver-ag-cluster-2   2/2     Running   0          10m   app.kubernetes.io/
 The pod having `kubedb.com/role=primary` is the primary and `kubedb.com/role=secondary` are the secondaries.
 
 
-Lets create a table in the primary.
+Let's create a table in the primary.
 
 ```shell
 # find the primary pod
@@ -321,7 +321,7 @@ mssqlserver-ag-cluster-2 secondary
 
 #### Case 1: Delete the current primary
 
-Lets delete the current primary and see how the role change happens almost immediately.
+Let's delete the current primary and see how the role change happens almost immediately.
 
 ```shell
 $ kubectl delete pods -n demo mssqlserver-ag-cluster-0 
@@ -342,22 +342,6 @@ You see almost immediately the failover happened. Here's what happened internall
 - Now this leader switch only means raft leader switch, not the **database leader switch(aka failover)** yet. So `mssqlserver-ag-cluster-2` still running as replica. It will be primary after the next step.
 - Once raft sidecar inside `mssqlserver-ag-cluster-2` see it has become leader of the cluster, it initiates the database failover process and start running as primary.
 - So, now `mssqlserver-ag-cluster-2` is running as primary.
-
-```yaml
-# You can find this part in your db yaml by running
-# kubectl get ms -n demo mssqlserver-ag-cluster -oyaml
-# under db.spec section
-# vist below link for more information
-# https://github.com/kubedb/apimachinery/blob/97c18a62d4e33a112e5f887dc3ad910edf3f3c82/apis/kubedb/v1/MSSQLServer_types.go#L204
-
-leaderElection:
-  electionTick: 10
-  heartbeatTick: 1
-  period: 300ms
-  transferLeadershipInterval: 1s
-  transferLeadershipTimeout: 1m0s
-
-```
 
 Now we know how failover is done, let's check if the new primary `mssqlserver-ag-cluster-2` is working.
 
@@ -398,7 +382,7 @@ mssqlserver-ag-cluster-2 primary
 
 ```
 
-Lets check if the secondary(`mssqlserver-ag-cluster-0`) got the updated data from new primary `mssqlserver-ag-cluster-2`.
+Let's check if the secondary(`mssqlserver-ag-cluster-0`) got the updated data from new primary `mssqlserver-ag-cluster-2`.
 
 ```shell
 $ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
@@ -421,8 +405,7 @@ Failed to update database "agdb1" because the database is read-only.
 
 ```
 
-#### Case 2: Delete the current primary and One replica
-
+#### Case 2: Delete the current primary and one secondary
 ```shell
 $ kubectl delete pods -n demo mssqlserver-ag-cluster-1 mssqlserver-ag-cluster-2
 pod "mssqlserver-ag-cluster-1" deleted
@@ -443,7 +426,7 @@ mssqlserver-ag-cluster-1 secondary
 mssqlserver-ag-cluster-2 secondary
 ```
 
-Lets validate the cluster state from new primary(`mssqlserver-ag-cluster-0`).
+Let's validate the cluster state from new primary(`mssqlserver-ag-cluster-0`).
 
 ```shell
 $ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
@@ -481,7 +464,7 @@ mssqlserver-ag-cluster-1 secondary
 mssqlserver-ag-cluster-2 secondary
 
 ```
-Lets verify cluster state.
+Let's verify cluster state.
 ```shell
 $ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
 mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf" 
@@ -525,7 +508,7 @@ mssqlserver-ag-cluster-1 secondary
 mssqlserver-ag-cluster-2 secondary
 
 ```
-Lets verify the cluster state now.
+Let's verify the cluster state now.
 
 ```shell
 $  kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
@@ -544,8 +527,7 @@ C4FADE0D-BC82-4D16-95E2-50AA6BE5BD8F BBCC64C9-E0E3-5985-6F01-884248E3DDC6       
 
 ```
 
-> **We make sure the pod with highest lsn (you can think lsn as the highest data point available in
-your cluster) always run as primary, so if a case occur where the pod with highest lsn is being 
+> **We make sure the pod with highest lsn for all databases (you can think lsn as the highest data point available in the databases) always run as primary, so if a case occur where the pod with highest lsn is being 
 terminated, we will not perform the failover until the highest lsn pod is back online. 
 
 
@@ -578,7 +560,7 @@ spec:
 ```
 
 
-For more details, please check the full section [here](/docs/guides/mssqlserver/volume-expansion/Overview/overview.md).
+For more details, please check the full section [here](/docs/guides/mssqlserver/volume-expansion/overview.md).
 
 > **Note**: There are two ways to update your volume: 1.Online 2.Offline. Which Mode to choose? <br>
 It depends on your `StorageClass`. If your storageclass supports online volume expansion, you can go with it. Otherwise, you can go with `Offline` Volume Expansion.
@@ -595,12 +577,8 @@ $ kubectl delete ns demo
 ## Next Steps
 
 - Learn about [PITR](/docs/guides/mssqlserver/pitr/archiver.md)
-- Learn about [backup and restore](/docs/guides/mssqlserver/backup/stash/overview/index.md) MSSQLServer database using Stash.
-- Learn about initializing [MSSQLServer with Script](/docs/guides/mssqlserver/initialization/script_source.md).
-- Learn about [custom MSSQLServerVersions](/docs/guides/mssqlserver/custom-versions/setup.md).
-- Want to setup MSSQLServer cluster? Check how to [configure Highly Available MSSQLServer Cluster](/docs/guides/mssqlserver/clustering/ha_cluster.md)
-- Monitor your MSSQLServer database with KubeDB using [built-in Prometheus](/docs/guides/mssqlserver/monitoring/using-builtin-prometheus.md).
+- Learn about [backup and restore](/docs/guides/mssqlserver/backup/overview/index.md) MSSQLServer database using Stash.
+- Want to setup MSSQLServer cluster? Check how to [configure Highly Available MSSQLServer Cluster](/docs/guides/mssqlserver/clustering/ag_cluster.md)
 - Monitor your MSSQLServer database with KubeDB using [Prometheus operator](/docs/guides/mssqlserver/monitoring/using-prometheus-operator.md).
 - Detail concepts of [MSSQLServer object](/docs/guides/mssqlserver/concepts/mssqlserver.md).
-- Use [private Docker registry](/docs/guides/mssqlserver/private-registry/using-private-registry.md) to deploy MSSQLServer with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
