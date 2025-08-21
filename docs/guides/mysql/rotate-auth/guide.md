@@ -1,5 +1,5 @@
 ---
-title: Mysql Rotateauth Guide
+title: MySQL Rotateauth Guide
 menu:
 docs_{{ .version }}:
 identifier: mysql-rotate-auth-guide
@@ -10,9 +10,9 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Rotate Authentication of Mysql
+# Rotate Authentication of MySQL
 
-**Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `Mysql`
+**Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `MySQL`
 user's authentication credentials using a `MySQLopsrequest`. There are two ways to perform this
 rotation.
 
@@ -48,77 +48,24 @@ updates the existing secret with the new credential.
 When you have installed KubeDB, it has created `MySQLVersion` crd for all supported MySQL versions. Check it by using the following command,
 
 ```bash
-$ kubectl get Mysqlversions
+$ kubectl get mysqlversion
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
-5               5         Official       ghcr.io/kubedb/mysql:5                        true         25h
-5-v1            5         Official       ghcr.io/kubedb/mysql:5-v1                     true         25h
-5.7             5.7       Official       ghcr.io/kubedb/mysql:5.7                      true         25h
-5.7-v1          5.7       Official       ghcr.io/kubedb/mysql:5.7-v1                   true         25h
-5.7-v2          5.7.25    Official       ghcr.io/kubedb/mysql:5.7-v2                   true         25h
-5.7-v3          5.7.25    Official       ghcr.io/kubedb/mysql:5.7.25                   true         25h
-5.7-v4          5.7.29    Official       ghcr.io/kubedb/mysql:5.7.29                   true         25h
-5.7.25          5.7.25    Official       ghcr.io/kubedb/mysql:5.7.25                   true         25h
-5.7.25-v1       5.7.25    Official       ghcr.io/kubedb/mysql:5.7.25-v1                true         25h
-5.7.25-v2       5.7.25    Official       ghcr.io/kubedb/mysql:5.7.25-v2                true         25h
-5.7.25-v3       5.7.25    Official       mysql:5.7.25                                  true         25h
-5.7.29          5.7.29    Official       ghcr.io/kubedb/mysql:5.7.29                   true         25h
-5.7.29-v1       5.7.29    Official       mysql:5.7.29                                  true         25h
-5.7.29-v2       5.7.29    Official       mysql:5.7.29                                  true         25h
-5.7.31          5.7.31    Official       ghcr.io/kubedb/mysql:5.7.31                   true         25h
-5.7.31-v1       5.7.31    Official       ghcr.io/kubedb/mysql:5.7.31-v1                true         25h
-5.7.31-v2       5.7.31    Official       mysql:5.7.31                                  true         25h
-5.7.33          5.7.33    Official       ghcr.io/kubedb/mysql:5.7.33                   true         25h
-5.7.33-v1       5.7.33    Official       mysql:5.7.33                                  true         25h
-5.7.35          5.7.35    Official       ghcr.io/kubedb/mysql:5.7.35                   true         25h
-5.7.35-v1       5.7.35    Official       mysql:5.7.35                                  true         25h
-5.7.36          5.7.36    Official       mysql:5.7.36                                  true         25h
-5.7.41          5.7.41    Official       ghcr.io/appscode-images/mysql:5.7.41-oracle   true         25h
-5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                25h
-5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                25h
-8               8         Official       ghcr.io/kubedb/mysql:8                        true         25h
-8-v1            8         Official       ghcr.io/kubedb/mysql:8-v1                     true         25h
-8.0             8.0       Official       ghcr.io/kubedb/mysql:8.0                      true         25h
-8.0-v1          8.0.3     Official       ghcr.io/kubedb/mysql:8.0-v1                   true         25h
-8.0-v2          8.0.14    Official       ghcr.io/kubedb/mysql:8.0-v2                   true         25h
-8.0-v3          8.0.20    Official       ghcr.io/kubedb/mysql:8.0.20                   true         25h
-8.0.14          8.0.14    Official       ghcr.io/kubedb/mysql:8.0.14                   true         25h
-8.0.14-v1       8.0.14    Official       ghcr.io/kubedb/mysql:8.0.14-v1                true         25h
-8.0.14-v2       8.0.14    Official       ghcr.io/kubedb/mysql:8.0.14-v2                true         25h
-8.0.14-v3       8.0.14    Official       mysql:8.0.14                                  true         25h
-8.0.17          8.0.17    Official       mysql:8.0.17                                  true         25h
-8.0.20          8.0.20    Official       ghcr.io/kubedb/mysql:8.0.20                   true         25h
-8.0.20-v1       8.0.20    Official       ghcr.io/kubedb/mysql:8.0.20-v1                true         25h
-8.0.20-v2       8.0.20    Official       mysql:8.0.20                                  true         25h
-8.0.21          8.0.21    Official       ghcr.io/kubedb/mysql:8.0.21                   true         25h
-8.0.21-v1       8.0.21    Official       ghcr.io/kubedb/mysql:8.0.21-v1                true         25h
-8.0.21-v2       8.0.21    Official       mysql:8.0.21                                  true         25h
-8.0.23          8.0.23    Official       ghcr.io/kubedb/mysql:8.0.23                   true         25h
-8.0.23-v1       8.0.23    Official       mysql:8.0.23                                  true         25h
-8.0.26          8.0.26    Official       ghcr.io/kubedb/mysql:8.0.26                   true         25h
-8.0.27          8.0.27    Official       mysql:8.0.27                                  true         25h
-8.0.27-innodb   8.0.27    MySQL          mysql/mysql-server:8.0.27                     true         25h
-8.0.29          8.0.29    Official       ghcr.io/appscode-images/mysql:8.0.29-oracle   true         25h
-8.0.3           8.0.3     Official       ghcr.io/kubedb/mysql:8.0.3                    true         25h
-8.0.3-v1        8.0.3     Official       ghcr.io/kubedb/mysql:8.0.3-v1                 true         25h
-8.0.3-v2        8.0.3     Official       ghcr.io/kubedb/mysql:8.0.3-v2                 true         25h
-8.0.3-v3        8.0.3     Official       mysql:8.0.3                                   true         25h
-8.0.3-v4        8.0.3     Official       mysql:8.0.3                                   true         25h
-8.0.31          8.0.31    Official       ghcr.io/appscode-images/mysql:8.0.31-oracle   true         25h
-8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                25h
-8.0.32          8.0.32    Official       ghcr.io/appscode-images/mysql:8.0.32-oracle   true         25h
-8.0.35          8.0.35    Official       ghcr.io/appscode-images/mysql:8.0.35-oracle                25h
-8.0.36          8.0.36    Official       ghcr.io/appscode-images/mysql:8.0.36-debian                25h
-8.1.0           8.1.0     Official       ghcr.io/appscode-images/mysql:8.1.0-oracle                 25h
-8.2.0           8.2.0     Official       ghcr.io/appscode-images/mysql:8.2.0-oracle                 25h
-8.4.2           8.4.2     Official       ghcr.io/appscode-images/mysql:8.4.2-oracle                 25h
-8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 25h
-9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 25h
-9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 25h
+5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                12d
+5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                12d
+8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                12d
+8.0.35          8.0.35    Official       ghcr.io/appscode-images/mysql:8.0.35-oracle                12d
+8.0.36          8.0.36    Official       ghcr.io/appscode-images/mysql:8.0.36-debian                12d
+8.1.0           8.1.0     Official       ghcr.io/appscode-images/mysql:8.1.0-oracle                 12d
+8.2.0           8.2.0     Official       ghcr.io/appscode-images/mysql:8.2.0-oracle                 12d
+8.4.2           8.4.2     Official       ghcr.io/appscode-images/mysql:8.4.2-oracle                 12d
+8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 12d
+9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 12d
+9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 12d
 ```
 
-## Create a Mysql server
+## Create a Mysql Database
 
-KubeDB implements a `Mysql` CRD to define the specification of a Mysql server. Below is the `Mysql`
+KubeDB implements a `MySQL` CRD to define the specification of a MySQL server. Below is the `MySQL`
 object created in this tutorial.
 
 ```yaml
@@ -145,7 +92,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mysql.kubedb.com/mysql-quickstart created
 ```
 
-## Verify authentication
+##Create a Mysql Database
 The user can verify whether they are authorized by executing a query directly in the database. To
 do this, the user needs `username` and `password` in order to connect to the database. Below is an
 example showing how to retrieve the credentials from the Secret.
@@ -193,9 +140,9 @@ mysql> SHOW DATABASES;
 If you can access the data table and run queries, it means the secrets are working correctly.
 ## Create RotateAuth MySQLopsrequest
 
-#### 1. Using operator generated credentials:
+#### 1. Using Operator Generated Credentials:
 
-In order to rotate authentication to the Mysql using operator generated, we have to create a 
+In order to rotate authentication to the MySQL using operator generated, we have to create a 
 `MySQLopsrequest` CR with `RotateAuth` type. Below is the YAML of the `MySQLopsrequest` CRO that
 we are going to create,
 ```yaml
@@ -213,8 +160,8 @@ spec:
 ```
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `mysql-quickstart` cluster.
-- `spec.type` specifies that we are performing `RotateAuth` on Mysql.
+- `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `mysql-quickstart` instance.
+- `spec.type` specifies that we are performing `RotateAuth` on MySQL.
 
 Let's create the `MySQLopsrequest` CR we have shown above,
 ```shell
@@ -223,13 +170,13 @@ Let's create the `MySQLopsrequest` CR we have shown above,
 ```
 Let's wait for `MySQLopsrequest` to be `Successful`. Run the following command to watch `MySQLopsrequest` CRO
 ```shell
- $ kubectl get MySQLopsrequest -n demo
+ $ kubectl get MySQLOpsRequest-n demo
 NAME                          TYPE         STATUS       AGE
 myops-rotate-auth-generated   RotateAuth   Successful   82s
 ```
 If we describe the `MySQLopsrequest` we will get an overview of the steps that were followed.
 ```shell
-$ kubectl describe MySQLopsrequest -n demo myops-rotate-auth-generated
+$ kubectl describe MySQLOpsRequest-n demo myops-rotate-auth-generated
 Name:         myops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -373,7 +320,7 @@ bash-5.1$
 
 ```
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
-#### 2. Using user created credentials
+#### 2.Using User Created Credentials
 
 At first, we need to create a secret with `kubernetes.io/basic-auth` type using custom password.
 Below is the command to create a secret with `kubernetes.io/basic-auth` type,
@@ -419,14 +366,14 @@ MySQLopsrequest.ops.kubedb.com/myops-rotate-auth-user created
 Let’s wait for `MySQLopsrequest` to be Successful. Run the following command to watch `MySQLopsrequest` CRO:
 
 ```shell
-$ kubectl get MySQLopsrequest -n demo
+$ kubectl get MySQLOpsRequest-n demo
 NAME                          TYPE         STATUS       AGE
 myops-rotate-auth-generated   RotateAuth   Successful   35m
 myops-rotate-auth-user        RotateAuth   Successful   2m18s
 ```
 We can see from the above output that the `MySQLopsrequest` has succeeded. If we describe the `MySQLopsrequest` we will get an overview of the steps that were followed.
 ```shell
-$ kubectl describe MySQLopsrequest -n demo myops-rotate-auth-user 
+$ kubectl describe MySQLOpsRequest-n demo myops-rotate-auth-user 
 Name:         myops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -575,10 +522,10 @@ The above output shows that the password has been changed successfully. The prev
 ## Cleaning up
 
 To clean up the Kubernetes resources you can delete the CRD or namespace.
-Or, you can delete one by one resource by their name by this tutorial, run:
+Alternatively, you can delete individual resources by name. To do so, run:
 
 ```shell
-$ kubectl delete MySQLopsrequest myops-rotate-auth-generated myops-rotate-auth-user -n demo
+$ kubectl delete MySQLOpsRequestmyops-rotate-auth-generated myops-rotate-auth-user -n demo
 MySQLopsrequest.ops.kubedb.com "myops-rotate-auth-generated" "myops-rotate-auth-user" deleted
 $ kubectl delete secret -n demo mysql-quickstart-auth-user
 secret "mysql-quickstart-auth-user" deleted
