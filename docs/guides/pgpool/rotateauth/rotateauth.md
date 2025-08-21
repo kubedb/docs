@@ -2,9 +2,9 @@
 title: Rotate Authentication Pgpool
 menu:
   docs_{{ .version }}:
-    identifier: pp-rotateauth-details
+    identifier: pp-rotate-auth-details
     name: Guide
-    parent: pp-rotateauth
+    parent: pp-rotate-auth
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -57,7 +57,7 @@ Here,
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 ```shell
- $kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotateauth/rotateauth.yaml
+ $kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotate-auth/rotate-auth.yaml
  pgpoolopsrequest.ops.kubedb.com/pgpops-rotate-auth-generated created
 ```
 Let's wait for `PgpoolOpsrequest` to be `Successful`. Run the following command to watch `PgpoolOpsrequest` CR
@@ -214,7 +214,7 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotateauth/rotateauthuser.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotate-auth/rotateauthuser.yaml
 Pgpoolopsrequest.ops.kubedb.com/pbops-rotate-auth-user created
 ```
 Let’s wait for `PgpoolOpsRequest` to be Successful. Run the following command to watch `PgpoolOpsRequest` CR:

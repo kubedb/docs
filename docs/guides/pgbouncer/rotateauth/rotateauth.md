@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: pb-rotateauthentication
     name: Guide
-    parent: pb-rotateauth
+    parent: pb-rotate-auth
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -110,7 +110,7 @@ Here,
 
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 ```shell
- $kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/rotateauth/rotateauth.yaml
+ $kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/rotate-auth/rotate-auth.yaml
  pgbounceropsrequest.ops.kubedb.com/pbops-rotate-auth-generated created
 ```
 Let's wait for `PgBouncerOpsrequest` to be `Successful`. Run the following command to watch `PgBouncerOpsrequest` CRO
@@ -276,7 +276,7 @@ Here,
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/rotateauth/rotateauthuser.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/rotate-auth/rotateauthuser.yaml
 pgbounceropsrequest.ops.kubedb.com/pbops-rotate-auth-user created
 ```
 Let’s wait for `PgBouncerOpsRequest` to be Successful. Run the following command to watch `PgBouncerOpsRequest` CRO:

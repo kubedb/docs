@@ -2,9 +2,9 @@
 title: Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
-    identifier: es-rotateauth
+    identifier: es-rotate-auth
     name: Guide
-    parent: es-rotateauth-elasticsearch
+    parent: es-rotate-auth-elasticsearch
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

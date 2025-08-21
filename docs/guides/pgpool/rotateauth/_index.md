@@ -2,7 +2,7 @@
 title: Rotate Authentication Pgpool
 menu:
   docs_{{ .version }}:
-    identifier: pp-rotateauth
+    identifier: pp-rotate-auth
     name: Rotate Authentication
     parent: pp-pgpool-guides
     weight: 46

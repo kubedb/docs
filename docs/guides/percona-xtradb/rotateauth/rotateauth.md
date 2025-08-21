@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-perconaxtradb-rotateauthentiocation
     name: Guide
-    parent: guides-perconaxtradb-rotateauth
+    parent: guides-perconaxtradb-rotate-auth
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

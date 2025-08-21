@@ -2,9 +2,9 @@
 title: Mysql Rotateauth Guide
 menu:
 docs_{{ .version }}:
-identifier: ig-rotateauth-guide
+identifier: mysql-rotate-auth-guide
 name: Guide
-parent: ig-quickstart-Mysql
+parent: guides-mysql-rotate-auth
 weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,9 +12,12 @@ section_menu_id: guides
 
 # Rotate Authentication of Mysql
 
-**Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `Mysql` user's authentication credentials using a `MySQLopsrequest`. There are two ways to perform this rotation.
+**Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `Mysql`
+user's authentication credentials using a `MySQLopsrequest`. There are two ways to perform this
+rotation.
 
-1. **Operator Generated:** The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential.
+1. **Operator Generated:** The KubeDB operator automatically generates a random credential and 
+updates the existing secret with the new credential.
 2. **User Defined:** The user can create their own credentials by defining a Secret of type
    `kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in the
    `MySQLopsrequest` CR.
@@ -115,7 +118,8 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 
 ## Create a Mysql server
 
-KubeDB implements a `Mysql` CRD to define the specification of a Mysql server. Below is the `Mysql` object created in this tutorial.
+KubeDB implements a `Mysql` CRD to define the specification of a Mysql server. Below is the `Mysql`
+object created in this tutorial.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -142,7 +146,9 @@ mysql.kubedb.com/mysql-quickstart created
 ```
 
 ## Verify authentication
-The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
+The user can verify whether they are authorized by executing a query directly in the database. To
+do this, the user needs `username` and `password` in order to connect to the database. Below is an
+example showing how to retrieve the credentials from the Secret.
 
 ````shell
 $ kubectl get mysql -n demo mysql-quickstart -ojson | jq .spec.authSecret.name
@@ -223,7 +229,7 @@ myops-rotate-auth-generated   RotateAuth   Successful   82s
 ```
 If we describe the `MySQLopsrequest` we will get an overview of the steps that were followed.
 ```shell
-$  kubectl describe MySQLopsrequest -n demo myops-rotate-auth-generated
+$ kubectl describe MySQLopsrequest -n demo myops-rotate-auth-generated
 Name:         myops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -401,7 +407,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `mysql-quickstart`cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on Mysql.
-- `spec.authentication.secretRef.name` specifies that we want to use `mysql-quickstart-auth` for database authentication.
+- `spec.authentication.secretRef.name` specifies that we use `mysql-quickstart-auth` for database authentication.
 
 
 Let's create the `MySQLopsrequest` CR we have shown above,
@@ -574,8 +580,8 @@ Or, you can delete one by one resource by their name by this tutorial, run:
 ```shell
 $ kubectl delete MySQLopsrequest myops-rotate-auth-generated myops-rotate-auth-user -n demo
 MySQLopsrequest.ops.kubedb.com "myops-rotate-auth-generated" "myops-rotate-auth-user" deleted
-$ kubectl delete secret -n demoquick-mysql-user-auth
-secret "quick-mysql-user-auth" deleted
+$ kubectl delete secret -n demo mysql-quickstart-auth-user
+secret "mysql-quickstart-auth-user" deleted
 $ kubectl delete secret -n demo   mysql-quickstart-auth 
 secret "mysql-quickstart-auth " deleted
 

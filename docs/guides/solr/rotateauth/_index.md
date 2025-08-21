@@ -2,7 +2,7 @@
 title:  Solr Rotate Authentication
 menu:
   docs_{{ .version }}:
-    identifier: sl-rotateauth
+    identifier: sl-rotate-auth
     name: Rotate Authentication
     parent: sl-solr-guides
     weight: 34

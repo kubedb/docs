@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: myops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: mysql-quickstart
+  authentication:
+    secretRef:
+      name: mysql-quickstart-auth-user
+  timeout: 5m
+  apply: IfReady

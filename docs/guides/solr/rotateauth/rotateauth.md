@@ -2,9 +2,9 @@
 title: Rotate Authentication Guide
 menu:
   docs_{{ .version }}:
-    identifier: sl-rotateauth-details
+    identifier: sl-rotate-auth-details
     name: Guide
-    parent: sl-rotateauth
+    parent: sl-rotate-auth
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -58,7 +58,7 @@ Here,
 
 Let's create the `SolrOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/rotateauth/rotateauth.yaml
+ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/rotate-auth/rotate-auth.yaml
 solropsrequest.ops.kubedb.com/solrops-rotate-auth-generated created
 ```
 Let's wait for `SolrOpsrequest` to be `Successful`. Run the following command to watch `SolrOpsrequest` CRO
@@ -220,7 +220,7 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/rotateauth/rotateauthuser.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/rotate-auth/rotateauthuser.yaml
 solropsrequest.ops.kubedb.com/solrops-rotate-auth-user created
 ```
 Let’s wait for `SolrOpsRequest` to be Successful. Run the following command to watch `SolrOpsRequest` CRO:

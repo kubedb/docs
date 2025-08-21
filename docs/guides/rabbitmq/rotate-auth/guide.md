@@ -2,9 +2,9 @@
 title: RabbitMQ Rotateauth Guide
 menu:
 docs_{{ .version }}:
-identifier: rm-rotateauth-guide
+identifier: rm-rotate-auth-guide
 name: Guide
-parent: rm-rotateauth
+parent: rm-rotate-auth
 weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

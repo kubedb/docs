@@ -2,7 +2,7 @@
 title: Ignite Rotateauth Guide
 menu:
 docs_{{ .version }}:
-identifier: ig-rotateauth-guide
+identifier: ig-rotate-auth-guide
 name: Guide
 parent: ig-quickstart-ignite
 weight: 10

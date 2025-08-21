@@ -1,4 +1,4 @@
---
+---
 title: Rotateauth RabbitMQ
 menu:
 docs_{{ .version }}:
