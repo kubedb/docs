@@ -37,7 +37,7 @@ But that is a bit rare though.
 To follow along with this tutorial, you will need:
 
 1. A running Kubernetes cluster.
-2. KubeDB [installed](https://kubedb.com/docs/{{<param "info.version">}}/setup/install/kubedb/) in your cluster.
+2. KubeDB [installed](https://kubedb.com/docs/{{< param "info.version" >}}/setup/install/kubedb/) in your cluster.
 3. kubectl command-line tool configured to communicate with your cluster.
 
 ### Step 1: Create a High-Availability MySQL Cluster
