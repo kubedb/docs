@@ -34,11 +34,25 @@ But that is a bit rare though.
 
 ### Before You Start
 
-To follow along with this tutorial, you will need:
 
-1. A running Kubernetes cluster.
-2. KubeDB [installed](https://kubedb.com/docs/{{< param "info.version" >}}/setup/install/kubedb/) in your cluster.
-3. kubectl command-line tool configured to communicate with your cluster.
+- At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+
+- [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
+
+  ```bash
+  $ kubectl get storageclasses
+  NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+  standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
+  ```
+
+- To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
+
+  ```bash
+  $ kubectl create ns demo
+  namespace/demo created
+  ```
 
 ### Step 1: Create a High-Availability MySQL Cluster
 
