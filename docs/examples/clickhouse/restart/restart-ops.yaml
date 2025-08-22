@@ -7,5 +7,5 @@ spec:
   type: Restart
   databaseRef:
     name: ch
-  timeout: 3m
-  apply: Always
+  timeout: 10m
+  apply: IfReady
