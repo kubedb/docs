@@ -557,7 +557,7 @@ spec:
   type: VolumeExpansion
   volumeExpansion:
     mode: Online # see the notes, your storageclass must support this mode
-    MSSQLServer: 20Gi # expanded resource
+    mssqlserver: 20Gi # expanded resource
 ```
 
 
