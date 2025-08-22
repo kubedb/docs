@@ -21,3 +21,5 @@ spec:
           - localhost
         ipAddresses:
           - "127.0.0.1"
+  timeout: 10m
+  apply: IfReady

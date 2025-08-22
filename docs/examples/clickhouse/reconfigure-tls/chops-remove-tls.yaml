@@ -9,3 +9,5 @@ spec:
     name: ch
   tls:
     remove: true
+  timeout: 10m
+  apply: IfReady

@@ -12,3 +12,5 @@ spec:
       name: ch-new-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
+  timeout: 10m
+  apply: IfReady
