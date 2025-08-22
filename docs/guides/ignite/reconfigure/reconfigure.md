@@ -40,7 +40,7 @@ Now, we are going to deploy a  `Ignite` cluster using a supported version by `Ku
 
 ### Prepare Ignite Standalone Database
 
-Now, we are going to deploy a `Ignite` cluster with version `3.13.2`.
+Now, we are going to deploy a `Ignite` cluster with version `2.17.0`.
 
 ### Deploy Ignite standalone 
 
@@ -68,7 +68,7 @@ metadata:
   name: ig-cluster
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "2.17.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -93,7 +93,7 @@ Now, wait until `ig-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get ig -n demo
 NAME            TYPE                  VERSION   STATUS   AGE
-ig-cluster      kubedb.com/v1alpha2   3.13.2    Ready    79m
+ig-cluster      kubedb.com/v1alpha2   2.17.0    Ready    79m
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.

@@ -54,7 +54,7 @@ standard (default)   kubernetes.io/gce-pd   Delete          Immediate           
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `Ignite` standalone database with version `3.13.2`.
+Now, we are going to deploy a `Ignite` standalone database with version `2.17.0`.
 
 #### Deploy Ignite standalone
 
@@ -67,7 +67,7 @@ metadata:
   name: ig-standalone
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "2.17.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -90,7 +90,7 @@ Now, wait until `ig-standalone` has status `Ready`. i.e,
 ```bash
 $ kubectl get ig -n demo
 NAME            VERSION     STATUS    AGE
-ig-standalone   3.13.2      Ready     2m53s
+ig-standalone   2.17.0      Ready     2m53s
 ```
 
 Let's check volume size from PetSet, and from the persistent volume,

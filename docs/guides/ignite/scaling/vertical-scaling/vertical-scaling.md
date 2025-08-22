@@ -23,9 +23,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 - Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [Ignite](/docs/guides/rabbitmq/concepts/rabbitmq.md)
-  - [IgniteOpsRequest](/docs/guides/rabbitmq/concepts/opsrequest.md)
-  - [Vertical Scaling Overview](/docs/guides/rabbitmq/scaling/vertical-scaling/overview.md)
+  - [Ignite](/docs/guides/ignite/concepts/ignite.md)
+  - [IgniteOpsRequest](/docs/guides/ignite/concepts/opsrequest.md)
+  - [Vertical Scaling Overview](/docs/guides/ignite/scaling/vertical-scaling/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -34,7 +34,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/rabbitmq](/docs/examples/rabbitmq) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/ignite](/docs/examples/ignite) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Apply Vertical Scaling on Standalone
 
@@ -42,7 +42,7 @@ Here, we are going to deploy a  `Ignite` standalone using a supported version by
 
 ### Prepare Ignite Standalone Database
 
-Now, we are going to deploy a `Ignite` standalone database with version `3.13.2`.
+Now, we are going to deploy a `Ignite` standalone database with version `2.17.0`.
 
 ### Deploy Ignite standalone 
 
@@ -55,7 +55,7 @@ metadata:
   name: ig-standalone
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "2.17.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -69,8 +69,8 @@ spec:
 Let's create the `Ignite` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/mg-standalone.yaml
-rabbitmq.kubedb.com/ig-standalone created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/mg-standalone.yaml
+ignite.kubedb.com/ig-standalone created
 ```
 
 Now, wait until `ig-standalone` has status `Ready`. i.e,
@@ -78,7 +78,7 @@ Now, wait until `ig-standalone` has status `Ready`. i.e,
 ```bash
 $ kubectl get ig -n demo
 NAME            VERSION    STATUS    AGE
-ig-standalone   3.13.2      Ready     5m56s
+ig-standalone   2.17.0      Ready     5m56s
 ```
 
 Let's check the Pod containers resources,
@@ -137,13 +137,13 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `mops-vscale-standalone` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.standalone` specifies the desired resources after scaling.
-- Have a look [here](/docs/guides/rabbitmq/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
+- Have a look [here](/docs/guides/ignite/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/vertical-scaling/igops-vscale-standalone.yaml
-rabbitmqopsrequest.ops.kubedb.com/igops-vscale-standalone created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/vertical-scaling/igops-vscale-standalone.yaml
+igniteopsrequest.ops.kubedb.com/igops-vscale-standalone created
 ```
 
 #### Verify Ignite Standalone resources updated successfully 
@@ -153,8 +153,8 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command to watch `IgniteOpsRequest` CR,
 
 ```bash
-$ kubectl get rabbitmqopsrequest -n demo
-Every 2.0s: kubectl get rabbitmqopsrequest -n demo
+$ kubectl get igniteopsrequest -n demo
+Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME                      TYPE              STATUS       AGE
 igops-vscale-standalone   VerticalScaling   Successful   108s
 ```
@@ -162,7 +162,7 @@ igops-vscale-standalone   VerticalScaling   Successful   108s
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo igops-vscale-standalone
+$ kubectl describe igniteopsrequest -n demo igops-vscale-standalone
 Name:         igops-vscale-standalone
 Namespace:    demo
 Labels:       <none>
@@ -299,5 +299,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete ig -n demo ig-standalone
-kubectl delete rabbitmqopsrequest -n demo igops-vscale-standalone
+kubectl delete igniteopsrequest -n demo igops-vscale-standalone
 ```

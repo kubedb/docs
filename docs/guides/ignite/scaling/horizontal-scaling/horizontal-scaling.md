@@ -42,7 +42,7 @@ Here, we are going to deploy a `Ignite` using a supported version by `KubeDB` op
 
 ### Deploy Ignite 
 
-In this section, we are going to deploy a Ignite. We are going to deploy a `Ignite` with version `3.13.2`. Then, in the next section we will scale the ignite using `IgniteOpsRequest` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
+In this section, we are going to deploy a Ignite. We are going to deploy a `Ignite` with version `2.17.0`. Then, in the next section we will scale the ignite using `IgniteOpsRequest` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -51,7 +51,7 @@ metadata:
   name: ignite
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "2.17.0"
   replicas: 3
   storage:
     accessModes:
@@ -75,7 +75,7 @@ Now, wait until `ignite` has status `Ready`. i.e,
 ```bash
 $ kubectl get ig -n demo
 NAME            TYPE                  VERSION   STATUS   AGE
-ignite        kubedb.com/v1alpha2   3.13.2     Ready    2m
+ignite          kubedb.com/v1alpha2   2.17.0    Ready    2m
 ```
 
 Let's check the number of replicas this ignite has from the Ignite object, number of pods the PetSet have,

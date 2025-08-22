@@ -39,10 +39,10 @@ In this section, we are going to deploy a Ignite database using KubeDB.
 apiVersion: kubedb.com/v1alpha2
 kind: Ignite
 metadata:
-  name: rm
+  name: ig
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "2.17.0"
   replicas: 3
   storageType: Durable
   storage:
@@ -58,8 +58,8 @@ spec:
 Let's create the `Ignite` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/restart/rm.yaml
-ignite.kubedb.com/rm created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/restart/ig.yaml
+ignite.kubedb.com/ig created
 ```
 
 ## Apply Restart opsRequest
@@ -73,7 +73,7 @@ metadata:
 spec:
   type: Restart
   databaseRef:
-    name: rm
+    name: ig
   timeout: 3m
   apply: Always
 ```
@@ -114,7 +114,7 @@ metadata:
 spec:
   apply: Always
   databaseRef:
-    name: rm
+    name: ig
   timeout: 3m
   type: Restart
 status:
@@ -148,7 +148,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete igniteopsrequest -n demo restart
-kubectl delete ignite -n demo rm
+kubectl delete ignite -n demo ig
 kubectl delete ns demo
 ```
 

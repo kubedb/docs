@@ -41,7 +41,7 @@ namespace/demo created
 
 ## Autoscaling of Ignite
 
-In this section, we are going to deploy a Ignite with version `3.13.2`  Then, in the next section we will set up autoscaling for this Ignite using `IgniteAutoscaler` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
+In this section, we are going to deploy a Ignite with version `2.17.0`  Then, in the next section we will set up autoscaling for this Ignite using `IgniteAutoscaler` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -50,7 +50,7 @@ metadata:
   name: ignite-autoscale
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "2.17.0"
   replicas: 1
   storage:
     accessModes:
@@ -90,7 +90,7 @@ Now, wait until `ignite-autoscale` has status `Ready`. i.e,
 ```bash
 $ kubectl get ig -n demo
 NAME                 TYPE                  VERSION   STATUS   AGE
-ignite-autoscale   kubedb.com/v1alpha2   3.13.2     Ready    22s
+ignite-autoscale     kubedb.com/v1alpha2   2.17.0     Ready    22s
 ```
 
 Let's check the Pod containers resources,

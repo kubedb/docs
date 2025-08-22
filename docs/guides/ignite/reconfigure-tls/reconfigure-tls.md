@@ -48,7 +48,7 @@ metadata:
   name: ig
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "2.17.0"
   replicas: 3
   storage:
     storageClassName: "standard"

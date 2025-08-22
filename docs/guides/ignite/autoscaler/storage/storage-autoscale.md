@@ -58,7 +58,7 @@ Now, we are going to deploy a `Ignite` cluster using a supported version by `Kub
 
 #### Deploy Ignite Cluster
 
-In this section, we are going to deploy a Ignite cluster with version `3.13.2`.  Then, in the next section we will set up autoscaling for this database using `IgniteAutoscaler` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
+In this section, we are going to deploy a Ignite cluster with version `2.17.0`.  Then, in the next section we will set up autoscaling for this database using `IgniteAutoscaler` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
 
 > If you want to autoscale Ignite `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
@@ -69,7 +69,7 @@ metadata:
   name: ignite-autoscale
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "2.17.0"
   replicas: 3
   storage:
     accessModes:
@@ -109,7 +109,7 @@ Now, wait until `ignite-autoscale` has status `Ready`. i.e,
 ```bash
 $ kubectl get ignite -n demo
 NAME                 VERSION   STATUS   AGE
-ignite-autoscale   3.13.2    Ready    3m46s
+ignite-autoscale     2.17.0    Ready    3m46s
 ```
 
 Let's check volume size from petset, and from the persistent volume,
