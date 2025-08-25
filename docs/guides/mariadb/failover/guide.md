@@ -640,7 +640,6 @@ namespace "demo" deleted
 ## Next Steps
 
 - Learn about [backup and restore](/docs/guides/mariadb/backup/stash/overview/index.md) MariaDB database using Stash.
-- Learn about [custom MariaDBVersions](/docs/guides/mariadb/concepts/setup.md).
 - Want to setup MariaDB cluster? Check how to [configure Highly Available MariaDB Cluster](/docs/guides/mariadb/clustering/galera-cluster/index.md)
 - Monitor your MariaDB database with KubeDB using [built-in Prometheus](/docs/guides/mariadb/monitoring/prometheus-operator/index.md).
 - Detail concepts of [MariaDB object](/docs/guides/mariadb/concepts/mariadb/index.md).
