@@ -23,21 +23,36 @@ existing secret with the new credential, and does not provide the secret details
 
 ## Before You Begin
 
-- You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+- At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md). Make sure install with helm command including `--set global.featureGates.Memcached=true` to ensure Memcached CRD installation.
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- To configure TLS/SSL in `Memcached`, `KubeDB` uses `cert-manager` to issue certificates. So first you have to make sure that the cluster has `cert-manager` installed. To install `cert-manager` in your cluster following steps [here](https://cert-manager.io/docs/installation/kubernetes/).
-
-- You should be familiar with the following `KubeDB` concepts:
-    - [Memcached](/docs/guides/memcached/concepts/memcached.md)
-    - [MemcachedOpsRequest](/docs/guides/memcached/concepts/memcached-opsrequest.md)
-
-To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
+- To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
 ```bash
 $ kubectl create ns demo
 namespace/demo created
+
+$ kubectl get ns demo
+NAME      STATUS    AGE
+demo      Active    1s
+```
+
+## Find Available MemcachedVersion
+
+When you have installed KubeDB, it has created `MemcachedVersion` crd for all supported Memcached versions. Check 0
+
+```bash
+$ kubectl get memcachedversions
+NAME       VERSION   DB_IMAGE                                          DEPRECATED   AGE
+1.5        1.5       ghcr.io/kubedb/memcached:1.5                      true         5d19h
+1.5-v1     1.5       ghcr.io/kubedb/memcached:1.5-v1                   true         5d19h
+1.5.22     1.5.22    ghcr.io/appscode-images/memcached:1.5.22-alpine                5d19h
+1.5.4      1.5.4     ghcr.io/kubedb/memcached:1.5.4                    true         5d19h
+1.5.4-v1   1.5.4     ghcr.io/kubedb/memcached:1.5.4-v1                 true         5d19h
+1.6.22     1.6.22    ghcr.io/appscode-images/memcached:1.6.22-alpine                5d19h
+1.6.29     1.6.29    ghcr.io/appscode-images/memcached:1.6.29-alpine                5d19h
+1.6.33     1.6.33    ghcr.io/appscode-images/memcached:1.6.33-alpine                5d19h
 ```
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/memcached](/docs/examples/memcached/update-version) directory of [kubedb/docs](https://github.com/kube/docs) repository.
@@ -294,7 +309,7 @@ VERSION 1.6.22
 quit
 Connection closed by foreign host.
 ```
-Your credentials have been stored successfully, so everything’s working.
+Your credentials have been rotated successfully, so everything’s working.
 Also, there will be two more new keys in the secret that stores the previous credentials. The key is `authData.prev`. You can find the secret and its data by running the following command:
 
 ```shell
@@ -361,7 +376,6 @@ Let’s wait for `MemcachedOpsRequest` to be Successful. Run the following comma
 ```shell
 $ kubectl get Memcachedopsrequest -n demo
 NAME                          TYPE         STATUS       AGE
-mcops-rotate-auth-generated   RotateAuth   Successful   19h
 mcops-rotate-auth-user        RotateAuth   Successful   7m44s
 ```
 We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
@@ -492,7 +506,7 @@ VERSION 1.6.22
 quit
 Connection closed by foreign host.
 ```
-Your credentials have been stored successfully, so everything’s working.
+Your credentials have been rotated successfully, so everything’s working.
 
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 ```shell
@@ -501,7 +515,7 @@ user:yjf3Oc;ZlSs.iMVO
                   
 ```
 
-The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
+The above output shows that the password has been updated successfully. The previous username & password is stored in the secret for rollback purpose.
 
 ## Cleaning Up
 
