@@ -6,6 +6,6 @@ metadata:
 spec:
   type: RotateAuth
   databaseRef:
-    name: ch
+    name: clickhouse-prod
   timeout: 5m
   apply: IfReady
