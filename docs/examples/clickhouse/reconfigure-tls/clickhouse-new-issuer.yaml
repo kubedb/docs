@@ -5,4 +5,4 @@ metadata:
   namespace: demo
 spec:
   ca:
-    secretName: ch-new-ca
+    secretName: clickhouse-new-ca
