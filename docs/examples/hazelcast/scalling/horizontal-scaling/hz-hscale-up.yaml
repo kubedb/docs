@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HazelcastOpsRequest
+metadata:
+  name: hazelcast-scale-up
+  namespace: demo
+spec:
+  databaseRef:
+    name: hz-prod
+  type: HorizontalScaling
+  horizontalScaling:
+    hazelcast: 4
