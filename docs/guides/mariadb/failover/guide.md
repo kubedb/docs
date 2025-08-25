@@ -640,11 +640,8 @@ namespace "demo" deleted
 ## Next Steps
 
 - Learn about [backup and restore](/docs/guides/mariadb/backup/stash/overview/index.md) MariaDB database using Stash.
-- Learn about initializing [MariaDB with Script](/docs/guides/mariadb/initialization/script_source.md).
-- Learn about [custom MariaDBVersions](/docs/guides/mariadb/custom-versions/setup.md).
-- Want to setup MariaDB cluster? Check how to [configure Highly Available MariaDB Cluster](/docs/guides/mariadb/clustering/ha_cluster.md)
-- Monitor your MariaDB database with KubeDB using [built-in Prometheus](/docs/guides/mariadb/monitoring/using-builtin-prometheus.md).
-- Monitor your MariaDB database with KubeDB using [Prometheus operator](/docs/guides/mariadb/monitoring/using-prometheus-operator.md).
-- Detail concepts of [MariaDB object](/docs/guides/mariadb/concepts/mariadb.md).
-- Use [private Docker registry](/docs/guides/mariadb/private-registry/using-private-registry.md) to deploy MariaDB with KubeDB.
+- Want to setup MariaDB cluster? Check how to [configure Highly Available MariaDB Cluster](/docs/guides/mariadb/clustering/galera-cluster/index.md)
+- Monitor your MariaDB database with KubeDB using [built-in Prometheus](/docs/guides/mariadb/monitoring/prometheus-operator/index.md).
+- Detail concepts of [MariaDB object](/docs/guides/mariadb/concepts/mariadb/index.md).
+- Use [private Docker registry](/docs/guides/mariadb/private-registry/quickstart/index.md) to deploy MariaDB with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
