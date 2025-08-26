@@ -1,11 +1,11 @@
 ---
 title: MySQL Rotateauth Guide
 menu:
-docs_{{ .version }}:
-identifier: guides-mysql-rotate-auth-guide
-name: Guide
-parent: guides-mysql-rotate-auth
-weight: 10
+    docs_{{ .version }}:
+        identifier: guides-mysql-rotate-auth-guide
+        name: Guide
+        parent: guides-mysql-rotate-auth
+        weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

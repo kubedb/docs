@@ -1,11 +1,11 @@
 ---
 title: RabbitMQ Rotateauth Guide
 menu:
-docs_{{ .version }}:
-identifier: rm-rotateauth-guide
-name: Guide
-parent: rm-rotateauth
-weight: 10
+    docs_{{ .version }}:
+        identifier: rm-rotateauth-guide
+        name: Guide
+        parent: rm-rotateauth
+        weight: 10          
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
