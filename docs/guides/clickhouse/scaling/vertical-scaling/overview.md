@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator updates the 
 The following diagram shows how KubeDB Ops-manager operator updates the resources of the `ClickHouse`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Vertical scaling process of ClickHouse" src="/docs/images/day-2-operation/clickhouse/verticalScale.svg">
+  <img alt="Vertical scaling process of ClickHouse" src="/docs/images/day-2-operation/clickhouse/vertical-scaling.svg">
 <figcaption align="center">Fig: Vertical scaling process of ClickHouse</figcaption>
 </figure>
 

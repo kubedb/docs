@@ -27,7 +27,7 @@ This guide will give you an overview on how KubeDB Ops-manager operator update t
 The following diagram shows how KubeDB Ops-manager operator used to update the version of `ClickHouse`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="updating Process of ClickHouse" src="/docs/images/day-2-operation/clickhouse/updateVersion.svg">
+  <img alt="updating Process of ClickHouse" src="/docs/images/day-2-operation/clickhouse/update-version.png">
 <figcaption align="center">Fig: updating Process of ClickHouse</figcaption>
 </figure>
 

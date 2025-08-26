@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator expand the v
 The following diagram shows how KubeDB Ops-manager operator expand the volumes of `ClickHouse` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Volume Expansion process of ClickHouse" src="/docs/images/day-2-operation/clickhouse/volumeExpansion.svg">
+  <img alt="Volume Expansion process of ClickHouse" src="/docs/images/day-2-operation/clickhouse/volume-expansion.svg">
 <figcaption align="center">Fig: Volume Expansion process of ClickHouse</figcaption>
 </figure>
 

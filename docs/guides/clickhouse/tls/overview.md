@@ -40,7 +40,7 @@ Read about the fields in details from [clickhouse concept](/docs/guides/clickhou
 The following figure shows how `KubeDB` enterprise used to configure TLS/SSL in ClickHouse. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-<img alt="Deploy ClickHouse with TLS/SSL" src="/docs/images/clickhouse/TLS.svg">
+<img alt="Deploy ClickHouse with TLS/SSL" src="/docs/images/clickhouse/tls.svg">
 <figcaption align="center">Fig: Deploy ClickHouse with TLS/SSL</figcaption>
 </figure>
 
