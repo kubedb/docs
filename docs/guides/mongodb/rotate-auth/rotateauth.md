@@ -15,8 +15,8 @@ section_menu_id: guides
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the 
 existing secret with the new credential The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential..
-2. **User Defined:** The user can create their own credentials by defining a Secret of type 
-`kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in the `MongoDBOpsRequest`.
+2. **User Defined:** The user can create their own credentials by defining a secret of type 
+`kubernetes.io/basic-auth` containing the desired `password` and then reference this secret in the `MongoDBOpsRequest`.
 
 ## Before You Begin
 
@@ -84,10 +84,10 @@ NAME             VERSION   STATUS   AGE
 mgo-quickstart   4.4.26    Ready      8m1s
 ```
 ## Verify authentication
-The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
+The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
+$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authsecret.name
 "mgo-quickstart-auth"
 $ kubectl get secret -n demo mgo-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
 root⏎                                  
@@ -295,7 +295,7 @@ Events:
 ```
 **Verify Auth is rotated**
 ```shell
-$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
+$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authsecret.name
 "mgo-quickstart-auth"
 $ kubectl get secret -n demo mgo-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
 root⏎                                                               
@@ -344,7 +344,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `mgo-quickstart`cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on MongoDB.
-- `spec.authentication.secretRef.name` specifies that we are using `quick-mg-user-auth` as `spec.authSecret.name` for authentication.
+- `spec.authentication.secretRef.name` specifies that we are using `quick-mg-user-auth` as `spec.authsecret.name` for authentication.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
@@ -377,7 +377,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Authentication:
-    Secret Ref:
+    secret Ref:
       Name:  quick-mg-user-auth
   Database Ref:
     Name:   mgo-quickstart
@@ -392,7 +392,7 @@ Status:
     Status:                True
     Type:                  RotateAuth
     Last Transition Time:  2025-07-16T11:46:33Z
-    Message:               Successfully referenced the user provided authSecret
+    Message:               Successfully referenced the user provided authsecret
     Observed Generation:   1
     Reason:                UpdateCredential
     Status:                True
@@ -504,7 +504,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
+$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authsecret.name
 "quick-mg-user-auth"
 $ kubectl get secret -n demo quick-mg-user-auth -o=jsonpath='{.data.username}' | base64 -d
 root⏎                                                                    

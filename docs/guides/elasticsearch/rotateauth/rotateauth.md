@@ -1,20 +1,22 @@
 ---
-title: Rotate Authentication Guide
+title: Elasticsearch Rotateauth Guide
+description: Elasticsearch Rotateauth Guide
 menu:
   docs_{{ .version }}:
-    identifier: es-rotate-auth
+    identifier: es-rotateauth-guide
     name: Guide
-    parent: es-rotate-auth-elasticsearch
+    parent:  es-rotateauth-elasticsearch
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 # Rotate Authentication of Elasticsearch
 
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `Elasticsearch` user's authentication credentials using a `ElasticsearchOpsRequest`. There are two ways to perform this rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential .
-2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password`, and then reference this Secret in the `ElasticsearchOpsRequest`.
+2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password` and then reference this secret in the `ElasticsearchOpsRequest`.
 
 ## Before You Begin
 

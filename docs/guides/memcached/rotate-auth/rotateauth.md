@@ -17,9 +17,9 @@ user's authentication credentials using a `MemcachedOpsRequest`. There are two w
 rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the 
-existing secret with the new credential, and does not provide the secret details directly to the user.
-2. **User Defined:** The user can create their own credentials by defining a Secret of type
-`kubernetes.io/basic-auth` containing the desired `username` and `password`, and then reference this Secret in the `MemcachedOpsRequest`.
+existing secretwith the new credential, and does not provide the secretdetails directly to the user.
+2. **User Defined:** The user can create their own credentials by defining a secretof type
+`kubernetes.io/basic-auth` containing the desired `username` and `password` and then reference this secretin the `MemcachedOpsRequest`.
 
 ## Before You Begin
 
@@ -104,7 +104,7 @@ The user can verify whether they are authorized by executing a query directly in
 ````shell
 $ kubectl get memcached -n demo memcd-quickstart -ojson | jq .spec.authSecret.name
 "memcd-quickstart-auth"
-$ kubectl get secret -n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
+$ kubectl get secret-n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
 user:ikbkjbodeewenrgj
 ````
 Here, `username`is `user` and `password` is `ikbkjbodeewenrgj`
@@ -264,14 +264,14 @@ Events:
   Normal   RestartPods                                                     98s   KubeDB Ops-manager Operator  Restarted pods after rotate auth
   Normal   ResumeDatabase                                                  98s   KubeDB Ops-manager Operator  Resuming Memcached demo/memcd-quickstart
   Normal   ResumeDatabase                                                  98s   KubeDB Ops-manager Operator  Successfully resumed Memcached demo/memcd-quickstart
-  Normal   Successful                                                      98s   KubeDB Ops-manager Operator  Successfully Rotated Memcached Auth Secret for demo/memcd-quickstart
+  Normal   Successful                                                      98s   KubeDB Ops-manager Operator  Successfully Rotated Memcached Auth secretfor demo/memcd-quickstart
 ```
 
 **Verify Auth is rotated**
 ```shell
 $ kubectl get mc -n demo memcd-quickstart -ojson | jq .spec.authSecret.name
 "memcd-quickstart-auth"
-$ kubectl get secret -n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
+$ kubectl get secret-n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
 user:yjf3Oc;ZlSs.iMVO                    
 ```
 **Let's verify whether the credential is working or not:**
@@ -310,17 +310,17 @@ quit
 Connection closed by foreign host.
 ```
 Your credentials have been rotated successfully, so everything’s working.
-Also, there will be two more new keys in the secret that stores the previous credentials. The key is `authData.prev`. You can find the secret and its data by running the following command:
+Also, there will be two more new keys in the secretthat stores the previous credentials. The key is `authData.prev`. You can find the secretand its data by running the following command:
 
 ```shell
-$ kubectl get secret -n demo memcd-quickstart-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
+$ kubectl get secret-n demo memcd-quickstart-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
 user:ikbkjbodeewenrgj
 ```
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using User Created Credentials
 
-At first, we need to create a secret with `kubernetes.io/basic-auth` type using custom username 
-and password. Below is the command to create a secret with `kubernetes.io/basic-auth` type,
+At first, we need to create a secretwith `kubernetes.io/basic-auth` type using custom username 
+and password. Below is the command to create a secretwith `kubernetes.io/basic-auth` type,
 You can use the following yaml regarding changing the credentials
 
 ```shell
@@ -338,7 +338,7 @@ The `data.authdata` field stores user credentials in `Base64-encoded` format as 
 Now create a `MemcachedOpsRequest` with `RotateAuth` type. Below is the YAML of the
 `MemcachedOpsRequest` that we are going to create,
 
-Let's create the secret 
+Let's create the secret
 ```shell
 kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/memcached/rotate-auth/secret.yaml
 secret/mc-new-auth created
@@ -395,7 +395,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Authentication:
-    Secret Ref:
+    secretRef:
       Name:  mc-new-auth
   Database Ref:
     Name:   memcd-quickstart
@@ -461,14 +461,14 @@ Events:
   Normal   RestartPods                                                     13m   KubeDB Ops-manager Operator  Restarted pods after rotate auth
   Normal   ResumeDatabase                                                  13m   KubeDB Ops-manager Operator  Resuming Memcached demo/memcd-quickstart
   Normal   ResumeDatabase                                                  13m   KubeDB Ops-manager Operator  Successfully resumed Memcached demo/memcd-quickstart
-  Normal   Successful                                                      13m   KubeDB Ops-manager Operator  Successfully Rotated Memcached Auth Secret for demo/memcd-quickstart
+  Normal   Successful                                                      13m   KubeDB Ops-manager Operator  Successfully Rotated Memcached Auth secretfor demo/memcd-quickstart
 
 ```
 **Verify auth is rotate**
 ```shell
 $ kubectl get mc -n demo memcd-quickstart -ojson | jq .spec.authSecret.name
 "mc-new-auth"
-$  kubectl get secret -n demo mc-new-auth -o=jsonpath='{.data.authData}' | base64 -d
+$  kubectl get secret-n demo mc-new-auth -o=jsonpath='{.data.authData}' | base64 -d
 user:pass                                                                                   
 ```
 **Let's verify whether the credential is working or not:**
@@ -508,14 +508,14 @@ Connection closed by foreign host.
 ```
 Your credentials have been rotated successfully, so everything’s working.
 
-Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
+Also, there will be two more new keys in the secretthat stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secretand its data by running the following command:
 ```shell
-$ kubectl get secret -n demo mc-new-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
+$ kubectl get secret-n demo mc-new-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
 user:yjf3Oc;ZlSs.iMVO
                   
 ```
 
-The above output shows that the password has been updated successfully. The previous username & password is stored in the secret for rollback purpose.
+The above output shows that the password has been updated successfully. The previous username & password is stored in the secretfor rollback purpose.
 
 ## Cleaning Up
 
@@ -525,10 +525,10 @@ Or, you can delete one by one resource by their name by this tutorial, run:
 ```shell
 $ kubectl delete Memcachedopsrequest mcops-rotate-auth-generated mcops-rotate-auth-user -n demo
 Memcachedopsrequest.ops.kubedb.com "mcops-rotate-auth-generated" "mcops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo mc-new-auth
-secret "mc-new-auth" deleted
-$ kubectl delete secret -n demo  memcd-quickstart-auth
-secret "memcd-quickstart-auth" deleted
+$ kubectl delete secret-n demo mc-new-auth
+secret"mc-new-auth" deleted
+$ kubectl delete secret-n demo  memcd-quickstart-auth
+secret"memcd-quickstart-auth" deleted
 ```
 
 ## Next Steps

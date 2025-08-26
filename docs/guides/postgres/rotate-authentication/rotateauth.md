@@ -14,7 +14,7 @@ section_menu_id: guides
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `Postgres` user's authentication credentials using a `PostgresOpsRequest`. There are two ways to perform this rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the existing secret with the new credential The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential..
-2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password`, and then reference this Secret in the `PostgresOpsRequest`.
+2. **User Defined:** The user can create their own credentials by defining a secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password` and then reference this secret in the `PostgresOpsRequest`.
 
 ## Before You Begin 
 
@@ -79,10 +79,10 @@ NAME             VERSION   STATUS   AGE
 quick-postgres   13.13     Ready    7m36s
 ```
 ## Verify authentication 
-The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
+The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
+$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authsecret.name
 "quick-postgres-auth"
 $ kubectl get secret -n demo quick-postgres-auth -o jsonpath='{.data.username}' | base64 -d
 postgres
@@ -201,7 +201,7 @@ $ kubectl describe postgresopsrequest -n demo pgops-rotate-auth-generated
      Status:                True
      Type:                  CheckPodReady
      Last Transition Time:  2025-07-08T11:24:56Z
-     Message:               Successfully Rotated Postgres Auth Secret
+     Message:               Successfully Rotated Postgres Auth secret
      Observed Generation:   1
      Reason:                Successful
      Status:                True
@@ -221,12 +221,12 @@ $ kubectl describe postgresopsrequest -n demo pgops-rotate-auth-generated
    Normal   RestartNodes                                                      19m   KubeDB Ops-manager Operator  Successfully restarted all the nodes
    Normal   ResumeDatabase                                                    19m   KubeDB Ops-manager Operator  Resuming PostgreSQL demo/quick-postgres
    Normal   ResumeDatabase                                                    19m   KubeDB Ops-manager Operator  Successfully resumed PostgreSQL demo/quick-postgres
-   Normal   Successful                                                        19m   KubeDB Ops-manager Operator  Successfully Rotated Postgres Auth Secret for demo/quick-postgres
+   Normal   Successful                                                        19m   KubeDB Ops-manager Operator  Successfully Rotated Postgres Auth secret for demo/quick-postgres
   
 ```
 **Verify Auth is rotated**
 ```shell
-$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
+$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authsecret.name
 "quick-postgres-auth"
 $ kubectl get secret -n demo quick-postgres-auth -o=jsonpath='{.data.username}' | base64 -d
  postgres
@@ -276,7 +276,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `quick-postgres`cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on postgres.
-- `spec.authentication.secretRef.name` specifies that we are using `quick-postgres-user-auth` as `spec.authSecret.name` for authentication.
+- `spec.authentication.secretRef.name` specifies that we are using `quick-postgres-user-auth` as `spec.authsecret.name` for authentication.
 
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
@@ -309,7 +309,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Authentication:
-    Secret Ref:
+    secret Ref:
       Name:  quick-postgres-user-auth
   Database Ref:
     Name:   quick-postgres
@@ -324,7 +324,7 @@ Status:
     Status:                True
     Type:                  RotateAuth
     Last Transition Time:  2025-07-09T06:45:47Z
-    Message:               Successfully referenced the user provided authSecret
+    Message:               Successfully referenced the user provided authsecret
     Observed Generation:   1
     Reason:                UpdateCredential
     Status:                True
@@ -357,7 +357,7 @@ Status:
     Status:                True
     Type:                  CheckPodReady
     Last Transition Time:  2025-07-09T06:46:30Z
-    Message:               Successfully Rotated Postgres Auth Secret
+    Message:               Successfully Rotated Postgres Auth secret
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -377,12 +377,12 @@ Events:
   Normal   RestartNodes                                                      9m58s  KubeDB Ops-manager Operator  Successfully restarted all the nodes
   Normal   ResumeDatabase                                                    9m58s  KubeDB Ops-manager Operator  Resuming PostgreSQL demo/quick-postgres
   Normal   ResumeDatabase                                                    9m58s  KubeDB Ops-manager Operator  Successfully resumed PostgreSQL demo/quick-postgres
-  Normal   Successful                                                        9m58s  KubeDB Ops-manager Operator  Successfully Rotated Postgres Auth Secret for demo/quick-postgres
+  Normal   Successful                                                        9m58s  KubeDB Ops-manager Operator  Successfully Rotated Postgres Auth secret for demo/quick-postgres
 
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
+$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authsecret.name
 "quick-postgres-user-auth"
 $ kubectl get secret -n demo quick-postgres-user-auth-new -o=jsonpath='{.data.username}' | base64 -d
 admin                                        

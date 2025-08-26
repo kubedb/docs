@@ -14,7 +14,7 @@ section_menu_id: guides
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `Druid` user's authentication credentials using a `DruidOpsRequest`. There are two ways to perform this rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the existing secret with the new credential.
-2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in the `DruidOpsRequest`.
+2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `password`and then reference this secret in the `DruidOpsRequest`.
 
 ## Before You Begin
 
@@ -37,7 +37,7 @@ section_menu_id: guides
 
 ## Deploy Druid
 
-In this section, we are going to deploy a Druid database using KubeDB.
+In this section, we are going to deploy a `Druid` database using `KubeDB`.
 
 ### Create External Dependency (Deep Storage)
 

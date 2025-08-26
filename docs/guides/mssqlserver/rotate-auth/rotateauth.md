@@ -14,8 +14,8 @@ section_menu_id: guides
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `MSSQLServer` user's authentication credentials using a `MSSQLServerOpsRequest`. There are two ways to perform this rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential.
-2. **User Defined:** The user can create their own credentials by defining a Secret of type 
-`kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in the
+2. **User Defined:** The user can create their own credentials by defining a secret of type 
+`kubernetes.io/basic-auth` containing the desired `password`, and then reference this secret in the
 `MSSQLServerOpsRequest` CR.
 
 ## Before You Begin
@@ -130,10 +130,10 @@ NAME                     VERSION     STATUS   AGE
 mssqlserver-quickstart   2022-cu12   Ready    75m
 ```
 ## Verify authentication
-The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
+The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
+$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authsecret.name
 "mssqlserver-quickstart-auth"
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 sa⏎                            
@@ -291,7 +291,7 @@ Events:
 ```
 **Verify Auth is rotated**
 ```shell
-$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
+$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authsecret.name
 "mssqlserver-quickstart-auth"
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 sa⏎  
@@ -405,7 +405,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Authentication:
-    Secret Ref:
+    secret Ref:
       Name:  mssqlserver-quickstart-auth
   Database Ref:
     Name:   mssqlserver-quickstart
@@ -426,7 +426,7 @@ Status:
     Status:                True
     Type:                  DatabasePauseSucceeded
     Last Transition Time:  2025-07-15T11:03:19Z
-    Message:               Successfully referenced the user provided authSecret
+    Message:               Successfully referenced the user provided authsecret
     Observed Generation:   1
     Reason:                UpdateCredential
     Status:                True
@@ -484,7 +484,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
+$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authsecret.name
 "mssqlserver-quickstart-auth "
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
 sa⏎                                      

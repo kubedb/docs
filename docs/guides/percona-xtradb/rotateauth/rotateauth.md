@@ -15,7 +15,7 @@ section_menu_id: guides
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `PerconaXtraDB` user's authentication credentials using a `PerconaXtraDBOpsRequest`. There are two ways to perform this rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the existing secret with the new credential The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential..
-2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password`, and then reference this Secret in the `PerconaXtraDBOpsRequest`.
+2. **User Defined:** The user can create their own credentials by defining a secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password` and then reference this secret in the `PerconaXtraDBOpsRequest`.
 
 ## Before You Begin
 
@@ -76,10 +76,10 @@ NAME         VERSION   STATUS   AGE
 sample-pxc   8.0.40    Ready    43m
 ```
 ## Verify authentication
-The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
+The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get PerconaXtraDB -n demo sample-pxc -ojson | jq .spec.authSecret.name
+$ kubectl get PerconaXtraDB -n demo sample-pxc -ojson | jq .spec.authsecret.name
 "sample-pxc-auth"
 $ kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\username}' | base64 -d
 root⏎                                                                                                 
@@ -199,7 +199,7 @@ Status:
     Last Transition Time:  2025-07-21T09:26:50Z
     Message:               Successfully generated new credentials
     Observed Generation:   1
-    Reason:                patchedSecret
+    Reason:                patchedsecret
     Status:                True
     Type:                  UpdateCredential
     Last Transition Time:  2025-07-21T09:26:59Z
@@ -258,7 +258,7 @@ Events:                    <none>
 
 **Verify Auth is rotated**
 ```shell
-$ kubectl get perconaxtradb -n demo sample-pxc -ojson | jq .spec.authSecret.name
+$ kubectl get perconaxtradb -n demo sample-pxc -ojson | jq .spec.authsecret.name
 "sample-pxc-auth"
 $ kubectl get secret -n demo sample-pxc-auth -o=jsonpath='{.data.username}' | base64 -d
 root⏎                         
@@ -307,7 +307,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `sample-pxc`cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on PerconaXtraDB.
-- `spec.authentication.secretRef.name` specifies that we are using `quick-pcx-user-auth` as `spec.authSecret.name` for authentication.
+- `spec.authentication.secretRef.name` specifies that we are using `quick-pcx-user-auth` as `spec.authsecret.name` for authentication.
 
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
@@ -341,7 +341,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Authentication:
-    Secret Ref:
+    secret Ref:
       Name:  quick-pcx-user-auth
   Database Ref:
     Name:   sample-pxc
@@ -356,9 +356,9 @@ Status:
     Status:                True
     Type:                  Running
     Last Transition Time:  2025-07-21T10:25:50Z
-    Message:               Successfully referenced the user provided authSecret
+    Message:               Successfully referenced the user provided authsecret
     Observed Generation:   1
-    Reason:                patchedSecret
+    Reason:                patchedsecret
     Status:                True
     Type:                  UpdateCredential
     Last Transition Time:  2025-07-21T10:25:59Z
@@ -502,7 +502,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get perconaxtradb -n demo sample-pxc -ojson | jq .spec.authSecret.name
+$ kubectl get perconaxtradb -n demo sample-pxc -ojson | jq .spec.authsecret.name
 "quick-pcx-user-auth "
 $ kubectl get secrets -n demo quick-pcx-user-auth -o jsonpath='{.data.\username}' | base64 -d
 root⏎                                                                                     

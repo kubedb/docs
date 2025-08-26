@@ -2,9 +2,9 @@
 title: RabbitMQ Rotateauth Guide
 menu:
 docs_{{ .version }}:
-identifier: rm-rotate-auth-guide
+identifier: rm-rotateauth-guide
 name: Guide
-parent: rm-rotate-auth
+parent: rm-rotateauth
 weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -18,8 +18,8 @@ perform this rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential and 
 updates the existing secret with the new credential.
-2. **User Defined:** The user can create their own credentials by defining a Secret of type
-   `kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in 
+2. **User Defined:** The user can create their own credentials by defining a secret of type
+   `kubernetes.io/basic-auth` containing the desired `password` and then reference this secret in 
 the `RabbitMQOpsRequest` CR.
 
 ## Before You Begin
@@ -91,10 +91,10 @@ RabbitMQ.kubedb.com/rabbitmq created
 ```
 
 ## Verify authentication
-The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
+The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
+$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authsecret.name
 "rabbitmq-auth"
 $ kubectl get secret -n demo rabbitmq-auth -o jsonpath='{.data.username}' | base64 -d
 admin⏎          
@@ -290,7 +290,7 @@ Events:
 ```
 **Verify Auth is rotated**
 ```shell
-$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
+$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authsecret.name
 "rabbitmq-auth"
 $ kubectl get secret -n demo rabbitmq-auth -o jsonpath='{.data.username}' | base64 -d
 admin⏎                                        
@@ -397,7 +397,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Authentication:
-    Secret Ref:
+    secret Ref:
       Name:  rm-auth-user
   Database Ref:
     Name:   rabbitmq
@@ -417,7 +417,7 @@ Status:
     Status:                True
     Type:                  Reconcile
     Last Transition Time:  2025-08-15T15:19:29Z
-    Message:               Successfully referenced the user provided authSecret
+    Message:               Successfully referenced the user provided authsecret
     Observed Generation:   1
     Reason:                UpdateCredential
     Status:                True
@@ -502,7 +502,7 @@ Events:
   Warning  reconcile; ConditionStatus:True                        100s  KubeDB Ops-manager Operator  reconcile; ConditionStatus:True
   Warning  reconcile; ConditionStatus:True                        100s  KubeDB Ops-manager Operator  reconcile; ConditionStatus:True
   Warning  reconcile; ConditionStatus:True                        100s  KubeDB Ops-manager Operator  reconcile; ConditionStatus:True
-  Normal   UpdateCredential                                       100s  KubeDB Ops-manager Operator  Successfully referenced the user provided authSecret
+  Normal   UpdateCredential                                       100s  KubeDB Ops-manager Operator  Successfully referenced the user provided authsecret
   Warning  reconcile; ConditionStatus:True                        95s   KubeDB Ops-manager Operator  reconcile; ConditionStatus:True
   Warning  reconcile; ConditionStatus:True                        95s   KubeDB Ops-manager Operator  reconcile; ConditionStatus:True
   Warning  reconcile; ConditionStatus:True                        92s   KubeDB Ops-manager Operator  reconcile; ConditionStatus:True
@@ -524,7 +524,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
+$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authsecret.name
 "rm-auth-user"
 $ kubectl get secret -n demo rm-auth-user -o=jsonpath='{.data.username}' | base64 -d
 rabbit⏎                              

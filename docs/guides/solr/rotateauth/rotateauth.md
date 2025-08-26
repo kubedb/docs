@@ -14,7 +14,7 @@ section_menu_id: guides
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `Solr` user's authentication credentials using a `SolrOpsRequest`. There are two ways to perform this rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the existing secret with the new credential The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential..
-2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password`, and then reference this Secret in the `SolrOpsRequest`.
+2. **User Defined:** The user can create their own credentials by defining a secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password` and then reference this secret in the `SolrOpsRequest`.
 
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/solr/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
@@ -22,10 +22,10 @@ section_menu_id: guides
 > This tutorial demonstrates how to rotate authentication credentials for Solr managed by KubeDB. Before you begin, ensure that the Solr CRD is installed and running. If not, follow [this guide](/docs/guides/solr/quickstart/overview/index.md) to set it up.
 
 ## Verify authentication
-The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
+The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get solr -n demo solr-combined -ojson | jq .spec.authSecret.name
+$ kubectl get solr -n demo solr-combined -ojson | jq .spec.authsecret.name
 "solr-combined-auth"
 $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
 admin⏎           
@@ -166,7 +166,7 @@ Events:
 ```
 **Verify Auth is rotated**
 ```shell
-$  kubectl get solr -n demo solr-combined -ojson | jq .spec.authSecret.name
+$  kubectl get solr -n demo solr-combined -ojson | jq .spec.authsecret.name
 "solr-combined-auth"
 $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
 admin⏎ 
@@ -215,7 +215,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `solr-combined`cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on Solr.
-- `spec.authentication.secretRef.name` specifies that we are using `solr-combined-user-auth` as `spec.authSecret.name` for authentication.
+- `spec.authentication.secretRef.name` specifies that we are using `solr-combined-user-auth` as `spec.authsecret.name` for authentication.
 
 Let's create the `SolrOpsRequest` CR we have shown above,
 
@@ -248,7 +248,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Authentication:
-    Secret Ref:
+    secret Ref:
       Name:  solr-combined-user-auth
   Database Ref:
     Name:   solr-combined
@@ -263,7 +263,7 @@ Status:
     Status:                True
     Type:                  RotateAuth
     Last Transition Time:  2025-07-21T05:57:28Z
-    Message:               Successfully referenced the user provided authSecret
+    Message:               Successfully referenced the user provided authsecret
     Observed Generation:   1
     Reason:                UpdateCredential
     Status:                True
@@ -332,7 +332,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$  kubectl get solr -n demo solr-combined -ojson | jq .spec.authSecret.name
+$  kubectl get solr -n demo solr-combined -ojson | jq .spec.authsecret.name
 "solr-combined-user-auth"
 $ kubectl get secret -n demo solr-combined-user-auth -o jsonpath='{.data.username}' | base64 -d
 solr⏎      

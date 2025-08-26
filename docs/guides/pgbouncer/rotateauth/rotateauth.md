@@ -15,7 +15,7 @@ section_menu_id: guides
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `PgBouncer` user's authentication credentials using a `PgBouncerOpsRequest`. There are two ways to perform this rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the existing secret with the new credential The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential..
-2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password`, and then reference this Secret in the `PgBouncerOpsRequest`.
+2. **User Defined:** The user can create their own credentials by defining a secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password` and then reference this secret in the `PgBouncerOpsRequest`.
 
 ## Before You Begin
 
@@ -38,10 +38,10 @@ namespace/demo created
 > Note: Before you begin, you have to create `PgBouncer` CRD with the help of [this](/docs/guides/pgbouncer/quickstart/quickstart.md).
 
 ## Verify authentication
-The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
+The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get pgbouncer -n demo pgbouncer-server -ojson | jq .spec.authSecret.name
+$ kubectl get pgbouncer -n demo pgbouncer-server -ojson | jq .spec.authsecret.name
 "pgbouncer-server-auth"
 $ kubectl get secrets -n demo pgbouncer-server-auth -o jsonpath='{.data.\username}' | base64 -d
 pgbouncer⏎     
@@ -222,7 +222,7 @@ Events:
 
 **Verify Auth is rotated**
 ```shell
-$ kubectl get PgBouncer -n demo pgbouncer-server -ojson | jq .spec.authSecret.name
+$ kubectl get PgBouncer -n demo pgbouncer-server -ojson | jq .spec.authsecret.name
 "pgbouncer-server-auth"
 $ kubectl get secret -n demo pgbouncer-server-auth -o=jsonpath='{.data.username}' | base64 -d
 pgbouncer⏎      
@@ -271,7 +271,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `pgbouncer-server`cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on PgBouncer.
-- `spec.authentication.secretRef.name` specifies that we are using `quick-pb-user-auth` as `spec.authSecret.name` for authentication.
+- `spec.authentication.secretRef.name` specifies that we are using `quick-pb-user-auth` as `spec.authsecret.name` for authentication.
 
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
@@ -304,7 +304,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Authentication:
-    Secret Ref:
+    secret Ref:
       Name:  quick-pb-user-auth
   Database Ref:
     Name:   pgbouncer-server
@@ -319,7 +319,7 @@ Status:
     Status:                True
     Type:                  RotateAuth
     Last Transition Time:  2025-07-18T04:39:59Z
-    Message:               Successfully referenced the user provided authSecret
+    Message:               Successfully referenced the user provided authsecret
     Observed Generation:   1
     Reason:                UpdateCredential
     Status:                True
@@ -391,7 +391,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$  kubectl get PgBouncer -n demo pgbouncer-server -ojson | jq .spec.authSecret.name
+$  kubectl get PgBouncer -n demo pgbouncer-server -ojson | jq .spec.authsecret.name
 "quick-pb-user-auth"
 $ kubectl get secrets -n demo quick-pb-user-auth -o jsonpath='{.data.\username}' | base64 -d
 user⏎                                                                                       

@@ -2,7 +2,7 @@
 title: MySQL Rotateauth Guide
 menu:
 docs_{{ .version }}:
-identifier: mysql-rotate-auth-guide
+identifier: guides-mysql-rotate-auth-guide
 name: Guide
 parent: guides-mysql-rotate-auth
 weight: 10
@@ -18,8 +18,8 @@ rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential and 
 updates the existing secret with the new credential.
-2. **User Defined:** The user can create their own credentials by defining a Secret of type
-   `kubernetes.io/basic-auth` containing the desired `password`, and then reference this Secret in the
+2. **User Defined:** The user can create their own credentials by defining a secret of type
+   `kubernetes.io/basic-auth` containing the desired `password` and then reference this secret in the
    `MySQLopsrequest` CR.
 
 ## Before You Begin
@@ -95,10 +95,10 @@ mysql.kubedb.com/mysql-quickstart created
 ##Create a Mysql Database
 The user can verify whether they are authorized by executing a query directly in the database. To
 do this, the user needs `username` and `password` in order to connect to the database. Below is an
-example showing how to retrieve the credentials from the Secret.
+example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get mysql -n demo mysql-quickstart -ojson | jq .spec.authSecret.name
+$ kubectl get mysql -n demo mysql-quickstart -ojson | jq .spec.authsecret.name
 "mysql-quickstart-auth"
 $ kubectl get secret -n demo mysql-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 root⏎                                
@@ -205,7 +205,7 @@ Status:
     Last Transition Time:  2025-08-20T09:16:42Z
     Message:               Successfully generated new credential
     Observed Generation:   1
-    Reason:                patchedSecret
+    Reason:                patchedsecret
     Status:                True
     Type:                  UpdateCredential
     Last Transition Time:  2025-08-20T09:16:44Z
@@ -262,7 +262,7 @@ Events:
 ```
 **Verify Auth is rotated**
 ```shell
-$ kubectl get mysql -n demo mysql-quickstart -ojson | jq .spec.authSecret.name
+$ kubectl get mysql -n demo mysql-quickstart -ojson | jq .spec.authsecret.name
 "mysql-quickstart-auth"
 $ kubectl get secret -n demo mysql-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 root⏎                                    
@@ -388,7 +388,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Authentication:
-    Secret Ref:
+    secret Ref:
       Name:  mysql-quickstart-auth-user
   Database Ref:
     Name:   mysql-quickstart
@@ -403,9 +403,9 @@ Status:
     Status:                True
     Type:                  Running
     Last Transition Time:  2025-08-20T09:49:59Z
-    Message:               Successfully referenced the user provided authSecret
+    Message:               Successfully referenced the user provided authsecret
     Observed Generation:   1
-    Reason:                patchedSecret
+    Reason:                patchedsecret
     Status:                True
     Type:                  UpdateCredential
     Last Transition Time:  2025-08-20T09:50:01Z
@@ -464,7 +464,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get my -n demo mysql-quickstart -ojson | jq .spec.authSecret.name
+$ kubectl get my -n demo mysql-quickstart -ojson | jq .spec.authsecret.name
 "mysql-quickstart-auth-user"
 $ kubectl get secret -n demo mysql-quickstart-auth-user -o=jsonpath='{.data.username}' | base64 -d
 root⏎                                                                

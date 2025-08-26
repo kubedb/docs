@@ -16,14 +16,14 @@ section_menu_id: guides
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `Pgpool` user's authentication credentials using a `PgpoolOpsRequest`. There are two ways to perform this rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the existing secret with the new credential The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential..
-2. **User Defined:** The user can create their own credentials by defining a Secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password`, and then reference this Secret in the `PgpoolOpsRequest`.
+2. **User Defined:** The user can create their own credentials by defining a secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password` and then reference this secret in the `PgpoolOpsRequest`.
 
 > Note: Before you begin, you have to create `Pgpool` CRD with the help of [this](/docs/guides/pgpool/quickstart/quickstart.md).
 ## Verify authentication
-The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
+The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get Pgpool -n pool quick-pgpool -ojson | jq .spec.authSecret.name
+$ kubectl get Pgpool -n pool quick-pgpool -ojson | jq .spec.authsecret.name
 "quick-pgpool-auth"
 $ kubectl get secrets -n pool quick-pgpool-auth -o jsonpath='{.data.\username}' | base64 -d
 pcp⏎               
@@ -160,7 +160,7 @@ Events:
 
 **Verify Auth is rotated**
 ```shell
-$  kubectl get Pgpool -n pool quick-pgpool -ojson | jq .spec.authSecret.name
+$  kubectl get Pgpool -n pool quick-pgpool -ojson | jq .spec.authsecret.name
 "quick-pgpool-auth"
 $ kubectl get secrets -n pool quick-pgpool-auth -o jsonpath='{.data.\username}' | base64 -d
 pcp⏎     
@@ -209,7 +209,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `quick-pgpool`cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on Pgpool.
-- `spec.authentication.secretRef.name` specifies that we are using `quick-pp-user-auth` as `spec.authSecret.name` for authentication.
+- `spec.authentication.secretRef.name` specifies that we are using `quick-pp-user-auth` as `spec.authsecret.name` for authentication.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
@@ -242,7 +242,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Authentication:
-    Secret Ref:
+    secret Ref:
       Name:  quick-pp-user-auth
   Database Ref:
     Name:   quick-pgpool
@@ -263,7 +263,7 @@ Status:
     Status:                True
     Type:                  DatabasePauseSucceeded
     Last Transition Time:  2025-08-01T08:55:43Z
-    Message:               Successfully referenced the user provided authSecret
+    Message:               Successfully referenced the user provided authsecret
     Observed Generation:   1
     Reason:                UpdateCredential
     Status:                True
@@ -322,7 +322,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get pgpool -n pool quick-pgpool -ojson | jq .spec.authSecret.name
+$ kubectl get pgpool -n pool quick-pgpool -ojson | jq .spec.authsecret.name
 "quick-pp-user-auth"
 $ kubectl get secrets -n pool quick-pp-user-auth -o jsonpath='{.data.\username}' | base64 -d
 user⏎                                                                                       

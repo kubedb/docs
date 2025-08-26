@@ -5,6 +5,6 @@ docs_{{ .version }}:
 identifier: rm-rotateauth
 name: Rotate Authentication
 parent: rm-guides
-weight: 101
+weight: 105
 menu_name: docs_{{ .version }}
 ---

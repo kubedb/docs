@@ -5,6 +5,6 @@ menu:
     identifier: ms-rotate-auth
     name: Rotate Authentication 
     parent: guides-mssqlserver
-    weight: 85
+    weight: 86
 menu_name: docs_{{ .version }}
 ---

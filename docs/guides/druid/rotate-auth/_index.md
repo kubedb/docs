@@ -5,6 +5,6 @@ menu:
     identifier: guides-druid-rotate-auth
     name: Rotate Authentication
     parent: guides-druid
-    weight: 130
+    weight: 135
 menu_name: docs_{{ .version }}
 ---
