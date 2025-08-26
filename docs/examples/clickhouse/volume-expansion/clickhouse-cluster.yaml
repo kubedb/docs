@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: ClickHouse
 metadata:
-  name: ch
+  name: clickhouse-prod
   namespace: demo
 spec:
   version: 24.4.1
@@ -29,7 +29,7 @@ spec:
                     memory: 4Gi
                   requests:
                     cpu: 500m
-                    memory: 2Gi
+                    memory: 1Gi
             initContainers:
               - name: clickhouse-init
                 resources:
