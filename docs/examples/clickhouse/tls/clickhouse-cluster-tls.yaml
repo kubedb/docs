@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: ClickHouse
 metadata:
-  name: ch
+  name: clickhouse-prod-tls
   namespace: demo
 spec:
   version: 24.4.1
@@ -49,7 +49,7 @@ spec:
     issuerRef:
       apiGroup: "cert-manager.io"
       kind: Issuer
-      name: ch-issuer
+      name: clickhouse-ca-issuer
     certificates:
       - alias: server
         subject:
