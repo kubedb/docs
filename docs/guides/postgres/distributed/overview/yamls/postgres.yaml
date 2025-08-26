@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: postgres
+  namespace: demo
+spec:
+  distributed: true
+  deletionPolicy: WipeOut
+  replicas: 3
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 500Mi
+  storageType: Durable
+  version: "17.2"
+  podTemplate:
+    spec:
+      podPlacementPolicy:
+        name: distributed-postgres
+
