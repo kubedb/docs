@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ClickHouseOpsRequest
+metadata:
+  name: chops-scale-horizontal-up
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: clickhouse-prod
+  horizontalScaling:
+    cluster:
+      - clusterName: appscode-cluster
+        replicas: 4
