@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: ch-restart
     name: Restart
-    parent: ch-cassandra-guides
+    parent: ch-clickhouse-guides
     weight: 46
 menu_name: docs_{{ .version }}
 ---
