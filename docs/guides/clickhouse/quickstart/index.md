@@ -357,7 +357,7 @@ Query id: 12353f2c-d6d1-4dbc-a4cf-aa2f6a5e0ce4
 ```
 ## spec.deletionPolicy
 
-`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Cassandra` crd or which resources KubeDB should keep or delete when you delete `Cassandra` crd. KubeDB provides following four deletion policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `ClickHouse` crd or which resources KubeDB should keep or delete when you delete `ClickHouse` crd. KubeDB provides following four deletion policies:
 
 - DoNotTerminate
 - WipeOut
@@ -366,7 +366,7 @@ Query id: 12353f2c-d6d1-4dbc-a4cf-aa2f6a5e0ce4
 
 When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`.
 
-Following table show what KubeDB does when you delete Cassandra crd for different termination policies,
+Following table show what KubeDB does when you delete ClickHouse crd for different termination policies,
 
 | Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |

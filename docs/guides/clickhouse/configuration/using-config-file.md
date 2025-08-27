@@ -106,7 +106,7 @@ spec:
 clickhouse.kubedb.com/ch-standalone created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `cas-custom-config-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `ch-standalone-0` has been created.
 
 Check that the petset's pod is running
 
