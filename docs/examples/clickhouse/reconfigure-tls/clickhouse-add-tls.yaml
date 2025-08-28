@@ -1,0 +1,26 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ClickHouseOpsRequest
+metadata:
+  name: chops-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: clickhouse-prod
+  tls:
+    sslVerificationMode: "strict"
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: clickhouse-ca-issuer
+    certificates:
+      - alias: server
+        subject:
+          organizations:
+            - kubedb:server
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
+  timeout: 10m
+  apply: IfReady

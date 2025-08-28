@@ -1,14 +1,16 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ClickHouseOpsRequest
 metadata:
-  name: chops-cluster-reconfigure-with-secret
+  name: chops-update-issuer
   namespace: demo
 spec:
-  type: Reconfigure
+  type: ReconfigureTLS
   databaseRef:
     name: clickhouse-prod
-  configuration:
-    configSecret:
-      name: new-ch-custom-config
+  tls:
+    issuerRef:
+      name: ch-new-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
   timeout: 10m
   apply: IfReady

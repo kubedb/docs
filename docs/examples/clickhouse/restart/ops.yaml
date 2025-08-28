@@ -1,14 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ClickHouseOpsRequest
 metadata:
-  name: chops-cluster-reconfigure-with-secret
+  name: clickhouse-restart
   namespace: demo
 spec:
-  type: Reconfigure
+  type: Restart
   databaseRef:
     name: clickhouse-prod
-  configuration:
-    configSecret:
-      name: new-ch-custom-config
   timeout: 10m
   apply: IfReady

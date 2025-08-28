@@ -1,13 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ClickHouseOpsRequest
 metadata:
-  name: ch-update-version
+  name: chops-scale-horizontal-down
   namespace: demo
 spec:
-  type: UpdateVersion
+  type: HorizontalScaling
   databaseRef:
     name: clickhouse-prod
-  updateVersion:
-    targetVersion: 25.7.1
-  timeout: 5m
-  apply: IfReady
+  horizontalScaling:
+      replicas: 3
