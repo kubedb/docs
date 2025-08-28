@@ -8,6 +8,7 @@ spec:
   databaseRef:
     name: clickhouse-prod
   tls:
+    sslVerificationMode: "strict"
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer

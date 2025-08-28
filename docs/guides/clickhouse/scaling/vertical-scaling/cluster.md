@@ -68,7 +68,7 @@ spec:
             requests:
               storage: 1Gi
     cluster:
-      - name: appscode-cluster
+        name: appscode-cluster
         shards: 2
         replicas: 2
         podTemplate:
@@ -153,16 +153,14 @@ spec:
   databaseRef:
     name: clickhouse-prod
   verticalScaling:
-    cluster:
-      - clusterName: appscode-cluster
-        node:
-          resources:
-            requests:
-              memory: "3Gi"
-              cpu: "3"
-            limits:
-              memory: "3Gi"
-              cpu: "3"
+    node:
+      resources:
+        requests:
+          memory: "3Gi"
+          cpu: "3"
+        limits:
+          memory: "3Gi"
+          cpu: "3"
 ```
 
 Here,
