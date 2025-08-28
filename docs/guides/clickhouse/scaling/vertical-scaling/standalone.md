@@ -121,7 +121,7 @@ spec:
   databaseRef:
     name: clickhouse-prod
   verticalScaling:
-    standalone:
+    node:
       resources:
         requests:
           memory: "3Gi"

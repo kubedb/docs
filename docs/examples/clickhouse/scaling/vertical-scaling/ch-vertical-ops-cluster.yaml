@@ -8,13 +8,11 @@ spec:
   databaseRef:
     name: clickhouse-prod
   verticalScaling:
-    cluster:
-      - clusterName: appscode-cluster
-        node:
-          resources:
-            requests:
-              memory: "3Gi"
-              cpu: "3"
-            limits:
-              memory: "3Gi"
-              cpu: "3"
+    node:
+      resources:
+        requests:
+          memory: "3Gi"
+          cpu: "3"
+        limits:
+          memory: "3Gi"
+          cpu: "3"

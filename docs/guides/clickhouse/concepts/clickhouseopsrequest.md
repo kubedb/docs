@@ -65,9 +65,7 @@ spec:
   databaseRef:
     name: clickhouse-prod
   horizontalScaling:
-    cluster:
-      - clusterName: appscode-cluster
-        replicas: 3
+    replicas: 3
   type: HorizontalScaling
 status:
   conditions:
@@ -96,7 +94,6 @@ spec:
   type: VerticalScaling
   verticalScaling:
     cluster:
-      - clusterName: appscode-cluster
         node:
           resources:
             limits:
@@ -217,6 +214,7 @@ spec:
   databaseRef:
     name: clickhouse-prod
   tls:
+    sslVerificationMode: "strict"
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer

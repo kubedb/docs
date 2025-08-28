@@ -61,7 +61,7 @@ spec:
             requests:
               storage: 1Gi
     cluster:
-      - name: appscode-cluster
+        name: appscode-cluster
         shards: 2
         replicas: 2
         podTemplate:
@@ -184,6 +184,7 @@ spec:
   databaseRef:
     name: clickhouse-prod
   tls:
+    sslVerificationMode: "relaxed"
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
