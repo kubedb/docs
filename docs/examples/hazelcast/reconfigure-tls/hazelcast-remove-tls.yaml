@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HazelcastOpsRequest
+metadata:
+  name: hzops-remove
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: hz-prod
+  tls:
+    remove: true
