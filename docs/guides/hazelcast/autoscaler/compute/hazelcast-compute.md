@@ -1,9 +1,9 @@
 ---
-title: Hazelcast Combined Autoscaling
+title: Hazelcast  Autoscaling
 menu:
   docs_{{ .version }}:
-    identifier: hz-auto-scaling-combined
-    name: Combined Cluster
+    identifier: hz-auto-scaling
+    name:  Cluster
     parent: hz-compute-auto-scaling
     weight: 20
 menu_name: docs_{{ .version }}
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Autoscaling the Compute Resource of a Hazelcast Combined Cluster
+# Autoscaling the Compute Resource of a Hazelcast  Cluster
 
-This guide will show you how to use `KubeDB` to autoscale compute resources i.e. cpu and memory of a Hazelcast combined cluster.
+This guide will show you how to use `KubeDB` to autoscale compute resources i.e. cpu and memory of a Hazelcast  cluster.
 
 ## Before You Begin
 
@@ -39,18 +39,18 @@ namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/hazelcast](/docs/examples/hazelcast) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-## Autoscaling of Combined Cluster
+## Autoscaling of  Cluster
 
 Before deploying hazelcast we need to create license secret since we are running enterprise version of hazelcast.
 
 ```bash
-kubectl create secret generic hz-license-key -n demo --from-literal=licenseKey=TrialLicense#10Nodes#eyJhbGxvd2VkTmF0aXZlTWVtb3J5U2l6ZSI6MTAwLCJhbGxvd2VkTnVtYmVyT2ZOb2RlcyI6MTAsImFsbG93ZWRUaWVyZWRTdG9yZVNpemUiOjAsImFsbG93ZWRUcGNDb3JlcyI6MCwiY3JlYXRpb25EYXRlIjoxNzQ4ODQwNDc3LjYzOTQ0NzgxNiwiZXhwaXJ5RGF0ZSI6MTc1MTQxNDM5OS45OTk5OTk5OTksImZlYXR1cmVzIjpbMCwyLDMsNCw1LDYsNyw4LDEwLDExLDEzLDE0LDE1LDE3LDIxLDIyXSwiZ3JhY2VQZXJpb2QiOjAsImhhemVsY2FzdFZlcnNpb24iOjk5LCJvZW0iOmZhbHNlLCJ0cmlhbCI6dHJ1ZSwidmVyc2lvbiI6IlY3In0=.6PYD6i-hejrJ5Czgc3nYsmnwF7mAI-78E8LFEuYp-lnzXh_QLvvsYx4ECD0EimqcdeG2J5sqUI06okLD502mCA==
+kubectl create secret generic hz-license-key -n demo --from-literal=licenseKey='you hazelcast license key'
 secret/hz-license-key created
 ```
 
-Here, we are going to deploy a `Hazelcast` Combined Cluster using a supported version by `KubeDB` operator. Then we are going to apply `HazelcastAutoscaler` to set up autoscaling.
+Here, we are going to deploy a `Hazelcast`  Cluster using a supported version by `KubeDB` operator. Then we are going to apply `HazelcastAutoscaler` to set up autoscaling.
 
-#### Deploy Hazelcast Combined Cluster
+#### Deploy Hazelcast  Cluster
 
 In this section, we are going to deploy a Hazelcast Topology database with version `5.5.2`.  Then, in the next section we will set up autoscaling for this database using `HazelcastAutoscaler` CRD. Below is the YAML of the `Hazelcast` CR that we are going to create,
 
@@ -89,7 +89,7 @@ spec:
 Let's create the `Hazelcast` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/hazelcast-combined.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/hazelcast.yaml
 hazelcast.kubedb.com/hazelcast-dev created
 ```
 
@@ -144,13 +144,13 @@ Here, we are going to set up compute resource autoscaling using a HazelcastAutos
 
 #### Create HazelcastAutoscaler Object
 
-In order to set up compute resource autoscaling for this combined cluster, we have to create a `HazelcastAutoscaler` CRO with our desired configuration. Below is the YAML of the `HazelcastAutoscaler` object that we are going to create,
+In order to set up compute resource autoscaling for this  cluster, we have to create a `HazelcastAutoscaler` CRO with our desired configuration. Below is the YAML of the `HazelcastAutoscaler` object that we are going to create,
 
 ```yaml
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: HazelcastAutoscaler
 metadata:
-  name: hz-combined-autoscaler
+  name: hz--autoscaler
   namespace: demo
 spec:
   databaseRef:
@@ -191,8 +191,8 @@ Here,
 Let's create the `HazelcastAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/compute/hazelcast-combined-autoscaler.yaml
-hazelcastautoscaler.autoscaling.kubedb.com/hz-combined-autoscaler created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/compute/hazelcast-autoscaler.yaml
+hazelcastautoscaler.autoscaling.kubedb.com/hz-autoscaler created
 ```
 
 #### Verify Autoscaling is set up successfully
@@ -200,8 +200,8 @@ hazelcastautoscaler.autoscaling.kubedb.com/hz-combined-autoscaler created
 Let's check that the `hazelcastautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl describe hazelcastautoscaler hz-combined-autoscaler -n demo
-Name:         hz-combined-autoscaler
+$ kubectl describe hazelcastautoscaler hz--autoscaler -n demo
+Name:         hz-autoscaler
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -335,7 +335,7 @@ Metadata:
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  HazelcastAutoscaler
-    Name:                  hz-combined-autoscaler
+    Name:                  hz--autoscaler
     UID:                   860b6bb9-55a0-48d1-b02f-35b7a4bb696d
   Resource Version:        5631147
   UID:                     586fc38a-16d7-4a26-8c89-4c04395298dc
@@ -453,7 +453,7 @@ $ kubectl get hazelcast -n demo hazelcast-dev -o json | jq '.spec.podTemplate.sp
 ```
 
 
-The above output verifies that we have successfully auto scaled the resources of the Hazelcast combined cluster.
+The above output verifies that we have successfully auto-scaled the resources of the Hazelcast  cluster.
 
 ## Cleaning Up
 
@@ -461,7 +461,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete hazelcastopsrequest -n demo hzops-hazelcast-dev-68lrza 
-kubectl delete hazelcastautoscaler -n demo hz-combined-autoscaler
+kubectl delete hazelcastautoscaler -n demo hz--autoscaler
 kubectl delete hz -n demo hazelcast-dev
 kubectl delete ns demo
 ```

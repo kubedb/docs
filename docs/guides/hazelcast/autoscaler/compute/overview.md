@@ -40,7 +40,7 @@ The Auto Scaling process consists of the following steps:
 
 3. When the operator finds a `Hazelcast` CRO, it creates required number of `Statefulsets` and related necessary stuff like secrets, services, etc.
 
-4. Then, in order to set up autoscaling of the various components (ie. Combined) of the `Hazelcast` cluster the user creates a `HazelcastAutoscaler` CRO with desired configuration.
+4. Then, in order to set up autoscaling of the various components (ie. ) of the `Hazelcast` cluster the user creates a `HazelcastAutoscaler` CRO with desired configuration.
 
 5. `KubeDB` Autoscaler operator watches the `HazelcastAutoscaler` CRO.
 

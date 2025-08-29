@@ -43,7 +43,7 @@ The Auto Scaling process consists of the following steps:
 
 - Each Statefulset creates a Persistent Volume according to the Volume Claim Template provided in the Statefulset configuration.
 
-4. Then, in order to set up storage autoscaling of the various components (ie. Combined, Node) of the `Hazelcast` cluster, the user creates a `HazelcastAutoscaler` CRO with desired configuration.
+4. Then, in order to set up storage autoscaling of the various components (ie. Node) of the `Hazelcast` cluster, the user creates a `HazelcastAutoscaler` CRO with desired configuration.
 
 5. `KubeDB` Autoscaler operator watches the `HazelcastAutoscaler` CRO.
 

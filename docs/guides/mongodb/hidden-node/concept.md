@@ -2,7 +2,7 @@
 title: MongoDB Hidden-Node Concept
 menu:
   docs_{{ .version }}:
-    identifier: mg-hidden-concepts
+    identifier: mg-hidden-concept
     name: Concept
     parent: mg-hidden
     weight: 10

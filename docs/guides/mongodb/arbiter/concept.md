@@ -2,7 +2,7 @@
 title: MongoDB Arbiter Concept
 menu:
   docs_{{ .version }}:
-    identifier: mg-arbiter-concepts
+    identifier: mg-arbiter-concept
     name: Concept
     parent: mg-arbiter
     weight: 10

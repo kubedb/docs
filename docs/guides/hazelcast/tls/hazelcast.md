@@ -18,11 +18,11 @@ KubeDB supports providing TLS/SSL encryption for `Hazelcast`. This tutorial will
 
 ## Before You Begin
 
-- At first, you need to have a Kubernetes combined, and the kubectl command-line tool must be configured to communicate with your combined. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+- At first, you need to have a Kubernetes, and the kubectl command-line tool must be configured to communicate with your . If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install [`cert-manger`](https://cert-manager.io/docs/installation/) v1.0.0 or later to your combined to manage your SSL/TLS certificates.
+- Install [`cert-manger`](https://cert-manager.io/docs/installation/) v1.0.0 or later to your to manage your SSL/TLS certificates.
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster combined following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster  following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -136,7 +136,7 @@ spec:
 
 ```
 
-### Deploy Hazelcast Combined with TLS/SSL
+### Deploy Hazelcast with TLS/SSL
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/tls/hazelcast-sample.yaml
@@ -151,7 +151,7 @@ NAME               TYPE                  VERSION   STATUS   AGE
 hazelcast-sample   kubedb.com/v1alpha2   5.5.2     Ready    165m
 ```
 
-### Verify TLS/SSL in Hazelcast Combined
+### Verify TLS/SSL in Hazelcast 
 
 ```bash
 $ kubectl describe secret hazelcast-sample-client-cert -n demo
@@ -192,7 +192,7 @@ bash-5.1$ ls
 ca.crt	keystore.p12  tls.crt  tls.key	truststore.p12
 ```
 
-From the above output, we can see that we are able to connect to the Hazelcast combined using the TLS configuration.
+From the above output, we can see that we are able to connect to the Hazelcast using the TLS configuration.
 
 ## Cleaning up
 
@@ -206,7 +206,7 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Monitor your Hazelcast combined with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/hazelcast/monitoring/prometheus-operator.md).
-- Monitor your Hazelcast combined with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/hazelcast/monitoring/prometheus-builtin.md).
+- Monitor your Hazelcast  with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/hazelcast/monitoring/prometheus-operator.md).
+- Monitor your Hazelcast  with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/hazelcast/monitoring/prometheus-builtin.md).
 - Detail concepts of [Hazelcast object](/docs/guides/hazelcast/concepts/hazelcast.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

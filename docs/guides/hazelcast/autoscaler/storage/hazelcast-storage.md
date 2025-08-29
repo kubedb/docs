@@ -1,9 +1,9 @@
 ---
-title: Hazelcast Combined Autoscaling
+title: Hazelcast  Autoscaling
 menu:
   docs_{{ .version }}:
-    identifier: hz-storage-auto-scaling-combined
-    name: Combined Cluster
+    identifier: hz-storage-auto-scaling-
+    name:  Cluster
     parent: hz-storage-auto-scaling
     weight: 20
 menu_name: docs_{{ .version }}
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Storage Autoscaling of a Hazelcast Combined Cluster
+# Storage Autoscaling of a Hazelcast  Cluster
 
-This guide will show you how to use `KubeDB` to autoscale the storage of a Hazelcast Combined cluster.
+This guide will show you how to use `KubeDB` to autoscale the storage of a Hazelcast  cluster.
 
 ## Before You Begin
 
@@ -43,7 +43,7 @@ namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/hazelcast](/docs/examples/hazelcast) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-## Storage Autoscaling of Combined Cluster
+## Storage Autoscaling of  Cluster
 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
@@ -55,11 +55,11 @@ standard (default)   kubernetes.io/gce-pd   Delete          Immediate           
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `Hazelcast` combined using a supported version by `KubeDB` operator. Then we are going to apply `HazelcastAutoscaler` to set up autoscaling.
+Now, we are going to deploy a `Hazelcast`  using a supported version by `KubeDB` operator. Then we are going to apply `HazelcastAutoscaler` to set up autoscaling.
 
-#### Deploy Hazelcast combined
+#### Deploy Hazelcast 
 
-In this section, we are going to deploy a Hazelcast combined cluster with version `5.5.2`.  Then, in the next section we will set up autoscaling for this cluster using `HazelcastAutoscaler` CRD. Below is the YAML of the `Hazelcast` CR that we are going to create,
+In this section, we are going to deploy a Hazelcast  cluster with version `5.5.2`.  Then, in the next section we will set up autoscaling for this cluster using `HazelcastAutoscaler` CRD. Below is the YAML of the `Hazelcast` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -96,7 +96,7 @@ spec:
 Let's create the `Hazelcast` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/hazelcast-combined.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/hazelcast.yaml
 hazelcast.kubedb.com/hazelcast-dev created
 ```
 
@@ -134,13 +134,13 @@ Here, we are going to set up storage autoscaling using a HazelcastAutoscaler Obj
 
 #### Create HazelcastAutoscaler Object
 
-In order to set up vertical autoscaling for this combined cluster, we have to create a `HazelcastAutoscaler` CRO with our desired configuration. Below is the YAML of the `HazelcastAutoscaler` object that we are going to create,
+In order to set up vertical autoscaling for this  cluster, we have to create a `HazelcastAutoscaler` CRO with our desired configuration. Below is the YAML of the `HazelcastAutoscaler` object that we are going to create,
 
 ```yaml
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: HazelcastAutoscaler
 metadata:
-  name: hz-storage-autoscaler-combined
+  name: hz-storage-autoscaler-
   namespace: demo
 spec:
   databaseRef:
@@ -168,8 +168,8 @@ Here,
 Let's create the `HazelcastAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaling/storage/hazelcast-storage-autoscaler-combined.yaml
-hazelcastautoscaler.autoscaling.kubedb.com/hz-storage-autoscaler-combined created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaling/storage/hazelcast-storage-autoscaler.yaml
+hazelcastautoscaler.autoscaling.kubedb.com/hz-storage-autoscaler created
 ```
 
 #### Storage Autoscaling is set up successfully
@@ -178,11 +178,11 @@ Let's check that the `hazelcastautoscaler` resource is created successfully,
 
 ```bash
 NAME                             AGE
-hz-storage-autoscaler-combined   8s
+hz-storage-autoscaler   8s
 
 
-$ kubectl describe hazelcastautoscaler -n demo hz-storage-autoscaler-combined 
-Name:         hz-storage-autoscaler-combined
+$ kubectl describe hazelcastautoscaler -n demo hz-storage-autoscaler
+Name:         hz-storage-autoscaler
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -286,7 +286,7 @@ Metadata:
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  HazelcastAutoscaler
-    Name:                  hz-storage-autoscaler-combined
+    Name:                  hz-storage-autoscaler-
     UID:                   9b6ba215-73d3-4b6d-bff7-495c01449185
   Resource Version:        5638392
   UID:                     4146ba75-2d77-42a4-813c-160c5a008595
@@ -421,7 +421,7 @@ Events:
 
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the combined cluster has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the  cluster has expanded to meet the desired state, Let's check,
 
 ```bash
 $ kubectl get statefulset -n demo hazelcast-dev -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -432,7 +432,7 @@ pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51   1462Mi        RWO            Delete  
 pvc-f068d245-718b-4561-b452-f3130bb260f6   1462Mi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-1         longhorn              <unset>    30m1s
 ```
 
-The above output verifies that we have successfully autoscaled the volume of the Hazelcast combined cluster.
+The above output verifies that we have successfully autoscaled the volume of the Hazelcast  cluster.
 
 ## Cleaning Up
 
@@ -440,7 +440,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete hazelcastopsrequests -n demo zops-hazelcast-dev-a89p
-kubectl delete hazelcastautoscaler -n demo hz-storage-autoscaler-combined
+kubectl delete hazelcastautoscaler -n demo hz-storage-autoscaler
 kubectl delete hz -n demo hazelcast-dev
 ```
 

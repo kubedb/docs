@@ -24,13 +24,13 @@ Like any official Kubernetes resource, a `HazelcastAutoscaler` has `TypeMeta`, `
 
 Here, some sample `HazelcastAutoscaler` CROs for autoscaling different components of database is given below:
 
-**Sample `HazelcastAutoscaler` for combined cluster:**
+**Sample `HazelcastAutoscaler` for  cluster:**
 
 ```yaml
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: HazelcastAutoscaler
 metadata:
-  name: hz-autoscaler-combined
+  name: hz-autoscaler
   namespace: demo
 spec:
   databaseRef:
@@ -76,7 +76,7 @@ These are the options to pass in the internally created opsRequest CRO. `opsRequ
 
 `spec.compute` specifies the autoscaling configuration for the compute resources i.e. cpu and memory of the database components. This field consists of the following sub-field:
 
-- `spec.compute.hazelcast` indicates the desired compute autoscaling configuration for a combined Hazelcast cluster.
+- `spec.compute.hazelcast` indicates the desired compute autoscaling configuration for a Hazelcast cluster.
 
 All of them has the following sub-fields:
 
@@ -96,7 +96,7 @@ There are two more fields, those are only specifiable for the percona variant in
 
 `spec.storage` specifies the autoscaling configuration for the storage resources of the database components. This field consists of the following sub-field:
 
-- `spec.storage.node` indicates the desired storage autoscaling configuration for a combined Hazelcast cluster.
+- `spec.storage.node` indicates the desired storage autoscaling configuration for a Hazelcast cluster.
 
 All of them has the following sub-fields:
 

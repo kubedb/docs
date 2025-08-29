@@ -2,7 +2,7 @@
 title: MongoDB ReplicaSet Concept
 menu:
   docs_{{ .version }}:
-    identifier: mg-clustering-replicaset-concepts
+    identifier: mg-clustering-replicaset-concept
     name: ReplicaSet Concept
     parent: mg-clustering-mongodb
     weight: 10
