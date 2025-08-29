@@ -38,25 +38,19 @@ namespace/demo created
 
 Now, we are going to deploy a  `Ignite` cluster using a supported version by `KubeDB` operator. Then we are going to apply `IgniteOpsRequest` to reconfigure its configuration.
 
-### Prepare Ignite Standalone Database
+### Prepare Ignite Database
 
 Now, we are going to deploy a `Ignite` cluster with version `2.17.0`.
 
-### Deploy Ignite standalone 
+### Deploy Ignite
 
 At first, we will create `ignite.conf` file containing required configuration settings.
-
-```ini
-$ cat ignite.conf
-default_vhost = /customvhost
-```
-Here, `default_vhost` is set to `/customvhost` instead of the default vhost `/`.
 
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo rabbit-custom-config --from-file=./ignite.conf
-secret/rabbit-custom-config created
+$ kubectl create secret generic -n demo ig-custom-config --from-file=./node-configuration.xml
+secret/ig-custom-config created
 ```
 
 In this section, we are going to create a Ignite object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Ignite` CR that we are going to create,
@@ -78,13 +72,13 @@ spec:
       requests:
         storage: 1Gi
   configSecret:
-    name: rabbit-custom-config
+    name: ig-custom-config
 ```
 
 Let's create the `Ignite` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/cluster/rabbit-custom-config.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/cluster/ig-custom-config.yaml
 ignite.kubedb.com/ig-cluster created
 ```
 
@@ -107,30 +101,9 @@ $ kubectl get secrets -n demo ig-cluster-admin-cred  -o jsonpath='{.data.\passwo
 m6lXjZugrC4VEpB8
 ```
 
-Now let's check the configuration we have provided by using ignite's inbuilt cli.
-
-```bash
-$ kubectl exec -it -n demo ig-cluster-0 -- bash
-Defaulted container "ignite" out of: ignite, ignite-init (init)
-ig-cluster-0:/$ ignitectl list_vhosts
-Listing vhosts ...
-name
-/customvhost
-```
-
-Provided custom vhost is there and is defaulted.
-
 ### Reconfigure using new secret
 
-Now we will update this default vhost to `/newvhost` using Reconfigure Ops-Request.
-
-Now, Let's edit the `ignite.conf` file containing required configuration settings.
-
-```bash
-$ echo "default_vhost = /newvhost" > ignite.conf
-```
-
-Then, we will create a new secret with this configuration file.
+Now, we will create a new secret with this configuration file.
 
 ```bash
 $ kubectl create secret generic -n demo new-custom-config --from-file=./ignite.conf
@@ -160,7 +133,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-standalone` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `igps-reconfigure` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.configuration.configSecret.name` specifies the name of the new secret.
 - Have a look [here](/docs/guides/ignite/concepts/opsrequest.md#specconfiguration) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
@@ -168,7 +141,7 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/opsrequests/rabbit-reconfigure-with-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/opsrequests/ig-reconfigure-with-secret.yaml
 igniteopsrequest.ops.kubedb.com/reconfigure-ig-cluster created
 ```
 
@@ -267,19 +240,6 @@ Events:
   Normal   Successful                                             5m39s  KubeDB Ops-manager Operator  Successfully resumed Ignite database: demo/ig-cluster for IgniteOpsRequest: reconfigure-ig-cluster
 ```
 
-Now let's check the configuration we have provided after reconfiguration.
-
-```bash
-$ kubectl exec -it -n demo ig-cluster-0 -- bash
-Defaulted container "ignite" out of: ignite, ignite-init (init)
-ig-cluster-0:/$ ignitectl list_vhosts
-Listing vhosts ...
-name
-/newvhost
-/customvhost
-```
-As we can see from the configuration of running Ignite, `/newvhost` is in the list of vhosts.
-
 ### Reconfigure using apply config
 
 Let's say you are in a rush or, don't want to create a secret for updating configuration. You can directly do that using the following manifest.
@@ -300,8 +260,19 @@ spec:
     name: ig-cluster
   configuration:
     applyConfig:
-      ignite.conf: |
-        default_vhost = /newvhost
+      node-configuration.xml: |
+        <?xml version="1.0" encoding="UTF-8"?>
+        <beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+        <!-- Your Ignite Configuration -->
+        <bean class="org.apache.ignite.configuration.IgniteConfiguration">
+    
+        <property name="authenticationEnabled" value="true"/>
+
+        </bean>
+        </beans>
   timeout: 5m
   apply: IfReady
 ```

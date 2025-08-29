@@ -72,10 +72,6 @@ spec:
             limits:
               cpu: "1"
               memory: "2Gi"
-  serviceTemplates:
-    - alias: primary
-      spec:
-        type: LoadBalancer
 ```
 
 Let's create the `Ignite` CRO we have shown above,
@@ -438,3 +434,4 @@ To clean up the Kubernetes resources created by this tutorial, run:
 kubectl delete ig -n demo ignite-autoscale
 kubectl delete igniteautoscaler -n demo ignite-autoscale-ops
 ```
+

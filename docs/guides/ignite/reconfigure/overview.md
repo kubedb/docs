@@ -37,7 +37,7 @@ The Reconfiguring Ignite process consists of the following steps:
 
 2. `KubeDB` Provisioner  operator watches the `Ignite` CR.
 
-3. When the operator finds a `Ignite` CR, it creates required number of `StatefulSets` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `Ignite` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
 4. Then, in order to reconfigure the `Ignite` database the user creates a `IgniteOpsRequest` CR with desired information.
 
@@ -47,7 +47,7 @@ The Reconfiguring Ignite process consists of the following steps:
 
 7. Then the `KubeDB` Ops-manager operator will replace the existing configuration with the new configuration provided or merge the new configuration with the existing configuration according to the `MogoDBOpsRequest` CR.
 
-8. Then the `KubeDB` Ops-manager operator will restart the related StatefulSet Pods so that they restart with the new configuration defined in the `IgniteOpsRequest` CR.
+8. Then the `KubeDB` Ops-manager operator will restart the related PetSet Pods so that they restart with the new configuration defined in the `IgniteOpsRequest` CR.
 
 9. After the successful reconfiguring of the `Ignite` components, the `KubeDB` Ops-manager operator resumes the `Ignite` object so that the `KubeDB` Provisioner  operator resumes its usual operations.
 

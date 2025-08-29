@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Vertical Scale Ignite Standalone
+# Vertical Scale Ignite
 
-This guide will show you how to use `KubeDB` Ops-manager operator to update the resources of a Ignite standalone database.
+This guide will show you how to use `KubeDB` Ops-manager operator to update the resources of a Ignite database.
 
 ## Before You Begin
 
@@ -36,23 +36,23 @@ namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/ignite](/docs/examples/ignite) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-## Apply Vertical Scaling on Standalone
+## Apply Vertical Scaling
 
-Here, we are going to deploy a  `Ignite` standalone using a supported version by `KubeDB` operator. Then we are going to apply vertical scaling on it.
+Here, we are going to deploy a  `Ignite` using a supported version by `KubeDB` operator. Then we are going to apply vertical scaling on it.
 
-### Prepare Ignite Standalone Database
+### Prepare Ignite Database
 
-Now, we are going to deploy a `Ignite` standalone database with version `2.17.0`.
+Now, we are going to deploy a `Ignite` database with version `2.17.0`.
 
-### Deploy Ignite standalone 
+### Deploy Ignite 
 
-In this section, we are going to deploy a Ignite standalone database. Then, in the next section we will update the resources of the database using `IgniteOpsRequest` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
+In this section, we are going to deploy a Ignite database. Then, in the next section we will update the resources of the database using `IgniteOpsRequest` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Ignite
 metadata:
-  name: ig-standalone
+  name: ig
   namespace: demo
 spec:
   version: "2.17.0"
@@ -69,22 +69,22 @@ spec:
 Let's create the `Ignite` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/mg-standalone.yaml
-ignite.kubedb.com/ig-standalone created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/ig.yaml
+ignite.kubedb.com/ig created
 ```
 
-Now, wait until `ig-standalone` has status `Ready`. i.e,
+Now, wait until `ig` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get ig -n demo
 NAME            VERSION    STATUS    AGE
-ig-standalone   2.17.0      Ready     5m56s
+ig   2.17.0      Ready     5m56s
 ```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo ig-standalone-0 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo ig-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
     "cpu": "500m",
@@ -103,7 +103,7 @@ We are now ready to apply the `IgniteOpsRequest` CR to update the resources of t
 
 ### Vertical Scaling
 
-Here, we are going to update the resources of the standalone database to meet the desired resources after scaling.
+Here, we are going to update the resources of the database to meet the desired resources after scaling.
 
 #### Create IgniteOpsRequest
 
@@ -113,12 +113,12 @@ In order to update the resources of the database, we have to create a `IgniteOps
 apiVersion: ops.kubedb.com/v1alpha1
 kind: IgniteOpsRequest
 metadata:
-  name: igops-vscale-standalone
+  name: igops-vscale
   namespace: demo
 spec:
   type: VerticalScaling
   databaseRef:
-    name: ig-standalone
+    name: ig
   verticalScaling:
     node:
       resources:
@@ -134,19 +134,19 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `mops-vscale-standalone` database.
+- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `igps-vscale` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
-- `spec.VerticalScaling.standalone` specifies the desired resources after scaling.
+- `spec.VerticalScaling.Node` specifies the desired resources after scaling.
 - Have a look [here](/docs/guides/ignite/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/vertical-scaling/igops-vscale-standalone.yaml
-igniteopsrequest.ops.kubedb.com/igops-vscale-standalone created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/vertical-scaling/igops-vscale.yaml
+igniteopsrequest.ops.kubedb.com/igops-vscale created
 ```
 
-#### Verify Ignite Standalone resources updated successfully 
+#### Verify Ignite resources updated successfully 
 
 If everything goes well, `KubeDB` Ops-manager operator will update the resources of `Ignite` object and related `StatefulSets` and `Pods`.
 
@@ -156,14 +156,14 @@ Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command
 $ kubectl get igniteopsrequest -n demo
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME                      TYPE              STATUS       AGE
-igops-vscale-standalone   VerticalScaling   Successful   108s
+igops-vscale              VerticalScaling   Successful   108s
 ```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo igops-vscale-standalone
-Name:         igops-vscale-standalone
+$ kubectl describe igniteopsrequest -n demo igops-vscale
+Name:         igops-vscale
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -192,7 +192,7 @@ Metadata:
         f:type:
         f:verticalScaling:
           .:
-          f:standalone:
+          f:node:
             .:
             f:limits:
               .:
@@ -222,14 +222,14 @@ Metadata:
 Spec:
   Apply:  IfReady
   Database Ref:
-    Name:  mg-standalone
+    Name:  ig
   Readiness Criteria:
     Objects Count Diff Percentage:  10
     Oplog Max Lag Seconds:          20
   Timeout:                          5m
   Type:                             VerticalScaling
   Vertical Scaling:
-    Standalone:
+    Node:
       Limits:
         Cpu:     1
         Memory:  2Gi
@@ -245,11 +245,11 @@ Status:
     Status:                True
     Type:                  VerticalScaling
     Last Transition Time:  2022-10-26T10:54:51Z
-    Message:               Successfully Vertically Scaled Standalone Resources
+    Message:               Successfully Vertically Scaled Resources
     Observed Generation:   1
-    Reason:                UpdateStandaloneResources
+    Reason:                UpdateResources
     Status:                True
-    Type:                  UpdateStandaloneResources
+    Type:                  UpdateResources
     Last Transition Time:  2022-10-26T10:54:52Z
     Message:               Successfully Vertically Scaled Database
     Observed Generation:   1
@@ -261,24 +261,24 @@ Status:
 Events:
   Type    Reason                     Age   From                         Message
   ----    ------                     ----  ----                         -------
-  Normal  PauseDatabase              34s   KubeDB Ops-manager Operator  Pausing Ignite demo/mg-standalone
-  Normal  PauseDatabase              34s   KubeDB Ops-manager Operator  Successfully paused Ignite demo/mg-standalone
-  Normal  Starting                   34s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-standalone
-  Normal  UpdateStandaloneResources  34s   KubeDB Ops-manager Operator  Successfully updated standalone Resources
-  Normal  Starting                   34s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: mg-standalone
-  Normal  UpdateStandaloneResources  34s   KubeDB Ops-manager Operator  Successfully updated standalone Resources
-  Normal  UpdateStandaloneResources  4s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Standalone Resources
-  Normal  UpdateStandaloneResources  4s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Standalone Resources
-  Normal  ResumeDatabase             4s    KubeDB Ops-manager Operator  Resuming Ignite demo/mg-standalone
-  Normal  ResumeDatabase             3s    KubeDB Ops-manager Operator  Successfully resumed Ignite demo/mg-standalone
+  Normal  PauseDatabase              34s   KubeDB Ops-manager Operator  Pausing Ignite demo/ig
+  Normal  PauseDatabase              34s   KubeDB Ops-manager Operator  Successfully paused Ignite demo/ig
+  Normal  Starting                   34s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: ig
+  Normal  UpdateResources  34s   KubeDB Ops-manager Operator  Successfully updated Resources
+  Normal  Starting                   34s   KubeDB Ops-manager Operator  Updating Resources of StatefulSet: ig
+  Normal  UpdateResources  34s   KubeDB Ops-manager Operator  Successfully updated Resources
+  Normal  UpdateResources  4s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Resources
+  Normal  UpdateResources  4s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Resources
+  Normal  ResumeDatabase             4s    KubeDB Ops-manager Operator  Resuming Ignite demo/ig
+  Normal  ResumeDatabase             3s    KubeDB Ops-manager Operator  Successfully resumed Ignite demo/ig
   Normal  Successful                 3s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Database
 
 ```
 
-Now, we are going to verify from the Pod yaml whether the resources of the standalone database has updated to meet up the desired state, Let's check,
+Now, we are going to verify from the Pod yaml whether the resources of the database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo ig-standalone-0 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo ig-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
     "cpu": "1",
@@ -291,13 +291,13 @@ $ kubectl get pod -n demo ig-standalone-0 -o json | jq '.spec.containers[].resou
 }
 ```
 
-The above output verifies that we have successfully scaled up the resources of the Ignite standalone database.
+The above output verifies that we have successfully scaled up the resources of the Ignite database.
 
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete ig -n demo ig-standalone
-kubectl delete igniteopsrequest -n demo igops-vscale-standalone
+kubectl delete ig -n demo ig
+kubectl delete igniteopsrequest -n demo igops-vscale
 ```

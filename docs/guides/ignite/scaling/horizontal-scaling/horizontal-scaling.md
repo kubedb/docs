@@ -116,7 +116,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing horizontal scaling operation on `pp-horizontal` ignite.
+- `spec.databaseRef.name` specifies that we are performing horizontal scaling operation on ignite.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our ignite.
 - `spec.horizontalScaling.replicas` specifies the desired replicas after scaling.
 
@@ -227,7 +227,7 @@ Events:
   Normal   Successful                                 7m42s  KubeDB Ops-manager Operator  Successfully resumed Ignite database: demo/ignite for IgniteOpsRequest: ignite-horizontal-scale-up
 ```
 
-Now, we are going to verify the number of replicas this ignite has from the Pgpool object, number of pods the PetSet have,
+Now, we are going to verify the number of replicas this ignite has from the Ignite object, number of pods the PetSet have,
 
 ```bash
 $ kubectl get ig -n demo ignite -o json | jq '.spec.replicas'
@@ -312,7 +312,7 @@ Spec:
 Status:
   Conditions:
     Last Transition Time:  2024-07-17T08:52:28Z
-    Message:               Pgpool ops-request has started to horizontally scaling the nodes
+    Message:               Ignite ops-request has started to horizontally scaling the nodes
     Observed Generation:   1
     Reason:                HorizontalScaling
     Status:                True
@@ -351,7 +351,7 @@ Status:
     Status:                True
     Type:                  GetPod--pp-horizontal-2
     Last Transition Time:  2024-07-17T08:53:16Z
-    Message:               Successfully updated Pgpool
+    Message:               Successfully updated ignite
     Observed Generation:   1
     Reason:                UpdateDatabase
     Status:                True
@@ -367,15 +367,15 @@ Status:
 Events:
   Type     Reason                                                       Age   From                         Message
   ----     ------                                                       ----  ----                         -------
-  Normal   Starting                                                     96s   KubeDB Ops-manager Operator  Start processing for PgpoolOpsRequest: demo/ignite-horizontal-scale-down
-  Normal   Starting                                                     96s   KubeDB Ops-manager Operator  Pausing Pgpool databse: demo/ignite
-  Normal   Successful                                                   96s   KubeDB Ops-manager Operator  Successfully paused Pgpool database: demo/ignite for PgpoolOpsRequest: ignite-horizontal-scale-down
+  Normal   Starting                                                     96s   KubeDB Ops-manager Operator  Start processing for IgniteOpsRequest: demo/ignite-horizontal-scale-down
+  Normal   Starting                                                     96s   KubeDB Ops-manager Operator  Pausing Ignite databse: demo/ignite
+  Normal   Successful                                                   96s   KubeDB Ops-manager Operator  Successfully paused Ignite database: demo/ignite for IgniteOpsRequest: ignite-horizontal-scale-down
   Normal   patch petset; ConditionStatus:True; PodName:pp-horizontal-2  88s   KubeDB Ops-manager Operator  patch petset; ConditionStatus:True; PodName:pp-horizontal-2
   Normal   get pod; ConditionStatus:False                               83s   KubeDB Ops-manager Operator  get pod; ConditionStatus:False
   Normal   get pod; ConditionStatus:True; PodName:pp-horizontal-2       53s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:pp-horizontal-2
   Normal   HorizontalScaleDown                                          48s   KubeDB Ops-manager Operator  Successfully Scaled Down Node
   Normal   UpdateDatabase                                               48s   KubeDB Ops-manager Operator  Successfully updated Ignite
-  Normal   Starting                                                     48s   KubeDB Ops-manager Operator  Resuming Pgpool database: demo/ignite
+  Normal   Starting                                                     48s   KubeDB Ops-manager Operator  Resuming Ignite database: demo/ignite
   Normal   Successful                                                   48s   KubeDB Ops-manager Operator  Successfully resumed Ignite database: demo/ignite for IgniteOpsRequest: ignite-horizontal-scale-down
 ```
 

@@ -77,7 +77,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: standard
+    storageClassName: topolvm
   storageType: Durable
   deletionPolicy: WipeOut
   podTemplate:
@@ -203,34 +203,6 @@ Events:                   <none>
 ```
 
 So, the `igniteautoscaler` resource is created successfully.
-
-For this demo we are going to use an opensource tool to manually publish and consume messages in our cluster. This will eventually fill up the storage and trigger a `igniteopsrequest` once the threshold is breached.
-
-We are going to use a docker image called `perf-test`. It runs producers and consumers to continuously publish and consume messages in Ignite cluster. Here's how to run it on kubernetes using the credentials and the address for operator generated primary service.
-
-```bash
-kubectl run perf-test --image=pivotalignite/perf-test -- --uri "amqp://admin:password@ignite-autoscale.demo.svc:5672/"
-```
-
-You can check the log for this pod which shows publish and consume rates of messages in Ignite.
-
-```bash
-$ kubectl logs pod/perf-test -f
-id: test-104606-706, starting consumer #0
-id: test-104606-706, starting consumer #0, channel #0
-id: test-104606-706, starting producer #0
-id: test-104606-706, starting producer #0, channel #0
-id: test-104606-706, time 1.000 s, sent: 81286 msg/s, received: 23516 msg/s, min/median/75th/95th/99th consumer latency: 6930/174056/361178/503928/519681 µs
-id: test-104606-706, time 2.000 s, sent: 30997 msg/s, received: 30686 msg/s, min/median/75th/95th/99th consumer latency: 529789/902251/1057447/1247103/1258790 µs
-id: test-104606-706, time 3.000 s, sent: 29032 msg/s, received: 30418 msg/s, min/median/75th/95th/99th consumer latency: 1262421/1661565/1805425/1953992/1989182 µs
-id: test-104606-706, time 4.000 s, sent: 30997 msg/s, received: 31228 msg/s, min/median/75th/95th/99th consumer latency: 1572496/1822873/1938918/2035918/2065812 µs
-id: test-104606-706, time 5.000 s, sent: 29032 msg/s, received: 33588 msg/s, min/median/75th/95th/99th consumer latency: 1503867/1729779/1831281/1930593/1968284 µs
-id: test-104606-706, time 6.000 s, sent: 32704 msg/s, received: 32493 msg/s, min/median/75th/95th/99th consumer latency: 1503915/1749654/1865878/1953439/1971834 µs
-id: test-104606-706, time 7.000 s, sent: 38117 msg/s, received: 30759 msg/s, min/median/75th/95th/99th consumer latency: 1511466/1772387/1854642/1918369/1940327 µs
-id: test-104606-706, time 8.000 s, sent: 35088 msg/s, received: 31676 msg/s, min/median/75th/95th/99th consumer latency: 1578860/1799719/1915632/1985467/2024141 µs
-id: test-104606-706, time 9.000 s, sent: 29706 msg/s, received: 31375 msg/s, min/median/75th/95th/99th consumer latency: 1516415/1743385/1877037/1972570/1988962 µs
-id: test-104606-706, time 10.000 s, sent: 15903 msg/s, received: 26711 msg/s, min/median/75th/95th/99th consumer latency: 1569546/1884700/1992762/2096417/2136613 µs
-```
 
 Let's watch the `igniteopsrequest` in the demo namespace to see if any `igniteopsrequest` object is created. After some time you'll see that a `igniteopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 

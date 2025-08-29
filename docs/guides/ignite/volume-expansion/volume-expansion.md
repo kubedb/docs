@@ -135,7 +135,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing volume expansion operation on `ig-standalone` database.
 - `spec.type` specifies that we are performing `VolumeExpansion` on our database.
-- `spec.volumeExpansion.standalone` specifies the desired volume size.
+- `spec.volumeExpansion.node` specifies the desired volume size.
 - `spec.volumeExpansion.mode` specifies the desired volume expansion mode(`Online` or `Offline`).
 
 During `Online` VolumeExpansion KubeDB expands volume without pausing database object, it directly updates the underlying PVC. And for `Offline` volume expansion, the database is paused. The Pods are deleted and PVC is updated. Then the database Pods are recreated with updated PVC.
@@ -181,7 +181,7 @@ $ kubectl describe igniteopsrequest -n demo igops-volume-exp-standalone
       Name:  ig-standalone
     Type:    VolumeExpansion
     Volume Expansion:
-      Standalone:  2Gi
+      Node:  2Gi
   Status:
     Conditions:
       Last Transition Time:  2020-08-25T17:48:33Z
@@ -197,7 +197,7 @@ $ kubectl describe igniteopsrequest -n demo igops-volume-exp-standalone
       Status:                True
       Type:                  VolumeExpansion
       Last Transition Time:  2020-08-25T17:50:03Z
-      Message:               Successfully Resumed Ignite: ig-standalone
+      Message:               Successfully Resumed Ignite: ig
       Observed Generation:   1
       Reason:                ResumeDatabase
       Status:                True
@@ -219,24 +219,24 @@ $ kubectl describe igniteopsrequest -n demo igops-volume-exp-standalone
     Normal  Successful       29s   KubeDB Ops-manager operator  Successfully Scaled Database
 ```
 
-Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
+Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo ig-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo ig -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "2Gi"
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   REASON   AGE
-pvc-d0b07657-a012-4384-862a-b4e437774287   2Gi        RWO            Delete           Bound    demo/datadir-mg-standalone-0   standard                4m29s
+pvc-d0b07657-a012-4384-862a-b4e437774287   2Gi        RWO            Delete           Bound    demo/datadir-ig-0   standard                4m29s
 ```
 
-The above output verifies that we have successfully expanded the volume of the Ignite standalone database.
+The above output verifies that we have successfully expanded the volume of the Ignite database.
 
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete ig -n demo ig-standalone
+kubectl delete ig -n demo ig
 kubectl delete igniteopsrequest -n demo igops-volume-exp-standalone
 ```
