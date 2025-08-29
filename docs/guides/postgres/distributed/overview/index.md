@@ -23,8 +23,8 @@ This guide provides a step-by-step process to deploy a distributed Postgres clus
 
 In an **Open Cluster Management (OCM)** setup, clusters are categorized as:
 
-- **Hub Cluster**: The central control plane where policies, applications, and resources are defined and managed. It orchestrates the lifecycle of applications deployed across spoke clusters.
-- **Spoke Cluster**: Managed clusters registered with the hub, running the actual workloads (e.g., Postgres pods).
+* **Hub Cluster**: The central control plane where policies, [applications](), and resources are defined and managed. It orchestrates the lifecycle of applications deployed across spoke clusters.
+* **Spoke Cluster**: Managed clusters registered with the hub, running the actual workloads (e.g., Postgres pods).
 
 When a spoke cluster (e.g., `demo-worker`) is joined to the hub using the `clusteradm join` command, OCM creates a namespace on the hub cluster matching the spoke cluster's name (e.g., `demo-worker`). This namespace is used to manage resources specific to the spoke cluster from the hub.
 
@@ -517,7 +517,7 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
     --set petset.features.ocm.enabled=true \
     --wait --burst-limit=10000 --debug
 ```
-Note: `--set petset.features.ocm.enabled=true` must be set to enable Postgres Distributed feature.
+Note: `--set petset.features.ocm.enabled=true` must be set to enable Postgres Distributed feature. Also `--set-file global.license=` should point to your kubedb license file. 
 
 Follow the [KubeDB Installation Guide](https://kubedb.com/docs/v2025.6.30/setup/install/kubedb/) for additional details.
 
@@ -529,26 +529,30 @@ Create a `PlacementPolicy` to control pod distribution across clusters. Example:
 apiVersion: apps.k8s.appscode.com/v1
 kind: PlacementPolicy
 metadata:
-  labels:
-    app.kubernetes.io/managed-by: Helm
-  name: distributed-postgres
+   labels:
+      app.kubernetes.io/managed-by: Helm
+   name: distributed-postgres
 spec:
-  nodeSpreadConstraint:
-    maxSkew: 1
-    whenUnsatisfiable: ScheduleAnyway
-  ocm:
-    distributionRules:
-      - clusterName: demo-controller
-        replicas:
-          - 0
-          - 2
-      - clusterName: demo-worker
-        replicas:
-          - 1
-    sliceName: demo-slice
-  zoneSpreadConstraint:
-    maxSkew: 1
-    whenUnsatisfiable: ScheduleAnyway
+   clusterSpreadConstraint:
+      distributionRules:
+         - clusterName: demo-controller
+           replicaIndices:
+              - 0
+              - 2
+         - clusterName: demo-worker
+           replicaIndices:
+              - 1
+      slice:
+         projectNamespace: kubeslice-demo-distributed-mariadb
+         sliceName: demo-slice
+   nodeSpreadConstraint:
+      maxSkew: 1
+      whenUnsatisfiable: ScheduleAnyway
+   zoneSpreadConstraint:
+      maxSkew: 1
+      whenUnsatisfiable: ScheduleAnyway
+
+
 ```
 
 This policy schedules:
@@ -655,7 +659,7 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 500Mi
+        storage: 2Gi
   storageType: Durable
   version: "17.2"
   podTemplate:
