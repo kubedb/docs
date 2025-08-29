@@ -1,0 +1,26 @@
+apiVersion: apps.k8s.appscode.com/v1
+kind: PlacementPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: distributed-postgres
+spec:
+  clusterSpreadConstraint:
+    distributionRules:
+      - clusterName: demo-controller
+        replicaIndices:
+          - 0
+          - 2
+      - clusterName: demo-worker
+        replicaIndices:
+          - 1
+    slice:
+      projectNamespace: kubeslice-demo-distributed-mariadb
+      sliceName: demo-slice
+  nodeSpreadConstraint:
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
+  zoneSpreadConstraint:
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
+
