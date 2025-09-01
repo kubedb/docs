@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ClickHouseOpsRequest
+metadata:
+  name: ch-update-version
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: ch
+  updateVersion:
+    targetVersion: 25.7.1

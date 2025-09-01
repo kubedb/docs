@@ -96,7 +96,7 @@ mg-standalone   4.4.26      Ready     2m53s
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo mg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo mg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo
@@ -222,7 +222,7 @@ $ kubectl describe mongodbopsrequest -n demo mops-volume-exp-standalone
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo mg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo mg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "2Gi"
 
 $ kubectl get pv -n demo
