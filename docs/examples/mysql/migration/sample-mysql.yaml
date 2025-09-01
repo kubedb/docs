@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1
+kind: MySQL
+metadata:
+  name: sample-mysql
+  namespace: demo
+spec:
+  version: "9.1.0"
+  replicas: 3
+  topology:
+    mode: GroupReplication
+    group:
+      mode: Single-Primary
+  storageType: Durable
+  storage:
+    storageClassName: local-path
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
