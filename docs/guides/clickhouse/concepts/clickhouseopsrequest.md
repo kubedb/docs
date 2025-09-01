@@ -93,15 +93,14 @@ spec:
     name: clickhouse-prod
   type: VerticalScaling
   verticalScaling:
-    cluster:
-        node:
-          resources:
-            limits:
-              cpu: "2"
-              memory: 2Gi
-            requests:
-              cpu: "2"
-              memory: 2Gi
+    node:
+      resources:
+        limits:
+          cpu: "2"
+          memory: 2Gi
+        requests:
+          cpu: "2"
+          memory: 2Gi
 status:
   conditions:
     - lastTransitionTime: "2025-08-21T08:15:43Z"

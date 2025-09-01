@@ -336,9 +336,7 @@ spec:
   databaseRef:
     name: clickhouse-prod
   horizontalScaling:
-    cluster:
-      - clusterName: appscode-cluster
-        replicas: 3
+    replicas: 3
 ```
 
 Here,
