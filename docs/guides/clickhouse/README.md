@@ -15,7 +15,7 @@ aliases:
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-## Supported MySQL Features
+## Supported ClickHouse Features
 
 | Features                                                      | Availability |
 |---------------------------------------------------------------|:------------:|
