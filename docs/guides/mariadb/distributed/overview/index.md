@@ -500,69 +500,7 @@ sh secrets.sh <worker-secret-name> <worker-cluster-name> <kubeslice-projectname>
    spire-install-clusterid-cr-qwqlr     0/1     Completed   0          4m47s
    spire-install-crds-cnbjh             0/1     Completed   0          4m50s
    ```
-
-### Step 4: Install the KubeDB Operator
-
-Install the KubeDB Operator on the `demo-controller` cluster to manage the MariaDB instance.
-
-#### Get a Free License
-Download a FREE license from [AppsCode License Server](https://appscode.com/issue-license?p=kubedb). Get the license for `demo-controller` cluster.
-
-```bash
-helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
-    --version v2025.8.31 \
-    --namespace kubedb --create-namespace \
-    --set-file global.license=$HOME/Downloads/kubedb-license-cd548cce-5141-4ed3-9276-6d9578707f12.txt \
-    --set petset.features.ocm.enabled=true \
-    --wait --burst-limit=10000 --debug
-```
-Note: `--set petset.features.ocm.enabled=true` must be set to enable MariaDB Distributed feature.
-
-Follow the [KubeDB Installation Guide](https://kubedb.com/docs/v2025.6.30/setup/install/kubedb/) for additional details.
-
-### Step 5: Define a PodPlacementPolicy
-
-Create a `PodPlacementPolicy` to control pod distribution across clusters. Create a `pod-placement-policy.yaml` file:
-
-```yaml
-apiVersion: apps.k8s.appscode.com/v1
-kind: PlacementPolicy
-metadata:
-   labels:
-      app.kubernetes.io/managed-by: Helm
-   name: distributed-mariadb
-spec:
-   clusterSpreadConstraint:
-      distributionRules:
-         - clusterName: demo-controller
-           replicaIndices:
-              - 0
-              - 2
-         - clusterName: demo-worker
-           replicaIndices:
-              - 1
-      slice:
-         projectNamespace: kubeslice-demo-distributed-mariadb
-         sliceName: demo-slice
-   nodeSpreadConstraint:
-      maxSkew: 1
-      whenUnsatisfiable: ScheduleAnyway
-   zoneSpreadConstraint:
-      maxSkew: 1
-      whenUnsatisfiable: ScheduleAnyway
-```
-
-This policy schedules:
-- `mariadb-0` and `mariadb-2` on `demo-controller`.
-- `mariadb-1` on `demo-worker`.
-
-Apply the policy on `demo-controller`:
-
-```bash
-kubectl apply -f pod-placement-policy.yaml --context demo-controller --kubeconfig $HOME/.kube/config
-```
-
-### Step 6: Onboard Application Namespace
+6. **Onboard Application Namespace**:
 
 Create a `SliceConfig` to onboard the `demo` (application) and `kubedb` (operator) namespaces for network connectivity. Create a `sliceconfig.yaml` file:
 
@@ -613,14 +551,26 @@ Apply the `SliceConfig`:
 ```bash
 kubectl apply -f sliceconfig.yaml
 ```
+### Step 4: Install the KubeDB Operator
 
-Restart all pods in the `kubedb` namespace to inject KubeSlice sidecar containers:
+Install the KubeDB Operator on the `demo-controller` cluster to manage the MariaDB instance.
+
+#### Get a Free License
+Download a FREE license from [AppsCode License Server](https://appscode.com/issue-license?p=kubedb). Get the license for `demo-controller` cluster.
 
 ```bash
-kubectl delete -n kubedb pod --all
+helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
+    --version v2025.8.31 \
+    --namespace kubedb --create-namespace \
+    --set-file global.license=$HOME/Downloads/kubedb-license-cd548cce-5141-4ed3-9276-6d9578707f12.txt \
+    --set petset.features.ocm.enabled=true \
+    --wait --burst-limit=10000 --debug
 ```
+Note: `--set petset.features.ocm.enabled=true` must be set to enable MariaDB Distributed feature.
 
-Verify the pods restart and are running:
+Follow the [KubeDB Installation Guide](https://kubedb.com/docs/v2025.6.30/setup/install/kubedb/) for additional details.
+
+Verify the pods are running:
 
 ```bash
 kubectl get pods -n kubedb
@@ -636,7 +586,50 @@ kubedb-petset-cf9f5b6f4-d9558                  2/2     Running   0          44s
 kubedb-sidekick-5dbf7bcf64-4b8cw               2/2     Running   0          44s
    ```
 
-### Step 7: Create a Distributed MariaDB Instance
+
+### Step 5: Define a PodPlacementPolicy
+
+Create a `PodPlacementPolicy` to control pod distribution across clusters. Create a `pod-placement-policy.yaml` file:
+
+```yaml
+apiVersion: apps.k8s.appscode.com/v1
+kind: PlacementPolicy
+metadata:
+   labels:
+      app.kubernetes.io/managed-by: Helm
+   name: distributed-mariadb
+spec:
+   clusterSpreadConstraint:
+      distributionRules:
+         - clusterName: demo-controller
+           replicaIndices:
+              - 0
+              - 2
+         - clusterName: demo-worker
+           replicaIndices:
+              - 1
+      slice:
+         projectNamespace: kubeslice-demo-distributed-mariadb
+         sliceName: demo-slice
+   nodeSpreadConstraint:
+      maxSkew: 1
+      whenUnsatisfiable: ScheduleAnyway
+   zoneSpreadConstraint:
+      maxSkew: 1
+      whenUnsatisfiable: ScheduleAnyway
+```
+
+This policy schedules:
+- `mariadb-0` and `mariadb-2` on `demo-controller`.
+- `mariadb-1` on `demo-worker`.
+
+Apply the policy on `demo-controller`:
+
+```bash
+kubectl apply -f pod-placement-policy.yaml --context demo-controller --kubeconfig $HOME/.kube/config
+```
+
+### Step 6: Create a Distributed MariaDB Instance
 
 Define a MariaDB custom resource with `spec.distributed` set to `true` and reference the `PodPlacementPolicy`. Create a `mariadb.yaml` file:
 
@@ -670,7 +663,7 @@ Apply the resource on `demo-controller`:
 kubectl apply -f mariadb.yaml --context demo-controller --kubeconfig $HOME/.kube/config
 ```
 
-### Step 8: Verify the Deployment
+### Step 7: Verify the Deployment
 
 1. **Check MariaDB Resource and Pods on `demo-controller`**:
 
