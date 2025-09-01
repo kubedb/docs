@@ -21,6 +21,147 @@ section_menu_id: guides
 
 > This tutorial demonstrates how to rotate authentication credentials for Solr managed by KubeDB. Before you begin, ensure that the Solr CRD is installed and running. If not, follow [this guide](/docs/guides/solr/quickstart/overview/index.md) to set it up.
 
+## Before You Begin
+
+At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+
+Now, install the KubeDB operator in your cluster following the steps [here](/docs/setup/install/_index.md).  and make sure install with helm command including `--set global.featureGates.Solr=true --set global.featureGates.ZooKeeper=true` to ensure Solr and ZooKeeper crd.
+
+To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
+
+```bash
+$ kubectl create namespace demo
+namespace/demo created
+
+$ kubectl get namespace
+NAME                 STATUS   AGE
+demo                 Active   9s
+```
+
+> Note: YAML files used in this tutorial are stored in [docs/guides/solr/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Solr. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/solr/quickstart/overview/index.md#tips-for-testing).
+
+## Find Available StorageClass
+
+We will have to provide `StorageClass` in Solr CRD specification. Check available `StorageClass` in your cluster using the following command,
+
+```bash
+$ kubectl get storageclass
+NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  14h
+```
+
+Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
+
+## Find Available SolrVersion
+
+When you install the KubeDB operator, it registers a CRD named `SolrVersions`. The installation process comes with a set of tested SolrVersion objects. Let's check available SolrVersions by,
+
+```bash
+$ kubectl get solrversion
+NAME     VERSION   DB_IMAGE                              DEPRECATED   AGE
+8.11.2   8.11.2    ghcr.io/appscode-images/solr:8.11.2   true         12d
+8.11.4   8.11.4    ghcr.io/appscode-images/solr:8.11.4                12d
+9.4.1    9.4.1     ghcr.io/appscode-images/solr:9.4.1                 12d
+9.6.1    9.6.1     ghcr.io/appscode-images/solr:9.6.1                 12d
+9.7.0    9.7.0     ghcr.io/appscode-images/solr:9.7.0                 12d
+9.8.0    9.8.0     ghcr.io/appscode-images/solr:9.8.0                 12d
+
+```
+
+Notice the `DEPRECATED` column. Here, `true` means that this SolrVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated SolrVersion.
+
+In this tutorial, we will use `9.8.0 ` SolrVersion CR to create a Solr cluster.
+
+> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use SolrVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `9.4.1` over `8.11.2`.
+
+## Create a Solr Cluster
+
+The KubeDB operator implements a Solr CRD to define the specification of a Solr database.
+
+The KubeDB Solr runs in `solrcloud` mode. Hence, it needs a external zookeeper to distribute replicas among pods and save configurations.
+
+We will use `KubeDB` `ZooKeeper` for this purpose.
+
+The `ZooKeeper` instance used for this tutorial:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: ZooKeeper
+metadata:
+  name: zoo-com
+  namespace: demo
+spec:
+  version: 3.8.3
+  replicas: 3
+  deletionPolicy: Delete
+  adminServerPort: 8080
+  storage:
+    resources:
+      requests:
+        storage: "100Mi"
+    storageClassName: standard
+    accessModes:
+      - ReadWriteOnce
+```
+
+Let's create the ZooKeeper CR that is shown above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
+zooKeeper.kubedb.com/zoo-com created
+```
+
+The ZooKeeper's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
+
+```bash
+$ kubectl get zookeeper -n demo -w
+NAME       TYPE                  VERSION   STATUS   AGE
+zoo-com    kubedb.com/v1alpha2   3.7.2     Ready    13m
+```
+
+Then we can deploy solr in our cluster.
+
+The Solr instance used for this tutorial:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Solr
+metadata:
+  name: solr-combined
+  namespace: demo
+spec:
+  version: 9.8.0
+  deletionPolicy: Delete
+  replicas: 2
+  zookeeperRef:
+    name: zoo-com
+    namespace: demo
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+    storageClassName: standard
+```
+
+Let's create the Solr CR that is shown above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/solr/solr.yaml
+solr.kubedb.com/solr-combined created
+```
+
+The Solr's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
+
+```bash
+$ kubectl get Solr -n demo -w
+NAME            TYPE                    VERSION     STATUS   AGE
+solr-combined   kubedb.com/v1alpha2     9.8.0      Ready    17m
+```
+
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
 
@@ -352,7 +493,7 @@ The above output shows that the password has been changed successfully. The prev
 ## Cleaning up
 
 To clean up the Kubernetes resources you can delete the CRD or namespace.
-Or, you can delete one by one resource by their name by this tutorial, run:
+Or, you can delete one by one resource by their name which are created on  this tutorial, run:
 
 ```shell
 $ kubectl delete Solropsrequest solrops-rotate-auth-generated solrops-rotate-auth-user -n demo
