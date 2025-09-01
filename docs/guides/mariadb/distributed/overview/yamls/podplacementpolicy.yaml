@@ -5,19 +5,21 @@ metadata:
     app.kubernetes.io/managed-by: Helm
   name: distributed-mariadb
 spec:
-  nodeSpreadConstraint:
-    maxSkew: 1
-    whenUnsatisfiable: ScheduleAnyway
-  ocm:
+  clusterSpreadConstraint:
     distributionRules:
       - clusterName: demo-controller
-        replicas:
+        replicaIndices:
           - 0
           - 2
       - clusterName: demo-worker
-        replicas:
+        replicaIndices:
           - 1
-    sliceName: demo-slice
+    slice:
+      projectNamespace: kubeslice-demo-distributed-mariadb
+      sliceName: demo-slice
+  nodeSpreadConstraint:
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
   zoneSpreadConstraint:
     maxSkew: 1
     whenUnsatisfiable: ScheduleAnyway
