@@ -42,5 +42,5 @@ KubeDB supports the following ClickHouse Versions.
 
 ## User Guide
 
-- [Quickstart ClickHouse](/docs/guides/clickhouse/quickstart/index.md) with KubeDB Operator.
+- [Quickstart ClickHouse](/docs/guides/clickhouse/quickstart/guide/quickstart.md) with KubeDB Operator.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
