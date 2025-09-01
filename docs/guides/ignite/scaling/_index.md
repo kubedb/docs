@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: ig-scaling
     name: Scaling
-    parent: ig-guides
+    parent: ignite-guides
     weight: 60
 menu_name: docs_{{ .version }}
 ---
