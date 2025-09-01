@@ -510,7 +510,7 @@ Download a FREE license from [AppsCode License Server](https://appscode.com/issu
 
 ```bash
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
-    --version v2025.7.31 \
+    --version v2025.8.31 \
     --namespace kubedb --create-namespace \
     --set-file global.license=$HOME/Downloads/kubedb-license-cd548cce-5141-4ed3-9276-6d9578707f12.txt \
     --set petset.features.ocm.enabled=true \
@@ -528,26 +528,28 @@ Create a `PodPlacementPolicy` to control pod distribution across clusters. Creat
 apiVersion: apps.k8s.appscode.com/v1
 kind: PlacementPolicy
 metadata:
-  labels:
-    app.kubernetes.io/managed-by: Helm
-  name: distributed-mariadb
+   labels:
+      app.kubernetes.io/managed-by: Helm
+   name: distributed-mariadb
 spec:
-  nodeSpreadConstraint:
-    maxSkew: 1
-    whenUnsatisfiable: ScheduleAnyway
-  ocm:
-    distributionRules:
-      - clusterName: demo-controller
-        replicas:
-          - 0
-          - 2
-      - clusterName: demo-worker
-        replicas:
-          - 1
-    sliceName: demo-slice
-  zoneSpreadConstraint:
-    maxSkew: 1
-    whenUnsatisfiable: ScheduleAnyway
+   clusterSpreadConstraint:
+      distributionRules:
+         - clusterName: demo-controller
+           replicaIndices:
+              - 0
+              - 2
+         - clusterName: demo-worker
+           replicaIndices:
+              - 1
+      slice:
+         projectNamespace: kubeslice-demo-distributed-mariadb
+         sliceName: demo-slice
+   nodeSpreadConstraint:
+      maxSkew: 1
+      whenUnsatisfiable: ScheduleAnyway
+   zoneSpreadConstraint:
+      maxSkew: 1
+      whenUnsatisfiable: ScheduleAnyway
 ```
 
 This policy schedules:
@@ -706,10 +708,11 @@ kubectl apply -f mariadb.yaml --context demo-controller --kubeconfig $HOME/.kube
 
 3. **Verify Galera Cluster Status**:
    Connect to a MariaDB pod and check the Galera cluster status:
+   The primary service DNS will be formatted as <database-name>.<database-namespace>.svc
 
    ```bash
    kubectl exec -it -n demo pod/mariadb-0 --context demo-controller -- bash
-   mariadb -uroot -p$MYSQL_ROOT_PASSWORD
+   mariadb -uroot -p$MYSQL_ROOT_PASSWORD -hmariadb.demo.svc
    ```
 
    Run the following query:
