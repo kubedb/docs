@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: ig-reconfigure
     name: Reconfigure
-    parent: ig-guides
+    parent: ignite-guides
     weight: 80
 menu_name: docs_{{ .version }}
 ---

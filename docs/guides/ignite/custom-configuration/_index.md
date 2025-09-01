@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: custom-configuration
     name: Custom Configuration
-    parent: ig-ignite-guides
+    parent: ignite-guides
     weight: 40
 menu_name: docs_{{ .version }}
 ---
