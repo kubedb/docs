@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: ig-readme-ignite
     name: Ignite
-    parent: ig-ignite-guides
+    parent: ignite-guides
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
