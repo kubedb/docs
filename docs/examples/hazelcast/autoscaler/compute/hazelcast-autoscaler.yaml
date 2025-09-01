@@ -1,0 +1,24 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: HazelcastAutoscaler
+metadata:
+  name: hz-combined-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: hazelcast-dev
+  opsRequestOptions:
+    timeout: 5m
+    apply: IfReady
+  compute:
+    hazelcast:
+      trigger: "On"
+      podLifeTimeThreshold: 2m
+      resourceDiffPercentage: 1
+      minAllowed:
+        cpu: 600m
+        memory: 1.6Gi
+      maxAllowed:
+        cpu: 1
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"
