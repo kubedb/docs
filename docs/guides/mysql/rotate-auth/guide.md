@@ -13,14 +13,14 @@ section_menu_id: guides
 # Rotate Authentication of MySQL
 
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `MySQL`
-user's authentication credentials using a `MySQLOpsrequest`. There are two ways to perform this
+user's authentication credentials using a `MySQLOpsRequest`. There are two ways to perform this
 rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential and 
 updates the existing secret with the new credential.
 2. **User Defined:** The user can create their own credentials by defining a secret of type
    `kubernetes.io/basic-auth` containing the desired `password` and then reference this secret in the
-   `MySQLOpsrequest` CR.
+   `MySQLOpsRequest` CR.
 
 ## Before You Begin
 
@@ -143,16 +143,16 @@ mysql> SHOW DATABASES;
 ```
 
 If you can access the data table and run queries, it means the secrets are working correctly.
-## Create RotateAuth MySQLOpsrequest
+## Create RotateAuth MySQLOpsRequest
 
 #### 1. Using Operator Generated Credentials:
 
 In order to rotate authentication to the MySQL using operator generated, we have to create a 
-`MySQLOpsrequest` CR with `RotateAuth` type. Below is the YAML of the `MySQLOpsrequest` CRO that
+`MySQLOpsRequest` CR with `RotateAuth` type. Below is the YAML of the `MySQLOpsRequest` CRO that
 we are going to create,
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
-kind: MySQLOpsrequest
+kind: MySQLOpsRequest
 metadata:
   name: myops-rotate-auth-generated
   namespace: demo
@@ -168,26 +168,26 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `mysql-quickstart` instance.
 - `spec.type` specifies that we are performing `RotateAuth` on MySQL.
 
-Let's create the `MySQLOpsrequest` CR we have shown above,
+Let's create the `MySQLOpsRequest` CR we have shown above,
 ```shell
  $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mysql/rotate-auth/rotate-auth-generated.yaml
- MySQLOpsrequest.ops.kubedb.com/myops-rotate-auth-generated created
+ MySQLOpsRequest.ops.kubedb.com/myops-rotate-auth-generated created
 ```
-Let's wait for `MySQLOpsrequest` to be `Successful`. Run the following command to watch `MySQLOpsrequest` CRO
+Let's wait for `MySQLOpsRequest` to be `Successful`. Run the following command to watch `MySQLOpsRequest` CRO
 ```shell
- $ kubectl get MySQLOpsrequest-n demo
+ $ kubectl get MySQLOpsRequest-n demo
 NAME                          TYPE         STATUS       AGE
 myops-rotate-auth-generated   RotateAuth   Successful   82s
 ```
-If we describe the `MySQLOpsrequest` we will get an overview of the steps that were followed.
+If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed.
 ```shell
-$ kubectl describe MySQLOpsrequest-n demo myops-rotate-auth-generated
+$ kubectl describe MySQLOpsRequest-n demo myops-rotate-auth-generated
 Name:         myops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
-Kind:         MySQLOpsrequest
+Kind:         MySQLOpsRequest
 Metadata:
   Creation Timestamp:  2025-08-20T09:16:39Z
   Generation:          1
@@ -202,7 +202,7 @@ Spec:
 Status:
   Conditions:
     Last Transition Time:  2025-08-20T09:16:39Z
-    Message:               Controller has started to Progress the MySQLOpsrequest: demo/myops-rotate-auth-generated
+    Message:               Controller has started to Progress the MySQLOpsRequest: demo/myops-rotate-auth-generated
     Observed Generation:   1
     Reason:                Running
     Status:                True
@@ -235,7 +235,7 @@ Status:
     Status:                True
     Type:                  IsJoinInCluster
     Last Transition Time:  2025-08-20T09:16:59Z
-    Message:               Successfully started MySQL pods for MySQLOpsrequest: demo/myops-rotate-auth-generated 
+    Message:               Successfully started MySQL pods for MySQLOpsRequest: demo/myops-rotate-auth-generated 
     Observed Generation:   1
     Reason:                RestartPodsSucceeded
     Status:                True
@@ -251,15 +251,15 @@ Status:
 Events:
   Type     Reason                                    Age   From                         Message
   ----     ------                                    ----  ----                         -------
-  Normal   Starting                                  27m   KubeDB Ops-manager Operator  Start processing for MySQLOpsrequest: demo/myops-rotate-auth-generated
+  Normal   Starting                                  27m   KubeDB Ops-manager Operator  Start processing for MySQLOpsRequest: demo/myops-rotate-auth-generated
   Normal   Starting                                  27m   KubeDB Ops-manager Operator  Pausing MySQL databse: demo/mysql-quickstart
-  Normal   Successful                                27m   KubeDB Ops-manager Operator  Successfully paused MySQL database: demo/mysql-quickstart for MySQLOpsrequest: myops-rotate-auth-generated
+  Normal   Successful                                27m   KubeDB Ops-manager Operator  Successfully paused MySQL database: demo/mysql-quickstart for MySQLOpsRequest: myops-rotate-auth-generated
   Normal   Starting                                  27m   KubeDB Ops-manager Operator  Restarting Pod: mysql-quickstart-0/demo
   Warning  evict pod; ConditionStatus:True           27m   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True
   Warning  is pod ready; ConditionStatus:False       27m   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:False
   Warning  is pod ready; ConditionStatus:True        26m   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:True
   Warning  is join in cluster; ConditionStatus:True  26m   KubeDB Ops-manager Operator  is join in cluster; ConditionStatus:True
-  Normal   Successful                                26m   KubeDB Ops-manager Operator  Successfully started MySQL pods for MySQLOpsrequest: demo/myops-rotate-auth-generated
+  Normal   Successful                                26m   KubeDB Ops-manager Operator  Successfully started MySQL pods for MySQLOpsRequest: demo/myops-rotate-auth-generated
   Normal   Starting                                  26m   KubeDB Ops-manager Operator  Resuming MySQL database: demo/mysql-quickstart
   Normal   Successful                                26m   KubeDB Ops-manager Operator  Successfully resumed MySQL database: demo/mysql-quickstart
   Normal   Successful                                26m   KubeDB Ops-manager Operator  Controller has successfully rotate MySQL auth secret
@@ -337,11 +337,11 @@ $ kubectl create secret generic mysql-quickstart-auth-user -n demo \
                 --from-literal=password=Mysql2
 secret/mysql-quickstart-auth-user created
 ```
-Now create a `MySQLOpsrequest` with `RotateAuth` type. Below is the YAML of the `MySQLOpsrequest` that we are going to create,
+Now create a `MySQLOpsRequest` with `RotateAuth` type. Below is the YAML of the `MySQLOpsRequest` that we are going to create,
 
 ```shell
 apiVersion: ops.kubedb.com/v1alpha1
-kind: MySQLOpsrequest
+kind: MySQLOpsRequest
 metadata:
   name: myops-rotate-auth-user
   namespace: demo
@@ -362,29 +362,29 @@ Here,
 - `spec.authentication.secretRef.name` specifies that we use `mysql-quickstart-auth` for database authentication.
 
 
-Let's create the `MySQLOpsrequest` CR we have shown above,
+Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```shell
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mysql/rotate-auth/rotate-auth-user.yaml
-MySQLOpsrequest.ops.kubedb.com/myops-rotate-auth-user created
+MySQLOpsRequest.ops.kubedb.com/myops-rotate-auth-user created
 ```
-Let’s wait for `MySQLOpsrequest` to be Successful. Run the following command to watch `MySQLOpsrequest` CRO:
+Let’s wait for `MySQLOpsRequest` to be Successful. Run the following command to watch `MySQLOpsRequest` CRO:
 
 ```shell
-$ kubectl get MySQLOpsrequest-n demo
+$ kubectl get MySQLOpsRequest-n demo
 NAME                          TYPE         STATUS       AGE
 myops-rotate-auth-generated   RotateAuth   Successful   35m
 myops-rotate-auth-user        RotateAuth   Successful   2m18s
 ```
-We can see from the above output that the `MySQLOpsrequest` has succeeded. If we describe the `MySQLOpsrequest` we will get an overview of the steps that were followed.
+We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed.
 ```shell
-$ kubectl describe MySQLOpsrequest-n demo myops-rotate-auth-user 
+$ kubectl describe MySQLOpsRequest-n demo myops-rotate-auth-user 
 Name:         myops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
-Kind:         MySQLOpsrequest
+Kind:         MySQLOpsRequest
 Metadata:
   Creation Timestamp:  2025-08-20T09:49:56Z
   Generation:          1
@@ -402,7 +402,7 @@ Spec:
 Status:
   Conditions:
     Last Transition Time:  2025-08-20T09:49:56Z
-    Message:               Controller has started to Progress the MySQLOpsrequest: demo/myops-rotate-auth-user
+    Message:               Controller has started to Progress the MySQLOpsRequest: demo/myops-rotate-auth-user
     Observed Generation:   1
     Reason:                Running
     Status:                True
@@ -435,7 +435,7 @@ Status:
     Status:                True
     Type:                  IsJoinInCluster
     Last Transition Time:  2025-08-20T09:50:41Z
-    Message:               Successfully started MySQL pods for MySQLOpsrequest: demo/myops-rotate-auth-user 
+    Message:               Successfully started MySQL pods for MySQLOpsRequest: demo/myops-rotate-auth-user 
     Observed Generation:   1
     Reason:                RestartPodsSucceeded
     Status:                True
@@ -451,9 +451,9 @@ Status:
 Events:
   Type     Reason                                     Age    From                         Message
   ----     ------                                     ----   ----                         -------
-  Normal   Starting                                   2m54s  KubeDB Ops-manager Operator  Start processing for MySQLOpsrequest: demo/myops-rotate-auth-user
+  Normal   Starting                                   2m54s  KubeDB Ops-manager Operator  Start processing for MySQLOpsRequest: demo/myops-rotate-auth-user
   Normal   Starting                                   2m54s  KubeDB Ops-manager Operator  Pausing MySQL databse: demo/mysql-quickstart
-  Normal   Successful                                 2m54s  KubeDB Ops-manager Operator  Successfully paused MySQL database: demo/mysql-quickstart for MySQLOpsrequest: myops-rotate-auth-user
+  Normal   Successful                                 2m54s  KubeDB Ops-manager Operator  Successfully paused MySQL database: demo/mysql-quickstart for MySQLOpsRequest: myops-rotate-auth-user
   Normal   Starting                                   2m44s  KubeDB Ops-manager Operator  Restarting Pod: mysql-quickstart-0/demo
   Warning  evict pod; ConditionStatus:True            2m44s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True
   Warning  is pod ready; ConditionStatus:False        2m44s  KubeDB Ops-manager Operator  is pod ready; ConditionStatus:False
@@ -461,7 +461,7 @@ Events:
   Warning  is join in cluster; ConditionStatus:False  2m9s   KubeDB Ops-manager Operator  is join in cluster; ConditionStatus:False
   Warning  is pod ready; ConditionStatus:True         2m9s   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:True
   Warning  is join in cluster; ConditionStatus:True   2m9s   KubeDB Ops-manager Operator  is join in cluster; ConditionStatus:True
-  Normal   Successful                                 2m9s   KubeDB Ops-manager Operator  Successfully started MySQL pods for MySQLOpsrequest: demo/myops-rotate-auth-user
+  Normal   Successful                                 2m9s   KubeDB Ops-manager Operator  Successfully started MySQL pods for MySQLOpsRequest: demo/myops-rotate-auth-user
   Normal   Starting                                   2m9s   KubeDB Ops-manager Operator  Resuming MySQL database: demo/mysql-quickstart
   Normal   Successful                                 2m9s   KubeDB Ops-manager Operator  Successfully resumed MySQL database: demo/mysql-quickstart
   Normal   Successful                                 2m9s   KubeDB Ops-manager Operator  Controller has successfully rotate MySQL auth secret
@@ -530,8 +530,8 @@ To clean up the Kubernetes resources you can delete the CRD or namespace.
 Alternatively, you can delete individual resources by name. To do so, run:
 
 ```shell
-$ kubectl delete MySQLOpsrequestmyops-rotate-auth-generated myops-rotate-auth-user -n demo
-MySQLOpsrequest.ops.kubedb.com "myops-rotate-auth-generated" "myops-rotate-auth-user" deleted
+$ kubectl delete MySQLOpsRequestmyops-rotate-auth-generated myops-rotate-auth-user -n demo
+MySQLOpsRequest.ops.kubedb.com "myops-rotate-auth-generated" "myops-rotate-auth-user" deleted
 $ kubectl delete secret -n demo mysql-quickstart-auth-user
 secret "mysql-quickstart-auth-user" deleted
 $ kubectl delete secret -n demo   mysql-quickstart-auth 
