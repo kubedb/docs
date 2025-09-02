@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PerconaXtraDBOpsRequest
+metadata:
+  name: pxops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: sample-pxc
+  authentication:
+    secretRef:
+      name: quick-pcx-user-auth
+  timeout: 5m
+  apply: IfReady

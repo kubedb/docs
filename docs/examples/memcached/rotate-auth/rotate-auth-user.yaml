@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MemcachedOpsRequest
+metadata:
+  name: mcops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: memcd-quickstart
+  authentication:
+    secretRef:
+      name: mc-new-auth
+  timeout: 5m
+  apply: IfReady
