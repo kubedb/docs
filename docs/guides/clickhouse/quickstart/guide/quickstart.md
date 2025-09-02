@@ -2,7 +2,7 @@
 title: ClickHouse Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: ch-quickstart-clickhouse
+    identifier: ch-clickhouse-quickstart-clickhouse
     name: ClickHouse
     parent: ch-quickstart-clickhouse
     weight: 10

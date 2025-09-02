@@ -1,5 +1,5 @@
 ---
-title: Cassandra Quickstart
+title: ClickHouse Quickstart
 menu:
   docs_{{ .version }}:
     identifier: ch-quickstart-clickhouse
