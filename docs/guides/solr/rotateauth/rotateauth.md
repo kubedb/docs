@@ -492,16 +492,15 @@ The above output shows that the password has been changed successfully. The prev
 
 ## Cleaning up
 
-To clean up the Kubernetes resources you can delete the CRD or namespace.
-Or, you can delete one by one resource by their name which are created on  this tutorial, run:
+To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```shell
 $ kubectl delete Solropsrequest solrops-rotate-auth-generated solrops-rotate-auth-user -n demo
-Solropsrequest.ops.kubedb.com "solrops-rotate-auth-generated" "solrops-rotate-auth-user" deleted
 $ kubectl delete secret -n demo  solr-combined-user-auth
-secret "solr-combined-user-auth" deleted
 $ kubectl delete secret -n demo  solr-combined-auth
-secret "solr-combined-auth" deleted
+$ kubectl delete solr -n demo solr-combined
+$ kubectl delete ns demo
+
 ```
 
 ## Next Steps
