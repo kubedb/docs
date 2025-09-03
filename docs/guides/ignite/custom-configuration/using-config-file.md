@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: ig-using-config-file-configuration
     name: Customize Configurations
-    parent: custom-configuration
+    parent: ig-custom-configuration
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

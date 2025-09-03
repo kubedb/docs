@@ -1,11 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ClickHouseOpsRequest
 metadata:
-  name: cluster-restart
+  name: chops-rotate-auth-generated
   namespace: demo
 spec:
-  type: Restart
+  type: RotateAuth
   databaseRef:
-    name: ch
-  timeout: 3m
-  apply: Always
+    name: clickhouse-prod
+  timeout: 5m
+  apply: IfReady

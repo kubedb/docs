@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: ClickHouse
 metadata:
-  name: ch
+  name: clickhouse-prod
   namespace: demo
 spec:
   version: 24.4.1
@@ -17,7 +17,7 @@ spec:
             requests:
               storage: 1Gi
     cluster:
-      - name: appscode-cluster
+        name: appscode-cluster
         shards: 2
         replicas: 2
         podTemplate:
@@ -29,7 +29,7 @@ spec:
                     memory: 4Gi
                   requests:
                     cpu: 500m
-                    memory: 512Mi
+                    memory: 1Gi
             initContainers:
               - name: clickhouse-init
                 resources:
@@ -37,26 +37,12 @@ spec:
                     memory: 1Gi
                   requests:
                     cpu: 500m
-                    memory: 512Mi
+                    memory: 1Gi
         storage:
+          storageClassName: longhorn
           accessModes:
             - ReadWriteOnce
           resources:
             requests:
               storage: 1Gi
-  sslVerificationMode: relaxed
-  tls:
-    issuerRef:
-      apiGroup: "cert-manager.io"
-      kind: Issuer
-      name: ch-issuer
-    certificates:
-      - alias: server
-        subject:
-          organizations:
-            - kubedb:server
-        dnsNames:
-          - localhost
-        ipAddresses:
-          - "127.0.0.1"
   deletionPolicy: WipeOut

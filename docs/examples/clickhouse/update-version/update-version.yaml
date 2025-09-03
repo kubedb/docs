@@ -6,6 +6,8 @@ metadata:
 spec:
   type: UpdateVersion
   databaseRef:
-    name: ch
+    name: clickhouse-prod
   updateVersion:
     targetVersion: 25.7.1
+  timeout: 5m
+  apply: IfReady
