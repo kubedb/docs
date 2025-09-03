@@ -102,7 +102,7 @@ spec:
 
 `spec.replicas` the number of members in ClickHouse replicaset of Standalone mode. In Standalone Mode replica should be 1. 
 
-If `spec.clusterTopology` is set, then `spec.replicas` needs to be empty. Instead use `spec.clusterTopology.cluster[index].replicas`.
+If `spec.clusterTopology` is set, then `spec.replicas` needs to be empty. Instead use `spec.clusterTopology.cluster.replicas`.
 
 KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
 
@@ -167,7 +167,7 @@ When `spec.clusterTopology` is set, the following fields needs to be empty, othe
 
 #### spec.clusterTopology.cluster
 
-`cluster` is an optional field that provides a way to configure clickhouse clusters. `spec.clusterTopology.cluster[]` is an array of cluster. ClickHouse cluster mode refers to the deployment of multiple ClickHouse server instances that work together as a distributed database system. This setup is designed to handle large volumes of analytical queries and data, offering scalability, high availability, and fault tolerance.
+`cluster` is an optional field that provides a way to configure clickhouse cluster.
 Available configurable fields:
 
 - `name` (`: "appscode-cluster"`) — is a `mandatory` field that specifies the unique name of the cluster. All cluster name should be unique.

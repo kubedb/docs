@@ -30,11 +30,11 @@ This tutorial will show you how to use KubeDB to run a ClickHouse database.
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
-  ```bash
-  $ kubectl get storageclasses
-  NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-  standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-  ```
+```bash
+➤ kubectl get storageclass
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  27h
+```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -48,9 +48,10 @@ This tutorial will show you how to use KubeDB to run a ClickHouse database.
 When you have installed KubeDB, it has created `ClickHouseVersion` crd for all supported ClickHouse versions. Check it by using the following command,
 
 ```bash
-$ kubectl get clickhouseversions
+➤ kubectl get clickhouseversions
 NAME     VERSION   DB_IMAGE                              DEPRECATED   AGE
-24.4.1   24.4.1    clickhouse/clickhouse-server:24.4.1                3h21m
+24.4.1   24.4.1    clickhouse/clickhouse-server:24.4.1                27h
+25.7.1   25.7.1    clickhouse/clickhouse-server:25.7.1                27h
 ```
 
 ## Create a ClickHouse database
@@ -82,7 +83,7 @@ clickhouse.kubedb.com/clickhouse-quickstart created
 
 Here,
 
-- `spec.version` is the name of the ClickHouseVersion CRD where the docker images are specified. In this tutorial, a ClickHouse `8.0.35` database is going to be created.
+- `spec.version` is the name of the ClickHouseVersion CRD where the docker images are specified. In this tutorial, a ClickHouse `24.4.1` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for ClickHouse database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create ClickHouse database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `ClickHouse` crd or which resources KubeDB should keep or delete when you delete `ClickHouse` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
@@ -92,217 +93,238 @@ Here,
 KubeDB operator watches for `ClickHouse` objects using Kubernetes api. When a `ClickHouse` object is created, KubeDB operator will create a new PetSet and a Service with the matching ClickHouse object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present.
 
 ```bash
-$ kubectl dba describe my -n demo clickhouse-quickstart
-Name:               clickhouse-quickstart
-Namespace:          demo
-CreationTimestamp:  Fri, 03 Jun 2022 12:50:40 +0600
-Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1","kind":"ClickHouse","metadata":{"annotations":{},"name":"clickhouse-quickstart","namespace":"demo"},"spec":{"storage":{"acces...
-Replicas:           1  total
-Status:             Ready
-StorageType:        Durable
-Volume:
-  StorageClass:      standard
-  Capacity:          1Gi
-  Access Modes:      RWO
-Paused:              false
-Halted:              false
-Termination Policy:  DoNotTerminate
-
-PetSet:          
-  Name:               clickhouse-quickstart
-  CreationTimestamp:  Fri, 03 Jun 2022 12:50:40 +0600
-  Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=clickhouse-quickstart
-                        app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=clickhouses.kubedb.com
-  Annotations:        <none>
-  Replicas:           824646358808 desired | 1 total
-  Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
-
-Service:        
-  Name:         clickhouse-quickstart
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=clickhouse-quickstart
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=clickhouses.kubedb.com
-  Annotations:  <none>
-  Type:         ClusterIP
-  IP:           10.96.150.194
-  Port:         primary  3306/TCP
-  TargetPort:   db/TCP
-  Endpoints:    10.244.0.30:3306
-
-Service:        
-  Name:         clickhouse-quickstart-pods
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=clickhouse-quickstart
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=clickhouses.kubedb.com
-  Annotations:  <none>
-  Type:         ClusterIP
-  IP:           None
-  Port:         db  3306/TCP
-  TargetPort:   db/TCP
-  Endpoints:    10.244.0.30:3306
-
-Auth Secret:
-  Name:         clickhouse-quickstart-auth
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=clickhouse-quickstart
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=clickhouses.kubedb.com
-  Annotations:  <none>
-  Type:         kubernetes.io/basic-auth
-  Data:
-    password:  16 bytes
-    username:  4 bytes
-
-AppBinding:
-  Metadata:
-    Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"ClickHouse","metadata":{"annotations":{},"name":"clickhouse-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"8.0.35"}}
-
-    Creation Timestamp:  2022-06-03T06:50:40Z
-    Labels:
-      app.kubernetes.io/component:   database
-      app.kubernetes.io/instance:    clickhouse-quickstart
-      app.kubernetes.io/managed-by:  kubedb.com
-      app.kubernetes.io/name:        clickhouses.kubedb.com
-    Name:                            clickhouse-quickstart
-    Namespace:                       demo
-  Spec:
-    Client Config:
-      Service:
-        Name:    clickhouse-quickstart
-        Path:    /
-        Port:    3306
-        Scheme:  clickhouse
-      URL:       tcp(clickhouse-quickstart.demo.svc:3306)/
-    Parameters:
-      API Version:  appcatalog.appscode.com/v1alpha1
-      Kind:         StashAddon
-      Stash:
-        Addon:
-          Backup Task:
-            Name:  clickhouse-backup-8.0.21
-            Params:
-              Name:   args
-              Value:  --all-databases --set-gtid-purged=OFF
-          Restore Task:
-            Name:  clickhouse-restore-8.0.21
-    Secret:
-      Name:   clickhouse-quickstart-auth
-    Type:     kubedb.com/clickhouse
-    Version:  8.0.35
-
-Events:
-  Type     Reason      Age   From             Message
-  ----     ------      ----  ----             -------
-  Normal   Successful  32s   KubeDB Operator  Successfully created governing service
-  Normal   Successful  32s   KubeDB Operator  Successfully created service for primary/standalone
-  Normal   Successful  32s   KubeDB Operator  Successfully created database auth secret
-  Normal   Successful  32s   KubeDB Operator  Successfully created PetSet
-  Normal   Successful  32s   KubeDB Operator  Successfully created ClickHouse
-  Normal   Successful  32s   KubeDB Operator  Successfully created appbinding
+➤ kubectl describe clickhouse -n demo clickhouse-quickstart 
+Name:         clickhouse-quickstart
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  kubedb.com/v1alpha2
+Kind:         ClickHouse
+Metadata:
+  Creation Timestamp:  2025-09-03T10:06:06Z
+  Finalizers:
+    kubedb.com/clickhouse
+  Generation:        3
+  Resource Version:  49211
+  UID:               44c534e7-3143-4cc3-a332-5bd0a77dbd25
+Spec:
+  Auth Secret:
+    Name:  clickhouse-quickstart-auth
+  Auto Ops:
+  Deletion Policy:  WipeOut
+  Health Checker:
+    Failure Threshold:  3
+    Period Seconds:     20
+    Timeout Seconds:    10
+  Pod Template:
+    Controller:
+    Metadata:
+    Spec:
+      Containers:
+        Name:  clickhouse
+        Resources:
+          Limits:
+            Memory:  4Gi
+          Requests:
+            Cpu:     1
+            Memory:  4Gi
+        Security Context:
+          Allow Privilege Escalation:  false
+          Capabilities:
+            Drop:
+              ALL
+          Run As Non Root:  true
+          Run As User:      101
+          Seccomp Profile:
+            Type:  RuntimeDefault
+      Init Containers:
+        Name:  clickhouse-init
+        Resources:
+        Security Context:
+          Allow Privilege Escalation:  false
+          Capabilities:
+            Drop:
+              ALL
+          Run As Non Root:  true
+          Run As User:      101
+          Seccomp Profile:
+            Type:  RuntimeDefault
+      Pod Placement Policy:
+        Name:  default
+      Security Context:
+        Fs Group:  101
+  Replicas:        1
+  Storage:
+    Access Modes:
+      ReadWriteOnce
+    Resources:
+      Requests:
+        Storage:  1Gi
+  Storage Type:   Durable
+  Version:        24.4.1
+Status:
+  Conditions:
+    Last Transition Time:  2025-09-03T10:06:06Z
+    Message:               The KubeDB operator has started the provisioning of ClickHouse: demo/clickhouse-quickstart
+    Observed Generation:   2
+    Reason:                ProvisioningStarted
+    Status:                True
+    Type:                  ProvisioningStarted
+    Last Transition Time:  2025-09-03T10:06:16Z
+    Message:               All desired replicas are ready
+    Observed Generation:   3
+    Reason:                AllReplicasReady
+    Status:                True
+    Type:                  ReplicaReady
+    Last Transition Time:  2025-09-03T10:06:39Z
+    Message:               The Clickhouse: demo/clickhouse-quickstart is accepting client requests
+    Observed Generation:   3
+    Reason:                AcceptingConnection
+    Status:                True
+    Type:                  AcceptingConnection
+    Last Transition Time:  2025-09-03T10:06:39Z
+    Message:               database demo/clickhouse-quickstart is ready
+    Observed Generation:   3
+    Reason:                AllReplicasReady
+    Status:                True
+    Type:                  Ready
+    Last Transition Time:  2025-09-03T10:06:39Z
+    Message:               The ClickHouse: demo/clickhouse-quickstart is successfully provisioned.
+    Observed Generation:   3
+    Reason:                DatabaseSuccessfullyProvisioned
+    Status:                True
+    Type:                  Provisioned
+  Phase:                   Ready
+Events:                    <none>
 
 
 
-$ kubectl get petset -n demo
-NAME               READY   AGE
-clickhouse-quickstart   1/1     3m19s
 
-$ kubectl get pvc -n demo
-NAME                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-data-clickhouse-quickstart-0   Bound    pvc-ab44ce95-2300-47d7-8f25-3cd7bc5b0091   1Gi        RWO            standard       3m50s
+➤ kubectl get petset -n demo clickhouse-quickstart 
+NAME                    AGE
+clickhouse-quickstart   2m6s
+
+➤ kubectl get pvc -n demo
+NAME                           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+data-clickhouse-quickstart-0   Bound    pvc-811822f0-13a4-4dbf-8d70-845dd8f01a3f   1Gi        RWO            local-path     <unset>                 2m25
 
 
-$ kubectl get pv -n demo
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   REASON   AGE
-pvc-ab44ce95-2300-47d7-8f25-3cd7bc5b0091   1Gi        RWO            Delete           Bound    demo/data-clickhouse-quickstart-0   standard                4m19s
+➤ kubectl get pv -n demo
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+pvc-811822f0-13a4-4dbf-8d70-845dd8f01a3f   1Gi        RWO            Delete           Bound    demo/data-clickhouse-quickstart-0                                   local-path     <unset>                          5m13s
 
-kubectl get service -n demo
-NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-clickhouse-quickstart        ClusterIP   10.96.150.194   <none>        3306/TCP   5m13s
-clickhouse-quickstart-pods   ClusterIP   None            <none>        3306/TCP   5m13s
+➤ kubectl get svc -n demo
+NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+clickhouse-quickstart        ClusterIP   10.43.239.202   <none>        9000/TCP,8123/TCP   8m1s
+clickhouse-quickstart-pods   ClusterIP   None            <none>        9000/TCP,8123/TCP   8m1s
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified ClickHouse object:
 
 ```yaml
-$ kubectl get my -n demo clickhouse-quickstart -o yaml
-apiVersion: kubedb.com/v1
+➤ kubectl get clickhouse -n demo clickhouse-quickstart -oyaml
+apiVersion: kubedb.com/v1alpha2
 kind: ClickHouse
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"ClickHouse","metadata":{"annotations":{},"name":"clickhouse-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","version":"8.0.35"}}
-  creationTimestamp: "2022-06-03T06:50:40Z"
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"ClickHouse","metadata":{"annotations":{},"name":"clickhouse-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"version":"24.4.1"}}
+  creationTimestamp: "2025-09-03T10:06:06Z"
   finalizers:
-  - kubedb.com
+    - kubedb.com/clickhouse
+  generation: 3
+  name: clickhouse-quickstart
+  namespace: demo
+  resourceVersion: "49211"
+  uid: 44c534e7-3143-4cc3-a332-5bd0a77dbd25
 spec:
-  allowedReadReplicas:
-    namespaces:
-      from: Same
-  allowedSchemas:
-    namespaces:
-      from: Same
   authSecret:
     name: clickhouse-quickstart-auth
+  autoOps: {}
+  deletionPolicy: WipeOut
+  healthChecker:
+    failureThreshold: 3
+    periodSeconds: 20
+    timeoutSeconds: 10
   podTemplate:
     controller: {}
     metadata: {}
     spec:
-      resources:
-        limits:
-          memory: 1Gi
-        requests:
-          cpu: 500m
-          memory: 1Gi
-      serviceAccountName: clickhouse-quickstart
+      containers:
+        - name: clickhouse
+          resources:
+            limits:
+              memory: 4Gi
+            requests:
+              cpu: "1"
+              memory: 4Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 101
+            seccompProfile:
+              type: RuntimeDefault
+      initContainers:
+        - name: clickhouse-init
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 101
+            seccompProfile:
+              type: RuntimeDefault
+      podPlacementPolicy:
+        name: default
+      securityContext:
+        fsGroup: 101
   replicas: 1
   storage:
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-    storageClassName: standard
   storageType: Durable
-  deletionPolicy: Delete
-  useAddressType: DNS
-  version: 8.0.35
+  version: 24.4.1
 status:
   conditions:
-  - lastTransitionTime: "2022-06-03T06:50:40Z"
-    message: 'The KubeDB operator has started the provisioning of ClickHouse: demo/clickhouse-quickstart'
-    reason: DatabaseProvisioningStartedSuccessfully
-    status: "True"
-    type: ProvisioningStarted
-  - lastTransitionTime: "2022-06-03T06:50:46Z"
-    message: All desired replicas are ready.
-    reason: AllReplicasReady
-    status: "True"
-    type: ReplicaReady
-  - lastTransitionTime: "2022-06-03T06:51:05Z"
-    message: database demo/clickhouse-quickstart is accepting connection
-    reason: AcceptingConnection
-    status: "True"
-    type: AcceptingConnection
-  - lastTransitionTime: "2022-06-03T06:51:05Z"
-    message: database demo/clickhouse-quickstart is ready
-    reason: AllReplicasReady
-    status: "True"
-    type: Ready
-  - lastTransitionTime: "2022-06-03T06:51:05Z"
-    message: 'The ClickHouse: demo/clickhouse-quickstart is successfully provisioned.'
-    observedGeneration: 2
-    reason: DatabaseSuccessfullyProvisioned
-    status: "True"
-    type: Provisioned
-  observedGeneration: 2
+    - lastTransitionTime: "2025-09-03T10:06:06Z"
+      message: 'The KubeDB operator has started the provisioning of ClickHouse: demo/clickhouse-quickstart'
+      observedGeneration: 2
+      reason: ProvisioningStarted
+      status: "True"
+      type: ProvisioningStarted
+    - lastTransitionTime: "2025-09-03T10:06:16Z"
+      message: All desired replicas are ready
+      observedGeneration: 3
+      reason: AllReplicasReady
+      status: "True"
+      type: ReplicaReady
+    - lastTransitionTime: "2025-09-03T10:06:39Z"
+      message: 'The Clickhouse: demo/clickhouse-quickstart is accepting client requests'
+      observedGeneration: 3
+      reason: AcceptingConnection
+      status: "True"
+      type: AcceptingConnection
+    - lastTransitionTime: "2025-09-03T10:06:39Z"
+      message: database demo/clickhouse-quickstart is ready
+      observedGeneration: 3
+      reason: AllReplicasReady
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2025-09-03T10:06:39Z"
+      message: 'The ClickHouse: demo/clickhouse-quickstart is successfully provisioned.'
+      observedGeneration: 3
+      reason: DatabaseSuccessfullyProvisioned
+      status: "True"
+      type: Provisioned
   phase: Ready
-
 ```
 
 ## Connect with ClickHouse database
@@ -314,22 +336,21 @@ If you want to use an existing secret please specify that when creating the Clic
 Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `clickhouse-quickstart-auth` secret holds username and password
 
 ```bash
-$ kubectl get pods clickhouse-quickstart-0 -n demo -o yaml | grep podIP
-  podIP: 10.244.0.14
+➤ kubectl get pods clickhouse-quickstart-0 -n demo -o yaml | grep podIP
+  podIP: 10.42.0.116
 
-$ kubectl get secrets -n demo clickhouse-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
+➤ kubectl get secrets -n demo clickhouse-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
 admin
 
 $ kubectl get secrets -n demo clickhouse-quickstart-auth -o jsonpath='{.data.\password}' | base64 -d
-e6S2JnXBxSe39hxg
+hHWEDm8Cr2PnNJD8
 ```
 we will exec into the pod `clickhouse-quickstart-0` and connect to the database using username and password
 
 ```bash
-$ kubectl exec -it -n demo clickhouse-quickstart-0 -- bash
+➤ kubectl exec -it -n demo clickhouse-quickstart-0 -- bash
 Defaulted container "clickhouse" out of: clickhouse, clickhouse-init (init)
-clickhouse@clickhouse-quickstart-0:/$ clickhouse-client -uadmin --password="e6S2JnXBxSe39hxg"
-
+clickhouse@clickhouse-quickstart-0:/$ clickhouse-client -uadmin --password="hHWEDm8Cr2PnNJD8"
 ClickHouse client version 24.4.1.2088 (official build).
 Connecting to localhost:9000 as user admin.
 Connected to ClickHouse server version 24.4.1.
@@ -342,7 +363,7 @@ clickhouse-quickstart-0.clickhouse-quickstart-pods.demo.svc.cluster.local :) sho
 
 SHOW DATABASES
 
-Query id: 12353f2c-d6d1-4dbc-a4cf-aa2f6a5e0ce4
+Query id: 338babd1-90f7-46d2-8f7b-85b83288e2c1
 
    ┌─name───────────────┐
 1. │ INFORMATION_SCHEMA │
@@ -352,7 +373,7 @@ Query id: 12353f2c-d6d1-4dbc-a4cf-aa2f6a5e0ce4
 5. │ system             │
    └────────────────────┘
 
-5 rows in set. Elapsed: 0.004 sec.
+5 rows in set. Elapsed: 0.001 sec.
 
 ```
 ## spec.deletionPolicy
@@ -382,16 +403,20 @@ If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination poli
 Run the following command to get ClickHouse resources,
 
 ```bash
-$ kubectl get my,sts,secret,svc,pvc -n demo
-NAME                                VERSION   STATUS   AGE
-clickhouse.kubedb.com/clickhouse-quickstart   8.0.35    Halted   22m
+➤ kubectl get ch,sts,secret,svc,pvc -n demo
+NAME                                          TYPE                  VERSION   STATUS   AGE
+clickhouse.kubedb.com/clickhouse-quickstart   kubedb.com/v1alpha2   24.4.1    Ready    12m
 
-NAME                           TYPE                                  DATA   AGE
-secret/default-token-lgbjm     kubernetes.io/service-account-token   3      27h
-secret/clickhouse-quickstart-auth   Opaque                                2      22m
+NAME                                  TYPE                       DATA   AGE
+secret/clickhouse-quickstart-auth     kubernetes.io/basic-auth   2      12m
+secret/clickhouse-quickstart-config   Opaque                     1      12m
 
-NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-clickhouse-quickstart-0   Bound    pvc-7ab0ebb0-bb2e-45c1-9af1-4f175672605b   1Gi        RWO            standard       22m
+NAME                                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+service/clickhouse-quickstart        ClusterIP   10.43.239.202   <none>        9000/TCP,8123/TCP   12m
+service/clickhouse-quickstart-pods   ClusterIP   None            <none>        9000/TCP,8123/TCP   12m
+
+NAME                                                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/data-clickhouse-quickstart-0   Bound    pvc-811822f0-13a4-4dbf-8d70-845dd8f01a3f   1Gi        RWO            local-path     <unset>                 12m
 ```
 
 From the above output , you can see that `ClickHouse` object, `PVCs`, `Secret` are still alive. Then you can recreate your `ClickHouse` with same configuration.
@@ -403,9 +428,7 @@ From the above output , you can see that `ClickHouse` object, `PVCs`, `Secret` a
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo clickhouse/clickhouse-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo clickhouse/clickhouse-quickstart
-
 kubectl delete ns demo
 ```
 
