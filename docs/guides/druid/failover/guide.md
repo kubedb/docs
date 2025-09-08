@@ -196,43 +196,45 @@ druid-cluster   kubedb.com/v1alpha2   31.0.0    Ready    4m12s
 
 You can monitor on another terminal the status until all pods are ready:
 ```shell
-$ watch kubectl get my,petset,pods -n demo
+$ watch kubectl get druid,petset,pods -n demo
 ```
 See the database is ready.
 
 ```shell
 $ kubectl get druid,petset,pods -n demo
 NAME                             TYPE                  VERSION   STATUS   AGE
-druid.kubedb.com/druid-cluster   kubedb.com/v1alpha2   31.0.0    Ready    58m
+druid.kubedb.com/druid-cluster   kubedb.com/v1alpha2   31.0.0    Ready    15m
 
 NAME                                                        AGE
-petset.apps.k8s.appscode.com/druid-cluster-brokers          57m
-petset.apps.k8s.appscode.com/druid-cluster-coordinators     57m
-petset.apps.k8s.appscode.com/druid-cluster-historicals      57m
-petset.apps.k8s.appscode.com/druid-cluster-middlemanagers   57m
-petset.apps.k8s.appscode.com/druid-cluster-mysql-metadata   58m
-petset.apps.k8s.appscode.com/druid-cluster-overlords        57m
-petset.apps.k8s.appscode.com/druid-cluster-routers          57m
-petset.apps.k8s.appscode.com/druid-cluster-zk               58m
+petset.apps.k8s.appscode.com/druid-cluster-brokers          14m
+petset.apps.k8s.appscode.com/druid-cluster-coordinators     14m
+petset.apps.k8s.appscode.com/druid-cluster-historicals      14m
+petset.apps.k8s.appscode.com/druid-cluster-middlemanagers   14m
+petset.apps.k8s.appscode.com/druid-cluster-mysql-metadata   15m
+petset.apps.k8s.appscode.com/druid-cluster-overlords        14m
+petset.apps.k8s.appscode.com/druid-cluster-routers          14m
+petset.apps.k8s.appscode.com/druid-cluster-zk               15m
 
 NAME                                 READY   STATUS    RESTARTS   AGE
-pod/druid-cluster-brokers-0          1/1     Running   0          57m
-pod/druid-cluster-brokers-1          1/1     Running   0          57m
-pod/druid-cluster-coordinators-0     1/1     Running   0          57m
-pod/druid-cluster-historicals-0      1/1     Running   0          57m
-pod/druid-cluster-historicals-1      1/1     Running   0          57m
-pod/druid-cluster-middlemanagers-0   1/1     Running   0          57m
-pod/druid-cluster-middlemanagers-1   1/1     Running   0          57m
-pod/druid-cluster-mysql-metadata-0   2/2     Running   0          58m
-pod/druid-cluster-mysql-metadata-1   2/2     Running   0          58m
-pod/druid-cluster-mysql-metadata-2   2/2     Running   0          58m
-pod/druid-cluster-overlords-0        1/1     Running   0          57m
-pod/druid-cluster-overlords-1        1/1     Running   0          57m
-pod/druid-cluster-routers-0          1/1     Running   0          57m
-pod/druid-cluster-zk-0               1/1     Running   0          58m
-pod/druid-cluster-zk-1               1/1     Running   0          58m
-pod/druid-cluster-zk-2               1/1     Running   0          58m
-pod/myminio-default-0                2/2     Running   0          59m
+pod/druid-cluster-brokers-0          1/1     Running   0          14m
+pod/druid-cluster-brokers-1          1/1     Running   0          14m
+pod/druid-cluster-coordinators-0     1/1     Running   0          14m
+pod/druid-cluster-coordinators-1     1/1     Running   0          14m
+pod/druid-cluster-historicals-0      1/1     Running   0          14m
+pod/druid-cluster-historicals-1      1/1     Running   0          14m
+pod/druid-cluster-middlemanagers-0   1/1     Running   0          14m
+pod/druid-cluster-middlemanagers-1   1/1     Running   0          14m
+pod/druid-cluster-mysql-metadata-0   2/2     Running   0          15m
+pod/druid-cluster-mysql-metadata-1   2/2     Running   0          15m
+pod/druid-cluster-mysql-metadata-2   2/2     Running   0          15m
+pod/druid-cluster-overlords-0        1/1     Running   0          14m
+pod/druid-cluster-overlords-1        1/1     Running   0          14m
+pod/druid-cluster-routers-0          1/1     Running   0          14m
+pod/druid-cluster-routers-1          1/1     Running   0          14m
+pod/druid-cluster-zk-0               1/1     Running   0          15m
+pod/druid-cluster-zk-1               1/1     Running   0          15m
+pod/druid-cluster-zk-2               1/1     Running   0          15m
+pod/myminio-default-0                2/2     Running   0          3d21h
 
 ```
 
@@ -241,25 +243,23 @@ You can check the roles and status of Druid pods using labels:
 
 ```bash
 $ kubectl get pods -n demo --show-labels | grep role
-druid-cluster-brokers-0          1/1     Running   0          58m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-brokers-64667d6fbb,kubedb.com/role=brokers,statefulset.kubernetes.io/pod-name=druid-cluster-brokers-0
-druid-cluster-brokers-1          1/1     Running   0          58m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-brokers-64667d6fbb,kubedb.com/role=brokers,statefulset.kubernetes.io/pod-name=druid-cluster-brokers-1
-druid-cluster-coordinators-0     1/1     Running   0          58m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-coordinators-955d5f7c4,kubedb.com/role=coordinators,statefulset.kubernetes.io/pod-name=druid-cluster-coordinators-0
-druid-cluster-historicals-0      1/1     Running   0          58m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-historicals-54894c9748,kubedb.com/role=historicals,statefulset.kubernetes.io/pod-name=druid-cluster-historicals-0
-druid-cluster-historicals-1      1/1     Running   0          58m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-historicals-54894c9748,kubedb.com/role=historicals,statefulset.kubernetes.io/pod-name=druid-cluster-historicals-1
-druid-cluster-middlemanagers-0   1/1     Running   0          58m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-middlemanagers-5556d8775c,kubedb.com/role=middleManagers,statefulset.kubernetes.io/pod-name=druid-cluster-middlemanagers-0
-druid-cluster-middlemanagers-1   1/1     Running   0          58m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-middlemanagers-5556d8775c,kubedb.com/role=middleManagers,statefulset.kubernetes.io/pod-name=druid-cluster-middlemanagers-1
-druid-cluster-mysql-metadata-0   2/2     Running   0          59m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster-mysql-metadata,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-mysql-metadata-55c56b8549,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=druid-cluster-mysql-metadata-0
-druid-cluster-mysql-metadata-1   2/2     Running   0          59m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster-mysql-metadata,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-mysql-metadata-55c56b8549,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=druid-cluster-mysql-metadata-1
-druid-cluster-mysql-metadata-2   2/2     Running   0          59m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster-mysql-metadata,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=druid-cluster-mysql-metadata-55c56b8549,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=druid-cluster-mysql-metadata-2
-druid-cluster-overlords-0        1/1     Running   0          58m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-overlords-d8fd8d477,kubedb.com/role=overlords,statefulset.kubernetes.io/pod-name=druid-cluster-overlords-0
-druid-cluster-overlords-1        1/1     Running   0          58m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-overlords-d8fd8d477,kubedb.com/role=overlords,statefulset.kubernetes.io/pod-name=druid-cluster-overlords-1
-druid-cluster-routers-0          1/1     Running   0          58m   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-routers-86f759b75b,kubedb.com/role=routers,statefulset.kubernetes.io/pod-name=druid-cluster-routers-0
+druid-cluster-brokers-0          1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-brokers-64667d6fbb,kubedb.com/role=brokers,statefulset.kubernetes.io/pod-name=druid-cluster-brokers-0
+druid-cluster-brokers-1          1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-brokers-64667d6fbb,kubedb.com/role=brokers,statefulset.kubernetes.io/pod-name=druid-cluster-brokers-1
+druid-cluster-coordinators-0     1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-coordinators-955d5f7c4,kubedb.com/role=coordinators,statefulset.kubernetes.io/pod-name=druid-cluster-coordinators-0
+druid-cluster-coordinators-1     1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-coordinators-955d5f7c4,kubedb.com/role=coordinators,statefulset.kubernetes.io/pod-name=druid-cluster-coordinators-1
+druid-cluster-historicals-0      1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-historicals-54894c9748,kubedb.com/role=historicals,statefulset.kubernetes.io/pod-name=druid-cluster-historicals-0
+druid-cluster-historicals-1      1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-historicals-54894c9748,kubedb.com/role=historicals,statefulset.kubernetes.io/pod-name=druid-cluster-historicals-1
+druid-cluster-middlemanagers-0   1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-middlemanagers-5556d8775c,kubedb.com/role=middleManagers,statefulset.kubernetes.io/pod-name=druid-cluster-middlemanagers-0
+druid-cluster-middlemanagers-1   1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-middlemanagers-5556d8775c,kubedb.com/role=middleManagers,statefulset.kubernetes.io/pod-name=druid-cluster-middlemanagers-1
+druid-cluster-mysql-metadata-0   2/2     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster-mysql-metadata,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-mysql-metadata-d99dc44fc,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=druid-cluster-mysql-metadata-0
+druid-cluster-mysql-metadata-1   2/2     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster-mysql-metadata,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-mysql-metadata-d99dc44fc,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=druid-cluster-mysql-metadata-1
+druid-cluster-mysql-metadata-2   2/2     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster-mysql-metadata,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=druid-cluster-mysql-metadata-d99dc44fc,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=druid-cluster-mysql-metadata-2
+druid-cluster-overlords-0        1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-overlords-d8fd8d477,kubedb.com/role=overlords,statefulset.kubernetes.io/pod-name=druid-cluster-overlords-0
+druid-cluster-overlords-1        1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-overlords-d8fd8d477,kubedb.com/role=overlords,statefulset.kubernetes.io/pod-name=druid-cluster-overlords-1
+druid-cluster-routers-0          1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-routers-86f759b75b,kubedb.com/role=routers,statefulset.kubernetes.io/pod-name=druid-cluster-routers-0
+druid-cluster-routers-1          1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-routers-86f759b75b,kubedb.com/role=routers,statefulset.kubernetes.io/pod-name=druid-cluster-routers-1
 
 ```
-
-## Insert and Query Data (Optional)
-
-If you have Druid's web console or REST API exposed, you can submit a simple ingestion task and run a query to verify data flow. For example, use the Druid console or API to submit a batch ingestion and then query the data.
 
 ## How Failover Works in Druid with KubeDB
 
@@ -280,18 +280,25 @@ pod "druid-cluster-zk-0" deleted
 ```
 in another terminal you can watch their status 
 ```shell
-watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
+$ watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
 ```
 
 ```shell
 druid-cluster-brokers-0 brokers
+druid-cluster-brokers-1 brokers
 druid-cluster-coordinators-0 coordinators
+druid-cluster-coordinators-1 coordinators
 druid-cluster-historicals-0 historicals
+druid-cluster-historicals-1 historicals
 druid-cluster-middlemanagers-0 middleManagers
+druid-cluster-middlemanagers-1 middleManagers
 druid-cluster-mysql-metadata-0 primary
 druid-cluster-mysql-metadata-1 standby
 druid-cluster-mysql-metadata-2 standby
+druid-cluster-overlords-0 overlords
+druid-cluster-overlords-1 overlords
 druid-cluster-routers-0 routers
+druid-cluster-routers-1 routers
 druid-cluster-zk-0
 druid-cluster-zk-1
 druid-cluster-zk-2
@@ -300,66 +307,35 @@ myminio-default-0
 ```
 You can not see that a new `druid-cluster-zk-0` pod is created automatically and joins the `Zookeeper` ensemble. Because `Zookeeper` is highly available, the `Druid` cluster continues to function without interruption.
 
-**Delete all of the `Zookeeper` pods**
-```shell
-kubectl delete pod -n demo druid-cluster-zk-0 druid-cluster-zk-1 druid-cluster-zk-2
-pod "druid-cluster-zk-0" deleted
-pod "druid-cluster-zk-1" deleted
-pod "druid-cluster-zk-2" deleted
-```
-```shell
-watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
-```
-For a moment, all the nodes may disappear, but shortly after, you’ll see that all the `Zookeeper` pods remain unchange
-```shell
-druid-cluster-brokers-0 brokers
-druid-cluster-coordinators-0 coordinators
-druid-cluster-historicals-0 historicals
-druid-cluster-middlemanagers-0 middleManagers
-druid-cluster-mysql-metadata-0 primary
-druid-cluster-mysql-metadata-1 standby
-druid-cluster-mysql-metadata-2 standby
-druid-cluster-routers-0 routers
-druid-cluster-zk-0
-druid-cluster-zk-1
-druid-cluster-zk-2
-myminio-default-0
-```
+> Note: You should not delete more than one `ZooKeeper` pod at a time, since `ZooKeeper` relies on a majority of nodes to maintain quorum. If all nodes are deleted, quorum is lost and the entire ZooKeeper ensemble becomes unavailable. This in turn disrupts the Druid cluster’s ability to coordinate and manage its distributed components, which may result in service interruptions and potential data loss.
+
 
 ### case 2: Delete a MySQL Pod
 Druid uses MySQL for metadata storage. Each of the nods has their role also, you can see the role of each pod.
 
-```shell
-watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
-```
-
-```shell
-druid-cluster-brokers-0 brokers
-druid-cluster-coordinators-0 coordinators
-druid-cluster-historicals-0 historicals
-druid-cluster-middlemanagers-0 middleManagers
-druid-cluster-mysql-metadata-0 primary
-druid-cluster-mysql-metadata-1 standby
-druid-cluster-mysql-metadata-2 standby
-druid-cluster-routers-0 routers
-druid-cluster-zk-0
-druid-cluster-zk-1
-druid-cluster-zk-2
-myminio-default-0
-
-```
 **Delete the `primary` MySQL pod**
+```shell
+$ kubectl delete pod -n demo druid-cluster-mysql-metadata-0 
+pod "druid-cluster-mysql-metadata-0" deleted
 
+```
 You can delete `druid-cluster-mysql-metadata-0` pods which has `primary` role to see how KubeDB handles failover.
 ```shell
 druid-cluster-brokers-0 brokers
+druid-cluster-brokers-1 brokers
 druid-cluster-coordinators-0 coordinators
+druid-cluster-coordinators-1 coordinators
 druid-cluster-historicals-0 historicals
+druid-cluster-historicals-1 historicals
 druid-cluster-middlemanagers-0 middleManagers
+druid-cluster-middlemanagers-1 middleManagers
 druid-cluster-mysql-metadata-0 primary
 druid-cluster-mysql-metadata-1 standby
 druid-cluster-mysql-metadata-2 primary
+druid-cluster-overlords-0 overlords
+druid-cluster-overlords-1 overlords
 druid-cluster-routers-0 routers
+druid-cluster-routers-1 routers
 druid-cluster-zk-0
 druid-cluster-zk-1
 druid-cluster-zk-2
@@ -369,13 +345,20 @@ myminio-default-0
 You can see how quickly another pod takes the role of `primary` and the deleted pod is recreated automatically after a few seconds with the role of `standby`. 
 ```shell
 druid-cluster-brokers-0 brokers
+druid-cluster-brokers-1 brokers
 druid-cluster-coordinators-0 coordinators
+druid-cluster-coordinators-1 coordinators
 druid-cluster-historicals-0 historicals
+druid-cluster-historicals-1 historicals
 druid-cluster-middlemanagers-0 middleManagers
+druid-cluster-middlemanagers-1 middleManagers
 druid-cluster-mysql-metadata-0 standby
 druid-cluster-mysql-metadata-1 standby
 druid-cluster-mysql-metadata-2 primary
+druid-cluster-overlords-0 overlords
+druid-cluster-overlords-1 overlords
 druid-cluster-routers-0 routers
+druid-cluster-routers-1 routers
 druid-cluster-zk-0
 druid-cluster-zk-1
 druid-cluster-zk-2
@@ -383,10 +366,11 @@ myminio-default-0
 
 ```
 
-**Delete a `standby` MySQL pod**
+**Delete two `standby` MySQL pod**
+
 You can also delete `druid-cluster-mysql-metadata-1` pods which has `standby` role to see how KubeDB handles failover.
 ```shell
-kubectl delete pod -n demo druid-cluster-mysql-metadata-0 druid-cluster-mysql-metadata-1
+$ kubectl delete pod -n demo druid-cluster-mysql-metadata-0 druid-cluster-mysql-metadata-1
 pod "druid-cluster-mysql-metadata-0" deleted
 pod "druid-cluster-mysql-metadata-1" deleted
 ```
@@ -394,13 +378,20 @@ pod "druid-cluster-mysql-metadata-1" deleted
 For few seconds, you will see that  `standby` roles are missing.
 ```shell
 druid-cluster-brokers-0 brokers
+druid-cluster-brokers-1 brokers
 druid-cluster-coordinators-0 coordinators
+druid-cluster-coordinators-1 coordinators
 druid-cluster-historicals-0 historicals
+druid-cluster-historicals-1 historicals
 druid-cluster-middlemanagers-0 middleManagers
-druid-cluster-mysql-metadata-0 
+druid-cluster-middlemanagers-1 middleManagers
+druid-cluster-mysql-metadata-0
 druid-cluster-mysql-metadata-1
 druid-cluster-mysql-metadata-2 primary
+druid-cluster-overlords-0 overlords
+druid-cluster-overlords-1 overlords
 druid-cluster-routers-0 routers
+druid-cluster-routers-1 routers
 druid-cluster-zk-0
 druid-cluster-zk-1
 druid-cluster-zk-2
@@ -409,55 +400,36 @@ myminio-default-0
 ```
 After 10-30 seconds you can see that the deleted pods are recreated automatically and join the MySQL cluster with their respective roles.
 ```shell
+
 druid-cluster-brokers-0 brokers
+druid-cluster-brokers-1 brokers
 druid-cluster-coordinators-0 coordinators
+druid-cluster-coordinators-1 coordinators
 druid-cluster-historicals-0 historicals
+druid-cluster-historicals-1 historicals
 druid-cluster-middlemanagers-0 middleManagers
+druid-cluster-middlemanagers-1 middleManagers
 druid-cluster-mysql-metadata-0 standby
 druid-cluster-mysql-metadata-1 standby
 druid-cluster-mysql-metadata-2 primary
+druid-cluster-overlords-0 overlords
+druid-cluster-overlords-1 overlords
 druid-cluster-routers-0 routers
+druid-cluster-routers-1 routers
 druid-cluster-zk-0
 druid-cluster-zk-1
 druid-cluster-zk-2
 myminio-default-0
 
 ```
-**Delete all of the `MySQL` Pods**
-You can also delete all of the `MySQL` pods to see how KubeDB handles failover.
-```shell
-kubectl delete pod -n demo druid-cluster-mysql-metadata-0 druid-cluster-mysql-metadata-1 druid-cluster-mysql-metadata-2
-pod "druid-cluster-mysql-metadata-0" deleted
-pod "druid-cluster-mysql-metadata-1" deleted
-pod "druid-cluster-mysql-metadata-2" deleted
-```
-You may notice that the `MySQL` pods briefly lose their assigned roles for a few seconds. To maintain stability in a production environment, it's best to avoid deleting all `MySQL` pods at once.
-```shell
-druid-cluster-brokers-0 brokers
-druid-cluster-coordinators-0 coordinators
-druid-cluster-historicals-0 historicals
-druid-cluster-middlemanagers-0 middleManagers
-druid-cluster-mysql-metadata-0 
-druid-cluster-mysql-metadata-1
-druid-cluster-mysql-metadata-2
-druid-cluster-routers-0 routers
-druid-cluster-zk-0
-druid-cluster-zk-1
-druid-cluster-zk-2
-myminio-default-0
-```
-It will show an error when you will try to access the Druid web console or REST API.
-<figure align="center">
-  <img alt="Rotate Authentication process of Kafka" src="/docs/guides/druid/failover/error1.png">
-<figcaption align="center">Fig:Error in Druid API</figcaption>
-</figure>
+>Note: You should not delete all `MySQL` pods at a time, since `MySQL` relies on a majority of nodes to maintain quorum. If all nodes are deleted, quorum is lost and the entire MySQL ensemble becomes unavailable. This in turn disrupts the Druid cluster’s ability to coordinate and manage its distributed components, which may result in service interruptions and potential data loss.
 
 ### Case 3: Delete a Broker Pod
 
 Druid Brokers can be scaled out and all running servers will be active and queryable. We 
 recommend placing them behind a load balancer.
 
-Delete a `Broker` pod and observe failover:
+**Delete a `Broker` pod and observe failover:**
 
 ```bash
 $ kubectl delete pod -n demo druid-cluster-brokers-0
@@ -467,19 +439,22 @@ pod "druid-cluster-brokers-0" deleted
 
 Monitor the pods:
 
-```shell
-$ watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
-```
 ```bash
-
 druid-cluster-brokers-0 brokers
+druid-cluster-brokers-1 brokers
 druid-cluster-coordinators-0 coordinators
+druid-cluster-coordinators-1 coordinators
 druid-cluster-historicals-0 historicals
+druid-cluster-historicals-1 historicals
 druid-cluster-middlemanagers-0 middleManagers
-druid-cluster-mysql-metadata-0 primary
-druid-cluster-mysql-metadata-1 standby
+druid-cluster-middlemanagers-1 middleManagers
+druid-cluster-mysql-metadata-0 standby
+druid-cluster-mysql-metadata-1 primary
 druid-cluster-mysql-metadata-2 standby
+druid-cluster-overlords-0 overlords
+druid-cluster-overlords-1 overlords
 druid-cluster-routers-0 routers
+druid-cluster-routers-1 routers
 druid-cluster-zk-0
 druid-cluster-zk-1
 druid-cluster-zk-2
@@ -494,6 +469,7 @@ then they will automatically failover between each other as necessary. Only one 
 at a time, but inactive servers will redirect to the currently active server.
 
 **Delete a Coordinator Pod**
+
 ```bash
 $ kubectl delete pod -n demo druid-cluster-coordinators-0
 pod "druid-cluster-coordinators-0" deleted
@@ -521,12 +497,11 @@ druid-cluster-zk-2
 myminio-default-0
 
 ```
-**Delete All Coordinator Pods**
-```bash
+
 **Delete a Overlord Pod**
 
 ```bash
-kubectl delete pod -n demo druid-cluster-overlords-0
+$ kubectl delete pod -n demo druid-cluster-overlords-0
 pod "druid-cluster-overlords-0" deleted
 ```
 ```shell
@@ -552,45 +527,14 @@ druid-cluster-zk-2
 myminio-default-0
 
 ```
-**Delete All Overlord Pods**
-```bash
-$ kubectl delete pod -n demo druid-cluster-overlords-0 druid-cluster-overlords-1
-pod "druid-cluster-overlords-0" deleted
-pod "druid-cluster-overlords-1" deleted
-```
-
-Again, KubeDB will recreate the pod and maintain ingestion availability.
-```shell
-druid-cluster-brokers-0 brokers
-druid-cluster-brokers-1 brokers
-druid-cluster-coordinators-0 coordinators
-druid-cluster-coordinators-1 coordinators
-druid-cluster-historicals-0 historicals
-druid-cluster-historicals-1 historicals
-druid-cluster-middlemanagers-0 middleManagers
-druid-cluster-middlemanagers-1 middleManagers
-druid-cluster-mysql-metadata-0 primary
-druid-cluster-mysql-metadata-1 standby
-druid-cluster-mysql-metadata-2 standby
-druid-cluster-overlords-0 overlords
-druid-cluster-overlords-1 overlords
-druid-cluster-routers-0 routers
-druid-cluster-routers-1 routers
-druid-cluster-zk-0
-druid-cluster-zk-1
-druid-cluster-zk-2
-myminio-default-0
-
-```
-Even if you delete any pod, KubeDB will automatically recreate it, ensuring the cluster stays healthy and fully functional without interruption
-
+> Note: You should not delete all `Coordinator` or `Overlord` pods at a time, since only one pod can be active at a time. This in turn disrupts the Druid cluster’s ability to coordinate and manage its distributed components, which may result in service interruptions and potential data loss.
 ## Cleanup
 
 To clean up run:
 
 ```bash
-kubectl delete druid -n demo druid-cluster
-kubectl delete ns demo
+$ kubectl delete druid -n demo druid-cluster
+$ kubectl delete ns demo
 ```
 
 ## Next Steps
