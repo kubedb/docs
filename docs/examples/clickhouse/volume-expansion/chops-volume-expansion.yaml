@@ -7,7 +7,7 @@ spec:
   apply: "IfReady"
   type: VolumeExpansion
   databaseRef:
-    name: ch
+    name: clickhouse-prod
   volumeExpansion:
     mode: "Offline"
     node: 2Gi

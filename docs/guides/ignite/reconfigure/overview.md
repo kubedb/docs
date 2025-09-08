@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 The following diagram shows how KubeDB Ops-manager operator reconfigures `Ignite` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Reconfiguring process of Ignite" src="/docs/guides/ignite/images/reconfigure.svg">
+  <img alt="Reconfiguring process of Ignite" src="/docs/images/day-2-operation/ignite/ig-reconfigure.png">
 <figcaption align="center">Fig: Reconfiguring process of Ignite</figcaption>
 </figure>
 
