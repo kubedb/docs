@@ -63,10 +63,8 @@ metadata:
   generation: 1
   labels:
     prometheus: prometheus
-  ...
     manager: kubectl
     operation: Update
-    time: "2020-08-25T04:02:07Z"
   name: prometheus
   namespace: default
   resourceVersion: "2087"
