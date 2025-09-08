@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ClickHouseOpsRequest
+metadata:
+  name: chops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: clickhouse-prod
+  authentication:
+    secretRef:
+      name: clickhouse-user-auth
+  timeout: 5m
+  apply: IfReady
