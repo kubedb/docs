@@ -140,7 +140,7 @@ In order to set up vertical autoscaling for this  cluster, we have to create a `
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: HazelcastAutoscaler
 metadata:
-  name: hz-storage-autoscaler-
+  name: hz-storage-autoscaler
   namespace: demo
 spec:
   databaseRef:
@@ -286,7 +286,7 @@ Metadata:
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  HazelcastAutoscaler
-    Name:                  hz-storage-autoscaler-
+    Name:                  hz-storage-autoscaler
     UID:                   9b6ba215-73d3-4b6d-bff7-495c01449185
   Resource Version:        5638392
   UID:                     4146ba75-2d77-42a4-813c-160c5a008595
