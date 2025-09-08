@@ -1,10 +1,12 @@
 apiVersion: kubedb.com/v1alpha2
 kind: ClickHouse
 metadata:
-  name: ch
+  name: clickhouse-prod
   namespace: demo
 spec:
   version: 24.4.1
+  configSecret:
+    name: ch-custom-config
   clusterTopology:
     clickHouseKeeper:
       externallyManaged: false
@@ -17,7 +19,7 @@ spec:
             requests:
               storage: 1Gi
     cluster:
-      - name: appscode-cluster
+        name: appscode-cluster
         shards: 2
         replicas: 2
         podTemplate:

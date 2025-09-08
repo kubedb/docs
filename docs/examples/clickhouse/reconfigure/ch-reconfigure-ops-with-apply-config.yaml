@@ -1,15 +1,17 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ClickHouseOpsRequest
 metadata:
-  name: chops-cluster-reconfiugre-with-config
+  name: chops-cluster-reconfigure-with-config
   namespace: demo
 spec:
   type: Reconfigure
   databaseRef:
-    name: ch
+    name: clickhouse-prod
   configuration:
     applyConfig:
-      config.yaml: |
+      ch-config.yaml: |
         profiles:
           default:
             max_query_size: 180000
+  timeout: 10m
+  apply: IfReady

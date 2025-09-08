@@ -2,9 +2,9 @@
 title: ClickHouseVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: cas-catalog-concepts
+    identifier: ch-catalog-concepts
     name: ClickHouseVersion
-    parent: cas-concepts-clickhouse
+    parent: ch-concepts-clickhouse
     weight: 45
 menu_name: docs_{{ .version }}
 section_menu_id: guides
