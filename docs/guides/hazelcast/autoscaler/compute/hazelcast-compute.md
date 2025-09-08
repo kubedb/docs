@@ -2,7 +2,7 @@
 title: Hazelcast  Autoscaling
 menu:
   docs_{{ .version }}:
-    identifier: hz-auto-scaling
+    identifier: hz-auto-scaling-compute
     name:  Cluster
     parent: hz-compute-auto-scaling
     weight: 20
