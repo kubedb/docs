@@ -9,5 +9,5 @@ spec:
     name: sample-mysql
   migration:
     storageClassName: longhorn-custom
-    volumeReclaimPolicy: Delete
+    oldPVReclaimPolicy: Delete
   
