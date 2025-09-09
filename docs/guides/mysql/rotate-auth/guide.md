@@ -103,7 +103,7 @@ do this, the user needs `username` and `password` in order to connect to the dat
 example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get mysql -n demo mysql-quickstart -ojson | jq .spec.authsecret.name
+$ kubectl get mysql -n demo mysql-quickstart -ojson | jq .spec.authSecret.name
 "mysql-quickstart-auth"
 $ kubectl get secret -n demo mysql-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 root⏎                                
@@ -267,7 +267,7 @@ Events:
 ```
 **Verify Auth is rotated**
 ```shell
-$ kubectl get mysql -n demo mysql-quickstart -ojson | jq .spec.authsecret.name
+$ kubectl get mysql -n demo mysql-quickstart -ojson | jq .spec.authSecret.name
 "mysql-quickstart-auth"
 $ kubectl get secret -n demo mysql-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 root⏎                                    
@@ -469,7 +469,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get my -n demo mysql-quickstart -ojson | jq .spec.authsecret.name
+$ kubectl get my -n demo mysql-quickstart -ojson | jq .spec.authSecret.name
 "mysql-quickstart-auth-user"
 $ kubectl get secret -n demo mysql-quickstart-auth-user -o=jsonpath='{.data.username}' | base64 -d
 root⏎                                                                

@@ -23,7 +23,7 @@ section_menu_id: guides
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get Pgpool -n pool quick-pgpool -ojson | jq .spec.authsecret.name
+$ kubectl get Pgpool -n pool quick-pgpool -ojson | jq .spec.authSecret.name
 "quick-pgpool-auth"
 $ kubectl get secrets -n pool quick-pgpool-auth -o jsonpath='{.data.\username}' | base64 -d
 pcp⏎               
@@ -160,7 +160,7 @@ Events:
 
 **Verify Auth is rotated**
 ```shell
-$  kubectl get Pgpool -n pool quick-pgpool -ojson | jq .spec.authsecret.name
+$  kubectl get Pgpool -n pool quick-pgpool -ojson | jq .spec.authSecret.name
 "quick-pgpool-auth"
 $ kubectl get secrets -n pool quick-pgpool-auth -o jsonpath='{.data.\username}' | base64 -d
 pcp⏎     
@@ -322,7 +322,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get pgpool -n pool quick-pgpool -ojson | jq .spec.authsecret.name
+$ kubectl get pgpool -n pool quick-pgpool -ojson | jq .spec.authSecret.name
 "quick-pp-user-auth"
 $ kubectl get secrets -n pool quick-pp-user-auth -o jsonpath='{.data.\username}' | base64 -d
 user⏎                                                                                       

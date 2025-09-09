@@ -82,7 +82,7 @@ quick-postgres   13.13     Ready    7m36s
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authsecret.name
+$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
 "quick-postgres-auth"
 $ kubectl get secret -n demo quick-postgres-auth -o jsonpath='{.data.username}' | base64 -d
 postgres
@@ -226,7 +226,7 @@ $ kubectl describe postgresopsrequest -n demo pgops-rotate-auth-generated
 ```
 **Verify Auth is rotated**
 ```shell
-$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authsecret.name
+$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
 "quick-postgres-auth"
 $ kubectl get secret -n demo quick-postgres-auth -o=jsonpath='{.data.username}' | base64 -d
  postgres
@@ -382,7 +382,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authsecret.name
+$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
 "quick-postgres-user-auth"
 $ kubectl get secret -n demo quick-postgres-user-auth-new -o=jsonpath='{.data.username}' | base64 -d
 admin                                        

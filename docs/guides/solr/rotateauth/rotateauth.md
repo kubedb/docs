@@ -166,7 +166,7 @@ solr-combined   kubedb.com/v1alpha2     9.8.0      Ready    17m
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get solr -n demo solr-combined -ojson | jq .spec.authsecret.name
+$ kubectl get solr -n demo solr-combined -ojson | jq .spec.authSecret.name
 "solr-combined-auth"
 $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
 admin⏎           
@@ -307,7 +307,7 @@ Events:
 ```
 **Verify Auth is rotated**
 ```shell
-$  kubectl get solr -n demo solr-combined -ojson | jq .spec.authsecret.name
+$  kubectl get solr -n demo solr-combined -ojson | jq .spec.authSecret.name
 "solr-combined-auth"
 $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
 admin⏎ 
@@ -473,7 +473,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$  kubectl get solr -n demo solr-combined -ojson | jq .spec.authsecret.name
+$  kubectl get solr -n demo solr-combined -ojson | jq .spec.authSecret.name
 "solr-combined-user-auth"
 $ kubectl get secret -n demo solr-combined-user-auth -o jsonpath='{.data.username}' | base64 -d
 solr⏎      

@@ -94,7 +94,7 @@ RabbitMQ.kubedb.com/rabbitmq created
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authsecret.name
+$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
 "rabbitmq-auth"
 $ kubectl get secret -n demo rabbitmq-auth -o jsonpath='{.data.username}' | base64 -d
 admin⏎          
@@ -290,7 +290,7 @@ Events:
 ```
 **Verify Auth is rotated**
 ```shell
-$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authsecret.name
+$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
 "rabbitmq-auth"
 $ kubectl get secret -n demo rabbitmq-auth -o jsonpath='{.data.username}' | base64 -d
 admin⏎                                        
@@ -524,7 +524,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authsecret.name
+$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
 "rm-auth-user"
 $ kubectl get secret -n demo rm-auth-user -o=jsonpath='{.data.username}' | base64 -d
 rabbit⏎                              
