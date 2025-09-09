@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Hazelcast
+metadata:
+  name: hz-prod
+  namespace: demo
+spec:
+  deletionPolicy: WipeOut
+  licenseSecret:
+    name: hz-license-key
+  replicas: 3
+  version: 5.5.2
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi

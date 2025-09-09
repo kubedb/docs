@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HazelcastOpsRequest
+metadata:
+  name: hz-vscale-up
+  namespace: demo
+spec:
+  databaseRef:
+    name: hz-prod
+  type: VerticalScaling
+  verticalScaling:
+    hazelcast:
+      resources:
+        limits:
+          cpu: 1
+          memory: 2.5Gi
+        requests:
+          cpu: 1
+          memory: 2.5Gi

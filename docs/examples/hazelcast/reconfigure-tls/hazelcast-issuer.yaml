@@ -1,0 +1,8 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: hz-issuer
+  namespace: demo
+spec:
+  ca:
+    secretName: hz-ca

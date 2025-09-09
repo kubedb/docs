@@ -1,0 +1,41 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Hazelcast
+metadata:
+  name: hazelcast-sample
+  namespace: demo
+spec:
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      name: self-signed-issuer
+      kind: ClusterIssuer
+    certificates:
+      - alias: server
+        subject:
+          organizations:
+            - kubedb
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
+      - alias: client
+        subject:
+          organizations:
+            - kubedb
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
+  enableSSL: true
+  deletionPolicy: WipeOut
+  licenseSecret:
+    name: hz-license-key
+  replicas: 3
+  version: 5.5.2
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+    storageClassName: standard

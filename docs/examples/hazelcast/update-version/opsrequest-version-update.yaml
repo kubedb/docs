@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HazelcastOpsRequest
+metadata:
+  name: hzops-update-version
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: hz-prod
+  updateVersion:
+    targetVersion: 5.5.6
