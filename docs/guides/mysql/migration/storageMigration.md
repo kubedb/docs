@@ -48,7 +48,7 @@ longhorn-custom        driver.longhorn.io      Delete          WaitForFirstConsu
 longhorn-static        driver.longhorn.io      Delete          Immediate              true                   12d
 ```
 From the above output we can see that we have more than two `StorageClass` resources. We will now deploy a `MySQL` database using `local-path` StorageClass and insert some data into it. 
-After that, we will apply `MySQLOPSRequest` to migrate StorageClass from `local-path` to `longhorn-custom`.
+After that, we will apply `MySQLOpsRequest` to migrate StorageClass from `local-path` to `longhorn-custom`.
 
 > Note: If the `VOLUMEBINDINGMODE` of previous StorageClass is  set to `WaitForFirstConsumer` then the `VOLUMEBINDINGMODE` of new StorageClass must set to `WaitForFirstConsumer`
 
@@ -185,7 +185,7 @@ spec:
     name: sample-mysql
   migration:
     storageClassName: longhorn-custom
-    volumeReclaimPolicy: Delete
+    oldPVReclaimPolicy: Delete
 ```
 
 Here,
@@ -193,8 +193,9 @@ Here,
 - `spec.type` specifies that we are performing `StorageMigration` operation.
 - `spec.databaseRef.name` specifies that we are performing StorageMigration operation on `sample-mysql` database.
 - `spec.migration.storageClassName` specifies our desired StorageClass
-- `spec.migration.volumeReclaimPolicy` specifies the reclaim policy of previous persistent volume.
+- `spec.migration.oldPVReclaimPolicy` specifies the reclaim policy of previous persistent volume.
 
+> Note: To retain the old PersistentVolume, set `spec.migration.oldPVReclaimPolicy` to `Retain`.
 
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
