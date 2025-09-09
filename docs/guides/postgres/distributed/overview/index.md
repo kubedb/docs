@@ -502,6 +502,59 @@ Verify the worker installation:
    spire-install-crds-cnbjh             0/1     Completed   0          4m50s
    ```
 
+ **Onboard Database Namespace**
+
+
+Create a `SliceConfig` to onboard the `demo` (application) and `kubedb` (operator) namespaces for network connectivity. Create a `sliceconfig.yaml` file:
+
+```yaml
+apiVersion: controller.kubeslice.io/v1alpha1
+kind: SliceConfig
+metadata:
+  name: demo-slice
+  namespace: kubeslice-demo-distributed-postgres
+spec:
+  sliceSubnet: 10.1.0.0/16
+  maxClusters: 16
+  sliceType: Application
+  sliceGatewayProvider:
+    sliceGatewayType: Wireguard
+    sliceCaType: Local
+  sliceIpamType: Local
+  rotationInterval: 60
+  vpnConfig:
+    cipher: AES-128-CBC
+  clusters:
+    - demo-controller
+    - demo-worker
+  qosProfileDetails:
+    queueType: HTB
+    priority: 1
+    tcType: BANDWIDTH_CONTROL
+    bandwidthCeilingKbps: 5120
+    bandwidthGuaranteedKbps: 2560
+    dscpClass: AF11
+  namespaceIsolationProfile:
+    applicationNamespaces:
+      - namespace: demo
+        clusters:
+          - '*'
+      - namespace: kubedb
+        clusters:
+          - '*'
+    isolationEnabled: false
+    allowedNamespaces:
+      - namespace: kube-system
+        clusters:
+          - '*'
+```
+
+Apply the `SliceConfig`:
+
+```bash
+kubectl apply -f sliceconfig.yaml
+```
+
 ### Step 4: Install the KubeDB Operator
 
 Install the KubeDB Operator on the `demo-controller` cluster to manage the Postgres instance.
@@ -511,7 +564,7 @@ Download a FREE license from [AppsCode License Server](https://appscode.com/issu
 
 ```bash
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
-    --version v2025.7.31 \
+    --version v2025.8.31 \
     --namespace kubedb --create-namespace \
     --set-file global.license=$HOME/Downloads/kubedb-license-cd548cce-5141-4ed3-9276-6d9578707f12.txt \
     --set petset.features.ocm.enabled=true \
@@ -565,82 +618,7 @@ Apply the policy on `demo-controller`:
 kubectl apply -f podplacementpolicy.yaml --context demo-controller --kubeconfig $HOME/.kube/config
 ```
 
-### Step 6: Onboard Application Namespace
-
-
-Create a `SliceConfig` to onboard the `demo` (application) and `kubedb` (operator) namespaces for network connectivity. Create a `sliceconfig.yaml` file:
-
-```yaml
-apiVersion: controller.kubeslice.io/v1alpha1
-kind: SliceConfig
-metadata:
-  name: demo-slice
-  namespace: kubeslice-demo-distributed-postgres
-spec:
-  sliceSubnet: 10.1.0.0/16
-  maxClusters: 16
-  sliceType: Application
-  sliceGatewayProvider:
-    sliceGatewayType: Wireguard
-    sliceCaType: Local
-  sliceIpamType: Local
-  rotationInterval: 60
-  vpnConfig:
-    cipher: AES-128-CBC
-  clusters:
-    - demo-controller
-    - demo-worker
-  qosProfileDetails:
-    queueType: HTB
-    priority: 1
-    tcType: BANDWIDTH_CONTROL
-    bandwidthCeilingKbps: 5120
-    bandwidthGuaranteedKbps: 2560
-    dscpClass: AF11
-  namespaceIsolationProfile:
-    applicationNamespaces:
-      - namespace: demo
-        clusters:
-          - '*'
-      - namespace: kubedb
-        clusters:
-          - '*'
-    isolationEnabled: false
-    allowedNamespaces:
-      - namespace: kube-system
-        clusters:
-          - '*'
-```
-
-Apply the `SliceConfig`:
-
-```bash
-kubectl apply -f sliceconfig.yaml
-```
-
-Restart all pods in the `kubedb` namespace to inject KubeSlice sidecar containers:
-
-```bash
-kubectl delete -n kubedb pod --all
-```
-
-Verify the pods restart and are running:
-
-```bash
-kubectl get pods -n kubedb
-```
-**Output**:
-   ```
-   NAME                                           READY   STATUS    RESTARTS   AGE
-kubedb-kubedb-autoscaler-0                     1/2     Running   0          44s
-kubedb-kubedb-ops-manager-0                    1/2     Running   0          43s
-kubedb-kubedb-provisioner-0                    1/2     Running   0          43s
-kubedb-kubedb-webhook-server-df667cd85-tjdp9   2/2     Running   0          44s
-kubedb-petset-cf9f5b6f4-d9558                  2/2     Running   0          44s
-kubedb-sidekick-5dbf7bcf64-4b8cw               2/2     Running   0          44s
-   ```
-
-### Step 7: Create a Distributed Postgres Instance
+### Step 6: Create a Distributed Postgres Instance
 
 Define a Postgres custom resource with `spec.distributed: true` and reference the `PlacementPolicy`. Example:
 
@@ -674,7 +652,7 @@ Apply the resource on `demo-controller`:
 kubectl apply -f postgres.yaml --context demo-controller --kubeconfig $HOME/.kube/config
 ```
 
-### Step 8: Verify the Deployment
+### Step 7: Verify the Deployment
 
 1. **Check Postgres Resource and Pods on `demo-controller`**:
 
