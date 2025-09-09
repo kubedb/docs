@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Hazelcast
+metadata:
+  name: hazelcast-dev
+  namespace: demo
+spec:
+  replicas: 2
+  version: 5.5.2
+  licenseSecret:
+    name: hz-license-key
+  configSecret:
+    name: hz
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: longhorn
+  storageType: Durable
+  deletionPolicy: WipeOut

@@ -1,0 +1,10 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HazelcastOpsRequest
+metadata:
+  name: hazelcast-restart
+  namespace: demo
+spec:
+  apply: IfReady
+  databaseRef:
+    name: hazelcast-quickstart
+  type: Restart
