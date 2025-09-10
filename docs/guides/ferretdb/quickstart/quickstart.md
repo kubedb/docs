@@ -84,7 +84,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ferredb/quickstart/ferretdb-internal.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ferretdb/quickstart/ferretdb-internal.yaml
 ferretdb.kubedb.com/ferret created
 ```
 
