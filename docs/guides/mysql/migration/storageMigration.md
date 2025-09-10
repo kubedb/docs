@@ -82,15 +82,20 @@ spec:
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/migration/sample-mysql.yaml
 mysql.kubedb.com/sample-mysql created
 ```
-Now, wait until sample-mysql has status `Ready`. i.e,
+Now, wait until sample-mysql has status `Ready` and check the `StorageClass`,
 
 ```bash
-$ kubectl get mysql -n demo
-NAME           VERSION   STATUS   AGE
-sample-mysql   9.1.0     Ready    9m32s
+$ kubectl get mysql,pvc -n demo
+NAME                            VERSION   STATUS   AGE
+mysql.kubedb.com/sample-mysql   9.1.0     Ready    101s
+
+NAME                                        STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/data-sample-mysql-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   1Gi        RWO            local-path     <unset>                 96s
+persistentvolumeclaim/data-sample-mysql-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   1Gi        RWO            local-path     <unset>                 90s
+persistentvolumeclaim/data-sample-mysql-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   1Gi        RWO            local-path     <unset>                 85s
 ```
 
-Lets create a table in the primary.
+The database is `Ready` and all the `PersistentVolumeClaim` uses `local-path`  StorageClass, Let's create a table in the primary.
 
 ```bash
 # find the primary pod
@@ -217,10 +222,17 @@ Every 2.0s: kubectl get mysqlopsrequest -n demo
 NAME                TYPE               STATUS       AGE
 storage-migration   StorageMigration   Successful   12m
 ```
+We can see from the above output that the `MySQLOpsRequest` has succeeded. Let's verify the StorageClass.
 
-We can see from the above output that the `MySQLOpsRequest` has succeded.
+``` bash
+$ kubectl get pvc -n demo
+NAME                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS        VOLUMEATTRIBUTESCLASS   AGE
+data-sample-mysql-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   1Gi        RWO            longhorn-custom     <unset>                 21m
+data-sample-mysql-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   1Gi        RWO            longhorn-custom     <unset>                 21m
+data-sample-mysql-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   1Gi        RWO            longhorn-custom     <unset>                 21m
+```
 
-Now, we will verify that the data remains intact after the `StorageMigration` operation. Let's exec into one of the `MySQL` pod and perform read query.
+The `PersistentVolumeClaim` StorageClass has changed to `longhorn-custom`.  Now, we will verify that the data remains intact after the `StorageMigration` operation. Let's exec into one of the `MySQL` pod and perform read query.
 
 ```bash
 $ kubectl exec -it -n demo sample-mysql-0 -- bash
