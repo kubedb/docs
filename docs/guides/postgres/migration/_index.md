@@ -3,7 +3,7 @@ title: Migration
 menu:
   docs_{{ .version }}:
     identifier: pg-migration
-    name: Initialization
+    name: Migration
     parent: pg-postgres-guides
     weight: 42
 menu_name: docs_{{ .version }}
