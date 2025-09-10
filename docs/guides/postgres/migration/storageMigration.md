@@ -75,15 +75,20 @@ spec:
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/sample-postgres.yaml
 postgres.kubedb.com/sample-postgres created
 ```
-Now, wait until sample-postgres has status `Ready`. i.e,
+Now, wait until sample-postgres has status `Ready` and check the `StorageClass`,
 
 ```bash
-$ kubectl get postgres -n demo
+$ kubectl get postgres,pvc -n demo
 NAME              VERSION   STATUS   AGE
-sample-postgres   13.13     Ready    41s
+sample-postgres   13.13     Ready    101s
+
+NAME                                           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/data-sample-postgres-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   1Gi        RWO            local-path     <unset>                 96s
+persistentvolumeclaim/data-sample-postgres-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   1Gi        RWO            local-path     <unset>                 90s
+persistentvolumeclaim/data-sample-postgres-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   1Gi        RWO            local-path     <unset>                 85s
 ```
 
-Lets create a table in the primary.
+The database is `Ready` and all the `PersistentVolumeClaim` uses `local-path`  StorageClass, Let's create a table in the primary.
 
 ```bash
 # find the primary pod
@@ -157,9 +162,17 @@ NAME                TYPE               STATUS       AGE
 storage-migration   StorageMigration   Successful   13m
 ```
 
-We can see from the above output that the `PostgresOpsRequest` has succeded.
+We can see from the above output that the `PostgresOpsRequest` has succeeded. Let's verify the StorageClass.
 
-Now, we will verify that the data remains intact after the `StorageMigration` operation. Let's exec into one of the `Postgres` pod and perform read query.
+``` bash
+$ kubectl get pvc -n demo
+NAME                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS        VOLUMEATTRIBUTESCLASS   AGE
+data-sample-postgres-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   1Gi        RWO            longhorn-custom     <unset>                 21m
+data-sample-postgres-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   1Gi        RWO            longhorn-custom     <unset>                 21m
+data-sample-postgres-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   1Gi        RWO            longhorn-custom     <unset>                 21m
+```
+
+The `PersistentVolumeClaim` StorageClass has changed to `longhorn-custom`. Now, we will verify that the data remains intact after the `StorageMigration` operation. Let's exec into one of the `Postgres` pod and perform read query.
 
 ```bash
 $ kubectl exec -it -n demo sample-postgres-0 -- bash
