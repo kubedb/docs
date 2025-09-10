@@ -75,10 +75,10 @@ spec:
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/sample-postgres.yaml
 postgres.kubedb.com/sample-postgres created
 ```
-Now, wait until sample-mysql has status `Ready`. i.e,
+Now, wait until sample-postgres has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mysql -n demo
+$ kubectl get postgres -n demo
 NAME              VERSION   STATUS   AGE
 sample-postgres   13.13     Ready    41s
 ```
@@ -110,7 +110,7 @@ postgres=# select count(*) from hello;
 ```
 
 ## Apply StorageMigration Ops-Request
-To migrate `StorageClass` we have to create a `MySQLOpsRequest` CR with our desired `StorageClass`. Below is the YAML of the `MySQLOpsRequest` CR that we are going to create,
+To migrate `StorageClass` we have to create a `PostgresOpsRequest` CR with our desired `StorageClass`. Below is the YAML of the `PostgresOpsRequest` CR that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -130,7 +130,7 @@ spec:
 Here,
 
 - `spec.type` specifies that we are performing `StorageMigration` operation.
-- `spec.databaseRef.name` specifies that we are performing StorageMigration operation on `sample-mysql` database.
+- `spec.databaseRef.name` specifies that we are performing StorageMigration operation on `sample-postgres` database.
 - `spec.migration.storageClassName` specifies our desired StorageClass
 - `spec.migration.oldPVReclaimPolicy` specifies the reclaim policy of previous persistent volume. 
 
@@ -149,7 +149,7 @@ If everything goes well, `KubeDb` operator will migrate the `StorageClass` along
 Let’s wait for `PostgresOpsRequest` to be `Successful`. Run the following command to watch PostgresOpsRequest CR,
 
 ``` bash
-$ watch kubectl get mysqlopsrequest -n demo
+$ watch kubectl get postgresopsrequest -n demo
 
 Every 2.0s: kubectl get postgresopsrequest -n demo  
 
