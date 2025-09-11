@@ -62,7 +62,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/initialization/md-git-sync.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/initialization/git-sync-public.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 
@@ -125,13 +125,11 @@ MariaDB [mysql]> select * from demo_table;
 ```
 ## From Private Git Repository
 
-### Using SSH Key
+### 1. Using SSH Key
 
 Git-sync supports using SSH protocol for pulling git content.
 
-#### Step 1: Create Secret
-
-Obtain the host keys for your git server:
+First, Obtain the host keys for your git server:
 
 ```bash
 $ ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
@@ -152,7 +150,7 @@ $ kubectl create secret generic -n demo git-creds \
     --from-file=known_hosts=/tmp/known_hosts
 ```
 
-The following YAML manifest provides an example of a `MariaDB` object configured to use `git-sync` with a private Git repository:
+The following YAML manifest provides an example of a `MariaDB` resource configured to use `git-sync` with a private Git repository:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -188,7 +186,7 @@ spec:
 ```
 
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/initialization/git-sync-private.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/initialization/git-sync-ssh.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 
@@ -197,6 +195,61 @@ Here,
 - `.spec.init.git.authSecret` specifies the secret containing the `SSH` key.
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
+
+### 2. Using Username and Personal Access Token(PAT)
+
+First, create a `Personal Access Token (PAT)` on your Git host server with the required permissions to access the repository.
+Then create a Kubernetes secret using the `Personal Access Token (PAT)`:
+
+```bash
+$ kubectl create secret generic -n demo git-pat \
+    --from-literal=github-pat=<ghp_yourpersonalaccesstoken>
+```
+
+Now, create a `MariaDB` resource that references the secret created above. 
+The following YAML manifest shows an example:
+
+```yaml
+apiVersion: kubedb.com/v1
+kind: MariaDB
+metadata:
+  name: sample-mariadb
+  namespace: demo
+spec:
+  init:
+   script:
+     scriptPath: "current"
+     git:
+       args:
+       # update with your private repository    
+       - --repo=https://github.com/refat75/mysql-init-scripts.git
+       - --link=current
+       - --root=/root
+       - --credential={"url":"https://github.com","username":"refat75","password-file":"/etc/git-secret/github-pat"}
+       # terminate after one successful sync
+       - --one-time 
+       authSecret:
+         name: git-pat
+       # run as git sync user 
+       securityContext:
+         runAsUser: 65533
+  version: "10.5.23"
+  storage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
+```
+
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/initialization/git-sync-pat.yaml
+mariadb.kubedb.com/sample-mariadb created
+```
+
+Once the database reaches the `Ready` state, you can verify the data using the method described above.
+
 
 ## CleanUp
 

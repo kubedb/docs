@@ -1,0 +1,31 @@
+apiVersion: kubedb.com/v1
+kind: MariaDB
+metadata:
+  name: sample-mariadb
+  namespace: demo
+spec:
+  init:
+    script:
+      scriptPath: "current"
+      git:
+        args:
+          # update with your private repository
+          - --repo=https://github.com/refat75/mysql-init-scripts.git
+          - --link=current
+          - --root=/root
+          - --credential={"url":"https://github.com","username":"refat75","password-file":"/etc/git-secret/github-pat"}
+          # terminate after one successful sync
+          - --one-time
+        authSecret:
+          name: git-pat
+        # run as git sync user
+        securityContext:
+          runAsUser: 65533
+  version: "10.5.23"
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
