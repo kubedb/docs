@@ -7,6 +7,7 @@ menu:
     parent: pg-migration
     weight: 10
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
 
 
@@ -55,7 +56,7 @@ apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
   name: sample-postgres
-  namespace: migration
+  namespace: demo
 spec:
   version: "13.13"
   replicas: 3
@@ -83,9 +84,9 @@ NAME              VERSION   STATUS   AGE
 sample-postgres   13.13     Ready    101s
 
 NAME                                           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-persistentvolumeclaim/data-sample-postgres-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   1Gi        RWO            local-path     <unset>                 96s
-persistentvolumeclaim/data-sample-postgres-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   1Gi        RWO            local-path     <unset>                 90s
-persistentvolumeclaim/data-sample-postgres-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   1Gi        RWO            local-path     <unset>                 85s
+persistentvolumeclaim/data-sample-postgres-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   3Gi        RWO            local-path     <unset>                 96s
+persistentvolumeclaim/data-sample-postgres-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   3Gi        RWO            local-path     <unset>                 90s
+persistentvolumeclaim/data-sample-postgres-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   3Gi        RWO            local-path     <unset>                 85s
 ```
 
 The database is `Ready` and all the `PersistentVolumeClaim` uses `local-path`  StorageClass, Let's create a table in the primary.
@@ -149,7 +150,7 @@ postgresopsrequest.ops.kubedb.com/storage-migration created
 ```
 ## Verify the StorageClass Migrated Successfully
 
-If everything goes well, `KubeDb` operator will migrate the `StorageClass` along with the data.
+If everything goes well, `KubeDB` operator will migrate the `StorageClass` along with the data.
 
 Let’s wait for `PostgresOpsRequest` to be `Successful`. Run the following command to watch PostgresOpsRequest CR,
 
