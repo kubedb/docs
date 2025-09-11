@@ -230,8 +230,6 @@ Following table show what KubeDB does when you delete Ignite crd for different t
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
 
-> For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
-
 ## spec.helathChecker
 It defines the attributes for the health checker.
 - spec.healthChecker.periodSeconds specifies how often to perform the health check.

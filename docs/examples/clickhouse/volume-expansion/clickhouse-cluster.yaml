@@ -1,0 +1,48 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ClickHouse
+metadata:
+  name: clickhouse-prod
+  namespace: demo
+spec:
+  version: 24.4.1
+  clusterTopology:
+    clickHouseKeeper:
+      externallyManaged: false
+      spec:
+        replicas: 3
+        storage:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+    cluster:
+        name: appscode-cluster
+        shards: 2
+        replicas: 2
+        podTemplate:
+          spec:
+            containers:
+              - name: clickhouse
+                resources:
+                  limits:
+                    memory: 4Gi
+                  requests:
+                    cpu: 500m
+                    memory: 1Gi
+            initContainers:
+              - name: clickhouse-init
+                resources:
+                  limits:
+                    memory: 1Gi
+                  requests:
+                    cpu: 500m
+                    memory: 1Gi
+        storage:
+          storageClassName: longhorn
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+  deletionPolicy: WipeOut

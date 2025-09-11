@@ -1,0 +1,62 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ClickHouse
+metadata:
+  name: clickhouse-prod-tls
+  namespace: demo
+spec:
+  version: 24.4.1
+  clusterTopology:
+    clickHouseKeeper:
+      externallyManaged: false
+      spec:
+        replicas: 3
+        storage:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+    cluster:
+        name: appscode-cluster
+        shards: 2
+        replicas: 2
+        podTemplate:
+          spec:
+            containers:
+              - name: clickhouse
+                resources:
+                  limits:
+                    memory: 4Gi
+                  requests:
+                    cpu: 500m
+                    memory: 512Mi
+            initContainers:
+              - name: clickhouse-init
+                resources:
+                  limits:
+                    memory: 1Gi
+                  requests:
+                    cpu: 500m
+                    memory: 512Mi
+        storage:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+  sslVerificationMode: relaxed
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: clickhouse-ca-issuer
+    certificates:
+      - alias: server
+        subject:
+          organizations:
+            - kubedb:server
+        dnsNames:
+          - localhost
+        ipAddresses:
+          - "127.0.0.1"
+  deletionPolicy: WipeOut
