@@ -210,7 +210,7 @@ mysqlopsrequest.ops.kubedb.com/storage-migration created
 ```
 ## Verify the StorageClass Migrated Successfully
 
-If everything goes well, `KubeDb` operator will migrate the `StorageClass` along with the data.
+If everything goes well, `KubeDB` operator will migrate the `StorageClass` along with the data.
 
 Let’s wait for `MySQLOpsRequest` to be `Successful`. Run the following command to watch MySQLOpsRequest CR,
 
