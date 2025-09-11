@@ -1,0 +1,10 @@
+apiVersion: controller.kubeslice.io/v1alpha1
+kind: Project
+metadata:
+  name: demo-distributed-postgres
+  namespace: kubeslice-controller
+spec:
+  serviceAccount:
+    readWrite:
+      - admin
+
