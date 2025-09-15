@@ -50,7 +50,7 @@ longhorn-static        driver.longhorn.io      Delete          Immediate        
 From the above output we can see that we have more than two `StorageClass` resources. We will now deploy a `MySQL` database using `local-path` StorageClass and insert some data into it. 
 After that, we will apply `MySQLOpsRequest` to migrate StorageClass from `local-path` to `longhorn-custom`.
 
-> Note: If the `VOLUMEBINDINGMODE` of previous StorageClass is  set to `WaitForFirstConsumer` then the `VOLUMEBINDINGMODE` of new StorageClass must set to `WaitForFirstConsumer`
+> Both the old and new PVCs should be on the same node. Therefore, the new StorageClass `VOLUMEBINDINGMODE` should be `WaitForFirstConsumer` if the old one uses `WaitForFirstConsumer`. If the old one uses `Immediate` any mode is allowed.
 
 KubeDB implements a `MySQL` CRD to define the specification of a MySQL database. Below is the `MySQL` object created in this tutorial. 
 
