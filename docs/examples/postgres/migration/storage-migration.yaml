@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: storage-migration
+  namespace: demo
+spec:
+  type: StorageMigration
+  databaseRef:
+    name: sample-postgres
+  migration:
+    storageClassName: longhorn-custom
+    oldPVReclaimPolicy: Delete
