@@ -5,6 +5,6 @@ menu:
     identifier: fr-scaling
     name: Scaling
     parent: fr-ferretdb-guides
-    weight: 43
+    weight: 44
 menu_name: docs_{{ .version }}
 ---

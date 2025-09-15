@@ -1,10 +1,10 @@
 ---
-title: Failover & Disaster Recovery Overview Microsoft SQL Server
+title: Failover & Disaster Recovery Overview FerretDB
 menu:
   docs_{{ .version }}:
-    identifier: ms-failover-disaster-recovery
+    identifier: fr-failover-disaster-recovery
     name: Overview
-    parent: FerretDB-fdr
+    parent: fr-failover-ferretdb
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
