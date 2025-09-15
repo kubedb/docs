@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: storage-migration
+  namespace: demo
+spec:
+  type: StorageMigration
+  databaseRef:
+    name: sample-mysql
+  migration:
+    storageClassName: longhorn-custom
+    oldPVReclaimPolicy: Delete
+  
