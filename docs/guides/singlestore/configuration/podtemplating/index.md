@@ -600,7 +600,7 @@ Containers:
     Mounts:
       /scripts from init-scripts (rw)
       /var/lib/memsql from data (rw)
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-htm2z (rotate-auth)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-htm2z (ro)
 Conditions:
   Type                        Status
   PodReadyToStartContainers   True 
