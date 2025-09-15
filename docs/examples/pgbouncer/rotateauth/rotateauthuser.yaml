@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgBouncerOpsRequest
+metadata:
+  name: pbops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: pgbouncer-server
+  authentication:
+    secretRef:
+      name: quick-pb-user-auth
+  timeout: 5m
+  apply: IfReady

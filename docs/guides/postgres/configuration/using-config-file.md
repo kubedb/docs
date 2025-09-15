@@ -54,7 +54,7 @@ shared_buffers=256MB
 Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/configuration/user.conf)"
+$ kubectl create secret generic -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://raw.githubusercontent.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/user.conf)"
 secret/pg-configuration created
 ```
 

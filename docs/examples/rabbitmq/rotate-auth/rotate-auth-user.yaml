@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RabbitMQOpsRequest
+metadata:
+  name: rmops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: rabbitmq
+  authentication:
+    secretRef:
+      name: rm-auth-user
+  timeout: 5m
+  apply: IfReady
