@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisOpsRequest
+metadata:
+  name: rdops-rotate-auth-generated
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: redis-quickstart
+  timeout: 5m
+  apply: IfReady

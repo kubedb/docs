@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: esops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: sample-es
+  authentication:
+    secretRef:
+      name: sample-es-auth-user
+  timeout: 5m
+  apply: IfReady

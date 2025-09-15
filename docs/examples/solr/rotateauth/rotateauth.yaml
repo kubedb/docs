@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: solrops-rotate-auth-generated
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: solr-combined
+  timeout: 5m
+  apply: IfReady

@@ -194,7 +194,7 @@ Here,
 Let's create the Druid CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-with-monitoring.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-quickstart.yaml
 druid.kubedb.com/druid-quickstart created
 ```
 

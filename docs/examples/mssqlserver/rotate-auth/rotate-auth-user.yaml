@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MSSQLServerOpsRequest
+metadata:
+  name: msops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: mssqlserver-quickstart
+  authentication:
+    secretRef:
+      name: quick-mssql-user-auth
+  timeout: 5m
+  apply: IfReady
