@@ -94,7 +94,7 @@ spec:
   server:
     primary:
       replicas: 2
-    standby:
+    secondary:
       replicas: 2
 ```
 
@@ -117,7 +117,7 @@ ferretdb.kubedb.com/ferret   demo        2.0.0     Ready    2m54s
 NAME                                             AGE
 petset.apps.k8s.appscode.com/ferret              2m1s
 petset.apps.k8s.appscode.com/ferret-pg-backend   2m51s
-petset.apps.k8s.appscode.com/ferret-standby      2m1s
+petset.apps.k8s.appscode.com/ferret-secondary    2m1s
 
 NAME                      READY   STATUS    RESTARTS   AGE
 pod/ferret-0              1/1     Running   0          2m1s
@@ -125,21 +125,21 @@ pod/ferret-1              1/1     Running   0          2m
 pod/ferret-pg-backend-0   2/2     Running   0          2m50s
 pod/ferret-pg-backend-1   2/2     Running   0          2m43s
 pod/ferret-pg-backend-2   2/2     Running   0          2m36s
-pod/ferret-standby-0      1/1     Running   0          2m1s
-pod/ferret-standby-1      1/1     Running   0          2m
+pod/ferret-secondary-0    1/1     Running   0          2m1s
+pod/ferret-secondary-1    1/1     Running   0          2m
 
 ```
 
-Inspect who is `Primary` and who is `standby`.
+Inspect who is `Primary` and who is `secondary`.
 
 ```shell
 
 $  kubectl get pods -n demo --show-labels | grep role
 ferret-pg-backend-0   2/2     Running   0          3m12s   app.kubernetes.io/component=database,app.kubernetes.io/instance=ferret-pg-backend,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=postgreses.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=ferret-pg-backend-6766dfcdd7,kubedb-role=primary,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=ferret-pg-backend-0
-ferret-pg-backend-1   2/2     Running   0          113s    app.kubernetes.io/component=database,app.kubernetes.io/instance=ferret-pg-backend,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=postgreses.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=ferret-pg-backend-6766dfcdd7,kubedb-role=standby,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=ferret-pg-backend-1
-ferret-pg-backend-2   2/2     Running   0          110s    app.kubernetes.io/component=database,app.kubernetes.io/instance=ferret-pg-backend,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=postgreses.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=ferret-pg-backend-6766dfcdd7,kubedb-role=standby,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=ferret-pg-backend-2
+ferret-pg-backend-1   2/2     Running   0          113s    app.kubernetes.io/component=database,app.kubernetes.io/instance=ferret-pg-backend,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=postgreses.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=ferret-pg-backend-6766dfcdd7,kubedb-role=secondary,kubedb.com/role=secondary,statefulset.kubernetes.io/pod-name=ferret-pg-backend-1
+ferret-pg-backend-2   2/2     Running   0          110s    app.kubernetes.io/component=database,app.kubernetes.io/instance=ferret-pg-backend,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=postgreses.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=ferret-pg-backend-6766dfcdd7,kubedb-role=secondary,kubedb.com/role=secondary,statefulset.kubernetes.io/pod-name=ferret-pg-backend-2
 ```
-The pod having `kubedb.com/role=primary` is the primary and `kubedb.com/role=standby` are the secondaries.
+The pod having `kubedb.com/role=primary` is the primary and `kubedb.com/role=secondary` are the secondaries.
 
 
 Let's create a table in the primary.
@@ -170,7 +170,7 @@ postgres=# \l
 
 ```
 
-Verify the table creation in standby's.
+Verify the table creation in secondary's.
 
 ```shell
 $ kubectl exec -it -n demo ferret-pg-backend-1 -- bash
@@ -216,8 +216,8 @@ It will show current ms cluster roles.
 ferret-0
 ferret-1
 ferret-pg-backend-0 primary
-ferret-pg-backend-1 standby
-ferret-pg-backend-2 standby
+ferret-pg-backend-1 secondary
+ferret-pg-backend-2 secondary
 ferret-secondary-0
 ferret-secondary-1
 
@@ -237,9 +237,9 @@ ferret-0
 ferret-1
 ferret-pg-backend-0 
 ferret-pg-backend-1 primary
-ferret-pg-backend-2 standby
-ferret-standby-0
-ferret-standby-1
+ferret-pg-backend-2 secondary
+ferret-secondary-0
+ferret-secondary-1
 
 ```
 
@@ -275,21 +275,21 @@ postgres=# \l
 
 
 You will see the deleted pod (`FerretDB-ag-cluster-0`) is brought back by the kubedb operator and it is
-now assigned to `standby` role.
+now assigned to `secondary` role.
 
 ```shell
 
 ferret-0
 ferret-1
-ferret-pg-backend-0 standby
+ferret-pg-backend-0 secondary
 ferret-pg-backend-1 primary
-ferret-pg-backend-2 standby
-ferret-standby-0
-ferret-standby-1
+ferret-pg-backend-2 secondary
+ferret-secondary-0
+ferret-secondary-1
 
 ```
 
-Let's check if the standby(`FerretDB-ag-cluster-0`) got the updated data from new primary `FerretDB-ag-cluster-2`.
+Let's check if the secondary(`FerretDB-ag-cluster-0`) got the updated data from new primary `FerretDB-ag-cluster-2`.
 
 ```shell
 $ kubectl exec -it -n demo ferret-pg-backend-0 -- bash
@@ -316,7 +316,7 @@ postgres=# \l
 
 ```
 
-#### Case 2: Delete the current primary and one standby
+#### Case 2: Delete the current primary and one secondary
 ```shell
 $ kubectl delete pods -n demo ferret-pg-backend-0 ferret-pg-backend-1
 pod "ferret-pg-backend-0" deleted
@@ -331,8 +331,8 @@ ferret-1
 ferret-pg-backend-0 
 ferret-pg-backend-1 
 ferret-pg-backend-2 primary
-ferret-standby-0
-ferret-standby-1
+ferret-secondary-0
+ferret-secondary-1
 
 ```
 
@@ -341,11 +341,11 @@ After 10-20 second, the deleted pods will be back and will have its role.
 ```shell
 ferret-0
 ferret-1
-ferret-pg-backend-0 standby
-ferret-pg-backend-1 standby
+ferret-pg-backend-0 secondary
+ferret-pg-backend-1 secondary
 ferret-pg-backend-2 primary
-ferret-standby-0
-ferret-standby-1
+ferret-secondary-0
+ferret-secondary-1
 
 ```
 
@@ -379,7 +379,7 @@ postgres=# \l
 
 #### Case3: Delete any of the replica's
 
-Let's delete both of the standby's.
+Let's delete both of the secondary's.
 
 ```shell
 $ kubectl delete pods -n demo ferret-pg-backend-0 ferret-pg-backend-1
@@ -393,8 +393,8 @@ ferret-1
 ferret-pg-backend-0 
 ferret-pg-backend-1
 ferret-pg-backend-2 primary
-ferret-standby-0
-ferret-standby-1
+ferret-secondary-0
+ferret-secondary-1
 
 ```
 
@@ -402,8 +402,8 @@ Shortly both of the pods will be back with its role.
 ```shell
 ferret-0
 ferret-1
-ferret-pg-backend-0 standby
-ferret-pg-backend-1 standby
+ferret-pg-backend-0 secondary
+ferret-pg-backend-1 secondary
 ferret-pg-backend-2 primary
 ferret-secondary-0
 ferret-secondary-1
@@ -428,8 +428,8 @@ ferret-1
 ferret-pg-backend-0 
 ferret-pg-backend-1
 ferret-pg-backend-2 
-ferret-standby-0
-ferret-standby-1
+ferret-secondary-0
+ferret-secondary-1
 
 ```
 
@@ -437,11 +437,11 @@ Within 20-30 second, all  the pod should be back.
 ```shell
 ferret-0
 ferret-1
-ferret-pg-backend-0 standby
-ferret-pg-backend-1 standby
+ferret-pg-backend-0 secondary
+ferret-pg-backend-1 secondary
 ferret-pg-backend-2 primary
-ferret-standby-0
-ferret-standby-1
+ferret-secondary-0
+ferret-secondary-1
 
 ```
 
