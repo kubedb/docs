@@ -130,7 +130,7 @@ pod/ferret-secondary-1    1/1     Running   0          2m
 
 ```
 
-Inspect who is `Primary` and who is `secondary`.
+Inspect who is `primary` and who is `secondary`.
 
 ```shell
 
@@ -176,15 +176,11 @@ Verify the table creation in secondary's.
 $ kubectl exec -it -n demo ferret-pg-backend-1 -- bash
 
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
-postgres@ferret-pg-backend-0:/$ psql -u postgres
-/usr/lib/postgresql/17/bin/psql: invalid option -- 'u'
-psql: hint: Try "psql --help" for more information.
+
 postgres@ferret-pg-backend-0:/$ psql -U postgres
 psql (17.4 (Debian 17.4-1.pgdg120+2))
 Type "help" for help.
 
-postgres=# CREATE DATABASE Kothakoli;
-CREATE DATABASE
 postgres=# \l
                                                      List of databases
      Name      |  Owner   | Encoding | Locale Provider |  Collate   |   Ctype    | Locale | ICU Rules |   Access privileges   
@@ -211,7 +207,7 @@ Now current running primary is `FerretDB-ag-cluster-0`. Let's open another termi
 watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
 
 ```
-It will show current ms cluster roles.
+It will show current ferretdb cluster roles.
 ```shell
 ferret-0
 ferret-1
@@ -446,10 +442,11 @@ ferret-secondary-1
 ```
 
 ## CleanUp
-
+If you want to clean up each of the Kubernetes resources created by this tutorial, run:
 ```shell
-$ kubectl delete ms -n demo FerretDB-ag-cluster
-# Or, delete the demo
+$  kubectl delete -n demo fr/ferret
+ferretdb.kubedb.com "ferret" deleted
+
 $ kubectl delete ns demo
 ```
 
