@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mc-rotate-auth-overview
     name: Overview
-    parent: mc-rotate-auth
+    parent: rotate-auth
     weight: 5
 menu_name: docs_{{ .version }}
 section_menu_id: guides

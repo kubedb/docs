@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-clickhouse-readme
     name: ClickHouse
-    parent: guides-clickhouse
+    parent: ch-clickhouse-guides
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
