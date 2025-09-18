@@ -447,7 +447,7 @@ sh secrets.sh <worker-secret-name> <worker-cluster-name> <kubeslice-projectname>
    Kubernetes control plane is running at https://10.2.0.60:6443
    ```
 
-   Run the script for `demo-worker`:
+   Run the script to generate the values file for `demo-worker`:
 
    ```bash
    sh secrets.sh kubeslice-rbac-worker-demo-worker demo-worker kubeslice-demo-distributed-mariadb enp1s0 https://10.2.0.60:6443 > sliceoperator-worker.yaml
@@ -467,6 +467,11 @@ sh secrets.sh <worker-secret-name> <worker-cluster-name> <kubeslice-projectname>
 
    Repeat for `demo-controller`:
 
+   Run the script to generate the values file for `demo-controller`:
+
+   ```bash
+   sh secrets.sh kubeslice-rbac-worker-demo-controller demo-controller kubeslice-demo-distributed-mariadb enp1s0 https://10.2.0.56:6443 > sliceoperator-controller.yaml
+   ```
    ```bash
    kubectl config use-context demo-controller
    sh secrets.sh kubeslice-rbac-worker-demo-controller demo-controller kubeslice-demo-distributed-mariadb enp1s0 https://10.2.0.56:6443 > sliceoperator-controller.yaml
