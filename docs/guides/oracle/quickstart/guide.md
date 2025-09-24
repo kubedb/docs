@@ -17,18 +17,18 @@ section_menu_id: guides
 
 This tutorial will show you how to use KubeDB to run an Oracle database.
 
-<p align="center">   <img alt="lifecycle" src="/docs/guides/oracle/quickstart/images/oracle-lifecycle.png"> </p>
+<p align="center">   <img alt="lifecycle" src="/docs/guides/oracle/quickstart/Monitoring.png"> </p>
 
-Note: The YAML files used in this tutorial are stored in [docs/guides/oracle/quickstart/yamls](https://github.com/kubedb/docs/tree/{{
-< param "info.version" >}}/docs/guides/oracle/quickstart/yamls) folder in the GitHub repository kubedb/docs
+>Note: The YAML files used in this tutorial are stored in [docs/examples/oracle/quickstart](https://github.com/kubedb/docs/tree/{{
+< param "info.version" >}}/docs/examples/oracle/quickstart/yamls) folder in the GitHub repository kubedb/docs
 .
 
 ## Before You Begin
 
 - You need a Kubernetes cluster and kubectl configured to communicate with it. If you do not have a cluster,
-you can create one using kind
-- install the KubeDB CLI on your workstation and the KubeDB operator in your cluster following the 
-instructions here
+  you can create one using kind
+- install the KubeDB CLI on your workstation and the KubeDB operator in your cluster following the
+  instructions here
 
 - check available StorageClass in your cluster:
 
@@ -105,7 +105,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 oracle.kubedb.com/oracle created
 
 ```
-Here, 
+Here,
 - `spec.version`: Refers to the `OracleVersion CRD` specifying the docker image.
 
 - `spec.edition`: Database edition (`enterprise` in this example).
@@ -122,9 +122,9 @@ Here,
 
 - `spec.deletionPolicy`: Controls behavior when deleting the Oracle CRD (`Delete`, `Halt`, `WipeOut`).
 
-`KubeDB` operator watches for `Oracle` objects using Kubernetes api. When a `Oracle` object is created, 
-KubeDB operator will create a new PetSet and a Service with the matching Oracle object name. `KubeDB` 
-operator will also create a governing service for PetSets with the name `kubedb`, if one is not already 
+`KubeDB` operator watches for `Oracle` objects using Kubernetes api. When a `Oracle` object is created,
+KubeDB operator will create a new PetSet and a Service with the matching Oracle object name. `KubeDB`
+operator will also create a governing service for PetSets with the name `kubedb`, if one is not already
 present.
 If we describe the `Oracle` CRD we will get an overview of the steps that were followed.
 ```shell
@@ -241,7 +241,7 @@ Status:
 Events:                    <none>
 
 ```
-Check resources created by KubeDB operator:
+## Check Resources Created by KubeDB operator:
 ```shell
 $ kubectl get oracle,pods,pvc,services -n demo
 NAME                       VERSION   MODE         STATUS   AGE
