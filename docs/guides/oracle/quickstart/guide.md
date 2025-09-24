@@ -128,7 +128,7 @@ operator will also create a governing service for PetSets with the name `kubedb`
 present.
 If we describe the `Oracle` CRD we will get an overview of the steps that were followed.
 ```shell
-kubectl  describe oracle -n demo oracle
+$ kubectl  describe oracle -n demo oracle
 
 Name:         oracle
 Namespace:    demo
@@ -258,5 +258,36 @@ service/oracle        ClusterIP   10.43.170.95   <none>        1521/TCP   109m
 service/oracle-pods   ClusterIP   None           <none>        1521/TCP   109m
 
 ```
+🔹Status: (What the operator reports now)
+
+    Conditions: 
+        - ProvisioningStarted → operator started creating the DB. 
+        - ReplicaReady → all pods are running. 
+        - AcceptingConnection → DB listener is online at port 1521. 
+        - Ready → fully ready for queries. 
+        - Provisioned → provisioning completed successfully.
+    Phase: 
+        - Ready → Database is online, healthy, and serving connections.
+
+
 
 ## Connect to Oracle Database
+```shell
+ kubectl exec -it -n demo oracle-0 -- bash
+Defaulted container "oracle" out of: oracle, oracle-init (init)
+bash-4.2$ sqlplus / as sysdba
+
+SQL*Plus: Release 21.0.0.0.0 - Production on Wed Sep 24 05:11:41 2025
+Version 21.3.0.0.0
+
+Copyright (c) 1982, 2021, Oracle.  All rights reserved.
+
+Connected to:
+Oracle Database 21c Enterprise Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+
+SQL> exit
+Disconnected from Oracle Database 21c Enterprise Edition Release 21.0.0.0.0 - Production
+Version 21.3.0.0.0
+
+```
