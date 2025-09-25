@@ -461,6 +461,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: pg-rotate-auth
   configSecret:
     name: pg-configuration
@@ -578,6 +579,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: pg-rotate-auth
   configSecret:
     name: pg-configuration
@@ -668,6 +670,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: pg-rotate-auth
   configSecret:
     name: pg-configuration
@@ -757,6 +760,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: pg-rotate-auth
   configSecret:
     name: pg-configuration

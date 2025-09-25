@@ -115,6 +115,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: mysql-singapore-auth
   version: "9.1.0"
   replicas: 3
@@ -294,6 +295,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: mysql-london-auth
   healthChecker:
     failureThreshold: 1

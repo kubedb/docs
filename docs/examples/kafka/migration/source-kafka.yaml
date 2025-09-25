@@ -5,6 +5,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: source-kafka-auth
   replicas: 2
   version: 3.9.0

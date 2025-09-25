@@ -297,6 +297,7 @@ spec:
     name: cassandra-prod
   authentication:
     secretRef:
+      kind: Secret
       name: cassandra-user-auth
   timeout: 5m
   apply: IfReady

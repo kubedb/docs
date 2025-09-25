@@ -100,6 +100,7 @@ spec:
           requests:
             storage: 10Gi
   licenseSecret:
+    kind: Secret
     name: license-secret
   storageType: Durable
   deletionPolicy: WipeOut
@@ -171,6 +172,7 @@ spec:
     periodSeconds: 10
     timeoutSeconds: 10
   licenseSecret:
+    kind: Secret
     name: license-secret
   storageType: Durable
   topology:

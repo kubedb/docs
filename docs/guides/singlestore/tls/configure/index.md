@@ -146,6 +146,7 @@ spec:
           requests:
             storage: 10Gi
   licenseSecret:
+    kind: Secret
     name: license-secret
   deletionPolicy: WipeOut
   tls:

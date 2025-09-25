@@ -311,6 +311,7 @@ spec:
     name: clickhouse
   authentication:
     secretRef:
+      kind: Secret
       name: clickhouse-user-auth
   timeout: 5m
   apply: IfReady

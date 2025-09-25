@@ -159,6 +159,7 @@ metadata:
   uid: f3a948e4-b5c3-4327-b65e-b170fd744e89
 spec:
   authSecret:
+    kind: Secret
     name: rm-quickstart-admin-cred
   deletionPolicy: WipeOut
   healthChecker:

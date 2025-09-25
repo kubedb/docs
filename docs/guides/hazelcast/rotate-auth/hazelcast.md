@@ -276,6 +276,7 @@ spec:
     name: hazelcast-quickstart
   authentication:
     secretRef:
+      kind: Secret
       name: hazelcast-quickstart-usergen-auth
   apply: IfReady
 ```

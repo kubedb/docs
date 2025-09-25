@@ -9,6 +9,7 @@ spec:
   standbyMode: Hot
   streamingMode: Asynchronous
   authSecret:
+    kind: Secret
     name: p1-auth
   storageType: "Durable"
   storage:

@@ -229,6 +229,7 @@ metadata:
   uid: 05a5d98e-b2c1-4f81-84d9-87257bd76f08
 spec:
   authSecret:
+    kind: Secret
     name: mssqlserver-standalone-auth
   deletionPolicy: WipeOut
   healthChecker:

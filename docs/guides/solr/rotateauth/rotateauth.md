@@ -348,6 +348,7 @@ spec:
     name: solr-combined
   authentication:
     secretRef:
+      kind: Secret
       name: solr-combined-user-auth
   timeout: 5m
   apply: IfReady

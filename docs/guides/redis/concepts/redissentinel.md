@@ -35,6 +35,7 @@ spec:
   replicas: 3
   disableAuth: false
   authSecret:
+    kind: Secret
     name: sentinel1-auth
     externallyManaged: false
   tls:

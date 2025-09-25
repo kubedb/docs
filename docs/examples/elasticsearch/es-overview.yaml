@@ -8,6 +8,7 @@ spec:
   replicas: 2
   enableSSL: true
   authSecret:
+    kind: Secret
     name: e1-auth
   storageType: "Durable"
   storage:

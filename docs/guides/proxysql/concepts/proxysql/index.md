@@ -34,6 +34,7 @@ spec:
   backend:
     name: my-group
   authSecret:
+    kind: Secret
     name: proxysql-cluster-auth
     externallyManaged: true
   monitor:

@@ -181,6 +181,7 @@ metadata:
   uid: 9b3785b5-4dc3-47bc-91e2-ba260dabd17e
 spec:
   authSecret:
+    kind: Secret
     name: sen-demo-auth
   autoOps: {}
   healthChecker:

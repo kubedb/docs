@@ -32,6 +32,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: mssqlserver-auth
   configSecret:
     name: mssqlserver-custom-config

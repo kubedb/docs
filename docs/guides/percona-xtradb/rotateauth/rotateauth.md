@@ -299,6 +299,7 @@ spec:
     name: sample-pxc
   authentication:
     secretRef:
+      kind: Secret
       name: quick-pcx-user-auth
   timeout: 5m
   apply: IfReady

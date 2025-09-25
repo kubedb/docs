@@ -314,6 +314,7 @@ metadata:
   uid: d371db52-17c6-49b3-8318-67bc1dae344c
 spec:
   authSecret:
+    kind: Secret
     activeFrom: "2025-07-04T07:01:39Z"
     name: ag1-auth
   autoOps: {}

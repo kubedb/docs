@@ -36,6 +36,7 @@ spec:
     periodSeconds: 20
     timeoutSeconds: 10
   authSecret:
+    kind: Secret
     name: pgpool-auth
     externallyManaged: false
   postgresRef:

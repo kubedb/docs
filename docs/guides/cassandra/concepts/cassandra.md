@@ -30,6 +30,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: cassandra-admin-cred
   configSecret:
     name: cassandra-custom-config
@@ -38,6 +39,7 @@ spec:
     periodSeconds: 20
     timeoutSeconds: 10
   keystoreCredSecret:
+    kind: Secret
     name: cassandra-keystore-cred
   deletionPolicy: DoNotTerminate
   tls:

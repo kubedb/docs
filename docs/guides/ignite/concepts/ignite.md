@@ -34,6 +34,7 @@ spec:
   configSecret: 
     name: ignite-configuration
   authSecret:
+    kind: Secret
     name: ignite-quickstart-auth
   storage:
     accessModes:

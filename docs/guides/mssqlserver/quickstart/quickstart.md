@@ -233,6 +233,7 @@ metadata:
   uid: e5c9292b-f3a3-4dbf-95c8-1b544096e1d4
 spec:
   authSecret:
+    kind: Secret
     name: mssqlserver-quickstart-auth
   deletionPolicy: WipeOut
   healthChecker:

@@ -5,6 +5,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: mysql-london-auth
   healthChecker:
     failureThreshold: 1

@@ -35,9 +35,11 @@ spec:
   adminServerPort: 8080
   clientSecurePort: 2182
   authSecret:
+    kind: Secret
     name: zk-auth
     externallyManaged: false
   keystoreCredSecret:
+    kind: Secret
     name: zk-quickstart-keystore-cred
   enableSSL: true
   storage:

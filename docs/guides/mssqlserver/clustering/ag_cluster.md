@@ -245,6 +245,7 @@ metadata:
   uid: 0d383530-bbb5-442f-bef0-562304539f98
 spec:
   authSecret:
+    kind: Secret
     name: mssqlserver-ag-cluster-auth
   deletionPolicy: WipeOut
   healthChecker:

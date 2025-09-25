@@ -108,6 +108,8 @@ metadata:
 spec:
   version: "2.0.0"
   authSecret:
+    kind: Secret
+    name: ferret-auth
     externallyManaged: false
   backend:
     storage:

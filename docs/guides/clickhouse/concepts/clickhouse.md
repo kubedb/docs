@@ -31,6 +31,7 @@ metadata:
 spec:
   version: 24.4.1
   authSecret:
+    kind: Secret
     name: clickhouse-auth
   configSecret:
     name: ch-configuration

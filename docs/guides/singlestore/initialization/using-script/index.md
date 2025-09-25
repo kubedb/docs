@@ -115,6 +115,7 @@ spec:
           requests:
             storage: 10Gi
   licenseSecret:
+    kind: Secret
     name: license-secret
   storageType: Durable
   deletionPolicy: WipeOut
@@ -160,6 +161,7 @@ spec:
       configMap:
         name: sdb-init-script
   licenseSecret:
+    kind: Secret
     name: license-secret
   storageType: Durable
   topology:

@@ -11,6 +11,7 @@ spec:
         disktype: ssd
   deletionPolicy: WipeOut
   licenseSecret:
+    kind: Secret
     name: license-secret
   storage:
     storageClassName: "longhorn"

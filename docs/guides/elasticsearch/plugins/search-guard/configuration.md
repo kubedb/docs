@@ -363,6 +363,7 @@ metadata:
 spec:
   version: searchguard-7.9.3
   authSecret:
+    kind: Secret
     name: config-elasticsearch-auth
   storage:
     storageClassName: "standard"

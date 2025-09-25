@@ -201,6 +201,7 @@ spec:
     name: quick-pgpool
   authentication:
     secretRef:
+      kind: Secret
       name: quick-pp-user-auth
   timeout: 5m
   apply: IfReady

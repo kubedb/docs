@@ -363,6 +363,7 @@ spec:
     name: mssqlserver-quickstart
   authentication:
     secretRef:
+      kind: Secret
       name: mssqlserver-quickstart-auth-user
   timeout: 5m
   apply: IfReady

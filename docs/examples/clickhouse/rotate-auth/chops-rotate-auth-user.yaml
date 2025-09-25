@@ -9,6 +9,7 @@ spec:
     name: clickhouse-prod
   authentication:
     secretRef:
+      kind: Secret
       name: clickhouse-user-auth
   timeout: 5m
   apply: IfReady

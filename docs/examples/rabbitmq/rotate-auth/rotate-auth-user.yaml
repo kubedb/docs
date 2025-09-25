@@ -9,6 +9,7 @@ spec:
     name: rabbitmq
   authentication:
     secretRef:
+      kind: Secret
       name: rm-auth-user
   timeout: 5m
   apply: IfReady

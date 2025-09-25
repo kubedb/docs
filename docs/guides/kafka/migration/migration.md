@@ -98,6 +98,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: source-kafka-auth
   replicas: 2
   version: 3.9.0
@@ -276,6 +277,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: target-kafka-auth
   version: 3.9.0
   topology:
@@ -359,6 +361,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: mirror-connect-auth
   version: 3.9.0
   replicas: 3

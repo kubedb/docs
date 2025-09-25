@@ -43,6 +43,7 @@ spec:
     namespace: demo
     externallyManaged: true
   authSecret:
+    kind: Secret
     name: druid-admin-cred
   configSecret:
     name: druid-custom-config
@@ -52,6 +53,7 @@ spec:
     periodSeconds: 20
     timeoutSeconds: 10
   keystoreCredSecret:
+    kind: Secret
     name: druid-keystore-cred
   deletionPolicy: DoNotTerminate
   tls:
