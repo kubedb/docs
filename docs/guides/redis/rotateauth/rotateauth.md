@@ -259,6 +259,7 @@ spec:
     name: redis-quickstart
   authentication:
     secretRef:
+      kind: Secret
       name: redis-quickstart-user-auth
   timeout: 5m
   apply: IfReady

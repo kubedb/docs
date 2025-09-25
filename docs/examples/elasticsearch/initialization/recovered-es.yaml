@@ -6,6 +6,7 @@ metadata:
 spec:
   version: xpack-8.11.1
   authSecret:
+    kind: Secret
     name: instant-elasticsearch-auth
   storageType: Durable
   storage:

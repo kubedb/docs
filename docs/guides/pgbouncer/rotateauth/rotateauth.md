@@ -263,6 +263,7 @@ spec:
     name: pgbouncer-server
   authentication:
     secretRef:
+      kind: Secret
       name: quick-pb-user-auth
   timeout: 5m
   apply: IfReady

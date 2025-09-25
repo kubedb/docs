@@ -32,6 +32,7 @@ spec:
   authConfigSecret:
     name: solr-cluster-auth-config
   authSecret:
+    kind: Secret
     name: solr-cluster-admin-cred
   healthChecker:
     failureThreshold: 3

@@ -40,6 +40,7 @@ spec:
     renewDeadlineSeconds: 10
     retryPeriodSeconds: 2
   authSecret:
+    kind: Secret
     name: p1-auth
   storageType: "Durable"
   storage:

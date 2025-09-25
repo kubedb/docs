@@ -373,6 +373,7 @@ spec:
     name: druid-quickstart
   authentication:
     secretRef:
+      kind: Secret
       name: sample-druid-auth-user
   timeout: 5m
   apply: IfReady

@@ -5,6 +5,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: pg-singapore-auth
   allowedSchemas:
     namespaces:

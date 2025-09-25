@@ -32,6 +32,7 @@ spec:
   autoOps:
     disabled: true
   authSecret:
+    kind: Secret
     name: es-admin-cred
     externallyManaged: false
   configSecret:

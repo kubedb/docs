@@ -70,6 +70,7 @@ metadata:
 spec:
   version: "2.0.0"
   authSecret:
+    kind: Secret
     externallyManaged: false
   sslMode: disabled
   backend:
@@ -265,6 +266,7 @@ metadata:
   uid: 81a859d5-8f1f-4475-a9f7-2b2a42d9e626
 spec:
   authSecret:
+    kind: Secret
     externallyManaged: false
     name: ferret-auth
   deletionPolicy: WipeOut

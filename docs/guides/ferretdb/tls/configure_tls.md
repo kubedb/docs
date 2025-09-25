@@ -108,6 +108,7 @@ metadata:
 spec:
   version: "2.0.0"
   authSecret:
+    kind: Secret
     externallyManaged: false
   backend:
     storage:

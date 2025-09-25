@@ -351,6 +351,7 @@ spec:
     name: mysql-quickstart
   authentication:
     secretRef:
+      kind: Secret
       name: mysql-quickstart-auth-user
   timeout: 5m
   apply: IfReady

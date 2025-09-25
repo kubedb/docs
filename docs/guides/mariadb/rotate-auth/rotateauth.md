@@ -286,6 +286,7 @@ spec:
     name: sample-mariadb
   authentication:
     secretRef:
+      kind: Secret
       name: sample-mariadb-auth-user
   timeout: 5m
   apply: IfReady

@@ -33,6 +33,7 @@ spec:
   topology:
     mode: GroupReplication
   authSecret:
+    kind: Secret
     name: m1-auth
   storageType: "Durable"
   storage:

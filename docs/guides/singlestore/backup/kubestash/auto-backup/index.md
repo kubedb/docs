@@ -264,6 +264,7 @@ spec:
           requests:
             storage: 10Gi
   licenseSecret:
+    kind: Secret
     name: license-secret
   storageType: Durable
   deletionPolicy: WipeOut
@@ -598,6 +599,7 @@ spec:
           requests:
             storage: 10Gi
   licenseSecret:
+    kind: Secret
     name: license-secret
   storageType: Durable
   deletionPolicy: WipeOut

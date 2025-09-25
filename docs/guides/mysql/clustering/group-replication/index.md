@@ -250,6 +250,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: my-group-auth
   podTemplate:
     spec:
