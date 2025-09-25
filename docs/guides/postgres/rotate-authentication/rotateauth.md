@@ -268,6 +268,7 @@ spec:
     name: quick-postgres
   authentication:
     secretRef:
+      kind: Secret
       name: quick-postgres-user-auth
   timeout: 5m
   apply: IfReady

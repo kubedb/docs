@@ -31,6 +31,7 @@ metadata:
 spec:
   disableSecurity: false
   authSecret:
+    kind: Secret
     name: kafka-admin-cred
   configSecret:
     name: kafka-custom-config
@@ -40,6 +41,7 @@ spec:
     periodSeconds: 20
     timeoutSeconds: 10
   keystoreCredSecret:
+    kind: Secret
     name: kafka-keystore-cred
   podTemplate:
     metadata:

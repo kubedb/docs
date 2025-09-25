@@ -72,8 +72,10 @@ spec:
             storage: 40Gi
   storageType: Durable
   licenseSecret:
+    kind: Secret
     name: license-secret
   authSecret:
+    kind: Secret
     name: given-secret
   init:
     script:
@@ -247,6 +249,7 @@ spec:
       configMap:
         name: sdb-init-script
   licenseSecret:
+    kind: Secret
     name: license-secret
 ```
 

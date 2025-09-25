@@ -9,6 +9,7 @@ spec:
     name: quick-pgpool
   authentication:
     secretRef:
+      kind: Secret
       name: quick-pb-user-auth
   timeout: 5m
   apply: IfReady

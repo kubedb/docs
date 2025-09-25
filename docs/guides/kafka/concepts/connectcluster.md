@@ -36,9 +36,11 @@ spec:
     timeoutSeconds: 10
   disableSecurity: false
   authSecret:
+    kind: Secret
     name: connectcluster-auth
   enableSSL: true
   keystoreCredSecret:
+    kind: Secret
     name: connectcluster-keystore-cred
   tls:
     issuerRef:

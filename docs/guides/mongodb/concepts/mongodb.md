@@ -34,6 +34,7 @@ spec:
   version: "4.4.26"
   replicas: 3
   authSecret:
+    kind: Secret
     name: mgo1-auth
     externallyManaged: false
   replicaSet:

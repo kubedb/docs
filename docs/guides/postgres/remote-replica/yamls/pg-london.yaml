@@ -14,6 +14,7 @@ spec:
     timeoutSeconds: 10
     disableWriteCheck: true
   authSecret:
+    kind: Secret
     name: pg-london-auth
   clientAuthMode: md5
   standbyMode: Hot

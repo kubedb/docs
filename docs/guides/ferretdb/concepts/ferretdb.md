@@ -42,6 +42,7 @@ spec:
         requests:
           storage: 500Mi
   authSecret:
+    kind: Secret
     name: ferretdb-auth
     externallyManaged: false
   sslMode: requireSSL

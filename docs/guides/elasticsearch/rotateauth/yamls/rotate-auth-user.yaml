@@ -9,6 +9,7 @@ spec:
     name: sample-es
   authentication:
     secretRef:
+      kind: Secret
       name: sample-es-auth-user
   timeout: 5m
   apply: IfReady

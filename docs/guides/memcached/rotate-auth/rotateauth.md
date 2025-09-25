@@ -355,6 +355,7 @@ spec:
     name: memcached-quickstart
   authentication:
     secretRef:
+      kind: Secret
       name: mc-new-auth
   timeout: 5m
   apply: IfReady

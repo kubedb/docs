@@ -359,6 +359,7 @@ spec:
     name: kafka-prod
   authentication:
     secretRef:
+      kind: Secret
       name: kafka-user-auth
   timeout: 5m
   apply: IfReady

@@ -141,6 +141,7 @@ spec:
     namespaces:
       from: Same
   authSecret:
+    kind: Secret
     name: redis-cluster-auth
   autoOps: {}
   cluster:

@@ -110,6 +110,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: pg-singapore-auth
   allowedSchemas:
     namespaces:
@@ -253,6 +254,7 @@ spec:
     timeoutSeconds: 10
     disableWriteCheck: true
   authSecret:
+    kind: Secret
     name: pg-london-auth
   clientAuthMode: md5
   standbyMode: Hot

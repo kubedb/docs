@@ -31,6 +31,7 @@ metadata:
 spec:
   version: "3.13.2"
   authSecret:
+    kind: Secret
     name: rabbit-auth
   configSecret:
     name: rabbit-custom-config

@@ -336,6 +336,7 @@ spec:
     name: mgo-quickstart
   authentication:
     secretRef:
+      kind: Secret
       name: quick-mg-user-auth
   timeout: 5m
   apply: IfReady

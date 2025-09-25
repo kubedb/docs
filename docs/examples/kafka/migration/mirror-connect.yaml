@@ -5,6 +5,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: mirror-connect-auth
   version: 3.9.0
   replicas: 3

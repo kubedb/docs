@@ -127,6 +127,7 @@ spec:
           requests:
             storage: 10Gi
   licenseSecret:
+    kind: Secret
     name: license-secret
   storageType: Durable
   deletionPolicy: WipeOut
@@ -280,6 +281,7 @@ spec:
           requests:
             storage: 10Gi
   licenseSecret:
+    kind: Secret
     name: license-secret
   storageType: Durable
   deletionPolicy: WipeOut
@@ -408,6 +410,7 @@ spec:
         disktype: ssd
   deletionPolicy: WipeOut
   licenseSecret:
+    kind: Secret
     name: license-secret
   storage:
     storageClassName: "longhorn"
@@ -501,6 +504,7 @@ metadata:
 spec:
   deletionPolicy: WipeOut
   licenseSecret:
+    kind: Secret
     name: license-secret
   storage:
     storageClassName: "longhorn"
@@ -655,6 +659,7 @@ spec:
         effect: "NoSchedule"
   deletionPolicy: WipeOut
   licenseSecret:
+    kind: Secret
     name: license-secret
   storage:
     storageClassName: "longhorn"

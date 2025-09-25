@@ -30,6 +30,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: sample-mariadb-auth
   monitor:
     agent: prometheus.io

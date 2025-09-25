@@ -50,6 +50,7 @@ spec:
             - "rd2-1.kubedb.appscode"
   disableAuth: false
   authSecret:
+    kind: Secret
     name: redis1-auth
     externallyManaged: false
   tls:

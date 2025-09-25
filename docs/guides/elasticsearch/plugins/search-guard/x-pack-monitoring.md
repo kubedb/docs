@@ -303,6 +303,7 @@ spec:
   version: searchguard-7.9.3
   replicas: 1
   authSecret:
+    kind: Secret
     name: es-auth
   configSecret:
     name: es-custom-config
