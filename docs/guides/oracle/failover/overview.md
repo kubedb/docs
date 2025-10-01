@@ -157,6 +157,11 @@ Apply the manifest:
 $ kubectl apply -f oracle-dataguard.yaml
 ```
 
+```shell
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/dataguard/dataguard.yaml
+oracle.kubedb.com/oracle created
+
+```
 Monitor status until all pods are ready:
 
 ```bash

@@ -17,10 +17,10 @@ section_menu_id: guides
 
 This tutorial will show you how to use KubeDB to run an Oracle database.
 
-<p align="center">   <img alt="lifecycle" src="/docs/guides/oracle/quickstart/Monitoring.png"> </p>
+<p align="center">   <img alt="lifecycle" src="/guides/oracle/quickstart/Monitoring.png"> </p>
 
 >Note: The YAML files used in this tutorial are stored in [docs/examples/oracle/quickstart](https://github.com/kubedb/docs/tree/{{
-< param "info.version" >}}/docs/examples/oracle/quickstart/yamls) folder in the GitHub repository kubedb/docs
+< param "info.version" >}}/docs/examples/oracle/quickstart) folder in the GitHub repository kubedb/docs
 .
 
 ## Before You Begin
@@ -101,7 +101,7 @@ spec:
   version: 21.3.0
 ```
 ```shell
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/oracle/quickstart/yamls/oracle-quickstart.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/quickstart/standalone.yaml
 oracle.kubedb.com/oracle created
 
 ```
@@ -275,7 +275,7 @@ service/oracle-pods   ClusterIP   None           <none>        1521/TCP   109m
 
 ## Connect to Oracle Database
 ```shell
- kubectl exec -it -n demo oracle-0 -- bash
+$ kubectl exec -it -n demo oracle-0 -- bash
 Defaulted container "oracle" out of: oracle, oracle-init (init)
 bash-4.2$ sqlplus / as sysdba
 
@@ -298,7 +298,7 @@ Version 21.3.0.0.0
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo oracle/oracle -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete oracle -n demo oracle
-kubectl delete ns demo
+$ kubectl patch -n demo oracle/oracle -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete oracle -n demo oracle
+$ kubectl delete ns demo
 ```
