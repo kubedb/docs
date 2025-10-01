@@ -241,6 +241,20 @@ Status:
 Events:                    <none>
 
 ```
+
+🔹Status: (What the operator reports now)
+
+    Conditions: 
+        - ProvisioningStarted → operator started creating the DB. 
+        - ReplicaReady → all pods are running. 
+        - AcceptingConnection → DB listener is online at port 1521. 
+        - Ready → fully ready for queries. 
+        - Provisioned → provisioning completed successfully.
+    Phase: 
+        - Ready → Database is online, healthy, and serving connections.
+
+
+
 ## Check Resources Created by KubeDB operator:
 ```shell
 $ kubectl get oracle,pods,pvc,services -n demo
@@ -258,18 +272,6 @@ service/oracle        ClusterIP   10.43.170.95   <none>        1521/TCP   109m
 service/oracle-pods   ClusterIP   None           <none>        1521/TCP   109m
 
 ```
-🔹Status: (What the operator reports now)
-
-    Conditions: 
-        - ProvisioningStarted → operator started creating the DB. 
-        - ReplicaReady → all pods are running. 
-        - AcceptingConnection → DB listener is online at port 1521. 
-        - Ready → fully ready for queries. 
-        - Provisioned → provisioning completed successfully.
-    Phase: 
-        - Ready → Database is online, healthy, and serving connections.
-
-
 
 ## Connect to Oracle Database
 ```shell
@@ -290,4 +292,13 @@ SQL> exit
 Disconnected from Oracle Database 21c Enterprise Edition Release 21.0.0.0.0 - Production
 Version 21.3.0.0.0
 
+```
+## Cleaning up
+
+To clean up the Kubernetes resources created by this tutorial, run:
+
+```bash
+kubectl patch -n demo oracle/oracle -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete oracle -n demo oracle
+kubectl delete ns demo
 ```
