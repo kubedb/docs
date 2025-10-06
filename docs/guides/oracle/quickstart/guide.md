@@ -120,7 +120,7 @@ Here,
 
 - `spec.replicas`: Number of database pods (1 for standalone, ≥2 for DataGuard).
 
-- `spec.deletionPolicy`: Controls behavior when deleting the Oracle CRD (`Delete`, `Halt`, `WipeOut`). For more details, see [here](https://kubedb.com/docs/raw/{{< param "info.version" >}}/guides/oracle/management/#deletion-policy).
+- `spec.deletionPolicy`: Controls behavior when deleting the Oracle CRD (`Delete`, `Halt`, `WipeOut`). For more details, see [here](https://appscode.com/blog/post/deletion-policy/).
 
 `KubeDB` operator watches for `Oracle` objects using Kubernetes api. When a `Oracle` object is created,
 KubeDB operator will create a new PetSet and a Service with the matching Oracle object name. `KubeDB`
