@@ -1,0 +1,21 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: ClickHouseAutoscaler
+metadata:
+  name: ch-compute-autoscale
+  namespace: demo
+spec:
+  databaseRef:
+    name: clickhouse-prod
+  compute:
+    clickhouse:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 1
+        memory: 2Gi
+      maxAllowed:
+        cpu: 2
+        memory: 3Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"
