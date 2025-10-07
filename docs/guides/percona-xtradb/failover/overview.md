@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 -----------------------
 
-> New to KubeDB? Please start [here]( /README.md).
+> New to KubeDB? Please start [here](/docs/setup/README.md).
 
 # Maximizing PerconaXtraDB Uptime and Reliability
 
@@ -34,7 +34,7 @@ This guide walks you through setting up a PerconaXtraDB HA cluster using KubeDB 
 ### Before You Start
 
 * You must have a running Kubernetes cluster and a configured `kubectl`.
-* Install KubeDB CLI and KubeDB operator following [the setup instructions]( /setup/README.md).
+* Install KubeDB CLI and KubeDB operator following [the setup instructions]( /docs/setup/README.md).
 * A valid [StorageClass](https://kubernetes.io /concepts/storage/storage-classes/) is required.
 
 ```bash
@@ -331,10 +331,10 @@ $ kubectl delete ns demo
 ### Next Steps
 
 
-* Monitor your Percona XtraDB database with KubeDB using [built-in Prometheus](/guides/percona-xtradb/monitoring/builtin-prometheus/index.md)
-* Monitor with [Prometheus operator](/guides/percona-xtradb/monitoring/prometheus-operator/index.md)
-* Use [private Docker registry](/guides/percona-xtradb/private-registry/quickstart/index.md) to deploy Percona XtraDB with KubeDB
-* Detail concepts of [Percona XtraDB object]( /guides/percona-xtradb/concepts/perconaxtradb/index.md)
-* Want to hack on KubeDB? Check our [contribution guidelines]( /CONTRIBUTING.md)
+* Monitor your Percona XtraDB database with KubeDB using [built-in Prometheus](/docs/guides/percona-xtradb/monitoring/builtin-prometheus/index.md)
+* Monitor with [Prometheus operator](/docs/guides/percona-xtradb/monitoring/prometheus-operator/index.md)
+* Use [private Docker registry](/docs/guides/percona-xtradb/private-registry/quickstart/index.md) to deploy Percona XtraDB with KubeDB
+* Detail concepts of [Percona XtraDB object]( /docs/guides/percona-xtradb/concepts/perconaxtradb/index.md)
+
 
 ---
