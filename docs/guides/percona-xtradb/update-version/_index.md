@@ -5,6 +5,6 @@ menu:
     identifier: guides-perconaxtradb-updating
     name: UpdateVersion
     parent: guides-perconaxtradb
-    weight: 45
+    weight: 49
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: guides-perconaxtradb-volume-expansion
     name: Volume Expansion
     parent: guides-perconaxtradb
-    weight: 44
+    weight: 45
 menu_name: docs_{{ .version }}
 ---

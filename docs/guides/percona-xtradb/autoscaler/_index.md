@@ -5,6 +5,6 @@ menu:
     identifier: guides-perconaxtradb-autoscaling
     name: Autoscaling
     parent: guides-perconaxtradb
-    weight: 47
+    weight: 80
 menu_name: docs_{{ .version }}
 ---
