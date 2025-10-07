@@ -11,7 +11,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 -----------------------
 
-> New to KubeDB? Please start [here](/docs/README.md).
+> New to KubeDB? Please start [here](/docs/setup/README.md).
 
 # Maximizing Oracle Uptime and Reliability
 
@@ -32,7 +32,7 @@ This guide demonstrates how to set up an `Oracle HA cluster` with `Data Guard` e
 ### Before You Start
 
 * A running Kubernetes cluster with `kubectl` configured.
-* KubeDB operator and CLI installed ([instructions](/setup/README.md)).
+* KubeDB operator and CLI installed ([instructions](/docs/setup/README.md)).
 * A valid `StorageClass` available for persistent volumes.
 
 Check StorageClasses:

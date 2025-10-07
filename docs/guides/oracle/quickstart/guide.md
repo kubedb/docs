@@ -17,7 +17,7 @@ section_menu_id: guides
 
 This tutorial will show you how to use KubeDB to run an Oracle database.
 
-<p align="center">   <img alt="lifecycle" src="/guides/oracle/quickstart/Monitoring.png"> </p>
+<p align="center">   <img alt="lifecycle" src="/docs/guides/oracle/quickstart/Monitoring.png"> </p>
 
 >Note: The YAML files used in this tutorial are stored in [docs/examples/oracle/quickstart](https://github.com/kubedb/docs/tree/{{
 < param "info.version" >}}/docs/examples/oracle/quickstart) folder in the GitHub repository kubedb/docs
