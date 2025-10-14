@@ -405,35 +405,6 @@ The cluster will recover automatically, but full availability requires:
 - ZooKeeper ensemble to be functional
 - Leader election for all shards
 
-## Disaster Recovery
-
-For disaster recovery, KubeDB supports:
-
-1. **Backup & Restore**: Regular backups using Stash
-2. **Volume Snapshots**: For point-in-time recovery
-3. **Cross-cluster Replication**: For geographic redundancy
-
-### Handling Storage Issues
-
-If a Solr node's storage becomes full:
-
-1. Use Volume Expansion to recover:
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: SolrOpsRequest
-metadata:
-  name: solr-ops-volume-expand
-  namespace: demo
-spec:
-  type: VolumeExpansion
-  volumeExpansion:
-    mode: Online
-    solr: 20Gi
-  databaseRef:
-    name: solr-ha
-```
-
 ## Cleanup
 
 ```bash
