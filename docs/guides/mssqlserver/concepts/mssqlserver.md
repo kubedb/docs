@@ -487,13 +487,13 @@ The following fields are configurable in the `spec.tls` section:
       - `encoding` (optional) is the private key cryptography standards (PKCS) encoding for this certificate's private key to be encoded in. If provided, allowed values are "pkcs1" and "pkcs8" standing for PKCS#1 and PKCS#8, respectively. It defaults to PKCS#1 if not specified.
  
 
-### spec.serviceTemplate
+### spec.serviceTemplates
 
 KubeDB creates two different services for each MSSQLServer instance. One of them is a primary service named `<mssqlserver-name>` and points to the MSSQLServer `Primary` pod/node. Another one is a secondary service named `<mssqlserver-name>-secondary` and points to MSSQLServer `secondary` replica pods/nodes.
 
-These `primary` and `secondary` services can be customized using [spec.serviceTemplate](#spec.servicetemplate).
+These `primary` and `secondary` services can be customized using [spec.serviceTemplates](#spec.servicetemplate).
 
-You can provide template for the services using `spec.serviceTemplate`. This will allow you to set the type and other properties of the service. If `spec.serviceTemplate` is not provided, KubeDB will create a `primary` service of type `ClusterIP` with minimal settings.
+You can provide template for the services using `spec.serviceTemplates`. This will allow you to set the type and other properties of the service. If `spec.serviceTemplates` is not provided, KubeDB will create a `primary` service of type `ClusterIP` with minimal settings.
 
 KubeDB allows following fields to set in `spec.serviceTemplates`:
 - `alias` represents the identifier of the service. It has the following possible value:
