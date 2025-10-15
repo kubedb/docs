@@ -330,11 +330,11 @@ for: "./mariadb.yaml": admission webhook "mariadb.validators.kubedb.com" denied 
 
  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
 
-### spec.serviceTemplate
+### spec.serviceTemplates
 
-You can also provide a template for the services created by KubeDB operator for MariaDB database through `spec.serviceTemplate`. This will allow you to set the type and other properties of the services.
+You can also provide a template for the services created by KubeDB operator for MariaDB database through `spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
 
-KubeDB allows following fields to set in `spec.serviceTemplate`:
+KubeDB allows following fields to set in `spec.serviceTemplates`:
 
 - metadata:
   - annotations
@@ -348,6 +348,20 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
   - externalTrafficPolicy
   - healthCheckNodePort
   - sessionAffinityConfig
+
+```bash
+spec:
+  version: "10.6.16"
+  serviceTemplates:
+    - alias: primary
+      metadata:
+        annotations:
+          kubedb.com/test-annotation: "test"
+      spec:
+        type: LoadBalancer
+        ports:
+          - port: 3306
+```
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 

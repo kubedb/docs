@@ -387,11 +387,11 @@ for: "./mysql.yaml": admission webhook "mysql.validators.kubedb.com" denied the 
 
  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mysql/custom-rbac/index.md) to grant necessary permissions in this scenario.
 
-### spec.serviceTemplate
+### spec.serviceTemplates
 
-You can also provide a template for the services created by KubeDB operator for MySQL database through `spec.serviceTemplate`. This will allow you to set the type and other properties of the services.
+You can also provide a template for the services created by KubeDB operator for MySQL database through `spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
 
-KubeDB allows following fields to set in `spec.serviceTemplate`:
+KubeDB allows following fields to set in `spec.serviceTemplates`:
 
 - metadata:
   - annotations

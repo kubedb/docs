@@ -372,15 +372,15 @@ If a service account name is given, and there's an existing service account by t
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
 
-### spec.serviceTemplate
+### spec.serviceTemplates
 
 KubeDB creates two different services for each Postgres instance. One of them is a master service named `<postgres-name>` and points to the Postgres `Primary` pod/node. Another one is a replica service named `<postgres-name>-replicas` and points to Postgres `replica` pods/nodes.
 
-These `master` and `replica` services can be customized using [spec.serviceTemplate](#spec.servicetemplate) and [spec.replicaServiceTemplate](#specreplicaservicetemplate) respectively.
+These `master` and `replica` services can be customized using [spec.serviceTemplates](#spec.servicetemplate) and [spec.replicaServiceTemplate](#specreplicaservicetemplate) respectively.
 
-You can provide template for the `master` service using `spec.serviceTemplate`. This will allow you to set the type and other properties of the service. If `spec.serviceTemplate` is not provided, KubeDB will create a `master` service of type `ClusterIP` with minimal settings.
+You can provide template for the `master` service using `spec.serviceTemplates`. This will allow you to set the type and other properties of the service. If `spec.serviceTemplates` is not provided, KubeDB will create a `master` service of type `ClusterIP` with minimal settings.
 
-KubeDB allows following fields to set in `spec.serviceTemplate`:
+KubeDB allows following fields to set in `spec.serviceTemplates`:
 
 - metadata:
   - annotations
@@ -401,7 +401,7 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 
 You can provide template for the `replica` service using `spec.replicaServiceTemplate`. If `spec.replicaServiceTemplate` is not provided, KubeDB will create a `replica` service of type `ClusterIP` with minimal settings.
 
-The fileds of `spec.replicaServiceTemplate` is similar to `spec.serviceTemplate`, that is:
+The fileds of `spec.replicaServiceTemplate` is similar to `spec.serviceTemplates`, that is:
 
 - metadata:
   - annotations

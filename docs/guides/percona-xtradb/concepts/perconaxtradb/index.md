@@ -319,11 +319,11 @@ for: "./perconaxtradb.yaml": admission webhook "perconaxtradb.validators.kubedb.
 
  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
 
-### spec.serviceTemplate
+### spec.serviceTemplates
 
-You can also provide a template for the services created by KubeDB operator for PerconaXtraDB database through `spec.serviceTemplate`. This will allow you to set the type and other properties of the services.
+You can also provide a template for the services created by KubeDB operator for PerconaXtraDB database through `spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
 
-KubeDB allows following fields to set in `spec.serviceTemplate`:
+KubeDB allows following fields to set in `spec.serviceTemplates`:
 
 - metadata:
   - annotations

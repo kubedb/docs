@@ -386,11 +386,11 @@ If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy
 
 > For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
 
-### .spec.serviceTemplate
+### .spec.serviceTemplates
 
-You can also provide a template for the services created by KubeDB operator for the ProxySQL through `.spec.serviceTemplate`. This will allow you to set the type and other properties of the services.
+You can also provide a template for the services created by KubeDB operator for the ProxySQL through `.spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
 
-KubeDB allows following fields to set in `.spec.serviceTemplate`:
+KubeDB allows following fields to set in `.spec.serviceTemplates`:
 
 - metadata:
 - annotations

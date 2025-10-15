@@ -225,13 +225,13 @@ At least one of the following was changed:
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
 
-### spec.serviceTemplate
+### spec.serviceTemplates
 
 KubeDB creates a service for each PgBouncer instance. The service has the same name as the `pgbouncer.name` and points to pgbouncer pods.
 
-You can provide template for this service using `spec.serviceTemplate`. This will allow you to set the type and other properties of the service. If `spec.serviceTemplate` is not provided, KubeDB will create a service of type `ClusterIP` with minimal settings.
+You can provide template for this service using `spec.serviceTemplates`. This will allow you to set the type and other properties of the service. If `spec.serviceTemplates` is not provided, KubeDB will create a service of type `ClusterIP` with minimal settings.
 
-KubeDB allows the following fields to set in `spec.serviceTemplate`:
+KubeDB allows the following fields to set in `spec.serviceTemplates`:
 
 - metadata:
   - annotations
