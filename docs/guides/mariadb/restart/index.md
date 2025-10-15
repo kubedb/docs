@@ -5,7 +5,7 @@ menu:
     identifier: mariadb-restart-details
     name: Restart MariaDB
     parent: guides-mariadb
-    weight: 10
+    weight: 47
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -29,7 +29,7 @@ KubeDB supports restarting the MariaDB database via a `MariaDBOpsRequest`. Resta
   namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/MariaDB](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/MariaDB) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/MariaDB](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mariadb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy MariaDB
 
@@ -83,7 +83,11 @@ spec:
 - The `spec.timeout` field specifies the maximum amount of time the operator will wait for the operation to complete before marking it as failed. 
 - The `spec.apply` field determines whether the operation should always be applied (Always) or only when there are changes (IfReady).
 
-Let's create the `MariaDBOpsRequest` CR we have shown above,
+
+> Note: The method of restarting the standalone & cluster mode db is exactly same as above. All you need, is to specify the corresponding Postgres name in `spec.databaseRef.name` section.
+
+Let's create the `PostgresOpsRequest` CR we have shown above,
+
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/restart/ops.yaml
@@ -188,6 +192,6 @@ kubectl delete ns demo
 ## Next Steps
 
 - Learn about [backup and restore](/docs/guides/mariadb/backup/kubestash/overview/index.md) MariaDBQL database using Stash.
-- Learn about initializing [MariaDBQL with Script](../initialization/using-script/index.md)
+- Learn about initializing [MariaDBQL with Script](/docs/guides/mariadb/initialization/using-script/index.md)
 - Detail concepts of [MariaDB object](/docs/guides/mariadb/concepts/mariadb/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](https://kubedb.com/docs/v2025.8.31/welcome/contributing/).
