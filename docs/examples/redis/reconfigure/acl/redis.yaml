@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1
+kind: Redis
+metadata:
+  name: redis-instance
+  namespace: demo
+spec:
+  version: 8.2.2
+  mode: Cluster
+  cluster:
+    shards: 3
+    replicas: 2
+  storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: 20M
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+  deletionPolicy: WipeOut
+  acl:
+    secretRef:
+      name: old-acl-secret
+    rules:
+      - userName1 ${k1} allkeys +@string +@set -SADD
+      - userName2 ${k2} allkeys +@string +@set -SADD
+      - userName3 ${k3} allkeys +@string +@set -SADD
+      - userName4 ${k4} allkeys +@string +@set -SADD
