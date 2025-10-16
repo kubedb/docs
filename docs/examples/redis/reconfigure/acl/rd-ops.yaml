@@ -15,4 +15,4 @@ spec:
       deleteUsers:
         - userName2
       secretRef:
-        name: acl-list
+        name: new-acl-secret

@@ -104,25 +104,25 @@ To add or update users and/or delete existing users, create:
 1) a new Secret with the new/updated password keys, and
 2) a `RedisOpsRequest` of type `Reconfigure` referencing that Secret.
 
-Example Secret (acl-list):
+Example Secret (new-acl-secret):
 
 ```yaml
 # example: new secret with updated/extra credentials
 apiVersion: v1
 kind: Secret
 metadata:
-  name: acl-list
+  name: new-acl-secret
   namespace: demo
 type: Opaque
 stringData:
-  k1: "pass1"    # existing user password
+  k1: "updatedPass1"    # existing user password
   k10: "pass10"  # new user password for userName10
 ```
 
 Example RedisOpsRequest that:
 - syncs ACL entries from the given values,
 - deletes an existing user `userName2`,
-- references the `acl-list` Secret.
+- references the `new-acl-secret` Secret.
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -137,12 +137,12 @@ spec:
   configuration:
     auth:
       syncACL:
-        - userName1 ${k1} +get ~mykeys:*     # update userName1's rule (uses ${k1} from acl-list or the previous secret)
+        - userName1 ${k1} +get ~mykeys:*     # update userName1's rule (uses ${k1} from new-acl-secret or the previous secret)
         - userName10 ${k10} +get ~mykeys:*   # add new user userName10
       deleteUsers:
         - userName2                           # remove userName2 from ACL
       secretRef:
-        name: acl-list                   # secret containing referenced keys
+        name: new-acl-secret                   # secret containing referenced keys
 ```
 
 Apply the Secret and the RedisOpsRequest:
@@ -156,14 +156,24 @@ kubectl get redisopsrequest -n demo
 
 ## 5. Verify reconfiguration
 
-- Check RedisOpsRequest status:
-
-```bash
-kubectl describe redisopsrequest -n demo rdops
-```
-
 - Confirm the Redis CR `spec.acl` has been updated (operator patches spec to refer to the new secret and merged rules).
 - Verify ACLs inside Redis:
+
+### verify Redis CR spec.acl
+```bash
+kubectl get rd -n demo redis-instance -o yaml | yq '.spec.acl'
+{
+  "rules": [
+    "userName3 ${k3} allkeys +@string +@set -SADD",
+    "userName4 ${k4} allkeys +@string +@set -SADD",
+    "userName10 ${k10} +get ~mykeys:*",
+    "userName1 ${k1} +get ~mykeys:*"
+  ],
+  "secretRef": {
+    "name": "new-acl-secret"
+  }
+}
+```
 
 ```bash
 kubectl exec -it -n demo redis-instance-shard0-0 -c redis -- redis-cli acl list
@@ -184,5 +194,5 @@ Remove resources created for testing:
 ```bash
 kubectl delete redisopsrequest -n demo rdops
 kubectl delete rd -n demo redis-instance
-kubectl delete secret -n demo old-acl-secret acl-list
+kubectl delete secret -n demo old-acl-secret new-acl-secret
 ```
