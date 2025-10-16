@@ -119,4 +119,4 @@ You should see entries for userName1..userName4 and the default user. Each user 
 ## Next steps
 
 If you need to modify or rotate ACL users later, see the reconfigure guide:
-- docs/guides/redis/reconfigure/acl.md
+- [reconfigure acl](docs/guides/redis/reconfigure/acl.md)
