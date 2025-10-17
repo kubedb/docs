@@ -3,7 +3,7 @@ title: Reconfiguring Redis ACL
 menu:
   docs_{{ .version }}:
     identifier: rd-reconfigure-acl
-    name: Overview
+    name: Reconfiguring Redis ACL
     parent: rd-reconfigure
     weight: 60
 menu_name: docs_{{ .version }}

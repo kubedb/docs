@@ -3,7 +3,7 @@ title: Access Control Lists (ACL)
 menu:
   docs_{{ .version }}:
     identifier: rd-configuration-acl
-    name: ACL
+    name: Access Control Lists (ACL)
     parent: rd-configuration
     weight: 40
 menu_name: docs_{{ .version }}
