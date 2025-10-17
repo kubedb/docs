@@ -10,11 +10,30 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
+> New to KubeDB? Please start [here](/docs/README.md).
+
+# Using Access Control Lists (ACL) in Redis
+
+KubeDB supports providing ACL configuration for Redis. This tutorial will show you how to use KubeDB to run Redis with ACL configuration.
+
 ## Before You Begin
 
-- [Custom Configuration](docs/guides/redis/configuration/redis.md)
+- At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-> This guide shows how to configure Redis Access Control Lists (ACL) when creating a Redis resource with KubeDB.
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+
+- To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
+
+  ```bash
+  $ kubectl create ns demo
+  namespace/demo created
+
+  $ kubectl get ns demo
+  NAME    STATUS  AGE
+  demo    Active  5s
+  ```
+
+> Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 # Deploy Redis with ACL
 
