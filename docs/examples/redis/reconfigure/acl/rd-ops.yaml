@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisOpsRequest
+metadata:
+  name: rdops
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: redis-instance
+  configuration:
+    auth:
+      syncACL:
+        - userName1 ${k1} +get ~mykeys:*
+        - userName10 ${k10} +get ~mykeys:*
+      deleteUsers:
+        - userName2
+      secretRef:
+        name: new-acl-secret
