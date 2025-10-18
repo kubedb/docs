@@ -78,7 +78,7 @@ Here,
 Let's create the ZooKeeper CR that is shown above:
 
 ```bash
-$ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
 zooKeeper.kubedb.com/zoo-com created
 ```
 
@@ -88,7 +88,7 @@ The ZooKeeper's `STATUS` will go from `Provisioning` to `Ready` state within few
 $ kubectl get ZooKeeper -n demo -w
 NAME       TYPE                  VERSION   STATUS   AGE
 zoo-com    kubedb.com/v1alpha2   3.7.2     Ready    13m
-
+```
 Here, we are going to create a standalone (ie. `replicas: 1`) Solr cluster. We will use the Solr image provided by the Solr (`9.6.1`) for this demo. To learn more about Solr CR, visit [here](/docs/guides/solr/concepts/solr.md).
 
 ```yaml
