@@ -30,7 +30,7 @@ load balancing supported through `MariaDB MaxScale Server`.
 
 >note: Writing to a slave replica may result in a binary log (binlog) conflict issue.
 
-- **Galera Cluster (Multi-`Master`):**
+- **Galera Cluster (Multi-Master):**
 In this setup, all nodes act as `Master`, capable of handling both read and write operations. Since there’s
 no single point of failure, the system provides synchronous replication and built-in high availability, 
 but doesn’t use the traditional failover concept, as all pods are equal.
