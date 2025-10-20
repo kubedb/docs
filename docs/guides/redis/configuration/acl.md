@@ -135,7 +135,13 @@ You should see entries for userName1..userName4 and the default user. Each user 
 - Secrets: Store passwords in a Secret referenced by `spec.acl.secretRef`. Use `stringData` during creation for convenience.
 - Safety: For updates after deployment, use a `RedisOpsRequest` (Reconfigure) to sync ACL changes or delete users; this avoids manual pod edits.
 
-## Next steps
+## Next Steps
 
-If you need to modify or rotate ACL users later, see the reconfigure guide:
-- [reconfigure acl](docs/guides/redis/reconfigure/acl.md)
+- [Backup and Restore](/docs/guides/redis/backup/kubestash/overview/index.md) Redis databases using KubeStash.
+- Initialize [Redis with Script](/docs/guides/redis/initialization/using-script.md).
+- Monitor your Redis database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
+- Monitor your Redis database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
+- Use [private Docker registry](/docs/guides/redis/private-registry/using-private-registry.md) to deploy Redis with KubeDB.
+- Detail concepts of [Redis object](/docs/guides/redis/concepts/redis.md).
+- Detail concepts of [redisVersion object](/docs/guides/redis/concepts/catalog.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
