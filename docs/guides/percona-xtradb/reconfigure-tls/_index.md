@@ -5,6 +5,6 @@ menu:
     identifier: guides-perconaxtradb-reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: guides-perconaxtradb
-    weight: 46
+    weight: 70
 menu_name: docs_{{ .version }}
 ---
