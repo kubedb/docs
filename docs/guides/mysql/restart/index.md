@@ -102,8 +102,6 @@ $ kubectl get myops -n demo
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   64m
 
-
-
 $ kubectl get myops -n demo restart -oyaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
