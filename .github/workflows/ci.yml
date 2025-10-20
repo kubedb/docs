@@ -61,6 +61,12 @@ jobs:
           kubectl create -f https://github.com/kubedb/installer/raw/master/crds/kubedb-crds.yaml
           kubectl create -f https://github.com/kubernetes-csi/external-snapshotter/raw/master/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
           kubectl create -f https://github.com/kubestash/installer/raw/master/crds/kubestash-crds.yaml
+          # recommendation
+          kubectl create -f https://github.com/kubeops/supervisor/raw/master/crds/supervisor.appscode.com_approvalpolicies.yaml
+          kubectl create -f https://github.com/kubeops/supervisor/raw/master/crds/supervisor.appscode.com_clustermaintenancewindows.yaml
+          kubectl create -f https://github.com/kubeops/supervisor/raw/master/crds/supervisor.appscode.com_maintenancewindows.yaml
+          kubectl create -f https://github.com/kubeops/supervisor/raw/master/crds/supervisor.appscode.com_recommendations.yaml
+          # gateway
           kubectl create -f https://github.com/appscode-cloud/catalog/raw/master/crds/catalog.appscode.com_mongodbbindings.yaml
           kubectl create -f https://github.com/voyagermesh/installer/raw/master/charts/voyager-gateway/crds/generated/gateway.envoyproxy.io_envoyproxies.yaml
           kubectl create -f https://github.com/voyagermesh/installer/raw/master/charts/gateway-api/crds/gateway.networking.k8s.io_gatewayclasses.yaml
