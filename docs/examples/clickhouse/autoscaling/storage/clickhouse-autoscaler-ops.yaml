@@ -1,0 +1,14 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: ClickHouseAutoscaler
+metadata:
+  name: ch-storage-autoscale
+  namespace: demo
+spec:
+  databaseRef:
+    name: clickhouse-prod
+  storage:
+    clickhouse:
+      trigger: "On"
+      usageThreshold: 40
+      scalingThreshold: 50
+      expansionMode: "Online"
