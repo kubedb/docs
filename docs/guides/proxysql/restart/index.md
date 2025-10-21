@@ -1,8 +1,8 @@
 ---
-title: Restart ProxySQL
+title: Restart 
 menu:
   docs_{{ .version }}:
-    identifier: proxysql-restart-details
+    identifier:  guides-proxysql-restart
     name: Restart ProxySQL
     parent: guides-proxysql
     weight: 10
