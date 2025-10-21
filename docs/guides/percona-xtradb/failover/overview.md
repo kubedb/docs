@@ -286,13 +286,6 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 ```
 
-**Why this fixes the mistake:**
-
-* We replaced the misleading heading "Delete the Primary Node" with an explicit and accurate description: "Delete a single node".
-* We added the exact `kubectl delete pod` command so the step actually performs the deletion.
-* We included the expected `kubectl get pods` outputs **immediately after deletion**, **during recreation**, and **after readiness** so readers can confirm the cluster state.
-* We added `wsrep_cluster_size` checks to show Galera membership changes while a node is down and after it rejoins.
-
 #### Case 2: Delete two nodes
 
 (Kept and clarified from the original doc.) Example commands and expected behavior:
