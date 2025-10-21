@@ -5,6 +5,6 @@ menu:
     identifier: rd-initialization-redis
     name: Initialization
     parent: rd-redis-guides
-    weight: 41
+    weight: 40
 menu_name: docs_{{ .version }}
 ---

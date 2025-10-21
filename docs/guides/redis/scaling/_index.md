@@ -5,6 +5,6 @@ menu:
     identifier: rd-scaling
     name: Scaling
     parent: rd-redis-guides
-    weight: 43
+    weight: 80
 menu_name: docs_{{ .version }}
 ---
