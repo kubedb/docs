@@ -194,4 +194,4 @@ kubectl delete ns demo
 - Learn about [backup and restore](/docs/guides/mariadb/backup/kubestash/overview/index.md) MariaDBQL database using Stash.
 - Learn about initializing [MariaDBQL with Script](/docs/guides/mariadb/initialization/using-script/index.md)
 - Detail concepts of [MariaDB object](/docs/guides/mariadb/concepts/mariadb/index.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](https://kubedb.com/docs/v2025.8.31/welcome/contributing/).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

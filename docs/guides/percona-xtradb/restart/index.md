@@ -306,4 +306,4 @@ kubectl delete ns demo
 
 - Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/perconaxtradb/index.md).
 - Detail concepts of [PerconaXtraDBopsRequest object](/docs/guides/percona-xtradb/concepts/opsrequest/index.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](https://kubedb.com/docs/v2025.8.31/welcome/contributing/).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md)..

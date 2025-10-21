@@ -183,4 +183,4 @@ kubectl delete ns demo
 - Learn about [backup and restore](/docs/guides/mysql/backup/kubestash/overview/index.md) mysqlQL database using Stash.
 - Learn about initializing [mysqlQL with Script](/docs/guides/mysql/initialization/index.md)
 - Detail concepts of [mysql object](/docs/guides/mysql/concepts/mysqldatabase/index.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](https://kubedb.com/docs/v2025.8.31/welcome/contributing/).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -291,4 +291,4 @@ kubectl delete ns demo
 
 - Detail concepts of [ProxySQL object](/docs/guides/proxysql/concepts/proxysql/index.md).
 - Detail concepts of [ProxySQL object](/docs/guides/proxysql/concepts/opsrequest/index.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](https://kubedb.com/docs/v2025.8.31/welcome/contributing/).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md)..

@@ -242,4 +242,4 @@ $ kubectl delete ns demo
 - Learn about [backup and restore](/docs/guides/redis/backup/kubestash/overview/index.md) Redis databases using KubeStash.
 - Explore initializing a [Redis database with scripts](/docs/guides/redis/initialization/using-script.md).
 - Understand the detailed concepts of the [Redis object](/docs/guides/redis/concepts/redis.md).
-- Want to contribute to KubeDB? Check our [contribution guidelines](https://kubedb.com/docs/raw/{{< param "info.version" >}}/welcome/contributing/).
+- Want to contribute to KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
