@@ -42,11 +42,12 @@ metadata:
   name: mysql
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "8.2.0"
   replicas: 3
+  topology:
+    mode: GroupReplication
   storageType: Durable
   storage:
-    storageClassName: local-path
     accessModes:
       - ReadWriteOnce
     resources:

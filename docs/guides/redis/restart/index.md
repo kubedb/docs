@@ -41,10 +41,10 @@ metadata:
   name: redis-cluster
   namespace: demo
 spec:
-  version: "8.2.2"
+  version:  8.2.2
   mode: Cluster
   cluster:
-    replicas: 3
+    replicas: 2
   storageType: Durable
   storage:
     resources:
@@ -53,7 +53,7 @@ spec:
     storageClassName: local-path
     accessModes:
       - ReadWriteOnce
-    deletionPolicy: WipeOut
+  deletionPolicy: WipeOut
 ```
 
 Let’s create the `Redis` custom resource (CR) shown above:
