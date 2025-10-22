@@ -5,7 +5,7 @@ menu:
     identifier:  guides-proxysql-restart
     name: Restart ProxySQL
     parent: guides-proxysql
-    weight: 10
+    weight: 90
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

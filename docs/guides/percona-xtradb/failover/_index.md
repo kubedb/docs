@@ -1,5 +1,5 @@
 ---
-title: Failover PerconaXtraDB
+title: PerconaXtraDB failover
 menu:
   docs_{{ .version }}:
     identifier: guides-perconaxtradb-failover
@@ -7,4 +7,5 @@ menu:
     parent: guides-perconaxtradb
     weight: 46
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---

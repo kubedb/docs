@@ -5,7 +5,7 @@ menu:
     identifier: guides-mysql-custom-rbac
     name: Custom RBAC
     parent: guides-mysql
-    weight: 31
+    weight: 60
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

@@ -5,7 +5,7 @@ menu:
     identifier: guides-proxysql-custom-rbac
     name: Custom RBAC
     parent: guides-proxysql
-    weight: 31
+    weight: 80
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

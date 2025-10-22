@@ -2,9 +2,9 @@
 title: Restart mysql
 menu:
   docs_{{ .version }}:
-    identifier: mysql-restart-details
+    identifier: mysql-restart
     name: Restart mysql
-    parent: guides-mysql
+    parent: mysql-restart-details
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

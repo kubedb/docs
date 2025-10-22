@@ -5,6 +5,6 @@ menu:
     identifier: guides-proxysql-tls
     name: TLS/SSL Encryption
     parent: guides-proxysql
-    weight: 110
+    weight: 130
 menu_name: docs_{{ .version }}
 ---

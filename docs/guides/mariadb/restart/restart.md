@@ -2,10 +2,10 @@
 title: Restart MariaDB
 menu:
   docs_{{ .version }}:
-    identifier: mariadb-restart-details
+    identifier: mariadb-restart
     name: Restart MariaDB
-    parent: guides-mariadb
-    weight: 47
+    parent: mariadb-restart-details
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

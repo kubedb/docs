@@ -1,12 +1,13 @@
 ---
-title: Redis restart
+title: Restart Redis Overview
 menu:
   docs_{{ .version }}:
-    identifier: rd-restart-redis
-    name: Restart
-    parent: rd-redis-guides
-    weight: 50
+    identifier: rd-restart-overview
+    name: Restart Redis
+    parent: rd-restart
+    weight: 10
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
@@ -66,7 +67,7 @@ redis.kubedb.com/redis-cluster created
 Once the Redis cluster is created, you can check the pods created:
 
 ```bash
-$ kubectl get pods -n demo
+$ kubectl get pods -n demo -l app.kubernetes.io/instance=redis-cluster -w
 NAME                     READY   STATUS    RESTARTS   AGE
 redis-cluster-shard0-0   1/1     Running   0          19h
 redis-cluster-shard0-1   1/1     Running   0          19h
@@ -74,7 +75,6 @@ redis-cluster-shard1-0   1/1     Running   0          19h
 redis-cluster-shard1-1   1/1     Running   0          19h
 redis-cluster-shard2-0   1/1     Running   0          19h
 redis-cluster-shard2-1   1/1     Running   0          19h
-
 ```
 
 ## Apply Restart OpsRequest
