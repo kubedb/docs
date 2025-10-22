@@ -1,11 +1,12 @@
 ---
-title: PerconaXtraDB Failover and DR Scenarios
+title: PerconaXtraDB Failover Overview
+description: PerconaXtraDB Failover Overview
 menu:
-docs_{{ .version }}:
-identifier: guides-perconaxtradb-failure-and-disaster-recovery-overview
-name: Overview
-parent: guides-perconaxtradb-failover
-weight: 20
+  docs_{{ .version }}:
+    identifier: guides-perconaxtradb-Failover-overview
+    name: Overview
+    parent: guides-perconaxtradb-Failover
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

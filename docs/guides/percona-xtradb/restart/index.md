@@ -1,15 +1,14 @@
 ---
-title: PerconaXtraDB Restart
+title: Restart PerconaXtraDB
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-restart
+    identifier: guides-perconaxtradb-Restart
     name: Restart
     parent: guides-perconaxtradb
     weight: 47
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
-
 > New to KubeDB? Please start [here](/docs/README.md).
 
 # Restart PerconaXtraDB

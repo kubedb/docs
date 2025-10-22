@@ -127,11 +127,7 @@ spec:
 - `spec.type` specifies the type of operation (Restart in this case).
 
 - `spec.proxyRef` references the ProxySQL database. The OpsRequest must be created in the same namespace as the database.
-
-- `spec.timeout` the maximum time the operator will wait for the operation to finish before marking it as failed.
-
-- `spec.apply` determines whether to always apply the operation (Always) or only if there are changes (IfReady).
-
+> For details on the fields of ProxySQLOpsRequest, please visit to the [ProxySQLOpsRequest API reference](/docs/guides/proxysql/concepts/opsrequest/index.md)
 
 Let's create the `ProxySQLOpsRequest` CR we have shown above,
 
@@ -260,22 +256,7 @@ status:
   phase: Successful
 
 ```
-**Verify Data Persistence**
 
-After the restart, reconnect to the database and verify that the previously created database still exists:
-
-```bash
-$ kubectl exec -it -n demo mysql-proxy-0 -- bash
-
-proxysql@mysql-proxy-0:/$  mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="ProxySQLAdmin > " 
-Welcome to the MariaDB monitor.  Commands end with ; or \g.
-Your MySQL connection id is 120
-Server version: 8.0.27 (ProxySQL Admin Module)
-
-Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-```
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
@@ -290,5 +271,5 @@ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [ProxySQL object](/docs/guides/proxysql/concepts/proxysql/index.md).
-- Detail concepts of [ProxySQL object](/docs/guides/proxysql/concepts/opsrequest/index.md).
+- Detail concepts of [ProxySQLOpsRequest object](/docs/guides/proxysql/concepts/opsrequest/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md)..

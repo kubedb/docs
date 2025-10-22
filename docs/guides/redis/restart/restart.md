@@ -1,20 +1,20 @@
 ---
-title: Restart Redis Overview
+title: Restart Redis 
 menu:
   docs_{{ .version }}:
-    identifier: rd-restart-overview
-    name: Restart Redis
-    parent: rd-restart
-    weight: 10
+    identifier: rd-restart-redis
+    name: Restart 
+    parent: rd-redis-guides
+    weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Restart Redis
+# Overview
 
-KubeDB supports restarting a Redis database via a `RedisOpsRequest`. Restarting is useful if some pods are stuck in an unexpected state or are not functioning correctly. This tutorial will guide you through the process of restarting a Redis cluster using KubeDB.
+KubeDB supports restarting a Redis/Valkey database via a `RedisOpsRequest`. Restarting is useful if some pods are stuck in an unexpected state or are not functioning correctly. This tutorial will guide you through the process of restarting a Redis cluster using KubeDB.
 
 ## Before You Begin
 

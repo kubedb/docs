@@ -84,9 +84,9 @@ spec:
 - The `spec.apply` field determines whether the operation should always be applied (Always) or only when there are changes (IfReady).
 
 
-> Note: The method of restarting the standalone & cluster mode db is exactly same as above. All you need, is to specify the corresponding Postgres name in `spec.databaseRef.name` section.
+> Note: The method of restarting the standalone & cluster mode db is exactly same as above. All you need, is to specify the corresponding MairiDB name in `spec.databaseRef.name` section.
 
-Let's create the `PostgresOpsRequest` CR we have shown above,
+Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 
 ```bash
