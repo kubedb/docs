@@ -66,17 +66,15 @@ redis.kubedb.com/redis-cluster created
 Once the Redis cluster is created, you can check the pods created:
 
 ```bash
-$ kubectl get pods -n demo -w
+$ kubectl get pods -n demo
 NAME                     READY   STATUS    RESTARTS   AGE
-redis-cluster-shard0-0   1/1     Running   0          47m
-redis-cluster-shard0-1   1/1     Running   0          11m
-redis-cluster-shard0-2   1/1     Running   0          10m
-redis-cluster-shard1-0   1/1     Running   0          47m
-redis-cluster-shard1-1   1/1     Running   0          9m44s
-redis-cluster-shard1-2   1/1     Running   0          9m4s
-redis-cluster-shard2-0   1/1     Running   0          47m
-redis-cluster-shard2-1   1/1     Running   0          8m25s
-redis-cluster-shard2-2   1/1     Running   0          11m
+redis-cluster-shard0-0   1/1     Running   0          19h
+redis-cluster-shard0-1   1/1     Running   0          19h
+redis-cluster-shard1-0   1/1     Running   0          19h
+redis-cluster-shard1-1   1/1     Running   0          19h
+redis-cluster-shard2-0   1/1     Running   0          19h
+redis-cluster-shard2-1   1/1     Running   0          19h
+
 ```
 
 ## Apply Restart OpsRequest
@@ -120,7 +118,7 @@ This ensures high availability and minimal disruption during the restart.
 You can check the status of the `RedisOpsRequest` to confirm the restart operation:
 
 ```bash
-$  kubectl get rdops -n demo
+$ kubectl get rdops -n demo
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   6m51s
 
