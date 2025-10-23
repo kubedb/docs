@@ -50,7 +50,6 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: "local-path"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -141,7 +140,7 @@ Here,
 
 - `spec.timeout` the maximum time the operator will wait for the operation to finish before marking it as failed.
 
-- `spec.apply` determines whether to always apply the operation (Always) or only if there are changes (IfReady).
+- `spec.apply` determines whether to always apply the operation (Always) or  if the database phase is ready (IfReady).
 
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
@@ -174,7 +173,6 @@ pxc-1   2/2     Running       0          42s
 pxc-2   2/2     Terminating   0          56m
 
 ```
-> Note: The arbiter pod (if any) is not restarted by the operator. The arbiter doesn’t store any database data, so it doesn’t require a restart. If you want to restart it manually, simply run kubectl delete pod <db-name>-arbiter-0.
 
 ```shell
 $ kubectl get PerconaXtraDBopsrequest -n demo

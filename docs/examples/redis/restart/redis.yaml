@@ -13,7 +13,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: local-path
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut

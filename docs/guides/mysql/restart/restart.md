@@ -82,7 +82,7 @@ spec:
 - `spec.type` specifies the Type of the ops Request
 - `spec.databaseRef` holds the name of the MySQL database.  The db should be available in the same namespace as the opsRequest
 - The `spec.timeout` field specifies the maximum amount of time the operator will wait for the operation to complete before marking it as failed.
-- The `spec.apply` field determines whether the operation should always be applied (Always) or only when there are changes (IfReady).
+- The `spec.apply` field determines whether the operation should always be applied (Always) or if the database phase is ready (IfReady).
 
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
@@ -96,8 +96,7 @@ In MySQL, pods follow a `primary-standby` architecture:
 - The `primary` pod is restarted last.
 - During the primary pod restart, one of the standby pods is automatically promoted to primary to ensure continuous availability.
 
-> Note: This will not restart the arbiter pod if you have one. Arbiter pod doesn't have any data related to your database. So you can ignore restarting this pod because no restart is necessary for arbiter pod but if you want so, just kubectl delete the arbiter pod (dbName-arbiter-0) in order to restart it.
-
+Now, let's see the status of the `MySQLOpsRequest` we just created.
 ```shell
 $ kubectl get myops -n demo
 NAME      TYPE      STATUS       AGE

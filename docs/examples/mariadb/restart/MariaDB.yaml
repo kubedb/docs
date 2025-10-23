@@ -1,14 +1,14 @@
 apiVersion: kubedb.com/v1
-kind: PerconaXtraDB
+kind: MariaDB
 metadata:
-  name: pxc
+  name: mariadb
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "10.5.23"
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:

@@ -46,7 +46,6 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: local-path
     accessModes:
       - ReadWriteOnce
     resources:
@@ -58,7 +57,7 @@ spec:
 Let's create the `MariaDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/MariaDB/restart/MariaDB.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/restart/MariaDB.yaml
 MariaDB.kubedb.com/mariadb created
 ```
 
@@ -81,10 +80,10 @@ spec:
 - `spec.type` specifies the Type of the ops Request
 - `spec.databaseRef` holds the name of the MariaDB database.  The db should be available in the same namespace as the opsRequest
 - The `spec.timeout` field specifies the maximum amount of time the operator will wait for the operation to complete before marking it as failed. 
-- The `spec.apply` field determines whether the operation should always be applied (Always) or only when there are changes (IfReady).
+- The `spec.apply` field determines whether the operation should always be applied (Always) or if the database phase is ready (IfReady).
 
 
-> Note: The method of restarting the standalone & cluster mode db is exactly same as above. All you need, is to specify the corresponding MairiDB name in `spec.databaseRef.name` section.
+> Note: The method of restarting the standalone & cluster mode db is exactly same as above. All you need, is to specify the corresponding MariaDB name in `spec.databaseRef.name` section.
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
@@ -95,7 +94,6 @@ MariaDBopsrequest.ops.kubedb.com/restart created
 ```
 
 In `MariaDB`, all pods act as primary, so the Ops-manager operator will restart the pods one by one in sequence.
-> Note: This will not restart the arbiter pod if you have one. Arbiter pod doesn't have any data related to your database. So you can ignore restarting this pod because no restart is necessary for arbiter pod but if you want so, just kubectl delete the arbiter pod (dbName-arbiter-0) in order to restart it.
 
 ```shell
 $ kubectl get mariaops -n demo restart 
