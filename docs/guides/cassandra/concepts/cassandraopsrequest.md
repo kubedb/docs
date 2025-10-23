@@ -402,26 +402,20 @@ Important: Ops-manager Operator can skip an opsRequest, only if its execution ha
 | `Failed`                      | Specifies such a state that the operation on the database failed.         |
 | `StartingBalancer`            | Specifies such a state that the balancer has successfully started         |
 | `StoppingBalancer`            | Specifies such a state that the balancer has successfully stopped         |
-| `UpdateShardImage`            | Specifies such a state that the Shard Images has been updated             |
 | `UpdateReplicaSetImage`       | Specifies such a state that the Replicaset Image has been updated         |
 | `UpdateConfigServerImage`     | Specifies such a state that the ConfigServer Image has been updated       |
-| `UpdateMongosImage`           | Specifies such a state that the Mongos Image has been updated             |
 | `UpdatePetSetResources`       | Specifies such a state that the Petset resources has been updated         |
 | `UpdateShardResources`        | Specifies such a state that the Shard resources has been updated          |
 | `UpdateReplicaSetResources`   | Specifies such a state that the Replicaset resources has been updated     |
 | `UpdateConfigServerResources` | Specifies such a state that the ConfigServer resources has been updated   |
-| `UpdateMongosResources`       | Specifies such a state that the Mongos resources has been updated         |
 | `ScaleDownReplicaSet`         | Specifies such a state that the scale down operation of replicaset        |
 | `ScaleUpReplicaSet`           | Specifies such a state that the scale up operation of replicaset          |
 | `ScaleUpShardReplicas`        | Specifies such a state that the scale up operation of shard replicas      |
 | `ScaleDownShardReplicas`      | Specifies such a state that the scale down operation of shard replicas    |
 | `ScaleDownConfigServer`       | Specifies such a state that the scale down operation of config server     |
 | `ScaleUpConfigServer`         | Specifies such a state that the scale up operation of config server       |
-| `ScaleMongos`                 | Specifies such a state that the scale down operation of replicaset        |
 | `VolumeExpansion`             | Specifies such a state that the volume expansion operaton of the database |
 | `ReconfigureReplicaset`       | Specifies such a state that the reconfiguration of replicaset nodes       |
-| `ReconfigureMongos`           | Specifies such a state that the reconfiguration of mongos nodes           |
-| `ReconfigureShard`            | Specifies such a state that the reconfiguration of shard nodes            |
 | `ReconfigureConfigServer`     | Specifies such a state that the reconfiguration of config server nodes    |
 
 - The `status` field is a string, with possible values `True`, `False`, and `Unknown`.
