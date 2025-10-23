@@ -1,16 +1,16 @@
 ---
-title: Postgres
+title: Oracle
 menu:
   docs_{{ .version }}:
-    identifier: pg-readme-postgres
-    name: Postgres
-    parent: pg-postgres-guides
+    identifier: oracle-readme
+    name: Oracle
+    parent: guides-oracle
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
-url: /docs/{{ .version }}/guides/postgres/
+url: /docs/{{ .version }}/guides/oracle/
 aliases:
-  - /docs/{{ .version }}/guides/postgres/README/
+  - /docs/{{ .version }}/guides/oracle/README/
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
