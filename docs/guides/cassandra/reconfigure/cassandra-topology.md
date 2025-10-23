@@ -362,7 +362,7 @@ spec:
   configuration:
     applyConfig:
       cassandra.yaml: |-
-        read_request_timeout=5500ms
+        read_request_timeout: 5500ms
   timeout: 5m
   apply: IfReady
 ```
