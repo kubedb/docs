@@ -124,9 +124,7 @@ spec:
   timeout: 3m
   apply: Always
 ```
-- `spec.type` specifies the type of operation (Restart in this case).
 
-- `spec.proxyRef` references the ProxySQL database. The OpsRequest must be created in the same namespace as the database.
 > For details on the fields of ProxySQLOpsRequest, please visit to the [ProxySQLOpsRequest API reference](/docs/guides/proxysql/concepts/opsrequest/index.md)
 
 Let's create the `ProxySQLOpsRequest` CR we have shown above,

@@ -152,7 +152,20 @@ spec:
     rotateCertificates: true
 ```
 
-
+**Sample ProxySQLOpsRequest Objects for Restart of the ProxySQL:**
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: restart
+  namespace: demo
+spec:
+  type: Restart
+  proxyRef:
+    name: mysql-proxy
+  timeout: 3m
+  apply: Always
+```
 Here, we are going to describe the various sections of a `ProxySQLOpsRequest` crd.
 
 A `ProxySQLOpsRequest` object has the following fields in the `spec` section.
@@ -175,6 +188,14 @@ A `ProxySQLOpsRequest` object has the following fields in the `spec` section.
 - `Restart`
 
 > You can perform only one type of operation on a single `ProxySQLOpsRequest` CR. For example, if you want to update your proxysql and scale up its replica then you have to create two separate `ProxySQLOpsRequest`. At first, you have to create a `ProxySQLOpsRequest` for updating. Once it is completed, then you can create another `ProxySQLOpsRequest` for scaling. You should not create two `ProxySQLOpsRequest` simultaneously.
+### spec.timeout
+
+`spec.timeout` the maximum time the operator will wait for the operation to finish before marking it as failed.
+
+### spec.apply
+
+`spec.apply`  determines whether to always apply the operation (Always) or only if there are changes (IfReady).
+
 
 ### spec.updateVersion
 
