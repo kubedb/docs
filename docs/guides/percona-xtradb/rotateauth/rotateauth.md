@@ -99,7 +99,7 @@ Forwarding from [::1]:11211 -> 11211
 ```
 Now, you can exec into the pod `sample-pxc` and connect to database using `username` and `password`
 ```shell
-kubectl exec -it -n demo sample-pxc-0 -- mysql -u root --password='Q!IsZ7.NXM.ZIxvT'
+$ kubectl exec -it -n demo sample-pxc-0 -- mysql -u root --password='Q!IsZ7.NXM.ZIxvT'
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.

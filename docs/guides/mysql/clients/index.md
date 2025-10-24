@@ -5,7 +5,7 @@ menu:
     identifier: guides-mysql-clients
     name: Connecting to a MySQL Cluster
     parent: guides-mysql
-    weight: 105
+    weight: 240
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

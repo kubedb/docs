@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-migration
     name: Migration
     parent: guides-mysql
-    weight: 43
+    weight: 130
 menu_name: docs_{{ .version }}
 ---

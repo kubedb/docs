@@ -5,7 +5,7 @@ menu:
     identifier: guides-mysql-quickstart
     name: Quickstart
     parent: guides-mysql
-    weight: 15
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-reconfigure
     name: Reconfigure
     parent: guides-mysql
-    weight: 41
+    weight: 80
 menu_name: docs_{{ .version }}
 ---

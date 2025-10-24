@@ -37,13 +37,13 @@ KubeDB supports providing custom configuration for Ignite. This tutorial will sh
 
 ## Overview
 
-Ignite does not allows to configuration via any file. However, configuration parameters can be set as arguments while starting the ignite docker image. To keep similarity with other KubeDB supported databases which support configuration through a config file, KubeDB has added an additional executable script on top of the official ignite docker image. This script parses the configuration file then set them as arguments of ignite binary.
+Ignite does not allow to configuration via any file. However, configuration parameters can be set as arguments while starting the ignite docker image. To keep similarity with other KubeDB supported databases which support configuration through a config file, KubeDB has added an additional executable script on top of the official ignite docker image. This script parses the configuration file then set them as arguments of ignite binary.
 
-To know more about configuring Ignite server see [here](https://ignite.apache.org/docs/latest/understanding-configuration).
+To know more about configuring Ignite server see [here](https://ignite.apache.org/docs/ignite3/latest/administrators-guide/config/node-config).
 
 At first, you have to create a config file named `node-configuration.xml` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Ignite crd. KubeDB will mount this volume into `/usr/config` directory of the database pod.
 
-In this tutorial, we will enable ignite's [authentication](https://ignite.apache.org/docs/latest/security/authentication) via secret.
+In this tutorial, we will enable Ignite's authentication via secret.
 
 Create a secret with custom configuration file:
 ```yaml

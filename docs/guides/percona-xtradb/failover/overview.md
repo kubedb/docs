@@ -1,11 +1,12 @@
 ---
-title: PerconaXtraDB Failover and DR Scenarios
+title: PerconaXtraDB Failover Overview
+description: PerconaXtraDB Failover Overview
 menu:
-docs_{{ .version }}:
-identifier: guides-perconaxtradb-failure-and-disaster-recovery-overview
-name: Overview
-parent: guides-perconaxtradb-failover
-weight: 20
+  docs_{{ .version }}:
+    identifier: guides-perconaxtradb-Failover-overview
+    name: Overview
+    parent: guides-perconaxtradb-Failover
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -285,13 +286,6 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +--------------------+-------+
 
 ```
-
-**Why this fixes the mistake:**
-
-* We replaced the misleading heading "Delete the Primary Node" with an explicit and accurate description: "Delete a single node".
-* We added the exact `kubectl delete pod` command so the step actually performs the deletion.
-* We included the expected `kubectl get pods` outputs **immediately after deletion**, **during recreation**, and **after readiness** so readers can confirm the cluster state.
-* We added `wsrep_cluster_size` checks to show Galera membership changes while a node is down and after it rejoins.
 
 #### Case 2: Delete two nodes
 

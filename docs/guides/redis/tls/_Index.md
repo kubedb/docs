@@ -5,6 +5,6 @@ menu:
     identifier: rd-tls
     name: TLS/SSL Encryption
     parent: rd-redis-guides
-    weight: 45
+    weight: 90
 menu_name: docs_{{ .version }}
 ---

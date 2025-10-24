@@ -140,7 +140,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/xtradb-galera/kubedb/examples/xtradb-galera.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/xtradb-galera/kubedb/examples/xtradb-proxy.yaml
 proxysql.kubedb.com/xtradb-proxy created
 ```
 

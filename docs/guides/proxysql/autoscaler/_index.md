@@ -5,6 +5,6 @@ menu:
     identifier: guides-proxysql-autoscaling
     name: Autoscaling
     parent: guides-proxysql
-    weight: 46
+    weight: 140
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: guides-proxysql-updating
     name: UpdateVersion
     parent: guides-proxysql
-    weight: 45
+    weight: 60
 menu_name: docs_{{ .version }}
 ---
