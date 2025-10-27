@@ -1,0 +1,31 @@
+apiVersion: kubedb.com/v1
+kind: MySQL
+metadata:
+  name: sample-mysql
+  namespace: demo
+spec:
+  init:
+    script:
+      scriptPath: "current"
+      git:
+        args:
+          # update with your private repository
+          - --repo=https://github.com/Bonusree/init_script.git
+          - --link=current
+          - --root=/git
+          - --credential={"url":"https://github.com","username":"Bonusree","password-file":"/etc/git-secret/github-pat"}
+          # terminate after one successful sync
+          - --one-time
+        authSecret:
+          name: git-pat
+        # run as git sync user
+        securityContext:
+          runAsUser: 65533
+  version: "9.1.0"
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
