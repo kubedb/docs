@@ -1,0 +1,40 @@
+apiVersion: kubedb.com/v1
+kind: MongoDB
+metadata:
+  name: rs
+  namespace: demo
+spec:
+  init:
+    script:
+      scriptPath: "current"
+      git:
+        args:
+          # use --ssh for private repository
+          - --ssh
+          - --repo=git@github.com:Bonusree/mongo_scripts.git
+          - --depth=1
+          - --period=60s
+          - --link=current
+          - --root=/git
+          # terminate after successful sync
+          - --one-time
+        authSecret:
+          name: git-creds
+        # run as git sync user
+        securityContext:
+          runAsUser: 65533
+  podTemplate:
+    spec:
+      # permission for reading ssh key
+      securityContext:
+        fsGroup: 65533
+  version: "8.0.4"
+  storageType: Durable
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  deletionPolicy: WipeOut

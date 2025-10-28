@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1
+kind: MongoDB
+metadata:
+  name: rs
+  namespace: demo
+spec:
+  init:
+    script:
+      scriptPath: "current"
+      git:
+        args:
+          - --repo=https://github.com/kubedb/git-sync-demo.git
+          - --depth=1
+          - --period=60s
+          - --link=current
+          - --root=/git
+          # terminate after successful sync
+          - --one-time
+  version: "8.0.4"
+  storageType: Durable
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  deletionPolicy: WipeOut
