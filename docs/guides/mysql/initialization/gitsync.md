@@ -185,7 +185,7 @@ spec:
       git:
         args:
           # update with your private repository    
-          - --repo=git@github.com:Bonusree/init_script.git
+          - --repo=<private_git_repo_url>
           - --link=current
           - --root=/git
           # terminate after one successful sync
