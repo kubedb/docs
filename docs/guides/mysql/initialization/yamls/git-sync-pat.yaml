@@ -10,10 +10,10 @@ spec:
       git:
         args:
           # update with your private repository
-          - --repo=https://github.com/Bonusree/init_script.git
+          - --repo=<private_git_repo_http_url>
           - --link=current
           - --root=/git
-          - --credential={"url":"https://github.com","username":"Bonusree","password-file":"/etc/git-secret/github-pat"}
+          - --credential={"url":"https://github.com","username":"<username>","password-file":"/etc/git-secret/github-pat"}
           # terminate after one successful sync
           - --one-time
         authSecret:
