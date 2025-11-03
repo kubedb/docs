@@ -68,7 +68,7 @@ MySQL.kubedb.com/sample-mysql created
 
 The `git-sync` container has two required flags:
 - `--repo`  – specifies the remote Git repository to sync.
-- `--root`  – specifies the working directory where the repository will be cloned.
+- `--root`  – specifies the working directory where the repository will be cloned.Here name `/git`is fixed
 
 Here, the value of the `--link` argument must match the value of `spec.init.script.scriptPath`.
 The `--link` argument creates a symlink that always points to the latest synced data.
@@ -164,6 +164,8 @@ $ ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
 Use the `kubectl create secret` command to create a secret from your local SSH key and known hosts file.
 This secret will be used by git-sync to authenticate with the Git repository.
 
+>Here, we are using the default SSH key file located at `$HOME/.ssh/id_rsa`. If your SSH key is stored in a different location, please update the command accordingly. Also you can use any name instead of `git-creds` to create the secret.
+
 ```bash
 $ kubectl create secret generic -n demo git-creds \
     --from-file=ssh=$HOME/.ssh/id_rsa \
@@ -185,12 +187,13 @@ spec:
       git:
         args:
           # update with your private repository    
-          - --repo=<private_git_repo_url>
+          - --repo=<private_git_repo_ssh_url>
           - --link=current
           - --root=/git
           # terminate after one successful sync
           - --one-time
         authSecret:
+          # the name of the secret created above
           name: git-creds
         # run as git sync user 
         securityContext:
@@ -220,7 +223,7 @@ Once the database reaches the `Ready` state, you can verify the data using the m
 
 First, create a `Personal Access Token (PAT)` on your Git host server with the required permissions to access the repository.
 Then create a Kubernetes secret using the `Personal Access Token (PAT)`:
-
+> Here, you can use any key name instead of `git-pat` to store the token in the secret.
 ```bash
 $ kubectl create secret generic -n demo git-pat \
     --from-literal=github-pat=<ghp_yourpersonalaccesstoken>
@@ -242,13 +245,14 @@ spec:
       git:
         args:
           # update with your private repository    
-          - --repo=https://github.com/Bonusree/init_script.git
+          - --repo=<private_git_repo_http_url>
           - --link=current
           - --root=/git
-          - --credential={"url":"https://github.com","username":"Bonusree","password-file":"/etc/git-secret/github-pat"}
+          - --credential={"url":"https://github.com","username":"<username>","password-file":"/etc/git-secret/github-pat"}
           # terminate after one successful sync
           - --one-time
         authSecret:
+            # the name of the secret created above
           name: git-pat
         # run as git sync user 
         securityContext:

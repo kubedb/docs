@@ -1,10 +1,10 @@
 ---
-title: Initialize Redis From Git Repository
+title: Initialize Redis gitsync
 menu:
   docs_{{ .version }}:
-    identifier: guides-Redis-initialization-gitsync
+    identifier: rd-gitsync-initialization
     name: Git Repository
-    parent: guides-Redis-initialization
+    parent: rd-initialization-redis
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -13,9 +13,9 @@ section_menu_id: guides
 > New to KubeDB? Please start [here](/docs/README.md).
 
 # Initialization Redis from a Git Repository
-This guide demonstrates how to use KubeDB to initialize a Redis database with initialization scripts (.sql, .sh, and/or .sql.gz) stored in a public or private Git repository.
+This guide demonstrates how to use KubeDB to initialize a Redis database with initialization scripts (.sh, .sh, and/or .sh.gz) stored in a public or private Git repository.
 To fetch the repository contents, KubeDB uses a sidecar container called [git-sync](https://github.com/kubernetes/git-sync).
-In this example, we will initialize Redis using a `.sql` script from the GitHub repository [kubedb/mysql-init-scripts](https://github.com/kubedb/mysql-init-scripts).
+In this example, we will initialize Redis using a `.sh` script from the GitHub repository [kubedb/redis-init-scripts](https://github.com/kubedb/redis-init-scripts).
 
 ## Before You Begin
 
@@ -45,7 +45,7 @@ spec:
   version: "8.2.2"
   mode: Standalone
   storage:
-    storageClassName: "local-path"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -66,24 +66,25 @@ spec:
 
 ```
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Redis/initialization/git-sync-public.yaml
-Redis.kubedb.com/sample-Redis created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/initialization/git-sync-public.yaml
+Redis.kubedb.com/redis-demo created
 ```
 
 The `git-sync` container has two required flags:
 - `--repo`  – specifies the remote Git repository to sync.
-
+- `spec.init.script.scriptPath` – specifies the path within the repository where the initialization scripts are located.
+- - `.spec.init.git.securityContext.runAsUser: 999` ensure the container runs as the dedicated non-root `git-sync` user.
 > To know more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync).
 
-Now, wait until `sample-Redis` has status `Ready`. i.e,
+Now, wait until `redis-demo` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get Redis -n demo
 NAME             VERSION   STATUS   AGE
-sample-Redis   10.5.23   Ready    5m
+redis-demo        8.2.2    Ready    5m
 ```
 
-Next, we will connect to the Redis database and verify the data inserted from the `*.sql` script stored in the Git repository.
+Next, we will connect to the Redis database and verify the data inserted from the `*.sh` script stored in the Git repository.
 
 ```bash
 $ kubectl exec -n demo -it redis-demo-0 -- bash
@@ -140,7 +141,7 @@ $ ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
 
 Use the `kubectl create secret` command to create a secret from your local SSH key and known hosts file.
 This secret will be used by git-sync to authenticate with the Git repository.
-
+> Here, we are using the default SSH key file located at `$HOME/.ssh/id_rsa`. If your SSH key is stored in a different location, please update the command accordingly. Also, you can use any name instead of `git-creds` to create the secret.
 ```bash
 $ kubectl create secret generic -n demo git-creds \
     --from-file=ssh=$HOME/.ssh/id_rsa \
@@ -153,51 +154,80 @@ The following YAML manifest provides an example of a `Redis` resource configured
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
-  name: sample-Redis
+  name: redis-demo
   namespace: demo
 spec:
+  version: 8.2.2
+  mode: Cluster
   init:
-   script:
-     scriptPath: "current"
-     git:
-       args:
-       # update with your private repository    
-       - --repo=git@github.com:refat75/mysql-init-scripts.git
-       - --link=current
-       - --root=/root
-       # terminate after one successful sync
-       - --one-time 
-       authSecret:
-         name: git-creds
-       # run as git sync user 
-       securityContext:
-         runAsUser: 65533
-  version: "10.5.23"
+    script:
+      scriptPath: "redis_script.git"
+      git:
+        args:
+          # use --ssh for private repository
+          - --ssh
+          - --repo=<private_git_repo_http_url>
+          - --depth=1
+          - --period=60s
+          - --root=/init-script-from-git
+          # terminate after successful sync
+          - --one-time
+        authSecret:
+            # the name of the secret created above
+          name: git-creds
+        # got credentials from the secret
+  cluster:
+    shards: 3
+    replicas: 2
+  storageType: Durable
   storage:
-    accessModes:
-    - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 20M
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
   deletionPolicy: WipeOut
 ```
 
+
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Redis/initialization/git-sync-ssh.yaml
-Redis.kubedb.com/sample-Redis created
+Redis.kubedb.com/redis-demo created
 ```
 
-Here,
-- `.spec.init.git.securityContext.runAsUser: 65533` ensure the container runs as the dedicated non-root `git-sync` user.
-- `.spec.init.git.authSecret` specifies the secret containing the `SSH` key.
+Here, replace `<private_git_repo_ssh_url>` with your private Git repository's SSH URL.
+
+
+The `git-sync` container has two required flags:
+- `--repo`  – specifies the remote Git repository to sync.
+- `--root`  – specifies the working directory where the repository will be cloned.
+- `spec.init.git.authSecret` specifies the secret containing the `SSH` key.
+- `spec.init.script.scriptPath` – specifies the path within the repository where the initialization scripts are located.
+for more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync/blob/master/docs/ssh.md)
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
+```shell
+kubectl get redis -n demo 
+NAME         VERSION   STATUS   AGE
+redis-demo   8.2.2     Ready    48m
+
+```
+```shell
+$ kubectl exec -n demo -it redis-demo-shard0-0 -- bash
+Defaulted container "redis" out of: redis, redis-init (init), git-sync (init)
+redis@redis-demo-shard0-0:/data$ redis-cli -c
+127.0.0.1:6379>  get user:1:name
+-> Redirected to slot [12440] located at 10.42.0.241:6379
+"John Doe"
+10.42.0.241:6379> exit
+```
 
 ### 2. Using Username and Personal Access Token(PAT)
 
 First, create a `Personal Access Token (PAT)` on your Git host server with the required permissions to access the repository.
 Then create a Kubernetes secret using the `Personal Access Token (PAT)`:
-
+> Here, you can use any key name instead of `git-pat` to store the token in the secret.
 ```bash
 $ kubectl create secret generic -n demo git-pat \
     --from-literal=github-pat=<ghp_yourpersonalaccesstoken>
@@ -210,49 +240,72 @@ The following YAML manifest shows an example:
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
-  name: sample-Redis
+  name: redis-demo
   namespace: demo
 spec:
+  version: 8.2.2
+  mode: Cluster
   init:
-   script:
-     scriptPath: "current"
-     git:
-       args:
-       # update with your private repository    
-       - --repo=https://github.com/refat75/mysql-init-scripts.git
-       - --link=current
-       - --root=/root
-       - --credential={"url":"https://github.com","username":"refat75","password-file":"/etc/git-secret/github-pat"}
-       # terminate after one successful sync
-       - --one-time 
-       authSecret:
-         name: git-pat
-       # run as git sync user 
-       securityContext:
-         runAsUser: 65533
-  version: "10.5.23"
+    script:
+      scriptPath: "redis_script.git"
+      git:
+        args:
+
+          - --repo=https://github.com/Bonusree/redis_script.git
+          - --depth=1
+          - --period=60s
+          - --root=/init-script-from-git
+          - --credential={"url":"https://github.com","username":"<username>","password-file":"/etc/git-secret/github-pat"}
+          # terminate after successful sync
+          - --one-time
+        authSecret:
+          # the name of the secret created above
+          name: git-pat
+        # run as git credentials user
+  cluster:
+    shards: 3
+    replicas: 2
+  storageType: Durable
   storage:
-    accessModes:
-    - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 20M
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
   deletionPolicy: WipeOut
 ```
 
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Redis/initialization/git-sync-pat.yaml
-Redis.kubedb.com/sample-Redis created
+Redis.kubedb.com/redis-demo created
 ```
+Here,
 
-Once the database reaches the `Ready` state, you can verify the data using the method described above.
 
+- `--credential`Provides authentication information for accessing a private Git repository over HTTPS.
+Once the database reaches the `Ready` state, you can verify the data using the method described above. Let's check:
+```shell
+kubectl get redis -n demo 
+NAME         VERSION   STATUS   AGE
+redis-demo   8.2.2     Ready    48m
+
+```
+```shell
+$ kubectl exec -n demo -it redis-demo-shard0-0 -- bash
+Defaulted container "redis" out of: redis, redis-init (init), git-sync (init)
+redis@redis-demo-shard0-0:/data$ redis-cli -c
+127.0.0.1:6379>  get user:1:name
+-> Redirected to slot [12440] located at 10.42.0.241:6379
+"John Doe"
+10.42.0.241:6379> exit
+```
 
 ## CleanUp
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete Redis -n demo sample-Redis
+$ kubectl delete Redis -n demo redis-demo
 $ kubectl delete ns demo
 ```
