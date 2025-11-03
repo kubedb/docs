@@ -1,0 +1,36 @@
+apiVersion: kubedb.com/v1
+kind: Redis
+metadata:
+  name: redis-demo
+  namespace: demo
+spec:
+  version: 8.2.2
+  mode: Cluster
+  init:
+    script:
+      scriptPath: "redis_script.git"
+      git:
+        args:
+
+          - --repo=https://github.com/Bonusree/redis_script.git
+          - --depth=1
+          - --period=60s
+          - --root=/init-script-from-git
+          - --credential={"url":"https://github.com","username":"Bonusree","password-file":"/etc/git-secret/github-pat"}
+          # terminate after successful sync
+          - --one-time
+        authSecret:
+          name: git-creds
+        # run as git sync user
+  cluster:
+    shards: 3
+    replicas: 2
+  storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: 20M
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+  deletionPolicy: WipeOut
