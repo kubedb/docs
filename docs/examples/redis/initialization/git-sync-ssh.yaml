@@ -11,17 +11,18 @@ spec:
       scriptPath: "redis_script.git"
       git:
         args:
-
-          - --repo=https://github.com/Bonusree/redis_script.git
+          # use --ssh for private repository
+          - --ssh
+          - --repo=<private_git_repo_ssh_url>
           - --depth=1
           - --period=60s
           - --root=/init-script-from-git
-          - --credential={"url":"https://github.com","username":"Bonusree","password-file":"/etc/git-secret/github-pat"}
           # terminate after successful sync
           - --one-time
         authSecret:
+          # the name of the secret created above
           name: git-creds
-        # run as git sync user
+        # got credentials from the secret
   cluster:
     shards: 3
     replicas: 2
@@ -30,7 +31,7 @@ spec:
     resources:
       requests:
         storage: 20M
-    storageClassName: "local-path"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
