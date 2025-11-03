@@ -31,7 +31,7 @@ spec:
   version: "8.0.4"
   storageType: Durable
   storage:
-    storageClassName: "local-path"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:

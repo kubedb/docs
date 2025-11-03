@@ -1,10 +1,10 @@
 ---
-title: Initialize Redis From Git Repository
+title: Initialize MongoDB  Git Repository
 menu:
   docs_{{ .version }}:
-    identifier: guides-Redis-initialization-gitsync
+    identifier: mg-gitsync-mongodb
     name: Git Repository
-    parent: guides-Redis-initialization
+    parent: mg-initialization-mongodb
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,10 +12,10 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Initialization Redis from a Git Repository
-This guide demonstrates how to use KubeDB to initialize a Redis database with initialization scripts (.sql, .sh, and/or .sql.gz) stored in a public or private Git repository.
+# Initialization MongoDB from a Git Repository
+This guide demonstrates how to use KubeDB to initialize a MongoDB database with initialization scripts (.js, .sh, and/or .sql.gz) stored in a public or private Git repository.
 To fetch the repository contents, KubeDB uses a sidecar container called [git-sync](https://github.com/kubernetes/git-sync).
-In this example, we will initialize Redis using a `.sql` script from the GitHub repository [kubedb/mysql-init-scripts](https://github.com/kubedb/mysql-init-scripts).
+In this example, we will initialize MongoDB using a `.js` script from the GitHub repository [kubedb/mongodb-init-scripts](https://github.com/kubedb/mongodb-init-scripts).
 
 ## Before You Begin
 
@@ -31,9 +31,9 @@ namespace/demo created
 
 ## From Public Git Repository
 
-KubeDB implements a `Redis` Custom Resource Definition (CRD) to define the specification of a Redis database.
-To initialize the database from a public Git repository, you need to specify the required arguments for the `git-sync` sidecar container within the Redis resource specification.
-The following YAML manifest shows an example `Redis` object configured with `git-sync`:
+KubeDB implements a `MongoDB` Custom Resource Definition (CRD) to define the specification of a MongoDB database.
+To initialize the database from a public Git repository, you need to specify the required arguments for the `git-sync` sidecar container within the MongoDB resource specification.
+The following YAML manifest shows an example `MongoDB` object configured with `git-sync`:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -57,7 +57,7 @@ spec:
   version: "8.0.4"
   storageType: Durable
   storage:
-    storageClassName: "local-path"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -67,8 +67,8 @@ spec:
 
 ```
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Redis/initialization/git-sync-public.yaml
-Redis.kubedb.com/sample-Redis created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/git-sync-public.yaml
+MongoDB.kubedb.com/rs created
 ```
 
 The `git-sync` container has two required flags:
@@ -79,7 +79,7 @@ The `git-sync` container has two required flags:
 
 > To know more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync).
 
-Now, wait until `sample-Redis` has status `Ready`. i.e,
+Now, wait until `rs` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get mg -n demo
@@ -88,7 +88,7 @@ rs     8.0.4     Ready    49m
 
 ```
 
-Next, we will connect to the Redis database and verify the data inserted from the `*.sql` script stored in the Git repository.
+Next, we will connect to the MongoDB database and verify the data inserted from the `*.js` script stored in the Git repository.
 
 ```bash
 $  kubectl exec -it -n demo rs-0 -- bash
@@ -149,59 +149,72 @@ $ ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
 Use the `kubectl create secret` command to create a secret from your local SSH key and known hosts file.
 This secret will be used by git-sync to authenticate with the Git repository.
 
+>Here, we are using the default SSH key file located at `$HOME/.ssh/id_rsa`. If your SSH key is stored in a different location, please update the command accordingly. Also, you can use any name instead of `git-creds` to create the secret.
+
 ```bash
 $ kubectl create secret generic -n demo git-creds \
     --from-file=ssh=$HOME/.ssh/id_rsa \
     --from-file=known_hosts=/tmp/known_hosts
 ```
 
-The following YAML manifest provides an example of a `Redis` resource configured to use `git-sync` with a private Git repository:
+The following YAML manifest provides an example of a `MongoDB` resource configured to use `git-sync` with a private Git repository:
 
 ```yaml
 apiVersion: kubedb.com/v1
-kind: Redis
+kind: MongoDB
 metadata:
-  name: sample-Redis
+  name: rs
   namespace: demo
 spec:
   init:
-   script:
-     scriptPath: "current"
-     git:
-       args:
-       # update with your private repository    
-       - --repo=git@github.com:refat75/mysql-init-scripts.git
-       - --link=current
-       - --root=/root
-       # terminate after one successful sync
-       - --one-time 
-       authSecret:
-         name: git-creds
-       # run as git sync user 
-       securityContext:
-         runAsUser: 65533
-  version: "10.5.23"
+    script:
+      scriptPath: "current"
+      git:
+        args:
+          # use --ssh for private repository
+          - --ssh
+          - --repo=<private_git_repo_ssh_url>
+          - --depth=1
+          - --period=60s
+          - --link=current
+          - --root=/git
+          # terminate after successful sync
+          - --one-time
+        authSecret:
+          name: git-creds
+        # run as git sync user 
+        securityContext:
+          runAsUser: 65533
+  podTemplate:
+    spec:
+      # permission for reading ssh key
+      securityContext:
+        fsGroup: 65533
+  version: "8.0.4"
+  storageType: Durable
   storage:
+    storageClassName: "local-path"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 10Gi
   deletionPolicy: WipeOut
 ```
 
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Redis/initialization/git-sync-ssh.yaml
-Redis.kubedb.com/sample-Redis created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/git-sync-ssh.yaml
+MongoDB.kubedb.com/rs created
 ```
 
 Here,
+- `repo` with your private Git repository's SSH URL.
 - `.spec.init.git.securityContext.runAsUser: 65533` ensure the container runs as the dedicated non-root `git-sync` user.
 - `.spec.init.git.authSecret` specifies the secret containing the `SSH` key.
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
 
-Next, we will connect to the Redis database and verify the data inserted from the `*.sql` script stored in the Git repository.
+Next, we will connect to the MongoDB database and verify the data inserted from the `*.js` script stored in the Git repository.
 
 ```bash
 $  kubectl exec -it -n demo rs-0 -- bash
@@ -246,61 +259,85 @@ kubedb> exit
 First, create a `Personal Access Token (PAT)` on your Git host server with the required permissions to access the repository.
 Then create a Kubernetes secret using the `Personal Access Token (PAT)`:
 
+> Here, you can use any key name instead of `git-pat` to store the token in the secret.
+
 ```bash
 $ kubectl create secret generic -n demo git-pat \
     --from-literal=github-pat=<ghp_yourpersonalaccesstoken>
 ```
 
-Now, create a `Redis` resource that references the secret created above.
+Now, create a `MongoDB` resource that references the secret created above.
 The following YAML manifest shows an example:
 
 ```yaml
 apiVersion: kubedb.com/v1
-kind: Redis
+kind: MongoDB
 metadata:
-  name: sample-Redis
+  name: rs
   namespace: demo
 spec:
   init:
-   script:
-     scriptPath: "current"
-     git:
-       args:
-       # update with your private repository    
-       - --repo=https://github.com/refat75/mysql-init-scripts.git
-       - --link=current
-       - --root=/root
-       - --credential={"url":"https://github.com","username":"refat75","password-file":"/etc/git-secret/github-pat"}
-       # terminate after one successful sync
-       - --one-time 
-       authSecret:
-         name: git-pat
-       # run as git sync user 
-       securityContext:
-         runAsUser: 65533
-  version: "10.5.23"
+    script:
+      scriptPath: "current"
+      git:
+        args:
+          # use --ssh for private repository
+          - --repo=<private_git_repo_http_url>
+          - --depth=1
+          - --period=60s
+          - --link=current
+          - --root=/git
+          - --credential={"url":"https://github.com","username":"<username>","password-file":"/etc/git-secret/github-pat"}
+          # terminate after successful sync
+          - --one-time
+        authSecret:
+          # the name of the secret created above
+          name: git-pat
+        # run as git sync user 
+        securityContext:
+          runAsUser: 65533
+  podTemplate:
+    spec:
+      # permission for reading ssh key
+      securityContext:
+        fsGroup: 65533
+  version: "8.0.4"
+  storageType: Durable
   storage:
+    storageClassName: "local-path"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 10Gi
   deletionPolicy: WipeOut
 ```
 
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Redis/initialization/git-sync-pat.yaml
-Redis.kubedb.com/sample-Redis created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/git-sync-pat.yaml
+MongoDB.kubedb.com/rs created
 ```
+The `git-sync` container has two required flags:
+- `--repo`  – specifies the remote Git repository to sync.
+- `--root`  – specifies the working directory where the repository will be cloned.
+- `spec.init.git.authSecret` specifies the secret containing the `Personal Access Token (PAT)`.'
+- `spec.init.git.args.--credential` specifies the credential information for accessing the private Git repository.
 
+Here, the value of the `--link` argument must match the value of `spec.init.script.scriptPath`.
+The `--link` argument creates a symlink that always points to the latest synced data.
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
+```yaml
+$ kubectl get mg -n demo
+NAME   VERSION   STATUS   AGE
+rs     8.0.4     Ready    38m
 
+```
 
 ## CleanUp
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete Redis -n demo sample-Redis
+$ kubectl delete MongoDB -n demo rs
 $ kubectl delete ns demo
 ```

@@ -9,13 +9,25 @@ spec:
       scriptPath: "current"
       git:
         args:
-          - --repo=https://github.com/kubedb/git-sync-demo.git
+          # use --ssh for private repository
+          - --repo=https://github.com/Bonusree/mongo_scripts.git
           - --depth=1
           - --period=60s
           - --link=current
           - --root=/git
+          - --credential={"url":"https://github.com","username":"Bonusree","password-file":"/etc/git-secret/github-pat"}
           # terminate after successful sync
           - --one-time
+        authSecret:
+          name: git-pat
+        # run as git sync user
+        securityContext:
+          runAsUser: 65533
+  podTemplate:
+    spec:
+      # permission for reading ssh key
+      securityContext:
+        fsGroup: 65533
   version: "8.0.4"
   storageType: Durable
   storage:
