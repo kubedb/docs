@@ -11,7 +11,7 @@ spec:
         args:
           # use --ssh for private repository
           - --ssh
-          - --repo=git@github.com:Bonusree/mongo_scripts.git
+          - --repo=<private_git_repo_ssh_url>
           - --depth=1
           - --period=60s
           - --link=current

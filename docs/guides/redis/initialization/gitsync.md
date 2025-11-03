@@ -166,7 +166,7 @@ spec:
         args:
           # use --ssh for private repository
           - --ssh
-          - --repo=<private_git_repo_http_url>
+          - --repo=<private_git_repo_ssh_url>
           - --depth=1
           - --period=60s
           - --root=/init-script-from-git
@@ -192,7 +192,7 @@ spec:
 
 
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Redis/initialization/git-sync-ssh.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/initialization/git-sync-ssh.yaml
 Redis.kubedb.com/redis-demo created
 ```
 
@@ -251,7 +251,7 @@ spec:
       git:
         args:
 
-          - --repo=https://github.com/Bonusree/redis_script.git
+          - --repo=<private_git_repo_http_url>
           - --depth=1
           - --period=60s
           - --root=/init-script-from-git
@@ -277,7 +277,7 @@ spec:
 ```
 
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Redis/initialization/git-sync-pat.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/initialization/git-sync-pat.yaml
 Redis.kubedb.com/redis-demo created
 ```
 Here,
