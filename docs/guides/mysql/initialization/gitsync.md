@@ -2,7 +2,7 @@
 title: Initialize MySQL From Git Repository
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-initialization-gitsync
+    identifier: guides-mysql-gitsync
     name: Git Repository
     parent: guides-mysql-initialization
     weight: 20
@@ -13,7 +13,7 @@ section_menu_id: guides
 > New to KubeDB? Please start [here](/docs/README.md).
 
 # Initialization MySQL from a Git Repository
-This guide demonstrates how to use KubeDB to initialize a MySQL database with initialization scripts (.sql, .sh, and/or .sql.gz) stored in a public or private Git repository.
+This guide demonstrates how to use KubeDB to initialize a MySQL database with initialization scripts (.sql, .sh, .js and/or .sql.gz) stored in a public or private Git repository.
 To fetch the repository contents, KubeDB uses a sidecar container called [git-sync](https://github.com/kubernetes/git-sync).
 In this example, we will initialize MySQL using a `.sql` script from the GitHub repository [kubedb/mysql-init-scripts](https://github.com/kubedb/mysql-init-scripts).
 

@@ -253,7 +253,7 @@ spec:
     name: license-secret
 ```
 
-In the above example, KubeDB operator will launch a Job to execute all js script of `sdb-init-script` in alphabetical order once PetSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mysql/initialization/index.md).
+In the above example, KubeDB operator will launch a Job to execute all js script of `sdb-init-script` in alphabetical order once PetSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mysql/initialization/using_script.md).
 
 ### spec.monitor
 

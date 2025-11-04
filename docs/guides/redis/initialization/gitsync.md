@@ -5,7 +5,7 @@ menu:
     identifier: rd-gitsync-initialization
     name: Git Repository
     parent: rd-initialization-redis
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -13,7 +13,7 @@ section_menu_id: guides
 > New to KubeDB? Please start [here](/docs/README.md).
 
 # Initialization Redis from a Git Repository
-This guide demonstrates how to use KubeDB to initialize a Redis database with initialization scripts (.sh, .sh, and/or .sh.gz) stored in a public or private Git repository.
+This guide demonstrates how to use KubeDB to initialize a Redis database with initialization scripts ( .sh, and/or .sh.gz) stored in a public or private Git repository.
 To fetch the repository contents, KubeDB uses a sidecar container called [git-sync](https://github.com/kubernetes/git-sync).
 In this example, we will initialize Redis using a `.sh` script from the GitHub repository [kubedb/redis-init-scripts](https://github.com/kubedb/redis-init-scripts).
 
