@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-updating
     name: UpdateVersion MySQL
     parent: guides-mysql
-    weight: 88
+    weight: 120
 menu_name: docs_{{ .version }}
 ---
