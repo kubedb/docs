@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-schema-manager
     name: Schema Manager
     parent: guides-mysql
-    weight: 55
+    weight: 230
 menu_name: docs_{{ .version }}
 ---

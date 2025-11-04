@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-scaling
     name: Scaling MySQL
     parent: guides-mysql
-    weight: 43
+    weight: 160
 menu_name: docs_{{ .version }}
 ---
