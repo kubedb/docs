@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Clickhouse
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-clickhouse
+    name: Kubectl-Dba Debug Clickhouse
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug clickhouse
 
-Debug helper for MariaDB database
+Debug helper for ClickHouse database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug clickhouse [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug clickhouse -n demo sample-clickhouse --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for clickhouse
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 

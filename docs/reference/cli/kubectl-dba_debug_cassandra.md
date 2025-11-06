@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Cassandra
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-cassandra
+    name: Kubectl-Dba Debug Cassandra
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug cassandra
 
-Debug helper for MariaDB database
+Debug helper for Cassandra database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug cassandra [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug cassandra -n demo sample-cassandra --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for cassandra
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 

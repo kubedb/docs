@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Proxysql
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-proxysql
+    name: Kubectl-Dba Debug Proxysql
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug proxysql
 
-Debug helper for MariaDB database
+Debug helper for ProxySQL database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug proxysql [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug proxysql -n demo sample-proxysql --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for proxysql
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 

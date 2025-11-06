@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Singlestore
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-singlestore
+    name: Kubectl-Dba Debug Singlestore
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug singlestore
 
-Debug helper for MariaDB database
+Debug helper for Singlestore database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug singlestore [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug singlestore -n demo sample-singlestore --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for singlestore
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 

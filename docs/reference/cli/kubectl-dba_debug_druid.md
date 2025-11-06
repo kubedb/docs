@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Druid
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-druid
+    name: Kubectl-Dba Debug Druid
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug druid
 
-Debug helper for MariaDB database
+Debug helper for Druid database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug druid [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug druid -n demo sample-druid --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for druid
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 
