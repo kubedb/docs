@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: es-demo-update
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: es-demo
+  updateVersion:
+    targetVersion: xpack-9.1.4
