@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Zookeeper
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-zookeeper
+    name: Kubectl-Dba Debug Zookeeper
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug zookeeper
 
-Debug helper for MariaDB database
+Debug helper for Zookeeper database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug zookeeper [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug zookeeper -n demo sample-zookeeper --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for zookeeper
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 
