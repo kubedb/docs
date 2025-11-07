@@ -1,10 +1,10 @@
 ---
-title: Update Version of Elasticsearch
+title: Update Version Elasticsearch
 menu:
   docs_{{ .version }}:
-    identifier: es-update-version-Elasticsearch
+    identifier: es-updateversion-Elasticsearch
     name: Elasticsearch
-    parent: es-update-version
+    parent: es-updateversion-elasticsearch
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
