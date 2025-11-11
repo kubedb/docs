@@ -6,6 +6,6 @@ metadata:
 spec:
   type: Restart
   databaseRef:
-    name: es-demo
-  timeout: 10m
+    name: es-quickstart
+  timeout: 3m
   apply: Always
