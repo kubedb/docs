@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: esops-hscale-down-combined
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: es
+  horizontalScaling:
+    node: 2

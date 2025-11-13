@@ -64,7 +64,7 @@ Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch-v1.yaml
-Elasticsearch.kubedb.com/Elasticsearch created
+Elasticsearch.kubedb.com/es created
 ```
 let's wait until all pods are in the `Running` state,
 
