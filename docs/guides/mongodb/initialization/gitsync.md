@@ -13,7 +13,7 @@ section_menu_id: guides
 > New to KubeDB? Please start [here](/docs/README.md).
 
 # Initialization MongoDB from a Git Repository
-This guide demonstrates how to use KubeDB to initialize a MongoDB database with initialization scripts (.js, .sh, and/or .sql.gz) stored in a public or private Git repository.
+This guide demonstrates how to use KubeDB to initialize a MongoDB database with initialization scripts (.js, and/or .sh) stored in a public or private Git repository.
 To fetch the repository contents, KubeDB uses a sidecar container called [git-sync](https://github.com/kubernetes/git-sync).
 In this example, we will initialize MongoDB using a `.js` script from the GitHub repository [kubedb/mongodb-init-scripts](https://github.com/kubedb/mongodb-init-scripts).
 
@@ -93,7 +93,7 @@ Next, we will connect to the MongoDB database and verify the data inserted from 
 ```bash
 $  kubectl exec -it -n demo rs-0 -- bash
 Defaulted container "mongodb" out of: mongodb, copy-config (init), git-sync (init)
-mongodb@rs-0:/$ mongosh -u root -p 'tQ;c(ykM_T_EbLKS'
+mongodb@rs-0:/$ mongosh -u root -p $<your_mongodb_root_password>
 Current Mongosh Log ID:	6900695d231f7a9e99ce5f46
 Connecting to:		mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.5.8
 Using MongoDB:		8.0.4

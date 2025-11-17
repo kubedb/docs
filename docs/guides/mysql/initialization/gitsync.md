@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Initialization MySQL from a Git Repository
+# Initializing MySQL from a Git Repository
 This guide demonstrates how to use KubeDB to initialize a MySQL database with initialization scripts (.sql, .sh, .js and/or .sql.gz) stored in a public or private Git repository.
 To fetch the repository contents, KubeDB uses a sidecar container called [git-sync](https://github.com/kubernetes/git-sync).
 In this example, we will initialize MySQL using a `.sql` script from the GitHub repository [kubedb/mysql-init-scripts](https://github.com/kubedb/mysql-init-scripts).
@@ -86,13 +86,10 @@ sample-mysql   9.1.0     Ready    42m
 Next, we will connect to the MySQL database and verify the data inserted from the `*.sql` script stored in the Git repository.
 
 ```bash
-$  kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.\username}' | base64 -d
-root⏎  
-$ kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.\password}' | base64 -d
-lYeFGCL~mklFUN1b⏎ 
+
 $  kubectl exec -it -n demo sample-mysql-0 -- bash
 Defaulted container "mysql" out of: mysql, mysql-init (init), git-sync (init)
-bash-5.1$ mysql -uroot -p"lYeFGCL~mklFUN1b"  
+bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 156
