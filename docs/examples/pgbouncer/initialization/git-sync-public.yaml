@@ -1,0 +1,27 @@
+apiVersion: kubedb.com/v1
+kind: PgBouncer
+metadata:
+  name: pb
+  namespace: demo
+spec:
+  version: "1.24.0"
+  replicas: 1
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "quick-postgres"
+      namespace: demo
+  connectionPool:
+    maxClientConnections: 20
+    reservePoolSize: 5
+  init:
+    script:
+      git:
+        args:
+          - --repo=<default_git_repo_http_url>
+          - --depth=1
+          - --period=60s
+          - --one-time
+        resources: {}
+      scriptPath: <desired_script_path>
