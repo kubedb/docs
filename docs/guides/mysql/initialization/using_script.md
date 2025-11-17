@@ -1,11 +1,11 @@
 ---
-title: Initialize MySQL using Script
+title: Initialize MySQL Using Script
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-initialization
-    name: Initialization Using Script
-    parent: guides-mysql
-    weight: 41
+    identifier: guides-mysql-using-script
+    name: Using Script
+    parent: guides-mysql-initialization
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -501,7 +501,7 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Initialize [MySQL with Script](/docs/guides/mysql/initialization/index.md).
+- Initialize [MySQL with Script](/docs/guides/mysql/initialization/using_script.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/index.md) to deploy MySQL with KubeDB.

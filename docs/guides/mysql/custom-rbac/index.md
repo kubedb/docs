@@ -5,7 +5,7 @@ menu:
     identifier: guides-mysql-custom-rbac
     name: Custom RBAC
     parent: guides-mysql
-    weight: 31
+    weight: 60
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -273,7 +273,7 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 ## Next Steps
 
 - [Quickstart MySQL](/docs/guides/mysql/quickstart/index.md) with KubeDB Operator.
-- Initialize [MySQL with Script](/docs/guides/mysql/initialization/index.md).
+- Initialize [MySQL with Script](/docs/guides/mysql/initialization/using_script.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/index.md) to deploy MySQL with KubeDB.
