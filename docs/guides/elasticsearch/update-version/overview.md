@@ -19,8 +19,8 @@ This guide will give you an overview of how KubeDB ops manager updates the versi
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Elasticsearch](/docs/guides/Elasticsearch/concepts/Elasticsearch.md)
-    - [ElasticsearchOpsRequest](/docs/guides/Elasticsearch/concepts/opsrequest.md)
+    - [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md)
+    - [ElasticsearchOpsRequest](/docs/guides/elasticsearch/concepts/elasticsearch-ops-request/index.md)
 
 ## How update Process Works
 
@@ -49,8 +49,8 @@ The updating process consists of the following steps:
 6. When it finds one, it Pauses the `Elasticsearch` object so that the `KubeDB-Provisioner` operator doesn't perform any operation on the `Elasticsearch` during the updating process.
 
 7. By looking at the target version from `ElasticsearchOpsRequest` cr, In case of major update `KubeDB-ops-manager` does some pre-update steps as we need old bin and lib files to update from current to target Elasticsearch version.
-8. Then By looking at the target version from `ElasticsearchOpsRequest` cr, `KubeDB-ops-manager` operator updates the images of the `PetSet` for updating versions.
 
+8. Then By looking at the target version from `ElasticsearchOpsRequest` cr, `KubeDB-ops-manager` operator updates the images of the `PetSet` for updating versions.
 
 9. After successful upgradation of the `PetSet` and its `Pod` images, the `KubeDB-ops-manager` updates the image of the `Elasticsearch` object to reflect the updated cluster state.
 
