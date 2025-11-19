@@ -5,6 +5,6 @@ menu:
     identifier: es-updateversion-elasticsearch
     name: Update Version
     parent: es-elasticsearch-guides
-    weight: 15
+    weight: 95
 menu_name: docs_{{ .version }}
 ---
