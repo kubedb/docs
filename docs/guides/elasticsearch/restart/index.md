@@ -5,7 +5,7 @@ menu:
     identifier: es-restart-elasticsearch
     name: Restart
     parent: es-elasticsearch-guides
-    weight: 15
+    weight: 115
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

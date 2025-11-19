@@ -5,6 +5,6 @@ menu:
     identifier: es-plugin-elasticsearch
     name: Extensions & Plugins
     parent: es-elasticsearch-guides
-    weight: 60
+    weight: 70
 menu_name: docs_{{ .version }}
 ---
