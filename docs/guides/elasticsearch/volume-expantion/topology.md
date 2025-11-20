@@ -223,7 +223,7 @@ Spec:
     Data:    5Gi
     Ingest:  4Gi
     Master:  5Gi
-    Mode:    Offline
+    Mode:    online
 Status:
   Conditions:
     Last Transition Time:  2025-11-20T10:07:17Z
@@ -725,6 +725,29 @@ pvc-c274f913-5452-47e1-ab42-ba584bdae297   5Gi        RWO            Delete     
 
 The above output verifies that we have successfully expanded the volume of the Elasticsearch.
 
+
+**Only Data Node Expansion:**
+Only data node volume expansion can be done by creating an `ElasticsearchOpsRequest` manifest like below,
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: volume-expansion-data-nodes
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: es-cluster
+  volumeExpansion:
+    mode: "Online"
+    data: 5Gi
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/volume-expantion/volume-expansion-topo-data.yaml
+Elasticsearchopsrequest.ops.kubedb.com/volume-expansion-data-nodes created
+```
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
