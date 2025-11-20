@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: es-volume-expansion-combined
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: es-combined
+  volumeExpansion:
+    mode: "Online"
+    node: 4Gi
