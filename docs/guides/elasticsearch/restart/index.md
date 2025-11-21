@@ -51,7 +51,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: "local-path"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:

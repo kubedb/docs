@@ -2,9 +2,9 @@
 title: Elasticsearch Vertical Scaling Overview
 menu:
 docs_{{ .version }}:
-identifier: kf-vertical-scaling-overview
+identifier: es-vertical-scalling-overview
 name: Overview
-parent: kf-vertical-scaling
+parent: es-vertical-scalling-elasticsearch
 weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
