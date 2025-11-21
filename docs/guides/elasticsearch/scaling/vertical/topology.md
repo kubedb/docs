@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: es-vertical-scaling-topology
     name: Topology Cluster
-    parent: es-vertical-scaling
+    parent: es-vertical-scalling-elasticsearch
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides

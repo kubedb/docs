@@ -2,10 +2,10 @@
 title: Vertical Scaling Elasticsearch Combined Cluster
 menu:
   docs_{{ .version }}:
-    identifier: kf-vertical-scaling-combined
+    identifier: es-vertical-scaling-combined
     name: Combined Cluster
-    parent: kf-vertical-scaling
-    weight: 30
+    parent: es-vertical-scalling-elasticsearch
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

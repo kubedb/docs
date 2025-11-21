@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: es-horizontal-scaling-combined
     name: Combined Cluster
-    parent: es-horizontal-scaling
+    parent: es-horizontal-scalling-elasticsearch
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -61,7 +61,7 @@ spec:
   replicas: 2
   storageType: Durable
   storage:
-    storageClassName: "local-path"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -129,8 +129,8 @@ secret/es-remote-monitoring-user-cred   kubernetes.io/basic-auth   2      5m4s
 secret/es-transport-cert                kubernetes.io/tls          3      5m8s
 
 NAME                              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-persistentvolumeclaim/data-es-0   Bound    pvc-7c8cc17d-7427-4411-9262-f213e826540b   1Gi        RWO            local-path     <unset>                 5m5s
-persistentvolumeclaim/data-es-1   Bound    pvc-f2cf7ac9-b0c2-4c44-93dc-476cc06c25b4   1Gi        RWO            local-path     <unset>                 4m59s
+persistentvolumeclaim/data-es-0   Bound    pvc-7c8cc17d-7427-4411-9262-f213e826540b   1Gi        RWO            standard     <unset>                 5m5s
+persistentvolumeclaim/data-es-1   Bound    pvc-f2cf7ac9-b0c2-4c44-93dc-476cc06c25b4   1Gi        RWO            standard     <unset>                 4m59s
 
 ```
 

@@ -2,9 +2,9 @@
 title: Elasticsearch Horizontal Scaling Overview
 menu:
   docs_{{ .version }}:
-    identifier: kf-horizontal-scaling-overview
+    identifier: es-horizontal-scalling-overview
     name: Overview
-    parent: kf-horizontal-scaling
+    parent: es-horizontal-scalling-elasticsearch
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

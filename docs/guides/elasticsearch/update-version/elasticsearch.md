@@ -60,7 +60,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: local-path
+    storageClassName: standard
   storageType: Durable
   version: xpack-9.1.3
  

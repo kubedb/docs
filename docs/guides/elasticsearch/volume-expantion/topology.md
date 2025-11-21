@@ -129,15 +129,15 @@ $ kubectl get petset -n demo es-cluster-ingest -o json | jq '.spec.volumeClaimTe
 "1Gi"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-11b48c6e-d996-45a7-8ba2-f8d71a655912   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-2   local-path     <unset>                          22h
-pvc-1904104c-bbf2-4754-838a-8a647b2bd23e   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-2     local-path     <unset>                          22h
-pvc-19aa694a-29c0-43d9-a495-c84c77df2dd8   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-0   local-path     <unset>                          22h
-pvc-33702b18-7e98-41b7-9b19-73762cb4f86a   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-1   local-path     <unset>                          22h
-pvc-8604968f-f433-4931-82bc-8d240d6f52d8   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-0     local-path     <unset>                          22h
-pvc-ae5ccc43-d078-4816-a553-8a3cd1f674be   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-0   local-path     <unset>                          22h
-pvc-b4225042-c69f-41df-99b2-1b3191057a85   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-1     local-path     <unset>                          22h
-pvc-bd4b7d5a-8494-4ee2-a25c-697a6f23cb79   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-1   local-path     <unset>                          22h
-pvc-c9057b3b-4412-467f-8ae5-f6414e0059c3   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-2   local-path     <unset>                          22h
+pvc-11b48c6e-d996-45a7-8ba2-f8d71a655912   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-2   standard     <unset>                          22h
+pvc-1904104c-bbf2-4754-838a-8a647b2bd23e   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-2     standard     <unset>                          22h
+pvc-19aa694a-29c0-43d9-a495-c84c77df2dd8   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-0   standard     <unset>                          22h
+pvc-33702b18-7e98-41b7-9b19-73762cb4f86a   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-1   standard     <unset>                          22h
+pvc-8604968f-f433-4931-82bc-8d240d6f52d8   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-0     standard     <unset>                          22h
+pvc-ae5ccc43-d078-4816-a553-8a3cd1f674be   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-0   standard     <unset>                          22h
+pvc-b4225042-c69f-41df-99b2-1b3191057a85   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-1     standard     <unset>                          22h
+pvc-bd4b7d5a-8494-4ee2-a25c-697a6f23cb79   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-1   standard     <unset>                          22h
+pvc-c9057b3b-4412-467f-8ae5-f6414e0059c3   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-2   standard     <unset>                          22h
 ```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
