@@ -1,0 +1,28 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: vscale-topology
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: es-cluster
+  verticalScaling:
+    master:
+      resources:
+        limits:
+          cpu: 750m
+          memory: 800Mi
+    data:
+      resources:
+        requests:
+          cpu: 760m
+          memory: 900Mi
+    ingest:
+      resources:
+        limits:
+          cpu: 900m
+          memory: 1.2Gi
+        requests:
+          cpu: 800m
+          memory: 1Gi
