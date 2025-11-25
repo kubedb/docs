@@ -5,7 +5,7 @@ menu:
     identifier: es-volume-expansion-combined
     name: Combined
     parent: es-voulume-expansion-elasticsearch
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

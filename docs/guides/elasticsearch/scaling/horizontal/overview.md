@@ -28,7 +28,7 @@ The following diagram shows how KubeDB Ops-manager operator scales up or down `E
 
 [//]: # (<figure align="center">)
 
-[//]: # (  <img alt="Horizontal scaling process of Elasticsearch" src="/docs/images/day-2-operation/Elasticsearch/kf-horizontal-scaling.svg">)
+[//]: # (  <img alt="Horizontal scaling process of Elasticsearch" src="/docs/images/elasticsearch/horizontal_scaling.jpg">)
 
 [//]: # (<figcaption align="center">Fig: Horizontal scaling process of Elasticsearch</figcaption>)
 

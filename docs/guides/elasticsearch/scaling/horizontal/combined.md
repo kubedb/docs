@@ -43,7 +43,7 @@ Here, we are going to deploy a  `Elasticsearch` combined cluster using a support
 
 ### Prepare Elasticsearch Combined cluster
 
-Now, we are going to deploy a `Elasticsearch` combined cluster with version `3.9.0`.
+Now, we are going to deploy a `Elasticsearch` combined cluster with version `xpack-9.1.4`.
 
 ### Deploy Elasticsearch combined cluster
 

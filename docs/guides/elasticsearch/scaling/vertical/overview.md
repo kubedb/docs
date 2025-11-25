@@ -1,11 +1,11 @@
 ---
 title: Elasticsearch Vertical Scaling Overview
 menu:
-docs_{{ .version }}:
-identifier: es-vertical-scalling-overview
-name: Overview
-parent: es-vertical-scalling-elasticsearch
-weight: 10
+    docs_{{ .version }}
+        identifier: es-vertical-scalling-overview
+        name: Overview
+        parent: es-vertical-scalling-elasticsearch
+        weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -26,10 +26,10 @@ This guide will give an overview on how KubeDB Ops-manager operator updates the 
 
 The following diagram shows how KubeDB Ops-manager operator updates the resources of the `Elasticsearch`. Open the image in a new tab to see the enlarged version.
 
-{{/*<figure align="center">*/}}
-{{/*      <img alt="Vertical scaling process of Elasticsearch" src="/docs/images/day-2-operation/Elasticsearch/kf-vertical-scaling.svg">*/}}
-{{/*    <figcaption align="center">Fig: Vertical scaling process of Elasticsearch</figcaption>*/}}
-{{/*</figure>*/}}
+<figure align="center">
+      <img alt="Vertical scaling process of Elasticsearch" src="/docs/images/elasticsearch/es-vertical-scaling.jpg">
+    <figcaption align="center">Fig: Vertical scaling process of Elasticsearch</figcaption>
+</figure>
 
 The vertical scaling process consists of the following steps:
 
