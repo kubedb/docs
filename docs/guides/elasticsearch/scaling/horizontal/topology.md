@@ -168,7 +168,7 @@ persistentvolumeclaim/data-es-hscale-topology-master-2   Bound    pvc-a9160094-c
 
 ```
 
-We can see from the above output that the Elasticsearch has 2 nodes.
+We can see from the above output that the Elasticsearch has 3 nodes.
 
 We are now ready to apply the `ElasticsearchOpsRequest` CR to scale this cluster.
 

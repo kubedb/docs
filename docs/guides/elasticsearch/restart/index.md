@@ -76,6 +76,72 @@ es-1   2/2     Running   0          6m28s
 es-2   2/2     Running   0          6m28s
 ```
 
+### Populate Data
+
+To connect to our Elasticsearch cluster, let's port-forward the Elasticsearch service to local machine:
+
+```bash
+$ kubectl port-forward -n demo svc/sample-es 9200
+Forwarding from 127.0.0.1:9200 -> 9200
+Forwarding from [::1]:9200 -> 9200
+```
+
+Keep it like that and switch to another terminal window:
+
+```bash
+$ export ELASTIC_USER=$(kubectl get secret -n demo es-demo -o jsonpath='{.data.username}' | base64 -d)
+
+$ export ELASTIC_PASSWORD=$(kubectl get secret -n demo es-demo -o jsonpath='{.data.password}' | base64 -d)
+
+$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cluster/health?pretty"
+{
+  "cluster_name" : "sample-es",
+  "status" : "green",
+  "timed_out" : false,
+  "number_of_nodes" : 3,
+  "number_of_data_nodes" : 3,
+  "active_primary_shards" : 1,
+  "active_shards" : 2,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 0,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 100.0
+}
+```
+
+So, our cluster status is green. Let's create some indices with dummy data:
+
+```bash
+$ curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/products/_doc?pretty" -H 'Content-Type: application/json' -d '
+{
+    "name": "KubeDB",
+    "vendor": "AppsCode Inc.",
+    "description": "Database Operator for Kubernetes"
+}
+'
+
+$ curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/companies/_doc?pretty" -H 'Content-Type: application/json' -d '
+{
+    "name": "AppsCode Inc.",
+    "mission": "Accelerate the transition to Containers by building a Kubernetes-native Data Platform",
+    "products": ["KubeDB", "Stash", "KubeVault", "Kubeform", "ByteBuilders"]
+}
+'
+```
+
+Now, let’s verify that the indexes have been created successfully.
+
+```bash
+$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+health status index            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
+green  open   .geoip_databases oiaZfJA8Q5CihQon0oR8hA   1   1         42            0     81.6mb         40.8mb
+green  open   companies        GuGisWJ8Tkqnq8vhREQ2-A   1   1          1            0     11.5kb          5.7kb
+green  open   products         wyu-fImDRr-Hk_GXVF7cDw   1   1          1            0     10.6kb          5.3kb
+```
 
 
 # Apply Restart opsRequest
@@ -240,55 +306,25 @@ After the restart, reconnect to the database and verify that the previously crea
 Let's port-forward the port `9200` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/es-quickstart 9200
+$ kubectl port-forward -n demo svc/es-demo 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
+
 ```
 
-Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 
-**Connection information:**
-
-- Address: `localhost:9200`
-- Username:
+Now let's check the data persistencyof our Elasticsearch database.
 
 ```bash
-$ kubectl get secret -n demo es-quickstart-elastic-cred -o jsonpath='{.data.username}' | base64 -d
-elastic
+$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+health status index         uuid                   pri rep docs.count docs.deleted store.size pri.store.size dataset.size
+green  open   companies     02UKouHARfuMs2lZXMkVQQ   1   1          1            0     13.6kb          6.8kb        6.8kb
+green  open   kubedb-system 2Fr26ppkSyy7uJrkfIhzvg   1   1          1            6    433.3kb        191.1kb      191.1kb
+green  open   products      XxAYeIKOSLaOqp2rczCwFg   1   1          1            0     12.4kb          6.2kb        6.2kb
+
 ```
 
-- Password:
-
-```bash
-$ kubectl get secret -n demo es-quickstart-elastic-cred -o jsonpath='{.data.password}' | base64 -d
-vIHoIfHn=!Z8F4gP
-```
-
-Now let's check the health of our Elasticsearch database.
-
-```bash
-$ curl -XGET -k -u 'elastic:vIHoIfHn=!Z8F4gP' "https://localhost:9200/_cluster/health?pretty"
-
-{
-  "cluster_name" : "es-quickstart",
-  "status" : "green",
-  "timed_out" : false,
-  "number_of_nodes" : 3,
-  "number_of_data_nodes" : 3,
-  "active_primary_shards" : 3,
-  "active_shards" : 6,
-  "relocating_shards" : 0,
-  "initializing_shards" : 0,
-  "unassigned_shards" : 0,
-  "delayed_unassigned_shards" : 0,
-  "number_of_pending_tasks" : 0,
-  "number_of_in_flight_fetch" : 0,
-  "task_max_waiting_in_queue_millis" : 0,
-  "active_shards_percent_as_number" : 100.0
-}
-```
-
-From the health information above, we can see that our Elasticsearch cluster's status is `green` which means the cluster is healthy.
+As you can see, the previously created indices `companies` and `products` are still present after the restart, confirming data persistence after the restart operation.
 
 
 ## Cleaning up
