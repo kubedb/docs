@@ -59,7 +59,7 @@ Now, we are going to deploy a `Elasticsearch` combined cluster with version `xpa
 
 ### Deploy Elasticsearch
 
-In this section, we are going to deploy a Elasticsearch topology cluster for broker and controller with 1GB volume. Then, in the next section we will expand its volume to 2GB using `ElasticsearchOpsRequest` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy a Elasticsearch topology cluster for broker and controller with 1Gi volume. Then, in the next section we will expand its volume to 2Gi using `ElasticsearchOpsRequest` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -140,7 +140,7 @@ pvc-bd4b7d5a-8494-4ee2-a25c-697a6f23cb79   1Gi        RWO            Delete     
 pvc-c9057b3b-4412-467f-8ae5-f6414e0059c3   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-2   standard     <unset>                          22h
 ```
 
-You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
+You can see the petsets have 1Gi storage, and the capacity of all the persistent volumes are also 1Gi.
 
 We are now ready to apply the `ElasticsearchOpsRequest` CR to expand the volume of this database.
 

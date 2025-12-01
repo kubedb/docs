@@ -405,7 +405,9 @@ $ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topol
 $ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.ingest.replicas'
 2
 ```
-**Only ingest nodes after scaling down:**
+From all the above outputs we can see that the replicas of the Topology cluster is `2`. That means we have successfully scaled down the replicas of the Elasticsearch Topology cluster.
+
+Only one node can be scaling down at a time. So we are scaling down the `ingest` node.
 ```bash
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ElasticsearchOpsRequest
@@ -420,7 +422,6 @@ spec:
     topology:
       ingest: 2
 ```
-From all the above outputs we can see that the replicas of the Topology cluster is `2`. That means we have successfully scaled down the replicas of the Elasticsearch Topology cluster.
 
 
 
@@ -589,8 +590,7 @@ $ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topol
 
 From all the above outputs we can see that the brokers of the Topology Elasticsearch is `3`. That means we have successfully scaled up the replicas of the Elasticsearch Topology cluster.
 
-
-**Only ingest nodes after scaling up:**
+Only one node can be scaling up at a time. So we are scaling up the `ingest` node.
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ElasticsearchOpsRequest

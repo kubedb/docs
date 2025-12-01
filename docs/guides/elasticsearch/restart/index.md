@@ -22,7 +22,8 @@ This guide will demonstrate how to restart an Elasticsearch cluster using an Ops
 
 ## Before You Begin
 
-- You need a running Kubernetes cluster and a properly configured `kubectl` command-line tool. If you don’t have a cluster, you can create one using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+- You need a running Kubernetes cluster and a properly configured `kubectl` command-line tool. If you don’t
+have a cluster, you can create one using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
 - Install the KubeDB CLI on your workstation and the KubeDB operator in your cluster by following the [installation steps](/docs/setup/README.md).
 

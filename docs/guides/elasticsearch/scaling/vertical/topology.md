@@ -689,6 +689,4 @@ kubectl delete ns demo
 - Detail concepts of [Elasticsearch object](/docs/guides/Elasticsearch/concepts/Elasticsearch.md).
 - Different Elasticsearch topology clustering modes [here](/docs/guides/Elasticsearch/clustering/_index.md).
 - Monitor your Elasticsearch database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/Elasticsearch/monitoring/using-prometheus-operator.md).
-
-[//]: # (- Monitor your Elasticsearch database with KubeDB using [out-of-the-box builtin-Prometheus]&#40;/docs/guides/Elasticsearch/monitoring/using-builtin-prometheus.md&#41;.)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

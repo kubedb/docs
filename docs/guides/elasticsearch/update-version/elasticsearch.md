@@ -38,7 +38,7 @@ namespace/demo created
 
 ## Prepare Elasticsearch
 
-Now, we are going to deploy a `Elasticsearch` replicaset database with version `xpack-8.11.1`.
+Now, we are going to deploy a `Elasticsearch` replicaset database with version `xpack-9.1.3`.
 
 ### Deploy Elasticsearch
 
@@ -110,7 +110,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `es-demo` Elasticsearch.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `xpack-8.16.4`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `xpack-9.1.4`.
 
 > **Note:** If you want to update combined Elasticsearch, you just refer to the `Elasticsearch` combined object name in `spec.databaseRef.name`. To create a combined Elasticsearch, you can refer to the [Elasticsearch Combined](/docs/guides/elasticsearch/clustering/combined-cluster/index.md) guide.
 
