@@ -77,7 +77,7 @@ spec:
           - --period=60s
           - --one-time
         resources: {}
-      scriptPath: <desired_script_path>
+      scriptPath: <desired_script_path_in_repo>
 ```
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/initialization/git-sync-public.yaml
@@ -159,36 +159,40 @@ The following YAML manifest provides an example of a `PgBouncer ` resource confi
 
 ```yaml
 apiVersion: kubedb.com/v1
-kind: PgBouncer 
+kind: PgBouncer
 metadata:
-  name: pb 
-  namespace: demo
+   name: pb
+   namespace: demo
 spec:
-  init:
-    script:
-      scriptPath: "current"
-      git:
-        args:
-          # update with your private repository    
-          - --repo=<private_git_repo_ssh_url>
-          - --link=current
-          - --root=/git
-          # terminate after one successful sync
-          - --one-time
-        authSecret:
-          # the name of the secret created above
-          name: git-creds
-        # run as git sync user 
-        securityContext:
-          runAsUser: 65533
-  version: "9.1.0"
-  storage:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  deletionPolicy: WipeOut
+   version: "1.24.0"
+   replicas: 1
+   database:
+     syncUsers: true
+     databaseName: "postgres"
+     databaseRef:
+       name: "postgres"
+       namespace: demo
+     connectionPool:
+       maxClientConnections: 20
+       reservePoolSize: 5
+     init:
+       script:
+         scriptPath: pgpool_pgb_script.git/pgbouncer
+         git:
+            args:
+            # use --ssh for private repository
+            # - --ssh
+            - --repo=git@github.com:Bonusree/pgpool_pgb_script.git
+            - --depth=1
+            - --period=60s
+            - --root=/init-script-from-git
+            # terminate after successful sync
+            - --one-time
+            authSecret:
+            name: git-creds
+            securityContext:
+            runAsUser: 65533
+            # run as git sync user
 ```
 
 ```bash
@@ -217,36 +221,40 @@ The following YAML manifest shows an example:
 
 ```yaml
 apiVersion: kubedb.com/v1
-kind: PgBouncer 
+kind: PgBouncer
 metadata:
-  name: pb 
+  name: pb
   namespace: demo
 spec:
-  init:
-    script:
-      scriptPath: "current"
-      git:
-        args:
-          # update with your private repository    
-          - --repo=<private_git_repo_http_url>
-          - --link=current
-          - --root=/git
-          - --credential={"url":"https://github.com","username":"<username>","password-file":"/etc/git-secret/github-pat"}
-          # terminate after one successful sync
-          - --one-time
-        authSecret:
-            # the name of the secret created above
-          name: git-pat
-        # run as git sync user 
-        securityContext:
-          runAsUser: 65533
-  version: "9.1.0"
-  storage:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+       name: "postgres"
+       namespace: demo
+    connectionPool:
+      maxClientConnections: 20
+      reservePoolSize: 5
+    init:
+      script:
+         scriptPath: pgpool_pgb_script.git/pgbouncer
+         git:
+            args:
+                # update with your private repository
+                - --repo=https://github.com/Bonusree/pgpool_pgb_script.git
+                - --link=current
+                - --root=/git
+                - --credential={"url":"https://github.com","username":"Bonusree","password-file":"/etc/git-secret/github-pat"}
+                # terminate after one successful sync
+                - --one-time
+            authSecret:
+                # the name of the secret created above
+                name: git-pat
+                # run as git sync user
+            securityContext:
+                runAsUser: 65533
+  version: "1.24.0"
+  replicas: 1
   deletionPolicy: WipeOut
 ```
 
