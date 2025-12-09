@@ -5,6 +5,6 @@ menu:
     identifier: rd-reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: rd-redis-guides
-    weight: 46
+    weight: 110
 menu_name: docs_{{ .version }}
 ---

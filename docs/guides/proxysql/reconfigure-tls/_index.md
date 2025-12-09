@@ -5,6 +5,6 @@ menu:
     identifier: guides-proxysql-reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: guides-proxysql
-    weight: 46
+    weight: 110
 menu_name: docs_{{ .version }}
 ---

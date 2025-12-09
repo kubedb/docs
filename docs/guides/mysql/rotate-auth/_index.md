@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-rotate-auth
     name: Rotate Authentication 
     parent: guides-mysql
-    weight: 43
+    weight: 150
 menu_name: docs_{{ .version }}
 ---

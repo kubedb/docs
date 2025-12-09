@@ -5,7 +5,7 @@ menu:
     identifier: guides-mysql-initialization
     name: Initialization Using Script
     parent: guides-mysql
-    weight: 41
+    weight: 110
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

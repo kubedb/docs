@@ -5,6 +5,6 @@ menu:
     identifier: proxysql-backends
     name: Backends
     parent: guides-proxysql
-    weight: 25
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

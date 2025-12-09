@@ -1,0 +1,10 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisOpsRequest
+metadata:
+  name: restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: redis-cluster
+  apply: Always

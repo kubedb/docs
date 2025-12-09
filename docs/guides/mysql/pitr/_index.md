@@ -5,6 +5,6 @@ menu:
     identifier: pitr-mysql
     name: Point-in-time Recovery
     parent: guides-mysql
-    weight: 42
+    weight: 85
 menu_name: docs_{{ .version }}
 ---

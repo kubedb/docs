@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: restart
+  namespace: demo
+spec:
+  type: Restart
+  proxyRef:
+    name: mysql-proxy
+  timeout: 3m
+  apply: Always

@@ -5,6 +5,6 @@ menu:
     identifier: rd-guides-redis-backup
     name: Backup & Restore
     parent: rd-redis-guides
-    weight: 50
+    weight: 140
 menu_name: docs_{{ .version }}
 ---

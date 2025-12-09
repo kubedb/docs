@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-tls
     name: TLS/SSL Encryption
     parent: guides-mysql
-    weight: 45
+    weight: 170
 menu_name: docs_{{ .version }}
 ---
