@@ -10,7 +10,7 @@ section_menu_id: reference
 ---
 ## kubectl-dba debug redis
 
-Debug helper for redis database
+Debug helper for Redis database
 
 ```
 kubectl-dba debug redis [flags]

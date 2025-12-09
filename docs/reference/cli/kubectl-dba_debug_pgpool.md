@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Pgpool
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-pgpool
+    name: Kubectl-Dba Debug Pgpool
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug pgpool
 
-Debug helper for MariaDB database
+Debug helper for Pgpool database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug pgpool [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug pgpool -n demo sample-pgpool --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for pgpool
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 

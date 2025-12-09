@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Ferretdb
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-ferretdb
+    name: Kubectl-Dba Debug Ferretdb
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug ferretdb
 
-Debug helper for MariaDB database
+Debug helper for FerretDB database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug ferretdb [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug ferretdb -n demo sample-ferretdb --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for ferretdb
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 
