@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Perconaxtradb
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-perconaxtradb
+    name: Kubectl-Dba Debug Perconaxtradb
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug perconaxtradb
 
-Debug helper for MariaDB database
+Debug helper for PerconaXtraDB database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug perconaxtradb [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug perconaxtradb -n demo sample-perconaxtradb --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for perconaxtradb
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 
