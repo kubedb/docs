@@ -15,7 +15,7 @@ section_menu_id: guides
 # Initialization PgBouncer from a Git Repository
 This guide demonstrates how to use KubeDB to initialize a PgBouncer database with initialization scripts (.sql, .sh, .js and/or .sql.gz) stored in a public or private Git repository.
 To fetch the repository contents, KubeDB uses a sidecar container called [git-sync](https://github.com/kubernetes/git-sync).
-In this example, we will initialize PgBouncer using a `.sql` script from the GitHub repository [kubedb/PgBouncer -init-scripts](https://github.com/kubedb/PgBouncer -init-scripts).
+In this example, we will initialize PgBouncer using a `.sh` script from the GitHub repository [kubedb/PgBouncer -init-scripts](https://github.com/kubedb/PgBouncer -init-scripts).
 
 ## Before You Begin
 
@@ -89,9 +89,6 @@ Here,
 The `git-sync` container has one required flags:
 - `--repo`  – specifies the remote Git repository to sync.
 
-Here, the value of the `--link` argument must match the value of `spec.init.script.scriptPath`.
-The `--link` argument creates a symlink that always points to the latest synced data.
-
 > To know more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync).
 
 Now, wait until `pb` has status `Ready`. i.e,
@@ -117,7 +114,7 @@ Type "help" for help.
 
 postgres=# \dt
                     List of relations
- Schema |             Name             | Type  |  Owner   
+ Schema |             Name             | Type  |  Owner
 --------+------------------------------+-------+----------
  public | kubedb_write_check_pgbouncer | table | postgres
  public | kubedb_write_check_pgpool    | table | postgres
@@ -150,7 +147,7 @@ This secret will be used by git-sync to authenticate with the Git repository.
 >Here, we are using the default SSH key file located at `$HOME/.ssh/id_rsa`. If your SSH key is stored in a different location, please update the command accordingly. Also you can use any name instead of `git-creds` to create the secret.
 
 ```bash
-$ kubectl create secret generic -n demo git-creds \
+$ kubectl create secret generic -n demo <secret_name> \
     --from-file=ssh=$HOME/.ssh/id_rsa \
     --from-file=known_hosts=/tmp/known_hosts
 ```
@@ -161,48 +158,48 @@ The following YAML manifest provides an example of a `PgBouncer ` resource confi
 apiVersion: kubedb.com/v1
 kind: PgBouncer
 metadata:
-   name: pb
-   namespace: demo
+  name: pb
+  namespace: demo
 spec:
-   version: "1.24.0"
-   replicas: 1
-   database:
-     syncUsers: true
-     databaseName: "postgres"
-     databaseRef:
-       name: "postgres"
-       namespace: demo
-     connectionPool:
-       maxClientConnections: 20
-       reservePoolSize: 5
-     init:
-       script:
-         scriptPath: pgpool_pgb_script.git/pgbouncer
-         git:
-            args:
-            # use --ssh for private repository
-            # - --ssh
-            - --repo=git@github.com:Bonusree/pgpool_pgb_script.git
-            - --depth=1
-            - --period=60s
-            - --root=/init-script-from-git
-            # terminate after successful sync
-            - --one-time
-            authSecret:
-            name: git-creds
-            securityContext:
-            runAsUser: 65533
-            # run as git sync user
+  version: "1.24.0"
+  replicas: 1
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "postgres"
+      namespace: demo
+  connectionPool:
+    maxClientConnections: 20
+    reservePoolSize: 5
+  init:
+    script:
+      scriptPath: <desired_scrip_path_in_repo>
+      git:
+        args:
+          # use --ssh for private repository
+          - --repo=<private_git_repo_ssh_url>
+          - --depth=1
+          - --period=60s
+          - --root=/init-script-from-git
+          # terminate after successful sync
+          - --one-time
+        authSecret:
+          name: <secret_name>
+        securityContext:
+          runAsUser: 65533
+        # run as git sync user
+
 ```
 
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/PgBouncer /initialization/yamls/git-sync-ssh.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/pgbouncer/initialization/yamls/git-sync-ssh.yaml
 PgBouncer .kubedb.com/pb created
 ```
 
 Here,
 - `.spec.init.git.securityContext.runAsUser: 65533` ensure the container runs as the dedicated non-root `git-sync` user.
-- `.spec.init.git.authSecret` specifies the secret containing the `SSH` key.
+
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
 
@@ -244,7 +241,7 @@ spec:
                 - --repo=https://github.com/Bonusree/pgpool_pgb_script.git
                 - --link=current
                 - --root=/git
-                - --credential={"url":"https://github.com","username":"Bonusree","password-file":"/etc/git-secret/github-pat"}
+                - --credential={"url":"https://github.com","username":"<git_username>","password-file":"/etc/git-secret/github-pat"}
                 # terminate after one successful sync
                 - --one-time
             authSecret:
@@ -271,6 +268,6 @@ Once the database reaches the `Ready` state, you can verify the data using the m
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete PgBouncer -n demo pb 
+$ kubectl delete PgBouncer -n demo pb
 $ kubectl delete ns demo
 ```
