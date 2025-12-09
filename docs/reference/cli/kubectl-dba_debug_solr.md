@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Solr
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-solr
+    name: Kubectl-Dba Debug Solr
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug solr
 
-Debug helper for MariaDB database
+Debug helper for Solr database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug solr [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug solr -n demo sample-solr --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for solr
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 

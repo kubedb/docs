@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Memcached
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-memcached
+    name: Kubectl-Dba Debug Memcached
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug memcached
 
-Debug helper for MariaDB database
+Debug helper for Memcached database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug memcached [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug memcached -n demo sample-memcached --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for memcached
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 

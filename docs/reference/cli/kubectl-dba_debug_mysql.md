@@ -10,7 +10,7 @@ section_menu_id: reference
 ---
 ## kubectl-dba debug mysql
 
-Debug helper for mysql database
+Debug helper for MySQL database
 
 ```
 kubectl-dba debug mysql [flags]
