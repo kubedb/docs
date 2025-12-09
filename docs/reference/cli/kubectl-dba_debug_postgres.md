@@ -10,7 +10,7 @@ section_menu_id: reference
 ---
 ## kubectl-dba debug postgres
 
-Debug helper for postgres database
+Debug helper for Postgres database
 
 ```
 kubectl-dba debug postgres [flags]

@@ -10,7 +10,7 @@ section_menu_id: reference
 ---
 ## kubectl-dba debug elasticsearch
 
-Debug helper for elasticsearch database
+Debug helper for Elasticsearch database
 
 ```
 kubectl-dba debug elasticsearch [flags]

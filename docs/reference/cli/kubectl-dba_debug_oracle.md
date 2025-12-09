@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Mariadb
+title: Kubectl-Dba Debug Oracle
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-mariadb
-    name: Kubectl-Dba Debug Mariadb
+    identifier: kubectl-dba-debug-oracle
+    name: Kubectl-Dba Debug Oracle
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug mariadb
+## kubectl-dba debug oracle
 
-Debug helper for MariaDB database
+Debug helper for Oracle database
 
 ```
-kubectl-dba debug mariadb [flags]
+kubectl-dba debug oracle [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug mariadb -n demo sample-mariadb --operator-namespace kubedb
+kubectl dba debug oracle -n demo sample-oracle --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for mariadb
+  -h, --help                        help for oracle
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 
