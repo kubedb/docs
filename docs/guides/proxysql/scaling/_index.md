@@ -5,6 +5,6 @@ menu:
     identifier: guides-proxysql-scaling
     name: Scaling
     parent: guides-proxysql
-    weight: 43
+    weight: 120
 menu_name: docs_{{ .version }}
 ---

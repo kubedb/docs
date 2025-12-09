@@ -5,6 +5,6 @@ menu:
     identifier: rd-volume-expansion
     name: Volume Expansion
     parent: rd-redis-guides
-    weight: 42
+    weight: 70
 menu_name: docs_{{ .version }}
 ---

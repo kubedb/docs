@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PerconaXtraDBOpsRequest
+metadata:
+  name: restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: pxc
+  timeout: 3m
+  apply: Always

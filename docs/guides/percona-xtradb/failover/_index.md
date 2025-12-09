@@ -1,8 +1,8 @@
 ---
-title: Failover PerconaXtraDB
+title: PerconaXtraDB Failover
 menu:
   docs_{{ .version }}:
-    identifier: guides-perconaxtradb-failover
+    identifier: guides-perconaxtradb-Failover
     name: Failover and Disaster Recovery
     parent: guides-perconaxtradb
     weight: 46
