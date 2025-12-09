@@ -10,7 +10,7 @@ section_menu_id: reference
 ---
 ## kubectl-dba debug mongodb
 
-Debug helper for mongodb database
+Debug helper for MongoDB database
 
 ```
 kubectl-dba debug mongodb [flags]
