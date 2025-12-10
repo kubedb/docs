@@ -169,6 +169,7 @@ spec:
     ...
   secret:
     name: sample-mysql-auth
+    kind: Secret
   type: kubedb.com/mysql
   version: 8.2.0
 ```

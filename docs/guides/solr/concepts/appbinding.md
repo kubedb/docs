@@ -66,6 +66,7 @@ spec:
       scheme: http
   secret:
     name: solr-dev-admin-cred
+    kind: Secret
   type: kubedb.com/solr
   version: 9.4.1
 ```

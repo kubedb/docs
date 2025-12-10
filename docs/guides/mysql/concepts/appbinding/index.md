@@ -75,6 +75,7 @@ spec:
           name: mysql-restore-8.0.21
   secret:
     name: mysql-group-auth
+    kind: Secret
   type: kubedb.com/mysql
   version: 9.1.0
 

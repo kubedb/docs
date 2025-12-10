@@ -66,6 +66,7 @@ spec:
       scheme: http
   secret:
     name: zk-cluster-auth
+    kind: Secret
   type: kubedb.com/zookeeper
   version: 3.9.1
 ```

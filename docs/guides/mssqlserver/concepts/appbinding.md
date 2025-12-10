@@ -65,8 +65,10 @@ spec:
       scheme: tcp
   secret:
     name: mssqlserver-auth
+    kind: Secret
   tlsSecret:
     name: mssqlserver-client-cert
+    kind: Secret
   type: kubedb.com/mssqlserver
   version: "2022"
 ```
