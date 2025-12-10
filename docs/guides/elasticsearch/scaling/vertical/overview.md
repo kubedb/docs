@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator updates the 
 The following diagram shows how KubeDB Ops-manager operator updates the resources of the `Elasticsearch`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-      <img alt="Vertical scaling process of Elasticsearch" src="/docs/images/elasticsearch/es-vertical-scaling.jpg">
+      <img alt="Vertical scaling process of Elasticsearch" src="/docs/images/elasticsearch/es-vertical-scaling.png">
     <figcaption align="center">Fig: Vertical scaling process of Elasticsearch</figcaption>
 </figure>
 

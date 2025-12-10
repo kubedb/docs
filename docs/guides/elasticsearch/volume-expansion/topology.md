@@ -745,7 +745,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/volume-expantion/volume-expansion-topo-data.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/volume-expansion/volume-expansion-topo-data.yaml
 Elasticsearchopsrequest.ops.kubedb.com/volume-expansion-data-nodes created
 ```
 ## Cleaning Up

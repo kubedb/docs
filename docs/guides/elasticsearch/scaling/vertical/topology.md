@@ -23,10 +23,10 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 - Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Elasticsearch](/docs/guides/Elasticsearch/concepts/Elasticsearch.md)
-    - [Topology](/docs/guides/Elasticsearch/clustering/topology-cluster/index.md)
-    - [ElasticsearchOpsRequest](/docs/guides/Elasticsearch/concepts/elasticsearch-ops-request.md)
-    - [Vertical Scaling Overview](/docs/guides/Elasticsearch/scaling/vertical-scaling/overview.md)
+    - [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch.md)
+    - [Topology](/docs/guides/elasticsearch/clustering/topology-cluster/index.md)
+    - [ElasticsearchOpsRequest](/docs/guides/elasticsearch/concepts/elasticsearch-ops-request.md)
+    - [Vertical Scaling Overview](/docs/guides/elasticsearch/scaling/vertical/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -686,7 +686,6 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Detail concepts of [Elasticsearch object](/docs/guides/Elasticsearch/concepts/Elasticsearch.md).
-- Different Elasticsearch topology clustering modes [here](/docs/guides/Elasticsearch/clustering/_index.md).
-- Monitor your Elasticsearch database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/Elasticsearch/monitoring/using-prometheus-operator.md).
+- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch.md).
+- Different Elasticsearch topology clustering modes [here](/docs/guides/elasticsearch/clustering/topology-cluster/simple-dedicated-cluster/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

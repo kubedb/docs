@@ -177,7 +177,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing reconfigure TLS operation on `es-demo` cluster.
 - `spec.type` specifies that we are performing `ReconfigureTLS` on Elasticsearch.
 - `spec.tls.issuerRef` specifies the issuer name, kind and api group.
-- `spec.tls.certificates` specifies the certificates. You can learn more about this field from [here](/docs/guides/elasticsearch/concepts/Elasticsearch.md#spectls).
+- `spec.tls.certificates` specifies the certificates. You can learn more about this field from [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
@@ -1007,7 +1007,7 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch.md).
+- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 - Different Elasticsearch topology clustering modes [here](/docs/guides/elasticsearch/clustering/_index.md).
 - Monitor your Elasticsearch database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

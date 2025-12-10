@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator expand the v
 The following diagram shows how KubeDB Ops-manager operator expand the volumes of `Elasticsearch` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-      <img alt="Volume Expansion process of Elasticsearch" src="/docs/images/elasticsearch/es-volume-expansion.jpg">
+      <img alt="Volume Expansion process of Elasticsearch" src="/docs/images/elasticsearch/es-volume-expansion.png">
     <figcaption align="center">Fig: Volume Expansion process of Elasticsearch</figcaption>
 </figure>
 

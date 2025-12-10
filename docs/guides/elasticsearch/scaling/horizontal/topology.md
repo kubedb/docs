@@ -24,7 +24,7 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the E
 
 - You should be familiar with the following `KubeDB` concepts:
     - [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md)
-    - [Topology](/docs/guides/elasticsearch/clustering/topology-cluster/index.md)
+    - [Topology](/docs/guides/elasticsearch/clustering/topology-cluster/simple-dedicated-cluster/index.md)
     - [ElasticsearchOpsRequest](/docs/guides/elasticsearch/concepts/elasticsearch-ops-request/index.md)
     - [Horizontal Scaling Overview](/docs/guides/elasticsearch/scaling/horizontal/overview.md)
 
