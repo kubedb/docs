@@ -1,11 +1,11 @@
 ---
 title: Elasticsearch Vertical Scaling Overview
 menu:
-    docs_{{ .version }}
-        identifier: es-vertical-scalling-overview
-        name: Overview
-        parent: es-vertical-scalling-elasticsearch
-        weight: 10
+  docs_{{ .version }}:
+    identifier: es-vertical-scalling-overview
+    name: Overview
+    parent: es-vertical-scalling-elasticsearch
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
