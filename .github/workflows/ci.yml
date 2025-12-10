@@ -84,3 +84,18 @@ jobs:
       - name: Check links
         run: |
           liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$'
+          max_retries=5
+                    retry_count=0
+                    while [ $retry_count -lt $max_retries ]; do
+                      if liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$'; then
+                        echo "Link check passed"
+                        exit 0
+                      fi
+                      retry_count=$((retry_count + 1))
+                      if [ $retry_count -lt $max_retries ]; then
+                        echo "Link check failed, retrying... (attempt $((retry_count + 1))/$max_retries)"
+                        sleep 5
+                      fi
+                    done
+                    echo "Link check failed after $max_retries attempts"
+                    exit 1
