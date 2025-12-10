@@ -20,7 +20,7 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 
 - You should be familiar with the following `KubeDB` concepts:
 - [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md)
-- [ElasticsearchOpsRequest](/docs/guides/elasticsearch/concepts/elasticsearch-ops-request.md)
+- [ElasticsearchOpsRequest](/docs/guides/elasticsearch/concepts/elasticsearch-ops-request/index.md)
 
 ## How Reconfiguring Elasticsearch TLS Configuration Process Works
 

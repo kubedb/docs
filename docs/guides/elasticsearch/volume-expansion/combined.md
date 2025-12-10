@@ -361,5 +361,5 @@ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
-- Different Elasticsearch topology clustering modes [here](/docs/guides/elasticsearch/clustering/topology-cluster/single-dedicated-cluster/index.md).
+- Different Elasticsearch topology clustering modes [here](/docs/guides/elasticsearch/clustering/topology-cluster/simple-dedicated-cluster/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
