@@ -521,7 +521,7 @@ subject=CN = pgbouncer, O = kubedb-updated
 $ kubectl get secrets -n demo pb-server-cert -o jsonpath='{.data.ca\.crt}' | base64 -d | openssl x509 -noout -subject
 subject=CN = pgbouncer, O = kubedb-updated
 ```
-Now you can check [here](https://certlogik.com/decoder/).
+
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
