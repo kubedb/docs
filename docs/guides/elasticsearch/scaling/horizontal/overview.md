@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Elasticsearch Horizontal Scaling
 
-This guide will give an overview on how KubeDB Ops-manager operator scales up or down `Elasticsearch` cluster replicas of various component such as Combined, Broker, Controller.
+This guide will give an overview on how KubeDB Ops-manager operator scales up or down `Elasticsearch` cluster replicas of various components.
 
 ## Before You Begin
 

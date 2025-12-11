@@ -57,7 +57,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: local-path
+    storageClassName: standard
   storageType: Durable
   version: xpack-8.11.1
 
@@ -67,7 +67,7 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Elasticsearch/reconfigure-tls/Elasticsearch.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch.yaml
 Elasticsearch.kubedb.com/es-demo created
 ```
 
@@ -80,7 +80,7 @@ es-demo   xpack-8.11.1   Ready    26h
 
 ```
 
-Now, we can exec one hazelcast pod and verify configuration that the TLS is disabled.
+Now, we can exec one elasticsearch pod and verify configuration that the TLS is disabled.
 ```bash
 $ kubectl exec -n demo es-demo-0 -- \
                                         cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.security
@@ -140,7 +140,7 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Elasticsearch/reconfigure-tls/Elasticsearch-issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-issuer.yaml
 issuer.cert-manager.io/es-issuer created
 ```
 
@@ -184,7 +184,7 @@ Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 > **Note:** For combined Elasticsearch, you just need to refer Elasticsearch combined object in `databaseRef` field. To learn more about combined Elasticsearch, please visit [here](/docs/guides/elasticsearch/clustering/combined-cluster/index.md).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Elasticsearch/reconfigure-tls/Elasticsearch-add-tls.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-add-tls.yaml
 Elasticsearchopsrequest.ops.kubedb.com/add-tls created
 ```
 
@@ -326,7 +326,7 @@ Status:
 Events:                    <none>
 ```
 
-Now, Let's exec into a Elasticsearch broker pod and verify the configuration that the TLS is enabled.
+Now, Lets exec into a Elasticsearch  pod and verify the configuration that the TLS is enabled.
 
 ```bash
 $ kubectl exec -n demo es-demo-0 -- \
@@ -393,7 +393,7 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Elasticsearch/reconfigure-tls/esops-rotate.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/esops-rotate.yaml
 Elasticsearchopsrequest.ops.kubedb.com/esops-rotate created
 ```
 
@@ -560,7 +560,7 @@ secret/es-new-ca created
 
 ```
 
-Now, Let's create a new `Issuer` using the `mongo-new-ca` secret that we have just created. The `YAML` file looks like this:
+Now, Let's create a new `Issuer` using the `es-new-ca` secret that we have just created. The `YAML` file looks like this:
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -576,7 +576,7 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Elasticsearch/reconfigure-tls/Elasticsearch-new-issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-new-issuer.yaml
 issuer.cert-manager.io/es-new-issuer created
 ```
 
@@ -610,7 +610,7 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Elasticsearch/reconfigure-tls/Elasticsearch-update-tls-issuer.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-update-tls-issuer.yaml
 Elasticsearchpsrequest.ops.kubedb.com/esops-update-issuer created
 ```
 
@@ -838,7 +838,7 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Elasticsearch/reconfigure-tls/esops-remove.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/esops-remove.yaml
 Elasticsearchopsrequest.ops.kubedb.com/esops-remove created
 ```
 
@@ -973,7 +973,7 @@ Events:
 
 ```
 
-Now, Let's exec into one of the broker node and find out that TLS is disabled or not.
+Now, Let's exec into one of the  node and find out that TLS is disabled or not.
 
 ```bash
 $ kubectl exec -n demo es-demo-0 -- \

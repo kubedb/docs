@@ -41,7 +41,7 @@ The Volume Expansion process consists of the following steps:
 
 4. Each PetSet creates a Persistent Volume according to the Volume Claim Template provided in the petset configuration. This Persistent Volume will be expanded by the `KubeDB` Ops-manager operator.
 
-5. Then, in order to expand the volume of the various components (ie. Combined, Broker, Controller) of the `Elasticsearch`, the user creates a `ElasticsearchOpsRequest` CR with desired information.
+5. Then, in order to expand the volume of the various components (ie. Combined, Controller) of the `Elasticsearch`, the user creates a `ElasticsearchOpsRequest` CR with desired information.
 
 6. `KubeDB` Ops-manager operator watches the `ElasticsearchOpsRequest` CR.
 

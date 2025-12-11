@@ -4,7 +4,7 @@ metadata:
   name: es-demo
   namespace: demo
 spec:
-  deletionPolicy: Delete
+  deletionPolicy: WipeOut
   enableSSL: true
   replicas: 3
   storage:
@@ -15,5 +15,5 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: xpack-9.1.3
+  version: xpack-8.11.1
 

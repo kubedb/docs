@@ -82,7 +82,7 @@ es-2   2/2     Running   0          6m28s
 To connect to our Elasticsearch cluster, let's port-forward the Elasticsearch service to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/sample-es 9200
+$ kubectl port-forward -n demo svc/es 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
 ```
@@ -307,7 +307,7 @@ After the restart, reconnect to the database and verify that the previously crea
 Let's port-forward the port `9200` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/es-demo 9200
+$ kubectl port-forward -n demo svc/es 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
 
