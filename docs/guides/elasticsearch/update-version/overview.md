@@ -24,15 +24,15 @@ This guide will give you an overview of how KubeDB ops manager updates the versi
 
 ## How update Process Works
 
-The following diagram shows how KubeDB KubeDB ops manager used to update the version of `Elasticsearch`. Open the image in a new tab to see the enlarged version.
+The following diagram shows how  KubeDB ops manager used to update the version of `Elasticsearch`. Open the image in a new tab to see the enlarged version.
 
-[//]: # (<figure align="center">)
+<figure align="center">
 
-[//]: # (  <img alt="Elasticsearch update Flow" src="/docs/guides/Elasticsearch/update-version/overview/images/pg-updating.png">)
+  <img alt="Elasticsearch update Flow" src="/docs/images/elasticsearch/versionupdate.png">
 
-[//]: # (<figcaption align="center">Fig: updating Process of Elasticsearch</figcaption>)
+<figcaption align="center">Fig: updating Process of Elasticsearch</figcaption>
 
-[//]: # (</figure>)
+</figure>
 
 The updating process consists of the following steps:
 

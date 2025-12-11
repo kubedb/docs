@@ -26,13 +26,13 @@ This guide will give an overview on how KubeDB Ops-manager operator scales up or
 
 The following diagram shows how KubeDB Ops-manager operator scales up or down `Elasticsearch` database components. Open the image in a new tab to see the enlarged version.
 
-[//]: # (<figure align="center">)
+<figure align="center">
 
-[//]: # (  <img alt="Horizontal scaling process of Elasticsearch" src="/docs/images/elasticsearch/horizontal_scaling.jpg">)
+  <img alt="Horizontal scaling process of Elasticsearch" src="/docs/images/elasticsearch/horizontal_scaling.jpg">
 
-[//]: # (<figcaption align="center">Fig: Horizontal scaling process of Elasticsearch</figcaption>)
+<figcaption align="center">Fig: Horizontal scaling process of Elasticsearch</figcaption>
 
-[//]: # (</figure>)
+</figure>
 
 The Horizontal scaling process consists of the following steps:
 
