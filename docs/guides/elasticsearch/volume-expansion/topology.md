@@ -26,7 +26,7 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 
 - You should be familiar with the following `KubeDB` concepts:
     - [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md)
-    - [Topology](/docs/guides/elasticsearch/clustering/topology-cluster/_index.md)
+    - [Topology](/docs/guides/elasticsearch/clustering/topology-cluster/simple-dedicated-cluster)
     - [ElasticsearchOpsRequest](/docs/guides/elasticsearch/concepts/elasticsearch-ops-request/index.md)
     - [Volume Expansion Overview](/docs/guides/elasticsearch/volume-expansion/overview.md)
 

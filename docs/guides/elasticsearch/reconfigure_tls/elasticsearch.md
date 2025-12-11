@@ -31,7 +31,7 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/Elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/Elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/Elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Add TLS to a Elasticsearch database
 
@@ -1008,7 +1008,6 @@ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
-- Different Elasticsearch topology clustering modes [here](/docs/guides/elasticsearch/clustering/_index.md).
 - Monitor your Elasticsearch database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

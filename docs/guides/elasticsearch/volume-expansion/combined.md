@@ -86,7 +86,7 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/clustering/multi-nodes-es.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/clustering/multi-node-es.yaml
 Elasticsearch.kubedb.com/es-combined created
 ```
 
@@ -147,7 +147,7 @@ Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/volume-expansion/elasticsearch-volume-expansion-combined.yaml
-Elasticsearchopsrequest.ops.kubedb.com/es-volume-exp-combined created
+Elasticsearchopsrequest.ops.kubedb.com/es-volume-expansion-combinedcreated
 ```
 
 #### Verify Elasticsearch Combined volume expanded successfully
@@ -158,8 +158,8 @@ Let's wait for `ElasticsearchOpsRequest` to be `Successful`.  Run the following 
 
 ```bash
 $ kubectl get Elasticsearchopsrequest -n demo
-NAME                     TYPE              STATUS       AGE
-es-volume-exp-combined   VolumeExpansion   Successful   2m4s
+NAME                            TYPE              STATUS       AGE
+es-volume-expansion-combined  VolumeExpansion   Successful   2m4s
 ```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.

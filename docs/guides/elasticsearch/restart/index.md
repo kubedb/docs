@@ -34,7 +34,7 @@ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/Elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/Elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy Elasticsearch
 
@@ -90,9 +90,9 @@ Forwarding from [::1]:9200 -> 9200
 Keep it like that and switch to another terminal window:
 
 ```bash
-$ export ELASTIC_USER=$(kubectl get secret -n demo es-demo -o jsonpath='{.data.username}' | base64 -d)
+$ export ELASTIC_USER=$(kubectl get secret -n demo es-o jsonpath='{.data.username}' | base64 -d)
 
-$ export ELASTIC_PASSWORD=$(kubectl get secret -n demo es-demo -o jsonpath='{.data.password}' | base64 -d)
+$ export ELASTIC_PASSWORD=$(kubectl get secret -n demo es-o jsonpath='{.data.password}' | base64 -d)
 
 $ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cluster/health?pretty"
 {

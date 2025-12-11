@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Elasticsearch Volume Expansion
 
-This guide will give an overview on how KubeDB Ops-manager operator expand the volume of various component of `Elasticsearch` like:. (Combined and Topology).
+This guide will give an overview on how KubeDB Ops-manager operator expand the volume of various component of `Elasticsearch` like:(Combined and Topology).
 
 ## Before You Begin
 
