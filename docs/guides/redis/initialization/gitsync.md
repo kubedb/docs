@@ -281,8 +281,8 @@ Redis.kubedb.com/redis-demo created
 ```
 Here,
 
-
 - `--credential`Provides authentication information for accessing a private Git repository over HTTPS.
+- `<private_git_repo_http_url>` with your private Git repository's HTTPS URL.
 Once the database reaches the `Ready` state, you can verify the data using the method described above. Let's check:
 ```shell
 kubectl get redis -n demo 

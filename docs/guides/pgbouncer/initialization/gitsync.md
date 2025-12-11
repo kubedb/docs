@@ -117,12 +117,11 @@ postgres=# \dt
  Schema |             Name             | Type  |  Owner
 --------+------------------------------+-------+----------
  public | kubedb_write_check_pgbouncer | table | postgres
- public | kubedb_write_check_pgpool    | table | postgres
  public | my_table                     | table | postgres
 (3 rows)
 
 ```
-`my_table` is created by the `init.sql` script stored in the Git repository.
+`my_table` is created by the `init-script.sh` script stored in the Git repository.
 ## From Private Git Repository
 
 ### 1. Using SSH Key
@@ -196,12 +195,43 @@ spec:
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/pgbouncer/initialization/yamls/git-sync-ssh.yaml
 PgBouncer .kubedb.com/pb created
 ```
+Here, replace `<private_git_repo_ssh_url>` with your private Git repository's SSH URL.
 
-Here,
-- `.spec.init.git.securityContext.runAsUser: 65533` ensure the container runs as the dedicated non-root `git-sync` user.
 
+The `git-sync` container has two required flags:
+- `--repo`  – specifies the remote Git repository to sync.
+- `--root`  – specifies the working directory where the repository will be cloned.
+- `spec.init.git.authSecret` specifies the secret containing the `SSH` key.
+- `spec.init.script.scriptPath` – specifies the path within the repository and folder where the initialization scripts are located.
+  for more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync/blob/master/docs/ssh.md)
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
+```bash
+$ kubectl get PgBouncer -n demo
+NAME   VERSION   STATUS   AGE
+pb     1.24.0    Ready    8m
+
+```
+```bash
+$ kubectl exec -it -n demo pb-0 -- sh
+Defaulted container "pgbouncer" out of: pgbouncer, git-sync (init)
+
+/ $ cd init-scripts/
+/init-scripts $ export PGPASSWORD="qrDy;GnX4QsKQ0UL"
+/init-scripts $ psql -U postgres -d postgres -h localhost -p <db container port>
+psql (16.10, server 13.13)
+Type "help" for help.
+
+postgres=# \dt
+                    List of relations
+ Schema |             Name             | Type  |  Owner
+--------+------------------------------+-------+----------
+ public | kubedb_write_check_pgbouncer | table | postgres
+ public | my_table                     | table | postgres
+(3 rows)
+
+```
+`my_table` is created by the `init-script.sh` script stored in the Git repository.
 
 ### 2. Using Username and Personal Access Token(PAT)
 
@@ -259,9 +289,38 @@ spec:
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/PgBouncer /initialization/yamls/git-sync-pat.yaml
 PgBouncer .kubedb.com/pb created
 ```
+Here,
 
-Once the database reaches the `Ready` state, you can verify the data using the method described above.
+- `--credential`Provides authentication information for accessing a private Git repository over HTTPS.
+- `<private_git_repo_http_url>` with your private Git repository's HTTPS URL.
 
+OOnce the database reaches the `Ready` state, you can verify the data using the method described above.
+```bash
+$ kubectl get PgBouncer -n demo
+NAME   VERSION   STATUS   AGE
+pb     1.24.0    Ready    19m
+
+```
+```bash
+$ kubectl exec -it -n demo pb-0 -- sh
+Defaulted container "pgbouncer" out of: pgbouncer, git-sync (init)
+
+/ $ cd init-scripts/
+/init-scripts $ export PGPASSWORD="qrDy;GnX4QsKQ0UL"
+/init-scripts $ psql -U postgres -d postgres -h localhost -p <db container port>
+psql (16.10, server 13.13)
+Type "help" for help.
+
+postgres=# \dt
+                    List of relations
+ Schema |             Name             | Type  |  Owner
+--------+------------------------------+-------+----------
+ public | kubedb_write_check_pgbouncer | table | postgres
+ public | my_table                     | table | postgres
+(3 rows)
+
+```
+`my_table` is created by the `init-script.sh` script stored in the Private Git repository.
 
 ## CleanUp
 
