@@ -27,7 +27,7 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 The following diagram shows how KubeDB Ops-manager operator reconfigures TLS of a `Elasticsearch`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-      <img alt="Reconfiguring TLS process of Elasticsearch" src="/docs/guides/elasticsearch/reconfigure_tls/es-tls.png">
+      <img alt="Reconfiguring TLS process of Elasticsearch" src="/docs/images/elasticsearch/es-tls.png">
     <figcaption align="center">Fig: Reconfiguring TLS process of Elasticsearch</figcaption>
 </figure>
 
