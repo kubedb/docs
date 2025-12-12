@@ -39,7 +39,7 @@ The following YAML manifest shows an example `MongoDB` object configured with `g
 apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
-  name: rs
+  name: mg-git
   namespace: demo
 spec:
   init:
@@ -68,7 +68,7 @@ spec:
 ```
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/git-sync-public.yaml
-MongoDB.kubedb.com/rs created
+MongoDB.kubedb.com/mg-git created
 ```
 
 The `git-sync` container has two required flags:
@@ -79,21 +79,21 @@ The `git-sync` container has two required flags:
 
 > To know more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync).
 
-Now, wait until `rs` has status `Ready`. i.e,
+Now, wait until `mg-git` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get mg -n demo
 NAME   VERSION   STATUS   AGE
-rs     8.0.4     Ready    49m
+mg-git     8.0.4     Ready    49m
 
 ```
 
 Next, we will connect to the MongoDB database and verify the data inserted from the `*.js` script stored in the Git repository.
 
 ```bash
-$  kubectl exec -it -n demo rs-0 -- bash
+$  kubectl exec -it -n demo mg-git-0 -- bash
 Defaulted container "mongodb" out of: mongodb, copy-config (init), git-sync (init)
-mongodb@rs-0:/$ mongosh -u root -p $<your_mongodb_root_password>
+mongodb@mg-git-0:/$ mongosh -u root -p $<your_mongodb_root_password>
 Current Mongosh Log ID:	6900695d231f7a9e99ce5f46
 Connecting to:		mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.5.8
 Using MongoDB:		8.0.4
@@ -163,7 +163,7 @@ The following YAML manifest provides an example of a `MongoDB` resource configur
 apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
-  name: rs
+  name: mg-git-ssh
   namespace: demo
 spec:
   init:
@@ -204,7 +204,7 @@ spec:
 
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/git-sync-ssh.yaml
-MongoDB.kubedb.com/rs created
+MongoDB.kubedb.com/mg-git-ssh created
 ```
 
 Here,
@@ -217,9 +217,9 @@ Once the database reaches the `Ready` state, you can verify the data using the m
 Next, we will connect to the MongoDB database and verify the data inserted from the `*.js` script stored in the Git repository.
 
 ```bash
-$  kubectl exec -it -n demo rs-0 -- bash
+$  kubectl exec -it -n demo mg-git-ssh-0 -- bash
 Defaulted container "mongodb" out of: mongodb, copy-config (init), git-sync (init)
-mongodb@rs-0:/$ mongosh -u root -p 'tQ;c(ykM_T_EbLKS'
+mongodb@mg-git-ssh-0:/$ mongosh -u root -p 'tQ;c(ykM_T_EbLKS'
 Current Mongosh Log ID:	6900695d231f7a9e99ce5f46
 Connecting to:		mongodb://<credentials>@127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.5.8
 Using MongoDB:		8.0.4
@@ -273,7 +273,7 @@ The following YAML manifest shows an example:
 apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
-  name: rs
+  name: mg-git-pat
   namespace: demo
 spec:
   init:
@@ -315,7 +315,7 @@ spec:
 
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/git-sync-pat.yaml
-MongoDB.kubedb.com/rs created
+MongoDB.kubedb.com/mg-git-pat created
 ```
 The `git-sync` container has two required flags:
 - `--repo`  – specifies the remote Git repository to sync.
@@ -329,7 +329,7 @@ Once the database reaches the `Ready` state, you can verify the data using the m
 ```yaml
 $ kubectl get mg -n demo
 NAME   VERSION   STATUS   AGE
-rs     8.0.4     Ready    38m
+mg-git-pat     8.0.4     Ready    38m
 
 ```
 
@@ -338,6 +338,6 @@ rs     8.0.4     Ready    38m
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete MongoDB -n demo rs
+$ kubectl delete MongoDB -n demo mg-git mg-git-ssh mg-git-pat
 $ kubectl delete ns demo
 ```
