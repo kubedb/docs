@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-mode-transform
     name: MySQL Replication Mode Transform
     parent: guides-mysql
-    weight: 200
+    weight: 210
 menu_name: docs_{{ .version }}
 ---
