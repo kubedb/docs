@@ -218,7 +218,6 @@ clientConfig:
           name: redis-restore-6.2.5
   secret:
     name: sample-redis-auth
-    kind: Secret
   type: kubedb.com/redis
   version: 6.0.20
 ```

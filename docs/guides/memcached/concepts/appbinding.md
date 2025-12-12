@@ -55,7 +55,6 @@ An `AppBinding` object created by `KubeDB` for Memcached database is shown below
         scheme: tcp
     secret:
       name: memcached-auth
-      kind: Secret
     type: kubedb.com/memcached
     version: 1.6.22
 ```

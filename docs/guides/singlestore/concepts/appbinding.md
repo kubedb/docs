@@ -78,7 +78,6 @@ spec:
           name: ""
   secret:
     name: sdb-root-cred
-    kind: Secret
   type: kubedb.com/singlestore
   version: 8.7.10
 ```
