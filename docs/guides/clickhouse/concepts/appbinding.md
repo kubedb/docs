@@ -66,6 +66,7 @@ spec:
       scheme: http
   secret:
     name: ch-cluster-auth
+    kind: Secret
   type: kubedb.com/clickhouse
   version: 24.4.1
 ```

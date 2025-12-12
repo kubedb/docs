@@ -46,6 +46,7 @@ spec:
   type: kubedb.com/postgres
   secret:
     name: quick-postgres-auth
+    kind: Secret
   clientConfig:
     service:
       name: quick-postgres

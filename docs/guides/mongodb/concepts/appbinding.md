@@ -77,6 +77,7 @@ spec:
           name: mongodb-restore-4.4.6
   secret:
     name: sample-mgo-rs-auth
+    kind: Secret
   type: kubedb.com/mongodb
   version: 4.4.26
 ```

@@ -63,6 +63,7 @@ spec:
     url: amqp://<username>:<password>@rabbitmq.rabbit.svc.cluster.local:5672/
   secret:
     name: rabbitmq-admin-cred
+    kind: Secret
   type: kubedb.com/rabbitmq
   version: 3.13.2
 ```

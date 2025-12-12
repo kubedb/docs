@@ -179,6 +179,10 @@ items:
               name: mariadb-restore-10.5.8
       secret:
         name: sample-mariadb-auth
+        
+        
+        
+        
       type: kubedb.com/mariadb
       version: 11.1.3
 kind: List

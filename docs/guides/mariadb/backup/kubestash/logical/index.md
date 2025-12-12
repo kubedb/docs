@@ -180,6 +180,7 @@ spec:
           name: mariadb-restore-10.5.8
   secret:
     name: sample-mariadb-auth
+    kind: Secret
   type: kubedb.com/mariadb
   version: 11.1.3
 ```

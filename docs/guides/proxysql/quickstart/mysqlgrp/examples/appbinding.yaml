@@ -14,7 +14,9 @@ spec:
     url: tcp(mysql-server.demo.svc:3306)/
   secret:
     name: mysql-server-auth
+    kind: Secret
   tlsSecret:
-    name: mysql-server-client-cert 
+    name: mysql-server-client-cert
+    kind: Secret
   type: mysql
   version: 9.1.0

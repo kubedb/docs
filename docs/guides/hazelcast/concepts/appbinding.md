@@ -66,6 +66,7 @@ spec:
       scheme: https
   secret:
     name: hazelcast-sample-auth
+    kind: Secret
   type: kubedb.com/hazelcast
   version: 5.5.2
 
