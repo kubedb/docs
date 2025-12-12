@@ -174,7 +174,6 @@ spec:
           name: redis-restore-7.0.5
   secret:
     name: sample-redis-auth
-    kind: Secret
   type: kubedb.com/redis
   version: 7.4.0
 ```

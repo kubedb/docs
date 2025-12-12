@@ -75,7 +75,6 @@ spec:
     gcs:
       bucket: stash-testing
       prefix: mariadb-backup/${TARGET_NAMESPACE}/${TARGET_APP_RESOURCE}/${TARGET_NAME}
-    storageName: gcs-
   # ============== Blueprint for BackupConfiguration =================
   schedule: "*/5 * * * *"
   retentionPolicy:
