@@ -5,6 +5,6 @@ menu:
     identifier: es-dashboard
     name: Elasticsearch Dashboard
     parent: es-elasticsearch-guides
-    weight: 32
+    weight: 65
 menu_name: docs_{{ .version }}
 ---

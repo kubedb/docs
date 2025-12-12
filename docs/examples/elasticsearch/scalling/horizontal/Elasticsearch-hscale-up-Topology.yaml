@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: esops-hscale-up-topology
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: es-hscale-topology
+  horizontalScaling:
+    topology:
+      master: 3
+      ingest: 3
+      data: 3

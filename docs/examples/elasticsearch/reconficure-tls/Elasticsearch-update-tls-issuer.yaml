@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: esops-update-issuer
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: es-demo
+  tls:
+    issuerRef:
+      name: es-new-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
