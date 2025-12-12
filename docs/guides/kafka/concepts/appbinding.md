@@ -67,10 +67,8 @@ spec:
       scheme: https
   secret:
     name: kafka-admin-cred
-    kind: Secret
   tlsSecret:
     name: kafka-client-cert
-    kind: Secret
   type: kubedb.com/kafka
   version: 3.9.0
 ```

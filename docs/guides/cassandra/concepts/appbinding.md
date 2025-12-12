@@ -68,10 +68,8 @@ spec:
     url: http://cassandra-quickstart-coordinators-0.cassandra-quickstart-pods.demo.svc.cluster.local:8081,http://cassandra-quickstart-overlords-0.cassandra-quickstart-pods.demo.svc.cluster.local:8090,http://cassandra-quickstart-middlemanagers-0.cassandra-quickstart-pods.demo.svc.cluster.local:8091,http://cassandra-quickstart-historicals-0.cassandra-quickstart-pods.demo.svc.cluster.local:8083,http://cassandra-quickstart-brokers-0.cassandra-quickstart-pods.demo.svc.cluster.local:8082,http://cassandra-quickstart-routers-0.cassandra-quickstart-pods.demo.svc.cluster.local:8888
   secret:
     name: cassandra-quickstart-admin-cred
-    kind: Secret
   tlsSecret:
     name: cassandra-client-cert
-    kind: Secret
   type: kubedb.com/cassandra
   version: 28.0.1
 ```

@@ -217,7 +217,6 @@ spec:
     url: http://sample-druid-coordinators-0.sample-druid-pods.demo.svc.cluster.local:8081,http://sample-druid-overlords-0.sample-druid-pods.demo.svc.cluster.local:8090,http://sample-druid-middlemanagers-0.sample-druid-pods.demo.svc.cluster.local:8091,http://sample-druid-historicals-0.sample-druid-pods.demo.svc.cluster.local:8083,http://sample-druid-brokers-0.sample-druid-pods.demo.svc.cluster.local:8082,http://sample-druid-routers-0.sample-druid-pods.demo.svc.cluster.local:8888
   secret:
     name: sample-druid-admin-cred
-    kind: Secret
   type: kubedb.com/druid
   version: 30.0.1
 ```
