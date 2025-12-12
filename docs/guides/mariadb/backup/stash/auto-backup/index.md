@@ -58,9 +58,9 @@ mariadb-restore-10.5.23   62m
 
 ## Prepare Backup Blueprint
 
-To backup an MariaDB database using Stash, you have to create a `Secret` containing the backend credentials, a `Repository` containing the backend information, and a `BackupConfiguration` containing the schedule and target information. A `BackupBlueprint` allows you to specify a template for the `Repository` and the `BackupConfiguration`.
+To backup an MariaDB database using Stash, you have to create a `` containing the backend credentials, a `Repository` containing the backend information, and a `BackupConfiguration` containing the schedule and target information. A `BackupBlueprint` allows you to specify a template for the `Repository` and the `BackupConfiguration`.
 
-The `BackupBlueprint` is a non-namespaced CRD. So, once you have created a `BackupBlueprint`, you can use it to backup any MariaDB database of any namespace just by creating the storage `Secret` in that namespace and adding few annotations to your MariaDB CRO. Then, Stash will automatically create a `Repository` and a `BackupConfiguration` according to the template to backup the database.
+The `BackupBlueprint` is a non-namespaced CRD. So, once you have created a `BackupBlueprint`, you can use it to backup any MariaDB database of any namespace just by creating the storage `` in that namespace and adding few annotations to your MariaDB CRO. Then, Stash will automatically create a `Repository` and a `BackupConfiguration` according to the template to backup the database.
 
 Below is the `BackupBlueprint` object that we are going to use in this tutorial,
 
@@ -75,7 +75,7 @@ spec:
     gcs:
       bucket: stash-testing
       prefix: mariadb-backup/${TARGET_NAMESPACE}/${TARGET_APP_RESOURCE}/${TARGET_NAME}
-    storageSecretName: gcs-secret
+    storageName: gcs-
   # ============== Blueprint for BackupConfiguration =================
   schedule: "*/5 * * * *"
   retentionPolicy:
@@ -84,7 +84,7 @@ spec:
     prune: true
 ```
 
-Here, we are using a GCS bucket as our backend. We are providing `gcs-secret` at the `storageSecretName` field. Hence, we have to create a secret named `gcs-secret` with the access credentials of our bucket in every namespace where we want to enable backup through this blueprint.
+Here, we are using a GCS bucket as our backend. We are providing `gcs-` at the `storageName` field. Hence, we have to create a  named `gcs-` with the access credentials of our bucket in every namespace where we want to enable backup through this blueprint.
 
 Notice the `prefix` field of `backend` section. We have used some variables in form of `${VARIABLE_NAME}`. Stash will automatically resolve those variables from the database information to make the backend prefix unique for each database instance.
 
@@ -101,19 +101,19 @@ Now, we are ready to backup our MariaDB databases using few annotations. You can
 
 In this section, we are going to backup an MariaDB database of `demo` namespace. We are going to use the default configurations specified in the `BackupBlueprint`.
 
-### Create Storage Secret
+### Create Storage 
 
-At first, let's create the `gcs-secret` in `demo` namespace with the access credentials to our GCS bucket.
+At first, let's create the `gcs-` in `demo` namespace with the access credentials to our GCS bucket.
 
 ```bash
 ❯ echo -n 'changeit' > RESTIC_PASSWORD
 ❯ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
 ❯ cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-❯ kubectl create secret generic -n demo gcs-secret \
+❯ kubectl create  generic -n demo gcs- \
     --from-file=./RESTIC_PASSWORD \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
+/gcs- created
 ```
 
 ### Create Database
@@ -180,7 +180,7 @@ spec:
     gcs:
       bucket: stash-testing
       prefix: mariadb-backup/demo/mariadb/sample-mariadb
-    storageSecretName: gcs-secret
+    storageName: gcs-
 ```
 
 Here, you can see that Stash has resolved the variables in `prefix` field and substituted them with the equivalent information from this database.
@@ -229,10 +229,10 @@ status:
     status: "True"
     type: RepositoryFound
   - lastTransitionTime: "2021-02-25T05:14:51Z"
-    message: Backend Secret demo/gcs-secret exist.
-    reason: BackendSecretAvailable
+    message: Backend  demo/gcs- exist.
+    reason: BackendAvailable
     status: "True"
-    type: BackendSecretFound
+    type: BackendFound
   - lastTransitionTime: "2021-02-25T05:14:51Z"
     message: Backup target appcatalog.appscode.com/v1alpha1 appbinding/sample-mariadb
       found.
@@ -272,16 +272,16 @@ Once the backup has been completed successfully, you should see the backed up da
 
 In this section, we are going to backup an MariaDB database of `demo-2` namespace. This time, we are going to overwrite the default schedule used in the `BackupBlueprint`.
 
-### Create Storage Secret
+### Create Storage 
 
-At first, let's create the `gcs-secret` in `demo-2` namespace with the access credentials to our GCS bucket.
+At first, let's create the `gcs-` in `demo-2` namespace with the access credentials to our GCS bucket.
 
 ```bash
-❯ kubectl create secret generic -n demo-2 gcs-secret \
+❯ kubectl create  generic -n demo-2 gcs- \
     --from-file=./RESTIC_PASSWORD \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
+/gcs- created
 ```
 
 ### Create Database
@@ -349,7 +349,7 @@ spec:
     gcs:
       bucket: stash-testing
       prefix: mariadb-backup/demo-2/mariadb/sample-mariadb-2
-    storageSecretName: gcs-secret
+    storageName: gcs-
 ```
 
 Here, you can see that Stash has resolved the variables in `prefix` field and substituted them with the equivalent information from this new database.
@@ -409,10 +409,10 @@ status:
     status: "True"
     type: RepositoryFound
   - lastTransitionTime: "2021-02-25T06:10:14Z"
-    message: Backend Secret demo-2/gcs-secret exist.
-    reason: BackendSecretAvailable
+    message: Backend  demo-2/gcs- exist.
+    reason: BackendAvailable
     status: "True"
-    type: BackendSecretFound
+    type: BackendFound
   - lastTransitionTime: "2021-02-25T06:10:14Z"
     message: Backup target appcatalog.appscode.com/v1alpha1 appbinding/sample-mariadb-2
       found.
@@ -453,16 +453,16 @@ Once the backup has been completed successfully, you should see that Stash has c
 
 In this section, we are going to backup an MariaDB database of `demo-3` namespace. This time, we are going to pass some parameters for the Task through the annotations.
 
-### Create Storage Secret
+### Create Storage 
 
-At first, let's create the `gcs-secret` in `demo-3` namespace with the access credentials to our GCS bucket.
+At first, let's create the `gcs-` in `demo-3` namespace with the access credentials to our GCS bucket.
 
 ```bash
-❯ kubectl create secret generic -n demo-3 gcs-secret \
+❯ kubectl create  generic -n demo-3 gcs- \
     --from-file=./RESTIC_PASSWORD \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
+/gcs- created
 ```
 
 ### Create Database
@@ -531,7 +531,7 @@ spec:
     gcs:
       bucket: stash-testing
       prefix: mariadb-backup/demo-3/mariadb/sample-mariadb-3
-    storageSecretName: gcs-secret
+    storageName: gcs-
 ```
 
 Here, you can see that Stash has resolved the variables in `prefix` field and substituted them with the equivalent information from this new database.
@@ -584,10 +584,10 @@ status:
     status: "True"
     type: RepositoryFound
   - lastTransitionTime: "2021-02-25T11:58:12Z"
-    message: Backend Secret demo-3/gcs-secret exist.
-    reason: BackendSecretAvailable
+    message: Backend  demo-3/gcs- exist.
+    reason: BackendAvailable
     status: "True"
-    type: BackendSecretFound
+    type: BackendFound
   - lastTransitionTime: "2021-02-25T11:58:12Z"
     message: Backup target appcatalog.appscode.com/v1alpha1 appbinding/sample-mariadb-3
       found.

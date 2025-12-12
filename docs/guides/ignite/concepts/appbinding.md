@@ -30,6 +30,9 @@ An `AppBinding` object created by `KubeDB` for Ignite database is shown below,
 
 ```yaml
   apiVersion: appcatalog.appscode.com/v1alpha1
+  
+  
+  
   kind: AppBinding
   metadata:
     annotations:
@@ -55,6 +58,7 @@ An `AppBinding` object created by `KubeDB` for Ignite database is shown below,
         scheme: tcp
     secret:
       name: ignite-auth
+      kind: Secret
     type: kubedb.com/ignite
     version: 2.17.0
 ```

@@ -14,7 +14,9 @@ spec:
     url: tcp(xtradb-galera.demo.svc:3306)/
   secret:
     name: xtradb-galera-auth
+    kind: Secret
   type: perconaxtradb
   tlsSecret:
     name: xtradb-galera-client-cert
+    kind: Secret
   version: 8.0.26

@@ -18,5 +18,6 @@ spec:
       scheme: postgresql
   secret:
     name: sample-postgres-auth
+    kind: Secret
   type: kubedb.com/postgres
   version: "11.2"

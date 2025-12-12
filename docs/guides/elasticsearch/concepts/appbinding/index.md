@@ -81,8 +81,10 @@ spec:
               value: --match=^(?![.])(?!apm-agent-configuration)(?!kubedb-system).+
   secret:
     name: es-quickstart-elastic-cred
+    kind: Secret
   tlsSecret:
     name: es-quickstart-client-cert
+    kind: Secret
   type: kubedb.com/elasticsearch
   version: 8.2.0
 

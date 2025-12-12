@@ -68,8 +68,10 @@ spec:
     url: http://druid-quickstart-coordinators-0.druid-quickstart-pods.demo.svc.cluster.local:8081,http://druid-quickstart-overlords-0.druid-quickstart-pods.demo.svc.cluster.local:8090,http://druid-quickstart-middlemanagers-0.druid-quickstart-pods.demo.svc.cluster.local:8091,http://druid-quickstart-historicals-0.druid-quickstart-pods.demo.svc.cluster.local:8083,http://druid-quickstart-brokers-0.druid-quickstart-pods.demo.svc.cluster.local:8082,http://druid-quickstart-routers-0.druid-quickstart-pods.demo.svc.cluster.local:8888
   secret:
     name: druid-quickstart-admin-cred
+    kind: Secret
   tlsSecret:
     name: druid-client-cert
+    kind: Secret
   type: kubedb.com/druid
   version: 28.0.1
 ```
