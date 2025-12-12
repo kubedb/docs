@@ -54,7 +54,6 @@ spec:
       scheme: postgresql
   secret:
     name: quick-postgres-auth
-    kind: Secret
   type: kubedb.com/postgres
   version: "13.13"
 ```

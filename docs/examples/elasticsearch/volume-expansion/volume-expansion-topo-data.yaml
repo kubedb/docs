@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: volume-expansion-data-nodes
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: es-cluster
+  volumeExpansion:
+    mode: "Online"
+    data: 5Gi

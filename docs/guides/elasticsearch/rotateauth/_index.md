@@ -5,7 +5,7 @@ menu:
     identifier: es-rotateauth-elasticsearch
     name: Rotate Authentication
     parent: es-elasticsearch-guides
-    weight: 45
+    weight: 125
 menu_name: docs_{{ .version }}
 ---
 

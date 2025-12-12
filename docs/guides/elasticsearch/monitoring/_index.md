@@ -5,6 +5,6 @@ menu:
     identifier: es-monitoring-elasticsearch
     name: Monitoring
     parent: es-elasticsearch-guides
-    weight: 50
+    weight: 135
 menu_name: docs_{{ .version }}
 ---
