@@ -15,10 +15,6 @@ spec:
   secret:
     name: mysql-server-auth
   tlsSecret:
-<<<<<<< HEAD
     name: mysql-server-client-cert
-=======
-    name: mysql-server-client-cert 
->>>>>>> 9067b4c9 (gitsync mysql)
   type: mysql
   version: 9.1.0
