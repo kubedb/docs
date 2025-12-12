@@ -48,7 +48,6 @@ spec:
       scheme: mysql
   secret:
     name: sample-mariadb-auth
-    kind: Secret
   type: kubedb.com/mariadb
   version: 10.5.23
 ```

@@ -77,10 +77,8 @@ spec:
           name: redis-restore-6.2.5
   secret:
     name: redis1-auth
-    kind: Secret
   tlsSecret:
     name: redis1-client-cert
-    kind: Secret
   type: kubedb.com/redis
   version: 6.2.14
 ```

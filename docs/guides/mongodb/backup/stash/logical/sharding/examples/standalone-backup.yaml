@@ -11,7 +11,6 @@ spec:
       scheme: mongodb
   secret:
     name: sample-mgo-sh-auth
-    kind: Secret
   type: kubedb.com/mongodb
 ---
 apiVersion: stash.appscode.com/v1alpha1

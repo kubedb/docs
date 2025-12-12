@@ -600,7 +600,7 @@ sOhjQoxh3hMrHh1IDDsa5S+r1jyWSr6lkCkf5dAeIx/CVZgJUnnou68sVkNL5P3g
 aLcixLL6zhgM40K56RE7b14=
 -----END CERTIFICATE-----
 ```
-Now you can check [here](https://certlogik.com/decoder/).
+Now you can check any certificate decoding website.
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 

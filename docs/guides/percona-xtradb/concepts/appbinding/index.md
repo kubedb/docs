@@ -48,7 +48,6 @@ spec:
       scheme: mysql
   secret:
     name: sample-pxc-auth
-    kind: Secret
   type: kubedb.com/perconaxtradb
   version: 8.0.40
 ```

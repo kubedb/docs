@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1
+kind: Elasticsearch
+metadata:
+  name: es-demo
+  namespace: demo
+spec:
+  deletionPolicy: Delete
+  enableSSL: true
+  replicas: 3
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
+  storageType: Durable
+  version: xpack-9.1.3
+

@@ -5,6 +5,6 @@ menu:
     identifier: es-concepts-elasticsearch
     name: Concepts
     parent: es-elasticsearch-guides
-    weight: 20
+    weight: 25
 menu_name: docs_{{ .version }}
 ---

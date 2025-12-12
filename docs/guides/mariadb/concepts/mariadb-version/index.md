@@ -80,9 +80,9 @@ spec:
   stash:
     addon:
       backupTask:
-        name: mariadb-backup-10.5.8
+        name: mariadb-backup-10.6.23
       restoreTask:
-        name: mariadb-restore-10.5.8
+        name: mariadb-restore-10.6.23
   ui:
     - name: phpmyadmin
       version: v2024.4.27

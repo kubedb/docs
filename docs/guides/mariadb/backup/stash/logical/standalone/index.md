@@ -193,8 +193,8 @@ When you install the Stash, it automatically installs all the official database 
 
 ```bash
 $ kubectl get tasks.stash.appscode.com | grep mariadb
-mariadb-backup-10.5.23    35s
-mariadb-restore-10.5.8   35s
+mariadb-backup-10.6.23    35s
+mariadb-backup-10.6.23   35s
 ```
 
 ### Ensure AppBinding
@@ -307,7 +307,7 @@ If everything goes well, the phase of the `BackupConfiguration` should be `Ready
 ```bash
 $ kubectl get backupconfiguration -n demo
 NAME                    TASK                    SCHEDULE      PAUSED   PHASE      AGE
-sample-mariadb-backup   mariadb-backup-10.5.23   */5 * * * *            Ready      11s
+sample-mariadb-backup   mariadb-backup-10.6.23   */5 * * * *            Ready      11s
 ```
 
 #### Verify CronJob
@@ -386,7 +386,7 @@ Verify that the `BackupConfiguration` has been paused,
 ```bash
 $ kubectl get backupconfiguration -n demo sample-mariadb-backup
 NAME                   TASK                    SCHEDULE      PAUSED   PHASE   AGE
-sample-mariadb-backup  mariadb-backup-10.5.23   */5 * * * *   true     Ready   26m
+sample-mariadb-backup  mariadb-backup-10.6.23   */5 * * * *   true     Ready   26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the `BackupConfiguration` has been paused.
@@ -459,7 +459,7 @@ metadata:
   namespace: demo
 spec:
   task:
-    name: mariadb-restore-10.5.8
+    name: mariadb-backup-10.6.23
   repository:
     name: gcs-repo
   target:
@@ -566,7 +566,7 @@ Verify that the `BackupConfiguration` has been resumed,
 ```bash
 $ kubectl get backupconfiguration -n demo sample-mariadb-backup
 NAME                    TASK                    SCHEDULE      PAUSED   PHASE   AGE
-sample-mariadb-backup   mariadb-backup-10.5.23   */5 * * * *   false    Ready   29m
+sample-mariadb-backup   mariadb-backup-10.6.23   */5 * * * *   false    Ready   29m
 ```
 
 Here,  `false` in the `PAUSED` column means the backup has been resume successfully. The CronJob also should be resumed now.
