@@ -33,7 +33,7 @@ This tutorial will show you how to use KubeDB to run an Oracle database.
 - check available StorageClass in your cluster:
 
 ```shell
-ubectl get storageclasses
+$ kubectl get storageclasses
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  28d
 
