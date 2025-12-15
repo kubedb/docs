@@ -31,7 +31,7 @@ aliases:
 ## Life Cycle of a Oracle Object
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/images/postgres/lifecycle.png">
+  <img alt="lifecycle"  src="/docs/images/oracle/oracle_lifecycle.png">
 </p>
 
 ## User Guide
