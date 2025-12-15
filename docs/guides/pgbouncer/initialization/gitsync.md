@@ -72,12 +72,12 @@ spec:
     script:
       git:
         args:
-          - --repo=<public_git_repo_url>
+          - --repo=https://github.com/kubedb/pgbouncer-init-scripts
           - --depth=1
           - --period=60s
           - --one-time
         resources: {}
-      scriptPath: <desired_scrip_path_in_repo>
+      scriptPath: "pgbouncer-init-scripts/init"
 ```
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/initialization/git-sync-public.yaml

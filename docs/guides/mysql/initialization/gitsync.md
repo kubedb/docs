@@ -121,7 +121,7 @@ You can turn off this feature to get a quicker startup with -A
 
 Database changed
 
-mysql> select * from kubedb_table;
+mysql> select * from demo_table;
 +----+-------+
 | id | name  |
 +----+-------+
@@ -139,6 +139,9 @@ mysql> select * from kubedb_table;
 |  3 | name3 |
 +----+-------+
 3 rows in set (0.00 sec)
+
+
+
 ```
 ## From Private Git Repository
 
