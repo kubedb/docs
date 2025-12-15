@@ -16,7 +16,7 @@ concurrency:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-24.04
+    runs-on: firecracker
     steps:
       - uses: actions/checkout@v4
 
