@@ -202,6 +202,7 @@ The `git-sync` container has two required flags:
 - `--repo`  – specifies the remote Git repository to sync.
 - `--root`  – specifies the working directory where the repository will be cloned.
 - `spec.init.git.authSecret` specifies the secret containing the `SSH` key.
+- `<private_git_repo_ssh_url>` with your private Git repository's SSH URL.
 - `spec.init.script.scriptPath` – specifies the path within the repository and folder where the initialization scripts are located.
   for more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync/blob/master/docs/ssh.md)
 

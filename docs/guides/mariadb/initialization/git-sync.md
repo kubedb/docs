@@ -165,7 +165,7 @@ spec:
      git:
        args:
        # update with your private repository    
-       - --repo=git@github.com:refat75/mysql-init-scripts.git
+       - --repo=<your-ssh-repo-url>
        - --link=current
        - --root=/root
        # terminate after one successful sync
@@ -222,10 +222,10 @@ spec:
      git:
        args:
        # update with your private repository    
-       - --repo=https://github.com/refat75/mysql-init-scripts.git
+       - --repo=<your-https-repo-url>
        - --link=current
        - --root=/root
-       - --credential={"url":"https://github.com","username":"refat75","password-file":"/etc/git-secret/github-pat"}
+       - --credential={"url":"https://github.com","username":"<username>","password-file":"/etc/git-secret/github-pat"}
        # terminate after one successful sync
        - --one-time 
        authSecret:

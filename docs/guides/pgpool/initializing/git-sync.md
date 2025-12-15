@@ -202,6 +202,7 @@ The `git-sync` container has two required flags:
 - `--repo`  – specifies the remote Git repository to sync.
 - `--root`  – specifies the working directory where the repository will be cloned.
 - `spec.init.git.authSecret` specifies the secret containing the `SSH` key.
+- `<private_git_repo_ssh_url>` with your private Git repository's SSH URL.
 - `spec.init.script.scriptPath` – specifies the path within the repository and folder where the initialization scripts are located.
   for more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync/blob/master/docs/ssh.md)
 
@@ -264,14 +265,14 @@ spec:
   deletionPolicy: WipeOut
   init:
     script:
-      scriptPath: pgpool_pgb_script/pgpool
+      scriptPath: <any_name>
       git:
         args:
           # update with your private repository    
-          - --repo=https://github.com/Bonusree/pgpool_pgb_script.git
+          - --repo=<private_git_repo_http_url>
           - --link=current
           - --root=/git
-          - --credential={"url":"https://github.com","username":"Bonusree","password-file":"/etc/git-secret/github-pat"}
+          - --credential={"url":"https://github.com","username":"<username>","password-file":"/etc/git-secret/github-pat"}
           # terminate after one successful sync
           - --one-time
         authSecret:

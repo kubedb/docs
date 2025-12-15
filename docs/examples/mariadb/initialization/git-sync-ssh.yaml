@@ -10,7 +10,7 @@ spec:
       git:
         args:
           # update with your private repository
-          - --repo=git@github.com:refat75/mysql-init-scripts.git
+          - --repo=<YOUR-PRIVATE-REPO-SSH-URL>
           - --link=current
           - --root=/root
           # terminate after one successful sync

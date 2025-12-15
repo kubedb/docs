@@ -10,10 +10,10 @@ spec:
       git:
         args:
           # update with your private repository
-          - --repo=https://github.com/refat75/mysql-init-scripts.git
+          - --repo=<YOUR-PRIVATE-REPO-HTTP-URL>
           - --link=current
           - --root=/root
-          - --credential={"url":"https://github.com","username":"refat75","password-file":"/etc/git-secret/github-pat"}
+          - --credential={"url":"https://github.com","username":"<username>","password-file":"/etc/git-secret/github-pat"}
           # terminate after one successful sync
           - --one-time
         authSecret:
