@@ -36,14 +36,14 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/Pgpool](/docs/examples/Pgpool) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/Pgpool](/docs/examples/pgpool) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ### Prepare Postgres
 Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/clustering/streaming_replication.md),but you have to set `password` as  `qrDy;GnX4QsKQ0UL`.
 
 ### Prepare Pgpool
 
-Now, we are going to deploy a `Pgpool` with version `1.24.0`.
+Now, we are going to deploy a `Pgpool` with version `4.4.5`.
 
 ## From Public Git Repository
 
@@ -52,37 +52,38 @@ To initialize the database from a public Git repository, you need to specify the
 The following YAML manifest shows an example `Pgpool ` object configured with `git-sync`:
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: Pgpool
 metadata:
-  name: pb
+  name: pgpool
   namespace: demo
 spec:
-  version: "1.24.0"
+  version: "4.4.5"
   replicas: 1
-  database:
-    syncUsers: true
-    databaseName: "postgres"
-    databaseRef:
-      name: "quick-postgres"
-      namespace: demo
-  connectionPool:
-    maxClientConnections: 20
-    reservePoolSize: 5
+  postgresRef:
+    name: postgres
+    namespace: demo
+  initConfig:
+    pgpoolConfig:
+      num_init_children : 6
+      max_pool : 65
+      child_life_time : 400
+  deletionPolicy: WipeOut
   init:
     script:
+      scriptPath: "<desired_repo_name/scrip_path_in_repo>"
       git:
         args:
-          - --repo=<default_git_repo_http_url>
+          - --repo=<public_git_repo_https_url>
           - --depth=1
+          - --add-user=true
           - --period=60s
           - --one-time
-        resources: {}
-      scriptPath: <desired_script_path_in_repo>
+
 ```
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Pgpool/initialization/git-sync-public.yaml
-Pgpool .kubedb.com/pb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/initialization/git-sync/git-sync-public.yaml
+Pgpool .kubedb.com/pgpool created
 ```
 Here,
 
@@ -92,34 +93,31 @@ Here,
 
 > To know more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync).
 
-Now, wait until `pb` has status `Ready`. i.e,
+Now, wait until `pgpool` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get Pgpool -n demo
-NAME   VERSION   STATUS   AGE
-pb     1.24.0    Ready    49m
-
+$ kkubectl get Pgpool -n demo
+NAME     TYPE                  VERSION   STATUS   AGE
+pgpool   kubedb.com/v1alpha2   4.4.5     Ready    4m
 ```
 
 Next, we will connect to the Pgpool database and verify the data inserted from the `*.sql` script stored in the Git repository.
 
 ```bash
-$ kubectl exec -it -n demo pb-0 -- sh
-Defaulted container "Pgpool" out of: Pgpool, git-sync (init)
-
-/ $ cd init-scripts/
-/init-scripts $ export PGPASSWORD="qrDy;GnX4QsKQ0UL"
-/init-scripts $ psql -U postgres -d postgres -h localhost -p <db container port>
-psql (16.10, server 13.13)
+$kubectl exec -it -n demo pgpool-0 -- sh
+Defaulted container "pgpool" out of: pgpool, git-sync (init)
+/ $ export PGPASSWORD="qrDy;GnX4QsKQ0UL"
+/ $ psql -U postgres -d postgres -h localhost -p <db container port>
+psql (17.6, server 13.13)
 Type "help" for help.
 
 postgres=# \dt
-                    List of relations
- Schema |             Name             | Type  |  Owner
---------+------------------------------+-------+----------
- public | kubedb_write_check_Pgpool | table | postgres
- public | my_table                     | table | postgres
-(3 rows)
+                   List of relations
+ Schema |           Name            | Type  |  Owner   
+--------+---------------------------+-------+----------
+ public | kubedb_write_check_pgpool | table | postgres
+ public | my_table                  | table | postgres
+(2 rows)
 
 ```
 `my_table` is created by the `init-script.sh` script stored in the Git repository.
@@ -155,46 +153,47 @@ $ kubectl create secret generic -n demo <secret_name> \
 The following YAML manifest provides an example of a `Pgpool ` resource configured to use `git-sync` with a private Git repository:
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: Pgpool
 metadata:
-  name: pb
+  name: pgpool
   namespace: demo
 spec:
-  version: "1.24.0"
+  version: "4.4.5"
   replicas: 1
-  database:
-    syncUsers: true
-    databaseName: "postgres"
-    databaseRef:
-      name: "postgres"
-      namespace: demo
-  connectionPool:
-    maxClientConnections: 20
-    reservePoolSize: 5
+  postgresRef:
+    name: postgres
+    namespace: demo
+  initConfig:
+    pgpoolConfig:
+      num_init_children : 6
+      max_pool : 65
+      child_life_time : 400
+  deletionPolicy: WipeOut
   init:
     script:
-      scriptPath: <desired_scrip_path_in_repo>
+      scriptPath: <any_name>
       git:
         args:
           # use --ssh for private repository
+          - --ssh
           - --repo=<private_git_repo_ssh_url>
           - --depth=1
           - --period=60s
+          - --link=current
           - --root=/init-script-from-git
           # terminate after successful sync
           - --one-time
         authSecret:
-          name: <secret_name>
+          name: git-creds
+        # run as git sync user
         securityContext:
           runAsUser: 65533
-        # run as git sync user
-
 ```
 
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/pgpool/initialization/yamls/git-sync-ssh.yaml
-Pgpool .kubedb.com/pb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/initialization/git-sync/git-sync-ssh.yaml
+Pgpool .kubedb.com/pgpool created
 ```
 Here, replace `<private_git_repo_ssh_url>` with your private Git repository's SSH URL.
 
@@ -209,27 +208,25 @@ The `git-sync` container has two required flags:
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
 ```bash
 $ kubectl get Pgpool -n demo
-NAME   VERSION   STATUS   AGE
-pb     1.24.0    Ready    8m
+NAME     TYPE                  VERSION   STATUS   AGE
+pgpool   kubedb.com/v1alpha2   4.4.5     Ready    5m23s
 
 ```
 ```bash
-$ kubectl exec -it -n demo pb-0 -- sh
-Defaulted container "Pgpool" out of: Pgpool, git-sync (init)
-
-/ $ cd init-scripts/
-/init-scripts $ export PGPASSWORD="qrDy;GnX4QsKQ0UL"
-/init-scripts $ psql -U postgres -d postgres -h localhost -p <db container port>
-psql (16.10, server 13.13)
+$ kubectl exec -it -n demo pgpool-0 -- sh
+Defaulted container "pgpool" out of: pgpool, git-sync (init)
+/ $ export PGPASSWORD="qrDy;GnX4QsKQ0UL"
+/ $ psql -U postgres -d postgres -h localhost -p <db container port>
+psql (17.6, server 13.13)
 Type "help" for help.
 
 postgres=# \dt
-                    List of relations
- Schema |             Name             | Type  |  Owner
---------+------------------------------+-------+----------
- public | kubedb_write_check_Pgpool | table | postgres
- public | my_table                     | table | postgres
-(3 rows)
+                   List of relations
+ Schema |           Name            | Type  |  Owner   
+--------+---------------------------+-------+----------
+ public | kubedb_write_check_pgpool | table | postgres
+ public | my_table                  | table | postgres
+(2 rows)
 
 ```
 `my_table` is created by the `init-script.sh` script stored in the Git repository.
@@ -248,47 +245,47 @@ Now, create a `Pgpool ` resource that references the secret created above.
 The following YAML manifest shows an example:
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: Pgpool
 metadata:
-  name: pb
+  name: pgpool
   namespace: demo
 spec:
-  database:
-    syncUsers: true
-    databaseName: "postgres"
-    databaseRef:
-       name: "postgres"
-       namespace: demo
-    connectionPool:
-      maxClientConnections: 20
-      reservePoolSize: 5
-    init:
-      script:
-         scriptPath: pgpool_pgb_script.git/Pgpool
-         git:
-            args:
-                # update with your private repository
-                - --repo=https://github.com/Bonusree/pgpool_pgb_script.git
-                - --link=current
-                - --root=/git
-                - --credential={"url":"https://github.com","username":"<git_username>","password-file":"/etc/git-secret/github-pat"}
-                # terminate after one successful sync
-                - --one-time
-            authSecret:
-                # the name of the secret created above
-                name: git-pat
-                # run as git sync user
-            securityContext:
-                runAsUser: 65533
-  version: "1.24.0"
+  version: "4.4.5"
   replicas: 1
+  postgresRef:
+    name: postgres
+    namespace: demo
+  initConfig:
+    pgpoolConfig:
+      num_init_children : 6
+      max_pool : 65
+      child_life_time : 400
   deletionPolicy: WipeOut
+  init:
+    script:
+      scriptPath: pgpool_pgb_script/pgpool
+      git:
+        args:
+          # update with your private repository    
+          - --repo=https://github.com/Bonusree/pgpool_pgb_script.git
+          - --link=current
+          - --root=/git
+          - --credential={"url":"https://github.com","username":"Bonusree","password-file":"/etc/git-secret/github-pat"}
+          # terminate after one successful sync
+          - --one-time
+        authSecret:
+            # the name of the secret created above
+          name: git-pat
+        # run as git sync user 
+        securityContext:
+          runAsUser: 65533
+  
 ```
 
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/pgpool /initialization/yamls/git-sync-pat.yaml
-Pgpool .kubedb.com/pb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/initialization/git-sync/git-sync-pat.yaml
+Pgpool .kubedb.com/pgpool created
 ```
 Here,
 
@@ -298,28 +295,25 @@ Here,
 OOnce the database reaches the `Ready` state, you can verify the data using the method described above.
 ```bash
 $ kubectl get Pgpool -n demo
-NAME   VERSION   STATUS   AGE
-pb     1.24.0    Ready    19m
+NAME     TYPE                  VERSION   STATUS   AGE
+pgpool   kubedb.com/v1alpha2   4.4.5     Ready    3m32s
 
 ```
 ```bash
-$ kubectl exec -it -n demo pb-0 -- sh
-Defaulted container "Pgpool" out of: Pgpool, git-sync (init)
-
-/ $ cd init-scripts/
-/init-scripts $ export PGPASSWORD="qrDy;GnX4QsKQ0UL"
-/init-scripts $ psql -U postgres -d postgres -h localhost -p <db container port>
-psql (16.10, server 13.13)
+$ kubectl exec -it -n demo pgpool-0 -- sh
+Defaulted container "pgpool" out of: pgpool, git-sync (init)
+/ $ export PGPASSWORD="qrDy;GnX4QsKQ0UL"
+/ $ psql -U postgres -d postgres -h localhost -p 9999
+psql (17.6, server 13.13)
 Type "help" for help.
 
 postgres=# \dt
-                    List of relations
- Schema |             Name             | Type  |  Owner
---------+------------------------------+-------+----------
- public | kubedb_write_check_Pgpool | table | postgres
- public | my_table                     | table | postgres
-(3 rows)
-
+                   List of relations
+ Schema |           Name            | Type  |  Owner   
+--------+---------------------------+-------+----------
+ public | kubedb_write_check_pgpool | table | postgres
+ public | my_table                  | table | postgres
+(2 rows)
 ```
 `my_table` is created by the `init-script.sh` script stored in the Private Git repository.
 
@@ -328,6 +322,6 @@ postgres=# \dt
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete Pgpool -n demo pb
+$ kubectl delete Pgpool -n demo pgpool
 $ kubectl delete ns demo
 ```

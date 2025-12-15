@@ -1,0 +1,35 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pgpool
+  namespace: demo
+spec:
+  version: "4.4.5"
+  replicas: 1
+  postgresRef:
+    name: postgres
+    namespace: demo
+  initConfig:
+    pgpoolConfig:
+      num_init_children : 6
+      max_pool : 65
+      child_life_time : 400
+  deletionPolicy: WipeOut
+  init:
+    script:
+      scriptPath: pgpool_pgb_script/pgpool
+      git:
+        args:
+          # update with your private repository
+          - --repo=<YOUR-PRIVATE-REPO-URL>
+          - --link=current
+          - --root=/git
+          - --credential={"url":"https://github.com","username":"<username>","password-file":"/etc/git-secret/github-pat"}
+          # terminate after one successful sync
+          - --one-time
+        authSecret:
+          # the name of the secret created above
+          name: git-pat
+        # run as git sync user
+        securityContext:
+          runAsUser: 65533

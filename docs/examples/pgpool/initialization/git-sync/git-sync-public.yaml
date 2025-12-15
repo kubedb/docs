@@ -1,0 +1,27 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pgpool-demo
+  namespace: demo
+spec:
+  version: "4.4.5"
+  replicas: 1
+  postgresRef:
+    name: postgres
+    namespace: demo
+  initConfig:
+    pgpoolConfig:
+      num_init_children : 6
+      max_pool : 65
+      child_life_time : 400
+  deletionPolicy: WipeOut
+  init:
+    script:
+      scriptPath: "pgbouncer-init-scripts/init"
+      git:
+        args:
+          - --repo=<public-repo-URL>
+          - --depth=1
+          - --add-user=true
+          - --period=60s
+          - --one-time

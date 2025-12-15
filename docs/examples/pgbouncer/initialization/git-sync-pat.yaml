@@ -1,0 +1,36 @@
+apiVersion: kubedb.com/v1
+kind: PgBouncer
+metadata:
+  name: pb
+  namespace: demo
+spec:
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "postgres"
+      namespace: demo
+  connectionPool:
+    maxClientConnections: 20
+    reservePoolSize: 5
+  init:
+    script:
+      scriptPath: <desired_scrip_path_in_repo>
+      git:
+        args:
+          # update with your private repository
+          - --repo=<private_git_repo_http_url>
+          - --link=current
+          - --root=/git
+          - --credential={"url":"https://github.com","username":"<git_username>","password-file":"/etc/git-secret/github-pat"}
+          # terminate after one successful sync
+          - --one-time
+        authSecret:
+          # the name of the secret created above
+          name: git-pat
+        # run as git sync user
+        securityContext:
+          runAsUser: 65533
+  version: "1.24.0"
+  replicas: 1
+  deletionPolicy: WipeOut

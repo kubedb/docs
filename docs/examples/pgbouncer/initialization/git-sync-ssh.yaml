@@ -17,11 +17,18 @@ spec:
     reservePoolSize: 5
   init:
     script:
+      scriptPath: <desired_scrip_path_in_repo>
       git:
         args:
-          - --repo=<default_git_repo_http_url>
+          # use --ssh for private repository
+          # - --ssh
+          - --repo=<private_git_repo_ssh_url>
           - --depth=1
           - --period=60s
+          - --root=/init-script-from-git
+          # terminate after successful sync
           - --one-time
-        resources: {}
-      scriptPath: <desired_script_path>
+        authSecret:
+          name: <secret_name>
+        securityContext:
+          runAsUser: 65533

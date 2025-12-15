@@ -118,7 +118,7 @@ postgres=# \dt
 --------+------------------------------+-------+----------
  public | kubedb_write_check_pgbouncer | table | postgres
  public | my_table                     | table | postgres
-(3 rows)
+(2 rows)
 
 ```
 `my_table` is created by the `init-script.sh` script stored in the Git repository.
@@ -228,7 +228,7 @@ postgres=# \dt
 --------+------------------------------+-------+----------
  public | kubedb_write_check_pgbouncer | table | postgres
  public | my_table                     | table | postgres
-(3 rows)
+(2 rows)
 
 ```
 `my_table` is created by the `init-script.sh` script stored in the Git repository.
@@ -317,7 +317,7 @@ postgres=# \dt
 --------+------------------------------+-------+----------
  public | kubedb_write_check_pgbouncer | table | postgres
  public | my_table                     | table | postgres
-(3 rows)
+(2 rows)
 
 ```
 `my_table` is created by the `init-script.sh` script stored in the Private Git repository.
