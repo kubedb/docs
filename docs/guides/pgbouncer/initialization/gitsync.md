@@ -72,12 +72,12 @@ spec:
     script:
       git:
         args:
-          - --repo=<default_git_repo_http_url>
+          - --repo=<public_git_repo_url>
           - --depth=1
           - --period=60s
           - --one-time
         resources: {}
-      scriptPath: <desired_script_path_in_repo>
+      scriptPath: <desired_scrip_path_in_repo>
 ```
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/initialization/git-sync-public.yaml
@@ -177,6 +177,7 @@ spec:
       git:
         args:
           # use --ssh for private repository
+          # - --ssh
           - --repo=<private_git_repo_ssh_url>
           - --depth=1
           - --period=60s
@@ -188,7 +189,6 @@ spec:
         securityContext:
           runAsUser: 65533
         # run as git sync user
-
 ```
 
 ```bash
@@ -257,29 +257,29 @@ spec:
     syncUsers: true
     databaseName: "postgres"
     databaseRef:
-       name: "postgres"
-       namespace: demo
-    connectionPool:
-      maxClientConnections: 20
-      reservePoolSize: 5
-    init:
-      script:
-         scriptPath: pgpool_pgb_script.git/pgbouncer
-         git:
-            args:
-                # update with your private repository
-                - --repo=https://github.com/Bonusree/pgpool_pgb_script.git
-                - --link=current
-                - --root=/git
-                - --credential={"url":"https://github.com","username":"<git_username>","password-file":"/etc/git-secret/github-pat"}
-                # terminate after one successful sync
-                - --one-time
-            authSecret:
-                # the name of the secret created above
-                name: git-pat
-                # run as git sync user
-            securityContext:
-                runAsUser: 65533
+      name: "postgres"
+      namespace: demo
+  connectionPool:
+    maxClientConnections: 20
+    reservePoolSize: 5
+  init:
+    script:
+      scriptPath: <desired_scrip_path_in_repo>
+      git:
+        args:
+          # update with your private repository    
+          - --repo=<private_git_repo_http_url>
+          - --link=current
+          - --root=/git
+          - --credential={"url":"https://github.com","username":"<git_username>","password-file":"/etc/git-secret/github-pat"}
+          # terminate after one successful sync
+          - --one-time
+        authSecret:
+          # the name of the secret created above
+          name: git-pat
+        # run as git sync user 
+        securityContext:
+          runAsUser: 65533
   version: "1.24.0"
   replicas: 1
   deletionPolicy: WipeOut
