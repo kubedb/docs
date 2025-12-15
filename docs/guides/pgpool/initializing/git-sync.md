@@ -25,7 +25,7 @@ In this example, we will initialize Pgpool using a `.sh` script from the GitHub 
 - Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Pgpool](/docs/guides/pgpool/concepts/Pgpool.md)
+    - [Pgpool](/docs/guides/pgpool/concepts/pgpool.md)
     - [PgpoolOpsRequest](/docs/guides/pgpool/concepts/opsrequest.md)
     - [Updating Overview](/docs/guides/pgpool/update-version/overview.md)
 
