@@ -1,11 +1,11 @@
 ---
-title: Oracle Fdr
+title: Oracle Concepts
 menu:
   docs_{{ .version }}:
-    identifier: guides-oracle-fdr
-    name: Failover and Disaster Recovery
+    identifier: guides-oracle-concepts
+    name: Concepts
     parent: guides-oracle
-    weight: 35
+    weight: 25
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

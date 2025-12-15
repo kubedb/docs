@@ -5,6 +5,6 @@ menu:
     identifier: guides-oracle
     name: Oracle
     parent: guides
-    weight: 1
+    weight: 11
 menu_name: docs_{{ .version }}
 ---

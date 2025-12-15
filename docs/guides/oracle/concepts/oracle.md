@@ -2,9 +2,9 @@
 title: Oracle CRD
 menu:
   docs_{{ .version }}:
-    identifier: orc-concepts
+    identifier: guides-oracle-oracle
     name: Oracle
-    parent: orc-concepts-oracle
+    parent: guides-oracle-concepts
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

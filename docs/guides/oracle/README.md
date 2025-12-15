@@ -15,7 +15,7 @@ aliases:
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-## Supported PostgreSQL Features
+## Supported Oracle Features
 
 | Features                           | Availability |
 |------------------------------------|:------------:|
@@ -28,7 +28,7 @@ aliases:
 | Initialization using Script        |   &#10003;   |
 | Using Custom docker image          |   &#10003;   |
 
-## Life Cycle of a PostgreSQL Object
+## Life Cycle of a Oracle Object
 
 <p align="center">
   <img alt="lifecycle"  src="/docs/images/postgres/lifecycle.png">
@@ -36,6 +36,6 @@ aliases:
 
 ## User Guide
 
-- [Quickstart PostgreSQL](/docs/guides/postgres/quickstart/quickstart.md) with KubeDB Operator.
+- [Quickstart Oracle](/docs/guides/oracle/quickstart/guide.md) with KubeDB Operator.
 
 
