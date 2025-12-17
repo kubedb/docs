@@ -15,7 +15,7 @@ section_menu_id: guides
 # Initialization PgBouncer from a Git Repository
 This guide demonstrates how to use KubeDB to initialize a PgBouncer database with initialization scripts (.sql, .sh, .js and/or .sql.gz) stored in a public or private Git repository.
 To fetch the repository contents, KubeDB uses a sidecar container called [git-sync](https://github.com/kubernetes/git-sync).
-In this example, we will initialize PgBouncer using a `.sh` script from the GitHub repository [kubedb/PgBouncer -init-scripts](https://github.com/kubedb/PgBouncer -init-scripts).
+In this example, we will initialize PgBouncer using a `.sh` script from the GitHub repository [kubedb/PgBouncer -init-scripts](https://github.com/kubedb/pgbouncer-pgpool-init-scripts/).
 
 ## Before You Begin
 
@@ -81,7 +81,7 @@ spec:
 ```
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/initialization/git-sync-public.yaml
-PgBouncer .kubedb.com/pb created
+PgBouncer.kubedb.com/pb created
 ```
 Here,
 
@@ -193,7 +193,7 @@ spec:
 
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/pgbouncer/initialization/yamls/git-sync-ssh.yaml
-PgBouncer .kubedb.com/pb created
+PgBouncer.kubedb.com/pb created
 ```
 Here, replace `<private_git_repo_ssh_url>` with your private Git repository's SSH URL.
 
@@ -288,7 +288,7 @@ spec:
 
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/PgBouncer /initialization/yamls/git-sync-pat.yaml
-PgBouncer .kubedb.com/pb created
+PgBouncer.kubedb.com/pb created
 ```
 Here,
 

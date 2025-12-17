@@ -1,10 +1,10 @@
 ---
-title: Gitsync Pgpool
+title: Git Repository Pgpool Initialization
 menu:
   docs_{{ .version }}:
-    identifier: pp-gitrepo-details
+    identifier: pp-git-repo-pgpool
     name: Git Repository
-    parent: pp-restart
+    parent: pp-initialization
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -16,7 +16,7 @@ section_menu_id: guides
 # Initialization Pgpool from a Git Repository
 This guide demonstrates how to use KubeDB to initialize a Pgpool database with initialization scripts (.sql, .sh, .js and/or .sql.gz) stored in a public or private Git repository.
 To fetch the repository contents, KubeDB uses a sidecar container called [git-sync](https://github.com/kubernetes/git-sync).
-In this example, we will initialize Pgpool using a `.sh` script from the GitHub repository [kubedb/Pgpool -init-scripts](https://github.com/kubedb/Pgpool -init-scripts).
+In this example, we will initialize Pgpool using a `.sh` script from the GitHub repository [kubedb/Pgpool-init-scripts](https://github.com/kubedb/pgbouncer-pgpool-init-scripts/).
 
 ## Before You Begin
 

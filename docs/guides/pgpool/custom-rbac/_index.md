@@ -5,6 +5,6 @@ menu:
     identifier: pp-custom-rbac
     name: Custom RBAC
     parent: pp-pgpool-guides
-    weight: 31
+    weight: 50
 menu_name: docs_{{ .version }}
 ---
