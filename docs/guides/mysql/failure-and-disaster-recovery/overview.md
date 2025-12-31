@@ -133,7 +133,7 @@ ha-mysql-2   2/2     Running   0          34m   app.kubernetes.io/component=data
 The pod having `kubedb.com/role=primary` is the primary and `kubedb.com/role=standby` are the standby's.
 
 
-Lets create a table in the primary.
+Let's create a table in the primary.
 
 ```shell
 # find the primary pod
@@ -239,7 +239,7 @@ ha-mysql-2 standby
 
 #### Case 1: Delete the current primary
 
-Lets delete the current primary and see how the role change happens almost immediately.
+Let's delete the current primary and see how the role change happens almost immediately.
 
 ```shell
 $ kubectl delete pods -n demo ha-mysql-0 

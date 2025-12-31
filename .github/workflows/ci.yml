@@ -89,11 +89,11 @@ jobs:
 
       - name: Check links
         run: |
-          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$'
+          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$'
           max_retries=5
           retry_count=0
           while [ $retry_count -lt $max_retries ]; do
-            if liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$'; then
+            if liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$'; then
               echo "Link check passed"
               exit 0
             fi
