@@ -73,7 +73,7 @@ Redis.kubedb.com/redis-demo created
 The `git-sync` container has two required flags:
 - `--repo`  – specifies the remote Git repository to sync.
 - `spec.init.script.scriptPath` – specifies the path within the repository where the initialization scripts are located.
-- - `.spec.init.git.securityContext.runAsUser: 999` ensure the container runs as the dedicated non-root `git-sync` user.
+- `.spec.init.git.securityContext.runAsUser: 999` ensure the container runs as the dedicated non-root `git-sync` user.
 > To know more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync).
 
 Now, wait until `redis-demo` has status `Ready`. i.e,
@@ -199,7 +199,7 @@ The `git-sync` container has two required flags:
 - `--root`  – specifies the working directory where the repository will be cloned.
 - `spec.init.git.authSecret` specifies the secret containing the `SSH` key.
 - `spec.init.script.scriptPath` – specifies the path within the repository where the initialization scripts are located.
-for more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync/blob/master/docs/ssh.md)
+
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
 ```shell

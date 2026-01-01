@@ -249,5 +249,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete mariadb -n demo sample-mariadb
+$ kubectl delete secret -n demo git-pat git-creds
 $ kubectl delete ns demo
 ```

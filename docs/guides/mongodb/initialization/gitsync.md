@@ -322,7 +322,7 @@ The `--link` argument creates a symlink that always points to the latest synced 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
 ```yaml
 $ kubectl get mg -n demo
-NAME   VERSION   STATUS   AGE
+NAME          VERSION   STATUS   AGE
 mg-git-pat     8.0.4     Ready    38m
 ```
 
@@ -332,5 +332,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete MongoDB -n demo mg-git mg-git-ssh mg-git-pat
+$ kubectl delete secret -n demo git-pat git-creds
 $ kubectl delete ns demo
 ```
