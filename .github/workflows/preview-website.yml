@@ -13,7 +13,7 @@ concurrency:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-24.04
+    runs-on: firecracker
     steps:
       - uses: actions/checkout@v4
         with:
@@ -32,10 +32,9 @@ jobs:
 
       - name: Install yq
         run: |
-          curl -fsSL -o yqq https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
-          chmod +x yqq
-          sudo mv yqq /usr/local/bin/yqq
-          pipx install yq
+          curl -fsSL -o yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          chmod +x yq
+          sudo mv yq /usr/local/bin/yq
 
       - name: Install Hugo
         run: |
