@@ -208,11 +208,6 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/git-sync-ssh.yaml
-MySQL.kubedb.com/sample-mysql created
-```
-
 Here,
 - `.spec.init.git.securityContext.runAsUser: 65533` ensure the container runs as the dedicated non-root `git-sync` user.
 - `.spec.init.git.authSecret` specifies the secret containing the `SSH` key.
@@ -267,10 +262,6 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/git-sync-pat.yaml
-MySQL.kubedb.com/sample-mysql created
-```
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
 
@@ -281,5 +272,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete MySQL -n demo sample-mysql
+$ kubectl delete secret -n demo git-pat git-creds
 $ kubectl delete ns demo
 ```

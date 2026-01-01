@@ -185,10 +185,6 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/initialization/git-sync-ssh.yaml
-mariadb.kubedb.com/sample-mariadb created
-```
 
 Here, 
 - `.spec.init.git.securityContext.runAsUser: 65533` ensure the container runs as the dedicated non-root `git-sync` user.
@@ -243,10 +239,6 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/initialization/git-sync-pat.yaml
-mariadb.kubedb.com/sample-mariadb created
-```
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
 

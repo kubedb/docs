@@ -202,10 +202,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/git-sync-ssh.yaml
-MongoDB.kubedb.com/mg-git-ssh created
-```
+
 
 Here,
 - `repo` with your private Git repository's SSH URL.
@@ -313,10 +310,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/git-sync-pat.yaml
-MongoDB.kubedb.com/mg-git-pat created
-```
+
 The `git-sync` container has two required flags:
 - `--repo`  – specifies the remote Git repository to sync.
 - `--root`  – specifies the working directory where the repository will be cloned.
@@ -330,7 +324,6 @@ Once the database reaches the `Ready` state, you can verify the data using the m
 $ kubectl get mg -n demo
 NAME   VERSION   STATUS   AGE
 mg-git-pat     8.0.4     Ready    38m
-
 ```
 
 ## CleanUp

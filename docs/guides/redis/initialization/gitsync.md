@@ -191,11 +191,6 @@ spec:
 ```
 
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/initialization/git-sync-ssh.yaml
-Redis.kubedb.com/redis-demo created
-```
-
 Here, replace `<private_git_repo_ssh_url>` with your private Git repository's SSH URL.
 
 
@@ -275,10 +270,6 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/initialization/git-sync-pat.yaml
-Redis.kubedb.com/redis-demo created
-```
 Here,
 
 - `--credential`Provides authentication information for accessing a private Git repository over HTTPS.
@@ -306,5 +297,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete Redis -n demo redis-demo
+$ kubectl delete secret -n demo git-pat git-creds
 $ kubectl delete ns demo
 ```

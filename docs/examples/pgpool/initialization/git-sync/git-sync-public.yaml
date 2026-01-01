@@ -17,10 +17,10 @@ spec:
   deletionPolicy: WipeOut
   init:
     script:
-      scriptPath: "pgbouncer-init-scripts/init"
+      scriptPath: "current"
       git:
         args:
-          - --repo=<public-repo-URL>
+          - --repo=https://github.com/kubedb/pgbouncer-pgpool-init-scripts
           - --depth=1
           - --add-user=true
           - --period=60s

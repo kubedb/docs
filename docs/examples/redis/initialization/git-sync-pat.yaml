@@ -11,7 +11,6 @@ spec:
       scriptPath: "redis_script.git"
       git:
         args:
-
           - --repo=<private_git_repo_http_url>
           - --depth=1
           - --period=60s

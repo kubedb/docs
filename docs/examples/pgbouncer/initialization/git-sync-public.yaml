@@ -10,7 +10,7 @@ spec:
     syncUsers: true
     databaseName: "postgres"
     databaseRef:
-      name: "postgres"
+      name: "quick-postgres"
       namespace: demo
   connectionPool:
     maxClientConnections: 20
@@ -19,9 +19,9 @@ spec:
     script:
       git:
         args:
-          - --repo=<default_git_repo_http_url>
+          - --repo=https://github.com/kubedb/pgbouncer-pgpool-init-scripts
           - --depth=1
           - --period=60s
           - --one-time
         resources: {}
-      scriptPath: <desired_script_path>
+      scriptPath: pgbouncer-pgpool-init-scripts/pgbouncer

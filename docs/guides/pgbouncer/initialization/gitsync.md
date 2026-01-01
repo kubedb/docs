@@ -72,12 +72,12 @@ spec:
     script:
       git:
         args:
-          - --repo=https://github.com/kubedb/pgbouncer-init-scripts
+          - --repo=https://github.com/kubedb/pgbouncer-pgpool-init-scripts
           - --depth=1
           - --period=60s
           - --one-time
         resources: {}
-      scriptPath: "pgbouncer-init-scripts/init"
+      scriptPath: pgbouncer-pgpool-init-scripts/pgbouncer
 ```
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/initialization/git-sync-public.yaml
@@ -177,7 +177,6 @@ spec:
       git:
         args:
           # use --ssh for private repository
-          # - --ssh
           - --repo=<private_git_repo_ssh_url>
           - --depth=1
           - --period=60s
@@ -191,10 +190,7 @@ spec:
         # run as git sync user
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/pgbouncer/initialization/yamls/git-sync-ssh.yaml
-PgBouncer.kubedb.com/pb created
-```
+
 Here, replace `<private_git_repo_ssh_url>` with your private Git repository's SSH URL.
 
 
@@ -286,10 +282,6 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/PgBouncer /initialization/yamls/git-sync-pat.yaml
-PgBouncer.kubedb.com/pb created
-```
 Here,
 
 - `--credential`Provides authentication information for accessing a private Git repository over HTTPS.
@@ -329,5 +321,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete PgBouncer -n demo pb
+$ kubectl delete secret -n demo git-pat git-creds
 $ kubectl delete ns demo
 ```

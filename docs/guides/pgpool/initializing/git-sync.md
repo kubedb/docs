@@ -71,15 +71,14 @@ spec:
   deletionPolicy: WipeOut
   init:
     script:
-      scriptPath: "pgbouncer-init-scripts/init"
+      scriptPath: "current"
       git:
         args:
-          - --repo=https://github.com/kubedb/pgbouncer-init-scripts
+          - --repo=https://github.com/kubedb/pgbouncer-pgpool-init-scripts
           - --depth=1
           - --add-user=true
           - --period=60s
           - --one-time
-
 ```
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/initialization/git-sync/git-sync-public.yaml
@@ -172,7 +171,7 @@ spec:
   deletionPolicy: WipeOut
   init:
     script:
-      scriptPath: <any_name>
+      scriptPath: "current"
       git:
         args:
           # use --ssh for private repository
@@ -191,10 +190,7 @@ spec:
           runAsUser: 65533
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/initialization/git-sync/git-sync-ssh.yaml
-Pgpool .kubedb.com/pgpool created
-```
+
 Here, replace `<private_git_repo_ssh_url>` with your private Git repository's SSH URL.
 
 
@@ -265,7 +261,7 @@ spec:
   deletionPolicy: WipeOut
   init:
     script:
-      scriptPath: <any_name>
+      scriptPath: "current"
       git:
         args:
           # update with your private repository    
@@ -281,13 +277,10 @@ spec:
         # run as git sync user 
         securityContext:
           runAsUser: 65533
-  
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/initialization/git-sync/git-sync-pat.yaml
-Pgpool .kubedb.com/pgpool created
-```
+
+
 Here,
 
 - `--credential`Provides authentication information for accessing a private Git repository over HTTPS.
@@ -324,5 +317,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete Pgpool -n demo pgpool
+$ kubectl delete secret -n demo git-pat git-creds
 $ kubectl delete ns demo
 ```
