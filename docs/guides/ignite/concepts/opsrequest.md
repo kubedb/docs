@@ -2,7 +2,7 @@
 title: IgniteOpsRequests CRD
 menu:
   docs_{{ .version }}:
-    identifier: ch-opsrequest-concepts
+    identifier: ig-opsrequest-concepts
     name: IgniteOpsRequest
     parent: ig-concepts-ignite
     weight: 15
