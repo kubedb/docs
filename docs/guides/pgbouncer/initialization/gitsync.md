@@ -15,7 +15,7 @@ section_menu_id: guides
 # Initialization PgBouncer from a Git Repository
 This guide demonstrates how to use KubeDB to initialize a PgBouncer database with initialization scripts (.sql, .sh, .js and/or .sql.gz) stored in a public or private Git repository.
 To fetch the repository contents, KubeDB uses a sidecar container called [git-sync](https://github.com/kubernetes/git-sync).
-In this example, we will initialize PgBouncer using a `.sh` script from the GitHub repository [kubedb/PgBouncer -init-scripts](https://github.com/kubedb/pgbouncer-pgpool-init-scripts/).
+In this example, we will initialize PgBouncer using a `.sh` script from the GitHub repository [kubedb/pgbouncer-init-scripts](https://github.com/kubedb/pgbouncer-pgpool-init-scripts/).
 
 ## Before You Begin
 
