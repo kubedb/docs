@@ -5,6 +5,6 @@ menu:
     identifier: pp-custom-versions-pgpool
     name: Custom Versions
     parent: pp-pgpool-guides
-    weight: 36
+    weight: 60
 menu_name: docs_{{ .version }}
 ---

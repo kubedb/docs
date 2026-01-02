@@ -165,7 +165,7 @@ spec:
      git:
        args:
        # update with your private repository    
-       - --repo=git@github.com:refat75/mysql-init-scripts.git
+       - --repo=<your-ssh-repo-url>
        - --link=current
        - --root=/root
        # terminate after one successful sync
@@ -185,10 +185,6 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/initialization/git-sync-ssh.yaml
-mariadb.kubedb.com/sample-mariadb created
-```
 
 Here, 
 - `.spec.init.git.securityContext.runAsUser: 65533` ensure the container runs as the dedicated non-root `git-sync` user.
@@ -222,10 +218,10 @@ spec:
      git:
        args:
        # update with your private repository    
-       - --repo=https://github.com/refat75/mysql-init-scripts.git
+       - --repo=<your-https-repo-url>
        - --link=current
        - --root=/root
-       - --credential={"url":"https://github.com","username":"refat75","password-file":"/etc/git-secret/github-pat"}
+       - --credential={"url":"https://github.com","username":"<username>","password-file":"/etc/git-secret/github-pat"}
        # terminate after one successful sync
        - --one-time 
        authSecret:
@@ -243,10 +239,6 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/initialization/git-sync-pat.yaml
-mariadb.kubedb.com/sample-mariadb created
-```
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
 
@@ -257,5 +249,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete mariadb -n demo sample-mariadb
+$ kubectl delete secret -n demo git-pat git-creds
 $ kubectl delete ns demo
 ```
