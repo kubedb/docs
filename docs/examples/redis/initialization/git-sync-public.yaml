@@ -1,0 +1,27 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Redis
+metadata:
+  name: redis-demo
+  namespace: demo
+spec:
+  version: "8.2.2"
+  mode: Standalone
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Mi
+  init:
+    script:
+      scriptPath: "redis-init-scripts"
+      git:
+        args:
+          - --repo=https://github.com/kubedb/redis-init-scripts
+          - --depth=1
+          - --period=60s
+          - --one-time
+        securityContext:
+          runAsUser: 999
+  terminationPolicy: Delete

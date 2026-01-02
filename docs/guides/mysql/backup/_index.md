@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-backup
     name: Backup & Restore
     parent: guides-mysql
-    weight: 40
+    weight: 80
 menu_name: docs_{{ .version }}
 ---

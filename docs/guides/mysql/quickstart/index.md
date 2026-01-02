@@ -620,7 +620,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 ## Next Steps
 
-- Initialize [MySQL with Script](/docs/guides/mysql/initialization/index.md).
+- Initialize [MySQL with Script](/docs/guides/mysql/initialization/using_script.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/index.md) to deploy MySQL with KubeDB.

@@ -2,7 +2,7 @@
 title: Rotate Authentication Overview
 menu:
   docs_{{ .version }}:
-    identifier: ms-rotate-auth-overview
+    identifier: guides-mysql-rotate-auth-overview
     name: Overview
     parent: ms-rotate-auth
     weight: 5

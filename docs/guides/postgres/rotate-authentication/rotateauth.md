@@ -14,7 +14,7 @@ section_menu_id: guides
 **Rotate Authentication** is a feature of the KubeDB Ops-Manager that allows you to rotate a `Postgres` user's authentication credentials using a `PostgresOpsRequest`. There are two ways to perform this rotation.
 
 1. **Operator Generated:** The KubeDB operator automatically generates a random credential, updates the existing secret with the new credential The KubeDB operator automatically generates a random credential and updates the existing secret with the new credential..
-2. **User Defined:** The user can create their own credentials by defining a secret of type `kubernetes.io/basic-auth` containing the desired `username` and `password` and then reference this secret in the `PostgresOpsRequest`.
+2. **User Defined:** The user can create their own credentials by defining a secret of type `kubernetes.io/basic-auth` containing the desired `password` and then reference this secret in the `PostgresOpsRequest`.
 
 ## Before You Begin 
 
@@ -245,11 +245,12 @@ The above output shows that the password has been changed successfully. The prev
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
+> **Note:** Can not change the username while rotating authentication. The username must be same as 'postgres' which is the current username of the database.
 
 ```shell
 $ kubectl create secret generic quick-postgres-user-auth -n demo \
                                                 --type=kubernetes.io/basic-auth \
-                                                --from-literal=username=admin \
+                                                --from-literal=username=postgres \
                                                 --from-literal=password=postgres-secret
  secret/quick-postgres-user-auth created
 ```
@@ -386,7 +387,7 @@ Events:
 $ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
 "quick-postgres-user-auth"
 $ kubectl get secret -n demo quick-postgres-user-auth-new -o=jsonpath='{.data.username}' | base64 -d
-admin                                        
+postgres                                        
 $ kubectl get secret -n demo quick-postgres-user-auth-new -o=jsonpath='{.data.password}' | base64 -d
 postgres-secret                                                                
 ```
