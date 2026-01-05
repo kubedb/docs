@@ -102,7 +102,10 @@ spec:
     url: http://vault.vault-demo.svc:8200
     roleName: virtual-secrets-role
 ```
-
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretstore.yaml
+secretstore.config.virtual-secrets.dev/vault configured
+```
 Here,
 
 - `spec.vault` - section describes the connection information for vault.
@@ -131,7 +134,7 @@ Here,
 - Other than that, everything else is similar to a core Kubernetes Secret.
   Let’s go ahead and apply the Secret,
 ```bash
-$ kubectl apply -f virtual-secrets/virtual-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/virtualsecret.yaml
 secret.virtual-secrets.dev/virtual-secret created
 ```
 
@@ -253,7 +256,7 @@ Here,
 -The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
 
 ```shell
-$ kubectl apply -f virtual-secrets/secret-provider-class.yaml 
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretProviderClass.yaml
 secretproviderclass.secrets-store.csi.x-k8s.io/virtual-secret created
 ```
 
@@ -291,7 +294,7 @@ Here,
 Let’s create the pod,
 
 ```shell
-$ kubectl apply -f virtual-secrets/app.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/webapp.yaml
 pod/webapp created
 ```
 
@@ -346,7 +349,7 @@ Here,
 We can now apply the Postgres custom resource,
 
 ```shell
-$ kubectl apply -f virtual-secrets/Postgres.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/virtual_secret/postgres.yaml
 Postgres.kubedb.com/rd created
 ``` 
 Now, wait until `pg` has status `Ready`. i.e. ,
@@ -418,24 +421,57 @@ username    postgres
 ```
 
 
-check
+We can see that the Postgres user password is stored in the vault server. Now let’s go ahead and connect to the database using the `psql` client to check whether it is working or not.
 ```bash
 kubectl exec -it -n demo pg-0 -- bash 
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
-pg-0:/$ ^[[200~PGPASSWORD=yFj_WnVA9rxfQlLt psql -U postgres -d postgres -p 5432 -h quick-postgres.demo.svc~^C
-pg-0:/$ PGPASSWORD=EGJl!tHEGzZoYwMi psql -U postgres -d postgres -p 5432 -h quick-postgres.demo.svc
-bash: !tHEGzZoYwMi: event not found
-pg-0:/$ ^[[200~ PGPASSWORD=EGJl!tHEGzZoYwMi psql -U postgres -d postgres -p 5432 -h quick-postgres.demo.svc
-bash: !tHEGzZoYwMi: event not found
-pg-0:/$ PGPASSWORD=EGJl!tHEGzZoYwMi psql -U postgres -d postgres -p 5432 -h pg.demo.svc
-bash: !tHEGzZoYwMi: event not found
 pg-0:/$ PGPASSWORD='EGJl!tHEGzZoYwMi' psql -U postgres -d postgres -p 5432 -h pg.demo.svc
 psql (17.5)
 Type "help" for help.
 
-postgres=# \dt
-Did not find any relations.
-postgres=# /dt
-postgres-# 
-
+postgres=# CREATE DATABASE my_database;
+CREATE DATABASE
+postgres=# \c my_database
+You are now connected to database "my_database" as user "postgres".
+my_database=# CREATE TABLE users (
+my_database(#     id SERIAL PRIMARY KEY,
+my_database(#     name VARCHAR(100) NOT NULL,
+my_database(#     email VARCHAR(150) UNIQUE NOT NULL,
+my_database(#     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+my_database(# );
+CREATE TABLE
+my_database=# \dt
+         List of relations
+ Schema | Name  | Type  |  Owner   
+--------+-------+-------+----------
+ public | users | table | postgres
+(1 row)
 ```
+We can see that we are able to connect to the database and create a database and a table successfully.
+
+## Cleanup
+To clean up the resources created in this guide, run the following commands:
+```bash
+$ kubectl delete -n demo postgres pg
+$ kubectl delete -n demo webapp,virtual-secret,secretproviderclass.virtual-secrets.dev/virtual-secret
+$ kubectl delete ns demo
+$ helm uninstall virtual-secrets-server -n kubevault
+$ helm uninstall secrets-store-csi-driver-provider-virtual-secrets -n kube-system
+$ helm uninstall csi-secrets-store -n kube-system
+```
+If you want to uninstall the `KubeVault`, run:
+```bash
+$ helm uninstall kubevault --namespace kubevault
+```
+## Next Steps
+
+- Learn about [backup and restore](/docs/guides/postgres/backup/stash/overview/index.md) PostgreSQL database using Stash.
+- Learn about initializing [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
+- Learn about [custom PostgresVersions](/docs/guides/postgres/custom-versions/setup.md).
+- Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
+- Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
+- Monitor your PostgreSQL database with KubeDB using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
+- Detail concepts of [Postgres object](/docs/guides/postgres/concepts/postgres.md).
+- Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy PostgreSQL with KubeDB.
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
