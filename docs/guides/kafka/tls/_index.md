@@ -5,6 +5,6 @@ menu:
     identifier: kf-tls
     name: TLS/SSL Encryption
     parent: kf-kafka-guides
-    weight: 45
+    weight: 50
 menu_name: docs_{{ .version }}
 ---
