@@ -707,7 +707,7 @@ kafkaopsrequest.ops.kubedb.com/kafka-prod-volumeexpansion-41xthr   VolumeExpansi
 
 ### Update Version
 
-List Kafka versions using `kubectl get Kafkaversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/kafka/update-version/versionupgrading/index.md).
+List Kafka versions using `kubectl get Kafkaversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/kafka/update-version/update-version.md).
 
 Let's choose `4.0.0` in this example.
 
