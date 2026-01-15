@@ -2,9 +2,9 @@
 title: Gitops Kafka
 menu:
   docs_{{ .version }}:
-    identifier: kf-gitops-kafka
+    identifier: kf-gitops
     name: Gitops
     parent: kf-kafka-guides
-    weight: 25
+    weight: 30
 menu_name: docs_{{ .version }}
 ---
