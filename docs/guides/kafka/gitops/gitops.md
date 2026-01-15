@@ -1,14 +1,16 @@
 ---
-title: GitOps KafkaQL
+title: Kafka GitOps Guides
+description: Kafka GitOps
 menu:
   docs_{{ .version }}:
-    identifier: kf-using-gitops
-    name: GitOps KafkaQL
-    parent: kf-gitops-Kafka
-    weight: 15
+    identifier: kf-gitops-guides
+    name: Gitops Kafka
+    parent: kf-gitops-kafka
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
@@ -889,7 +891,6 @@ There are some other fields that will trigger `Restart` ops request.
 - `.spec.monitor`
 - `.spec.spec.archiver`
 - `.spec.remoteReplica`
-- `.spec.leaderElection`
 - `spec.replication`
 - `.spec.standbyMode`
 - `.spec.streamingMode`
