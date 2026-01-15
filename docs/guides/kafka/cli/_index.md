@@ -5,6 +5,6 @@ menu:
     identifier: kf-cli-kafka
     name: CLI
     parent: kf-kafka-guides
-    weight: 100
+    weight: 95
 menu_name: docs_{{ .version }}
 ---
