@@ -1,21 +1,19 @@
 ---
-title: Kafka GitOps Guides
+title: Druid Gitops Guide
 menu:
-  docs_{{ .version }}:
-    identifier: kf-gitops-guides
-    name: Gitops Kafka
-    parent: kf-gitops-kafka
-    weight: 20
+    docs_{{ .version }}:
+        identifier: druid-gitops-guide
+        name: Druid Gitops
+        parent: guides-druid-gitops
+        weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
-
-
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# GitOps Kafka using KubeDB GitOps Operator
+# GitOps Druid using KubeDB GitOps Operator
 
-This guide will show you how to use `KubeDB` GitOps operator to create Kafka database and manage updates using GitOps workflow.
+This guide will show you how to use `KubeDB` GitOps operator to create Druid database and manage updates using GitOps workflow.
 
 ## Before You Begin
 
@@ -32,7 +30,7 @@ This guide will show you how to use `KubeDB` GitOps operator to create Kafka dat
   $ kubectl create ns demo
   namespace/demo created
   ```
-> Note: YAML files used in this tutorial are stored in [docs/examples/kafka](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/druid](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/druid) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 We are going to use `ArgoCD` in this tutorial. You can install `ArgoCD` in your cluster by following the steps [here](https://argo-cd.readthedocs.io/en/stable/getting_started/). Also, you need to install `argocd` CLI in your local machine. You can install `argocd` CLI by following the steps [here](https://argo-cd.readthedocs.io/en/stable/cli_installation/).
 
@@ -54,14 +52,14 @@ argocd app create kubedb --repo <repo-url> --path kubedb --dest-server https://k
 argocd app create kubedb --repo <repo-url> --path kubedb --dest-server https://kubernetes.default.svc --dest-namespace <namespace> --ssh-private-key-path ~/.ssh/id_rsa
 ```
 
-## Create Kafka Database using GitOps
+## Create Druid Database using GitOps
 
-### Create a Kafka GitOps CR
+### Create a Druid GitOps CR
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Kafka
+kind: Druid
 metadata:
-  name: kafka-prod
+  name: Druid-prod
   namespace: demo
 spec:
   version: 3.9.0
@@ -92,58 +90,58 @@ Create a directory like below,
 ```bash
 $ tree .
 ├── kubedb
-    └── Kafka.yaml
+    └── Druid.yaml
 1 directories, 1 files
 ```
 
-Now commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is created in your cluster.
+Now commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Druid` CR is created in your cluster.
 
-Our `gitops` operator will create an actual `Kafka` database CR in the cluster. List the resources created by `gitops` operator in the `demo` namespace.
+Our `gitops` operator will create an actual `Druid` database CR in the cluster. List the resources created by `gitops` operator in the `demo` namespace.
 
 
 ```bash
-$  kubectl get kafka.gitops.kubedb.com,kafka.kubedb.com -n demo
+$  kubectl get Druid.gitops.kubedb.com,Druid.kubedb.com -n demo
 NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-prod   2m56s
+Druid.gitops.kubedb.com/Druid-prod   2m56s
 
 NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-prod   kubedb.com/v1   3.9.0     Ready    2m56s
+Druid.kubedb.com/Druid-prod   kubedb.com/v1   3.9.0     Ready    2m56s
 ```
 
-List the resources created by `kubedb` operator created for `kubedb.com/v1` Kafka.
+List the resources created by `kubedb` operator created for `kubedb.com/v1` Druid.
 
 ```bash
-$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=kafka-prod'
+$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=Druid-prod'
 NAME                                                 AGE
-petset.apps.k8s.appscode.com/kafka-prod-broker       4m49s
-petset.apps.k8s.appscode.com/kafka-prod-controller   4m47s
+petset.apps.k8s.appscode.com/Druid-prod-broker       4m49s
+petset.apps.k8s.appscode.com/Druid-prod-controller   4m47s
 
 NAME                          READY   STATUS    RESTARTS   AGE
-pod/kafka-prod-broker-0       1/1     Running   0          4m48s
-pod/kafka-prod-broker-1       1/1     Running   0          4m42s
-pod/kafka-prod-controller-0   1/1     Running   0          4m47s
-pod/kafka-prod-controller-1   1/1     Running   0          4m40s
+pod/Druid-prod-broker-0       1/1     Running   0          4m48s
+pod/Druid-prod-broker-1       1/1     Running   0          4m42s
+pod/Druid-prod-controller-0   1/1     Running   0          4m47s
+pod/Druid-prod-controller-1   1/1     Running   0          4m40s
 
 NAME                     TYPE                       DATA   AGE
-secret/kafka-prod-auth   kubernetes.io/basic-auth   2      4m51s
+secret/Druid-prod-auth   kubernetes.io/basic-auth   2      4m51s
 
 NAME                      TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                       AGE
-service/kafka-prod-pods   ClusterIP   None         <none>        9092/TCP,9093/TCP,29092/TCP   4m51s
+service/Druid-prod-pods   ClusterIP   None         <none>        9092/TCP,9093/TCP,29092/TCP   4m51s
 
 NAME                                            TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/kafka-prod   kubedb.com/kafka   3.9.0     4m47s
+appbinding.appcatalog.appscode.com/Druid-prod   kubedb.com/Druid   3.9.0     4m47s
 ```
 
-## Update Kafka Database using GitOps
+## Update Druid Database using GitOps
 
-### Scale Kafka Database Resources
+### Scale Druid Database Resources
 
-Update the `Kafka.yaml` with the following,
+Update the `Druid.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Kafka
+kind: Druid
 metadata:
-  name: kafka-prod
+  name: Druid-prod
   namespace: demo
 spec:
   version: 3.9.0
@@ -152,7 +150,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1540Mi
@@ -171,7 +169,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1540Mi
@@ -190,25 +188,25 @@ spec:
   deletionPolicy: WipeOut
  ```
 
-Resource Requests and Limits are updated to `700m` CPU and `2Gi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is updated in your cluster.
+Resource Requests and Limits are updated to `700m` CPU and `2Gi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Druid` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the resource changes and create a `KafkaOpsRequest` to update the `Kafka` database. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the resource changes and create a `DruidOpsRequest` to update the `Druid` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ $ kubectl get kf,kafka,kfops -n demo
+$ $ kubectl get kf,Druid,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-prod   kubedb.com/v1   3.9.0     Ready    22h
+Druid.kubedb.com/Druid-prod   kubedb.com/v1   3.9.0     Ready    22h
 
 NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-prod   22h
+Druid.gitops.kubedb.com/Druid-prod   22h
 
 NAME                                                                   TYPE              STATUS        AGE
-Kafkaopsrequest.ops.kubedb.com/kafka-prod-verticalscaling-i0kr1l   VerticalScaling       Successful     2s
+Druidopsrequest.ops.kubedb.com/Druid-prod-verticalscaling-i0kr1l   VerticalScaling       Successful     2s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
 ```bash
-$ kubectl get pod -n demo Kafka-prod-broker-0 -o json | jq '.spec.containers[0].resources'
+$ kubectl get pod -n demo Druid-prod-broker-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
     "memory": "1536Mi"
@@ -220,13 +218,13 @@ $ kubectl get pod -n demo Kafka-prod-broker-0 -o json | jq '.spec.containers[0].
 }
 ```
 
-### Scale Kafka Replicas
-Update the `Kafka.yaml` with the following,
+### Scale Druid Replicas
+Update the `Druid.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Kafka
+kind: Druid
 metadata:
-  name: kafka-prod
+  name: Druid-prod
   namespace: demo
 spec:
   version: 3.9.0
@@ -235,7 +233,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1540Mi
@@ -254,7 +252,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1540Mi
@@ -273,44 +271,44 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Update the `replicas` to `3`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is updated in your cluster.
-Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` KafkaOpsRequest to update the `Kafka` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
+Update the `replicas` to `3`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Druid` CR is updated in your cluster.
+Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` DruidOpsRequest to update the `Druid` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,kafka,kfops -n demo
+$ kubectl get kf,Druid,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-prod   kubedb.com/v1   3.9.0     Ready    22h
+Druid.kubedb.com/Druid-prod   kubedb.com/v1   3.9.0     Ready    22h
 
 NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-prod   22h
+Druid.gitops.kubedb.com/Druid-prod   22h
 
 NAME                                                                 TYPE                STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-prod-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
-kafkaopsrequest.ops.kubedb.com/kafka-prod-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
+Druidopsrequest.ops.kubedb.com/Druid-prod-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
+Druidopsrequest.ops.kubedb.com/Druid-prod-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$  kubectl get pod -n demo -l 'app.kubernetes.io/instance=kafka-prod'
+$  kubectl get pod -n demo -l 'app.kubernetes.io/instance=Druid-prod'
 NAME                      READY   STATUS    RESTARTS   AGE
-kafka-prod-broker-0       1/1     Running   0          34m
-kafka-prod-broker-1       1/1     Running   0          33m
-kafka-prod-broker-2       1/1     Running   0          33m
-kafka-prod-controller-0   1/1     Running   0          32m
-kafka-prod-controller-1   1/1     Running   0          31m
-kafka-prod-controller-2   1/1     Running   0          31m
+Druid-prod-broker-0       1/1     Running   0          34m
+Druid-prod-broker-1       1/1     Running   0          33m
+Druid-prod-broker-2       1/1     Running   0          33m
+Druid-prod-controller-0   1/1     Running   0          32m
+Druid-prod-controller-1   1/1     Running   0          31m
+Druid-prod-controller-2   1/1     Running   0          31m
 ```
 
 We can also scale down the replicas by updating the `replicas` fields.
 
-### Expand Kafka Volume
+### Expand Druid Volume
 
-Update the `Kafka.yaml` with the following,
+Update the `Druid.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Kafka
+kind: Druid
 metadata:
-  name: kafka-prod
+  name: Druid-prod
   namespace: demo
 spec:
   version: 3.9.0
@@ -319,7 +317,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -338,7 +336,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -357,39 +355,39 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is updated in your cluster.
+Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Druid` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` KafkaOpsRequest to update the `Kafka` database volume. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` DruidOpsRequest to update the `Druid` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,kafka,kfops -n demo
+$ kubectl get kf,Druid,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-prod   kubedb.com/v1   3.9.0     Ready    23m
+Druid.kubedb.com/Druid-prod   kubedb.com/v1   3.9.0     Ready    23m
 
 NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-prod   23m
+Druid.gitops.kubedb.com/Druid-prod   23m
 
 NAME                                                                 TYPE                STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-prod-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
-kafkaopsrequest.ops.kubedb.com/kafka-prod-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
-kafkaopsrequest.ops.kubedb.com/kafka-prod-volumeexpansion-41xthr     VolumeExpansion     Successful   19m
+Druidopsrequest.ops.kubedb.com/Druid-prod-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
+Druidopsrequest.ops.kubedb.com/Druid-prod-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
+Druidopsrequest.ops.kubedb.com/Druid-prod-volumeexpansion-41xthr     VolumeExpansion     Successful   19m
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
-$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=kafka-prod'
+$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=Druid-prod'
 NAME                                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-kafka-prod-data-kafka-prod-broker-0       Bound    pvc-2afd4835-5686-492b-be93-c6e040e0a6c6   2Gi        RWO            Standard       <unset>                 3h39m
-kafka-prod-data-kafka-prod-broker-1       Bound    pvc-aaf994cc-6b04-4c37-80d5-5e966dad8487   2Gi        RWO            Standard       <unset>                 3h39m
-kafka-prod-data-kafka-prod-controller-0   Bound    pvc-82d2b233-203d-4df2-a0fd-ecedbc0825b7   2Gi        RWO            Standard       <unset>                 3h39m
-kafka-prod-data-kafka-prod-controller-1   Bound    pvc-91852c29-ab1a-48ad-9255-a0b15d5a7515   2Gi        RWO            Standard       <unset>                 3h39m
+Druid-prod-data-Druid-prod-broker-0       Bound    pvc-2afd4835-5686-492b-be93-c6e040e0a6c6   2Gi        RWO            Standard       <unset>                 3h39m
+Druid-prod-data-Druid-prod-broker-1       Bound    pvc-aaf994cc-6b04-4c37-80d5-5e966dad8487   2Gi        RWO            Standard       <unset>                 3h39m
+Druid-prod-data-Druid-prod-controller-0   Bound    pvc-82d2b233-203d-4df2-a0fd-ecedbc0825b7   2Gi        RWO            Standard       <unset>                 3h39m
+Druid-prod-data-Druid-prod-controller-1   Bound    pvc-91852c29-ab1a-48ad-9255-a0b15d5a7515   2Gi        RWO            Standard       <unset>                 3h39m
 
 ```
 
-## Reconfigure Kafka
+## Reconfigure Druid
 
 At first, we will create a secret containing `user.conf` file with required configuration settings.
-To know more about this configuration file, check [here](/docs/guides/kafka/configuration/kafka-combined.md)
+To know more about this configuration file, check [here](/docs/guides/Druid/configuration/Druid-combined.md)
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -407,16 +405,16 @@ Now, we will add this file to `kubedb /kf-configuration.yaml`.
 $ tree .
 ├── kubedb
 │ ├── kf-configuration.yaml
-│ └── Kafka.yaml
+│ └── Druid.yaml
 1 directories, 2 files
 ```
 
-Update the `Kafka.yaml` with the following,
+Update the `Druid.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Kafka
+kind: Druid
 metadata:
-  name: kafka-prod
+  name: Druid-prod
   namespace: demo
 spec:
   configSecret:
@@ -427,7 +425,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -446,7 +444,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -465,21 +463,21 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is updated in your cluster.
+Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Druid` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` KafkaOpsRequest to update the `Kafka` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` DruidOpsRequest to update the `Druid` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,kafka,kfops -n demo
+$ kubectl get kf,Druid,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-prod   kubedb.com/v1   3.9.0     Ready    74m
+Druid.kubedb.com/Druid-prod   kubedb.com/v1   3.9.0     Ready    74m
 
 NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-prod   74m
+Druid.gitops.kubedb.com/Druid-prod   74m
 
 NAME                                                               TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-prod-reconfigure-ukj41o       Reconfigure       Successful   24m
-kafkaopsrequest.ops.kubedb.com/kafka-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   70m
+Druidopsrequest.ops.kubedb.com/Druid-prod-reconfigure-ukj41o       Reconfigure       Successful   24m
+Druidopsrequest.ops.kubedb.com/Druid-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   70m
 
 ```
 
@@ -487,7 +485,7 @@ kafkaopsrequest.ops.kubedb.com/kafka-prod-volumeexpansion-41xthr   VolumeExpansi
 
 > We can also reconfigure the parameters creating another secret and reference the secret in the `configSecret` field. Also you can remove the `configSecret` field to use the default parameters.
 
-### Rotate Kafka Auth
+### Rotate Druid Auth
 
 To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new username and password.
 
@@ -496,20 +494,20 @@ We will do that using gitops, create the file `kubedb /kf-auth.yaml` with the fo
 ```bash
 kubectl create secret generic kf-rotate-auth -n demo \
 --type=kubernetes.io/basic-auth \
---from-literal=username=kafka \
---from-literal=password=kafka-secret
+--from-literal=username=Druid \
+--from-literal=password=Druid-secret
 secret/kf-rotate-auth created
 
 ```
 
 
 
-Update the `Kafka.yaml` with the following,
+Update the `Druid.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Kafka
+kind: Druid
 metadata:
-  name: kafka-prod
+  name: Druid-prod
   namespace: demo
 spec:
   authSecret:
@@ -523,7 +521,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -542,7 +540,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -561,22 +559,22 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Change the `authSecret` field to `kf-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is updated in your cluster.
+Change the `authSecret` field to `kf-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Druid` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the auth changes and create a `RotateAuth` KafkaOpsRequest to update the `Kafka` database auth. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the auth changes and create a `RotateAuth` DruidOpsRequest to update the `Druid` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get kf,kafka,kfops -n demo
+$  kubectl get kf,Druid,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-prod   kubedb.com/v1   3.9.0     Ready    7m11s
+Druid.kubedb.com/Druid-prod   kubedb.com/v1   3.9.0     Ready    7m11s
 
 NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-prod   7m11s
+Druid.gitops.kubedb.com/Druid-prod   7m11s
 
 NAME                                                               TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-prod-reconfigure-ukj41o       Reconfigure       Successful   17h
-kafkaopsrequest.ops.kubedb.com/kafka-prod-rotate-auth-43ris8       RotateAuth        Successful   28m
-kafkaopsrequest.ops.kubedb.com/kafka-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   17h
+Druidopsrequest.ops.kubedb.com/Druid-prod-reconfigure-ukj41o       Reconfigure       Successful   17h
+Druidopsrequest.ops.kubedb.com/Druid-prod-rotate-auth-43ris8       RotateAuth        Successful   28m
+Druidopsrequest.ops.kubedb.com/Druid-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   17h
 
 ```
 
@@ -585,7 +583,7 @@ kafkaopsrequest.ops.kubedb.com/kafka-prod-volumeexpansion-41xthr   VolumeExpansi
 
 We can add, rotate or remove TLS configuration using `gitops`.
 
-To add tls, we are going to create an example `Issuer` that will be used to enable SSL/TLS in Kafka. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
+To add tls, we are going to create an example `Issuer` that will be used to enable SSL/TLS in Druid. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
 
 - Start off by generating a ca certificates using openssl.
 
@@ -601,14 +599,14 @@ writing new private key to './ca.key'
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls kafka-ca \
+$ kubectl create secret tls Druid-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/Kafka-ca created
+secret/Druid-ca created
 ```
 
-Now, Let's create an `Issuer` using the `Kafka-ca` secret that we have just created. The `YAML` file looks like this:
+Now, Let's create an `Issuer` using the `Druid-ca` secret that we have just created. The `YAML` file looks like this:
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -618,7 +616,7 @@ metadata:
   namespace: demo
 spec:
   ca:
-    secretName: kafka-ca
+    secretName: Druid-ca
 ```
 
 Let's add that to our `kubedb /kf-issuer.yaml` file. File structure will look like this,
@@ -627,16 +625,16 @@ $ tree .
 ├── kubedb
 │ ├── kf-configuration.yaml
 │ ├── kf-issuer.yaml
-│ └── Kafka.yaml
+│ └── Druid.yaml
 1 directories, 4 files
 ```
 
-Update the `Kafka.yaml` with the following,
+Update the `Druid.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Kafka
+kind: Druid
 metadata:
-  name: kafka-prod
+  name: Druid-prod
   namespace: demo
 spec:
   version: 3.9.0
@@ -645,7 +643,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -664,7 +662,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -683,41 +681,41 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is updated in your cluster.
+Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Druid` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` KafkaOpsRequest to update the `Kafka` database tls. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` DruidOpsRequest to update the `Druid` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get kf,kafka,kfops,pods -n demo
+$  kubectl get kf,Druid,kfops,pods -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-prod   kubedb.com/v1   3.9.0     Ready    41m
+Druid.kubedb.com/Druid-prod   kubedb.com/v1   3.9.0     Ready    41m
 
 NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-prod   75m
+Druid.gitops.kubedb.com/Druid-prod   75m
 
 NAME                                                               TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-prod-reconfigure-ukj41o       Reconfigure       Successful   5d18h
-kafkaopsrequest.ops.kubedb.com/kafka-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   9m18s
-kafkaopsrequest.ops.kubedb.com/kafka-prod-rotate-auth-43ris8       RotateAuth        Successful   5d1h
-kafkaopsrequest.ops.kubedb.com/kafka-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   5d19h
+Druidopsrequest.ops.kubedb.com/Druid-prod-reconfigure-ukj41o       Reconfigure       Successful   5d18h
+Druidopsrequest.ops.kubedb.com/Druid-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   9m18s
+Druidopsrequest.ops.kubedb.com/Druid-prod-rotate-auth-43ris8       RotateAuth        Successful   5d1h
+Druidopsrequest.ops.kubedb.com/Druid-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   5d19h
 
 ```
 
 
-> We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for Kafka.
+> We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for Druid.
 
 ### Update Version
 
-List Kafka versions using `kubectl get Kafkaversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/kafka/update-version/update-version.md).
+List Druid versions using `kubectl get Druidversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/Druid/update-version/update-version.md).
 
 Let's choose `4.0.0` in this example.
 
-Update the `Kafka.yaml` with the following,
+Update the `Druid.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Kafka
+kind: Druid
 metadata:
-  name: kafka-prod
+  name: Druid-prod
   namespace: demo
 spec:
   version: 4.0.0
@@ -726,7 +724,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -745,7 +743,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -764,50 +762,50 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Update the `version` field to `17.4`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is updated in your cluster.
+Update the `version` field to `17.4`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Druid` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the version changes and create a `VersionUpdate` KafkaOpsRequest to update the `Kafka` database version. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the version changes and create a `VersionUpdate` DruidOpsRequest to update the `Druid` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,kafka,kfops -n demo
+$ kubectl get kf,Druid,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-prod   kubedb.com/v1   4.0.0     Ready    3h47m
+Druid.kubedb.com/Druid-prod   kubedb.com/v1   4.0.0     Ready    3h47m
 
 NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-prod   3h47m
+Druid.gitops.kubedb.com/Druid-prod   3h47m
 
 NAME                                                               TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-prod-reconfigure-ukj41o       Reconfigure       Successful   5d22h
-kafkaopsrequest.ops.kubedb.com/kafka-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   4h16m
-kafkaopsrequest.ops.kubedb.com/kafka-prod-rotate-auth-43ris8       RotateAuth        Successful   5d6h
-kafkaopsrequest.ops.kubedb.com/kafka-prod-versionupdate-wyn2dp     UpdateVersion     Successful   3h51m
-kafkaopsrequest.ops.kubedb.com/kafka-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   5d23h
+Druidopsrequest.ops.kubedb.com/Druid-prod-reconfigure-ukj41o       Reconfigure       Successful   5d22h
+Druidopsrequest.ops.kubedb.com/Druid-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   4h16m
+Druidopsrequest.ops.kubedb.com/Druid-prod-rotate-auth-43ris8       RotateAuth        Successful   5d6h
+Druidopsrequest.ops.kubedb.com/Druid-prod-versionupdate-wyn2dp     UpdateVersion     Successful   3h51m
+Druidopsrequest.ops.kubedb.com/Druid-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   5d23h
 ```
 
 
-Now, we are going to verify whether the `Kafka`, `PetSet` and it's `Pod` have updated with new image. Let's check,
+Now, we are going to verify whether the `Druid`, `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
-$ kubectl get Kafka -n demo kafka-prod -o=jsonpath='{.spec.version}{"\n"}'
+$ kubectl get Druid -n demo Druid-prod -o=jsonpath='{.spec.version}{"\n"}'
 4.0.0
 
-$ kubectl get petset -n demo kafka-prod-broker -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/kafka:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
+$ kubectl get petset -n demo Druid-prod-broker -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+ghcr.io/appscode-images/Druid:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
 
-$  kubectl get pod -n demo kafka-prod-broker-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/kafka:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
+$  kubectl get pod -n demo Druid-prod-broker-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+ghcr.io/appscode-images/Druid:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
 ```
 
 ### Enable Monitoring
 
 If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
 
-Update the `Kafka.yaml` with the following,
+Update the `Druid.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Kafka
+kind: Druid
 metadata:
-  name: kafka-prod
+  name: Druid-prod
   namespace: demo
 spec:
   version: 4.0.0
@@ -816,7 +814,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -835,7 +833,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: kafka
+            - name: Druid
               resources:
                 limits:
                   memory: 1536Mi
@@ -863,24 +861,24 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Add `monitor` field in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is updated in your cluster.
+Add `monitor` field in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Druid` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the monitoring changes and create a `Restart` KafkaOpsRequest to add the `Kafka` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the monitoring changes and create a `Restart` DruidOpsRequest to add the `Druid` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get Kafkaes.gitops.kubedb.com,Kafkaes.kubedb.com,Kafkaopsrequest -n demo
+$ kubectl get Druides.gitops.kubedb.com,Druides.kubedb.com,Druidopsrequest -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-prod   kubedb.com/v1   4.0.0     Ready    5h12m
+Druid.kubedb.com/Druid-prod   kubedb.com/v1   4.0.0     Ready    5h12m
 
 NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-prod   5h12m
+Druid.gitops.kubedb.com/Druid-prod   5h12m
 
 NAME                                                               TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-prod-reconfigure-ukj41o       Reconfigure       Successful   6d
-kafkaopsrequest.ops.kubedb.com/kafka-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   5h42m
-kafkaopsrequest.ops.kubedb.com/kafka-prod-restart-ljpqih           Restart           Successful   3m51s
-kafkaopsrequest.ops.kubedb.com/kafka-prod-rotate-auth-43ris8       RotateAuth        Successful   5d7h
-kafkaopsrequest.ops.kubedb.com/kafka-prod-versionupdate-wyn2dp     UpdateVersion     Successful   5h16m
-kafkaopsrequest.ops.kubedb.com/kafka-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   6d
+Druidopsrequest.ops.kubedb.com/Druid-prod-reconfigure-ukj41o       Reconfigure       Successful   6d
+Druidopsrequest.ops.kubedb.com/Druid-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   5h42m
+Druidopsrequest.ops.kubedb.com/Druid-prod-restart-ljpqih           Restart           Successful   3m51s
+Druidopsrequest.ops.kubedb.com/Druid-prod-rotate-auth-43ris8       RotateAuth        Successful   5d7h
+Druidopsrequest.ops.kubedb.com/Druid-prod-versionupdate-wyn2dp     UpdateVersion     Successful   5h16m
+Druidopsrequest.ops.kubedb.com/Druid-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   6d
 
 ```
 
@@ -899,10 +897,10 @@ There are some other fields that will trigger `Restart` ops request.
 
 ## Next Steps
 
-[//]: # (- Learn Kafka [GitOps]&#40;/docs/guides/kafka/concepts/Kafka-gitops.md&#41;)
-- Learn Kafka Scaling
-    - [Horizontal Scaling](/docs/guides/kafka/scaling/horizontal-scaling/combined.md)
-    - [Vertical Scaling](/docs/guides/kafka/scaling/vertical-scaling/combined.md)
-- Learn Version Update Ops Request and Constraints [here](/docs/guides/kafka/update-version/overview.md)
-- Monitor your KafkaQL database with KubeDB using [built-in Prometheus](/docs/guides/kafka/monitoring/using-builtin-prometheus.md).
+[//]: # (- Learn Druid [GitOps]&#40;/docs/guides/Druid/concepts/Druid-gitops.md&#41;)
+- Learn Druid Scaling
+    - [Horizontal Scaling](/docs/guides/Druid/scaling/horizontal-scaling/combined.md)
+    - [Vertical Scaling](/docs/guides/Druid/scaling/vertical-scaling/combined.md)
+- Learn Version Update Ops Request and Constraints [here](/docs/guides/Druid/update-version/overview.md)
+- Monitor your DruidQL database with KubeDB using [built-in Prometheus](/docs/guides/Druid/monitoring/using-builtin-prometheus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
