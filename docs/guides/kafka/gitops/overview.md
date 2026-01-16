@@ -1,11 +1,11 @@
 ---
-title: Kafka GitOps Overview
-description: Kafka GitOps Overview
+title: Kafka Gitops Overview
+description: Kafka Gitops Overview
 menu:
   docs_{{ .version }}:
     identifier: kf-gitops-overview
     name: Overview
-    parent: kf-gitops-kafka
+    parent: kf-gitops
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
