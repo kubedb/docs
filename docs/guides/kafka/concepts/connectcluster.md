@@ -54,6 +54,18 @@ spec:
         secretName: connectcluster-client-cert
   configSecret:
     name: custom-connectcluster-config
+  configuration:
+    secretName: custom-connectcluster-config
+    inline:
+      config.properties: |
+        key.converter=org.apache.kafka.connect.json.JsonConverter
+        value.converter=org.apache.kafka.connect.json.JsonConverter
+        key.converter.schemas.enable=true
+        value.converter.schemas.enable=true
+        offset.storage.topic=connect-cluster-offsets
+        config.storage.topic=connect-cluster-configs
+        status.storage.topic=connect-cluster-status
+        offset.flush.interval.ms=10000
   replicas: 3
   connectorPlugins:
     - gcs-0.13.0
@@ -132,6 +144,31 @@ kafkaRef:
 ```yaml
 configSecret:
   name: <custom-config-secret-name>
+```
+
+> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configSecret.name`. The field `.spec.configSecret` is deprecated and will be removed in future releases. If you still use `.spec.configSecret`, KubeDB will copy `.spec.configSecret.name` to `.spec.configuration.secretName` internally.
+
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for Kafka Connect Cluster. It has the following fields:
+- `configuration.secretName` is a optional field that specifies the name of the secret that holds custom configuration files for Kafka Connect Cluster.
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the ConnectCluster object. It has the following possible keys:
+    - `config.properties` - is used to provide custom configuration for Kafka Connect Cluster.
+
+```yaml
+spec:
+  configuration:
+    secretName: <custom-config-secret-name>
+```
+or
+```yaml
+spec:
+  configuration:
+    inline:
+      config.properties: |
+        key.converter=org.apache.kafka.connect.json.JsonConverter
+        value.converter=org.apache.kafka.connect.json.JsonConverter
+        .....
+        ....
 ```
 
 ### spec.authSecret

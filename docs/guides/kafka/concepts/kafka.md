@@ -35,6 +35,18 @@ spec:
     name: kafka-admin-cred
   configSecret:
     name: kafka-custom-config
+  configuration:
+    secretName: kafka-custom-config
+    inline:
+      broker.properties: |
+        log.retention.hours=168
+        log.segment.bytes=1073741824
+      controller.properties: |
+        log.retention.hours=168
+        log.segment.bytes=1073741824
+      server.properties: |
+        log.retention.hours=168
+        log.segment.bytes=1073741824
   enableSSL: true
   healthChecker:
     failureThreshold: 3
@@ -180,7 +192,17 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 
 ### spec.configSecret
 
-`spec.configSecret` is an optional field that points to a Secret used to hold custom Kafka configuration. If not set, KubeDB operator will use default configuration for Kafka.
+`spec.configSecret` is an optional field that points to a Secret used to hold custom Kafka configuration. If not set, KubeDB operator will use default configuration for Kafka. This is currently not in use. Use `.spec.configuration` to provide custom configuration instead. If you still provide this field, KubeDB operator will update `spec.configuration.secretName` with the provided secret name.
+
+> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configSecret.name`. The field `.spec.configSecret` is deprecated and will be removed in future releases. If you still use `.spec.configSecret`, KubeDB will copy `.spec.configSecret.name` to `.spec.configuration.secretName` internally.
+
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for Kafka cluster. It has the following fields:
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Kafka cluster.
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Kafka object. It has the following possible keys:
+    - `broker.properties` - is used to provide custom configuration for Kafka brokers.
+    - `controller.properties` - is used to provide custom configuration for Kafka controllers.
+    - `server.propertbies` - is used to provide custom configuration for both Kafka brokers and controllers.
 
 ### spec.topology
 

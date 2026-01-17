@@ -34,6 +34,6 @@ spec:
   connectClusterRef:
     name: mirror-connect
     namespace: demo
-  configSecret:
-    name: mirror-checkpoint-config
+  configuration:
+    secretName: mirror-checkpoint-config
   deletionPolicy: WipeOut

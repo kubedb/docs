@@ -31,6 +31,14 @@ metadata:
 spec:
   configSecret:
     name: mongodb-source-config
+  configuration:
+    secretName: mongodb-source-config
+    inline:
+      config.properties: |
+        connector.class=com.mongodb.*
+        tasks.max=1
+        topic.prefix=mongodb-
+        connection.uri=mongodb://mongo-user:
   connectClusterRef:
     name: connectcluster-quickstart
     namespace: demo
@@ -42,8 +50,30 @@ spec:
 `spec.configSecret` is a required field that specifies the name of the secret containing the configuration for the Connector. The secret should contain a key `config.properties` which contains the configuration for the Connector.
 ```yaml
 spec:
-  configSecret:
-    name: <config-secret-name>
+  configuration:
+    secretName: <config-secret-name>
+```
+
+> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configSecret.name`. The field `.spec.configSecret` is deprecated and will be removed in future releases. If you still use `.spec.configSecret`, KubeDB will copy `.spec.configSecret.name` to `.spec.configuration.secretName` internally.
+
+### spec.configuration
+
+`spec.configuration` is a required field that specifies the configuration for the Connector. It can either be specified inline or as a reference to a secret.
+```yaml
+spec:
+  configuration:
+    secretName: <config-secret-name>
+```
+or
+```yaml
+spec:
+  configuration:
+    inline:
+      config.properties: |
+        connector.class=com.mongodb.*
+        tasks.max=1
+        topic.prefix=mongodb-
+        connection.uri=mongodb://mongo-user:mongo-password@mongo-host:27017
 ```
 
 ### spec.connectClusterRef

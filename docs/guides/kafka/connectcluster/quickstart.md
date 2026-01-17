@@ -422,8 +422,8 @@ metadata:
   name: mongodb-source-connector
   namespace: demo
 spec:
-  configSecret:
-    name: mongodb-source-config
+  configuration:
+    secretName: mongodb-source-config
   connectClusterRef:
     name: connectcluster-quickstart
     namespace: demo
@@ -432,7 +432,7 @@ spec:
 
 Here,
 
-- `spec.configSecret` - is the name of the secret containing the connector configuration.
+- `spec.configuration.secretName` - is the name of the secret containing the connector configuration.
 - `spec.connectClusterRef` - is the name of the ConnectCluster instance that the connector will run on. This is an appbinding reference of the ConnectCluster instance.
 - `spec.deletionPolicy` - specifies what KubeDB should do when a user try to delete Connector CR. Deletion policy `WipeOut` will delete the connector from the ConnectCluster when the Connector CR is deleted. If you want to keep the connector after deleting the Connector CR, you can set the deletion policy to `Delete`.
 
