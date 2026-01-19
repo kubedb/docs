@@ -35,8 +35,8 @@ spec:
     kind: Secret
     name: es-admin-cred
     externallyManaged: false
-  configSecret:
-    name: es-custom-config
+  configuration:
+    secretName: es-custom-config
   enableSSL: true
   internalUsers:
     metrics_exporter: {}

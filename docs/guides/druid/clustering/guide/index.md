@@ -98,8 +98,8 @@ spec:
   version: 28.0.1
   deepStorage:
     type: s3
-    configSecret:
-      name: deep-storage-config
+    configuration:
+      secretName: deep-storage-config
   topology:
     routers:
       replicas: 1
@@ -148,7 +148,7 @@ Metadata:
         .:
         f:deepStorage:
           .:
-          f:configSecret:
+          f:configuration:
           f:type:
         f:deletionPolicy:
         f:healthChecker:
@@ -520,7 +520,7 @@ Metadata:
         .:
         f:deepStorage:
           .:
-          f:configSecret:
+          f:configuration:
           f:type:
         f:deletionPolicy:
         f:healthChecker:

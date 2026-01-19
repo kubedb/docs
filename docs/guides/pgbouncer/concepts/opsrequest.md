@@ -125,8 +125,8 @@ spec:
     name: pgbouncer-server
   configuration:
     pgbouncer:
-      configSecret:
-        name: new-custom-config
+      configuration:
+        secretName: new-custom-config
 ```
 
 Here, we are going to describe the various sections of a `PgBouncerOpsRequest` crd.

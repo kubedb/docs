@@ -69,8 +69,8 @@ metadata:
 spec:
   version: "16.1"
   replicas: 3
-  configSecret:
-    name: pg-configuration
+  configuration:
+    secretName: pg-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -158,8 +158,7 @@ spec:
   databaseRef:
     name: ha-postgres
   configuration:   
-    configSecret:
-      name: new-pg-configuration
+    secretName: new-pg-configuration
 ```
 
 Here,

@@ -9,5 +9,4 @@ spec:
     name: mg-standalone
   configuration:
     standalone:
-      configSecret:
-        name: new-custom-config
+      secretName: new-custom-config

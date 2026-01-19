@@ -5,8 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: 24.4.1
-  configSecret:
-    name: clickhouse-configuration
+  configuration:
+    secretName: clickhouse-configuration
   replicas: 1
   storage:
     accessModes:

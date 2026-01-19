@@ -29,9 +29,8 @@ spec:
       serviceMonitor:
         labels:
           app: kubedb
-        interval: 10s
-  configSecret:
-    name: pg-custom-config
+        interval  configuration:
+    secretName: pg-custom-config
   podTemplate:
     metadata:
       annotations:

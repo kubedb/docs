@@ -8,8 +8,7 @@ spec:
   shardTopology:
     configServer:
       replicas: 3
-      configSecret:
-        name: mg-custom-config
+      secretName: mg-custom-config
       storage:
         resources:
           requests:
@@ -17,13 +16,11 @@ spec:
         storageClassName: standard
     mongos:
       replicas: 2
-      configSecret:
-        name: mg-custom-config
+      secretName: mg-custom-config
     shard:
       replicas: 3
       shards: 2
-      configSecret:
-        name: mg-custom-config
+      secretName: mg-custom-config
       storage:
         resources:
           requests:

@@ -155,8 +155,8 @@ spec:
   deletionPolicy: Delete
   deepStorage:
     type: s3
-    configSecret:
-      name: deep-storage-config
+    configuration:
+      secretName: deep-storage-config
   topology:
     coordinators:
       replicas: 2
@@ -543,4 +543,3 @@ $ kubectl delete ns demo
 - Monitor your Druid cluster with [Prometheus integration](/docs/guides/druid/monitoring/using-builtin-prometheus.md).
 - Explore Druid [configuration options](/docs/guides/druid/configuration/_index.md).
 - Contribute to KubeDB: [contribution guidelines](/docs/CONTRIBUTING.md).
-

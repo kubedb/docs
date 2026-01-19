@@ -90,8 +90,10 @@ metadata:
   name: solr
   namespace: demo
 spec:
-  configSecret:
-    name: sl-custom-config
+-  configSecret:
+-    name: sl-custom-config
++  configuration:
++    secretName: sl-custom-config
   version: 9.6.1
   replicas: 2
   zookeeperRef:
@@ -215,8 +217,9 @@ metadata:
 spec:
   apply: IfReady
   configuration:
-    configSecret:
-      name: new-sl-custom-config
+-    configSecret:
+-      name: new-sl-custom-config
++    secretName: new-sl-custom-config
   databaseRef:
     name: solr
   type: Reconfigure
@@ -359,7 +362,7 @@ solr@solr-0:/opt/solr-9.6.1$ cat /var/solr/solr.xml
   <str name="coreRootDirectory">/var/solr/data</str>
   <str name="sharedLib">${solr.sharedLib:},/opt/solr/contrib/gcs-repository/lib,/opt/solr/contrib/prometheus-exporter/lib,/opt/solr/contrib/s3-repository/lib,/opt/solr/dist</str>
   <str name="allowPaths">${solr.allowPaths:}</str>
-  <int name="maxBooleanClauses">${solr.max.booleanClauses:2030}</int>
+  <int name="maxBooleanClauses">${solr.max.booleanClauses:2024}</int>
   <shardHandlerFactory name="shardHandlerFactory" class="HttpShardHandlerFactory">
     <int name="connTimeout">${connTimeout:60000}</int>
     <int name="socketTimeout">${socketTimeout:600000}</int>

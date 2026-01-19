@@ -4,8 +4,8 @@ metadata:
   name: solr
   namespace: demo
 spec:
-  configSecret:
-    name: sl-combined-custom-config
+  configuration:
+    secretName: sl-combined-custom-config
   version: 9.6.1
   replicas: 2
   zookeeperRef:

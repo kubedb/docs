@@ -6,8 +6,8 @@ metadata:
 spec:
   replicas: 3
   version: 2.17.0
-  configSecret: 
-    name: ignite-configuration
+  configuration:
+    secretName: ignite-configuration
   storage:
     storageClassName: "standard"
     accessModes:

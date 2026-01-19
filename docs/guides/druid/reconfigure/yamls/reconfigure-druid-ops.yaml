@@ -8,5 +8,4 @@ spec:
   databaseRef:
     name: druid-cluster
   configuration:
-    configSecret:
-      name: new-config
+    secretName: new-config

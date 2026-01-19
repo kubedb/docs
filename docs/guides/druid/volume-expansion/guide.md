@@ -121,8 +121,8 @@ spec:
   version: 28.0.1
   deepStorage:
     type: s3
-    configSecret:
-      name: deep-storage-config
+    configuration:
+      secretName: deep-storage-config
   topology:
     historicals:
       replicas: 1
@@ -437,62 +437,4 @@ Events:
   Warning  is pvc patched; ConditionStatus:True      8m59s  KubeDB Ops-manager Operator  is pvc patched; ConditionStatus:True
   Warning  compare storage; ConditionStatus:False    8m59s  KubeDB Ops-manager Operator  compare storage; ConditionStatus:False
   Warning  get pod; ConditionStatus:True             8m54s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True             8m54s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  get pod; ConditionStatus:True             8m49s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True             8m49s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  get pod; ConditionStatus:True             8m44s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True             8m44s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  get pod; ConditionStatus:True             8m39s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
-  Warning  get pvc; ConditionStatus:True             8m39s  KubeDB Ops-manager Operator  get pvc; ConditionStatus:True
-  Warning  compare storage; ConditionStatus:True     8m39s  KubeDB Ops-manager Operator  compare storage; ConditionStatus:True
-  Warning  create; ConditionStatus:True              8m39s  KubeDB Ops-manager Operator  create; ConditionStatus:True
-  Warning  is ops req patched; ConditionStatus:True  8m39s  KubeDB Ops-manager Operator  is ops req patched; ConditionStatus:True
-  Warning  get pod; ConditionStatus:True             8m34s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
-  Warning  is druid running; ConditionStatus:False   8m31s  KubeDB Ops-manager Operator  is druid running; ConditionStatus:False
-  Warning  get pod; ConditionStatus:True             8m29s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
-  Warning  get pod; ConditionStatus:True             8m24s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
-  Warning  get pod; ConditionStatus:True             8m19s  KubeDB Ops-manager Operator  get pod; ConditionStatus:True
-  Normal   UpdateHistoricalsNodePVCs                 8m14s  KubeDB Ops-manager Operator  successfully updated historicals node PVC sizes
-  Normal   UpdatePetSets                             7m59s  KubeDB Ops-manager Operator  successfully reconciled the Druid resources
-  Warning  get pet set; ConditionStatus:True         7m54s  KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Warning  get pet set; ConditionStatus:True         7m54s  KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
-  Normal   ReadyPetSets                              7m54s  KubeDB Ops-manager Operator  PetSet is recreated
-  Normal   Starting                                  7m54s  KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-cluster
-  Normal   Successful                                7m54s  KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-cluster for DruidOpsRequest: dr-volume-exp
-```
-
-Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
-
-```bash
-$ kubectl get petset -n demo druid-cluster-historicals -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
-"3Gi"
-
-$ kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
-"2Gi"
-
-$ kubectl get pv -n demo                                       
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                             STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-0bf49077-1c7a-4943-bb17-1dffd1626dcd   2Gi        RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      longhorn       <unset>                          23m
-pvc-59ed4914-53b3-4f18-a6aa-7699c2b738e2   2Gi        RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   longhorn       <unset>                          23m
-```
-
-The above output verifies that we have successfully expanded the volume of the Druid.
-
-## Cleaning Up
-
-To clean up the Kubernetes resources created by this tutorial, run:
-
-```bash
-kubectl delete druidopsrequest -n demo dr-volume-exp
-kubectl delete dr -n demo druid-cluster
-kubectl delete ns demo
-```
-
-## Next Steps
-
-- Detail concepts of [Druid object](/docs/guides/druid/concepts/druid.md).
-- Different Druid topology clustering modes [here](/docs/guides/druid/clustering/_index.md).
-- Monitor your Druid database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/druid/monitoring/using-prometheus-operator.md).
-- 
-[//]: # (- Monitor your Druid database with KubeDB using [out-of-the-box builtin-Prometheus]&#40;/docs/guides/druid/monitoring/using-builtin-prometheus.md&#41;.)
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+  Warning  get pvc:

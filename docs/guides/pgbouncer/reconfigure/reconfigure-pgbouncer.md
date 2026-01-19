@@ -173,8 +173,8 @@ spec:
     name: pb-custom
   configuration:
     pgbouncer:
-      configSecret:
-        name: new-custom-config
+      configuration:
+        secretName: new-custom-config
   timeout: 5m
   apply: IfReady
 ```
@@ -183,7 +183,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `pb-csutom` pgbouncer.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgbouncer.
-- `spec.configuration.pgbouncer.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.pgbouncer.configuration.secretName` specifies the name of the new secret.
 - Have a look [here](/docs/guides/pgbouncer/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
@@ -544,7 +544,7 @@ As we can see from the configuration of running pgbouncer, the value of `auth_ty
 
 ### Remove config
 
-This will remove all the custom config previously provided. After this Ops-manager operator will merge the new given config with the default config and apply this.
+This will remove all the custom config previously provided. After this Ops-manager will merge the new given config with the default config and apply this.
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `pb-custom` pgbouncer.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgbouncer.

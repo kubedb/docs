@@ -31,11 +31,11 @@ metadata:
   name: mssqlserver
   namespace: demo
 spec:
+  configuration:
+    secretName: mssql-custom-config
   authSecret:
     kind: Secret
-    name: mssqlserver-auth
-  configSecret:
-    name: mssqlserver-custom-config
+    name: mssql-admin-cred
   topology:
     availabilityGroup:
       databases:

@@ -8,7 +8,6 @@ spec:
   databaseRef:
     name: pp-custom
   configuration:
-    configSecret:
-      name: new-custom-config
+    secretName: new-custom-config
   timeout: 5m
   apply: IfReady

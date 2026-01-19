@@ -103,8 +103,8 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  configSecret:
-    name: mg-configuration
+  configuration:
+    secretName: mg-configuration
 ```
 
 ```bash

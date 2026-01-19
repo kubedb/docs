@@ -355,8 +355,8 @@ metadata:
   name: ha-postgres
   namespace: demo
 spec:
-  configSecret:
-    name: pg-configuration
+  configuration:
+    secretName: pg-configuration
   replicas: 5
   version: "16.6"
   storageType: Durable
@@ -463,8 +463,8 @@ spec:
   authSecret:
     kind: Secret
     name: pg-rotate-auth
-  configSecret:
-    name: pg-configuration
+  configuration:
+    secretName: pg-configuration
   replicas: 5
   version: "16.6"
   storageType: Durable
@@ -581,8 +581,8 @@ spec:
   authSecret:
     kind: Secret
     name: pg-rotate-auth
-  configSecret:
-    name: pg-configuration
+  configuration:
+    secretName: pg-configuration
   replicas: 5
   version: "16.6"
   storageType: Durable
@@ -672,8 +672,8 @@ spec:
   authSecret:
     kind: Secret
     name: pg-rotate-auth
-  configSecret:
-    name: pg-configuration
+  configuration:
+    secretName: pg-configuration
   replicas: 5
   version: "17.4"
   storageType: Durable
@@ -762,8 +762,8 @@ spec:
   authSecret:
     kind: Secret
     name: pg-rotate-auth
-  configSecret:
-    name: pg-configuration
+  configuration:
+    secretName: pg-configuration
   replicas: 5
   version: "17.4"
   storageType: Durable

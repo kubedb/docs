@@ -107,8 +107,8 @@ metadata:
   namespace: demo
 spec:
   version: "2022-cu12"
-  configSecret:
-    name: ms-custom-config
+  configuration:
+    secretName: ms-custom-config
   replicas: 3
   topology:
     mode: AvailabilityGroup
@@ -223,8 +223,9 @@ spec:
   databaseRef:
     name: mssqlserver-ag-cluster
   configuration:
-    configSecret:
-      name: new-custom-config
+-    configSecret:
+-      name: new-custom-config
++    secretName: new-custom-config
   timeout: 5m
   apply: IfReady
 ```
@@ -233,7 +234,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `mssqlserver-ag-cluster` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.customConfig.replicaSet.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.secretName` specifies the name of the new secret.
 - Have a look [here](/docs/guides/mssqlserver/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,

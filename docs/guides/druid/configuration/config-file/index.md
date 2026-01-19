@@ -155,12 +155,12 @@ metadata:
   namespace: demo
 spec:
   version: 28.0.1
-  configSecret:
-    name: config-secret
+  configuration:
+    secretName: config-secret
   deepStorage:
     type: s3
-    configSecret:
-      name: deep-storage-config
+    configuration:
+      secretName: deep-storage-config
   topology:
     routers:
       replicas: 1
@@ -281,4 +281,3 @@ $ kubectl delete namespace demo
 
 [//]: # (- Monitor your Druid database with KubeDB using [out-of-the-box Prometheus operator]&#40;/docs/guides/druid/monitoring/using-prometheus-operator.md&#41;.)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
-

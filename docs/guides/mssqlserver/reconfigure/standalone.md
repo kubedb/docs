@@ -218,8 +218,7 @@ spec:
   databaseRef:
     name: ms-standalone
   configuration:
-    configSecret:
-      name: new-custom-config
+    secretName: new-custom-config
   timeout: 5m
   apply: IfReady
 ```
@@ -228,7 +227,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `ms-standalone` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.secretName` specifies the name of the new secret.
 - Have a look [here](/docs/guides/mssqlserver/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
@@ -270,8 +269,7 @@ Metadata:
 Spec:
   Apply:  IfReady
   Configuration:
-    Config Secret:
-      Name:  new-custom-config
+    Secret Name:  new-custom-config
   Database Ref:
     Name:   ms-standalone
   Timeout:  5m
