@@ -85,8 +85,8 @@ spec:
         labels:
           app: kubedb
         interval: 10s
-  configSecret:
-    name: rd-custom-config
+  configuration:
+    secretName: rd-custom-config
   podTemplate:
     metadata:
       annotations:
@@ -287,9 +287,9 @@ Redis managed by KubeDB can be monitored with builtin-Prometheus and Prometheus 
 - [Monitor Redis with builtin Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md)
 - [Monitor Redis with Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md)
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Redis. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/redis/configuration/redis.md).
+`spec.configuration` is an optional field that allows users to provide custom configuration for Redis. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/redis/configuration/redis.md).
 
 ### spec.podTemplate
 

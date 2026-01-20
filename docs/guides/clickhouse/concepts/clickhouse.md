@@ -33,8 +33,8 @@ spec:
   authSecret:
     kind: Secret
     name: clickhouse-auth
-  configSecret:
-    name: ch-configuration
+  configuration:
+    secretName: ch-configuration
   clusterTopology:
     clickHouseKeeper:
       externallyManaged: false
@@ -152,9 +152,9 @@ type: Opaque
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that points to a Secret used to hold custom ClickHouse configuration. If not set, KubeDB operator will use default configuration for ClickHouse.
+`spec.configuration` is an optional field that points to a Secret used to hold custom ClickHouse configuration. If not set, KubeDB operator will use default configuration for ClickHouse.
 
 ### spec.clusterTopology
 

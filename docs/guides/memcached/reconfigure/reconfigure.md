@@ -65,7 +65,7 @@ $ kubectl create -f mc-configuration
 secret/mc-configuration created
 ```
 
-In this section, we are going to create a Memcached object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Memcahced` CR that we are going to create,
+In this section, we are going to create a Memcached object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Memcahced` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -76,8 +76,8 @@ metadata:
 spec:
   replicas: 1
   version: "1.6.22"
-  configSecret:
-    name: mc-configuration
+  configuration:
+    secretName: mc-configuration
   deletionPolicy: WipeOut
 ```
 
@@ -162,15 +162,15 @@ spec:
   databaseRef:
     name: memcd-quickstart
   configuration:
-    configSecret:
-      name: new-configuration
+    configuration:
+      secretName: new-configuration
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `memcd-quickstart` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 

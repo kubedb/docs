@@ -61,7 +61,7 @@ $ kubectl create secret generic -n demo mg-custom-config --from-file=./mongod.co
 secret/mg-custom-config created
 ```
 
-In this section, we are going to create a MongoDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to create a MongoDB object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -74,8 +74,8 @@ spec:
   shardTopology:
     configServer:
       replicas: 3
-      configSecret:
-        name: mg-custom-config
+      configuration:
+        secretName: mg-custom-config
       storage:
         resources:
           requests:
@@ -83,13 +83,13 @@ spec:
         storageClassName: standard
     mongos:
       replicas: 2
-      configSecret:
-        name: mg-custom-config
+      configuration:
+        secretName: mg-custom-config
     shard:
       replicas: 3
       shards: 2
-      configSecret:
-        name: mg-custom-config
+      configuration:
+        secretName: mg-custom-config
       storage:
         resources:
           requests:
@@ -197,14 +197,14 @@ spec:
     name: mg-sharding
   configuration:
     shard:
-      configSecret:
-        name: new-custom-config
+      configuration:
+        secretName: new-custom-config
     configServer:
-      configSecret:
-        name: new-custom-config 
+      configuration:
+        secretName: new-custom-config 
     mongos:
-      configSecret:
-        name: new-custom-config   
+      configuration:
+        secretName: new-custom-config   
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10
@@ -216,10 +216,10 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-shard` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.shard.configSecret.name` specifies the name of the new secret for shard nodes.
-- `spec.configuration.configServer.configSecret.name` specifies the name of the new secret for configServer nodes.
-- `spec.configuration.mongos.configSecret.name` specifies the name of the new secret for mongos nodes.
-- `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
+- `spec.configuration.shard.configuration.secretName` specifies the name of the new secret for shard nodes.
+- `spec.configuration.configServer.configuration.secretName` specifies the name of the new secret for configServer nodes.
+- `spec.configuration.mongos.configuration.secretName` specifies the name of the new secret for mongos nodes.
+- `spec.customConfig.arbiter.configuration.secretName` could also be specified with a config-secret.
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 > **Note:** If you don't want to reconfigure all the components together, you can only specify the components (shard, configServer and mongos) that you want to reconfigure.
@@ -335,7 +335,7 @@ Here,
 - `spec.configuration.shard.applyConfig` specifies the new configuration that will be merged in the existing secret for shard nodes.
 - `spec.configuration.configServer.applyConfig` specifies the new configuration that will be merged in the existing secret for configServer nodes.
 - `spec.configuration.mongos.applyConfig` specifies the new configuration that will be merged in the existing secret for mongos nodes.
-- `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
+- `spec.customConfig.arbiter.configuration.secretName` could also be specified with a config-secret.
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 > **Note:** If you don't want to reconfigure all the components together, you can only specify the components (shard, configServer and mongos) that you want to reconfigure.

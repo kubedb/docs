@@ -105,8 +105,8 @@ spec:
   version: 5.5.2
   licenseSecret:
     name: hz-license-key
-  configSecret:
-    name: hz
+  configuration:
+    secretName: hz
   storage:
     accessModes:
       - ReadWriteOnce

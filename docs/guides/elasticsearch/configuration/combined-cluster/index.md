@@ -104,8 +104,8 @@ spec:
   version: xpack-8.11.1
   enableSSL: true
   replicas: 3
-  configSecret:
-    name: es-custom-config # mentioned here!
+  configuration:
+    secretName: es-custom-config # mentioned here!
   storageType: Durable
   storage:
     storageClassName: "standard"

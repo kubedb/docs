@@ -63,7 +63,7 @@ $ kubectl create secret generic -n demo pp-custom-config --from-file=./pgpool.co
 secret/pp-custom-config created
 ```
 
-In this section, we are going to create a Pgpool object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Pgpool` CR that we are going to create,
+In this section, we are going to create a Pgpool object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Pgpool` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -74,8 +74,8 @@ metadata:
 spec:
   version: "4.5.0"
   replicas: 1
-  configSecret:
-    name: pp-custom-config
+  configuration:
+    secretName: pp-custom-config
   postgresRef:
     name: ha-postgres
     namespace: demo
@@ -178,8 +178,8 @@ spec:
   databaseRef:
     name: pp-custom
   configuration:
-    configSecret:
-      name: new-custom-config
+    configuration:
+      secretName: new-custom-config
   timeout: 5m
   apply: IfReady
 ```
@@ -188,7 +188,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `pp-csutom` pgpool.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgpool.
-- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.configuration.secretName` specifies the name of the new secret.
 - Have a look [here](/docs/guides/pgpool/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,

@@ -60,7 +60,7 @@ $ kubectl create secret generic -n demo md-configuration --from-file=./md-config
 secret/md-configuration created
 ```
 
-In this section, we are going to create a MariaDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MariaDB` CR that we are going to create,
+In this section, we are going to create a MariaDB object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MariaDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -70,8 +70,8 @@ metadata:
   namespace: demo
 spec:
   version: "10.6.16"
-  configSecret:
-    name: md-configuration
+  configuration:
+    secretName: md-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -180,15 +180,15 @@ spec:
   databaseRef:
     name: sample-mariadb
   configuration:   
-    configSecret:
-      name: new-md-configuration
+    configuration:
+      secretName: new-md-configuration
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `mdops-reconfigure-config` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 

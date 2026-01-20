@@ -75,7 +75,7 @@ secret/cas-topology-custom-config created
 ```
 
 
-In this section, we are going to create a Cassandra object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Cassandra` CR that we are going to create,
+In this section, we are going to create a Cassandra object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Cassandra` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -85,8 +85,8 @@ metadata:
   namespace: demo
 spec:
   version: 5.0.3
-  configSecret:
-    name: cas-topology-custom-config
+  configuration:
+    secretName: cas-topology-custom-config
   topology:
     rack:
       - name: r0
@@ -195,8 +195,8 @@ spec:
   databaseRef:
     name: cassandra-prod
   configuration:
-    configSecret:
-      name: new-cas-topology-custom-config
+    configuration:
+      secretName: new-cas-topology-custom-config
   timeout: 5m
   apply: IfReady
 ```
@@ -205,7 +205,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `cassandra-prod` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `CassandraOpsRequest` CR we have shown above,
 

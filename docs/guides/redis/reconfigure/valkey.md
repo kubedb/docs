@@ -59,7 +59,7 @@ $ kubectl create secret generic -n demo rd-custom-config --from-file=./valkey.co
 secret/rd-custom-config created
 ```
 
-In this section, we are going to create a Redis object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Redis` CR that we are going to create,
+In this section, we are going to create a Redis object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -77,8 +77,8 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  configSecret:
-    name: rd-custom-config
+  configuration:
+    secretName: rd-custom-config
 ```
 
 Let's create the `Redis` CR we have shown above,
@@ -150,15 +150,15 @@ spec:
   databaseRef:
     name: sample-redis
   configuration:
-      configSecret:
-        name: new-custom-config
+      configuration:
+        secretName: new-custom-config
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `sample-redis` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 

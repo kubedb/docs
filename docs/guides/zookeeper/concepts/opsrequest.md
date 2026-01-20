@@ -133,8 +133,8 @@ spec:
     name: zk-quickstart
   type: Reconfigure
   configuration:
-    configSecret:
-      name: new-config-secret
+    configuration:
+      secretName: new-config-secret
 ```
 
 **Sample `ZooKeeperOpsRequest` Objects for Volume Expansion of database cluster:**

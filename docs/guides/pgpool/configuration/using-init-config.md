@@ -33,7 +33,7 @@ KubeDB supports providing custom configuration for Pgpool while initializing the
 
 ## Overview
 
-Pgpool allows configuring via configuration file. The default configuration file for Pgpool deployed by `KubeDB` can be found in `opt/pgpool-II/etc/pgpool.conf`. When `spec.configSecret` is set to pgpool, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user and merge it with the remaining default config. After all that this secret will be mounted to Pgpool for use it as the configuration file.
+Pgpool allows configuring via configuration file. The default configuration file for Pgpool deployed by `KubeDB` can be found in `opt/pgpool-II/etc/pgpool.conf`. When `spec.configuration` is set to pgpool, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user and merge it with the remaining default config. After all that this secret will be mounted to Pgpool for use it as the configuration file.
 
 So, if you do not want to use a configuration file and secret for custom configuration you can use this `spec.initConfig.pgpoolConfig` field to provide any Pgpool config wih key value pair. The KubeDB operator will validate these configs provided and will merge with the default configs and make a configuration secret to mount to the Pgpool.
 

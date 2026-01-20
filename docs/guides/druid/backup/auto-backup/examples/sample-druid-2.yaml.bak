@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Druid
+metadata:
+  name: sample-druid-2
+  namespace: demo
+  annotations:
+    blueprint.kubestash.com/name: druid-customize-backup-blueprint
+    blueprint.kubestash.com/namespace: demo
+    variables.kubestash.com/schedule: "*/10 * * * *"
+    variables.kubestash.com/repoName: customize-blueprint
+    variables.kubestash.com/namespace: demo
+    variables.kubestash.com/targetName: sample-druid-2
+    variables.kubestash.com/targetedDatabases: druid
+spec:
+  version: 30.0.1
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
+  topology:
+    routers:
+      replicas: 1
+  deletionPolicy: WipeOut

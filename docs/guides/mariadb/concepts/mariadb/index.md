@@ -217,9 +217,9 @@ The following fields are configurable in the `spec.tls` section:
   - `uriSANs` (optional) is a list of URI Subject Alternative Names to be set in the Certificate.
   - `emailSANs` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for MariaDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47).
+`spec.configuration` is an optional field that allows users to provide custom configuration for MariaDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47).
 
 ### spec.podTemplate
 

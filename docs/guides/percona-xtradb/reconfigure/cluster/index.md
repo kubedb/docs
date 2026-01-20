@@ -61,7 +61,7 @@ $ kubectl create secret generic -n demo px-configuration --from-file=./px-config
 secret/px-configuration created
 ```
 
-In this section, we are going to create a PerconaXtraDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
+In this section, we are going to create a PerconaXtraDB object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -72,8 +72,8 @@ metadata:
 spec:
   version: "8.0.40"
   replicas: 3
-  configSecret:
-    name: px-configuration
+  configuration:
+    secretName: px-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -192,15 +192,15 @@ spec:
   databaseRef:
     name: sample-pxc
   configuration:   
-    configSecret:
-      name: new-px-configuration
+    configuration:
+      secretName: new-px-configuration
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `sample-pxc` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 

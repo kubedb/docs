@@ -63,8 +63,8 @@ spec:
         labels:
           app: kubedb
         interval: 10s
-  configSecret:
-    name: pg-custom-config
+  configuration:
+    secretName: pg-custom-config
   podTemplate:
     metadata:
       annotations:
@@ -297,9 +297,9 @@ PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and Promet
 
 > Enabling monitoring creates a [`Restart`](/docs/guides/postgres/restart/restart.md) OpsRequest by GitOps operator.
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for PostgreSQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/postgres/configuration/using-config-file.md).
+`spec.configuration` is an optional field that allows users to provide custom configuration for PostgreSQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/postgres/configuration/using-config-file.md).
 
 > Updating this field will create a [`Reconfigure`](/docs/guides/postgres/reconfigure/overview.md) OpsRequest by GitOps operator.
 

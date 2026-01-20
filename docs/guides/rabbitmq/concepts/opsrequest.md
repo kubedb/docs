@@ -130,8 +130,8 @@ spec:
   databaseRef:
     name: rm-quickstart
   configuration:
-    configSecret:
-      name: new-custom-config
+    configuration:
+      secretName: new-custom-config
 ```
 
 **Sample `RabbitMQOpsRequest` Objects for Volume Expansion of database cluster:**

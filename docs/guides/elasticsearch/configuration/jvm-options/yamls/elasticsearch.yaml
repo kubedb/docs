@@ -4,8 +4,8 @@ metadata:
   name: es-test
   namespace: demo
 spec:
-  configSecret:
-    name: es-custom-config
+  configuration:
+    secretName: es-custom-config
   enableSSL: false 
   version: opensearch-2.8.0
   storageType: Durable

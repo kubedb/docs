@@ -31,8 +31,8 @@ metadata:
 spec:
   replicas: 3
   version: 2.17.0
-  configSecret: 
-    name: ignite-configuration
+  configuration:
+    secretName: ignite-configuration
   authSecret:
     kind: Secret
     name: ignite-quickstart-auth
@@ -80,9 +80,9 @@ Ignite managed by KubeDB can be monitored with builtin-Prometheus and Prometheus
 - [Monitor Ignite with builtin Prometheus](/docs/guides/ignite/monitoring/using-builtin-prometheus.md)
 - [Monitor Ignite with Prometheus operator](/docs/guides/ignite/monitoring/using-prometheus-operator.md)
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Ignite. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/ignite/custom-configuration/using-config-file.md).
+`spec.configuration` is an optional field that allows users to provide custom configuration for Ignite. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/ignite/custom-configuration/using-config-file.md).
 
 ### spec.podTemplate
 

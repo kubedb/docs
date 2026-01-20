@@ -29,8 +29,8 @@ metadata:
   name: mongodb-source-connector
   namespace: demo
 spec:
-  configSecret:
-    name: mongodb-source-config
+  configuration:
+    secretName: mongodb-source-config
   configuration:
     secretName: mongodb-source-config
     inline:
@@ -45,16 +45,16 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is a required field that specifies the name of the secret containing the configuration for the Connector. The secret should contain a key `config.properties` which contains the configuration for the Connector.
+`spec.configuration` is a required field that specifies the name of the secret containing the configuration for the Connector. The secret should contain a key `config.properties` which contains the configuration for the Connector.
 ```yaml
 spec:
   configuration:
     secretName: <config-secret-name>
 ```
 
-> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configSecret.name`. The field `.spec.configSecret` is deprecated and will be removed in future releases. If you still use `.spec.configSecret`, KubeDB will copy `.spec.configSecret.name` to `.spec.configuration.secretName` internally.
+> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configuration.secretName`. The field `.spec.configuration` is deprecated and will be removed in future releases. If you still use `.spec.configuration`, KubeDB will copy `.spec.configuration.secretName` to `.spec.configuration.secretName` internally.
 
 ### spec.configuration
 

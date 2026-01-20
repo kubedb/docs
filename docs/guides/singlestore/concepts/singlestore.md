@@ -30,8 +30,8 @@ spec:
   topology:
     aggregator:
       replicas: 2
-      configSecret:
-        name: sdb-configuration
+      configuration:
+        secretName: sdb-configuration
       podTemplate:
         spec:
           containers:
@@ -51,8 +51,8 @@ spec:
             storage: 1Gi
     leaf:
       replicas: 3
-      configSecret:
-        name: sdb-configuration
+      configuration:
+        secretName: sdb-configuration
       podTemplate:
         spec:
           containers:

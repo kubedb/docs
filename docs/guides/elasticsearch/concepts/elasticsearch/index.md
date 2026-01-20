@@ -635,14 +635,14 @@ Elasticsearch managed by KubeDB can be monitored with builtin-Prometheus and Pro
 - [Monitor Elasticsearch with builtin Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md)
 - [Monitor Elasticsearch with Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md)
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an `optional` field that allows users to provide custom configuration for Elasticsearch. It contains a k8s secret name that holds the configuration files for both Elasticsearch and the security plugins (ie. x-pack, SearchGuard, and openDistro).
+`spec.configuration` is an `optional` field that allows users to provide custom configuration for Elasticsearch. It contains a k8s secret name that holds the configuration files for both Elasticsearch and the security plugins (ie. x-pack, SearchGuard, and openDistro).
 
 ```yaml
 spec:
-  configSecret:
-    name: es-custom-config
+  configuration:
+    secretName: es-custom-config
 ```
 
 The configuration file names are used as secret keys.

@@ -248,15 +248,15 @@ spec:
   databaseRef:
     name: druid-cluster
   configuration:
-    configSecret:
-      name: new-config
+    configuration:
+      secretName: new-config
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `druid-prod` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `DruidOpsRequest` CR we have shown above,
 

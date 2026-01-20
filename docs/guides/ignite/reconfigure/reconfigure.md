@@ -53,7 +53,7 @@ $ kubectl create secret generic -n demo ig-custom-config --from-file=./node-conf
 secret/ig-custom-config created
 ```
 
-In this section, we are going to create a Ignite object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Ignite` CR that we are going to create,
+In this section, we are going to create a Ignite object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Ignite` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -71,8 +71,8 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  configSecret:
-    name: ig-custom-config
+  configuration:
+    secretName: ig-custom-config
 ```
 
 Let's create the `Ignite` CR we have shown above,
@@ -125,8 +125,8 @@ spec:
   databaseRef:
     name: ig-cluster
   configuration:
-    configSecret:
-      name: new-custom-config
+    configuration:
+      secretName: new-custom-config
   timeout: 5m
   apply: IfReady
 ```
@@ -135,7 +135,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `igps-reconfigure` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.configuration.secretName` specifies the name of the new secret.
 - Have a look [here](/docs/guides/ignite/concepts/opsrequest.md#specconfiguration) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `IgniteOpsRequest` CR we have shown above,

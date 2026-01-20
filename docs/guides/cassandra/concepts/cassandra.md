@@ -32,8 +32,8 @@ spec:
   authSecret:
     kind: Secret
     name: cassandra-admin-cred
-  configSecret:
-    name: cassandra-custom-config
+  configuration:
+    secretName: cassandra-custom-config
   healthChecker:
     failureThreshold: 3
     periodSeconds: 20
@@ -148,9 +148,9 @@ type: Opaque
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that points to a Secret used to hold custom Cassandra configuration. If not set, KubeDB operator will use default configuration for Cassandra.
+`spec.configuration` is an optional field that points to a Secret used to hold custom Cassandra configuration. If not set, KubeDB operator will use default configuration for Cassandra.
 
 ### spec.topology
 

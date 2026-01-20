@@ -65,8 +65,8 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  configSecret:
-    name: pgpool-config
+  configuration:
+    secretName: pgpool-config
   initConfig:
     pgpoolConfig:
       log_statement : on
@@ -246,15 +246,15 @@ Pgpool managed by KubeDB can be monitored with builtin-Prometheus and Prometheus
 - [Monitor Pgpool with builtin Prometheus](/docs/guides/pgpool/monitoring/using-builtin-prometheus.md)
 - [Monitor Pgpool with Prometheus operator](/docs/guides/pgpool/monitoring/using-prometheus-operator.md)
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Pgpool. You can provide the custom configuration in a secret, then you can specify the secret name `spec.configSecret.name`.
+`spec.configuration` is an optional field that allows users to provide custom configuration for Pgpool. You can provide the custom configuration in a secret, then you can specify the secret name `spec.configuration.secretName`.
 
 > Please note that, the secret key needs to be `pgpool.conf`.
 
 To learn more about how to use a custom configuration file see [here](/docs/guides/pgpool/configuration/using-config-file.md).
 
-NB. If `spec.configSecret` is set, then `spec.initConfig` needs to be empty.
+NB. If `spec.configuration` is set, then `spec.initConfig` needs to be empty.
 
 ### spec.initConfig
 
@@ -262,7 +262,7 @@ NB. If `spec.configSecret` is set, then `spec.initConfig` needs to be empty.
 
 To learn more about how to use init configuration see [here](/docs/guides/pgpool/configuration/using-init-config.md).
 
-NB. If `spec.initConfig` is set, then `spec.configSecret` needs to be empty.
+NB. If `spec.initConfig` is set, then `spec.configuration` needs to be empty.
 
 ### spec.deletionPolicy
 

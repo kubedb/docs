@@ -41,7 +41,7 @@ Memcached does not allows to configuration via any file. However, configuration 
 
 To know more about configuring Memcached server see [here](https://github.com/memcached/memcached/wiki/ConfiguringServer).
 
-At first, you have to create a config file named `memcached.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Memcached crd. KubeDB will mount this volume into `/usr/config` directory of the database pod.
+At first, you have to create a config file named `memcached.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configuration` section while creating Memcached crd. KubeDB will mount this volume into `/usr/config` directory of the database pod.
 
 In this tutorial, we will configure [max_connections](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L672) and [limit_maxbytes](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L720) via secret.
 
@@ -86,7 +86,7 @@ metadata:
 type: Opaque
 ```
 
-Now, create Memcached crd specifying `spec.configSecret` field.
+Now, create Memcached crd specifying `spec.configuration` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/configuration/mc-custom.yaml
@@ -104,8 +104,8 @@ metadata:
 spec:
   replicas: 1
   version: "1.6.22"
-  configSecret:
-    name: mc-configuration
+  configuration:
+    secretName: mc-configuration
   podTemplate:
     spec:
       containers:

@@ -203,8 +203,8 @@ spec:
   databaseRef:
     name: kafka-prod
   configuration:
-    configSecret:
-      name: new-kf-topology-custom-config
+    configuration:
+      secretName: new-kf-topology-custom-config
   timeout: 5m
   apply: IfReady
 ```
@@ -213,7 +213,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `kafka-prod` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `KafkaOpsRequest` CR we have shown above,
 

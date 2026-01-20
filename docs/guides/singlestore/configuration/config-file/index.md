@@ -39,7 +39,7 @@ KubeDB supports providing custom configuration for SingleStore. This tutorial wi
 
 SingleStore allows to configure database via configuration file. The default configuration for SingleStore can be found in `/var/lib/memsql/instance/memsql.cnf` file. When SingleStore starts, it will look for custom configuration file in `/etc/memsql/conf.d` directory. If configuration file exist, SingleStore instance will use combined startup setting from both `/var/lib/memsql/instance/memsql.cnf` and `*.cnf` files in `/etc/memsql/conf.d` directory. This custom configuration will overwrite the existing default one. To know more about configuring SingleStore see [here](https://docs.singlestore.com/db/v8.7/reference/configuration-reference/cluster-config-files/singlestore-server-config-files/).
 
-At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You need to specify this volume in the `spec.configSecret` section when creating the SingleStore CRD for `Standalone` mode. Additionally, you can modify your `aggregator` and `leaf` nodes separately by providing separate configSecrets, or use the same one in the `spec.topology.aggregator.configSecret` and `spec.topology.leaf.configSecret` sections when creating the SingleStore CRD for `Cluster` mode. KubeDB will mount this volume into `/etc/memsql/conf.d` directory of the database pod.
+At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You need to specify this volume in the `spec.configuration` section when creating the SingleStore CRD for `Standalone` mode. Additionally, you can modify your `aggregator` and `leaf` nodes separately by providing separate configSecrets, or use the same one in the `spec.topology.aggregator.configSecret` and `spec.topology.leaf.configSecret` sections when creating the SingleStore CRD for `Cluster` mode. KubeDB will mount this volume into `/etc/memsql/conf.d` directory of the database pod.
 
 In this tutorial, we will configure [max_connections](https://docs.singlestore.com/db/v8.7/reference/configuration-reference/engine-variables/list-of-engine-variables/#in-depth-variable-definitions) and [read_buffer_size](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_read_buffer_size) via a custom config file. We will use configMap as volume source.
 
@@ -117,8 +117,8 @@ spec:
   topology:
     aggregator:
       replicas: 2
-      configSecret:
-        name: sdb-configuration
+      configuration:
+        secretName: sdb-configuration
       podTemplate:
         spec:
           containers:
@@ -139,8 +139,8 @@ spec:
             storage: 1Gi
     leaf:
       replicas: 2
-      configSecret:
-        name: sdb-configuration
+      configuration:
+        secretName: sdb-configuration
       podTemplate:
         spec:
           containers:

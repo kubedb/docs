@@ -233,9 +233,9 @@ We can add java environment variables using this attribute.
 Hazelcast managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box.
 
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Hazelcast. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc.
+`spec.configuration` is an optional field that allows users to provide custom configuration for Hazelcast. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc.
 
 ### spec.podTemplate
 

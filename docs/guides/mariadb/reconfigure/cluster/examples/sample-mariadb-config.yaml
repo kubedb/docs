@@ -6,8 +6,8 @@ metadata:
 spec:
   version: "10.6.16"
   replicas: 3
-  configSecret:
-    name: md-configuration
+  configuration:
+    secretName: md-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"

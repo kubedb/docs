@@ -33,8 +33,8 @@ spec:
   authSecret:
     kind: Secret
     name: rabbit-auth
-  configSecret:
-    name: rabbit-custom-config
+  configuration:
+    secretName: rabbit-custom-config
   enableSSL: true
   replicas: 4
   storage:
@@ -221,9 +221,9 @@ RabbitMQ managed by KubeDB can be monitored with builtin-Prometheus and Promethe
 - [Monitor RabbitMQ with builtin Prometheus](/docs/guides/rabbitmq/monitoring/using-builtin-prometheus.md)
 - [Monitor RabbitMQ with Prometheus operator](/docs/guides/rabbitmq/monitoring/using-prometheus-operator.md)
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for RabbitMQ. You can provide the custom configuration in a secret, then you can specify the secret name `spec.configSecret.name`.
+`spec.configuration` is an optional field that allows users to provide custom configuration for RabbitMQ. You can provide the custom configuration in a secret, then you can specify the secret name `spec.configuration.secretName`.
 
 > Please note that, the secret key needs to be `rabbitmq.conf`.
 

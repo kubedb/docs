@@ -33,11 +33,11 @@ KubeDB supports providing custom configuration for Pgpool. This tutorial will sh
 
 ## Overview
 
-Pgpool allows configuring via configuration file. The default configuration file for Pgpool deployed by `KubeDB` can be found in `opt/pgpool-II/etc/pgpool.conf`. When `spec.configSecret` is set to pgpool, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user and merge it with the remaining default config. After all that this secret will be mounted to Pgpool for use it as the configuration file.
+Pgpool allows configuring via configuration file. The default configuration file for Pgpool deployed by `KubeDB` can be found in `opt/pgpool-II/etc/pgpool.conf`. When `spec.configuration` is set to pgpool, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user and merge it with the remaining default config. After all that this secret will be mounted to Pgpool for use it as the configuration file.
 
 > To learn available configuration option of Pgpool see [Configuration Options](https://www.pgpool.net/docs/45/en/html/runtime-config.html).
 
-At first, you have to create a secret with your configuration file contents as the value of this key `pgpool.conf`. Then, you have to specify the name of this secret in `spec.configSecret.name` section while creating Pgpool crd.
+At first, you have to create a secret with your configuration file contents as the value of this key `pgpool.conf`. Then, you have to specify the name of this secret in `spec.configuration.secretName` section while creating Pgpool crd.
 
 ## Prepare Postgres
 For a Pgpool surely we will need a Postgres server so, prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/clustering/streaming_replication.md), or you can use any externally managed postgres but in that case you need to create an [appbinding](/docs/guides/pgpool/concepts/appbinding.md) yourself. In this tutorial we will use 3 node Postgres cluster named `ha-postgres`.
@@ -83,7 +83,7 @@ max_pool = 65
 child_life_time = 400
 ```
 
-Now, create Pgpool crd specifying `spec.configSecret` field.
+Now, create Pgpool crd specifying `spec.configuration` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -94,8 +94,8 @@ metadata:
 spec:
   version: "4.4.5"
   replicas: 1
-  configSecret:
-    name: pp-configuration
+  configuration:
+    secretName: pp-configuration
   postgresRef:
     name: ha-postgres
     namespace: demo

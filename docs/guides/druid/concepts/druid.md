@@ -45,8 +45,8 @@ spec:
   authSecret:
     kind: Secret
     name: druid-admin-cred
-  configSecret:
-    name: druid-custom-config
+  configuration:
+    secretName: druid-custom-config
   enableSSL: true
   healthChecker:
     failureThreshold: 3
@@ -228,9 +228,9 @@ type: Opaque
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that points to a Secret used to hold custom Druid configuration. If not set, KubeDB operator will use default configuration for Druid.
+`spec.configuration` is an optional field that points to a Secret used to hold custom Druid configuration. If not set, KubeDB operator will use default configuration for Druid.
 
 ### spec.topology
 

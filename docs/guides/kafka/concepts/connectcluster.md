@@ -52,8 +52,8 @@ spec:
         secretName: connectcluster-server-cert
       - alias: client
         secretName: connectcluster-client-cert
-  configSecret:
-    name: custom-connectcluster-config
+  configuration:
+    secretName: custom-connectcluster-config
   configuration:
     secretName: custom-connectcluster-config
     inline:
@@ -138,15 +138,15 @@ kafkaRef:
   namespace: <kafka-object-appbinding-namespace>
 ```
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that specifies the name of the secret containing the custom configuration for the ConnectCluster. The secret should contain a key `config.properties` which contains the custom configuration for the ConnectCluster. The default value of this field is `nil`.
+`spec.configuration` is an optional field that specifies the name of the secret containing the custom configuration for the ConnectCluster. The secret should contain a key `config.properties` which contains the custom configuration for the ConnectCluster. The default value of this field is `nil`.
 ```yaml
-configSecret:
-  name: <custom-config-secret-name>
+configuration:
+  secretName: <custom-config-secret-name>
 ```
 
-> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configSecret.name`. The field `.spec.configSecret` is deprecated and will be removed in future releases. If you still use `.spec.configSecret`, KubeDB will copy `.spec.configSecret.name` to `.spec.configuration.secretName` internally.
+> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configuration.secretName`. The field `.spec.configuration` is deprecated and will be removed in future releases. If you still use `.spec.configuration`, KubeDB will copy `.spec.configuration.secretName` to `.spec.configuration.secretName` internally.
 
 ### spec.configuration
 `spec.configuration` is an optional field that specifies custom configuration for Kafka Connect Cluster. It has the following fields:

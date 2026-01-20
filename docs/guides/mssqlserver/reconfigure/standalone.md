@@ -97,7 +97,7 @@ $ kubectl create secret generic -n demo ms-custom-config --from-file=./mssql.con
 secret/ms-custom-config created
 ```
 
-In this section, we are going to create a MSSQLServer object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MSSQLServer` CR that we are going to create,
+In this section, we are going to create a MSSQLServer object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -107,8 +107,8 @@ metadata:
   namespace: demo
 spec:
   version: "2022-cu12"
-  configSecret:
-    name: ms-custom-config
+  configuration:
+    secretName: ms-custom-config
   replicas: 1
   tls:
     issuerRef:

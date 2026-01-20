@@ -78,7 +78,7 @@ secret/ch-custom-config created
 ```
 
 
-In this section, we are going to create a ClickHouse object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `ClickHouse` CR that we are going to create,
+In this section, we are going to create a ClickHouse object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `ClickHouse` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -88,8 +88,8 @@ metadata:
   namespace: demo
 spec:
   version: 24.4.1
-  configSecret:
-    name: ch-custom-config
+  configuration:
+    secretName: ch-custom-config
   clusterTopology:
     clickHouseKeeper:
       externallyManaged: false
@@ -222,8 +222,8 @@ spec:
   databaseRef:
     name: clickhouse-prod
   configuration:
-    configSecret:
-      name: new-ch-custom-config
+    configuration:
+      secretName: new-ch-custom-config
   timeout: 10m
   apply: IfReady
 ```
@@ -232,7 +232,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `clickhouse-prod` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 

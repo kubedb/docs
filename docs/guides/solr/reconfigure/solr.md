@@ -81,7 +81,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 secret/sl-custom-config created
 ```
 
-In this section, we are going to create a Solr object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Solr` CR that we are going to create,
+In this section, we are going to create a Solr object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Solr` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -229,7 +229,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `Solr-dev` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `SolrOpsRequest` CR we have shown above,
 

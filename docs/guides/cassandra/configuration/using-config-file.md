@@ -33,11 +33,11 @@ KubeDB supports providing custom configuration for Cassandra. This tutorial will
 
 ## Overview
 
-Cassandra allows configuring via configuration file. The default configuration file for Cassandra deployed by `KubeDB` can be found in `/etc/cassandra/cassandra.yaml`. When `spec.configSecret` is set to cassandra, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user and merge it with the remaining default config. After all that this secret will be mounted to cassandra for use it as the configuration file.
+Cassandra allows configuring via configuration file. The default configuration file for Cassandra deployed by `KubeDB` can be found in `/etc/cassandra/cassandra.yaml`. When `spec.configuration` is set to cassandra, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user and merge it with the remaining default config. After all that this secret will be mounted to cassandra for use it as the configuration file.
 
 > To learn available configuration option of Cassandra see [Configuration Options](https://cassandra.apache.org/doc/4.0/cassandra/getting_started/configuring.html).
 
-At first, you have to create a secret with your configuration file contents as the value of this key `cassandra.yaml`. Then, you have to specify the name of this secret in `spec.configSecret.name` section while creating cassandra CRO.
+At first, you have to create a secret with your configuration file contents as the value of this key `cassandra.yaml`. Then, you have to specify the name of this secret in `spec.configuration.secretName` section while creating cassandra CRO.
 
 ## Custom Configuration
 
@@ -77,7 +77,7 @@ read_request_timeout: 6000ms
 write_request_timeout: 2500ms
 ```
 
-Now, create cassandra crd specifying `spec.configSecret` field.
+Now, create cassandra crd specifying `spec.configuration` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -87,8 +87,8 @@ metadata:
   namespace: demo
 spec:
   version: 5.0.3
-  configSecret:
-    name: cas-configuration
+  configuration:
+    secretName: cas-configuration
   topology:
     rack:
       - name: r0

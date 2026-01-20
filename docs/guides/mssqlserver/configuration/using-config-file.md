@@ -39,7 +39,7 @@ SQL Server allows configuring database via configuration file. The default confi
 
 > To learn available configuration option of SQL Server see [Configure SQL Server on Linux](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-mssql-conf?view=sql-server-ver16).
 
-At first, you have to create a config file named `mssql.conf` with your desired configuration. Then you have to create a [secret](https://kubernetes.io/docs/concepts/configuration/secret/) using this file. Then specify this secret name in `spec.configSecret.name` section while creating MSSQLServer CR. 
+At first, you have to create a config file named `mssql.conf` with your desired configuration. Then you have to create a [secret](https://kubernetes.io/docs/concepts/configuration/secret/) using this file. Then specify this secret name in `spec.configuration.secretName` section while creating MSSQLServer CR. 
 
 KubeDB will create a secret named `{mssqlserver-name}-config` with configuration file contents as the value of the key `mssql.conf` and mount this secret into `/var/opt/mssql/` directory of the database pod. The secret named `{mssqlserver-name}-config` will contain your desired configurations with some default configurations.
 
@@ -134,7 +134,7 @@ issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 
 
-Now, create MSSQLServer CR specifying `spec.configSecret` field.
+Now, create MSSQLServer CR specifying `spec.configuration` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2

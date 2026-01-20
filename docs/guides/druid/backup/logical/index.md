@@ -118,8 +118,8 @@ spec:
   version: 30.0.1
   deepStorage:
     type: s3
-    configSecret:
-      name: deep-storage-config
+    configuration:
+      secretName: deep-storage-config
   topology:
     routers:
       replicas: 1
@@ -602,8 +602,8 @@ spec:
   version: 30.0.1
   deepStorage:
     type: s3
-    configSecret:
-      name: deep-storage-config
+    configuration:
+      secretName: deep-storage-config
   topology:
     routers:
       replicas: 1

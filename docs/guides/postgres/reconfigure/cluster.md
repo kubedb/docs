@@ -58,7 +58,7 @@ $ kubectl create secret generic -n demo pg-configuration --from-file=./user.conf
 secret/pg-configuration created
 ```
 
-In this section, we are going to create a Postgres object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Postgres` CR that we are going to create,
+In this section, we are going to create a Postgres object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Postgres` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -165,7 +165,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `ha-postgres` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `PostgresOpsRequest` CR we have shown above,
 

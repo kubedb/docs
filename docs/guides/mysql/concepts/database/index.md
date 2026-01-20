@@ -69,8 +69,8 @@ spec:
       - localhost
       ipAddresses:
       - "127.0.0.1"
-  configSecret:
-    name: my-custom-config
+  configuration:
+    secretName: my-custom-config
   podTemplate:
     metadata:
       annotations:
@@ -274,9 +274,9 @@ The following fields are configurable in the `spec.tls` section:
   - `uriSANs` (optional) is a list of URI Subject Alternative Names to be set in the Certificate.
   - `emailSANs` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
 
-### spec.configSecret
+### spec.configuration
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/config-file/index.md).
+`spec.configuration` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/config-file/index.md).
 
 ### spec.podTemplate
 

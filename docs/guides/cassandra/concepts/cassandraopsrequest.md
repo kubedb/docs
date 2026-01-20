@@ -149,8 +149,8 @@ spec:
   databaseRef:
     name: cassandra-prod
   configuration:
-    configSecret:
-      name: new-configsecret
+    configuration:
+      secretName: new-configsecret
 status:
   conditions:
     - lastTransitionTime: "2025-07-25T18:22:38Z"

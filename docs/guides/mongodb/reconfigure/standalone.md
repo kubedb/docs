@@ -60,7 +60,7 @@ $ kubectl create secret generic -n demo mg-custom-config --from-file=./mongod.co
 secret/mg-custom-config created
 ```
 
-In this section, we are going to create a MongoDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to create a MongoDB object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -78,8 +78,8 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  configSecret:
-    name: mg-custom-config
+  configuration:
+    secretName: mg-custom-config
 ```
 
 Let's create the `MongoDB` CR we have shown above,
@@ -182,8 +182,8 @@ spec:
     name: mg-standalone
   configuration:
     standalone:
-      configSecret:
-        name: new-custom-config
+      configuration:
+        secretName: new-custom-config
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10
@@ -195,7 +195,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-standalone` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.standalone.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.standalone.configuration.secretName` specifies the name of the new secret.
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,

@@ -37,11 +37,11 @@ MongoDB allows configuring database via configuration file. The default configur
 
 > To learn available configuration option of MongoDB see [Configuration File Options](https://docs.mongodb.com/manual/reference/configuration-options/).
 
-At first, you have to create a secret with your configuration file contents as the value of this key `mongod.conf`. Then, you have to specify the name of this secret in `spec.configSecret.name` section while creating MongoDB crd. KubeDB will mount this secret into `/configdb-readonly/` directory of the database pod.
+At first, you have to create a secret with your configuration file contents as the value of this key `mongod.conf`. Then, you have to specify the name of this secret in `spec.configuration.secretName` section while creating MongoDB crd. KubeDB will mount this secret into `/configdb-readonly/` directory of the database pod.
 
-Here one important thing to note that, `spec.configSecret.name` will be used for standard replicaset members & standalone mongodb only. If you want to configure a specific type of mongo nodes, you have to set the name in respective fields.
-For example, to configure shard topology node, set `spec.shardTopology.<shard / configServer / mongos>.configSecret.name` field.
-Similarly, To configure arbiter node, set `spec.arbiter.configSecret.name` field.
+Here one important thing to note that, `spec.configuration.secretName` will be used for standard replicaset members & standalone mongodb only. If you want to configure a specific type of mongo nodes, you have to set the name in respective fields.
+For example, to configure shard topology node, set `spec.shardTopology.<shard / configServer / mongos>.configuration.secretName` field.
+Similarly, To configure arbiter node, set `spec.arbiter.configuration.secretName` field.
 
 In this tutorial, we will configure [net.maxIncomingConnections](https://docs.mongodb.com/manual/reference/configuration-options/#net.maxIncomingConnections) (default value: 65536) via a custom config file.
 
@@ -85,7 +85,7 @@ net:
   maxIncomingConnections: 100000
 ```
 
-Now, create MongoDB crd specifying `spec.configSecret` field.
+Now, create MongoDB crd specifying `spec.configuration` field.
 
 ```yaml
 apiVersion: kubedb.com/v1
