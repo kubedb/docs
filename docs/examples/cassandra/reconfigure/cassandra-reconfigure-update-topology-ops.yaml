@@ -8,6 +8,7 @@ spec:
   databaseRef:
     name: cassandra-prod
   configuration:
-    secretName: new-cas-topology-custom-config
+    configuration:
+      secretName: new-cas-topology-custom-config
   timeout: 5m
   apply: IfReady

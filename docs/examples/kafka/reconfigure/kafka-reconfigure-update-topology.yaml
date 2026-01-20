@@ -8,6 +8,7 @@ spec:
   databaseRef:
     name: kafka-prod
   configuration:
-    secretName: new-kf-topology-custom-config
+    configuration:
+      secretName: new-kf-topology-custom-config
   timeout: 5m
   apply: IfReady

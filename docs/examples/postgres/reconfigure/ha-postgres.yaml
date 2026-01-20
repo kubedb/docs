@@ -5,7 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: "16.1"
-  replicas:   configuration:
+  replicas: 3
+  configuration:
     secretName: pg-configuration
   storageType: Durable
   storage:

@@ -8,4 +8,5 @@ spec:
   databaseRef:
     name: zk-quickstart
   configuration:
-    secretName: zk-new-configuration
+    configuration:
+      secretName: zk-new-configuration

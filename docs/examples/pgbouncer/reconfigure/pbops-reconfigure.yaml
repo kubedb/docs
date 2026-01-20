@@ -9,6 +9,7 @@ spec:
     name: pb-custom
   configuration:
     pgbouncer:
-      secretName: new-custom-config
+      configuration:
+        secretName: new-custom-config
   timeout: 5m
   apply: IfReady

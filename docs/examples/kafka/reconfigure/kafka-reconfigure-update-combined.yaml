@@ -8,6 +8,7 @@ spec:
   databaseRef:
     name: kafka-dev
   configuration:
-    secretName: new-kf-combined-custom-config
+    configuration:
+      secretName: new-kf-combined-custom-config
   timeout: 5m
   apply: IfReady

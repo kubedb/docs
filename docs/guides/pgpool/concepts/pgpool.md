@@ -67,26 +67,27 @@ spec:
         interval: 10s
   configuration:
     secretName: pgpool-config
-  initConfig:
-    pgpoolConfig:
-      log_statement : on
-      log_per_node_statement : on
-      sr_check_period : 0
-      health_check_period : 0
-      backend_clustering_mode : 'streaming_replication'
-      num_init_children : 5
-      max_pool : 75
-      child_life_time : 300
-      child_max_connections : 0
-      connection_life_time : 0
-      client_idle_limit : 0
-      connection_cache : on
-      load_balance_mode : on
-      ssl : on
-      failover_on_backend_error : off
-      log_min_messages : warning
-      statement_level_load_balance: on
-      memory_cache_enabled: on
+  
+    initConfig:
+      pgpoolConfig:
+        log_statement : on
+        log_per_node_statement : on
+        sr_check_period : 0
+        health_check_period : 0
+        backend_clustering_mode : 'streaming_replication'
+        num_init_children : 5
+        max_pool : 75
+        child_life_time : 300
+        child_max_connections : 0
+        connection_life_time : 0
+        client_idle_limit : 0
+        connection_cache : on
+        load_balance_mode : on
+        ssl : on
+        failover_on_backend_error : off
+        log_min_messages : warning
+        statement_level_load_balance: on
+        memory_cache_enabled: on
   deletionPolicy: WipeOut
   syncUsers: true
   podTemplate:

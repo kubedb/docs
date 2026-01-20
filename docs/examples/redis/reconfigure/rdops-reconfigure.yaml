@@ -8,4 +8,5 @@ spec:
   databaseRef:
     name: sample-redis
   configuration:
-    secretName: new-custom-config
+    configuration:
+      secretName: new-custom-config
