@@ -90,8 +90,6 @@ metadata:
   name: solr
   namespace: demo
 spec:
--  configSecret:
--    name: sl-custom-config
 +  configuration:
 +    secretName: sl-custom-config
   version: 9.6.1
@@ -219,7 +217,6 @@ spec:
   configuration:
 -    configSecret:
 -      name: new-sl-custom-config
-+    secretName: new-sl-custom-config
   databaseRef:
     name: solr
   type: Reconfigure

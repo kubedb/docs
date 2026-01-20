@@ -223,9 +223,8 @@ spec:
   databaseRef:
     name: mssqlserver-ag-cluster
   configuration:
--    configSecret:
--      name: new-custom-config
-+    secretName: new-custom-config
+-    configuration:
++       secretName: new-custom-config
   timeout: 5m
   apply: IfReady
 ```
