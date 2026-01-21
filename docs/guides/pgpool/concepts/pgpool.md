@@ -66,7 +66,6 @@ spec:
           release: prometheus
         interval: 10s
   configuration:
-    secretName: pgpool-config
     inline:
       pgpoolConfig:
         log_statement : on
@@ -87,6 +86,7 @@ spec:
         log_min_messages : warning
         statement_level_load_balance: on
         memory_cache_enabled: on
+        secretName: pgpool-config
   deletionPolicy: WipeOut
   syncUsers: true
   podTemplate:

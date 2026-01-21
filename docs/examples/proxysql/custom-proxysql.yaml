@@ -8,5 +8,5 @@ spec:
   replicas: 1
   backend:
     name: my-group
-  configuration:
-    secretName: my-custom-config
+  ConfigSecret:
+    name: my-custom-config

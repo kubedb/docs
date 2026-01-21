@@ -26,14 +26,15 @@ spec:
       volumes:
         - name: data
           emptyDir: {}
-  initConfig:
-    pgpoolConfig:
-      log_destination : 'stderr'
-      logging_collector : on
-      log_directory : '/tmp/pgpool_log'
-      log_filename : 'pgpool-%Y-%m-%d_%H%M%S.log'
-      log_file_mode : 0777
-      log_truncate_on_rotation : off
-      log_rotation_age : 1d
-      log_rotation_size : 10MB
+  configuration:
+    inline:
+      pgpoolConfig:
+        log_destination : 'stderr'
+        logging_collector : on
+        log_directory : '/tmp/pgpool_log'
+        log_filename : 'pgpool-%Y-%m-%d_%H%M%S.log'
+        log_file_mode : 0777
+        log_truncate_on_rotation : off
+        log_rotation_age : 1d
+        log_rotation_size : 10MB
   deletionPolicy: WipeOut

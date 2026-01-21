@@ -170,12 +170,12 @@ spec:
   databaseRef:
     name: sdb-sample
   configuration:
-    aggregator:  
-      configuration:
-        secretName: sdb-new-custom-config
-    leaf:  
-      configuration:
-        secretName: sdb-new-custom-config
+    aggregator:
+      configSecret:
+        name: sdb-new-custom-config
+    leaf:
+      configSecret:
+        name: sdb-new-custom-config
 ```
 
 ```yaml
@@ -189,9 +189,9 @@ spec:
   databaseRef:
     name: sdb-standalone
   configuration:
-    node:  
-      configuration:
-        secretName: sdb-new-custom-config
+    node:
+      configSecret:
+        name: sdb-new-custom-config
 ```
 
 **Sample `SingleStoreOpsRequest` Objects for Volume Expansion of different database components:**

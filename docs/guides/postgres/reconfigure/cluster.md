@@ -157,15 +157,16 @@ spec:
   type: Reconfigure
   databaseRef:
     name: ha-postgres
-  configuration:   
-    secretName: new-pg-configuration
+  configuration:
+    configSecret:
+      name: new-pg-configuration
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `ha-postgres` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
