@@ -155,8 +155,8 @@ spec:
   deletionPolicy: Delete
   deepStorage:
     type: s3
-    configuration:
-      secretName: deep-storage-config
+    configSecret:
+      name: deep-storage-config
   topology:
     coordinators:
       replicas: 2

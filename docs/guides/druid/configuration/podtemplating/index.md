@@ -125,8 +125,8 @@ spec:
     secretName: config-secret
   deepStorage:
     type: s3
-    configuration:
-      secretName: deep-storage-config
+    configSecret:
+      name: deep-storage-config
   topology:
     coordinators:
       replicas: 1
@@ -272,8 +272,8 @@ spec:
   version: 28.0.1
   deepStorage:
     type: s3
-    configuration:
-      secretName: deep-storage-config
+    configSecret:
+      name: deep-storage-config
   topology:
     routers:
       replicas: 1
@@ -367,8 +367,8 @@ spec:
   version: 28.0.1
   deepStorage:
     type: s3
-    configuration:
-      secretName: deep-storage-config
+    configSecret:
+      name: deep-storage-config
   topology:
     routers:
       replicas: 1
@@ -518,8 +518,8 @@ spec:
   version: 28.0.1
   deepStorage:
     type: s3
-    configuration:
-      secretName: deep-storage-config
+    configSecret:
+      name: deep-storage-config
   topology:
     routers:
       podTemplate:

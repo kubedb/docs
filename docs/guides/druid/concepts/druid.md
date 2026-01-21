@@ -31,8 +31,8 @@ metadata:
 spec:
   deepStorage:
     type: s3
-    configuration:
-      secretName: deep-storage-config
+    configSecret:
+      name: deep-storage-config
   metadataStorage:
     type: PostgreSQL
     name: pg-demo
