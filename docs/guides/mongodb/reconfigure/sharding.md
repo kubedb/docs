@@ -198,7 +198,7 @@ spec:
   configuration:
     shard:
       configSecret:
-        name:: new-custom-config
+        name: new-custom-config
     configServer:
       configSecret:
         name: new-custom-config 

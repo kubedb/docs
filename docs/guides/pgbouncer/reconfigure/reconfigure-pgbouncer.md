@@ -172,9 +172,8 @@ spec:
   databaseRef:
     name: pb-custom
   configuration:
-    pgbouncer:
-      configuration:
-        secretName: new-custom-config
+    configSecret:
+      name: new-custom-config
   timeout: 5m
   apply: IfReady
 ```
@@ -183,7 +182,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `pb-csutom` pgbouncer.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgbouncer.
-- `spec.configuration.pgbouncer.configuration.secretName` specifies the name of the new secret.
+- `spec.configuration.configSecret.name` specifies the name of the new secret.
 - Have a look [here](/docs/guides/pgbouncer/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
@@ -224,7 +223,6 @@ Metadata:
 Spec:
   Apply:  IfReady
   Configuration:
-    Pgbouncer:
       Config Secret:
         Name:  new-custom-config
   Database Ref:
@@ -368,11 +366,10 @@ spec:
   databaseRef:
     name: pb-custom
   configuration:
-    pgbouncer:
-      applyConfig:
-        pgbouncer.ini: |-
-          [pgbouncer]
-          auth_type=scram-sha-256
+    applyConfig:
+      pgbouncer.ini: |-
+        [pgbouncer]
+        auth_type=scram-sha-256
   timeout: 5m
   apply: IfReady
 ```
@@ -381,7 +378,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `pb-custom` pgbouncer.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgbouncer.
-- `spec.configuration.pgbouncer.applyConfig` specifies the new configuration that will be merged in the existing secret.
+- `spec.configuration.applyConfig` specifies the new configuration that will be merged in the existing secret.
 
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 

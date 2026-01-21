@@ -92,7 +92,6 @@ spec:
   databaseRef:
     name: pgbouncer-server
   configuration:
-    pgbouncer:
       applyConfig:
         pgbouncer.conf: |-
           auth_type = scram-sh-256
@@ -109,7 +108,6 @@ spec:
   databaseRef:
     name: pgbouncer-server
   configuration:
-    pgbouncer:
       removeCustomConfig: true
 ```
 
@@ -124,9 +122,8 @@ spec:
   databaseRef:
     name: pgbouncer-server
   configuration:
-    pgbouncer:
-      configuration:
-        secretName: new-custom-config
+      configSecret:
+        name: new-custom-config
 ```
 
 Here, we are going to describe the various sections of a `PgBouncerOpsRequest` crd.
