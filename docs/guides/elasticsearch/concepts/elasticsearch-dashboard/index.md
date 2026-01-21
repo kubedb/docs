@@ -25,7 +25,7 @@ Suppose you have a KubeDB-managed [Elasticsearch](/docs/guides/elasticsearch/con
 As with all other Kubernetes objects, an `ElasticsearchDashboard` needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `spec` section.
 
 ```yaml
-apiVersion: elasticsearch.kubedb.com/v1alpha1
+apiVersion: elasticsearch.kubedb.com/v1
 kind: ElasticsearchDashboard
 metadata:
   name: es-cluster-dashboard

@@ -232,7 +232,6 @@ spec:
         emptyDir: {}
   configuration:
     inline:
-      pgpoolConfig:
         log_destination : 'stderr'
         logging_collector : on
         log_directory : '/tmp/pgpool_log'

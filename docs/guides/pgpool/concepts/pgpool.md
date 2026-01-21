@@ -67,7 +67,6 @@ spec:
         interval: 10s
   configuration:
     inline:
-      pgpoolConfig:
         log_statement : on
         log_per_node_statement : on
         sr_check_period : 0
