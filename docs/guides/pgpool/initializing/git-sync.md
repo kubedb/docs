@@ -63,11 +63,12 @@ spec:
   postgresRef:
     name: postgres
     namespace: demo
-  initConfig:
-    pgpoolConfig:
-      num_init_children : 6
-      max_pool : 65
-      child_life_time : 400
+  configuration:
+    inline:
+      pgpoolConfig:
+        num_init_children : 6
+        max_pool : 65
+        child_life_time : 400
   deletionPolicy: WipeOut
   init:
     script:
@@ -163,11 +164,12 @@ spec:
   postgresRef:
     name: postgres
     namespace: demo
-  initConfig:
-    pgpoolConfig:
-      num_init_children : 6
-      max_pool : 65
-      child_life_time : 400
+  configuration:
+    inline:
+      pgpoolConfig:
+        num_init_children : 6
+        max_pool : 65
+        child_life_time : 400
   deletionPolicy: WipeOut
   init:
     script:
@@ -253,11 +255,12 @@ spec:
   postgresRef:
     name: postgres
     namespace: demo
-  initConfig:
-    pgpoolConfig:
-      num_init_children : 6
-      max_pool : 65
-      child_life_time : 400
+  configuration:
+    inline:
+      pgpoolConfig:
+        num_init_children : 6
+        max_pool : 65
+        child_life_time : 400
   deletionPolicy: WipeOut
   init:
     script:

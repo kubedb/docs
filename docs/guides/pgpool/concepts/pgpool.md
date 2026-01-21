@@ -67,8 +67,7 @@ spec:
         interval: 10s
   configuration:
     secretName: pgpool-config
-  
-    initConfig:
+    inline:
       pgpoolConfig:
         log_statement : on
         log_per_node_statement : on
@@ -255,15 +254,15 @@ Pgpool managed by KubeDB can be monitored with builtin-Prometheus and Prometheus
 
 To learn more about how to use a custom configuration file see [here](/docs/guides/pgpool/configuration/using-config-file.md).
 
-NB. If `spec.configuration` is set, then `spec.initConfig` needs to be empty.
+NB. If `spec.configuration` is set, then `spec.configuration.inline` needs to be empty.
 
-### spec.initConfig
+### spec.configuration.inline
 
-`spec.initConfig` is an optional field that allows users to provide custom configuration for Pgpool while initializing.
+`spec.configuration.inline` is an optional field that allows users to provide custom configuration for Pgpool while initializing.
 
 To learn more about how to use init configuration see [here](/docs/guides/pgpool/configuration/using-init-config.md).
 
-NB. If `spec.initConfig` is set, then `spec.configuration` needs to be empty.
+NB. If `spec.configuration.inline` is set, then `spec.configuration` needs to be empty.
 
 ### spec.deletionPolicy
 

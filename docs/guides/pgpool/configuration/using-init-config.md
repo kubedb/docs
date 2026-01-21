@@ -35,7 +35,7 @@ KubeDB supports providing custom configuration for Pgpool while initializing the
 
 Pgpool allows configuring via configuration file. The default configuration file for Pgpool deployed by `KubeDB` can be found in `opt/pgpool-II/etc/pgpool.conf`. When `spec.configuration` is set to pgpool, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user and merge it with the remaining default config. After all that this secret will be mounted to Pgpool for use it as the configuration file.
 
-So, if you do not want to use a configuration file and secret for custom configuration you can use this `spec.initConfig.pgpoolConfig` field to provide any Pgpool config wih key value pair. The KubeDB operator will validate these configs provided and will merge with the default configs and make a configuration secret to mount to the Pgpool.
+So, if you do not want to use a configuration file and secret for custom configuration you can use this `spec.configuration.inline.pgpoolConfig` field to provide any Pgpool config wih key value pair. The KubeDB operator will validate these configs provided and will merge with the default configs and make a configuration secret to mount to the Pgpool.
 
 > To learn available configuration option of Pgpool see [Configuration Options](https://www.pgpool.net/docs/45/en/html/runtime-config.html).
 
@@ -44,7 +44,7 @@ For a Pgpool surely we will need a Postgres server so, prepare a KubeDB Postgres
 
 
 ## Init Configuration
-Now, create Pgpool crd specifying `spec.initConfig` field.
+Now, create Pgpool crd specifying `spec.configuration.inline` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -58,11 +58,12 @@ spec:
   postgresRef:
     name: ha-postgres
     namespace: demo
-  initConfig:
-    pgpoolConfig:
-      num_init_children : 6
-      max_pool : 65
-      child_life_time : 400
+  configuration:
+    inline:
+      pgpoolConfig:
+        num_init_children : 6
+        max_pool : 65
+        child_life_time : 400
   deletionPolicy: WipeOut
 ```
 
