@@ -122,8 +122,8 @@ spec:
   databaseRef:
     name: pgpool
   configuration:
-    configuration:
-      secretName: new-custom-config
+    configSecret:
+      name: new-custom-config
 ```
 
 

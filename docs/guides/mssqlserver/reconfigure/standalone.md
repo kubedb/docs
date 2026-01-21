@@ -218,8 +218,8 @@ spec:
   databaseRef:
     name: ms-standalone
   configuration:
-    configuration:
-      secretName: new-custom-config
+    configSecret:
+      name: new-custom-config
   timeout: 5m
   apply: IfReady
 ```

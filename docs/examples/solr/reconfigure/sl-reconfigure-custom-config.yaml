@@ -6,8 +6,8 @@ metadata:
 spec:
   apply: IfReady
   configuration:
-    configuration:
-      secretName: sl-combined-custom-config
+    configSecret:
+      name: sl-combined-custom-config
   databaseRef:
     name: solr
   type: Reconfigure

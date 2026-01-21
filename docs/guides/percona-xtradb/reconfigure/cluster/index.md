@@ -192,15 +192,15 @@ spec:
   databaseRef:
     name: sample-pxc
   configuration:   
-    configuration:
-      secretName: new-px-configuration
+    configSecret:
+      name: new-px-configuration
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `sample-pxc` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configuration.secretName` specifies the name of the new secret.
+- `spec.configuration.configSecret.name` specifies the name of the new secret.
 
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
@@ -491,32 +491,34 @@ affiliates. Other names may be trademarks of their respective
 owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-# value of `max_conncetions` is same as provided 
+
 mysql> show variables like 'max_connections';
 +-----------------+-------+
 | Variable_name   | Value |
 +-----------------+-------+
 | max_connections | 230   |
 +-----------------+-------+
-1 row in set (0.001 sec)
+1 row in set (0.00 sec)
 
-# value of `read_buffer_size` is same as provided
+
+# value of `read_buffer_size` is same as provided 
 mysql> show variables like 'read_buffer_size';
-+------------------+---------+
-| Variable_name    | Value   |
-+------------------+---------+
++------------------+--------+
+| Variable_name    | Value  |
++------------------+--------+
 | read_buffer_size | 1064960 |
-+------------------+---------+
-1 row in set (0.001 sec)
++------------------+--------+
+1 row in set (0.00 sec)
 
-# value of `innodb_log_buffer_size` is same as provided
+
 mysql> show variables like 'innodb_log_buffer_size';
 +------------------------+----------+
 | Variable_name          | Value    |
 +------------------------+----------+
 | innodb_log_buffer_size | 17408000 |
 +------------------------+----------+
-1 row in set (0.001 sec)
+1 row in set (0.00 sec)
+
 
 mysql> exit
 Bye

@@ -8,5 +8,6 @@ spec:
   databaseRef:
     name: zk-quickstart
   configuration:
-    configuration:
-      secretName: zk-new-configuration
+    configSecret:
+      name: zk-new-configuration
+    restart: auto

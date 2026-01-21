@@ -162,15 +162,15 @@ spec:
   databaseRef:
     name: memcd-quickstart
   configuration:
-    configuration:
-      secretName: new-configuration
+    configSecret:
+      name: new-configuration
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `memcd-quickstart` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configuration.secretName` specifies the name of the new secret.
+- `spec.configuration.configSecret.name` specifies the name of the new secret.
 
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
@@ -186,7 +186,7 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcahcedOpsRequest` CR,
 
 ```bash
-$ watch kubectl get memcahcedopsrequest -n demo
+$ watch kubectl get memcachedopsrequest -n demo
 Every 2.0s: kubectl get memcachedopsrequest -n demo
 NAME                          TYPE          STATUS       AGE
 memcd-reconfig                Reconfigure   Successful   1m

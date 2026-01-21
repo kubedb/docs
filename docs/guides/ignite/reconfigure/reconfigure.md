@@ -125,8 +125,8 @@ spec:
   databaseRef:
     name: ig-cluster
   configuration:
-    configuration:
-      secretName: new-custom-config
+    configSecret:
+      name: new-custom-config
   timeout: 5m
   apply: IfReady
 ```
@@ -135,7 +135,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `igps-reconfigure` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configuration.secretName` specifies the name of the new secret.
+- `spec.configuration.configSecret.name` specifies the name of the new secret.
 - Have a look [here](/docs/guides/ignite/concepts/opsrequest.md#specconfiguration) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `IgniteOpsRequest` CR we have shown above,

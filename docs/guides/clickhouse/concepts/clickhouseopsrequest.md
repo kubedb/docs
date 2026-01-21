@@ -154,8 +154,8 @@ metadata:
 spec:
   apply: IfReady
   configuration:
-    configuration:
-      secretName: ch-custom-config
+    configSecret:
+      name: ch-custom-config
   databaseRef:
     name: clickhouse-prod
   type: Reconfigure

@@ -127,8 +127,8 @@ metadata:
 spec:
   apply: IfReady
   configuration:
-    configuration:
-      secretName: hazelcast-custom-config
+    configSecret:
+      name: hazelcast-custom-config
     applyConfig:
       hazelcast.yaml: |-
         hazelcast:

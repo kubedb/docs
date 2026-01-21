@@ -244,8 +244,8 @@ spec:
   databaseRef:
     name: kafka-dev
   configuration:
-    configuration:
-      secretName: new-configsecret-combined
+    configSecret:
+      name: new-configsecret-combined
 status:
   conditions:
     - lastTransitionTime: "2024-07-25T18:22:38Z"
@@ -269,8 +269,8 @@ spec:
   databaseRef:
     name: kafka-prod
   configuration:
-    configuration:
-      secretName: new-configsecret-topology
+    configSecret:
+      name: new-configsecret-topology
 status:
   conditions:
     - lastTransitionTime: "2024-07-25T18:22:38Z"

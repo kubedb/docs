@@ -178,8 +178,8 @@ spec:
   databaseRef:
     name: pp-custom
   configuration:
-    configuration:
-      secretName: new-custom-config
+    configSecret:
+      name: new-custom-config
   timeout: 5m
   apply: IfReady
 ```
@@ -188,7 +188,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `pp-csutom` pgpool.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgpool.
-- `spec.configuration.configuration.secretName` specifies the name of the new secret.
+- `spec.configuration.configSecret.name` specifies the name of the new secret.
 - Have a look [here](/docs/guides/pgpool/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
@@ -508,42 +508,42 @@ Events:
 Now let's exec into the pgpool pod and check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo pp-custom-0 -- bash 
+$ kubectl exec -it -n demo pp-custom-0 -- bash
 pp-custom-0:/$ cat opt/pgpool-II/etc/pgpool.conf
-memory_cache_enabled = 'off'
-num_init_children = 5
-pcp_socket_dir = '/var/run/pgpool'
-port = '9999'
-enable_pool_hba = on
-log_min_messages = 'warning'
-pcp_port = '9595'
-sr_check_period = 0
-ssl = 'off'
-backend_weight1 = 1
-load_balance_mode = on
-backend_weight0 = 1
-backend_port0 = '5432'
-connection_cache = on
-backend_hostname1 = 'ha-postgres-standby.demo.svc'
-health_check_period = 0
-memqcache_oiddir = '/tmp/oiddir/'
-statement_level_load_balance = 'off'
-allow_clear_text_frontend_auth = 'false'
-log_per_node_statement = on
 backend_hostname0 = 'ha-postgres.demo.svc'
+backend_port0 = 5432
+backend_weight0 = 1
+backend_flag0 = 'ALWAYS_PRIMARY|DISALLOW_TO_FAILOVER'
+backend_hostname1 = 'ha-postgres-standby.demo.svc'
+backend_port1 = 5432
+backend_weight1 = 1
 backend_flag1 = 'DISALLOW_TO_FAILOVER'
 listen_addresses = *
-failover_on_backend_error = 'off'
-pcp_listen_addresses = *
-child_max_connections = 0
-socket_dir = '/var/run/pgpool'
-backend_flag0 = 'ALWAYS_PRIMARY|DISALLOW_TO_FAILOVER'
-backend_port1 = '5432'
-backend_clustering_mode = 'streaming_replication'
-connection_life_time = 0
-child_life_time = '300'
+log_per_node_statement = on
+num_init_children = 5
 max_pool = 75
+child_life_time = '300'
+child_max_connections = 0
+connection_life_time = 0
 client_idle_limit = 0
+connection_cache = on
+load_balance_mode = on
+log_min_messages = 'warning'
+statement_level_load_balance = 'off'
+memory_cache_enabled = 'off'
+enable_pool_hba = on
+port = 9999
+socket_dir = '/var/run/pgpool'
+pcp_listen_addresses = *
+pcp_port = 9595
+pcp_socket_dir = '/var/run/pgpool'
+sr_check_period = 0
+health_check_period = 0
+backend_clustering_mode = 'streaming_replication'
+ssl = 'off'
+failover_on_backend_error = 'off'
+memqcache_oiddir = '/tmp/oiddir/'
+allow_clear_text_frontend_auth = 'false'
 failover_on_backend_error = 'off'
 pp-custom-0:/$ exit
 exit

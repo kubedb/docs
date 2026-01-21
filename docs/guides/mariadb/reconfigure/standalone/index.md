@@ -180,15 +180,15 @@ spec:
   databaseRef:
     name: sample-mariadb
   configuration:   
-    configuration:
-      secretName: new-md-configuration
+    configSecret:
+      name: new-md-configuration
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `mdops-reconfigure-config` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configuration.secretName` specifies the name of the new secret.
+- `spec.configuration.configSecret.name` specifies the name of the new secret.
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 

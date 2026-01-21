@@ -248,8 +248,8 @@ spec:
   databaseRef:
     name: druid-cluster
   configuration:
-    configuration:
-      secretName: new-config
+    configSecret:
+      name: new-config
 ```
 
 Here,

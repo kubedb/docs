@@ -324,15 +324,15 @@ spec:
   databaseRef:
     name: sample-mysql
   configuration:   
-    configuration:
-      secretName: new-my-configuration
+    configSecret:
+      name: new-my-configuration
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `sample-mysql` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configuration.secretName` specifies the name of the new secret.
+- `spec.configuration.configSecret.name` specifies the name of the new secret.
 
 Let's create the `MySQLOpsRequest` CR we have shown above,
 

@@ -159,8 +159,8 @@ spec:
   databaseRef:
     name: druid-prod
   configuration:
-    configuration:
-      secretName: new-configsecret
+    configSecret:
+      name: new-configsecret
 status:
   conditions:
     - lastTransitionTime: "2024-07-25T18:22:38Z"

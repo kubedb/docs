@@ -222,8 +222,8 @@ spec:
   databaseRef:
     name: clickhouse-prod
   configuration:
-    configuration:
-      secretName: new-ch-custom-config
+    configSecret:
+      name: new-ch-custom-config
   timeout: 10m
   apply: IfReady
 ```
@@ -232,7 +232,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `clickhouse-prod` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.secretName` specifies the name of the new secret.
+- `spec.configuration.configSecret.name` specifies the name of the new secret.
 
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
