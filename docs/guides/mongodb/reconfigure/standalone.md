@@ -182,8 +182,8 @@ spec:
     name: mg-standalone
   configuration:
     standalone:
-      configuration:
-        secretName: new-custom-config
+      configSecret:
+        name: new-custom-config
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10
@@ -195,7 +195,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-standalone` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.standalone.configuration.secretName` specifies the name of the new secret.
+- `spec.configuration.standalone.configSecret.name` specifies the name of the new secret.
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,

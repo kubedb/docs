@@ -325,8 +325,8 @@ spec:
     name: mg-replicaset
   configuration:
     replicaSet:
-      configuration:
-        secretName: new-custom-config
+      configSecret:
+        name: new-custom-config
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -351,14 +351,14 @@ spec:
     name: mg-sharding
   configuration:
     shard:
-      configuration:
-        secretName: new-custom-config
+      configSecret:
+        name: new-custom-config
     configServer:
-      configuration:
-        secretName: new-custom-config
+      configSecret:
+        name: new-custom-config
     mongos:
-      configuration:
-        secretName: new-custom-config
+      configSecret:
+        name: new-custom-config
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -383,8 +383,8 @@ spec:
     name: mg-standalone
   configuration:
     standalone:
-      configuration:
-        secretName: new-custom-config
+      configSecret:
+        name: new-custom-config
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"

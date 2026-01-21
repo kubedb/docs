@@ -74,8 +74,8 @@ spec:
   shardTopology:
     configServer:
       replicas: 3
-      configuration:
-        secretName: mg-custom-config
+      configSecret:
+        name: mg-custom-config
       storage:
         resources:
           requests:
@@ -83,13 +83,13 @@ spec:
         storageClassName: standard
     mongos:
       replicas: 2
-      configuration:
-        secretName: mg-custom-config
+      configSecret:
+        name: mg-custom-config
     shard:
       replicas: 3
       shards: 2
-      configuration:
-        secretName: mg-custom-config
+      configSecret:
+        name: mg-custom-config
       storage:
         resources:
           requests:
@@ -197,14 +197,14 @@ spec:
     name: mg-sharding
   configuration:
     shard:
-      configuration:
-        secretName: new-custom-config
+      configSecret:
+        name:: new-custom-config
     configServer:
-      configuration:
-        secretName: new-custom-config 
+      configSecret:
+        name: new-custom-config 
     mongos:
-      configuration:
-        secretName: new-custom-config   
+      configSecret:
+        name: new-custom-config   
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10
@@ -216,10 +216,10 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-shard` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.shard.configuration.secretName` specifies the name of the new secret for shard nodes.
-- `spec.configuration.configServer.configuration.secretName` specifies the name of the new secret for configServer nodes.
-- `spec.configuration.mongos.configuration.secretName` specifies the name of the new secret for mongos nodes.
-- `spec.customConfig.arbiter.configuration.secretName` could also be specified with a config-secret.
+- `spec.configuration.shard.configSecret.name` specifies the name of the new secret for shard nodes.
+- `spec.configuration.configServer.configSecret.name` specifies the name of the new secret for configServer nodes.
+- `spec.configuration.mongos.configSecret.name` specifies the name of the new secret for mongos nodes.
+- `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 > **Note:** If you don't want to reconfigure all the components together, you can only specify the components (shard, configServer and mongos) that you want to reconfigure.
@@ -335,7 +335,7 @@ Here,
 - `spec.configuration.shard.applyConfig` specifies the new configuration that will be merged in the existing secret for shard nodes.
 - `spec.configuration.configServer.applyConfig` specifies the new configuration that will be merged in the existing secret for configServer nodes.
 - `spec.configuration.mongos.applyConfig` specifies the new configuration that will be merged in the existing secret for mongos nodes.
-- `spec.customConfig.arbiter.configuration.secretName` could also be specified with a config-secret.
+- `spec.customConfig.arbiter.configSecret.name` could also be specified with a config-secret.
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 > **Note:** If you don't want to reconfigure all the components together, you can only specify the components (shard, configServer and mongos) that you want to reconfigure.

@@ -9,11 +9,11 @@ spec:
     name: mg-sharding
   configuration:
     shard:
-      configuration:
-        secretName: new-custom-config
+      configSecret:
+        name: new-custom-config
     configServer:
-      configuration:
-        secretName: new-custom-config
+      configSecret:
+        name: new-custom-config
     mongos:
-      configuration:
-        secretName: new-custom-config
+      configSecret:
+        name: new-custom-config
