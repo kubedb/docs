@@ -60,7 +60,7 @@ spec:
     namespace: demo
   configuration:
     inline:
-      pgpoolConfig:
+      pgpool.conf: |
         num_init_children : 6
         max_pool : 65
         child_life_time : 400

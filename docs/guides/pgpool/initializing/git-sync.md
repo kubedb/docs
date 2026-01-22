@@ -65,9 +65,10 @@ spec:
     namespace: demo
   configuration:
     inline:
-      num_init_children : 6
-      max_pool : 65
-      child_life_time : 400
+      pgpool.conf: |
+          num_init_children : 6
+          max_pool : 65
+          child_life_time : 400
   deletionPolicy: WipeOut
   init:
     script:
@@ -165,9 +166,10 @@ spec:
     namespace: demo
   configuration:
     inline:
-      num_init_children : 6
-      max_pool : 65
-      child_life_time : 400
+      pgpool.conf: |
+          num_init_children : 6
+          max_pool : 65
+          child_life_time : 400
   deletionPolicy: WipeOut
   init:
     script:
@@ -255,9 +257,10 @@ spec:
     namespace: demo
   configuration:
     inline:
-      num_init_children : 6
-      max_pool : 65
-      child_life_time : 400
+      pgpool.conf: |
+          num_init_children : 6
+          max_pool : 65
+          child_life_time : 400
   deletionPolicy: WipeOut
   init:
     script:
