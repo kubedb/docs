@@ -11,6 +11,6 @@ spec:
     namespace: demo
   configuration:
     inline:
-      pgpoolConfig:
-        max_pool : 60
+      pgpool.conf: |
+        max_pool=60
   deletionPolicy: WipeOut
