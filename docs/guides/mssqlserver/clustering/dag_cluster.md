@@ -104,7 +104,7 @@ When deploying `Microsoft SQL Server` on Linux using `containers`, you need to s
 `EnterpriseCore`: This will run the container using the Enterprise Edition Core   
 `<valid product id>`: This will run the container with the edition that is associated with the PID
 
-`ACCEPT_EULA` confirms your acceptance of the [End-User Licensing Agreement](https://go.microsoft.com/fwlink/?linkid=857698).
+`ACCEPT_EULA` confirms your acceptance of the [End-User Licensing Agreement](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-environment-variables?view=sql-server-ver17#:~:text=ACCEPT_EULA,SQL%20Server%20image.).
 
 For a complete list of environment variables that can be used, refer to the documentation [here](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-environment-variables?view=sql-server-2017).
 
