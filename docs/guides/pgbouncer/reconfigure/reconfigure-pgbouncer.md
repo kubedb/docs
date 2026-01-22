@@ -183,6 +183,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are reconfiguring `pb-csutom` pgbouncer.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgbouncer.
 - `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.inline` is an optional field that allows you to provide custom configuration directly.
 - Have a look [here](/docs/guides/pgbouncer/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `PgBouncerOpsRequest` CR we have shown above,

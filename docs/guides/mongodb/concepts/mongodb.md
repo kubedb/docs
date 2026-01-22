@@ -471,7 +471,7 @@ MongoDB managed by KubeDB can be monitored with builtin-Prometheus and Prometheu
 
 To learn more about how to use a custom configuration file see [here](/docs/guides/mongodb/configuration/using-config-file.md).
 
-NB. If `spec.shardTopology` is set, then `spec.configuration` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.configSecret`
+NB. If `spec.shardTopology` is set, then `spec.configuration` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.configuration`
 
 ### spec.podTemplate
 

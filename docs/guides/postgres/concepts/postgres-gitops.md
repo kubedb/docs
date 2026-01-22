@@ -299,8 +299,7 @@ PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and Promet
 
 ### spec.configuration.secretName
 
-`spec.configuration.secretName` is an optional field that allows users to provide custom configuration for PostgreSQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/postgres/configuration/using-config-file.md).
-
+`spec.configuration.secretName` is an optional field that allows users to provide custom configuration for PostgreSQL. This field accepts a secret name that holds the custom configuration parameters.
 > Updating this field will create a [`Reconfigure`](/docs/guides/postgres/reconfigure/overview.md) OpsRequest by GitOps operator.
 
 ### spec.podTemplate
