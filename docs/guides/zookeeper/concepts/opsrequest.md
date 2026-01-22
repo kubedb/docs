@@ -136,6 +136,20 @@ spec:
     configSecret:
       name: new-config-secret
 ```
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ZooKeeperOpsRequest
+metadata:
+  name: myops-reconfigure-config
+  namespace: demo
+spec:
+  apply: IfReady
+  databaseRef:
+    name: zk-quickstart
+  type: Reconfigure
+  configuration:
+    restart: true
+```
 
 **Sample `ZooKeeperOpsRequest` Objects for Volume Expansion of database cluster:**
 
@@ -317,6 +331,13 @@ If you want to reconfigure your Running ZooKeeper cluster or different component
 ```
 
 - `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed ZooKeeper server.
+
+- `restart` significantly reduces unnecessary downtime.
+  - `auto` (default): restart only if required (determined by ops manager operator)
+  - `false`: no restart
+  - `true`: always restart
+
+
 
 ### spec.tls
 

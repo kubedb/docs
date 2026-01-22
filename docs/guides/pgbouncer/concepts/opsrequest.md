@@ -92,9 +92,9 @@ spec:
   databaseRef:
     name: pgbouncer-server
   configuration:
-      applyConfig:
-        pgbouncer.conf: |-
-          auth_type = scram-sh-256
+    applyConfig:
+      pgbouncer.conf: |-
+        auth_type = scram-sh-256
 ```
 
 ```yaml
@@ -108,7 +108,7 @@ spec:
   databaseRef:
     name: pgbouncer-server
   configuration:
-      removeCustomConfig: true
+    removeCustomConfig: true
 ```
 
 ```yaml
@@ -122,8 +122,21 @@ spec:
   databaseRef:
     name: pgbouncer-server
   configuration:
-      configSecret:
-        name: new-custom-config
+    configSecret:
+      name: new-custom-config
+```
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgBouncerOpsRequest
+metadata:
+  name: pgbouncer-reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: pgbouncer-server
+  configuration:
+    restart: true
 ```
 
 Here, we are going to describe the various sections of a `PgBouncerOpsRequest` crd.
@@ -189,9 +202,7 @@ Here, when you specify the resource request, the scheduler uses this information
 If you want to reconfigure your Running PgBouncer cluster or different components of it with new custom configuration, you have to specify `spec.configuration` section. This field consists of the following sub-field:
 
 - `configSecret` points to a secret in the same namespace of a PgBouncer resource, which contains the new custom configurations. If there are any configSecret set before in the database, this secret will replace it.
-- `applyConfig` contains the new custom config as a string which will be merged with the previous configuration. 
-
-- `applyConfig` is a map where key supports 1 values, namely `pgbouncer.ini`.
+- `applyConfig` contains the new custom config as a string which will be merged with the previous configuration. It is a map where key supports 1 values, namely `pgbouncer.ini`.
 
 ```yaml
   applyConfig:
@@ -200,6 +211,12 @@ If you want to reconfigure your Running PgBouncer cluster or different component
 ```
 
 - `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed pgbouncer server.
+- `restart` significantly reduces unnecessary downtime.
+  - `auto` (default): restart only if required (determined by ops manager operator)
+  - `false`: no restart
+  - `true`: always restart
+
+
 
 ### spec.timeout
 As we internally retry the ops request steps multiple times, This `timeout` field helps the users to specify the timeout for those steps of the ops request (in second). 

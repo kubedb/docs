@@ -451,7 +451,7 @@ To enable TLS on the HTTP layer, the configuration for the `http` layer certific
 
 If you want to reconfigure your Running Elasticsearch cluster or different components of it with new custom configuration, you have to specify `spec.configuration` section. This field consists of the following sub-field:
 
-- `spec.configuration.configsecret`: ConfigSecret is an optional field to provide custom configuration file for database.
+- `spec.configuration.configSecret`: ConfigSecret is an optional field to provide custom configuration file for database.
 - `spec.configuration.secureConfigSecret`: SecureConfigSecret is an optional field to provide secure settings for database.
 - `spec.configuration.applyConfig`: ApplyConfig is an optional field to provide Elasticsearch configuration. Provided configuration will be applied to config files stored in ConfigSecret. If the ConfigSecret is missing, the operator will create a new k8s secret by the following naming convention: {db-name}-user-config.
 ```yaml

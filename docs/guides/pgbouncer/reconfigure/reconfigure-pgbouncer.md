@@ -545,7 +545,7 @@ This will remove all the custom config previously provided. After this Ops-manag
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `pb-custom` pgbouncer.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgbouncer.
-- `spec.configuration.pgbouncer.removeCustomConfig` specifies for boolean values to remove previous custom configuration.
+- `spec.configuration.removeCustomConfig` specifies for boolean values to remove previous custom configuration.
 
 
 

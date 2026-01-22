@@ -8,9 +8,9 @@ spec:
   databaseRef:
     name: pb-custom
   configuration:
-      applyConfig:
-        pgbouncer.ini: |-
-          [pgbouncer]
-          auth_type=scram-sha-256
+    applyConfig:
+      pgbouncer.ini: |-
+        [pgbouncer]
+        auth_type=scram-sha-256
   timeout: 5m
   apply: IfReady

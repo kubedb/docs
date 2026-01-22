@@ -282,6 +282,29 @@ status:
   observedGeneration: 1
   phase: Successful
 ```
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+  name: kfops-reconfiugre-combined
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: kafka-dev
+  configuration:
+    restart: true
+status:
+  conditions:
+    - lastTransitionTime: "2024-07-25T18:22:38Z"
+      message: Successfully completed the modification process
+      observedGeneration: 1
+      reason: Successful
+      status: "True"
+      type: Successful
+  observedGeneration: 1
+  phase: Successful
+```
 
 **Sample `KafkaOpsRequest` Objects for Volume Expansion of different database components:**
 
@@ -533,7 +556,12 @@ controller.properties: |
     controller.properties: |
       metadata.log.dir=/var/log/kafka/metadata-custom
 ```
+- `restart` significantly reduces unnecessary downtime.
+  - `auto` (default): restart only if required (determined by ops manager operator)
+  - `false`: no restart
+  - `true`: always restart
 
+    
 - `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed kafka cluster.
 
 ### spec.tls

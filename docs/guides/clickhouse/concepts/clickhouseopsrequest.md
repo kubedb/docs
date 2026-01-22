@@ -170,7 +170,30 @@ status:
   observedGeneration: 1
   phase: Successful
 ```
-
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ClickHouseOpsRequest
+metadata:
+  name: chops-reconfiugre
+  namespace: demo
+spec:
+  apply: IfReady
+  configuration:
+    restart: true
+  databaseRef:
+    name: clickhouse-prod
+  type: Reconfigure
+status:
+  conditions:
+    - lastTransitionTime: "2025-08-21T10:00:04Z"
+      message: Successfully completed reconfigure ClickHouse
+      observedGeneration: 1
+      reason: Successful
+      status: "True"
+      type: Successful
+  observedGeneration: 1
+  phase: Successful
+```
 Sample `ClickHouseOpsRequest` Objects for Volume Expansion of ClickHouse:
 
 ```yaml
@@ -363,6 +386,10 @@ If you want to reconfigure your Running ClickHouse cluster or different componen
 
 - `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed clickhouse cluster.
 
+- `restart` significantly reduces unnecessary downtime.
+  - `auto` (default): restart only if required (determined by ops manager operator)
+  - `false`: no restart
+  - `true`: always restart
 ### spec.tls
 
 If you want to reconfigure the TLS configuration of your ClickHouse i.e. add TLS, remove TLS, update issuer/cluster issuer or Certificates and rotate the certificates, you have to specify `spec.tls` section. This field consists of the following sub-field:

@@ -55,7 +55,7 @@ The following YAML manifest shows an example `Pgpool ` object configured with `g
 apiVersion: kubedb.com/v1alpha2
 kind: Pgpool
 metadata:
-  name: pgpool
+  name: pgpool-demo
   namespace: demo
 spec:
   version: "4.4.5"
@@ -66,9 +66,9 @@ spec:
   configuration:
     inline:
       pgpool.conf: |
-          num_init_children : 6
-          max_pool : 65
-          child_life_time : 400
+        num_init_children=6
+        max_pool=65
+        child_life_time=400
   deletionPolicy: WipeOut
   init:
     script:
@@ -80,6 +80,7 @@ spec:
           - --add-user=true
           - --period=60s
           - --one-time
+
 ```
 ```bash
 kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/initialization/git-sync/git-sync-public.yaml
@@ -167,9 +168,9 @@ spec:
   configuration:
     inline:
       pgpool.conf: |
-          num_init_children : 6
-          max_pool : 65
-          child_life_time : 400
+        num_init_children=6
+        max_pool=65
+        child_life_time=400
   deletionPolicy: WipeOut
   init:
     script:
@@ -258,9 +259,9 @@ spec:
   configuration:
     inline:
       pgpool.conf: |
-          num_init_children : 6
-          max_pool : 65
-          child_life_time : 400
+        num_init_children=6
+        max_pool=65
+        child_life_time=400
   deletionPolicy: WipeOut
   init:
     script:

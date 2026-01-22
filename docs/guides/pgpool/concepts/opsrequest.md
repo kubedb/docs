@@ -125,7 +125,19 @@ spec:
     configSecret:
       name: new-custom-config
 ```
-
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgpoolOpsRequest
+metadata:
+  name: pgpool-reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: pgpool
+  configuration:
+    restart: auto 
+```
 
 **Sample `PgpoolOpsRequest` Objects for Reconfiguring TLS:**
 
@@ -249,6 +261,13 @@ If you want to reconfigure your Running Pgpool cluster or different components o
 - `applyConfig` contains the new custom config as a string which will be merged with the previous configuration. 
 
 - `applyConfig` is a map where key supports 1 values, namely `pgpool.conf`.
+- `restart` significantly reduces unnecessary downtime.
+  - `auto` (default): restart only if required (determined by ops manager operator)
+  - `false`: no restart
+  - `true`: always restart
+
+
+
 
 ```yaml
   applyConfig:

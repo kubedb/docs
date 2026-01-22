@@ -66,7 +66,7 @@ spec:
   configuration:
     inline:
       pgpool.conf: |  
-        max_pool : 60
+        max_pool :  60
   deletionPolicy: WipeOut
 ```
 Here we are creating the pgpool with `max_pool=60`, it is necessary because we will up scale the pgpool replicas so for that we need larger `max_pool`. Let's create the `Pgpool` CR we have shown above,

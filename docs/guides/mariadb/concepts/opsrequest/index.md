@@ -297,6 +297,12 @@ If you want to reconfigure your Running MariaDB cluster with new custom configur
 - `configSecret` points to a secret in the same namespace of a MariaDB resource, which contains the new custom configurations. If there are any configSecret set before in the database, this secret will replace it.
 - `applyConfig` contains the new custom config as a string which will be merged with the previous configuration.
 - `removeCustomConfig` reomoves all the custom configs of the MariaDB server.
+- `restart` significantly reduces unnecessary downtime.
+  - `auto` (default): restart only if required (determined by ops manager operator)
+  - `false`: no restart
+  - `true`: always restart
+
+
 
 ### spec.tls
 
