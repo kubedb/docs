@@ -65,6 +65,7 @@ jobs:
           kubectl create -f https://github.com/stashed/installer/raw/master/crds/stash-crds.yaml
           kubectl create -f https://github.com/kubevault/installer/raw/master/crds/kubevault-crds.yaml
           kubectl create -f https://github.com/kubedb/installer/raw/master/crds/kubedb-crds.yaml
+          kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/e6232a736934fc62cc2efb14a4f5c3e10c7167a1/crds/kafka.kubedb.com_connectors.yaml
           kubectl create -f https://github.com/kubernetes-csi/external-snapshotter/raw/master/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
           kubectl create -f https://github.com/kubestash/installer/raw/master/crds/kubestash-crds.yaml
           kubectl create -f https://github.com/appscode-cloud/catalog/raw/master/crds/catalog.appscode.com_mongodbbindings.yaml
