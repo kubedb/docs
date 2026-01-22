@@ -293,7 +293,7 @@ spec:
   databaseRef:
     name: kafka-dev
   configuration:
-    restart: true
+    restart: "true"
 status:
   conditions:
     - lastTransitionTime: "2024-07-25T18:22:38Z"

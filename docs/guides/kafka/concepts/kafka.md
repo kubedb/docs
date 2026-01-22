@@ -190,11 +190,10 @@ type: Opaque
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
-### spec.configuration
+### spec.configSecret
 
-`spec.configuration` is an optional field that points to a Secret used to hold custom Kafka configuration. If not set, KubeDB operator will use default configuration for Kafka. This is currently not in use. Use `.spec.configuration` to provide custom configuration instead. If you still provide this field, KubeDB operator will update `spec.configuration.secretName` with the provided secret name.
-
-> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configuration.secretName`. The field `.spec.configuration` is deprecated and will be removed in future releases. If you still use `.spec.configuration`, KubeDB will copy `.spec.configuration.secretName` to `.spec.configuration.secretName` internally.
+`spec.configSecret
+> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configuration.secretName`. The field `.spec.configSecret.name` is deprecated and will be removed in future releases. If you still use `.spec.configuration`, KubeDB will copy `.spec.configuration.secretName` to `.spec.configuration.secretName` internally.
 
 ### spec.configuration
 `spec.configuration` is an optional field that specifies custom configuration for Kafka cluster. It has the following fields:

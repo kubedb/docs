@@ -144,7 +144,7 @@ spec:
   databaseRef:
     name: rm-quickstart
   configuration:
-    restart: true
+    restart: "true"
 ```
 **Sample `RabbitMQOpsRequest` Objects for Volume Expansion of database cluster:**
 

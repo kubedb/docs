@@ -288,8 +288,9 @@ Redis managed by KubeDB can be monitored with builtin-Prometheus and Prometheus 
 - [Monitor Redis with Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md)
 
 ### spec.configuration
-
-`spec.configuration` is an optional field that allows users to provide custom configuration for Redis. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/redis/configuration/redis.md).
+`spec.configuration` is an optional field that specifies custom configuration for Redis cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Redis object.
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Redis cluster.
 
 ### spec.podTemplate
 

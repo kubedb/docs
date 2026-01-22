@@ -136,7 +136,7 @@ spec:
   databaseRef:
     name: pgbouncer-server
   configuration:
-    restart: true
+    restart: "true"
 ```
 
 Here, we are going to describe the various sections of a `PgBouncerOpsRequest` crd.

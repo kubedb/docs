@@ -222,12 +222,9 @@ RabbitMQ managed by KubeDB can be monitored with builtin-Prometheus and Promethe
 - [Monitor RabbitMQ with Prometheus operator](/docs/guides/rabbitmq/monitoring/using-prometheus-operator.md)
 
 ### spec.configuration
-
-`spec.configuration` is an optional field that allows users to provide custom configuration for RabbitMQ. You can provide the custom configuration in a secret, then you can specify the secret name `spec.configuration.secretName`.
-
-> Please note that, the secret key needs to be `rabbitmq.conf`.
-
-To learn more about how to use a custom configuration file see [here](/docs/guides/rabbitmq/configuration/using-config-file.md).
+`spec.configuration` is an optional field that specifies custom configuration for RabbitMQ cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the RabbitMQ object.
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for RabbitMQ cluster.
 
 ### spec.podTemplate
 

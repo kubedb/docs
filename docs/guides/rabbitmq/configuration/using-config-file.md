@@ -33,7 +33,7 @@ KubeDB supports providing custom configuration for RabbitMQ. This tutorial will 
 
 ## Overview
 
-RabbitMQ allows configuring via configuration file. The default configuration file for RabbitMQ deployed by `KubeDB` can be found in `/config/rabbitmq.conf`. When `spec.configuration` is set to rabbitmq, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user and merge it with the remaining default config. After all that this secret will be mounted to rabbitmq for use it as the configuration file.
+RabbitMQ allows configuring via configuration file. The default configuration file for RabbitMQ deployed by `KubeDB` can be found in `/config/rabbitmq.conf`. When `spec.configuration` is set to rabbitmq, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user. After all that this secret will be mounted to rabbitmq for use it as the configuration file.
 
 > To learn available configuration option of Pgpool see [Configuration Options](https://www.rabbitmq.com/docs/configure).
 

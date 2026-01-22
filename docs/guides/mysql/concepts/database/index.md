@@ -275,8 +275,9 @@ The following fields are configurable in the `spec.tls` section:
   - `emailSANs` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
 
 ### spec.configuration
-
-`spec.configuration` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/config-file/index.md).
+`spec.configuration` is an optional field that specifies custom configuration for MySql cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the MySql object.
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for MySql cluster.
 
 ### spec.podTemplate
 

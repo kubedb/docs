@@ -229,9 +229,9 @@ type: Opaque
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
 ### spec.configuration
-
-`spec.configuration` is an optional field that points to a Secret used to hold custom Druid configuration. If not set, KubeDB operator will use default configuration for Druid.
-
+`spec.configuration` is an optional field that specifies custom configuration for Druid cluster. It has the following fields:
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Druid cluster.
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Druid object.
 ### spec.topology
 
 `spec.topology` represents the topology configuration for Druid cluster in KRaft mode.

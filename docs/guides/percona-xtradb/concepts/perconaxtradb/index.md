@@ -206,8 +206,9 @@ The following fields are configurable in the `spec.tls` section:
   - `emailSANs` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
 
 ### spec.configuration
-
-`spec.configuration` is an optional field that allows users to provide custom configuration for PerconaXtraDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47).
+`spec.configuration` is an optional field that specifies custom configuration for Percona-XtraDB cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Percona-XtraDB object.
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Percona-XtraDB cluster.
 
 ### spec.podTemplate
 

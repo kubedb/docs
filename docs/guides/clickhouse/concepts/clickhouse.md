@@ -153,9 +153,9 @@ type: Opaque
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
 ### spec.configuration
-
-`spec.configuration` is an optional field that points to a Secret used to hold custom ClickHouse configuration. If not set, KubeDB operator will use default configuration for ClickHouse.
-
+`spec.configuration` is an optional field that specifies custom configuration for clickhouse cluster. It has the following fields:
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for clickhouse cluster.
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the clickhouse object.
 ### spec.clusterTopology
 
 `spec.clusterTopology` represents the topology configuration for ClickHouse cluster.

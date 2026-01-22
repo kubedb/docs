@@ -258,8 +258,9 @@ PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and Promet
 - [Monitor PostgreSQL with Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md)
 
 ### spec.configuration
-
-`spec.configuration` is an optional field that allows users to provide custom configuration for PostgreSQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/postgres/configuration/using-config-file.md).
+`spec.configuration` is an optional field that specifies custom configuration for Percona-XtraDB cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Percona-XtraDB object.
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Percona-XtraDB cluster.
 
 ### spec.podTemplate
 

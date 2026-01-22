@@ -179,7 +179,7 @@ metadata:
 spec:
   apply: IfReady
   configuration:
-    restart: true
+    restart: "true"
   databaseRef:
     name: clickhouse-prod
   type: Reconfigure

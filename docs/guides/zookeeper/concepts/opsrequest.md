@@ -148,7 +148,7 @@ spec:
     name: zk-quickstart
   type: Reconfigure
   configuration:
-    restart: true
+    restart: "true"
 ```
 
 **Sample `ZooKeeperOpsRequest` Objects for Volume Expansion of database cluster:**

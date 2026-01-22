@@ -234,8 +234,9 @@ Hazelcast managed by KubeDB can be monitored with builtin-Prometheus and Prometh
 
 
 ### spec.configuration
-
-`spec.configuration` is an optional field that allows users to provide custom configuration for Hazelcast. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc.
+`spec.configuration` is an optional field that specifies custom configuration for Hazelcast cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Hazelcast object.
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Hazelcast cluster.
 
 ### spec.podTemplate
 

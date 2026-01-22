@@ -33,7 +33,7 @@ KubeDB supports providing custom configuration for ClickHouse. This tutorial wil
 
 ## Overview
 
-ClickHouse allows configuring via configuration file. The default configuration file for ClickHouse deployed by `KubeDB` can be found in `/etc/clickhouse-server/config.xml`. When `spec.configuration` is set to clickhouse, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user and merge it with the remaining default config. After all that this secret will be mounted to clickhouse for use it as the configuration file.
+ClickHouse allows configuring via configuration file. The default configuration file for ClickHouse deployed by `KubeDB` can be found in `/etc/clickhouse-server/config.xml`. When `spec.configuration` is set to clickhouse, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user. After all that this secret will be mounted to clickhouse for use it as the configuration file.
 
 > To learn available configuration option of ClickHouse see [Configuration Options](https://clickhouse.com/docs/operations/configuration-files).
 

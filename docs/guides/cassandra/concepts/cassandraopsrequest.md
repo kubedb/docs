@@ -173,7 +173,7 @@ spec:
   databaseRef:
     name: cassandra-prod
   configuration:
-    restart: true
+    restart: "true"
 status:
   conditions:
     - lastTransitionTime: "2025-07-25T18:22:38Z"

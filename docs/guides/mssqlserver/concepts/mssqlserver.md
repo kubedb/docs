@@ -255,8 +255,9 @@ To learn how to configure `spec.storage`, please visit the links below:
 MSSQLServer managed by KubeDB can be monitored with Prometheus operator out-of-the-box.
 
 ### spec.configuration
-
-`spec.configuration` is an optional field that allows users to provide custom configuration for MSSQLServer. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use Kubernetes supported volume source `secret`.
+`spec.configuration` is an optional field that specifies custom configuration for mssqlserver cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the mssqlserver object.
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for mssqlserver cluster.
 
 ### spec.topology
 
