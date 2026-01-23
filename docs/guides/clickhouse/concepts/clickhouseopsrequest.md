@@ -156,29 +156,6 @@ spec:
   configuration:
     configSecret:
       name: ch-custom-config
-  databaseRef:
-    name: clickhouse-prod
-  type: Reconfigure
-status:
-  conditions:
-    - lastTransitionTime: "2025-08-21T10:00:04Z"
-      message: Successfully completed reconfigure ClickHouse
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: ClickHouseOpsRequest
-metadata:
-  name: chops-reconfiugre
-  namespace: demo
-spec:
-  apply: IfReady
-  configuration:
     restart: "true"
   databaseRef:
     name: clickhouse-prod
@@ -194,6 +171,7 @@ status:
   observedGeneration: 1
   phase: Successful
 ```
+
 Sample `ClickHouseOpsRequest` Objects for Volume Expansion of ClickHouse:
 
 ```yaml

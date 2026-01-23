@@ -124,20 +124,9 @@ spec:
   configuration:
     configSecret:
       name: new-custom-config
-```
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: PgBouncerOpsRequest
-metadata:
-  name: pgbouncer-reconfigure
-  namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: pgbouncer-server
-  configuration:
     restart: "true"
 ```
+
 
 Here, we are going to describe the various sections of a `PgBouncerOpsRequest` crd.
 

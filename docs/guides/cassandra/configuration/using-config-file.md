@@ -33,7 +33,8 @@ KubeDB supports providing custom configuration for Cassandra. This tutorial will
 
 ## Overview
 
-Cassandra allows configuring via configuration file. The default configuration file for Cassandra deployed by `KubeDB` can be found in `/etc/cassandra/cassandra.yaml`. When `spec.configuration` is set to cassandra, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user. After all that this secret will be mounted to cassandra for use it as the configuration file.
+When `spec.configuration.secretName` is set to Cassandra, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable 
+configurations from the user. After all that this secret will be mounted to cassandra for use it as the configuration file.
 
 > To learn available configuration option of Cassandra see [Configuration Options](https://cassandra.apache.org/doc/4.0/cassandra/getting_started/configuring.html).
 

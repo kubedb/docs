@@ -203,7 +203,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-config created
 
 #### Verify the new configuration is working
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MariaDB` object.
+If everything goes well, `KubeDB` Enterprise operator will update the `configuration.secretName` of `MariaDB` object.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
@@ -371,7 +371,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-apply-config created
 
 #### Verify the new configuration is working
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MariaDB` object.
+If everything goes well, `KubeDB`  operator will update the `configuration.secretName` of `MariaDB` object.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
@@ -529,7 +529,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-remove created
 
 #### Verify the new configuration is working
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MariaDB` object.
+If everything goes well, `KubeDB`  operator will update the `configuration.secretName` of `MariaDB` object.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 

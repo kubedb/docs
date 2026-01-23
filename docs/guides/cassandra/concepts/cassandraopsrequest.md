@@ -173,6 +173,8 @@ spec:
   databaseRef:
     name: cassandra-prod
   configuration:
+    configSecret:
+      name: new-configsecret
     restart: "true"
 status:
   conditions:

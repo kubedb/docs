@@ -127,6 +127,8 @@ spec:
         [mysqld]
         max_connections = 300
         read_buffer_size = 1234567
+    secretName: new-custom-config
+    restart: "true"
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -299,7 +301,7 @@ If you want to reconfigure your Running PerconaXtraDB cluster with new custom co
 - `removeCustomConfig` reomoves all the custom configs of the PerconaXtraDB server.
 - `restart` significantly reduces unnecessary downtime.
   - `auto` (default): restart only if required (determined by ops manager operator)
-  - `false`: no restart
+  - `false`: the pod will not restart, so the new configuration will not apply to the database.
   - `true`: always restart
 
 ### spec.tls

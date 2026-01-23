@@ -422,7 +422,7 @@ postgres=# show shared_buffers;
 You can check the other pods same way.
 So we have configured custom parameters.
 
-> We can also reconfigure the parameters creating another secret and reference the secret in the `configSecret` field. Also you can remove the `configSecret` field to use the default parameters.
+> We can also reconfigure the parameters creating another secret and reference the secret in the `configuration.secretName` field. Also you can remove the `configuration.secretName` field to use the default parameters.
 
 ### Rotate Postgres Auth
 

@@ -132,20 +132,9 @@ spec:
   configuration:
     configSecret:
       name: new-custom-config
-```
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: RabbitMQOpsRequest
-metadata:
-  name: rabbitmq-reconfigure
-  namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: rm-quickstart
-  configuration:
     restart: "true"
 ```
+
 **Sample `RabbitMQOpsRequest` Objects for Volume Expansion of database cluster:**
 
 You can expand RabbitMQ storage volume in both online and offline mode (detaching nodes prior to expanding storage). 
@@ -330,7 +319,7 @@ If you want to reconfigure your Running RabbitMQ cluster or different components
 
 - `restart` significantly reduces unnecessary downtime.
   - `auto` (default): restart only if required (determined by ops manager operator)
-  - `false`: no restart
+  - `false`: the pod will not restart, so the new configuration will not apply to the database.
   - `true`: always restart
 
     

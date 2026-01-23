@@ -149,9 +149,9 @@ type: Opaque
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
 ### spec.configuration
-`spec.configuration` is an optional field that specifies custom configuration for Cassendra cluster. It has the following fields:
-- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Cassendra cluster.
-- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Cassendra object.
+`spec.configuration` is an optional field that specifies custom configuration for Cassandra cluster. It has the following fields:
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Cassandra cluster.
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Cassandra object.
 
 ### spec.topology
 

@@ -124,19 +124,7 @@ spec:
   configuration:
     configSecret:
       name: new-custom-config
-```
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: PgpoolOpsRequest
-metadata:
-  name: pgpool-reconfigure
-  namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: pgpool
-  configuration:
-    restart: auto 
+    restart: "auto"
 ```
 
 **Sample `PgpoolOpsRequest` Objects for Reconfiguring TLS:**

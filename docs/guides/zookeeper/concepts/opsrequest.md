@@ -135,19 +135,6 @@ spec:
   configuration:
     configSecret:
       name: new-config-secret
-```
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: ZooKeeperOpsRequest
-metadata:
-  name: myops-reconfigure-config
-  namespace: demo
-spec:
-  apply: IfReady
-  databaseRef:
-    name: zk-quickstart
-  type: Reconfigure
-  configuration:
     restart: "true"
 ```
 

@@ -127,6 +127,7 @@ spec:
         [mysqld]
         max_connections = 300
         read_buffer_size = 1234567
+    restart: "true"
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -299,7 +300,7 @@ If you want to reconfigure your Running MariaDB cluster with new custom configur
 - `removeCustomConfig` reomoves all the custom configs of the MariaDB server.
 - `restart` significantly reduces unnecessary downtime.
   - `auto` (default): restart only if required (determined by ops manager operator)
-  - `false`: no restart
+  - `false`: If user set the restart to false, then pod will not be restarted and new config will not be synced with database.
   - `true`: always restart
 
 

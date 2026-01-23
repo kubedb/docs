@@ -271,29 +271,7 @@ spec:
   configuration:
     configSecret:
       name: new-configsecret-topology
-status:
-  conditions:
-    - lastTransitionTime: "2024-07-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: KafkaOpsRequest
-metadata:
-  name: kfops-reconfiugre-combined
-  namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: kafka-dev
-  configuration:
-    restart: "true"
+    restart: "auto"
 status:
   conditions:
     - lastTransitionTime: "2024-07-25T18:22:38Z"
