@@ -35,8 +35,8 @@ spec:
   enableSSL: true
   authSecret:
     name: es-cluster-user-cred
-  configuration:
-    secretName: custom-configuration
+  configSecret:
+    name: custom-configuration
   databaseRef:
     name: es-cluster
   podTemplate:

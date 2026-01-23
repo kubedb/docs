@@ -127,7 +127,6 @@ spec:
         [mysqld]
         max_connections = 300
         read_buffer_size = 1234567
-    secretName: new-custom-config
     restart: "true"
 status:
   conditions:
