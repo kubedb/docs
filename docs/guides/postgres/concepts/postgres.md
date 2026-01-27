@@ -258,9 +258,17 @@ PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and Promet
 - [Monitor PostgreSQL with Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md)
 
 ### spec.configuration
-`spec.configuration` is an optional field that specifies custom configuration for Percona-XtraDB cluster. It has the following fields:
-- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Percona-XtraDB object.
-- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Percona-XtraDB cluster.
+`spec.configuration` is an optional field that specifies custom configuration for Postgres cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Postgres object.
+  - ```yaml
+    spec:
+      configuration:
+        inline:
+          user.conf: |
+            max_connections=135     // you can provide multiple configurations like this
+            shared_buffers=256MB
+    ```
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Postgres cluster.
 
 ### spec.podTemplate
 
