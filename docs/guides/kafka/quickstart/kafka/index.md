@@ -227,7 +227,7 @@ Metadata:
   UID:               8a1eb48b-75f3-4b3d-b8ff-0634780a9f09
 Spec:
   Auth Secret:
-    Name:  kafka-quickstart-admin-cred
+    Name:  kafka-quickstart-auth
   Health Checker:
     Failure Threshold:  3
     Period Seconds:     20
@@ -311,7 +311,7 @@ NAME                                                  TYPE               VERSION
 appbinding.appcatalog.appscode.com/kafka-quickstart   kubedb.com/kafka   3.9.0     8m50s
 
 NAME                                 TYPE                       DATA   AGE
-secret/kafka-quickstart-admin-cred   kubernetes.io/basic-auth   2      8m52s
+secret/kafka-quickstart-auth   kubernetes.io/basic-auth   2      8m52s
 secret/kafka-quickstart-config       Opaque                     2      8m52s
 ```
 

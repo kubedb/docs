@@ -66,7 +66,7 @@ spec:
       port: 9092
       scheme: https
   secret:
-    name: kafka-admin-cred
+    name: kafka-auth
   tlsSecret:
     name: kafka-client-cert
   type: kubedb.com/kafka

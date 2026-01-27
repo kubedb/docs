@@ -32,7 +32,7 @@ spec:
   disableSecurity: false
   authSecret:
     kind: Secret
-    name: kafka-admin-cred
+    name: kafka-auth
   configSecret:
     name: kafka-custom-config
   enableSSL: true

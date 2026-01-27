@@ -97,7 +97,7 @@ NAME                                                  TYPE               VERSION
 appbinding.appcatalog.appscode.com/kafka-standalone   kubedb.com/kafka   3.9.0     8m56s
 
 NAME                                 TYPE                       DATA   AGE
-secret/kafka-standalone-admin-cred   kubernetes.io/basic-auth   2      8m59s
+secret/kafka-standalone-auth   kubernetes.io/basic-auth   2      8m59s
 secret/kafka-standalone-config       Opaque                     2      8m59s
 
 NAME                                                             STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
@@ -167,7 +167,7 @@ NAME                                                 TYPE               VERSION 
 appbinding.appcatalog.appscode.com/kafka-multinode   kubedb.com/kafka   3.9.0     6m2s
 
 NAME                                TYPE                       DATA   AGE
-secret/kafka-multinode-admin-cred   kubernetes.io/basic-auth   2      6m7s
+secret/kafka-multinode-auth   kubernetes.io/basic-auth   2      6m7s
 secret/kafka-multinode-config       Opaque                     2      6m7s
 
 NAME                                                           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
