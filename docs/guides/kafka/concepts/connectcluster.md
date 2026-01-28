@@ -54,8 +54,6 @@ spec:
         secretName: connectcluster-client-cert
   configuration:
     secretName: custom-connectcluster-config
-  configuration:
-    secretName: custom-connectcluster-config
     inline:
       config.properties: |
         key.converter=org.apache.kafka.connect.json.JsonConverter
@@ -138,15 +136,15 @@ kafkaRef:
   namespace: <kafka-object-appbinding-namespace>
 ```
 
-### spec.configuration
+### spec.configuration.secretName
 
-`spec.configuration` is an optional field that specifies the name of the secret containing the custom configuration for the ConnectCluster. The secret should contain a key `config.properties` which contains the custom configuration for the ConnectCluster. The default value of this field is `nil`.
+`spec.configuration.secretName` is an optional field that specifies the name of the secret containing the custom configuration for the ConnectCluster. The secret should contain a key `config.properties` which contains the custom configuration for the ConnectCluster. The default value of this field is `nil`.
 ```yaml
 configuration:
   secretName: <custom-config-secret-name>
 ```
 
-> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configuration.secretName`. The field `.spec.configuration` is deprecated and will be removed in future releases. If you still use `.spec.configuration`, KubeDB will copy `.spec.configuration.secretName` to `.spec.configuration.secretName` internally.
+> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configSecret.name` The field `.spec.configsecret` is deprecated and will be removed in future releases. If you still use `.spec.configSecret`, KubeDB will copy `.spec.configuSecret.name` to `.spec.configuration.secretName` internally.
 
 ### spec.configuration
 `spec.configuration` is an optional field that specifies custom configuration for Kafka Connect Cluster. It has the following fields:

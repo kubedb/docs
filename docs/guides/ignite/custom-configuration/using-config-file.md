@@ -41,7 +41,8 @@ Ignite does not allow to configuration via any file. However, configuration para
 
 To know more about configuring Ignite server see [here](https://ignite.apache.org/docs/ignite3/latest/administrators-guide/config/node-config).
 
-At first, you have to create a config file named `node-configuration.xml` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configuration` section while creating Ignite crd. KubeDB will mount this volume into `/usr/config` directory of the database pod.
+At first, you have to create a custom configuration file and provide its name in `spec.configuration.secretName`. The operator reads this Secret internally and applies the configuration automatically.
+
 
 In this tutorial, we will enable Ignite's authentication via secret.
 

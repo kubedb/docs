@@ -247,9 +247,9 @@ Pgpool managed by KubeDB can be monitored with builtin-Prometheus and Prometheus
 - [Monitor Pgpool with Prometheus operator](/docs/guides/pgpool/monitoring/using-prometheus-operator.md)
 
 ### spec.configuration
-`spec.configuration` is an optional field that specifies custom configuration for Percona-XtraDB cluster. It has the following fields:
-- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Percona-XtraDB object.
-- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Percona-XtraDB cluster.
+`spec.configuration` is an optional field that specifies custom configuration for Pgpool cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Pgpool object.
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Pgpool cluster.
 
 ### spec.deletionPolicy
 

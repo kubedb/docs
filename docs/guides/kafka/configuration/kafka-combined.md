@@ -78,7 +78,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 secret/configsecret-combined created
 ```
 
-Now that the config secret is created, it needs to be mention in the [Kafka](/docs/guides/kafka/concepts/kafka.md) object's yaml:
+Now that the config secret is created, it needs to be mentioned in the [Kafka](/docs/guides/kafka/concepts/kafka.md) object's yaml:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -123,7 +123,7 @@ kafka-dev    kubedb.com/v1   3.9.0     Ready          92s
 
 ## Verify Configuration
 
-Let's exec into one of the kafka pod that we have created and check the configurations are applied or not:
+Lets exec into one of the kafka pod that we have created and check the configurations are applied or not:
 
 Exec into the Kafka pod:
 
@@ -145,7 +145,7 @@ Here, we can see that our given configuration is applied to the Kafka cluster fo
 
 ## Cleanup
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete kf -n demo kafka-dev 

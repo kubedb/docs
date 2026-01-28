@@ -232,6 +232,17 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 `spec.configuration` is an optional field that specifies custom configuration for Druid cluster. It has the following fields:
 - `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Druid cluster.
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Druid object.
+```yaml
+spec:
+  configuration:
+    inline:
+      middleManagers.properties: |-
+        log.retention.hours=150
+        druid.worker.capacity=10
+      historicals.properties: |-
+        historicals.quorum.election.timeout.ms=4000
+        historicals.quorum.fetch.timeout.ms=5000
+```
 ### spec.topology
 
 `spec.topology` represents the topology configuration for Druid cluster in KRaft mode.

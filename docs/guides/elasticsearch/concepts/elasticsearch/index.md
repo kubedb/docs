@@ -644,8 +644,11 @@ Elasticsearch managed by KubeDB can be monitored with builtin-Prometheus and Pro
 spec:
   configuration:
     secretName: es-custom-config
-  inline:
-    key: value
+    inline:
+      elasticsearch.yml: |-
+        node.processors: 6 
+      data-elasticsearch.yml: |-
+        cluster.routing.allocation.disk.watermark.flood_stage: 7gb
 ```
 
 The configuration file names are used as secret keys.
