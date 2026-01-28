@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is MariaDB
 
-`MariaDB` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [MariaDB](https://www.mariadb.com/) in a Kubernetes native way. You only need to describe the desired database configuration in a MariaDB object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`MariaDB` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for MariaDB in a Kubernetes native way. You only need to describe the desired database configuration in a MariaDB object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## MariaDB Spec
 

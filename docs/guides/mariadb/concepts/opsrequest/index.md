@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is MariaDBOpsRequest
 
-`MariaDBOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [MariaDB](https://www.mariadb.com/) administrative operations like database version updating, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
+`MariaDBOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for MariaDB administrative operations like database version updating, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
 
 ## MariaDBOpsRequest CRD Specifications
 

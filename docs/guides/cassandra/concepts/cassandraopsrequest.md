@@ -362,7 +362,7 @@ If you want to reconfigure your Running Cassandra cluster or different component
 
 - `spec.configuration.configSecret` points to a secret in the same namespace of a Cassandra resource, which contains the new custom configurations. If there are any configSecret set before in the database, this secret will replace it.
 
-- `applyConfig` is a map where key supports 3 values, namely `server.properties`, `broker.properties`, `controller.properties`. And value represents the corresponding configurations.
+- `applyConfig` is a map where the key represents the target config file (e.g., config.yaml) and the value contains the corresponding configuration content.
 
 ```yaml
   applyConfig:

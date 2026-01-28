@@ -33,8 +33,9 @@ KubeDB supports providing custom configuration for Cassandra. This tutorial will
 
 ## Overview
 
-When `spec.configuration.secretName` is set to Cassandra, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable 
-configurations from the user. After all that this secret will be mounted to cassandra for use it as the configuration file.
+
+When `spec.configuration.secretName` is specified, the KubeDB operator retrieves the referenced Secret and validates the configuration values provided by the user.
+The validated configuration is then internally managed and applied by the operator.
 
 > To learn available configuration option of Cassandra see [Configuration Options](https://cassandra.apache.org/doc/4.0/cassandra/getting_started/configuring.html).
 
