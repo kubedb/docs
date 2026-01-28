@@ -220,6 +220,13 @@ The following fields are configurable in the `spec.tls` section:
 ### spec.configuration
 `spec.configuration` is an optional field that specifies custom configuration for Mariadb cluster. It has the following fields:
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Mariadb object.
+    - ```yaml
+        configuration:
+           inline:
+             md.cnf: |
+               [mysqld]
+               max_connections = 500
+      ```
 - `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Mariadb cluster.
 
 ### spec.podTemplate

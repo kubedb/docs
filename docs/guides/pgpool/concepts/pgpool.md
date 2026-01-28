@@ -251,6 +251,8 @@ Pgpool managed by KubeDB can be monitored with builtin-Prometheus and Prometheus
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Pgpool object.
 - `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Pgpool cluster.
 
+> Please note that, the secret key needs to be `pgpool.conf`.
+To learn more about how to use a custom configuration file see [here](/docs/guides/pgpool/configuration/using-config-file.md).
 ### spec.deletionPolicy
 
 `deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Pgpool` CR or which resources KubeDB should keep or delete when you delete `Pgpool` CR. KubeDB provides following four deletion policies:

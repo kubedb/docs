@@ -290,7 +290,26 @@ Redis managed by KubeDB can be monitored with builtin-Prometheus and Prometheus 
 ### spec.configuration
 `spec.configuration` is an optional field that specifies custom configuration for Redis cluster. It has the following fields:
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Redis object.
+  - ```yaml 
+      configuration:
+        inline: 
+          redis.conf: |
+            maxclients 2200
+            databases 6
+   ```
 - `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Redis cluster.
+- `configuration.acl` defines Redis users, their passwords (via Secret), and the commands/keys they are allowed to access.
+  - ```yaml
+    configuration:
+      acl:
+       secretRef:
+        name: old-acl-secret         # Secret that holds passwords referenced by variables like ${k1}
+       rules:
+        - userName1 ${k1} allkeys +@string +@set -SADD
+        - userName2 ${k2} allkeys +@string +@set -SADD
+        - userName3 ${k3} allkeys +@string +@set -SADD
+        - userName4 ${k4} allkeys +@string +@set -SADD
+    ```
 
 ### spec.podTemplate
 

@@ -81,8 +81,7 @@ Ignite managed by KubeDB can be monitored with builtin-Prometheus and Prometheus
 - [Monitor Ignite with Prometheus operator](/docs/guides/ignite/monitoring/using-prometheus-operator.md)
 
 ### spec.configuration
-
-`spec.configuration` is an optional field that allows users to provide custom configuration for Ignite. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/ignite/custom-configuration/using-config-file.md).
+`spec.configuration` is an optional field that specifies custom configuration for Ignite cluster. It has the following fields:
 -`spec.configuration.secretName` is the name of the secret that contains the Ignite configuration file. This field accepts a secret name that holds the custom configuration parameters.
 
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the ignite object.

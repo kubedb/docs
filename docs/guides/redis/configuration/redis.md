@@ -87,7 +87,7 @@ type: Opaque
 
 The configurations are encrypted in the secret.
 
-Now, create Redis crd specifying `spec.configuration` field.
+Now, create Redis crd specifying `spec.configuration.secretName` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-config/redis-custom.yaml

@@ -3,7 +3,7 @@ title: Run Pgpool with Custom Configuration
 menu:
   docs_{{ .version }}:
     identifier: pp-using-config-file-configuration
-    name: Customize Configurations
+    name: Inline Config
     parent: pp-configuration
     weight: 10
 menu_name: docs_{{ .version }}
@@ -33,8 +33,9 @@ KubeDB supports providing custom configuration for Pgpool. This tutorial will sh
 
 ## Overview
 
-Pgpool allows configuring via configuration file. The default configuration file for Pgpool deployed by `KubeDB` can be found in `opt/pgpool-II/etc/pgpool.conf`. When `spec.configuration` 
-is set to pgpool, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user. After all that this secret will be mounted to Pgpool for use it as the configuration file.
+Pgpool allows configuring via configuration file. The default configuration file for Pgpool deployed by `KubeDB` can be found in `opt/pgpool-II/etc/pgpool.conf`. When `spec.configuration.secretName` 
+is set to pgpool, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user. 
+After all that this secret will be mounted to Pgpool for use it as the configuration file.
 
 > To learn available configuration option of Pgpool see [Configuration Options](https://www.pgpool.net/docs/45/en/html/runtime-config.html).
 
@@ -84,7 +85,7 @@ max_pool = 65
 child_life_time = 400
 ```
 
-Now, create Pgpool crd specifying `spec.configuration` field.
+Now, create Pgpool crd specifying `spec.configuration.secretName` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2

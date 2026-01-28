@@ -59,7 +59,7 @@ $ kubectl create secret generic -n demo rd-custom-config --from-file=./valkey.co
 secret/rd-custom-config created
 ```
 
-In this section, we are going to create a Redis object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Redis` CR that we are going to create,
+In this section, we are going to create a Redis object specifying `spec.configuration.secretName` field to apply this custom configuration. Below is the YAML of the `Redis` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
