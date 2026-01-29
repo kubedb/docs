@@ -167,8 +167,8 @@ spec:
           requests:
             cpu: "200m"
             memory: "200Mi"
-    configuration:
-      secretName: another-config
+    configSecret:
+      name: another-config
   allowedSchemas:
     namespaces:
       from: Selector
@@ -300,7 +300,7 @@ Available configurable fields:
 - `shards` represents number of shards for a mongodb deployment. Each shard is deployed as a [replicaset](/docs/guides/mongodb/clustering/replication_concept.md).
 - `replicas` represents number of replicas of each shard replicaset.
 - `prefix` represents the prefix of each shard node.
-- `configSecret` is an optional field to provide custom configuration file for shards (i.e. mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configuration](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
+- `configuration.secretName` is an optional field to provide custom configuration file for shards (i.e. mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configuration.secretName](/docs/guides/mongodb/concepts/mongodb.md#specconfiguration.secretName) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 - `storage` to specify pvc spec for each node of sharding. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/guides/mongodb/concepts/mongodb.md#specstorage) in details.
 - `ephemeralStorage` to specify the configuration of ephemeral storage type, If you want to use volatile temporary storage attached to your instances which is only present during the running lifetime of the instance.
@@ -313,7 +313,7 @@ Available configurable fields:
 
 - `replicas` represents number of replicas for configServer replicaset. Here, configServer is deployed as a replicaset of mongodb.
 - `prefix` represents the prefix of configServer nodes.
-- `configSecret` is an optional field to provide custom configuration file for config server (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configuration](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
+- `configSecret` is an optional field to provide custom configuration file for config server (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 - `storage` to specify pvc spec for each node of configServer. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/guides/mongodb/concepts/mongodb.md#specstorage) in details.
 - `ephemeralStorage` to specify the configuration of ephemeral storage type, If you want to use volatile temporary storage attached to your instances which is only present during the running lifetime of the instance.
@@ -326,7 +326,7 @@ Available configurable fields:
 
 - `replicas` represents number of replicas of `Mongos` instance. Here, Mongos is deployed as stateless (deployment) instance.
 - `prefix` represents the prefix of mongos nodes.
-- `configSecret` is an optional field to provide custom configuration file for mongos (i.e. mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configuration](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
+- `configSecret` is an optional field to provide custom configuration file for mongos (i.e. mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 
 ### spec.sslMode
@@ -463,15 +463,15 @@ MongoDB managed by KubeDB can be monitored with builtin-Prometheus and Prometheu
 - [Monitor MongoDB with builtin Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md)
 - [Monitor MongoDB with Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md)
 
-### spec.configuration
+### spec.configuration.secretName
 
-`spec.configuration` is an optional field that allows users to provide custom configuration for MongoDB. You can provide the custom configuration in a secret, then you can specify the secret name `spec.configuration.secretName`.
+`spec.configuration.secretName` is an optional field that allows users to provide custom configuration for MongoDB. You can provide the custom configuration in a secret, then you can specify the secret name `spec.configuration.secretName`.
 
 > Please note that, the secret key needs to be `mongod.conf`.
 
 To learn more about how to use a custom configuration file see [here](/docs/guides/mongodb/configuration/using-config-file.md).
 
-NB. If `spec.shardTopology` is set, then `spec.configuration` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.configuration`
+NB. If `spec.shardTopology` is set, then `spec.configuration.secretName` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.configuration`
 
 ### spec.podTemplate
 

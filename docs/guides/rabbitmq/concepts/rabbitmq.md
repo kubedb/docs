@@ -224,6 +224,12 @@ RabbitMQ managed by KubeDB can be monitored with builtin-Prometheus and Promethe
 ### spec.configuration
 `spec.configuration` is an optional field that specifies custom configuration for RabbitMQ cluster. It has the following fields:
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the RabbitMQ object.
+  - ```yaml
+        configuration:
+          inline:
+            rabbitmq.conf: |
+              default_vhost = /newvhost
+    ```
 - `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for RabbitMQ cluster.
 
 ### spec.podTemplate

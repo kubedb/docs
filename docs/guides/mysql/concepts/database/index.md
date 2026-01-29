@@ -279,7 +279,7 @@ The following fields are configurable in the `spec.tls` section:
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the MySql object.
    - ```yaml
        configuration:
-         inline: |
+         inline: 
            my.cnf: |
              [mysqld]
              max_connections = 500

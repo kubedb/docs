@@ -86,6 +86,23 @@ Ignite managed by KubeDB can be monitored with builtin-Prometheus and Prometheus
 
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the ignite object.
 
+  - ```yaml
+        configuration:
+          inline:
+            node-configuration.xml: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://www.springframework.org/schema/beans"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://www.springframework.org/schema/beans
+              http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+              <!-- Your Ignite Configuration -->
+              <bean class="org.apache.ignite.configuration.IgniteConfiguration">        
+          
+              <property name="authenticationEnabled" value="true"/>
+
+              </bean>
+              </beans>
+    ```
 ### spec.podTemplate
 
 KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the Petset created for Ignite server.

@@ -249,6 +249,16 @@ Pgpool managed by KubeDB can be monitored with builtin-Prometheus and Prometheus
 ### spec.configuration
 `spec.configuration` is an optional field that specifies custom configuration for Pgpool cluster. It has the following fields:
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Pgpool object.
+  - ```yaml
+         configuration:
+           inline:
+             pgpool.conf: |
+                num_init_children = 6
+                max_pool = 65
+                child_life_time = 400
+    ```
+
+
 - `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Pgpool cluster.
 
 > Please note that, the secret key needs to be `pgpool.conf`.

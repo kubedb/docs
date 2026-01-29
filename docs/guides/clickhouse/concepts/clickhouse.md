@@ -156,6 +156,15 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 `spec.configuration` is an optional field that specifies custom configuration for clickhouse cluster. It has the following fields:
 - `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for clickhouse cluster.
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the clickhouse object.
+  - ```yaml
+        configuration:
+          inline:
+            ch-config.yaml: |
+              profiles:
+                default:
+                  max_query_size: 180000  
+      ```
+
 ### spec.clusterTopology
 
 `spec.clusterTopology` represents the topology configuration for ClickHouse cluster.

@@ -176,9 +176,9 @@ ProxySQL managed by KubeDB can be monitored with builtin-Prometheus and Promethe
 
 Checkout this [link](/docs/guides/proxysql/concepts/declarative-configuration/index.md) for detailed overview on declarative configuration. 
 
-### .spec.configuration
+### .spec.configuration.secretName
 
-`.spec.configuration` is another field to pass the bootstrap configuration for the proxysql. If you want to pass the configuration through a secret you can just mention the secret name under this field in `spec.configuration.secretName` field. The secret should look something like the following 
+`.spec.configuration.secretName` is another field to pass the bootstrap configuration for the proxysql. If you want to pass the configuration through a secret you can just mention the secret name under this field in `spec.configuration.secretName` field. The secret should look something like the following 
 
 ```bash
 $ kubectl view-secret -n demo my-config-secret -a  

@@ -185,6 +185,12 @@ ZooKeeper managed by KubeDB can be monitored with builtin-Prometheus and Prometh
 ### spec.configuration
 `spec.configuration` is an optional field that specifies custom configuration for Zookeeper cluster. It has the following fields:
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Zookeeper object.
+  - ```yaml
+          configuration:
+            inline:
+              zoo.cfg: |
+                maxClientCnxns=90  
+    ```
 - `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Zookeeper cluster.
 
 ### spec.enableSSL

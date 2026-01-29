@@ -257,6 +257,13 @@ MSSQLServer managed by KubeDB can be monitored with Prometheus operator out-of-t
 ### spec.configuration
 `spec.configuration` is an optional field that specifies custom configuration for mssqlserver cluster. It has the following fields:
 - `configuration.inline` is an optional field that allows you to provide custom configuration directly in the mssqlserver object.
+  - ```yaml
+        configuration:
+          inline:
+            mssql.conf: |-
+              [memory]
+              memorylimitmb = 3072 
+    ```
 - `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for mssqlserver cluster.
 
 ### spec.topology
