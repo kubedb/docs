@@ -37,7 +37,7 @@ demo                 Active   9s
 
 ## Create Standalone Kafka Cluster
 
-Here, we are going to create a standalone (i.e. `replicas: 1`) Kafka cluster in Kraft mode. For this demo, we are going to provision kafka version `3.9.0`. To learn more about Kafka CR, visit [here](/docs/guides/kafka/concepts/kafka.md). visit [here](/docs/guides/kafka/concepts/kafkaversion.md) to learn more about KafkaVersion CR.
+Here, we are going to create a standalone (i.e. `replicas: 1`) Kafka cluster in Kraft mode. For this demo, we are going to provision kafka version `3.9.0`. To learn more about Kafka CR, visit [here](/docs/guides/kafka/concepts/kafka.md). Visit [here](/docs/guides/kafka/concepts/kafkaversion.md) to learn more about KafkaVersion CR.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2

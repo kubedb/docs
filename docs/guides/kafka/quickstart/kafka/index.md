@@ -311,7 +311,7 @@ NAME                                                  TYPE               VERSION
 appbinding.appcatalog.appscode.com/kafka-quickstart   kubedb.com/kafka   3.9.0     8m50s
 
 NAME                                 TYPE                       DATA   AGE
-secret/kafka-quickstart-auth   kubernetes.io/basic-auth   2      8m52s
+secret/kafka-quickstart-auth         kubernetes.io/basic-auth   2      8m52s
 secret/kafka-quickstart-config       Opaque                     2      8m52s
 ```
 
