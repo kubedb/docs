@@ -79,7 +79,7 @@ heartbeat = 100
 collect_statistics = coarse
 ```
 
-Now, create rabbitmq crd specifying `spec.configuration` field.
+Now, create rabbitmq crd specifying `spec.configuration.secretName` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2

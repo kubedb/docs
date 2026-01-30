@@ -86,7 +86,7 @@ metadata:
   ...
 ```
 
-Now, create PerconaXtraDB crd specifying `spec.configuration` field.
+Now, create PerconaXtraDB crd specifying `spec.configuration.secretName` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/configuration/using-config-file/examples/px-custom.yaml

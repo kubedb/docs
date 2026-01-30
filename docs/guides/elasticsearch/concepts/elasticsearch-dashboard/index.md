@@ -81,9 +81,9 @@ The k8s secret must be of type: kubernetes.io/basic-auth with the following keys
 - `password`: Password for the `elastic`/`admin` user.
   If `spec.authSecret` is not set, dashboard operator will use the authSecret from referred database object.
 
-### spec.configuration
+### spec.configuration.secretName
 
-`spec.configuration` is an optional field that allows users to provide custom configuration for `ElasticsearchDashboard`. It contains a k8s secret name that holds the configuration files for `ElasticsearchDashboard`. If not provided, operator generated configurations will be applied to dashboard. If `configSecret` is provided, it will be merged with the operator-generated configuration. The user-provided configuration has higher precedence over the operator-generated configuration. The configuration file names are used as secret keys.
+`spec.configuration.secretName` is an optional field that allows users to provide custom configuration for `ElasticsearchDashboard`. It contains a k8s secret name that holds the configuration files for `ElasticsearchDashboard`. If not provided, operator generated configurations will be applied to dashboard. If `configSecret` is provided, it will be merged with the operator-generated configuration. The user-provided configuration has higher precedence over the operator-generated configuration. The configuration file names are used as secret keys.
 
 - Kibana:
   - `kibana.yml` for configuring Kibana

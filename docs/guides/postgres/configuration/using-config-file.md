@@ -77,7 +77,7 @@ metadata:
   uid: 131b321f-2ad1-11e9-9d44-080027154f61
 ```
 
-Now, create Postgres crd specifying `spec.configuration` field.
+Now, create Postgres crd specifying `spec.configuration.secretName` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/configuration/pg-configuration.yaml

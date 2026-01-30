@@ -80,7 +80,7 @@ profiles:
     max_query_size: 200000
 ```
 
-Now, create clickhouse crd specifying `spec.configuration` field.
+Now, create clickhouse crd specifying `spec.configuration.secretName` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2

@@ -95,7 +95,7 @@ metadata:
 type: Opaque
 ```
 
-Now, create Ignite crd specifying `spec.configuration` field.
+Now, create Ignite crd specifying `spec.configuration.secretName` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/configuration/custom-ignite.yaml

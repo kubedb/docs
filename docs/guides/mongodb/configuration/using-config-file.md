@@ -85,7 +85,7 @@ net:
   maxIncomingConnections: 100000
 ```
 
-Now, create MongoDB crd specifying `spec.configuration` field.
+Now, create MongoDB crd specifying `spec.configuration.secretName` field.
 
 ```yaml
 apiVersion: kubedb.com/v1

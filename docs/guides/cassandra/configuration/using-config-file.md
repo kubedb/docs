@@ -79,7 +79,7 @@ read_request_timeout: 6000ms
 write_request_timeout: 2500ms
 ```
 
-Now, create cassandra crd specifying `spec.configuration` field.
+Now, create cassandra crd specifying `spec.configuration.secretName` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2

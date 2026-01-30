@@ -88,7 +88,7 @@ type: Opaque
 
 ```
 
-Now, create MySQL crd specifying `spec.configuration` field.
+Now, create MySQL crd specifying `spec.configuration.secretName` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/configuration/config-file/yamls/mysql-custom.yaml

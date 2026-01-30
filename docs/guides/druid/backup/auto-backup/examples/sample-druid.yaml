@@ -11,7 +11,7 @@ spec:
   deepStorage:
     type: s3
     configSecret:
-      name: configsecret-combined
+      name: deep-storage-config
   topology:
     routers:
       replicas: 1

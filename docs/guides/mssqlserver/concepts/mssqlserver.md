@@ -32,10 +32,10 @@ metadata:
   namespace: demo
 spec:
   configuration:
-    secretName: mssql-custom-config
+    secretName: mssqlserver-custom-config
   authSecret:
     kind: Secret
-    name: mssql-admin-cred
+    name: mssqlserver-auth
   topology:
     availabilityGroup:
       databases:
