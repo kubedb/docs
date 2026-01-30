@@ -133,7 +133,7 @@ spec:
             storage: 1Gi
         storageClassName: standard
       suffix: controller
-  version: 3.9.0
+  version: 4.0.0
 status:
   conditions:
     - lastTransitionTime: "2023-03-29T07:01:29Z"

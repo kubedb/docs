@@ -92,7 +92,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 3.9.0
+  version: 4.0.0
   configSecret:
     name: kf-topology-custom-config
   topology:
