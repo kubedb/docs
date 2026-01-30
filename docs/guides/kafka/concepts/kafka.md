@@ -30,6 +30,28 @@ metadata:
   namespace: demo
 spec:
   disableSecurity: false
+  tieredStorage:
+    provider: s3|azure|gcs|local
+    s3:
+      bucket: kafka
+      endpoint: <s3-endpoint>
+      region: us-east-1
+      secretName: aws-secret
+      prefix: tiered-storage-demo/
+    azure:
+        container: kafka
+        secretName: azure-secret
+        prefix: tiered-storage-demo/
+        storageAccount: <storage-account-name>
+    gcs:
+        bucket: kafka
+        secretName: gcs-secret
+        prefix: tiered-storage-demo/
+    local:
+      mountPath: /mnt/tiered-storage
+      subPath: kafka
+    storageManagerClassName: io.aiven.kafka.tieredstorage.RemoteStorageManager
+    storageManagerClassPath: /opt/kafka/libs/tiered-plugins/*
   authSecret:
     kind: Secret
     name: kafka-admin-cred
@@ -196,25 +218,30 @@ configuration:
   secretName: <custom-config-secret-name>
 ```
 
-> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configSecret.name` The field `.spec.configsecret` is deprecated and will be removed in future releases. If you still use `.spec.configSecret`, KubeDB will copy `.spec.configuSecret.name` to `.spec.configuration.secretName` internally.
+### spec.tieredStorage
+`spec.tieredStorage` is an optional field that specifies the tiered storage configuration for Kafka. Tiered storage allows Kafka to offload older data to cheaper storage solutions like S3, Azure Blob Storage, GCS, or local storage, while keeping recent data on faster local storage. Tiered storage helps in reducing the cost of storage and improves the performance of Kafka by keeping the frequently accessed data on local storage. Following are the fields of `spec.tieredStorage`:
+- `provider` ( `string` | `""` ) - is a field that specifies the tiered storage provider. Supported providers are `s3`, `azure`, `gcs`, and `local`.
+- `s3` ( `object` | `nil` ) - is a field that specifies the S3 tiered storage configuration. It has the following fields:
+    - `bucket` ( `string` | `""` ) - is a required field that specifies the S3 bucket name.
+    - `endpoint` ( `string` | `""` ) - is an optional field that specifies the S3 endpoint.
+    - `region` ( `string` | `""` ) - is a required field that specifies the S3 region.
+    - `secretName` ( `string` | `""` ) - is a required field that specifies the name of the secret that contains the S3 credentials.
+    - `prefix` ( `string` | `""` ) - is an optional field that specifies the prefix for the S3 objects.
+- `azure` ( `object` | `nil` ) - is a field that specifies the Azure Blob Storage tiered storage configuration. It has the following fields:
+    - `container` ( `string` | `""` ) - is a required field that specifies the Azure Blob Storage container name.
+    - `storageAccount` ( `string` | `""` ) - is a required field that specifies the Azure storage account name.
+    - `secretName` ( `string` | `""` ) - is a required field that specifies the name of the secret that contains the Azure Blob Storage credentials.
+    - `prefix` ( `string` | `""` ) - is an optional field that specifies the prefix for the Azure Blob Storage objects.
+- `gcs` ( `object` | `nil` ) - is a field that specifies the GCS tiered storage configuration. It has the following fields:
+    - `bucket` ( `string` | `""` ) - is a required field that specifies the GCS bucket name.
+    - `secretName` ( `string` | `""` ) - is a required field that specifies the name of the secret that contains the GCS credentials.
+    - `prefix` ( `string` | `""` ) - is an optional field that specifies the prefix for the GCS objects.
+- `local` ( `object` | `nil` ) - is a field that specifies the local tiered storage configuration. It has the following fields:
+    - `mountPath` ( `string` | `""` ) - is a required field that specifies the mount path for the local storage.
+    - `subPath` ( `string` | `""` ) - is an optional field that specifies the sub-path for the local storage.
+- `storageClassName` ( `string` | `""` ) - is an optional field that specifies the storage class name for the tiered storage.
+- `storageManagerClassName` ( `string` | `""` ) - is an optional field that specifies the storage manager class name for the tiered storage. Default is `io.aiven.kafka.tieredstorage.RemoteStorageManager`.
 
-### spec.configuration
-`spec.configuration` is an optional field that specifies custom configuration for Kafka cluster. It has the following fields:
-- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Kafka cluster.
-- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Kafka object. It has the following possible keys:
-    - `broker.properties` - is used to provide custom configuration for Kafka brokers.
-    - `controller.properties` - is used to provide custom configuration for Kafka controllers.
-    - `server.propertbies` - is used to provide custom configuration for both Kafka brokers and controllers.
-    - ```yaml
-      spec:
-        configuration:
-          inline:
-            config.properties: |
-              connector.class=com.mongodb.*
-              tasks.max=1
-              topic.prefix=mongodb-
-              connection.uri=mongodb://mongo-user:mongo-password@mongo-host:27017
-      ```
 ### spec.topology
 
 `spec.topology` represents the topology configuration for Kafka cluster in KRaft mode.
