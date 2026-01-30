@@ -167,7 +167,7 @@ spec:
       name: kafka-ca-issuer
       kind: Issuer
   replicas: 3
-  version: 3.9.0
+  version: 4.0.0
   storage:
     accessModes:
       - ReadWriteOnce

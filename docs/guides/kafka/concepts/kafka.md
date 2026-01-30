@@ -32,7 +32,7 @@ spec:
   disableSecurity: false
   authSecret:
     kind: Secret
-    name: kafka-admin-cred
+    name: kafka-auth
   configSecret:
     name: kafka-custom-config
   enableSSL: true
@@ -108,7 +108,7 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  version: 3.9.0
+  version: 4.0.0
 ```
 
 ### spec.version
@@ -120,6 +120,7 @@ spec:
 - `3.7.2`
 - `3.8.1`
 - `3.9.0`
+- `4.0.0`
 
 ### spec.replicas
 

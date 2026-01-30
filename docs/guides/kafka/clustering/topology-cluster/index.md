@@ -89,7 +89,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 3.9.0
+  version: 4.0.0
   enableSSL: true
   tls:
     issuerRef:
@@ -161,7 +161,7 @@ NAME                                            TYPE               VERSION   AGE
 appbinding.appcatalog.appscode.com/kafka-prod   kubedb.com/kafka   3.9.0     4m8s
 
 NAME                                  TYPE                       DATA   AGE
-secret/kafka-prod-admin-cred          kubernetes.io/basic-auth   2      4m14s
+secret/kafka-prod-auth                kubernetes.io/basic-auth   2      4m14s
 secret/kafka-prod-broker-config       Opaque                     3      4m14s
 secret/kafka-prod-client-cert         kubernetes.io/tls          3      4m14s
 secret/kafka-prod-controller-config   Opaque                     3      4m10s
