@@ -39,7 +39,7 @@ KubeDB supports providing custom configuration for SingleStore. This tutorial wi
 
 SingleStore allows to configure database via configuration file. The default configuration for SingleStore can be found in `/var/lib/memsql/instance/memsql.cnf` file. When SingleStore starts, it will look for custom configuration file in `/etc/memsql/conf.d` directory. If configuration file exist, SingleStore instance will use combined startup setting from both `/var/lib/memsql/instance/memsql.cnf` and `*.cnf` files in `/etc/memsql/conf.d` directory. This custom configuration will overwrite the existing default one. To know more about configuring SingleStore see [here](https://docs.singlestore.com/db/v8.7/reference/configuration-reference/cluster-config-files/singlestore-server-config-files/).
 
-At first, you have to create a custom configuration file and provide its name in `spec.configuration.secretName`. The operator reads this Secret internally and applies the configuration automatically.
+At first, you have to create a secret with custom configuration file and provide its name in `spec.configuration.secretName`. The operator reads this Secret internally and applies the configuration automatically.
 
 In this tutorial, we will configure [max_connections](https://docs.singlestore.com/db/v8.7/reference/configuration-reference/engine-variables/list-of-engine-variables/#in-depth-variable-definitions) and [read_buffer_size](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_read_buffer_size) via a custom config file. We will use configMap as volume source.
 

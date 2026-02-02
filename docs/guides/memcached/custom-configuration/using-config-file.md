@@ -41,7 +41,7 @@ Memcached does not allows to configuration via any file. However, configuration 
 
 To know more about configuring Memcached server see [here](https://github.com/memcached/memcached/wiki/ConfiguringServer).
 
-At first, you have to create a custom configuration file and provide its name in `spec.configuration.secretName`. The operator reads this Secret internally and applies the configuration automatically.
+At first, you have to create a secret with custom configuration file and provide its name in `spec.configuration.secretName`. The operator reads this Secret internally and applies the configuration automatically.
 
 In this tutorial, we will configure [max_connections](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L672) and [limit_maxbytes](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L720) via secret.
 

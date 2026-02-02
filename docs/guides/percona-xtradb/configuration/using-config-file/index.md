@@ -39,7 +39,7 @@ KubeDB supports providing custom configuration for PerconaXtraDB. This tutorial 
 
 PerconaXtraDB allows to configure database via configuration file. The default configuration for PerconaXtraDB can be found in `/etc/my.cnf` file. KubeDB adds a new custom configuration directory `/etc/mysql/custom.conf.d` if it's enabled. When PerconaXtraDB starts, it will look for custom configuration file in `/etc/mysql/custom.conf.d` directory. If configuration file exist, PerconaXtraDB instance will use combined startup setting from both `/etc/my.cnf` and `*.cnf` files in `/etc/mysql/conf.d` and `/etc/mysql/custom.conf.d` directory. This custom configuration will overwrite the existing default one.
 
-At first, you have to create a custom configuration file and provide its name in `spec.configuration.secretName`. The operator reads this Secret internally and applies the configuration automatically.
+At first, you have to create a secret with custom configuration file and provide its name in `spec.configuration.secretName`. The operator reads this Secret internally and applies the configuration automatically.
 
 In this tutorial, we will configure [max_connections](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_max_connections/) and [read_buffer_size](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_read_buffer_size) via a custom config file. We will use Secret.
 

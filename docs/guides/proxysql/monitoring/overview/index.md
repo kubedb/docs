@@ -48,23 +48,14 @@ A sample YAML for Redis crd with `spec.monitor` section configured to enable mon
 
 ```yaml
 apiVersion: kubedb.com/v1
-kind: Redis
+kind: ProxySQL
 metadata:
-  name: sample-redis
-  namespace: databases
+  name: proxy
+  namespace: demo
 spec:
-  version: 6.0.20
-  deletionPolicy: WipeOut
-  configuration: # configure Redis to use password for authentication
-    secretName: redis-config
-  storageType: Durable
-  storage:
-    storageClassName: default
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 5Gi
+  version: "3.0.1-debian"
+  replicas: 3
+  syncUsers: true
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -73,13 +64,13 @@ spec:
           release: prometheus
       exporter:
         args:
-        - --redis.password=$(REDIS_PASSWORD)
+          - --ps.password=$(ps_PASSWORD)
         env:
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: _name_of_secret_with_redis_password
-              key: password # key with the password
+          - name: ps_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: _name_of_secret_with_ps_password
+                key: password # key with the password
         resources:
           requests:
             memory: 512Mi
@@ -90,6 +81,9 @@ spec:
         securityContext:
           runAsUser: 2000
           allowPrivilegeEscalation: false
+  backend:
+    name: mysql-server
+  deletionPolicy: WipeOut
 ```
 
 Assume that above Redis is configured to use basic authentication. So, exporter image also need to provide password to collect metrics. We have provided it through `spec.monitor.args` field.
