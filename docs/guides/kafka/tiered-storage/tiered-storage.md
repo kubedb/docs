@@ -72,7 +72,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-          storageClassName: standard
+        storageClassName: standard
     controller:
       replicas: 3
       storage:
@@ -81,7 +81,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-          storageClassName: standard
+        storageClassName: standard
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -155,7 +155,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-          storageClassName: standard
+        storageClassName: standard
     controller:
       replicas: 3
       storage:
@@ -164,7 +164,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-          storageClassName: standard
+        storageClassName: standard
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -222,7 +222,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-          storageClassName: standard
+        storageClassName: standard
     controller:
       replicas: 3
       storage:
@@ -231,7 +231,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-          storageClassName: standard
+        storageClassName: standard
   storageType: Durable
   deletionPolicy: WipeOut
 ```
