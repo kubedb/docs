@@ -16,10 +16,6 @@ section_menu_id: guides
 
 This tutorial will show you how to use KubeDB to run a [Tiered Storage](https://kafka.apache.org/41/operations/tiered-storage/). Kafka Tiered Storage is a feature that separates hot data and cold data by storing recent Kafka log segments on local broker disks and automatically offloading older segments to remote object storage (like S3, GCS, or Azure Blob).
 
-<p align="center">
-  <img alt="lifecycle"  src="/docs/images/kafka/...">
-</p>
-
 ## Before You Begin
 
 At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
