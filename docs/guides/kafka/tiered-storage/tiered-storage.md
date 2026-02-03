@@ -123,9 +123,9 @@ here, we created a topic with `local.retention.bytes=1` which will force kafka t
 
 > **Note**: You can set `local.retention.ms` instead of `local.retention.bytes` to offload segments based on time.
 
-## Create a Kafka Tiered Storage with azure compatible storage
+## Create a Kafka Tiered Storage with Azure compatible storage
 
-Here is an example Kafka CR that uses Tiered Storage with azure compatible storage:
+Here is an example Kafka CR that uses Tiered Storage with Azure compatible storage:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -191,7 +191,7 @@ kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Provisioning   4s
 kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Ready          112s
 ```
 
-## Create a Kafka Tiered Storage with gcs compatible storage
+## Create a Kafka Tiered Storage with GCS compatible storage
 
 Here is an example Kafka CR that uses Tiered Storage with GCS compatible storage:
 
