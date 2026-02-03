@@ -68,7 +68,7 @@ jobs:
           kubectl create -f https://github.com/kubernetes-csi/external-snapshotter/raw/master/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
           kubectl create -f https://github.com/kubestash/installer/raw/master/crds/kubestash-crds.yaml
           kubectl create -f https://github.com/appscode-cloud/catalog/raw/master/crds/catalog.appscode.com_mongodbbindings.yaml
-          kubectl create -f https://github.com/voyagermesh/installer/raw/master/charts/voyager-gateway/crds/generated/gateway.envoyproxy.io_envoyproxies.yaml
+          kubectl create -f https://github.com/envoyproxy/gateway/raw/main/charts/gateway-helm/crds/generated/gateway.envoyproxy.io_envoyproxies.yaml
           kubectl create -f https://github.com/voyagermesh/installer/raw/master/charts/gateway-api/crds/gateway.networking.k8s.io_gatewayclasses.yaml
           kubectl create -f https://github.com/fluxcd/helm-controller/raw/main/config/crd/bases/helm.toolkit.fluxcd.io_helmreleases.yaml
           kubectl create -f https://github.com/fluxcd/source-controller/raw/main/config/crd/bases/source.toolkit.fluxcd.io_helmrepositories.yaml

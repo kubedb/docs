@@ -30,6 +30,28 @@ metadata:
   namespace: demo
 spec:
   disableSecurity: false
+  tieredStorage:
+    provider: s3|azure|gcs|local
+    s3:
+      bucket: kafka
+      endpoint: <s3-endpoint>
+      region: us-east-1
+      secretName: aws-secret
+      prefix: tiered-storage-demo/
+    azure:
+        container: kafka
+        secretName: azure-secret
+        prefix: tiered-storage-demo/
+        storageAccount: <storage-account-name>
+    gcs:
+        bucket: kafka
+        secretName: gcs-secret
+        prefix: tiered-storage-demo/
+    local:
+      mountPath: /mnt/tiered-storage
+      subPath: kafka
+    storageManagerClassName: io.aiven.kafka.tieredstorage.RemoteStorageManager
+    storageManagerClassPath: /opt/kafka/libs/tiered-plugins/*
   authSecret:
     kind: Secret
     name: kafka-admin-cred
@@ -181,6 +203,30 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 ### spec.configSecret
 
 `spec.configSecret` is an optional field that points to a Secret used to hold custom Kafka configuration. If not set, KubeDB operator will use default configuration for Kafka.
+
+### spec.tieredStorage
+`spec.tieredStorage` is an optional field that specifies the tiered storage configuration for Kafka. Tiered storage allows Kafka to offload older data to cheaper storage solutions like S3, Azure Blob Storage, GCS, or local storage, while keeping recent data on faster local storage. Tiered storage helps in reducing the cost of storage and improves the performance of Kafka by keeping the frequently accessed data on local storage. Following are the fields of `spec.tieredStorage`:
+- `provider` ( `string` | `""` ) - is a field that specifies the tiered storage provider. Supported providers are `s3`, `azure`, `gcs`, and `local`.
+- `s3` ( `object` | `nil` ) - is a field that specifies the S3 tiered storage configuration. It has the following fields:
+    - `bucket` ( `string` | `""` ) - is a required field that specifies the S3 bucket name.
+    - `endpoint` ( `string` | `""` ) - is an optional field that specifies the S3 endpoint.
+    - `region` ( `string` | `""` ) - is a required field that specifies the S3 region.
+    - `secretName` ( `string` | `""` ) - is a required field that specifies the name of the secret that contains the S3 credentials.
+    - `prefix` ( `string` | `""` ) - is an optional field that specifies the prefix for the S3 objects.
+- `azure` ( `object` | `nil` ) - is a field that specifies the Azure Blob Storage tiered storage configuration. It has the following fields:
+    - `container` ( `string` | `""` ) - is a required field that specifies the Azure Blob Storage container name.
+    - `storageAccount` ( `string` | `""` ) - is a required field that specifies the Azure storage account name.
+    - `secretName` ( `string` | `""` ) - is a required field that specifies the name of the secret that contains the Azure Blob Storage credentials.
+    - `prefix` ( `string` | `""` ) - is an optional field that specifies the prefix for the Azure Blob Storage objects.
+- `gcs` ( `object` | `nil` ) - is a field that specifies the GCS tiered storage configuration. It has the following fields:
+    - `bucket` ( `string` | `""` ) - is a required field that specifies the GCS bucket name.
+    - `secretName` ( `string` | `""` ) - is a required field that specifies the name of the secret that contains the GCS credentials.
+    - `prefix` ( `string` | `""` ) - is an optional field that specifies the prefix for the GCS objects.
+- `local` ( `object` | `nil` ) - is a field that specifies the local tiered storage configuration. It has the following fields:
+    - `mountPath` ( `string` | `""` ) - is a required field that specifies the mount path for the local storage.
+    - `subPath` ( `string` | `""` ) - is an optional field that specifies the sub-path for the local storage.
+- `storageClassName` ( `string` | `""` ) - is an optional field that specifies the storage class name for the tiered storage.
+- `storageManagerClassName` ( `string` | `""` ) - is an optional field that specifies the storage manager class name for the tiered storage. Default is `io.aiven.kafka.tieredstorage.RemoteStorageManager`.
 
 ### spec.topology
 
