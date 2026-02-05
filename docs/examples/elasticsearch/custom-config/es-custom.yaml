@@ -6,8 +6,8 @@ metadata:
 spec:
   version: xpack-8.11.1
   replicas: 2
-  configSecret:
-    name: es-custom-config
+  configuration:
+    secretName: es-custom-config
   storage:
     storageClassName: "standard"
     accessModes:

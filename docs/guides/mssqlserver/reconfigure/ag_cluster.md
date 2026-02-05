@@ -97,7 +97,7 @@ $ kubectl create secret generic -n demo ms-custom-config --from-file=./mssql.con
 secret/ms-custom-config created
 ```
 
-In this section, we are going to create a MSSQLServer object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MSSQLServer` CR that we are going to create,
+In this section, we are going to create a MSSQLServer object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -107,8 +107,8 @@ metadata:
   namespace: demo
 spec:
   version: "2022-cu12"
-  configSecret:
-    name: ms-custom-config
+  configuration:
+    secretName: ms-custom-config
   replicas: 3
   topology:
     mode: AvailabilityGroup
@@ -233,7 +233,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `mssqlserver-ag-cluster` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.customConfig.replicaSet.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.secretName` specifies the name of the new secret.
 - Have a look [here](/docs/guides/mssqlserver/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,

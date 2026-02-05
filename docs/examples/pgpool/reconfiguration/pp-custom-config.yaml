@@ -6,8 +6,8 @@ metadata:
 spec:
   version: "4.5.0"
   replicas: 1
-  configSecret:
-    name: pp-custom-config
+  configuration:
+    secretName: pp-custom-config
   postgresRef:
     name: ha-postgres
     namespace: demo

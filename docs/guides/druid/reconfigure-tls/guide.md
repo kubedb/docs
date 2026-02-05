@@ -492,11 +492,10 @@ Events:
   Normal   UpdatePetSets                                                                    85s   KubeDB Ops-manager Operator  successfully reconciled the Druid with tls configuration
   Warning  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0               79s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
   Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0             79s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
-  Warning  check pod running; ConditionStatus:False; PodName:druid-cluster-historicals-0    74s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:druid-cluster-historicals-0
-  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0     69s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0
+  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0     74s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-historicals-0
   Warning  get pod; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0            64s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0
   Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0          64s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0
-  Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0  59s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0
+  Warning  check pod running: ConditionStatus:True; PodName:druid-cluster-middlemanagers-0  59s   KubeDB Ops-manager Operator  check pod running: ConditionStatus:True; PodName:druid-cluster-middlemanagers-0
   Warning  get pod; ConditionStatus:True; PodName:druid-cluster-brokers-0                   54s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-brokers-0
   Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-brokers-0                 54s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-brokers-0
   Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-brokers-0         49s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-brokers-0
@@ -877,10 +876,10 @@ Events:
   Normal   CertificateSynced                                                                93s   KubeDB Ops-manager Operator  Successfully synced all certificates
   Warning  get certificate; ConditionStatus:True                                            88s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
   Warning  check ready condition; ConditionStatus:True                                      88s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
-  Warning  issuing condition; ConditionStatus:True                                          88s   KubeDB Ops-manager Operator  issuing condition; ConditionStatus:True
+  Warning  issuing condition: ConditionStatus:True                                          88s   KubeDB Ops-manager Operator  issuing condition: ConditionStatus:True
   Warning  get certificate; ConditionStatus:True                                            88s   KubeDB Ops-manager Operator  get certificate; ConditionStatus:True
   Warning  check ready condition; ConditionStatus:True                                      88s   KubeDB Ops-manager Operator  check ready condition; ConditionStatus:True
-  Warning  issuing condition; ConditionStatus:True                                          88s   KubeDB Ops-manager Operator  issuing condition; ConditionStatus:True
+  Warning  issuing condition; ConditionStatus:True                                          88s   KubeDB Ops-manager Operator  issuing condition: ConditionStatus:True
   Normal   CertificateSynced                                                                87s   KubeDB Ops-manager Operator  Successfully synced all certificates
   Normal   UpdatePetSets                                                                    82s   KubeDB Ops-manager Operator  successfully reconciled the Druid with tls configuration
   Warning  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0               77s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
@@ -1169,7 +1168,7 @@ Status:
     Status:                True
     Type:                  CheckPodRunning--druid-cluster-routers-0
     Last Transition Time:  2024-10-28T14:25:25Z
-    Message:               get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+    Message:               get pod: ConditionStatus:True; PodName:druid-cluster-coordinators-0
     Observed Generation:   1
     Status:                True
     Type:                  GetPod--druid-cluster-coordinators-0
@@ -1232,7 +1231,7 @@ Events:
   Normal   Successful                                                                       19s   KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-cluster for DruidOpsRequest: drops-update-issuer
 ```
 
-Now, Lets exec into a druid node and find out the ca subject to see if it matches the one we have provided.
+Now, let's exec into a druid node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
 $ kubectl exec -it druid-cluster-broker-0 -- bash
@@ -1474,10 +1473,10 @@ Events:
   Warning  get pod; ConditionStatus:True; PodName:druid-cluster-brokers-0                   98s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-brokers-0
   Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-brokers-0                 98s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-brokers-0
   Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-brokers-0         93s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-brokers-0
-  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-routers-0                   88s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-routers-0
+  Warning  get pod: ConditionStatus:True; PodName:druid-cluster-routers-0                   88s    KubeDB Ops-manager Operator  get pod: ConditionStatus:True; PodName:druid-cluster-routers-0
   Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-routers-0                 88s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-routers-0
   Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-routers-0         83s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-routers-0
-  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0              78s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0              78s    KubeDB Ops-manager Operator  get pod: ConditionStatus:True; PodName:druid-cluster-coordinators-0
   Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0            78s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
   Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0    73s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0
   Warning  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0               68s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-historicals-0
@@ -1486,13 +1485,13 @@ Events:
   Warning  get pod; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0            58s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0
   Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0          58s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0
   Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0  53s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-middlemanagers-0
-  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-brokers-0                   48s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-brokers-0
+  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-brokers-0                   48s    KubeDB Ops-manager Operator  get pod: ConditionStatus:True; PodName:druid-cluster-brokers-0
   Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-brokers-0                 48s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-brokers-0
   Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-brokers-0         43s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-brokers-0
-  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-routers-0                   38s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-routers-0
+  Warning  get pod: ConditionStatus:True; PodName:druid-cluster-routers-0                   38s    KubeDB Ops-manager Operator  get pod: ConditionStatus:True; PodName:druid-cluster-routers-0
   Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-routers-0                 38s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-routers-0
   Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-routers-0         33s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-routers-0
-  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0              28s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
+  Warning  get pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0              28s    KubeDB Ops-manager Operator  get pod: ConditionStatus:True; PodName:druid-cluster-coordinators-0
   Warning  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0            28s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:druid-cluster-coordinators-0
   Warning  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0    23s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:druid-cluster-coordinators-0
   Normal   RestartNodes                                                                     18s    KubeDB Ops-manager Operator  Successfully restarted all nodes
@@ -1500,7 +1499,7 @@ Events:
   Normal   Successful                                                                       18s    KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-cluster for DruidOpsRequest: drops-remove
 ```
 
-Now, Let's exec into one of the broker node and find out that TLS is disabled or not.
+Now, Lets exec into one of the broker node and find out that TLS is disabled or not.
 
 ```bash
 $$ kubectl exec -it -n demo druid-cluster-broker-0 -- druid-configs.sh --bootstrap-server localhost:9092 --command-config /opt/druid/config/clientauth.properties --describe --entity-type brokers --all | grep 'ssl.keystore'

@@ -11,8 +11,8 @@ spec:
       router:
         replicas: 1
   replicas: 3
-  configSecret:
-    name: my-configuration
+  configuration:
+    secretName: my-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"

@@ -7,8 +7,8 @@ spec:
   version: "3.8.3"
   adminServerPort: 8080
   replicas: 3
-  configSecret:
-    name: zk-configuration
+  configuration:
+    secretName: zk-configuration
   storage:
     resources:
       requests:

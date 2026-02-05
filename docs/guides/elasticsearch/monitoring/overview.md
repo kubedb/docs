@@ -55,8 +55,8 @@ metadata:
 spec:
   version: 6.0.20
   deletionPolicy: WipeOut
-  configSecret: # configure Redis to use password for authentication
-    name: redis-config
+  configuration: # configure Redis to use password for authentication
+    secretName: redis-config
   storageType: Durable
   storage:
     storageClassName: default

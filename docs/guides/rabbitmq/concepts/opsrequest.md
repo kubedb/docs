@@ -132,6 +132,7 @@ spec:
   configuration:
     configSecret:
       name: new-custom-config
+    restart: "true"
 ```
 
 **Sample `RabbitMQOpsRequest` Objects for Volume Expansion of database cluster:**
@@ -316,6 +317,12 @@ If you want to reconfigure your Running RabbitMQ cluster or different components
 
 - `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed RabbitMQ server.
 
+- `restart` significantly reduces unnecessary downtime.
+  - `auto` (default): restart only if required (determined by ops manager operator)
+  - `false`: the pod will not restart, so the new configuration will not apply to the database.
+  - `true`: always restart
+
+    
 ### spec.tls
 
 If you want to reconfigure the TLS configuration of your RabbitMQ cluster i.e. add TLS, remove TLS, update issuer/cluster issuer or Certificates and rotate the certificates, you have to specify `spec.tls` section. This field consists of the following sub-field:

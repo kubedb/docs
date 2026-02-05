@@ -10,3 +10,4 @@ spec:
   configuration:
     configSecret:
       name: zk-new-configuration
+    restart: auto

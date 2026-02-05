@@ -36,6 +36,6 @@ spec:
   connectClusterRef:
     name: mirror-connect
     namespace: demo
-  configSecret:
-    name: mirror-source-config
+  configuration:
+    secretName: mirror-source-config
   deletionPolicy: WipeOut

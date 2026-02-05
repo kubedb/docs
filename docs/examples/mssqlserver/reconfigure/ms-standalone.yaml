@@ -5,8 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: "2022-cu12"
-  configSecret:
-    name: ms-custom-config
+  configuration:
+    secretName: ms-custom-config
   replicas: 1
   tls:
     issuerRef:

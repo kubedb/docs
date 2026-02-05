@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is MariaDBVersion
 
-`MariaDBVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [MariaDB](https://www.mariadb.com) database deployed with KubeDB in a Kubernetes native way.
+`MariaDBVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for MariaDB database deployed with KubeDB in a Kubernetes native way.
 
 When you install KubeDB, a `MariaDBVersion` custom resource will be created automatically for every supported MariaDB versions. You have to specify the name of `MariaDBVersion` crd in `spec.version` field of [MariaDB](/docs/guides/mariadb/concepts/mariadb) crd. Then, KubeDB will use the docker images specified in the `MariaDBVersion` crd to create your expected database.
 

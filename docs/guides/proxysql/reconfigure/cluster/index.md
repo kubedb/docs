@@ -343,7 +343,7 @@ With `KubeDB` `ProxySQL` ops-request you can reconfigure `mysql_query_rules` tab
 ### Check current mysql_query_rules table in ProxySQL
 
 Let's check the current `mysql_query_rules` table in the proxysql server.
-We might see some of the rules are already present. It happens when no rules are set in the `.spec.initConfig` section while deploying the proxysql. The operator adds some of the default query rules so that the basic operations can be run through the proxysql server. 
+We might see some of the rules are already present. It happens when no rules are set in the `.spec.configuration.init.inline` section while deploying the proxysql. The operator adds some of the default query rules so that the basic operations can be run through the proxysql server. 
 
 ```bash
 ProxySQLAdmin > select rule_id,active,match_digest,destination_hostgroup,apply from mysql_query_ru

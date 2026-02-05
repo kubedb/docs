@@ -6,8 +6,8 @@ metadata:
 spec:
   version: "16.1"
   replicas: 3
-  configSecret:
-    name: pg-configuration
+  configuration:
+    secretName: pg-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"

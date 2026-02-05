@@ -13,4 +13,3 @@ spec:
     routers:
       replicas: 1
   deletionPolicy: Delete
-

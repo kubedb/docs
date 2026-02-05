@@ -38,8 +38,8 @@ spec:
         labels:
           app: kubedb
         interval: 10s
-  configSecret:
-    name: mc-custom-config
+  configuration:
+    secretName: mc-custom-config
   podTemplate:
     metadata:
       annotations:
@@ -102,9 +102,10 @@ Memcached managed by KubeDB can be monitored with builtin-Prometheus and Prometh
 - [Monitor Memcached with builtin Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md)
 - [Monitor Memcached with Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md)
 
-### spec.configSecret
-
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Memcached. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/memcached/custom-configuration/using-config-file.md).
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for Memcached cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Memcached object.
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Memcached cluster.
 
 ### spec.podTemplate
 

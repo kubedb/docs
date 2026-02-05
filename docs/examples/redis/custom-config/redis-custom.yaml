@@ -5,8 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: 6.2.14
-  configSecret:
-    name: rd-configuration
+  configuration:
+    secretName: rd-configuration
   storage:
     storageClassName: "standard"
     accessModes:

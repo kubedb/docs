@@ -9,7 +9,8 @@ spec:
   postgresRef:
     name: ha-postgres
     namespace: demo
-  initConfig:
-    pgpoolConfig:
-      max_pool : 60
+  configuration:
+    inline:
+      pgpool.conf: |
+        max_pool=60
   deletionPolicy: WipeOut

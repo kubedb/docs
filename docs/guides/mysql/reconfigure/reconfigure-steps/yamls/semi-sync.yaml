@@ -12,8 +12,8 @@ spec:
       sourceTimeout: 23h
       errantTransactionRecoveryPolicy: PseudoTransaction
   replicas: 3
-  configSecret:
-    name: my-configuration
+  configuration:
+    secretName: my-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"

@@ -82,8 +82,8 @@ metadata:
   namespace: demo
 spec:
   # Make sure that you've mentioned the config secret name here
-  configSecret:
-    name: es-custom-config
+  configuration:
+    secretName: es-custom-config
   enableSSL: false 
   version: opensearch-2.8.0
   storageType: Durable

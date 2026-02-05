@@ -271,6 +271,7 @@ spec:
   configuration:
     configSecret:
       name: new-configsecret-topology
+    restart: "auto"
 status:
   conditions:
     - lastTransitionTime: "2024-07-25T18:22:38Z"
@@ -533,7 +534,12 @@ controller.properties: |
     controller.properties: |
       metadata.log.dir=/var/log/kafka/metadata-custom
 ```
+- `restart` significantly reduces unnecessary downtime.
+  - `auto` (default): restart only if required (determined by ops manager operator)
+  - `false`: no restart
+  - `true`: always restart
 
+    
 - `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed kafka cluster.
 
 ### spec.tls

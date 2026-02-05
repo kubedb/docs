@@ -59,7 +59,7 @@ $ kubectl create secret generic -n demo rabbit-custom-config --from-file=./rabbi
 secret/rabbit-custom-config created
 ```
 
-In this section, we are going to create a RabbitMQ object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `RabbitMQ` CR that we are going to create,
+In this section, we are going to create a RabbitMQ object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `RabbitMQ` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -77,8 +77,8 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  configSecret:
-    name: rabbit-custom-config
+  configuration:
+    secretName: rabbit-custom-config
 ```
 
 Let's create the `RabbitMQ` CR we have shown above,

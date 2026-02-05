@@ -33,11 +33,12 @@ KubeDB supports providing custom configuration for ClickHouse. This tutorial wil
 
 ## Overview
 
-ClickHouse allows configuring via configuration file. The default configuration file for ClickHouse deployed by `KubeDB` can be found in `/etc/clickhouse-server/config.xml`. When `spec.configSecret` is set to clickhouse, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user and merge it with the remaining default config. After all that this secret will be mounted to clickhouse for use it as the configuration file.
+ClickHouse allows configuring via configuration file. The default configuration file for ClickHouse deployed by `KubeDB` can be found in `/etc/clickhouse-server/config.xml`. When `spec.configuration` is set to clickhouse, 
+KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user. After all that this secret will be mounted to clickhouse for use it as the configuration file.
 
 > To learn available configuration option of ClickHouse see [Configuration Options](https://clickhouse.com/docs/operations/configuration-files).
 
-At first, you have to create a secret with your configuration file contents as the value of this key `clickhouse.yaml`. Then, you have to specify the name of this secret in `spec.configSecret.name` section while creating clickhouse CRO.
+At first, you have to create a secret with your configuration file contents as the value of this key `clickhouse.yaml`. Then, you have to specify the name of this secret in `spec.configuration.secretName` section while creating clickhouse CRO.
 
 ## Custom Configuration
 
@@ -79,7 +80,7 @@ profiles:
     max_query_size: 200000
 ```
 
-Now, create clickhouse crd specifying `spec.configSecret` field.
+Now, create clickhouse crd specifying `spec.configuration.secretName` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -89,8 +90,8 @@ metadata:
   namespace: demo
 spec:
   version: 24.4.1
-  configSecret:
-    name: clickhouse-configuration
+  configuration:
+    secretName: clickhouse-configuration
   replicas: 1
   storage:
     accessModes:

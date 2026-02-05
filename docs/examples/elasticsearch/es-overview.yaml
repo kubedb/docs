@@ -29,8 +29,8 @@ spec:
         labels:
           app: kubedb
         interval: 10s
-  configSecret:
-    name: es-custom-config
+  configuration:
+    secretName: es-custom-config
   podTemplate:
     metadata:
       annotations:

@@ -31,8 +31,8 @@ metadata:
 spec:
   replicas: 3
   version: 2.17.0
-  configSecret: 
-    name: ignite-configuration
+  configuration:
+    secretName: ignite-configuration
   authSecret:
     kind: Secret
     name: ignite-quickstart-auth
@@ -80,10 +80,29 @@ Ignite managed by KubeDB can be monitored with builtin-Prometheus and Prometheus
 - [Monitor Ignite with builtin Prometheus](/docs/guides/ignite/monitoring/using-builtin-prometheus.md)
 - [Monitor Ignite with Prometheus operator](/docs/guides/ignite/monitoring/using-prometheus-operator.md)
 
-### spec.configSecret
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for Ignite cluster. It has the following fields:
+-`spec.configuration.secretName` is the name of the secret that contains the Ignite configuration file. This field accepts a secret name that holds the custom configuration parameters.
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Ignite. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/ignite/custom-configuration/using-config-file.md).
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the ignite object.
 
+  - ```yaml
+        configuration:
+          inline:
+            node-configuration.xml: |
+              <?xml version="1.0" encoding="UTF-8"?>
+              <beans xmlns="http://www.springframework.org/schema/beans"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://www.springframework.org/schema/beans
+              http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+              <!-- Your Ignite Configuration -->
+              <bean class="org.apache.ignite.configuration.IgniteConfiguration">        
+          
+              <property name="authenticationEnabled" value="true"/>
+
+              </bean>
+              </beans>
+    ```
 ### spec.podTemplate
 
 KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the Petset created for Ignite server.

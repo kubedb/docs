@@ -5,8 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: "9.1.0"
-  configSecret:
-    name: my-custom-config
+  configuration:
+    secretName: my-custom-config
   storage:
     storageClassName: "standard"
     accessModes:

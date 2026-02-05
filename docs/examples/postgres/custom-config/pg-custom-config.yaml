@@ -5,8 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: "13.13"
-  configSecret:
-    name: pg-custom-config
+  configuration:
+    secretName: pg-custom-config
   storage:
     storageClassName: "standard"
     accessModes:

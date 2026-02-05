@@ -65,28 +65,28 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  configSecret:
-    name: pgpool-config
-  initConfig:
-    pgpoolConfig:
-      log_statement : on
-      log_per_node_statement : on
-      sr_check_period : 0
-      health_check_period : 0
-      backend_clustering_mode : 'streaming_replication'
-      num_init_children : 5
-      max_pool : 75
-      child_life_time : 300
-      child_max_connections : 0
-      connection_life_time : 0
-      client_idle_limit : 0
-      connection_cache : on
-      load_balance_mode : on
-      ssl : on
-      failover_on_backend_error : off
-      log_min_messages : warning
-      statement_level_load_balance: on
-      memory_cache_enabled: on
+  configuration:
+    inline:
+      pgpool.conf: |
+        log_statement=on
+        log_per_node_statement=on
+        sr_check_period=0
+        health_check_period=0
+        backend_clustering_mode='streaming_replication'
+        num_init_children=5
+        max_pool=75
+        child_life_time=300
+        child_max_connections=0
+        connection_life_time=0
+        client_idle_limit=0
+        connection_cache=on
+        load_balance_mode=on
+        ssl=on
+        failover_on_backend_error=off
+        log_min_messages=warning
+        statement_level_load_balance=on
+        memory_cache_enabled=on
+    secretName: pgpool-config
   deletionPolicy: WipeOut
   syncUsers: true
   podTemplate:
@@ -246,24 +246,23 @@ Pgpool managed by KubeDB can be monitored with builtin-Prometheus and Prometheus
 - [Monitor Pgpool with builtin Prometheus](/docs/guides/pgpool/monitoring/using-builtin-prometheus.md)
 - [Monitor Pgpool with Prometheus operator](/docs/guides/pgpool/monitoring/using-prometheus-operator.md)
 
-### spec.configSecret
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for Pgpool cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Pgpool object.
+  - ```yaml
+         configuration:
+           inline:
+             pgpool.conf: |
+                num_init_children = 6
+                max_pool = 65
+                child_life_time = 400
+    ```
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Pgpool. You can provide the custom configuration in a secret, then you can specify the secret name `spec.configSecret.name`.
+
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Pgpool cluster.
 
 > Please note that, the secret key needs to be `pgpool.conf`.
-
 To learn more about how to use a custom configuration file see [here](/docs/guides/pgpool/configuration/using-config-file.md).
-
-NB. If `spec.configSecret` is set, then `spec.initConfig` needs to be empty.
-
-### spec.initConfig
-
-`spec.initConfig` is an optional field that allows users to provide custom configuration for Pgpool while initializing.
-
-To learn more about how to use init configuration see [here](/docs/guides/pgpool/configuration/using-init-config.md).
-
-NB. If `spec.initConfig` is set, then `spec.configSecret` needs to be empty.
-
 ### spec.deletionPolicy
 
 `deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Pgpool` CR or which resources KubeDB should keep or delete when you delete `Pgpool` CR. KubeDB provides following four deletion policies:

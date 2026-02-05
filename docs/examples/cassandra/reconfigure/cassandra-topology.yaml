@@ -5,8 +5,6 @@ metadata:
   namespace: demo
 spec:
   version: 5.0.3
-  configSecret:
-    name: cas-topology-custom-config
   topology:
     rack:
       - name: r0
@@ -29,4 +27,6 @@ spec:
             requests:
               storage: 1Gi
         storageType: Durable
+  configuration:
+    secretName: cas-topology-custom-config
   deletionPolicy: WipeOut

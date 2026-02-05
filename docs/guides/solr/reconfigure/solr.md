@@ -81,7 +81,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 secret/sl-custom-config created
 ```
 
-In this section, we are going to create a Solr object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Solr` CR that we are going to create,
+In this section, we are going to create a Solr object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Solr` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -90,8 +90,8 @@ metadata:
   name: solr
   namespace: demo
 spec:
-  configSecret:
-    name: sl-custom-config
++  configuration:
++    secretName: sl-custom-config
   version: 9.6.1
   replicas: 2
   zookeeperRef:
@@ -215,8 +215,8 @@ metadata:
 spec:
   apply: IfReady
   configuration:
-    configSecret:
-      name: new-sl-custom-config
+-    configSecret:
+-      name: new-sl-custom-config
   databaseRef:
     name: solr
   type: Reconfigure
@@ -226,7 +226,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `Solr-dev` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.secretName` specifies the name of the new secret.
 
 Let's create the `SolrOpsRequest` CR we have shown above,
 
@@ -359,7 +359,7 @@ solr@solr-0:/opt/solr-9.6.1$ cat /var/solr/solr.xml
   <str name="coreRootDirectory">/var/solr/data</str>
   <str name="sharedLib">${solr.sharedLib:},/opt/solr/contrib/gcs-repository/lib,/opt/solr/contrib/prometheus-exporter/lib,/opt/solr/contrib/s3-repository/lib,/opt/solr/dist</str>
   <str name="allowPaths">${solr.allowPaths:}</str>
-  <int name="maxBooleanClauses">${solr.max.booleanClauses:2030}</int>
+  <int name="maxBooleanClauses">${solr.max.booleanClauses:2024}</int>
   <shardHandlerFactory name="shardHandlerFactory" class="HttpShardHandlerFactory">
     <int name="connTimeout">${connTimeout:60000}</int>
     <int name="socketTimeout">${socketTimeout:600000}</int>

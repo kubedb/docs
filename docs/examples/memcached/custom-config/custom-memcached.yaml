@@ -6,8 +6,8 @@ metadata:
 spec:
   replicas: 1
   version: "1.6.22"
-  configSecret:
-    name: mc-configuration
+  configuration:
+    secretName: mc-configuration
   podTemplate:
     spec:
       containers:

@@ -99,8 +99,8 @@ spec:
       apiGroup: cert-manager.io
       kind: Issuer
       name: connectcluster-ca-issuer
-  configSecret:
-    name: connectcluster-custom-config
+  configuration:
+    secretName: connectcluster-custom-config
   replicas: 3
   connectorPlugins:
   - postgres-3.0.5.final
@@ -115,7 +115,7 @@ Here,
 - `spec.enableSSL` - specifies whether the ConnectCluster should be TLS secured or not.
 - `spec.tls.issuerRef` - specifies the name of the Issuer CR. Here, the ConnectCluster will use the `connectcluster-ca-issuer` Issuer to enable SSL/TLS.
 - `spec.replicas` - specifies the number of ConnectCluster workers.
-- `spec.configSecret` - specifies the name of the secret that contains the custom configuration for the ConnectCluster. Here, the ConnectCluster will use the `connectcluster-custom-config` secret for custom configuration.
+- `spec.configuration.secretName` - specifies the name of the secret that contains the custom configuration for the ConnectCluster. Here, the ConnectCluster will use the `connectcluster-custom-config` secret for custom configuration.
 - `spec.connectorPlugins` - is the name of the KafkaConnectorVersion CR. Here, mongodb, mysql, postgres, and jdbc connector-plugins will be loaded to the ConnectCluster worker nodes.
 - `spec.kafkaRef` specifies the Kafka instance that the ConnectCluster will connect to. Here, the ConnectCluster will connect to the Kafka instance named `kafka-prod` in the `demo` namespace.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete ConnectCluster CR. Deletion policy `WipeOut` will delete the worker pods, secret when the ConnectCluster CR is deleted.
@@ -267,8 +267,8 @@ metadata:
   name: postgres-source-connector
   namespace: demo
 spec:
-  configSecret:
-    name: postgres-source-connector-config
+  configuration:
+    secretName: postgres-source-connector-config
   connectClusterRef:
     name: connectcluster-distributed
     namespace: demo
@@ -417,8 +417,8 @@ metadata:
   name: mysql-sink-connector
   namespace: demo
 spec:
-  configSecret:
-    name: mysql-sink-connector-config
+  configuration:
+    secretName: mysql-sink-connector-config
   connectClusterRef:
     name: connectcluster-distributed
     namespace: demo

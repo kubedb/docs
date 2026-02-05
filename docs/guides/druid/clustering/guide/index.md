@@ -148,7 +148,7 @@ Metadata:
         .:
         f:deepStorage:
           .:
-          f:configSecret:
+          f:configuration:
           f:type:
         f:deletionPolicy:
         f:healthChecker:
@@ -520,7 +520,7 @@ Metadata:
         .:
         f:deepStorage:
           .:
-          f:configSecret:
+          f:configuration:
           f:type:
         f:deletionPolicy:
         f:healthChecker:

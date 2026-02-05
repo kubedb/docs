@@ -85,8 +85,8 @@ spec:
         labels:
           app: kubedb
         interval: 10s
-  configSecret:
-    name: rd-custom-config
+  configuration:
+    secretName: rd-custom-config
   podTemplate:
     metadata:
       annotations:
@@ -287,9 +287,29 @@ Redis managed by KubeDB can be monitored with builtin-Prometheus and Prometheus 
 - [Monitor Redis with builtin Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md)
 - [Monitor Redis with Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md)
 
-### spec.configSecret
-
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Redis. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/redis/configuration/redis.md).
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for Redis cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Redis object.
+  - ```yaml 
+      configuration:
+        inline: 
+          redis.conf: |
+            maxclients 2200
+            databases 6
+   ```
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Redis cluster.
+- `configuration.acl` defines Redis users, their passwords (via Secret), and the commands/keys they are allowed to access.
+  - ```yaml
+    configuration:
+      acl:
+       secretRef:
+        name: old-acl-secret         # Secret that holds passwords referenced by variables like ${k1}
+       rules:
+        - userName1 ${k1} allkeys +@string +@set -SADD
+        - userName2 ${k2} allkeys +@string +@set -SADD
+        - userName3 ${k3} allkeys +@string +@set -SADD
+        - userName4 ${k4} allkeys +@string +@set -SADD
+    ```
 
 ### spec.podTemplate
 

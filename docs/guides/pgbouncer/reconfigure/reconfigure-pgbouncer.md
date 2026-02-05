@@ -63,7 +63,7 @@ $ kubectl create secret generic -n demo pb-custom-config --from-file=./pgbouncer
 secret/pb-custom-config created
 ```
 
-In this section, we are going to create a PgBouncer object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `PgBouncer` CR that we are going to create,
+In this section, we are going to create a PgBouncer object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `PgBouncer` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -172,9 +172,8 @@ spec:
   databaseRef:
     name: pb-custom
   configuration:
-    pgbouncer:
-      configSecret:
-        name: new-custom-config
+    configSecret:
+      name: new-custom-config
   timeout: 5m
   apply: IfReady
 ```
@@ -183,7 +182,8 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `pb-csutom` pgbouncer.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgbouncer.
-- `spec.configuration.pgbouncer.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.inline` is an optional field that allows you to provide custom configuration directly.
 - Have a look [here](/docs/guides/pgbouncer/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
@@ -224,7 +224,6 @@ Metadata:
 Spec:
   Apply:  IfReady
   Configuration:
-    Pgbouncer:
       Config Secret:
         Name:  new-custom-config
   Database Ref:
@@ -368,11 +367,10 @@ spec:
   databaseRef:
     name: pb-custom
   configuration:
-    pgbouncer:
-      applyConfig:
-        pgbouncer.ini: |-
-          [pgbouncer]
-          auth_type=scram-sha-256
+    applyConfig:
+      pgbouncer.ini: |-
+        [pgbouncer]
+        auth_type=scram-sha-256
   timeout: 5m
   apply: IfReady
 ```
@@ -381,7 +379,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `pb-custom` pgbouncer.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgbouncer.
-- `spec.configuration.pgbouncer.applyConfig` specifies the new configuration that will be merged in the existing secret.
+- `spec.configuration.applyConfig` specifies the new configuration that will be merged in the existing secret.
 
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
@@ -544,11 +542,11 @@ As we can see from the configuration of running pgbouncer, the value of `auth_ty
 
 ### Remove config
 
-This will remove all the custom config previously provided. After this Ops-manager operator will merge the new given config with the default config and apply this.
+This will remove all the custom config previously provided. After this Ops-manager will merge the new given config with the default config and apply this.
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `pb-custom` pgbouncer.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgbouncer.
-- `spec.configuration.pgbouncer.removeCustomConfig` specifies for boolean values to remove previous custom configuration.
+- `spec.configuration.removeCustomConfig` specifies for boolean values to remove previous custom configuration.
 
 
 

@@ -299,10 +299,10 @@ We have to enable certain modules to conduct the operations like backup and moni
 
 Solr managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. 
 
-
-### spec.configSecret
-
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Solr. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc.
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for Solr cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Solr object.
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Solr cluster.
 
 ### spec.podTemplate
 

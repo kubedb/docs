@@ -6,8 +6,8 @@ metadata:
 spec:
   version: "8.0.40"
   replicas: 3
-  configSecret:
-    name: px-configuration
+  configuration:
+    secretName: px-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"

@@ -6,8 +6,8 @@ metadata:
 spec:
   enableSSL: true 
   version: xpack-8.11.1
-  configSecret:
-    name: es-custom-config
+  configuration:
+    secretName: es-custom-config
   storageType: Durable
   deletionPolicy: WipeOut
   topology:

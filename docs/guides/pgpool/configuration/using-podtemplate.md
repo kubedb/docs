@@ -200,7 +200,7 @@ Now run these following commands to build and push the docker image to your dock
 $ docker build -t repository_name/custom_filebeat:latest .
 $ docker push repository_name/custom_filebeat:latest
 ```
-Now we will deploy our pgpool with custom sidecar container and will also use the `spec.initConfig` to configure the logs related settings. Here is the yaml of our pgpool:
+Now we will deploy our pgpool with custom sidecar container and will also use the `spec.configuration.inline` to configure the logs related settings. Here is the yaml of our pgpool:
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Pgpool
@@ -230,16 +230,17 @@ spec:
       volumes:
       - name: data
         emptyDir: {}
-  initConfig:
-    pgpoolConfig:
-      log_destination : 'stderr'
-      logging_collector : on
-      log_directory : '/tmp/pgpool_log'
-      log_filename : 'pgpool-%Y-%m-%d_%H%M%S.log'
-      log_file_mode : 0777
-      log_truncate_on_rotation : off
-      log_rotation_age : 1d
-      log_rotation_size : 10MB
+  configuration:
+    inline:
+      pgpool.conf: |
+        log_destination='stderr'
+        logging_collector=on
+        log_directory='/tmp/pgpool_log'
+        log_filename='pgpool-%Y-%m-%d_%H%M%S.log'
+        log_file_mode=0777
+        log_truncate_on_rotation=off
+        log_rotation_age=1d
+        log_rotation_size=10MB
   deletionPolicy: WipeOut
 ```
 ```bash

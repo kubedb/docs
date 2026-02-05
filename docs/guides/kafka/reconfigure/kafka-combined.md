@@ -72,7 +72,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 secret/kf-combined-custom-config created
 ```
 
-In this section, we are going to create a Kafka object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Kafka` CR that we are going to create,
+In this section, we are going to create a Kafka object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Kafka` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -83,8 +83,8 @@ metadata:
 spec:
   replicas: 2
   version: 3.9.0
-  configSecret:
-    name: kf-combined-custom-config
+  configuration:
+    secretName: kf-combined-custom-config
   storage:
     accessModes:
       - ReadWriteOnce
@@ -181,7 +181,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `kafka-dev` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.configSecret.name` specifies the name of the new secret.
 
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
@@ -192,7 +192,7 @@ kafkaopsrequest.ops.kubedb.com/kfops-reconfigure-combined created
 
 #### Verify the new configuration is working
 
-If everything goes well, `KubeDB` Ops-manager operator will update the `configSecret` of `Kafka` object.
+If everything goes well, `KubeDB` Ops-manager operator will update the `.spec.configuration` of `Kafka` object.
 
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CR,
 

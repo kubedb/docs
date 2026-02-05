@@ -129,6 +129,7 @@ spec:
   configuration:
     configSecret:
       name: hazelcast-custom-config
+    restart: "true"
     applyConfig:
       hazelcast.yaml: |-
         hazelcast:

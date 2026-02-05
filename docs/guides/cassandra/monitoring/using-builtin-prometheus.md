@@ -50,7 +50,6 @@ metadata:
   namespace: demo
 spec:
   version: 5.0.3
-  configuration:
   topology:
     rack:
       - name: r0

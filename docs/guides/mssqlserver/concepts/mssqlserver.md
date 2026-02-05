@@ -31,11 +31,11 @@ metadata:
   name: mssqlserver
   namespace: demo
 spec:
+  configuration:
+    secretName: mssqlserver-custom-config
   authSecret:
     kind: Secret
     name: mssqlserver-auth
-  configSecret:
-    name: mssqlserver-custom-config
   topology:
     availabilityGroup:
       databases:
@@ -254,9 +254,17 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 MSSQLServer managed by KubeDB can be monitored with Prometheus operator out-of-the-box.
 
-### spec.configSecret
-
-`spec.configSecret` is an optional field that allows users to provide custom configuration for MSSQLServer. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use Kubernetes supported volume source `secret`.
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for mssqlserver cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the mssqlserver object.
+  - ```yaml
+        configuration:
+          inline:
+            mssql.conf: |-
+              [memory]
+              memorylimitmb = 3072 
+    ```
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for mssqlserver cluster.
 
 ### spec.topology
 
@@ -566,8 +574,7 @@ When deploying `Microsoft SQL Server` on Linux using `containers`, you need to s
 `EnterpriseCore`: This will run the container using the Enterprise Edition Core   
 `<valid product id>`: This will run the container with the edition that is associated with the PID
 
-`ACCEPT_EULA` confirms your acceptance of the [End-User Licensing Agreement](https://go.microsoft.com/fwlink/?linkid=857698).
-
+`ACCEPT_EULA` confirms your acceptance of the [End-User Licensing Agreement](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-environment-variables?view=sql-server-ver17#:~:text=ACCEPT_EULA,SQL%20Server%20image).
 For a complete list of environment variables that can be used, refer to the documentation [here](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-environment-variables?view=sql-server-2017).
 
 Below is an example of how to configure the `MSSQL_PID` and `ACCEPT_EULA` environment variable in the KubeDB MSSQLServer Custom Resource Definition (CRD):

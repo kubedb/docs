@@ -13,5 +13,5 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  configSecret:
-    name: rabbit-custom-config
+  configuration:
+    secretName: rabbit-custom-config
