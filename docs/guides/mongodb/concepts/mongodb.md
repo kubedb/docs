@@ -300,7 +300,8 @@ Available configurable fields:
 - `shards` represents number of shards for a mongodb deployment. Each shard is deployed as a [replicaset](/docs/guides/mongodb/clustering/replication_concept.md).
 - `replicas` represents number of replicas of each shard replicaset.
 - `prefix` represents the prefix of each shard node.
-- `configuration.secretName` is an optional field to provide custom configuration file for shards (i.e. mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configuration.secretName](/docs/guides/mongodb/concepts/mongodb.md#specconfiguration.secretName) in details.
+- `configuration.secretName`  is an optional field used to reference a Secret that contains a custom configuration file for MongoDB shards (for example, mongod.cnf).
+  If this field is specified, the provided configuration file will be used. Otherwise, a default configuration file will be applied. See below to know about [spec.configuration.secretName](/docs/guides/mongodb/concepts/mongodb.md#specconfiguration.secretName) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 - `storage` to specify pvc spec for each node of sharding. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/guides/mongodb/concepts/mongodb.md#specstorage) in details.
 - `ephemeralStorage` to specify the configuration of ephemeral storage type, If you want to use volatile temporary storage attached to your instances which is only present during the running lifetime of the instance.
