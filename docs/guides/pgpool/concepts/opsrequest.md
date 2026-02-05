@@ -124,8 +124,8 @@ spec:
   configuration:
     configSecret:
       name: new-custom-config
+    restart: "auto"
 ```
-
 
 **Sample `PgpoolOpsRequest` Objects for Reconfiguring TLS:**
 
@@ -246,15 +246,16 @@ Here, when you specify the resource request, the scheduler uses this information
 If you want to reconfigure your Running Pgpool cluster or different components of it with new custom configuration, you have to specify `spec.configuration` section. This field consists of the following sub-field:
 
 - `configSecret` points to a secret in the same namespace of a Pgpool resource, which contains the new custom configurations. If there are any configSecret set before in the database, this secret will replace it.
-- `applyConfig` contains the new custom config as a string which will be merged with the previous configuration. 
-
-- `applyConfig` is a map where key supports 1 values, namely `pgpool.conf`.
-
-```yaml
-  applyConfig:
-    pgpool.conf: |-
-      max_pool = 30  
-```
+- `applyConfig` contains the new custom config as a string which will be merged with the previous configuration. It is a map where key supports 1 values, namely `pgpool.conf`.
+- `restart` significantly reduces unnecessary downtime.
+  - `auto` (default): restart only if required (determined by ops manager operator)
+  - `false`: no restart
+  - `true`: always restart
+  ```yaml
+    applyConfig:
+      pgpool.conf: |-
+        max_pool = 30  
+  ```
 
 - `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed pgpool server.
 

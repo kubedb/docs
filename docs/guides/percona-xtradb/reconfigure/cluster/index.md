@@ -61,7 +61,7 @@ $ kubectl create secret generic -n demo px-configuration --from-file=./px-config
 secret/px-configuration created
 ```
 
-In this section, we are going to create a PerconaXtraDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
+In this section, we are going to create a PerconaXtraDB object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `PerconaXtraDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -72,8 +72,8 @@ metadata:
 spec:
   version: "8.0.40"
   replicas: 3
-  configSecret:
-    name: px-configuration
+  configuration:
+    secretName: px-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -491,32 +491,34 @@ affiliates. Other names may be trademarks of their respective
 owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-# value of `max_conncetions` is same as provided 
+
 mysql> show variables like 'max_connections';
 +-----------------+-------+
 | Variable_name   | Value |
 +-----------------+-------+
 | max_connections | 230   |
 +-----------------+-------+
-1 row in set (0.001 sec)
+1 row in set (0.00 sec)
 
-# value of `read_buffer_size` is same as provided
+
+# value of `read_buffer_size` is same as provided 
 mysql> show variables like 'read_buffer_size';
-+------------------+---------+
-| Variable_name    | Value   |
-+------------------+---------+
++------------------+--------+
+| Variable_name    | Value  |
++------------------+--------+
 | read_buffer_size | 1064960 |
-+------------------+---------+
-1 row in set (0.001 sec)
++------------------+--------+
+1 row in set (0.00 sec)
 
-# value of `innodb_log_buffer_size` is same as provided
+
 mysql> show variables like 'innodb_log_buffer_size';
 +------------------------+----------+
 | Variable_name          | Value    |
 +------------------------+----------+
 | innodb_log_buffer_size | 17408000 |
 +------------------------+----------+
-1 row in set (0.001 sec)
+1 row in set (0.00 sec)
+
 
 mysql> exit
 Bye

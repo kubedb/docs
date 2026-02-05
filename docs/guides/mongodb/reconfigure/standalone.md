@@ -60,7 +60,7 @@ $ kubectl create secret generic -n demo mg-custom-config --from-file=./mongod.co
 secret/mg-custom-config created
 ```
 
-In this section, we are going to create a MongoDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to create a MongoDB object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -78,8 +78,8 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  configSecret:
-    name: mg-custom-config
+  configuration:
+    secretName: mg-custom-config
 ```
 
 Let's create the `MongoDB` CR we have shown above,

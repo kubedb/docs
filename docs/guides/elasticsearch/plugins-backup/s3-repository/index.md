@@ -109,8 +109,8 @@ metadata:
   namespace: demo
 spec:
   # Custom configuration, which will update elasticsearch.yml
-  configSecret:
-    name: es-custom-config
+  configuration:
+    secretName: es-custom-config
   # Secure settings which will be stored in elasticsearch.keystore
   secureConfigSecret:
     name: es-secure-settings

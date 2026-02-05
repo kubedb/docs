@@ -60,7 +60,7 @@ $ kubectl create secret generic -n demo my-configuration --from-file=./my-config
 secret/my-configuration created
 ```
 
-In this section, we are going to create a MySQL object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MySQL` CR that we are going to create,
+In this section, we are going to create a MySQL object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MySQL` CR that we are going to create,
 
 <ul class="nav nav-tabs" id="definationTab" role="tablist">
   <li class="nav-item">
@@ -95,8 +95,8 @@ spec:
   topology:
     mode: GroupReplication
   replicas: 3
-  configSecret:
-    name: my-configuration
+  configuration:
+    secretName: my-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -133,8 +133,8 @@ spec:
       router:
         replicas: 1
   replicas: 3
-  configSecret:
-    name: my-configuration
+  configuration:
+    secretName: my-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -172,8 +172,8 @@ spec:
       sourceTimeout: 23h
       errantTransactionRecoveryPolicy: PseudoTransaction
   replicas: 3
-  configSecret:
-    name: my-configuration
+  configuration:
+    secretName: my-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -205,8 +205,8 @@ metadata:
   namespace: demo
 spec:
   version: "9.1.0"
-  configSecret:
-    name: my-configuration
+  configuration:
+    secretName: my-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"

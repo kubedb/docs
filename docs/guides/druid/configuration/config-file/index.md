@@ -12,7 +12,6 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-> New to KubeDB? Please start [here](/docs/README.md).
 
 # Configure Druid Cluster
 
@@ -155,8 +154,8 @@ metadata:
   namespace: demo
 spec:
   version: 28.0.1
-  configSecret:
-    name: config-secret
+  configuration:
+    secretName: config-secret
   deepStorage:
     type: s3
     configSecret:
@@ -281,4 +280,3 @@ $ kubectl delete namespace demo
 
 [//]: # (- Monitor your Druid database with KubeDB using [out-of-the-box Prometheus operator]&#40;/docs/guides/druid/monitoring/using-prometheus-operator.md&#41;.)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
-

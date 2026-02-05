@@ -18,8 +18,8 @@ This guide explains how to configure Redis Access Control Lists (ACL) when deplo
 
 ## Overview
 
-- Define ACL rules in the Redis CR under `spec.acl.rules`.
-- Provide passwords via a Kubernetes Secret referenced by `spec.acl.secretRef`.
+- Define ACL rules in the Redis CR under `spec.configuration.acl.rules`.
+- Provide passwords via a Kubernetes Secret referenced by `spec.configuration.acl.secretRef`.
 - To change or add users later, create a new Secret and a `RedisOpsRequest` of type `Reconfigure` that references the new Secret and uses `configuration.auth` fields.
 
 `Note:` The way described bellow can be applied to valkey as well.
@@ -50,14 +50,15 @@ spec:
     accessModes:
     - ReadWriteOnce
   deletionPolicy: WipeOut
-  acl:
-    secretRef:
-      name: old-acl-secret         # Secret that holds passwords referenced by variables like ${k1}
-    rules:
-      - userName1 ${k1} allkeys +@string +@set -SADD
-      - userName2 ${k2} allkeys +@string +@set -SADD
-      - userName3 ${k3} allkeys +@string +@set -SADD
-      - userName4 ${k4} allkeys +@string +@set -SADD
+  configuration:
+    acl:
+      secretRef:
+        name: old-acl-secret         # Secret that holds passwords referenced by variables like ${k1}
+      rules:
+        - userName1 ${k1} allkeys +@string +@set -SADD
+        - userName2 ${k2} allkeys +@string +@set -SADD
+        - userName3 ${k3} allkeys +@string +@set -SADD
+        - userName4 ${k4} allkeys +@string +@set -SADD
 ```
 
 ## 2. Create the Secret with passwords
@@ -65,7 +66,7 @@ spec:
 Store the passwords as stringData keys that match the variable names used in `rules`:
 
 ```yaml
-# example: Secret referenced by spec.acl.secretRef (old-acl-secret)
+# example: Secret referenced by spec.configuration.acl.secretRef (old-acl-secret)
 apiVersion: v1
 kind: Secret
 metadata:
@@ -156,12 +157,12 @@ kubectl get redisopsrequest -n demo
 
 ## 5. Verify reconfiguration
 
-- Confirm the Redis CR `spec.acl` has been updated (operator patches spec to refer to the new secret and merged rules).
+- Confirm the Redis CR `spec.configuration.acl` has been updated (operator patches spec to refer to the new secret and merged rules).
 - Verify ACLs inside Redis:
 
-### verify Redis CR spec.acl
+### verify Redis CR spec.configuration.acl
 ```bash
-kubectl get rd -n demo redis-instance -o yaml | yq '.spec.acl'
+kubectl get rd -n demo redis-instance -o yaml | yq '.spec.configuration.acl'
 {
   "rules": [
     "userName3 ${k3} allkeys +@string +@set -SADD",
@@ -183,7 +184,7 @@ kubectl exec -it -n demo redis-instance-shard0-0 -c redis -- redis-cli acl list
 ## Notes and tips
 
 - Variable substitution: ACL rules in the Redis CR and RedisOpsRequest can refer to Secret keys using `${key}`; the operator substitutes these values from the referenced Secret.
-- Order: The operator typically applies the new secret and patches the Redis `spec.acl` before starting pods, ensuring the running Redis instances load the new ACL configuration.
+- Order: The operator typically applies the new secret and patches the Redis `spec.configuration.acl` before starting pods, ensuring the running Redis instances load the new ACL configuration.
 - Safe updates: Use `RedisOpsRequest` Reconfigure to change ACLs without manually editing the primary Redis CR; Ops-manager will pause/resume the database during the operation.
 - Deleting users: Use `deleteUsers` in RedisOpsRequest when you want to remove users rather than just overwrite rules.
 

@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is MariaDBAutoscaler
 
-`MariaDBAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling [MariaDB](https://www.mariadb.com/) compute resources and storage of database components in a Kubernetes native way.
+`MariaDBAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for autoscaling MariaDB compute resources and storage of database components in a Kubernetes native way.
 
 ## MariaDBAutoscaler CRD Specifications
 

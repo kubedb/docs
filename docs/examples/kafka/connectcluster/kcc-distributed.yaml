@@ -11,8 +11,8 @@ spec:
       apiGroup: cert-manager.io
       kind: Issuer
       name: connectcluster-ca-issuer
-  configSecret:
-    name: connectcluster-custom-config
+  configuration:
+    secretName: connectcluster-custom-config
   replicas: 3
   connectorPlugins:
     - postgres-3.0.5.final

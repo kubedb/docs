@@ -63,7 +63,7 @@ $ kubectl create secret generic -n demo pp-custom-config --from-file=./pgpool.co
 secret/pp-custom-config created
 ```
 
-In this section, we are going to create a Pgpool object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Pgpool` CR that we are going to create,
+In this section, we are going to create a Pgpool object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Pgpool` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -74,8 +74,8 @@ metadata:
 spec:
   version: "4.5.0"
   replicas: 1
-  configSecret:
-    name: pp-custom-config
+  configuration:
+    secretName: pp-custom-config
   postgresRef:
     name: ha-postgres
     namespace: demo
@@ -508,7 +508,7 @@ Events:
 Now let's exec into the pgpool pod and check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo pp-custom-0 -- bash 
+$ kubectl exec -it -n demo pp-custom-0 -- bash
 pp-custom-0:/$ cat opt/pgpool-II/etc/pgpool.conf
 memory_cache_enabled = 'off'
 num_init_children = 5

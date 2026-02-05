@@ -170,10 +170,10 @@ spec:
   databaseRef:
     name: sdb-sample
   configuration:
-    aggregator:  
+    aggregator:
       configSecret:
         name: sdb-new-custom-config
-    leaf:  
+    leaf:
       configSecret:
         name: sdb-new-custom-config
 ```
@@ -189,7 +189,7 @@ spec:
   databaseRef:
     name: sdb-standalone
   configuration:
-    node:  
+    node:
       configSecret:
         name: sdb-new-custom-config
 ```

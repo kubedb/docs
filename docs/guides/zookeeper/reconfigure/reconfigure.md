@@ -64,7 +64,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 secret/zk-configuration created
 ```
 
-In this section, we are going to create a ZooKeeper object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `ZooKeeper` CR that we are going to create,
+In this section, we are going to create a ZooKeeper object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `ZooKeeper` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -76,8 +76,8 @@ spec:
   version: "3.8.3"
   adminServerPort: 8080
   replicas: 3
-  configSecret:
-    name: zk-configuration
+  configuration:
+    secretName: zk-configuration
   storage:
     resources:
       requests:

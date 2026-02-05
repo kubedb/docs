@@ -173,8 +173,8 @@ spec:
   storageType: Durable
   deletionPolicy: WipeOut
   version: "percona-5.0.23"
-  configSecret:
-    name: mg-configuration
+  configuration:
+    secretName: mg-configuration
 ```
 
 ```bash

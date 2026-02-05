@@ -161,6 +161,7 @@ spec:
   configuration:
     configSecret:
       name: new-configsecret
+    restart: "true"
 status:
   conditions:
     - lastTransitionTime: "2024-07-25T18:22:38Z"
@@ -172,6 +173,7 @@ status:
   observedGeneration: 1
   phase: Successful
 ```
+
 
 **Sample `DruidOpsRequest` Objects for Volume Expansion of different database components:**
 
@@ -387,6 +389,13 @@ middleManagers.properties: |
 
 - `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed druid cluster.
 
+- `restart` significantly reduces unnecessary downtime.
+  - `auto` (default): restart only if required (determined by ops manager operator)
+  - `false`: no restart
+  - `true`: always restart
+
+
+
 ### spec.tls
 
 If you want to reconfigure the TLS configuration of your Druid i.e. add TLS, remove TLS, update issuer/cluster issuer or Certificates and rotate the certificates, you have to specify `spec.tls` section. This field consists of the following sub-field:
@@ -420,54 +429,4 @@ Use IfReady, if you want to process the opsRequest only when the database is Rea
 | Denied      | KubeDB has denied the operation requested in the DruidOpsRequest                 |
 | Skipped     | KubeDB has skipped the operation requested in the DruidOpsRequest                |
 
-Important: Ops-manager Operator can skip an opsRequest, only if its execution has not been started yet & there is a newer opsRequest applied in the cluster. `spec.type` has to be same as the skipped one, in this case.
-
-### status.observedGeneration
-
-`status.observedGeneration` shows the most recent generation observed by the `DruidOpsRequest` controller.
-
-### status.conditions
-
-`status.conditions` is an array that specifies the conditions of different steps of `DruidOpsRequest` processing. Each condition entry has the following fields:
-
-- `types` specifies the type of the condition. DruidOpsRequest has the following types of conditions:
-
-| Type                          | Meaning                                                                   |
-|-------------------------------|---------------------------------------------------------------------------|
-| `Progressing`                 | Specifies that the operation is now in the progressing state              |
-| `Successful`                  | Specifies such a state that the operation on the database was successful. |
-| `HaltDatabase`                | Specifies such a state that the database is halted by the operator        |
-| `ResumeDatabase`              | Specifies such a state that the database is resumed by the operator       |
-| `Failed`                      | Specifies such a state that the operation on the database failed.         |
-| `StartingBalancer`            | Specifies such a state that the balancer has successfully started         |
-| `StoppingBalancer`            | Specifies such a state that the balancer has successfully stopped         |
-| `UpdateShardImage`            | Specifies such a state that the Shard Images has been updated             |
-| `UpdateReplicaSetImage`       | Specifies such a state that the Replicaset Image has been updated         |
-| `UpdateConfigServerImage`     | Specifies such a state that the ConfigServer Image has been updated       |
-| `UpdateMongosImage`           | Specifies such a state that the Mongos Image has been updated             |
-| `UpdatePetSetResources`       | Specifies such a state that the Petset resources has been updated         |
-| `UpdateShardResources`        | Specifies such a state that the Shard resources has been updated          |
-| `UpdateReplicaSetResources`   | Specifies such a state that the Replicaset resources has been updated     |
-| `UpdateConfigServerResources` | Specifies such a state that the ConfigServer resources has been updated   |
-| `UpdateMongosResources`       | Specifies such a state that the Mongos resources has been updated         |
-| `ScaleDownReplicaSet`         | Specifies such a state that the scale down operation of replicaset        |
-| `ScaleUpReplicaSet`           | Specifies such a state that the scale up operation of replicaset          |
-| `ScaleUpShardReplicas`        | Specifies such a state that the scale up operation of shard replicas      |
-| `ScaleDownShardReplicas`      | Specifies such a state that the scale down operation of shard replicas    |
-| `ScaleDownConfigServer`       | Specifies such a state that the scale down operation of config server     |
-| `ScaleUpConfigServer`         | Specifies such a state that the scale up operation of config server       |
-| `ScaleMongos`                 | Specifies such a state that the scale down operation of replicaset        |
-| `VolumeExpansion`             | Specifies such a state that the volume expansion operaton of the database |
-| `ReconfigureReplicaset`       | Specifies such a state that the reconfiguration of replicaset nodes       |
-| `ReconfigureMongos`           | Specifies such a state that the reconfiguration of mongos nodes           |
-| `ReconfigureShard`            | Specifies such a state that the reconfiguration of shard nodes            |
-| `ReconfigureConfigServer`     | Specifies such a state that the reconfiguration of config server nodes    |
-
-- The `status` field is a string, with possible values `True`, `False`, and `Unknown`.
-    - `status` will be `True` if the current transition succeeded.
-    - `status` will be `False` if the current transition failed.
-    - `status` will be `Unknown` if the current transition was denied.
-- The `message` field is a human-readable message indicating details about the condition.
-- The `reason` field is a unique, one-word, CamelCase reason for the condition's last transition.
-- The `lastTransitionTime` field provides a timestamp for when the operation last transitioned from one state to another.
-- The `observedGeneration` shows the most recent condition transition generation observed by the controller.
+Important: Ops-manager Operator can skip an opsRequest, only if an

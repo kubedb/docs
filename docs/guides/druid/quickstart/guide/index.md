@@ -650,7 +650,7 @@ Now, the Druid cluster is accessible at `localhost:8888`. Let's check the [Servi
 $ curl "http://localhost:8888/status/health"
 true
 ```
-From the retrieved health information above, we can see that our Druid cluster’s status is `true`,  indicating that the service can receive API calls and is healthy. In the same way it possible to check the health of other druid nodes by port-forwarding the appropriate services.
+From the retrieved health information above, we can see that our Druid cluster’s status is `true`,  indicating that the service can receive API calls and is healthy. In the same way it is possible to check the health of other druid nodes by port-forwarding the appropriate services.
 
 ### Access the web console
 

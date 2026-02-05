@@ -65,7 +65,7 @@ $ kubectl create -f mc-configuration
 secret/mc-configuration created
 ```
 
-In this section, we are going to create a Memcached object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Memcahced` CR that we are going to create,
+In this section, we are going to create a Memcached object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Memcahced` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -76,8 +76,8 @@ metadata:
 spec:
   replicas: 1
   version: "1.6.22"
-  configSecret:
-    name: mc-configuration
+  configuration:
+    secretName: mc-configuration
   deletionPolicy: WipeOut
 ```
 
@@ -186,7 +186,7 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcahcedOpsRequest` CR,
 
 ```bash
-$ watch kubectl get memcahcedopsrequest -n demo
+$ watch kubectl get memcachedopsrequest -n demo
 Every 2.0s: kubectl get memcachedopsrequest -n demo
 NAME                          TYPE          STATUS       AGE
 memcd-reconfig                Reconfigure   Successful   1m

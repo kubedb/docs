@@ -94,7 +94,7 @@ spec:
       memcached.conf: |
         -m 50
         -c 50
-
+    restart: "true"
 ```
 
 ## MemcachedOpsRequest Spec

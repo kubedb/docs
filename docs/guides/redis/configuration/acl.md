@@ -41,8 +41,8 @@ This document explains how to configure ACL users during initial deployment so t
 
 ## Overview
 
-- Define ACL rules in the Redis CR under `spec.acl.rules`.
-- Provide passwords via a Kubernetes Secret referenced by `spec.acl.secretRef`.
+- Define ACL rules in the Redis CR under `spec.configuration.acl.rules`.
+- Provide passwords via a Kubernetes Secret referenced by `spec.configuration.acl.secretRef`.
 - The operator substitutes `${key}` placeholders from the referenced Secret and applies ACLs when provisioning Redis.
 
 ## Example Redis CR
@@ -71,14 +71,15 @@ spec:
     accessModes:
     - ReadWriteOnce
   deletionPolicy: WipeOut
-  acl:
-    secretRef:
-      name: rd-user         # Secret with password keys referenced below
-    rules:
-      - userName1 ${k1} allkeys +@string +@set -SADD
-      - userName2 ${k2} allkeys +@string +@set -SADD
-      - userName3 ${k3} allkeys +@string +@set -SADD
-      - userName4 ${k4} allkeys +@string +@set -SADD
+  configuration:
+    acl:
+      secretRef:
+        name: rd-user         # Secret with password keys referenced below
+      rules:
+        - userName1 ${k1} allkeys +@string +@set -SADD
+        - userName2 ${k2} allkeys +@string +@set -SADD
+        - userName3 ${k3} allkeys +@string +@set -SADD
+        - userName4 ${k4} allkeys +@string +@set -SADD
 ```
 
 ## Secret with passwords
@@ -131,8 +132,8 @@ You should see entries for userName1..userName4 and the default user. Each user 
 
 ## Notes and tips
 
-- Variable substitution: Use `${key}` in rules; the operator replaces these from the `spec.acl.secretRef` Secret.
-- Secrets: Store passwords in a Secret referenced by `spec.acl.secretRef`. Use `stringData` during creation for convenience.
+- Variable substitution: Use `${key}` in rules; the operator replaces these from the `spec.configuration.acl.secretRef` Secret.
+- Secrets: Store passwords in a Secret referenced by `spec.configuration.acl.secretRef`. Use `stringData` during creation for convenience.
 - Safety: For updates after deployment, use a `RedisOpsRequest` (Reconfigure) to sync ACL changes or delete users; this avoids manual pod edits.
 
 ## Next Steps

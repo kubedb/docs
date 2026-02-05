@@ -44,16 +44,17 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  initConfig:
-    mysqlUsers:
-      - username: test
-        active: 1
-        default_hostgroup: 2
-    adminVariables:
-      restapi_enabled: true
-      restapi_port: 6070
-  configSecret:
-    name: my-custom-config
+  configuration:
+    init:
+      inline:
+        mysqlUsers:
+          - username: test
+            active: 1
+            default_hostgroup: 2
+        adminVariables:
+          restapi_enabled: true
+          restapi_port: 6070
+      secretName: my-custom-config
   tls:
     issuerRef:
       apiGroup: cert-manager.io
@@ -159,25 +160,25 @@ type: Opaque
 
 ProxySQL managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. In the `.spec.monitor` section you can configure neccessary settings regarding monitoring. See the api [here](https://pkg.go.dev/kubedb.dev/apimachinery@v0.29.1/apis/kubedb/v1alpha2#:~:text=//%20Monitor%20is%20used%20monitor%20proxysql%20instance%0A%09//%20%2Boptional%0A%09Monitor%20*mona.AgentSpec%20%60json%3A%22monitor%2Comitempty%22%60).
 
-### .spec.InitConfig
+### .spec.configuration.init.inline
 
-`spec.initConfig` is the field where we can set the proxysql bootstrap configuration. In ProxySQL an initial configuration file is needed to bootstrap, named `proxysql.cnf`. In that file you should write down all the necessary configuration related to various proxysql tables and variables in a specific format.  In KubeDB ProxySQL we have eased this initial configuration setup with declarative yaml. All you need to do is to pass the configuration in the yaml in key-value format and the operator will turn that into a `proxysql.cnf` file with proper formatting . The `proxysql.cnf` file will be available in a secret with name `<proxysql-crd-name>-configuration` . When you change any configuration with the proxysqlOpsRequest , the secret will be auto updated with the new configuration. 
+`spec.configuration.init.inline` is the field where we can set the proxysql bootstrap configuration. In ProxySQL an initial configuration file is needed to bootstrap, named `proxysql.cnf`. In that file you should write down all the necessary configuration related to various proxysql tables and variables in a specific format.  In KubeDB ProxySQL we have eased this initial configuration setup with declarative yaml. All you need to do is to pass the configuration in the yaml in key-value format and the operator will turn that into a `proxysql.cnf` file with proper formatting . The `proxysql.cnf` file will be available in a secret with name `<proxysql-crd-name>-configuration` . When you change any configuration with the proxysqlOpsRequest , the secret will be auto updated with the new configuration. 
 
-`.spec.initConfig` contains four subsections : `mysqlUsers`, `mysqlQueryRules`, `adminVariables`, `mysqlVariables`. The detailed description is given below. See the api [here](https://pkg.go.dev/kubedb.dev/apimachinery@v0.29.1/apis/kubedb/v1alpha2#:~:text=//%20%2Boptional%0A%09//%20InitConfiguration%20contains%20information%20with%20which%20the%20proxysql%20will%20bootstrap%20(only%204%20tables%20are%20configurable)%0A%09InitConfiguration%20*ProxySQLConfiguration%20%60json%3A%22initConfig%2Comitempty%22%60). 
+`.spec.configuration.init.inline` contains four subsections : `mysqlUsers`, `mysqlQueryRules`, `adminVariables`, `mysqlVariables`. The detailed description is given below. See the api [here](https://pkg.go.dev/kubedb.dev/apimachinery@v0.29.1/apis/kubedb/v1alpha2#:~:text=//%20%2Boptional%0A%09//%20InitConfiguration%20contains%20information%20with%20which%20the%20proxysql%20will%20bootstrap%20(only%204%20tables%20are%20configurable)%0A%09InitConfiguration%20*ProxySQLConfiguration%20%60json%3A%22initConfig%2Comitempty%22%60). 
 
-`.spec.initConfig.mysqlUsers` section carries info for the `mysql_users` table. All the information provided through this field will eventually be used for setting up the `mysql_users` table inside the proxysql server. This section is an array field where each element of the array carries the necessary information for each individual users. An important note to be mentioned is that you don't need to fill up the password field for any user. The password will be automatically fetched by the KubeDB operator from the backend server.   
+`.spec.configuration.init.inline.mysqlUsers` section carries info for the `mysql_users` table. All the information provided through this field will eventually be used for setting up the `mysql_users` table inside the proxysql server. This section is an array field where each element of the array carries the necessary information for each individual users. An important note to be mentioned is that you don't need to fill up the password field for any user. The password will be automatically fetched by the KubeDB operator from the backend server.   
 
-`.spec.initConfig.mysqlQueryRules`section carries info for the `mysql_query_rules` table. This section is also an array field and each element of the array should be a `query_rule` as per proxysql accepts.
+`.spec.configuration.init.inline.mysqlQueryRules`section carries info for the `mysql_query_rules` table. This section is also an array field and each element of the array should be a `query_rule` as per proxysql accepts.
 
-`.spec.initConfig.mysqlVariables` section carries all the `mysql_variables` info that you want to set for the proxysql. You need to mention the variables you want to set with its value in a key-value format under this section and the KubeDB operator will bootstrap the proxysql with this.
+`.spec.configuration.init.inline.mysqlVariables` section carries all the `mysql_variables` info that you want to set for the proxysql. You need to mention the variables you want to set with its value in a key-value format under this section and the KubeDB operator will bootstrap the proxysql with this.
 
-`.spec.initConfig.adminVariables` section carries all the `admin_variables` info that you want to set for the proxysql. You need to mention the variables you want to set with its value in a key-value format under this section and the KubeDB operator will bootstrap the proxysql with this.
+`.spec.configuration.init.inline.adminVariables` section carries all the `admin_variables` info that you want to set for the proxysql. You need to mention the variables you want to set with its value in a key-value format under this section and the KubeDB operator will bootstrap the proxysql with this.
 
 Checkout this [link](/docs/guides/proxysql/concepts/declarative-configuration/index.md) for detailed overview on declarative configuration. 
 
-### .spec.configSecret
+### .spec.configuration.secretName
 
-`.spec.configSecret` is another field to pass the bootstrap configuration for the proxysql. If you want to pass the configuration through a secret you can just mention the secret name under this field. The secret should look something like the following 
+`.spec.configuration.secretName` is another field to pass the bootstrap configuration for the proxysql. If you want to pass the configuration through a secret you can just mention the secret name under this field in `spec.configuration.secretName` field. The secret should look something like the following 
 
 ```bash
 $ kubectl view-secret -n demo my-config-secret -a  

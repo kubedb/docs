@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is MariaDB
 
-`MariaDB` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [MariaDB](https://www.mariadb.com/) in a Kubernetes native way. You only need to describe the desired database configuration in a MariaDB object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`MariaDB` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for MariaDB in a Kubernetes native way. You only need to describe the desired database configuration in a MariaDB object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## MariaDB Spec
 
@@ -217,9 +217,17 @@ The following fields are configurable in the `spec.tls` section:
   - `uriSANs` (optional) is a list of URI Subject Alternative Names to be set in the Certificate.
   - `emailSANs` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
 
-### spec.configSecret
-
-`spec.configSecret` is an optional field that allows users to provide custom configuration for MariaDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47).
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for Mariadb cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Mariadb object.
+    - ```yaml
+        configuration:
+           inline:
+             md.cnf: |
+               [mysqld]
+               max_connections = 500
+      ```
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Mariadb cluster.
 
 ### spec.podTemplate
 

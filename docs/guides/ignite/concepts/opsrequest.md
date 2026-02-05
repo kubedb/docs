@@ -81,6 +81,7 @@ spec:
   configuration:
     configSecret:
       name: new-custom-config
+    restart: "true"
   timeout: 5m
   apply: IfReady
 ```

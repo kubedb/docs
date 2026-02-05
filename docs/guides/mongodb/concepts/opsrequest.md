@@ -656,10 +656,9 @@ If you want to reconfigure your Running MongoDB cluster or different components 
 
 All of them has the following sub-fields:
 
-- `configSecret` points to a secret in the same namespace of a MongoDB resource, which contains the new custom configurations. If there are any configSecret set before in the database, this secret will replace it.
-- `applyConfig` contains the new custom config as a string which will be merged with the previous configuration. 
+- `secretName` points to a secret in the same namespace of a MongoDB resource, which contains the new custom configurations. If there are any secretName set before in the database, this secret will replace it.
+- `applyConfig` contains the new custom config as a string which will be merged with the previous configuration. It is a map where key supports 3 values, namely `mongod.conf`, `replicaset.json`, `configuration.js`. And value represents the corresponding configurations.
 
-- `applyConfig` is a map where key supports 3 values, namely `mongod.conf`, `replicaset.json`, `configuration.js`. And value represents the corresponding configurations.
 For your information, replicaset.json is used to modify replica set configurations, which we see in the output of `rs.config()`. And `configurarion.js` is used to apply a js script to configure mongodb at runtime.
 KubeDB provisioner operator applies these two directly while reconciling.
 

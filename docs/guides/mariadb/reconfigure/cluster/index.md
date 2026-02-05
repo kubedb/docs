@@ -61,7 +61,7 @@ $ kubectl create secret generic -n demo md-configuration --from-file=./md-config
 secret/md-configuration created
 ```
 
-In this section, we are going to create a MariaDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MariaDB` CR that we are going to create,
+In this section, we are going to create a MariaDB object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MariaDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -72,8 +72,8 @@ metadata:
 spec:
   version: "10.6.16"
   replicas: 3
-  configSecret:
-    name: md-configuration
+  configuration:
+    secretName: md-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -203,7 +203,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-config created
 
 #### Verify the new configuration is working
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MariaDB` object.
+If everything goes well, `KubeDB` Enterprise operator will update the `configuration.secretName` of `MariaDB` object.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
@@ -371,7 +371,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-apply-config created
 
 #### Verify the new configuration is working
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MariaDB` object.
+If everything goes well, `KubeDB`  operator will update the `configuration.secretName` of `MariaDB` object.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
@@ -529,7 +529,7 @@ mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-remove created
 
 #### Verify the new configuration is working
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MariaDB` object.
+If everything goes well, `KubeDB`  operator will update the `configuration.secretName` of `MariaDB` object.
 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
