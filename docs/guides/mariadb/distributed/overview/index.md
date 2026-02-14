@@ -337,6 +337,7 @@ KubeSlice enables pod-to-pod communication across clusters. Install the KubeSlic
 
    Create a `registration.yaml` file:
 
+   Cluster name should match the OCM cluster names(spoke). The managedClusterAddOn resource should be created in the namespace with the same name as the cluster.
    ```yaml
    apiVersion: controller.kubeslice.io/v1alpha1
    kind: Cluster
@@ -355,6 +356,34 @@ KubeSlice enables pod-to-pod communication across clusters. Install the KubeSlic
    spec:
      networkInterface: enp1s0
      clusterProperty: {}
+   
+   ---
+   apiVersion: addon.open-cluster-management.io/v1alpha1
+   kind: ManagedClusterAddOn
+   metadata:
+     name: kubeslice
+     namespace: demo-controller
+   spec:
+     installNamespace: kubeslice-system
+     configs:
+       - name: demo-controller
+         namespace: kubeslice-demo-distributed-mariadb
+         group: controller.kubeslice.io
+         resource: clusters
+   ---
+   apiVersion: addon.open-cluster-management.io/v1alpha1
+   kind: ManagedClusterAddOn
+   metadata:
+     name: kubeslice
+     namespace: demo-worker
+   spec:
+     installNamespace: kubeslice-system
+     configs:
+       - name: demo-worker
+         namespace: kubeslice-demo-distributed-mariadb
+         group: controller.kubeslice.io
+         resource: clusters
+   ---
    ```
 
    Apply on `demo-controller`:
@@ -374,108 +403,6 @@ KubeSlice enables pod-to-pod communication across clusters. Install the KubeSlic
    NAME              AGE
    demo-controller   9s
    demo-worker       9s
-   ```
-
-5. **Register KubeSlice Worker Clusters**:
-   Create a `secrets.sh` script to generate worker configuration:
-
-```bash
-   # The script returns a kubeconfig for the service account given
-# you need to have kubectl on PATH with the context set to the cluster you want to create the config for
-# Cosmetics for the created config
-firstWorkerSecretName=$1
-# cluster name what you given in clusters registration
-clusterName=$2
-# the Namespace and ServiceAccount name that is used for the config
-namespace=$3
-# Need to give correct network interface value like ens160, eth0 etc
-networkInterface=$4
-# kubectl cluster-info of respective worker-cluster
-worker_endpoint=$5
-######################
-# actual script starts
-set -o errexit
-
-### Fetch Worker cluster Secrets ###
-PROJECT_NAMESPACE=$(kubectl get secrets $firstWorkerSecretName -n $namespace  -o jsonpath={.data.namespace})
-CONTROLLER_ENDPOINT=$(kubectl get secrets $firstWorkerSecretName -n $namespace  -o jsonpath={.data.controllerEndpoint})
-CA_CRT=$(kubectl get secrets $firstWorkerSecretName -n $namespace  -o jsonpath='{.data.ca\.crt}')
-TOKEN=$(kubectl get secrets $firstWorkerSecretName -n $namespace  -o jsonpath={.data.token})
-
-echo "
----
-## Base64 encoded secret values from controller cluster
-controllerSecret:
-namespace: ${PROJECT_NAMESPACE}
-endpoint: ${CONTROLLER_ENDPOINT}
-ca.crt: ${CA_CRT}
-token: ${TOKEN}
-cluster:
-name: ${clusterName}
-endpoint: ${worker_endpoint}
-netop:
-networkInterface: ${networkInterface}
-"
-```
-   Command to generate the worker configuration:
-```bash
-sh secrets.sh <worker-secret-name> <worker-cluster-name> <kubeslice-projectname> <network-interface> <worker-api-endpoint> 
-```
-
-   Get secrets for the project namespace:
-
-   ```bash
-   kubectl get secrets -n kubeslice-demo-distributed-mariadb
-   ```
-
-   **Output**:
-   ```
-   NAME                                    TYPE                                  DATA   AGE
-   kubeslice-rbac-rw-admin                 kubernetes.io/service-account-token   3      17m
-   kubeslice-rbac-worker-demo-controller   kubernetes.io/service-account-token   5      5m8s
-   kubeslice-rbac-worker-demo-worker       kubernetes.io/service-account-token   5      5m8s
-   ```
-
-   Get the `demo-worker` cluster endpoint:
-
-   ```bash
-   kubectl cluster-info --context demo-worker --kubeconfig $HOME/.kube/config
-   ```
-
-   **Output**:
-   ```
-   Kubernetes control plane is running at https://10.2.0.60:6443
-   ```
-
-   Run the script for `demo-worker`:
-
-   ```bash
-   sh secrets.sh kubeslice-rbac-worker-demo-worker demo-worker kubeslice-demo-distributed-mariadb enp1s0 https://10.2.0.60:6443 > sliceoperator-worker.yaml
-   ```
-
-   Install the KubeSlice worker on `demo-worker`:
-
-   ```bash
-   kubectl config use-context demo-worker
-   helm upgrade -i kubeslice-worker oci://ghcr.io/appscode-charts/kubeslice-worker \
-       --version v2025.7.31 \
-       -f sliceoperator-worker.yaml \
-       --namespace kubeslice-system \
-       --create-namespace \
-       --wait --burst-limit=10000 --debug
-   ```
-
-   Repeat for `demo-controller`:
-
-   ```bash
-   kubectl config use-context demo-controller
-   sh secrets.sh kubeslice-rbac-worker-demo-controller demo-controller kubeslice-demo-distributed-mariadb enp1s0 https://10.2.0.56:6443 > sliceoperator-controller.yaml
-   helm upgrade -i kubeslice-worker oci://ghcr.io/appscode-charts/kubeslice-worker \
-       --version v2025.7.31 \
-       -f sliceoperator-controller.yaml \
-       --namespace kubeslice-system \
-       --create-namespace \
-       --wait --burst-limit=10000 --debug
    ```
 
    Verify the worker installation:
@@ -551,6 +478,10 @@ Apply the `SliceConfig`:
 ```bash
 kubectl apply -f sliceconfig.yaml
 ```
+
+update the 
+
+
 ### Step 4: Install the KubeDB Operator
 
 Install the KubeDB Operator on the `demo-controller` cluster to manage the MariaDB instance.
