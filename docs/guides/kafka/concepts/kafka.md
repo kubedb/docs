@@ -31,25 +31,13 @@ metadata:
 spec:
   disableSecurity: false
   tieredStorage:
-    provider: s3|azure|gcs|local
+    provider: s3
     s3:
       bucket: kafka
       endpoint: <s3-endpoint>
       region: us-east-1
       secretName: aws-secret
       prefix: tiered-storage-demo/
-    azure:
-        container: kafka
-        secretName: azure-secret
-        prefix: tiered-storage-demo/
-        storageAccount: <storage-account-name>
-    gcs:
-        bucket: kafka
-        secretName: gcs-secret
-        prefix: tiered-storage-demo/
-    local:
-      mountPath: /mnt/tiered-storage
-      subPath: kafka
     storageManagerClassName: io.aiven.kafka.tieredstorage.RemoteStorageManager
     storageManagerClassPath: /opt/kafka/libs/tiered-plugins/*
   authSecret:
@@ -239,8 +227,10 @@ configuration:
 - `local` ( `object` | `nil` ) - is a field that specifies the local tiered storage configuration. It has the following fields:
     - `mountPath` ( `string` | `""` ) - is a required field that specifies the mount path for the local storage.
     - `subPath` ( `string` | `""` ) - is an optional field that specifies the sub-path for the local storage.
-- `storageClassName` ( `string` | `""` ) - is an optional field that specifies the storage class name for the tiered storage.
 - `storageManagerClassName` ( `string` | `""` ) - is an optional field that specifies the storage manager class name for the tiered storage. Default is `io.aiven.kafka.tieredstorage.RemoteStorageManager`.
+
+- `storageManagerClassPath` ( `string` | `""` ) - is an optional field that specifies the class path where the storage manager implementation JARs are located. Example: `/opt/kafka/libs/tiered-plugins/*`.
+
 
 ### spec.topology
 

@@ -121,21 +121,41 @@ kafka.kubedb.com/kafka-prod-tiered created
 
 ```bash
 $ kubectl get kafka -n demo -w
-NAME                TYPE                  VERSION   STATUS   AGE
-kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Provisioning   2s
-kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Provisioning   4s
+NAME                TYPE            VERSION   STATUS   AGE
+kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   2s
+kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   4s
 .
 .
-kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Ready          112s
+kafka-prod-tiered   kubedb.com/v1   4.0.0     Ready          112s
 ```
 
 Exec one of the broker pods and run the following command to create a tiered storage enabled topic and insert some data into it:
 
 ```bash
 $ kubectl exec -n demo -it kafka-prod-tiered-broker-0 -- bash
-root@kafka-prod-tiered-broker-0:/# kafka-topics.sh --bootstrap-server localhost:9092 --create --config remote.storage.enable=true --config retention.ms=-1 --config segment.bytes=1048576 \            --config retention.bytes=104857600 --config local.retention.bytes=1 --partitions 1 --replication-factor 1 --topic topic1 --command-config config/clientauth.properties
+root@kafka-prod-tiered-broker-0:/# kafka-topics.sh \
+  --bootstrap-server localhost:9092 \
+  --create \
+  --config remote.storage.enable=true \
+  --config retention.ms=-1 \
+  --config segment.bytes=1048576 \
+  --config retention.bytes=104857600 \
+  --config local.retention.bytes=1 \
+  --partitions 1 \
+  --replication-factor 1 \
+  --topic topic1 \
+  --command-config config/clientauth.properties
+
 topic1 created
-root@kafka-prod-tiered-broker-0:/#  kafka-producer-perf-test.sh --producer-props bootstrap.servers=localhost:9092 --topic topic1  --num-records 10000 --record-size 512 --throughput 1000 --producer.config config/clientauth.properties
+
+root@kafka-prod-tiered-broker-0:/# kafka-producer-perf-test.sh \
+  --producer-props bootstrap.servers=localhost:9092 \
+  --topic topic1 \
+  --num-records 10000 \
+  --record-size 512 \
+  --throughput 1000 \
+  --producer.config config/clientauth.properties
+
 4998 records sent, 999.2 records/sec (0.49 MB/sec), 13.5 ms avg latency, 526.0 ms max latency.
 10000 records sent, 999.3 records/sec (0.49 MB/sec), 8.51 ms avg latency, 526.00 ms max latency, 4 ms 50th, 50 ms 95th, 92 ms 99th, 92 ms 99.9th.
 ```
@@ -159,10 +179,10 @@ spec:
   tieredStorage:
     provider: azure
     azure:
-        container: kafka
-        secretName: azure-secret
-        prefix: tiered-storage-demo/
-        storageAccount: demo-account
+      container: kafka
+      secretName: azure-secret
+      prefix: tiered-storage-demo/
+      storageAccount: demo-account
   topology:
     broker:
       replicas: 3
@@ -189,13 +209,12 @@ spec:
 Here,
 
 - `spec.tieredStorage` specifies the tiered storage configuration for the Kafka cluster.
-    - `spec.tieredStorage.provider` specifies the tiered storage provider. Here, it is set to `azure`.
-    - `spec.tieredStorage.azure` specifies the azure compatible storage configuration.
-        - `spec.tieredStorage.azure.container` specifies the azure container name.
-        - `spec.tieredStorage.azure.secretName` specifies the name of the secret that contains the azure storage account key.
-        - `spec.tieredStorage.azure.prefix` specifies the prefix for the azure blobs.
-        - `spec.tieredStorage.azure.storageAccount` specifies the azure storage account name.
-
+  - `spec.tieredStorage.provider` specifies the tiered storage provider. Here, it is set to `azure`.
+  - `spec.tieredStorage.azure` specifies the azure compatible storage configuration.
+    - `spec.tieredStorage.azure.container` specifies the azure container name.
+    - `spec.tieredStorage.azure.secretName` specifies the name of the secret that contains the azure storage account key.
+    - `spec.tieredStorage.azure.prefix` specifies the prefix for the azure blobs.
+    - `spec.tieredStorage.azure.storageAccount` specifies the azure storage account name.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage/kafka-azure-tiered.yaml
@@ -204,12 +223,12 @@ kafka.kubedb.com/kafka-prod-tiered created
 
 ```bash
 $ kubectl get kafka -n demo -w
-NAME                TYPE                  VERSION   STATUS   AGE
-kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Provisioning   2s
-kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Provisioning   4s
+NAME                TYPE            VERSION   STATUS   AGE
+kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   2s
+kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   4s
 .
 .
-kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Ready          112s
+kafka-prod-tiered   kubedb.com/v1   4.0.0     Ready          112s
 ```
 
 ## Create a Kafka Tiered Storage with GCS compatible storage
@@ -227,9 +246,9 @@ spec:
   tieredStorage:
     provider: gcs
     gcs:
-        bucket: test-bucket
-        secretName: gcs-secret
-        prefix: tiered-storage-demo/
+      bucket: test-bucket
+      secretName: gcs-secret
+      prefix: tiered-storage-demo/
   topology:
     broker:
       replicas: 3
@@ -256,12 +275,11 @@ spec:
 Here,
 
 - `spec.tieredStorage` specifies the tiered storage configuration for the Kafka cluster.
-    - `spec.tieredStorage.provider` specifies the tiered storage provider. Here, it is set to `gcs`.
-    - `spec.tieredStorage.gcs` specifies the gcs compatible storage configuration.
-        - `spec.tieredStorage.gcs.bucket` specifies the gcs bucket name.
-        - `spec.tieredStorage.gcs.secretName` specifies the name of the secret that contains the gcs service account key.
-        - `spec.tieredStorage.gcs.prefix` specifies the prefix for the gcs objects.
-
+  - `spec.tieredStorage.provider` specifies the tiered storage provider. Here, it is set to `gcs`.
+  - `spec.tieredStorage.gcs` specifies the gcs compatible storage configuration.
+    - `spec.tieredStorage.gcs.bucket` specifies the gcs bucket name.
+    - `spec.tieredStorage.gcs.secretName` specifies the name of the secret that contains the gcs service account key.
+    - `spec.tieredStorage.gcs.prefix` specifies the prefix for the gcs objects.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage/kafka-gcs-tiered.yaml
@@ -270,12 +288,12 @@ kafka.kubedb.com/kafka-prod-tiered created
 
 ```bash
 $ kubectl get kafka -n demo -w
-NAME                TYPE                  VERSION   STATUS   AGE
-kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Provisioning   2s
-kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Provisioning   4s
+NAME                TYPE            VERSION   STATUS   AGE
+kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   2s
+kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   4s
 .
 .
-kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Ready          112s
+kafka-prod-tiered   kubedb.com/v1   4.0.0     Ready          112s
 ```
 
 ## Next Steps
