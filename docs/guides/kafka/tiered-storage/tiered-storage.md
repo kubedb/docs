@@ -35,9 +35,30 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [examples/kafka/tiered-storage/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Kafka Tiered Storage. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/schemaregistry/overview.md#tips-for-testing).
-
 > This tutorial will only work from version 4.0.0 onwards.
+
+## Create Secret for S3
+
+Before creating a Kafka cluster with S3 tiered storage, you need to create a secret containing the AWS access key and secret key. Here's an example secret:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-secret
+  namespace: demo
+type: Opaque
+stringData:
+  accessKeyId: YOUR_ACCESS_KEY_ID
+  secretAccessKey: YOUR_SECRET_ACCESS_KEY
+```
+
+Apply the secret:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage/kafka-s3-tiered-secret.yaml
+secret/aws-secret created
+```
 
 ## Create a Kafka Tiered Storage with S3 compatible storage
 
@@ -257,16 +278,7 @@ kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Provisioning   4s
 kafka-prod-tiered   kubedb.com/v1alpha2   4.0.0     Ready          112s
 ```
 
-## Tips for Testing
-
-If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for the production environment. You can follow these tips to avoid them.
-
-1 **Use `deletionPolicy: Delete`**. It is nice to be able to resume the cluster from the previous one. So, we preserve auth `Secrets`. If you don't want to resume the cluster, you can just use `spec.deletionPolicy: WipeOut`. It will clean up every resource that was created with the SchemaRegistry CR. For more details, please visit [here](/docs/guides/kafka/concepts/schemaregistry.md#specdeletionpolicy).
-
 ## Next Steps
 
-- [Quickstart Kafka](/docs/guides/kafka/quickstart/kafka/index.md) with KubeDB Operator.
-- [Quickstart ConnectCluster](/docs/guides/kafka/connectcluster/quickstart.md) with KubeDB Operator.
 - Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [ConnectCluster object](/docs/guides/kafka/concepts/connectcluster.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
