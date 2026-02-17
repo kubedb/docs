@@ -447,11 +447,10 @@ kubeslice-netop-g4dfn                1/1     Running     0          4m43s
 kubeslice-operator-949b7d6f7-9wj7h   2/2     Running     0          4m43s
 kubeslice-postdelete-job-ctlzt       0/1     Completed   0          20m
 nsm-delete-webhooks-ndksl            0/1     Completed   0          20m
+nsc-grpc-server-sbjj7                1/1     Running     0          4m43s
 nsm-install-crds-5z4j9               0/1     Completed   0          4m53s
 nsmgr-zzwgh                          2/2     Running     0          4m43s
 registry-k8s-979455d6d-q2j8x         1/1     Running     0          4m43s
-spire-install-clusterid-cr-qwqlr     0/1     Completed   0          4m47s
-spire-install-crds-cnbjh             0/1     Completed   0          4m50s
 ```
 
 #### 5. Onboard Application Namespace
