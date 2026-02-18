@@ -39,7 +39,8 @@ KubeDB supports providing custom configuration for MariaDB. This tutorial will s
 
 MariaDB allows to configure database via configuration file. The default configuration for MariaDB can be found in `/etc/mysql/my.cnf` file. When MariaDB starts, it will look for custom configuration file in `/etc/mysql/conf.d` directory. If configuration file exist, MariaDB instance will use combined startup setting from both `/etc/mysql/my.cnf` and `*.cnf` files in `/etc/mysql/conf.d` directory. This custom configuration will overwrite the existing default one. To know more about configuring MariaDB see [here](https://mariadb.com/kb/en/configuring-mariadb-with-option-files/).
 
-At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSecret` section while creating MariaDB crd. KubeDB will mount this volume into `/etc/mysql/conf.d` directory of the database pod.
+At first, you have to create a config file with `.cnf` extension with your desired configuration. Then create a Secret with this configuration file and provide its name in `spec.configuration.secretName`. The operator reads this Secret internally and applies the configuration automatically, without mounting any volume into the Pod.
+
 
 In this tutorial, we will configure [max_connections](https://mariadb.com/docs/server/ha-and-performance/optimization-and-tuning/system-variables/server-system-variables#max_connections) and [read_buffer_size](https://mariadb.com/docs/server/ha-and-performance/optimization-and-tuning/system-variables/server-system-variables#read_buffer_size/) via a custom config file. We will use Secret as volume source.
 
@@ -86,7 +87,7 @@ metadata:
   ...
 ```
 
-Now, create MariaDB crd specifying `spec.configSecret` field.
+Now, create MariaDB crd specifying `spec.configuration.secretName` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-config-file/examples/md-custom.yaml
@@ -103,8 +104,8 @@ metadata:
   namespace: demo
 spec:
   version: "10.5.23"
-  configSecret:
-    name: md-configuration
+  configuration:
+    secretName: md-configuration
   storageType: Durable
   storage:
     storageClassName: "standard"

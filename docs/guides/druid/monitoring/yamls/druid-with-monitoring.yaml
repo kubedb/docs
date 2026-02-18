@@ -20,4 +20,3 @@ spec:
           release: prometheus
         interval: 10s
   deletionPolicy: WipeOut
-

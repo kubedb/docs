@@ -79,7 +79,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 secret/sl-custom-config created
 ```
 
-In this section, we are going to create a Solr object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `Solr` CR that we are going to create,
+In this section, we are going to create a Solr object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Solr` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -88,8 +88,8 @@ metadata:
   name: solr
   namespace: demo
 spec:
-  configSecret:
-    name: sl-custom-config
+  configuration:
+    secretName: sl-custom-config
   version: 9.6.1
   replicas: 2
   zookeeperRef:

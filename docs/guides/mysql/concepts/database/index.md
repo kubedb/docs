@@ -69,8 +69,8 @@ spec:
       - localhost
       ipAddresses:
       - "127.0.0.1"
-  configSecret:
-    name: my-custom-config
+  configuration:
+    secretName: my-custom-config
   podTemplate:
     metadata:
       annotations:
@@ -223,7 +223,7 @@ spec:
         name: mysql-init-script
 ```
 
-In the above example, KubeDB operator will launch a Job to execute all js script of `mysql-init-script` in alphabetical order once PetSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mysql/initialization/index.md).
+In the above example, KubeDB operator will launch a Job to execute all js script of `mysql-init-script` in alphabetical order once PetSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mysql/initialization/using_script.md).
 
 ### spec.monitor
 
@@ -274,9 +274,17 @@ The following fields are configurable in the `spec.tls` section:
   - `uriSANs` (optional) is a list of URI Subject Alternative Names to be set in the Certificate.
   - `emailSANs` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
 
-### spec.configSecret
-
-`spec.configSecret` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/config-file/index.md).
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for MySql cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the MySql object.
+   - ```yaml
+       configuration:
+         inline: 
+           my.cnf: |
+             [mysqld]
+             max_connections = 500
+     ```    
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for MySql cluster.
 
 ### spec.podTemplate
 

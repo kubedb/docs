@@ -6,8 +6,8 @@ metadata:
 spec:
   replicas: 2
   version: 3.9.0
-  configSecret:
-    name: configsecret-combined
+  configuration:
+    secretName: configsecret-combined
   storage:
     accessModes:
       - ReadWriteOnce

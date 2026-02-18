@@ -162,7 +162,31 @@ status:
   observedGeneration: 1
   phase: Successful
 ```
-
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: CassandraOpsRequest
+metadata:
+  name: casops-reconfiugre
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: cassandra-prod
+  configuration:
+    configSecret:
+      name: new-configsecret
+    restart: "true"
+status:
+  conditions:
+    - lastTransitionTime: "2025-07-25T18:22:38Z"
+      message: Successfully completed the modification process
+      observedGeneration: 1
+      reason: Successful
+      status: "True"
+      type: Successful
+  observedGeneration: 1
+  phase: Successful
+```
 Sample `CassandraOpsRequest` Objects for Volume Expansion of different database components:
 
 ```yaml
@@ -338,7 +362,7 @@ If you want to reconfigure your Running Cassandra cluster or different component
 
 - `spec.configuration.configSecret` points to a secret in the same namespace of a Cassandra resource, which contains the new custom configurations. If there are any configSecret set before in the database, this secret will replace it.
 
-- `applyConfig` is a map where key supports 3 values, namely `server.properties`, `broker.properties`, `controller.properties`. And value represents the corresponding configurations.
+- `applyConfig` is a map where the key represents the target config file (e.g., config.yaml) and the value contains the corresponding configuration content.
 
 ```yaml
   applyConfig:
@@ -346,8 +370,25 @@ If you want to reconfigure your Running Cassandra cluster or different component
       authenticator: PasswordAuthenticator
 ```
 
-- `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed cassandra cluster.
+- `spec.configuration.restart` controls whether the database pods will be restarted after applying the new configuration. Supported values:
+  - `auto` (default): restart only if required (decided by the KubeDB operator)
+  - `false`: don't restart
+  - `true`: always restart
 
+
+```yaml
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: cassandra-prod
+  configuration:
+    configSecret:
+      name: new-configsecret
+    restart: auto
+```
+
+- `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed cassandra cluster.
+- 
 ### spec.tls
 
 If you want to reconfigure the TLS configuration of your Cassandra i.e. add TLS, remove TLS, update issuer/cluster issuer or Certificates and rotate the certificates, you have to specify `spec.tls` section. This field consists of the following sub-field:

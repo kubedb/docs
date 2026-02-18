@@ -284,7 +284,7 @@ metadata:
   ...
 ```
 
-Now, create Elasticsearch crd specifying  `spec.authSecret` and `spec.configSecret` field.
+Now, create Elasticsearch crd specifying  `spec.authSecret` and `spec.configuration` field.
 
 ```bash
 $ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/es-mon-demo.yaml
@@ -305,8 +305,8 @@ spec:
   authSecret:
     kind: Secret
     name: es-auth
-  configSecret:
-    name: es-custom-config
+  configuration:
+    secretName: es-custom-config
   storage:
     storageClassName: "standard"
     accessModes:

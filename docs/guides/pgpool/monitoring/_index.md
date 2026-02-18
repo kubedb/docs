@@ -5,6 +5,6 @@ menu:
     identifier: pp-monitoring-pgpool
     name: Monitoring
     parent: pp-pgpool-guides
-    weight: 50
+    weight: 160
 menu_name: docs_{{ .version }}
 ---

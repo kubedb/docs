@@ -4,8 +4,8 @@ metadata:
   name: mongodb-source-connector
   namespace: demo
 spec:
-  configSecret:
-    name: mongodb-source-config
+  configuration:
+    secretName: mongodb-source-config
   connectClusterRef:
     name: connectcluster-quickstart
     namespace: demo

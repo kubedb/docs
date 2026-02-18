@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1
-kind: MariaDB
+kind: MySQL
 metadata:
-  name: sample-mariadb
+  name: sample-mysql
   namespace: demo
 spec:
   init:
@@ -9,18 +9,12 @@ spec:
       scriptPath: "current"
       git:
         args:
-          # update with your private repository
-          - --repo=git@github.com:refat75/mysql-init-scripts.git
+          - --repo=https://github.com/kubedb/mysql-init-scripts
           - --link=current
-          - --root=/root
+          - --root=/git
           # terminate after one successful sync
           - --one-time
-        authSecret:
-          name: git-creds
-        # run as git sync user
-        securityContext:
-          runAsUser: 65533
-  version: "10.5.23"
+  version: "9.1.0"
   storage:
     accessModes:
       - ReadWriteOnce

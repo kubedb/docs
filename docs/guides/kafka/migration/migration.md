@@ -442,8 +442,8 @@ spec:
   connectClusterRef:
     name: mirror-connect
     namespace: demo
-  configSecret:
-    name: mirror-source-config
+  configuration:
+    secretName: mirror-source-config
   deletionPolicy: WipeOut
 ```
 
@@ -506,8 +506,8 @@ spec:
   connectClusterRef:
     name: mirror-connect
     namespace: demo
-  configSecret:
-    name: mirror-checkpoint-config
+  configuration:
+    secretName: mirror-checkpoint-config
   deletionPolicy: WipeOut
 ```
 
@@ -563,8 +563,8 @@ spec:
   connectClusterRef:
     name: mirror-connect
     namespace: demo
-  configSecret:
-    name: mirror-heartbeat-config
+  configuration:
+    secretName: mirror-heartbeat-config
   deletionPolicy: WipeOut
 ```
 

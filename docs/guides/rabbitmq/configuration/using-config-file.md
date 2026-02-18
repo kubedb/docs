@@ -33,11 +33,11 @@ KubeDB supports providing custom configuration for RabbitMQ. This tutorial will 
 
 ## Overview
 
-RabbitMQ allows configuring via configuration file. The default configuration file for RabbitMQ deployed by `KubeDB` can be found in `/config/rabbitmq.conf`. When `spec.configSecret` is set to rabbitmq, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user and merge it with the remaining default config. After all that this secret will be mounted to rabbitmq for use it as the configuration file.
+RabbitMQ allows configuring via configuration file. The default configuration file for RabbitMQ deployed by `KubeDB` can be found in `/config/rabbitmq.conf`. When `spec.configuration` is set to rabbitmq, KubeDB operator will get the secret and after that it will validate the values of the secret and then will keep the validated customizable configurations from the user. After all that this secret will be mounted to rabbitmq for use it as the configuration file.
 
 > To learn available configuration option of Pgpool see [Configuration Options](https://www.rabbitmq.com/docs/configure).
 
-At first, you have to create a secret with your configuration file contents as the value of this key `rabbitmq.conf`. Then, you have to specify the name of this secret in `spec.configSecret.name` section while creating rabbitmq CRO.
+At first, you have to create a secret with your configuration file contents as the value of this key `rabbitmq.conf`. Then, you have to specify the name of this secret in `spec.configuration.secretName` section while creating rabbitmq CRO.
 
 ## Custom Configuration
 
@@ -79,7 +79,7 @@ heartbeat = 100
 collect_statistics = coarse
 ```
 
-Now, create rabbitmq crd specifying `spec.configSecret` field.
+Now, create rabbitmq crd specifying `spec.configuration.secretName` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -90,8 +90,8 @@ metadata:
 spec:
   version: "3.13.2"
   replicas: 1
-  configSecret:
-    name: rm-configuration
+  configuration:
+    secretName: rm-configuration
   storage:
     accessModes:
       - ReadWriteOnce

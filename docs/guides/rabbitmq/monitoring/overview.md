@@ -55,8 +55,8 @@ metadata:
 spec:
   version: "3.13.2"
   deletionPolicy: WipeOut
-  configSecret:
-    name: config
+  configuration:
+    secretName: config
   storageType: Durable
   storage:
     storageClassName: standard

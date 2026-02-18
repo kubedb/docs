@@ -13,5 +13,5 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  configSecret:
-    name: rd-custom-config
+  configuration:
+    secretName: rd-custom-config

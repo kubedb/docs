@@ -121,8 +121,8 @@ metadata:
   namespace: demo
 spec:
   version: 28.0.1
-  configSecret:
-    name: config-secret
+  configuration:
+    secretName: config-secret
   deepStorage:
     type: s3
     configSecret:

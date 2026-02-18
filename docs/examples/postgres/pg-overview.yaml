@@ -30,8 +30,8 @@ spec:
         labels:
           app: kubedb
         interval: 10s
-  configSecret:
-    name: pg-custom-config
+  configuration:
+    secretName: pg-custom-config
   podTemplate:
     metadata:
       annotations:

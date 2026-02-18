@@ -56,8 +56,8 @@ spec:
         labels:
           app: kubedb
         interval: 10s
-  configSecret:
-    name: zk-custom-config
+  configuration:
+    secretName: zk-custom-config
   podTemplate:
     metadata:
       annotations:
@@ -182,10 +182,16 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 ZooKeeper managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. 
 
-
-### spec.configSecret
-
-`spec.configSecret` is an optional field that allows users to provide custom configuration for ZooKeeper. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc.
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for Zookeeper cluster. It has the following fields:
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Zookeeper object.
+  - ```yaml
+          configuration:
+            inline:
+              zoo.cfg: |
+                maxClientCnxns=90  
+    ```
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Zookeeper cluster.
 
 ### spec.enableSSL
 

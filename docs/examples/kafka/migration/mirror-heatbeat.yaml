@@ -29,6 +29,6 @@ spec:
   connectClusterRef:
     name: mirror-connect
     namespace: demo
-  configSecret:
-    name: mirror-heartbeat-config
+  configuration:
+    secretName: mirror-heartbeat-config
   deletionPolicy: WipeOut

@@ -41,7 +41,8 @@ Ignite does not allow to configuration via any file. However, configuration para
 
 To know more about configuring Ignite server see [here](https://ignite.apache.org/docs/ignite3/latest/administrators-guide/config/node-config).
 
-At first, you have to create a config file named `node-configuration.xml` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Ignite crd. KubeDB will mount this volume into `/usr/config` directory of the database pod.
+At first, you have to create a secret with custom configuration file and provide its name in `spec.configuration.secretName`. The operator reads this Secret internally and applies the configuration automatically.
+
 
 In this tutorial, we will enable Ignite's authentication via secret.
 
@@ -94,7 +95,7 @@ metadata:
 type: Opaque
 ```
 
-Now, create Ignite crd specifying `spec.configSecret` field.
+Now, create Ignite crd specifying `spec.configuration.secretName` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/configuration/custom-ignite.yaml
@@ -112,8 +113,8 @@ metadata:
 spec:
   replicas: 3
   version: 2.17.0
-  configSecret: 
-    name: ignite-configuration
+  configuration:
+    secretName: ignite-configuration
   storage:
     storageClassName: "standard"
     accessModes:

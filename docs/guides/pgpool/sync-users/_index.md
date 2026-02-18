@@ -5,6 +5,6 @@ menu:
     identifier: pp-sync-users
     name: Sync Users
     parent: pp-pgpool-guides
-    weight: 30
+    weight: 40
 menu_name: docs_{{ .version }}
 ---

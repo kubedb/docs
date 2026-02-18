@@ -5,8 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: 3.9.0
-  configSecret:
-    name: kf-topology-custom-config
+  configuration:
+    secretName: kf-topology-custom-config
   topology:
     broker:
       replicas: 2

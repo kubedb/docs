@@ -52,8 +52,8 @@ metadata:
   namespace: demo
 spec:
   version: 3.9.0
-  configSecret:
-    name: configsecret-topology
+  configuration:
+    secretName: configsecret-topology
   topology:
     broker:
       replicas: 2

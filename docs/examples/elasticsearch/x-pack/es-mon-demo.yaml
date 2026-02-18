@@ -9,8 +9,8 @@ spec:
   authSecret:
     kind: Secret
     name: es-auth
-  configSecret:
-    name: es-custom-config
+  configuration:
+    secretName: es-custom-config
   storage:
     storageClassName: "standard"
     accessModes:

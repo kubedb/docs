@@ -543,4 +543,3 @@ $ kubectl delete ns demo
 - Monitor your Druid cluster with [Prometheus integration](/docs/guides/druid/monitoring/using-builtin-prometheus.md).
 - Explore Druid [configuration options](/docs/guides/druid/configuration/_index.md).
 - Contribute to KubeDB: [contribution guidelines](/docs/CONTRIBUTING.md).
-

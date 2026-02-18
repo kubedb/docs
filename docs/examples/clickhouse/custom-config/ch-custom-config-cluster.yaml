@@ -5,8 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: 24.4.1
-  configSecret:
-    name: ch-configuration
+  configuration:
+    secretName: ch-configuration
   clusterTopology:
     clickHouseKeeper:
       externallyManaged: false

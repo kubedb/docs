@@ -156,6 +156,7 @@ spec:
   configuration:
     configSecret:
       name: ch-custom-config
+    restart: "true"
   databaseRef:
     name: clickhouse-prod
   type: Reconfigure
@@ -363,6 +364,10 @@ If you want to reconfigure your Running ClickHouse cluster or different componen
 
 - `removeCustomConfig` is a boolean field. Specify this field to true if you want to remove all the custom configuration from the deployed clickhouse cluster.
 
+- `restart` significantly reduces unnecessary downtime.
+  - `auto` (default): restart only if required (determined by ops manager operator)
+  - `false`: no restart
+  - `true`: always restart
 ### spec.tls
 
 If you want to reconfigure the TLS configuration of your ClickHouse i.e. add TLS, remove TLS, update issuer/cluster issuer or Certificates and rotate the certificates, you have to specify `spec.tls` section. This field consists of the following sub-field:

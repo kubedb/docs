@@ -52,7 +52,7 @@ The `OpenDistro` security plugin has the following configuration files:
 
 ## Custom Config Seceret
 
-The custom configuration files are passed via a Kubernetes secret. The **file names are the keys** of the Secret with the **file-contents as the values**. The secret name needs to be mentioned in `spec.configSecret.name` of the [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md) object.
+The custom configuration files are passed via a Kubernetes secret. The **file names are the keys** of the Secret with the **file-contents as the values**. The secret name needs to be mentioned in `spec.configuration.secretName` of the [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md) object.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -62,8 +62,8 @@ metadata:
   namespace: demo
 spec:
   version: xpack-8.11.1
-  configSecret:
-    name: es-custom-config
+  configuration:
+    secretName: es-custom-config
 ```
 
 ```yaml

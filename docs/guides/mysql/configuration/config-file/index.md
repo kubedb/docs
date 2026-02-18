@@ -39,7 +39,8 @@ KubeDB supports providing custom configuration for MySQL. This tutorial will sho
 
 MySQL allows to configure database via configuration file. The default configuration for MySQL can be found in `/etc/mysql/my.cnf` file. When MySQL starts, it will look for custom configuration file in `/etc/mysql/conf.d` directory. If configuration file exist, MySQL instance will use combined startup setting from both `/etc/mysql/my.cnf` and `*.cnf` files in `/etc/mysql/conf.d` directory. This custom configuration will overwrite the existing default one. To know more about configuring MySQL see [here](https://dev.mysql.com/doc/refman/8.0/en/server-configuration.html).
 
-At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSecret` section while creating MySQL crd. KubeDB will mount this volume into `/etc/mysql/conf.d` directory of the database pod.
+At first, you have to create a config file with `.cnf` extension with your desired configuration.  Then  create a Secret with this configuration file and provide its name in `spec.configuration.secretName`. The operator reads this Secret internally and applies the configuration automatically, without mounting any volume into the Pod.
+
 
 In this tutorial, we will configure [max_connections](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_max_connections) and [read_buffer_size](https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_read_buffer_size) via a custom config file. We will use configMap as volume source.
 
@@ -87,7 +88,7 @@ type: Opaque
 
 ```
 
-Now, create MySQL crd specifying `spec.configSecret` field.
+Now, create MySQL crd specifying `spec.configuration.secretName` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/configuration/config-file/yamls/mysql-custom.yaml
@@ -104,8 +105,8 @@ metadata:
   namespace: demo
 spec:
   version: "9.1.0"
-  configSecret:
-    name: my-configuration
+  configuration:
+    secretName: my-configuration
   storage:
     storageClassName: "standard"
     accessModes:
@@ -222,7 +223,7 @@ If you would like to uninstall KubeDB operator, please follow the steps [here](/
 ## Next Steps
 
 - [Quickstart MySQL](/docs/guides/mysql/quickstart/index.md) with KubeDB Operator.
-- Initialize [MySQL with Script](/docs/guides/mysql/initialization/index.md).
+- Initialize [MySQL with Script](/docs/guides/mysql/initialization/using_script.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/index.md) to deploy MySQL with KubeDB.

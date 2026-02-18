@@ -33,8 +33,18 @@ spec:
   authSecret:
     kind: Secret
     name: kafka-admin-cred
-  configSecret:
-    name: kafka-custom-config
+  configuration:
+    secretName: kafka-custom-config
+    inline:
+      broker.properties: |
+        log.retention.hours=168
+        log.segment.bytes=1073741824
+      controller.properties: |
+        log.retention.hours=168
+        log.segment.bytes=1073741824
+      server.properties: |
+        log.retention.hours=168
+        log.segment.bytes=1073741824
   enableSSL: true
   healthChecker:
     failureThreshold: 3
@@ -178,10 +188,33 @@ type: Opaque
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
-### spec.configSecret
+### spec.configuration.secretName
 
-`spec.configSecret` is an optional field that points to a Secret used to hold custom Kafka configuration. If not set, KubeDB operator will use default configuration for Kafka.
+`spec.configuration.secretName` is an optional field that specifies the name of the secret containing the custom configuration for the ConnectCluster. The secret should contain a key `config.properties` which contains the custom configuration for the ConnectCluster. The default value of this field is `nil`.
+```yaml
+configuration:
+  secretName: <custom-config-secret-name>
+```
 
+> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configSecret.name` The field `.spec.configsecret` is deprecated and will be removed in future releases. If you still use `.spec.configSecret`, KubeDB will copy `.spec.configuSecret.name` to `.spec.configuration.secretName` internally.
+
+### spec.configuration
+`spec.configuration` is an optional field that specifies custom configuration for Kafka cluster. It has the following fields:
+- `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Kafka cluster.
+- `configuration.inline` is an optional field that allows you to provide custom configuration directly in the Kafka object. It has the following possible keys:
+    - `broker.properties` - is used to provide custom configuration for Kafka brokers.
+    - `controller.properties` - is used to provide custom configuration for Kafka controllers.
+    - `server.propertbies` - is used to provide custom configuration for both Kafka brokers and controllers.
+    - ```yaml
+      spec:
+        configuration:
+          inline:
+            config.properties: |
+              connector.class=com.mongodb.*
+              tasks.max=1
+              topic.prefix=mongodb-
+              connection.uri=mongodb://mongo-user:mongo-password@mongo-host:27017
+      ```
 ### spec.topology
 
 `spec.topology` represents the topology configuration for Kafka cluster in KRaft mode.
