@@ -162,6 +162,71 @@ root@kafka-prod-tiered-broker-0:/# kafka-producer-perf-test.sh \
 
 here, we created a topic with `local.retention.bytes=1` which will force kafka to offload segments to the remote tiered storage as soon as possible. You can check the S3 bucket to see the offloaded segments.
 
+In this example, we are using an S3-compatible storage (MinIO). You can verify the offloaded segments using the `mc` (MinIO Client) command:
+to the consumer transparently.
+
+Verify Offloaded Segments in MinIO by running:
+
+```bash
+mc ls --recursive local/kafka
+```
+
+Example output:
+
+```bash
+[2026-02-19 23:42:14 +06] 2.0KiB STANDARD tiered-storage-demo/topic1-FzanGxsCRj6eR4xkkImQ9g/0/00000000000000000000-1qL0uiXzTrWBm-07BoNlnw.indexes
+[2026-02-19 23:42:14 +06]1016KiB STANDARD tiered-storage-demo/topic1-FzanGxsCRj6eR4xkkImQ9g/0/00000000000000000000-1qL0uiXzTrWBm-07BoNlnw.log
+[2026-02-19 23:42:14 +06]   736B STANDARD tiered-storage-demo/topic1-FzanGxsCRj6eR4xkkImQ9g/0/00000000000000000000-1qL0uiXzTrWBm-07BoNlnw.rsm-manifest
+...
+```
+
+These files confirm that older Kafka log segments have been offloaded to MinIO (remote storage).
+
+Inside the broker pod:
+
+```bash
+ls -lh /var/log/kafka/0/topic1-0
+```
+
+Example output:
+
+```bash
+total 104K
+-rw-r--r-- 1 kafka kafka 10M Feb 19 17:42 00000000000000009844.index
+-rw-r--r-- 1 kafka kafka 81K Feb 19 17:42 00000000000000009844.log
+-rw-r--r-- 1 kafka kafka 56  Feb 19 17:42 00000000000000009844.snapshot
+-rw-r--r-- 1 kafka kafka 10M Feb 19 17:42 00000000000000009844.timeindex
+-rw-r--r-- 1 kafka kafka 8   Feb 19 17:41 leader-epoch-checkpoint
+-rw-r--r-- 1 kafka kafka 43  Feb 19 17:41 partition.metadata
+```
+
+Notice that older segments are no longer present locally — they exist only in remote storage.
+
+To consume data that has been offloaded, run the following inside the broker pod:
+
+```bash
+kafka-console-consumer.sh \
+  --bootstrap-server localhost:9092 \
+  --topic topic1 \
+  --from-beginning \
+  --timeout-ms 15000 \
+  --consumer.config config/clientauth.properties
+```
+
+Since the requested offsets are no longer available on local disk, Kafka must retrieve them from remote storage.
+
+What Happens Internally
+
+1. The consumer requests offset `0`.
+2. The broker checks local storage for the required segment.
+3. The segment is not found locally.
+4. The broker fetches the segment from MinIO (remote storage).
+5. The broker uses the remote log index cache.
+6. The data is served to the consumer transparently.
+
+The entire process is handled automatically, and the consumer is unaware whether the data came from local or remote storage.
+
+
 > **Note**: You can set `local.retention.ms` instead of `local.retention.bytes` to offload segments based on time.
 
 ## Create a Kafka Tiered Storage with Azure compatible storage
@@ -298,5 +363,9 @@ kafka-prod-tiered   kubedb.com/v1   4.0.0     Ready          112s
 
 ## Next Steps
 
+- [Quickstart Kafka](/docs/guides/kafka/quickstart/kafka/index.md) with KubeDB Operator.
+- [Quickstart ConnectCluster](/docs/guides/kafka/connectcluster/quickstart.md) with KubeDB Operator.
 - Use [kubedb cli](/docs/guides/kafka/cli/cli.md) to manage databases like kubectl for Kubernetes.
+- Detail concepts of [ConnectCluster object](/docs/guides/kafka/concepts/connectcluster.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
