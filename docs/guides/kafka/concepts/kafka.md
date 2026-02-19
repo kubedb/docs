@@ -198,6 +198,16 @@ type: Opaque
 
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
+### spec.configuration.secretName
+
+`spec.configuration.secretName` is an optional field that specifies the name of the secret containing the custom configuration for the ConnectCluster. The secret should contain a key `config.properties` which contains the custom configuration for the ConnectCluster. The default value of this field is `nil`.
+```yaml
+configuration:
+  secretName: <custom-config-secret-name>
+```
+
+> **Note**: Use `.spec.configuration.secretName` to specify the name of the secret instead of `.spec.configSecret.name` The field `.spec.configsecret` is deprecated and will be removed in future releases. If you still use `.spec.configSecret`, KubeDB will copy `.spec.configuSecret.name` to `.spec.configuration.secretName` internally.
+
 ### spec.configuration
 `spec.configuration` is an optional field that specifies custom configuration for Kafka cluster. It has the following fields:
 - `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Kafka cluster.
