@@ -260,6 +260,7 @@ helm upgrade -i kubeslice-controller oci://ghcr.io/appscode-charts/kubeslice-con
     -f controller.yaml \
     --namespace kubeslice-controller \
     --create-namespace \
+    --set ocm.enabled=true \
     --wait --burst-limit=10000 --debug
 ```
 
