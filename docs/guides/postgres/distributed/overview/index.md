@@ -363,7 +363,7 @@ Create a `registration.yaml` file:
 
 > **Important:**
 > - The cluster name must exactly match the name of the OCM (spoke) cluster.
-> - The corresponding `ManagedClusterAddOn` resource must be created in the namespace that bears the same name as the cluster.
+> - The corresponding `ManagedClusterAddOn` resource must be created in the namespace that bears the same name as the cluster to setup kubeslice worker automatically.
 
 ```yaml
 apiVersion: controller.kubeslice.io/v1alpha1
