@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg
+  namespace: demo
+spec:
+  authSecret:
+    apiGroup: "virtual-secrets.dev"
+    secretStoreName: vault
+  replicas: 3
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  storageType: Durable
+  deletionPolicy: WipeOut
+  version: "17.5"
