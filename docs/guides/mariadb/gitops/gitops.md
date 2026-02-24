@@ -67,6 +67,7 @@ metadata:
   namespace: demo
 spec:
   version: "10.5.23"
+  replicas: 3
   storageType: Durable
   storage:
     storageClassName: longhorn
@@ -145,50 +146,30 @@ Update the `MariaDB.yaml` with the following,
 apiVersion: gitops.kubedb.com/v1alpha1
 kind: MariaDB
 metadata:
-  name: MariaDB-prod
+  name: mariadb-gitops
   namespace: demo
 spec:
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: MariaDB
-              resources:
-                limits:
-                  memory: 1540Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: local-path
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: MariaDB
-              resources:
-                limits:
-                  memory: 1540Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: local-path
+  version: "10.5.23"
+  replicas: 5
   storageType: Durable
+  podTemplate:
+    spec:
+      containers:
+      - name: mariadb
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1.2Gi
+          requests:
+            cpu: 100m
+            memory: 1.2Gi
+  storage:
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
   deletionPolicy: WipeOut
  ```
 
@@ -197,29 +178,31 @@ Resource Requests and Limits are updated to `700m` CPU and `2Gi` Memory. Commit 
 Now, `gitops` operator will detect the resource changes and create a `MariaDBOpsRequest` to update the `MariaDB` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ $ kubectl get kf,MariaDB,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-MariaDB.kubedb.com/MariaDB-prod   kubedb.com/v1   3.9.0     Ready    22h
+$  kubectl get md,mariadbopsrequest -n demo
+NAME                                VERSION   STATUS   AGE
+mariadb.kubedb.com/mariadb-gitops   10.5.23   Ready    39m
 
-NAME                                 AGE
-MariaDB.gitops.kubedb.com/MariaDB-prod   22h
+NAME                                                                       TYPE                STATUS       AGE
+mariadbopsrequest.ops.kubedb.com/mariadb-gitops-horizontalscaling-g0l4rg   HorizontalScaling   Successful   22m
+mariadbopsrequest.ops.kubedb.com/mariadb-gitops-verticalscaling-umbwjh     VerticalScaling     Successful   8m16s
 
-NAME                                                                   TYPE              STATUS        AGE
-MariaDBopsrequest.ops.kubedb.com/MariaDB-prod-verticalscaling-i0kr1l   VerticalScaling       Successful     2s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
 ```bash
-$ kubectl get pod -n demo MariaDB-prod-broker-0 -o json | jq '.spec.containers[0].resources'
+$ kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
-    "memory": "1536Mi"
+    "cpu": "500m",
+    "memory": "1288490188800m"
   },
   "requests": {
-    "cpu": "500m",
-    "memory": "1536Mi"
+    "cpu": "100m",
+    "memory": "1288490188800m"
   }
 }
+
+
 ```
 
 ### Scale MariaDB Replicas
@@ -228,50 +211,19 @@ Update the `MariaDB.yaml` with the following,
 apiVersion: gitops.kubedb.com/v1alpha1
 kind: MariaDB
 metadata:
-  name: MariaDB-prod
+  name: mariadb-gitops
   namespace: demo
 spec:
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: MariaDB
-              resources:
-                limits:
-                  memory: 1540Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 3
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: local-path
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: MariaDB
-              resources:
-                limits:
-                  memory: 1540Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 3
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: local-path
+  version: "10.5.23"
+  replicas: 5
   storageType: Durable
+  storage:
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
   deletionPolicy: WipeOut
 ```
 
@@ -279,28 +231,24 @@ Update the `replicas` to `3`. Commit the changes and push to your Git repository
 Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` MariaDBOpsRequest to update the `MariaDB` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,MariaDB,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-MariaDB.kubedb.com/MariaDB-prod   kubedb.com/v1   3.9.0     Ready    22h
+$ kubectl get md,mariadbopsrequest -n demo
+NAME                                VERSION   STATUS   AGE
+mariadb.kubedb.com/mariadb-gitops   10.5.23   Ready    26m
 
-NAME                                 AGE
-MariaDB.gitops.kubedb.com/MariaDB-prod   22h
+NAME                                                                       TYPE                STATUS       AGE
+mariadbopsrequest.ops.kubedb.com/mariadb-gitops-horizontalscaling-g0l4rg   HorizontalScaling   Successful   9m2s
 
-NAME                                                                 TYPE                STATUS       AGE
-MariaDBopsrequest.ops.kubedb.com/MariaDB-prod-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
-MariaDBopsrequest.ops.kubedb.com/MariaDB-prod-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$  kubectl get pod -n demo -l 'app.kubernetes.io/instance=MariaDB-prod'
-NAME                      READY   STATUS    RESTARTS   AGE
-MariaDB-prod-broker-0       1/1     Running   0          34m
-MariaDB-prod-broker-1       1/1     Running   0          33m
-MariaDB-prod-broker-2       1/1     Running   0          33m
-MariaDB-prod-controller-0   1/1     Running   0          32m
-MariaDB-prod-controller-1   1/1     Running   0          31m
-MariaDB-prod-controller-2   1/1     Running   0          31m
+$   kubectl get pod -n demo -l 'app.kubernetes.io/instance=mariadb-gitops'
+NAME               READY   STATUS    RESTARTS   AGE
+mariadb-gitops-0   2/2     Running   0          26m
+mariadb-gitops-1   2/2     Running   0          26m
+mariadb-gitops-2   2/2     Running   0          26m
+mariadb-gitops-3   2/2     Running   0          9m29s
+mariadb-gitops-4   2/2     Running   0          8m29s
 ```
 
 We can also scale down the replicas by updating the `replicas` fields.
