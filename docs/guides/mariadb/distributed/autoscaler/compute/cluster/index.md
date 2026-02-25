@@ -48,9 +48,7 @@ Here, we are going to deploy a distributed `MariaDB` Galera cluster using a supp
 
 ### Deploy PlacementPolicy
 
-For distributed MariaDB autoscaling, the `PlacementPolicy` must include a `monitoring.prometheus.url` for each spoke cluster. The autoscaler uses these endpoints to query resource usage metrics from Prometheus instances running in the respective clusters.
-
-Below is the YAML of the `PlacementPolicy` that we are going to create. It distributes 4 replicas across two clusters and provides the Prometheus endpoint for each:
+Below is the YAML of the `PlacementPolicy` that we are going to create. It distributes 3 replicas across two clusters:
 
 ```yaml
 apiVersion: apps.k8s.appscode.com/v1
@@ -63,16 +61,10 @@ spec:
   clusterSpreadConstraint:
     distributionRules:
       - clusterName: demo-controller
-        monitoring:
-          prometheus:
-            url: http://prometheus-operated.monitoring.svc.cluster.local:9090
         replicaIndices:
           - 0
           - 2
       - clusterName: demo-worker
-        monitoring:
-          prometheus:
-            url: http://prometheus-operated.monitoring.svc.cluster.local:9090
         replicaIndices:
           - 1
     slice:
@@ -88,7 +80,6 @@ spec:
 
 Here,
 
-- `spec.clusterSpreadConstraint.distributionRules[].monitoring.prometheus.url` specifies the Prometheus endpoint for the corresponding spoke cluster. The autoscaler uses this URL to scrape CPU and memory usage metrics for pods running in that cluster.
 - `spec.clusterSpreadConstraint.distributionRules[].replicaIndices` specifies which MariaDB replica indices are scheduled on that cluster. Here `demo-controller` hosts replicas `0` and `2`, and `demo-worker` hosts replica `1`.
 
 Apply the `PlacementPolicy` on the hub (`demo-controller`) cluster:
@@ -97,8 +88,6 @@ Apply the `PlacementPolicy` on the hub (`demo-controller`) cluster:
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/autoscaler/compute/cluster/examples/placement-policy.yaml --context demo-controller
 placementpolicy.apps.k8s.appscode.com/distributed-mariadb created
 ```
-
-> **Note:** Update the `monitoring.prometheus.url` values to match the actual Prometheus service endpoints in each of your spoke clusters.
 
 ### Deploy Distributed MariaDB Cluster
 
