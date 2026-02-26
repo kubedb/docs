@@ -5,6 +5,6 @@ menu:
     identifier: pb-initialization-pgbouncer
     name: Initializaion
     parent: pb-pgbouncer-guides
-    weight: 25
+    weight: 30
 menu_name: docs_{{ .version }}
 ---
