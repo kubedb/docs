@@ -121,7 +121,7 @@ metadata:
   name: virtual-secret
   namespace: demo
 stringData:
-  username: appscode
+  username: default
   password: virtual-secret
 secretStoreName: vault
 ```
@@ -150,18 +150,18 @@ $ kubectl get secrets.virtual-secrets.dev -n demo virtual-secret -oyaml
 apiVersion: virtual-secrets.dev/v1alpha1
 data:
   password: dmlydHVhbC1zZWNyZXQ=
-  username: YXBwc2NvZGU=
+  username: ZGVmYXVsdA==
 kind: Secret
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"virtual-secrets.dev/v1alpha1","kind":"Secret","metadata":{"annotations":{},"name":"virtual-secret","namespace":"demo"},"secretStoreName":"vault","stringData":{"password":"virtual-secret","username":"appscode"}}
-  creationTimestamp: "2025-12-30T11:13:54Z"
+      {"apiVersion":"virtual-secrets.dev/v1alpha1","kind":"Secret","metadata":{"annotations":{},"name":"virtual-secret","namespace":"demo"},"secretStoreName":"vault","stringData":{"password":"virtual-secret","username":"default"}}
+  creationTimestamp: "2026-02-25T05:48:27Z"
   generation: 1
   name: virtual-secret
   namespace: demo
-  resourceVersion: "12922"
-  uid: c7887183-6885-4435-a3c9-c741b28130a3
+  resourceVersion: "25163"
+  uid: f4bc8051-65e9-405d-847a-ecfa4fcab182
 secretStoreName: vault
 type: Opaque
 ```
@@ -198,7 +198,7 @@ version            1
 Key         Value
 ---         -----
 password    virtual-secret
-username    appscode
+username    default
 ```
 We can see that the secret data is stored in the `virtual-secrets.dev/demo/virtual-secret` path where,
 
@@ -306,7 +306,7 @@ Now, check the secret data written to the file system at /mnt/virtual-secrets on
 
 ```shell
 $ kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/username
-appscode⏎
+default
 
 $ kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/password
 virtual-secret⏎ 
@@ -356,15 +356,46 @@ redis.kubedb.com/rd created
 ``` 
 Now, wait until `rd` has status `Ready`. i.e. ,
 ```shell
-$ kubectl get redis -n demo
+$ ubectl get rd -n demo
 NAME   VERSION   STATUS   AGE
-rd     8.2.2     Ready    2m5s
+rd     8.2.2     Ready    18h
 ```
 
 Now, lets go ahead and check what secret it is using,
 ```shell
-$ kubectl get secrets.virtual-secrets.dev -n demo 
-NAME             TYPE                       DATA   AGE
-pg-demo-auth     kubernetes.io/basic-auth   2      1m53s
+$ kubectl get secrets.virtual-secrets.dev -n demo
+NAME             TYPE     DATA   AGE
+virtual-secret   Opaque   2      1d
 ```
-We can see that a `virtual-secret` named pg-demo-auth has been created by the KubeDB operator. Let’s get the whole definition of the virtual secret,
+
+We can see that the Redis user password is stored in the vault server as named ```virtual-secret``` . Now let’s go ahead and connect to the database using the password to check whether it is working or not.
+```bash
+ kubectl exec -it rd-shard0-0 -n demo -c redis -- bash
+redis@rd-shard0-0:/data$ redis-cli -a virtual-secret
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+127.0.0.1:6379> set hello world
+OK
+127.0.0.1:6379> get hello
+"world"
+127.0.0.1:6379> exit
+redis@rd-shard0-0:/data$ exit
+exit
+
+```
+We can see that we are able to connect to the database and create a database and a table successfully.
+
+## Cleanup
+To clean up the resources created in this guide, run the following commands:
+```bash
+$ kubectl delete -n demo rd rd
+redis.kubedb.com "rd" deleted
+$ kubectl delete -n demo webapp,virtual-secret,secretproviderclass.virtual-secrets.dev/virtual-secret
+$ kubectl delete ns demo
+$ helm uninstall virtual-secrets-server -n kubevault
+$ helm uninstall secrets-store-csi-driver-provider-virtual-secrets -n kube-system
+$ helm uninstall csi-secrets-store -n kube-system
+```
+If you want to uninstall the `KubeVault`, run:
+```bash
+$ helm uninstall kubevault --namespace kubevault
+```
