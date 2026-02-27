@@ -65,9 +65,6 @@ $ kubectl get kf kafka -n demo -oyaml
 apiVersion: kubedb.com/v1alpha2
 kind: Kafka
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Kafka","metadata":{"annotations":{},"name":"kafka","namespace":"demo"},"spec":{"authSecret":{"name":"kafka-admin-cred"},"enableSSL":true,"healthChecker":{"failureThreshold":3,"periodSeconds":20,"timeoutSeconds":10},"keystoreCredSecret":{"name":"kafka-keystore-cred"},"storageType":"Durable","deletionPolicy":"DoNotTerminate","tls":{"certificates":[{"alias":"server","secretName":"kafka-server-cert"},{"alias":"client","secretName":"kafka-client-cert"}],"issuerRef":{"apiGroup":"cert-manager.io","kind":"Issuer","name":"kafka-ca-issuer"}},"topology":{"broker":{"replicas":3,"resources":{"limits":{"memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"suffix":"broker"},"controller":{"replicas":3,"resources":{"limits":{"memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"suffix":"controller"}},"version":"3.9.0"}}
   creationTimestamp: "2023-03-29T07:01:29Z"
   finalizers:
     - kubedb.com
@@ -78,7 +75,7 @@ metadata:
   uid: ed5f6197-0238-4aba-a7d9-7dc771b2564c
 spec:
   authSecret:
-    name: kafka-admin-cred
+    name: kafka-auth
   enableSSL: true
   healthChecker:
     failureThreshold: 3
@@ -136,7 +133,7 @@ spec:
             storage: 1Gi
         storageClassName: standard
       suffix: controller
-  version: 3.9.0
+  version: 4.0.0
 status:
   conditions:
     - lastTransitionTime: "2023-03-29T07:01:29Z"
@@ -180,9 +177,6 @@ $ kubectl get kf kafka -n demo -ojson
     "apiVersion": "kubedb.com/v1alpha2",
     "kind": "Kafka",
     "metadata": {
-        "annotations": {
-            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"kubedb.com/v1alpha2\",\"kind\":\"Kafka\",\"metadata\":{\"annotations\":{},\"name\":\"kafka\",\"namespace\":\"demo\"},\"spec\":{\"authSecret\":{\"name\":\"kafka-admin-cred\"},\"enableSSL\":true,\"healthChecker\":{\"failureThreshold\":3,\"periodSeconds\":20,\"timeoutSeconds\":10},\"keystoreCredSecret\":{\"name\":\"kafka-keystore-cred\"},\"storageType\":\"Durable\",\"deletionPolicy\":\"DoNotTerminate\",\"tls\":{\"certificates\":[{\"alias\":\"server\",\"secretName\":\"kafka-server-cert\"},{\"alias\":\"client\",\"secretName\":\"kafka-client-cert\"}],\"issuerRef\":{\"apiGroup\":\"cert-manager.io\",\"kind\":\"Issuer\",\"name\":\"kafka-ca-issuer\"}},\"topology\":{\"broker\":{\"replicas\":3,\"resources\":{\"limits\":{\"memory\":\"1Gi\"},\"requests\":{\"cpu\":\"500m\",\"memory\":\"1Gi\"}},\"storage\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"1Gi\"}},\"storageClassName\":\"standard\"},\"suffix\":\"broker\"},\"controller\":{\"replicas\":3,\"resources\":{\"limits\":{\"memory\":\"1Gi\"},\"requests\":{\"cpu\":\"500m\",\"memory\":\"1Gi\"}},\"storage\":{\"accessModes\":[\"ReadWriteOnce\"],\"resources\":{\"requests\":{\"storage\":\"1Gi\"}},\"storageClassName\":\"standard\"},\"suffix\":\"controller\"}},\"version\":\"3.9.0\"}}\n"
-        },
         "creationTimestamp": "2023-03-29T07:01:29Z",
         "finalizers": [
             "kubedb.com"
@@ -195,7 +189,7 @@ $ kubectl get kf kafka -n demo -ojson
     },
     "spec": {
         "authSecret": {
-            "name": "kafka-admin-cred"
+            "name": "kafka-auth"
         },
         "enableSSL": true,
         "healthChecker": {
@@ -356,7 +350,7 @@ NAMESPACE   NAME                                       TYPE               VERSIO
 demo        appbinding.appcatalog.appscode.com/kafka   kubedb.com/kafka   3.9.0     45m
 
 NAMESPACE   NAME                             TYPE                       DATA   AGE
-demo        secret/kafka-admin-cred          kubernetes.io/basic-auth   2      46m
+demo        secret/kafka-auth                kubernetes.io/basic-auth   2      46m
 demo        secret/kafka-broker-config       Opaque                     3      46m
 demo        secret/kafka-client-cert         kubernetes.io/tls          3      46m
 demo        secret/kafka-controller-config   Opaque                     3      45m
@@ -521,7 +515,7 @@ Metadata:
   UID:               ed5f6197-0238-4aba-a7d9-7dc771b2564c
 Spec:
   Auth Secret:
-    Name:      kafka-admin-cred
+    Name:      kafka-auth
   Enable SSL:  true
   Health Checker:
     Failure Threshold:  3
