@@ -594,7 +594,7 @@ Download a FREE license from the [AppsCode License Server](https://appscode.com/
 
 ```bash
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
-    --version v2025.8.31 \
+    --version v2026.2.26 \
     --namespace kubedb --create-namespace \
     --set-file global.license=$HOME/Downloads/kubedb-license-cd548cce-5141-4ed3-9276-6d9578707f12.txt \
     --set petset.features.ocm.enabled=true \

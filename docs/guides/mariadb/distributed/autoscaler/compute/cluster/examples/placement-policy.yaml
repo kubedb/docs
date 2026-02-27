@@ -8,16 +8,10 @@ spec:
   clusterSpreadConstraint:
     distributionRules:
       - clusterName: demo-controller
-        monitoring:
-          prometheus:
-            url: http://prometheus-operated.monitoring.svc.cluster.local:9090
         replicaIndices:
           - 0
           - 2
       - clusterName: demo-worker
-        monitoring:
-          prometheus:
-            url: http://prometheus-operated.monitoring.svc.cluster.local:9090
         replicaIndices:
           - 1
     slice:
