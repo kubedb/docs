@@ -42,7 +42,7 @@ spec:
     storageManagerClassPath: /opt/kafka/libs/tiered-plugins/*
   authSecret:
     kind: Secret
-    name: kafka-admin-cred
+    name: kafka-auth
   configuration:
     secretName: kafka-custom-config
     inline:
@@ -128,7 +128,7 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  version: 3.9.0
+  version: 4.0.0
 ```
 
 ### spec.version
@@ -140,6 +140,7 @@ spec:
 - `3.7.2`
 - `3.8.1`
 - `3.9.0`
+- `4.0.0`
 
 ### spec.replicas
 
