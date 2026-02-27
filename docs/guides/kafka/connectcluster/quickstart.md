@@ -47,13 +47,14 @@ When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/d
 
 ```bash
 $ kubectl get kfversion
-
 NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
-3.5.2   3.5.2     ghcr.io/appscode-images/kafka-kraft:3.5.2                28h
-3.6.1   3.6.1     ghcr.io/appscode-images/kafka-kraft:3.6.1                28h
-3.7.2   3.7.2     ghcr.io/appscode-images/kafka-kraft:3.7.2                28h
-3.8.1   3.8.1     ghcr.io/appscode-images/kafka-kraft:3.8.1                28h
-3.9.0   3.9.0     ghcr.io/appscode-images/kafka-kraft:3.9.0                28h
+3.5.2   3.5.2     ghcr.io/appscode-images/kafka-kraft:3.5.2                7d19h
+3.6.1   3.6.1     ghcr.io/appscode-images/kafka-kraft:3.6.1                7d19h
+3.7.2   3.7.2     ghcr.io/appscode-images/kafka-kraft:3.7.2                7d19h
+3.8.1   3.8.1     ghcr.io/appscode-images/kafka-kraft:3.8.1                7d19h
+3.9.0   3.9.0     ghcr.io/appscode-images/kafka-kraft:3.9.0                7d19h
+4.0.0   4.0.0     ghcr.io/appscode-images/kafka:4.0.0                      7d19h
+
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this KafkaVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated KafkaVersion. You can also use the short from `kfversion` to check available KafkaVersions.
@@ -115,7 +116,7 @@ metadata:
   name: connectcluster-quickstart
   namespace: demo
 spec:
-  version: 3.9.0
+  version: 4.0.0
   replicas: 3
   connectorPlugins:
     - mongodb-1.14.1

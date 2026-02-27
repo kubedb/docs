@@ -47,6 +47,8 @@ Docker hub repositories:
     metadata:
       name: 10.5.23
     spec:
+      coordinator:
+        image: PRIVATE_REGISTRY/mariadb-coordinator:v0.40.0
       db:
         image: PRIVATE_REGISTRY/mysql:10.5.23
       exporter:

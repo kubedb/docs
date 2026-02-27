@@ -72,13 +72,15 @@ valkey-8.1.1   8.1.1     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-ima
   spec:
     db:
       image: PRIVATE_DOCKER_REGISTRY:6.0.20
+    coordinator:
+      image: PRIVATE_DOCKER_REGISTRY:v0.40.0
     exporter:
       image: PRIVATE_DOCKER_REGISTRY:1.9.0
     initContainer:
       image: PRIVATE_DOCKER_REGISTRY:0.12.0
     podSecurityPolicies:
       databasePolicyName: redis-db
-    version: 6.0.20
+    version: 6.2.14
   ```
 
 ## Create ImagePullSecret

@@ -1,0 +1,35 @@
+apiVersion: kubedb.com/v1
+kind: Kafka
+metadata:
+  name: kafka-prod-tiered
+  namespace: demo
+spec:
+  version: 4.0.0
+  tieredStorage:
+    provider: azure
+    azure:
+      container: kafka
+      secretName: azure-secret
+      prefix: tiered-storage-demo/
+      storageAccount: demo-account
+  topology:
+    broker:
+      replicas: 3
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+    controller:
+      replicas: 3
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+  storageType: Durable
+  deletionPolicy: WipeOut

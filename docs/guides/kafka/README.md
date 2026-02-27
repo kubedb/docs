@@ -62,6 +62,7 @@ KubeDB supports The following Kafka versions. Supported version are applicable f
 - `3.7.2`
 - `3.8.1`
 - `3.9.0`
+- `4.0.0`
 
 > The listed KafkaVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md) object with your custom Kafka image.
 

@@ -59,13 +59,14 @@ When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/d
 
 ```bash
 $ kubectl get kfversion
-
 NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
-3.5.2   3.5.2     ghcr.io/appscode-images/kafka-kraft:3.5.2                28h
-3.6.1   3.6.1     ghcr.io/appscode-images/kafka-kraft:3.6.1                28h
-3.7.2   3.7.2     ghcr.io/appscode-images/kafka-kraft:3.7.2                28h
-3.8.1   3.8.1     ghcr.io/appscode-images/kafka-kraft:3.8.1                28h
-3.9.0   3.9.0     ghcr.io/appscode-images/kafka-kraft:3.9.0                28h
+3.5.2   3.5.2     ghcr.io/appscode-images/kafka-kraft:3.5.2                7d19h
+3.6.1   3.6.1     ghcr.io/appscode-images/kafka-kraft:3.6.1                7d19h
+3.7.2   3.7.2     ghcr.io/appscode-images/kafka-kraft:3.7.2                7d19h
+3.8.1   3.8.1     ghcr.io/appscode-images/kafka-kraft:3.8.1                7d19h
+3.9.0   3.9.0     ghcr.io/appscode-images/kafka-kraft:3.9.0                7d19h
+4.0.0   4.0.0     ghcr.io/appscode-images/kafka:4.0.0                      7d19h
+
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this KafkaVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated KafkaVersion. You can also use the short from `kfversion` to check available KafkaVersions.
@@ -88,7 +89,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: 3.9.0
+  version: 4.0.0
   storage:
     accessModes:
       - ReadWriteOnce
@@ -113,7 +114,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: 3.9.0
+  version: 4.0.0
   storage:
     accessModes:
       - ReadWriteOnce
@@ -226,7 +227,7 @@ Metadata:
   UID:               8a1eb48b-75f3-4b3d-b8ff-0634780a9f09
 Spec:
   Auth Secret:
-    Name:  kafka-quickstart-admin-cred
+    Name:  kafka-quickstart-auth
   Health Checker:
     Failure Threshold:  3
     Period Seconds:     20
@@ -310,7 +311,7 @@ NAME                                                  TYPE               VERSION
 appbinding.appcatalog.appscode.com/kafka-quickstart   kubedb.com/kafka   3.9.0     8m50s
 
 NAME                                 TYPE                       DATA   AGE
-secret/kafka-quickstart-admin-cred   kubernetes.io/basic-auth   2      8m52s
+secret/kafka-quickstart-auth         kubernetes.io/basic-auth   2      8m52s
 secret/kafka-quickstart-config       Opaque                     2      8m52s
 ```
 

@@ -47,6 +47,8 @@ Docker hub repositories:
   metadata:
     name: 8.0.40
   spec:
+    coordinator:
+      image: PRIVATE_REGISTRY/percona-xtradb-coordinator:v0.34.0
     db:
       image: PRIVATE_REGISTRY/mysql:8.0.40
     exporter:

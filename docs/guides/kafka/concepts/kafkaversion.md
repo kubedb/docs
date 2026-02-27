@@ -55,7 +55,7 @@ spec:
     databasePolicyName: kafka-db
   securityContext:
     runAsUser: 1001
-  version: 3.9.0
+  version: 4.0.0
 ```
 
 ### metadata.name

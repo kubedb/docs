@@ -97,7 +97,7 @@ metadata:
   name: kafka-dev-tls
   namespace: demo
 spec:
-  version: 3.9.0
+  version: 4.0.0
   enableSSL: true
   tls:
     issuerRef:

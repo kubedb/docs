@@ -53,6 +53,9 @@ KubeDB supports the following Microsoft SQL Server Version.
 - `2022-CU12-ubuntu-22.04`
 - `2022-CU14-ubuntu-22.04`
 - `2022-CU16-ubuntu-22.04`
+- `2022-CU19-ubuntu-22.04`
+- `2022-CU22-ubuntu-22.04`
+- `2025-RTM-ubuntu-22.04`
 
 ## Life Cycle of a Microsoft SQL Server Object
 
