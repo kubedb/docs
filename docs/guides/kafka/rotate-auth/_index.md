@@ -5,6 +5,6 @@ menu:
     identifier: kf-rotate-auth
     name: Rotate Authentication
     parent: kf-kafka-guides
-    weight: 45
+    weight: 85
 menu_name: docs_{{ .version }}
 ---
