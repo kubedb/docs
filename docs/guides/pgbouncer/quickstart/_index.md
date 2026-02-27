@@ -5,6 +5,6 @@ menu:
     identifier: pb-quickstart-pgbouncer
     name: Quickstart
     parent: pb-pgbouncer-guides
-    weight: 15
+    weight: 10
 menu_name: docs_{{ .version }}
 ---
