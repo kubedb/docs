@@ -85,7 +85,7 @@ spec:
   configuration:
     secretName: es-custom-config
   enableSSL: false 
-  version: opensearch-2.8.0
+  version: opensearch-2.19.2
   storageType: Durable
   deletionPolicy: WipeOut
   topology:
@@ -133,7 +133,7 @@ Wait for the Elasticsearch to become ready:
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION             STATUS         AGE
-es-test       opensearch-2.8.0   Provisioning   12s
-es-test       opensearch-2.8.0   Provisioning   2m2s
-es-test       opensearch-2.8.0   Ready          2m2s
+es-test       opensearch-2.19.2   Provisioning   12s
+es-test       opensearch-2.19.2   Provisioning   2m2s
+es-test       opensearch-2.19.2   Ready          2m2s
 ```

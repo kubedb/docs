@@ -142,7 +142,7 @@ $ kubectl create secret generic vault-tls-secret -n demo \
 secret/vault-tls-secret created
 ```
 
-Now lets create KubeDB MongoDB. Currently, we have KMIP encryption support for `percona-4.2.24`,`percona-4.2.26`,`percona-5.0.23`,`percona-6.0.12` and `percona-7.0.4` version of KubeDB managed MongoDB.
+Now lets create KubeDB MongoDB. Currently, we have KMIP encryption support for `percona-4.2.24`,`percona-4.2.26`,`percona-5.0.23`, , `percona-5.0.31` ,`percona-6.0.12` and `percona-7.0.4` version of KubeDB managed MongoDB.
 
 We will use mongodb version `percona-5.0.23` for our demo purpose.
 
@@ -172,7 +172,7 @@ spec:
         storage: 1Gi
   storageType: Durable
   deletionPolicy: WipeOut
-  version: "percona-5.0.23"
+  version: "percona-5.0.29"
   configuration:
     secretName: mg-configuration
 ```
