@@ -79,7 +79,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Halt
-  version: xpack-8.11.1
+  version: xpack-8.19.9
 status:
   observedGeneration: 3$4212299729528774793
   phase: Running

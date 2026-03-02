@@ -4,7 +4,7 @@ metadata:
   name: es-standalone
   namespace: demo
 spec:
-  version: opensearch-2.8.0
+  version: opensearch-2.19.2
   enableSSL: true
   replicas: 1
   storageType: Durable
