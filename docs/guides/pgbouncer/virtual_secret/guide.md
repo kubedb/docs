@@ -106,8 +106,8 @@ spec:
 Here,
 
 - `spec.vault` - section describes the connection information for vault.
-- `spec.url` - contains the connection url to the vault server.
-- `spec.roleName` - contains the role name we specified when binding the policy to the service account earlier.
+- `spec.vault.url` - contains the connection url to the vault server.
+- `spec.vault.roleName` - contains the role name we specified when binding the policy to the service account earlier.
 
 > **Note:** `spec.aws`, `spec.azure` and `spec.gcp` can be used to specify the connection information of the corresponding secret manager.
 
@@ -121,7 +121,7 @@ metadata:
   name: virtual-secret
   namespace: demo
 stringData:
-  username: default
+  username: pgbouncer
   password: virtual-secret
 secretStoreName: vault
 ```
@@ -150,18 +150,18 @@ $ kubectl get secrets.virtual-secrets.dev -n demo virtual-secret -oyaml
 apiVersion: virtual-secrets.dev/v1alpha1
 data:
   password: dmlydHVhbC1zZWNyZXQ=
-  username: ZGVmYXVsdA==
+  username: cGdib3VuY2Vy
 kind: Secret
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"virtual-secrets.dev/v1alpha1","kind":"Secret","metadata":{"annotations":{},"name":"virtual-secret","namespace":"demo"},"secretStoreName":"vault","stringData":{"password":"virtual-secret","username":"default"}}
-  creationTimestamp: "2026-02-25T05:48:27Z"
+      {"apiVersion":"virtual-secrets.dev/v1alpha1","kind":"Secret","metadata":{"annotations":{},"name":"virtual-secret","namespace":"demo"},"secretStoreName":"vault","stringData":{"password":"virtual-secret","username":"pgbouncer"}}
+  creationTimestamp: "2026-02-26T09:07:06Z"
   generation: 1
   name: virtual-secret
   namespace: demo
-  resourceVersion: "25163"
-  uid: f4bc8051-65e9-405d-847a-ecfa4fcab182
+  resourceVersion: "58362"
+  uid: fb756118-3dbf-46b6-ac24-fa5cded478bc
 secretStoreName: vault
 type: Opaque
 ```
@@ -227,8 +227,10 @@ If both of them are deployed we should see two new pods in the `kube-system` nam
 ```shell
 $ kubectl get pods -n kube-system
 NAME                                                      READY   STATUS    RESTARTS      AGE
-csi-secrets-store-secrets-store-csi-driver-rvpvm          3/3     Running   0             61s
-secrets-store-csi-driver-provider-virtual-secrets-m78gv   1/1     Running   0             34s
+coredns-695cbbfcb9-r6v7j                                  1/1     Running   1 (36h ago)   2d18h
+csi-secrets-store-secrets-store-csi-driver-qzq8z          3/3     Running   3 (36h ago)   2d
+local-path-provisioner-546dfc6456-lpdp4                   1/1     Running   1 (36h ago)   2d18h
+secrets-store-csi-driver-provider-virtual-secrets-mdw84   1/1     Running   1 (36h ago)   47h
 ```
 The `Secrets Store CSI Driver` uses a custom resource named `SecretProviderClass` to mount the secret. Let’s go ahead and create that,
 
@@ -247,7 +249,7 @@ spec:
 Here,
 
 - `spec.provider` - specifies the provider for Secrets Store CSI Driver to communicate and use.
-- `parameters.secretName` - specifies the name of the virtual secret we want to mount.
+- `spec.parameters.secretName` - specifies the name of the virtual secret we want to mount.
 
 > **Note:** -We can also call the mount subresource of the virtual secret to create the SecretProviderClass for us.
 -The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
@@ -305,41 +307,40 @@ webapp              1/1     Running   0          6m45s
 Now, check the secret data written to the file system at /mnt/virtual-secrets on the webapp pod.
 
 ```shell
-$ kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/username
-default
+$  kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/username
+pgbouncer⏎                    
 
 $ kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/password
 virtual-secret⏎ 
 ```
 
 The value displayed matches the username and password value for the custom secret named `virtual-secret` we created earlier.
-
+### Get PostgreSQL Server ready with Virtual Secrets
 ### Use Virtual Secrets with Pgbouncer
 Virtual Secrets is integrated with KubeDB from the v2025.3.24 and it can be used to store KubeDB’s database credential. Now, the support has been added for `Pgbouncer`.
 We can proceed with deploying a `Pgbouncer` which will use `virtual-secrets` to create custom secret for the database authentication credential.
 ```yaml
-apiVersion: kubedb.com/v1
-kind: Pgbouncer
+apiVersion: kubedb.com/v1alpha2
+kind: PgBouncer
 metadata:
-  name: rd
+  name: pgb-vs
   namespace: demo
 spec:
-  version: 8.2.2
-  mode: Cluster
-  cluster:
-    shards: 3
-    replicas: 2
-  storageType: Durable
-  storage:
-    resources:
-      requests:
-        storage: 20M
-    storageClassName: "Standard"
-    accessModes:
-    - ReadWriteOnce
-  deletionPolicy: WipeOut
+  version: "1.18.0"
+  replicas: 1
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "pg-demo"
+      namespace: demo
+  connectionPool:
+    port: 5432
+    maxClientConnections: 20
+    reservePoolSize: 5
+  terminationPolicy: WipeOut
   authSecret:
-    apiGroup: virtual-secrets.dev
+    apiGroup: "virtual-secrets.dev"
     secretStoreName: vault
     name: virtual-secret
 ```
@@ -352,13 +353,13 @@ We can now apply the Pgbouncer custom resource,
 
 ```shell
 $ kubectl apply -f virtual-secrets/Pgbouncer.yaml
-Pgbouncer.kubedb.com/rd created
+Pgbouncer.kubedb.com/pgb-vs created
 ``` 
-Now, wait until `rd` has status `Ready`. i.e. ,
+Now, wait until `pgb-vs` has status `Ready`. i.e. ,
 ```shell
-$ ubectl get rd -n demo
-NAME   VERSION   STATUS   AGE
-rd     8.2.2     Ready    18h
+$ kubectl get pb -n demo
+NAME     VERSION   STATUS   AGE
+pgb-vs   1.18.0    Ready    22h
 ```
 
 Now, lets go ahead and check what secret it is using,
@@ -370,16 +371,33 @@ virtual-secret   Opaque   2      1d
 
 We can see that the Pgbouncer user password is stored in the vault server as named ```virtual-secret``` . Now let’s go ahead and connect to the database using the password to check whether it is working or not.
 ```bash
- kubectl exec -it rd-shard0-0 -n demo -c Pgbouncer -- bash
-Pgbouncer@rd-shard0-0:/data$ Pgbouncer-cli -a virtual-secret
-Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
-127.0.0.1:6379> set hello world
-OK
-127.0.0.1:6379> get hello
-"world"
-127.0.0.1:6379> exit
-Pgbouncer@rd-shard0-0:/data$ exit
-exit
+$ kubectl exec -it -n demo pgb-vs-0 -- sh
+
+/ $ psql -U pgbouncer -d pgbouncer -h localhost -p 5432
+psql (17.6, server 1.18.0/bouncer)
+WARNING: psql major version 17, server major version 1.18.
+         Some psql features might not work.
+Type "help" for help.
+
+pgbouncer=# SHOW DATABASES;
+   name    |       host       | port | database  | force_user | pool_size | min_pool_size | reserve_pool | pool_mode | max_connections | current_connections | paused | disabled 
+-----------+------------------+------+-----------+------------+-----------+---------------+--------------+-----------+-----------------+---------------------+--------+----------
+ pgbouncer |                  | 5432 | pgbouncer | pgbouncer  |         2 |             0 |            0 | statement |               0 |                   0 |      0 |        0
+ postgres  | pg-demo.demo.svc | 5432 | postgres  |            |        20 |             0 |            5 |           |               0 |                   1 |      0 |        0
+(2 rows)
+
+pgbouncer=# SHOW POOLS;
+ database  |   user    | cl_active | cl_waiting | cl_active_cancel_req | cl_waiting_cancel_req | sv_active | sv_active_cancel | sv_being_canceled | sv_idle | sv_used | sv_tested | sv_login | maxwait | maxwait_us | pool_mode 
+-----------+-----------+-----------+------------+----------------------+-----------------------+-----------+------------------+-------------------+---------+---------+-----------+----------+---------+------------+-----------
+ pgbouncer | pgbouncer |         1 |          0 |                    0 |                     0 |         0 |                0 |                 0 |       0 |       0 |         0 |        0 |       0 |          0 | statement
+ postgres  | postgres  |         0 |          0 |                    0 |                     0 |         0 |                0 |                 0 |       1 |       0 |         0 |        0 |       0 |          0 | session
+(2 rows)
+
+pgbouncer=# SHOW CLIENTS;
+ type |   user    | database  | state  | addr | port  | local_addr | local_port |      connect_time       |      request_time       | wait | wait_us | close_needed |      ptr       | link | remote_pid | tls | application_name 
+------+-----------+-----------+--------+------+-------+------------+------------+-------------------------+-------------------------+------+---------+--------------+----------------+------+------------+-----+------------------
+ C    | pgbouncer | pgbouncer | active | ::1  | 54834 | ::1        |       5432 | 2026-02-27 05:42:36 UTC | 2026-02-27 05:56:50 UTC |   27 |  168287 |            0 | 0x76c98b8147d0 |      |          0 |     | psql
+(1 row)
 
 ```
 We can see that we are able to connect to the database and create a database and a table successfully.
@@ -387,8 +405,8 @@ We can see that we are able to connect to the database and create a database and
 ## Cleanup
 To clean up the resources created in this guide, run the following commands:
 ```bash
-$ kubectl delete -n demo rd rd
-Pgbouncer.kubedb.com "rd" deleted
+$ kubectl delete -n demo pgb-vs
+Pgbouncer.kubedb.com "pgb-vs" deleted
 $ kubectl delete -n demo webapp,virtual-secret,secretproviderclass.virtual-secrets.dev/virtual-secret
 $ kubectl delete ns demo
 $ helm uninstall virtual-secrets-server -n kubevault
