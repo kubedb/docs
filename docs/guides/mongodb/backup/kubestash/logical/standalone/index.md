@@ -57,7 +57,7 @@ metadata:
   name: sample-mongodb
   namespace: demo
 spec:
-  version: "4.2.24"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -83,7 +83,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get mg -n demo sample-mongodb
 NAME             VERSION       STATUS    AGE
-sample-mongodb   4.2.24         Ready     2m9s
+sample-mongodb   4.4.26         Ready     2m9s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -409,7 +409,7 @@ metadata:
   name: restore-mongodb
   namespace: demo
 spec:
-  version: "4.2.24"
+  version: "4.4.26"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -433,7 +433,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get mg -n demo restore-mongodb
 NAME              VERSION   STATUS   AGE
-restore-mongodb   4.2.24     Ready    3m30s
+restore-mongodb   4.4.26     Ready    3m30s
 ```
 
 Let's verify all the databases of this `restore-mongodb` by exec into its pod

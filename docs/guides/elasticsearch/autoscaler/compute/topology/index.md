@@ -45,7 +45,7 @@ Here, we are going to deploy an `Elasticsearch` topology cluster using a support
 
 #### Deploy Elasticsearch Topology Cluster
 
-In this section, we are going to deploy an Elasticsearch topology with ElasticsearchVersion `opensearch-2.8.0`. Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy an Elasticsearch topology with ElasticsearchVersion `opensearch-2.19.2`. Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -55,7 +55,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: opensearch-2.8.0
+  version: opensearch-2.19.2
   storageType: Durable
   topology:
     master:
@@ -103,8 +103,8 @@ Now, wait until `es-topology` has status `Ready`. i.e,
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION             STATUS         AGE
-es-topology   opensearch-2.8.0   Provisioning   113s
-es-topology   opensearch-2.8.0   Ready          115s
+es-topology   opensearch-2.19.2   Provisioning   113s
+es-topology   opensearch-2.19.2   Ready          115s
 ```
 
 Let's check an ingest node containers resources,

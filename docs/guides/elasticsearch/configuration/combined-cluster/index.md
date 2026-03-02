@@ -101,7 +101,7 @@ metadata:
   name: es-multinode
   namespace: demo
 spec:
-  version: xpack-8.11.1
+  version: xpack-8.19.9
   enableSSL: true
   replicas: 3
   configuration:
@@ -129,9 +129,9 @@ Now, wait for the Elasticsearch to become ready:
 ```bash
 $ kubectl get es -n demo -w
 NAME           VERSION          STATUS         AGE
-es-multinode   xpack-8.11.1   Provisioning   18s
-es-multinode   xpack-8.11.1   Provisioning   2m5s
-es-multinode   xpack-8.11.1   Ready          2m5s
+es-multinode   xpack-8.19.9   Provisioning   18s
+es-multinode   xpack-8.19.9   Provisioning   2m5s
+es-multinode   xpack-8.19.9   Ready          2m5s
 ```
 
 ## Verify Configuration

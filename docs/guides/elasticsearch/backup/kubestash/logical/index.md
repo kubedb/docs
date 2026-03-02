@@ -67,7 +67,7 @@ metadata:
   name: es-quickstart
   namespace: demo
 spec:
-  version: xpack-8.15.0
+  version: xpack-8.17.6
   enableSSL: true
   replicas: 2
   storageType: Durable
@@ -95,7 +95,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get es -n demo es-quickstart
 NAME              VERSION        STATUS   AGE
-es-quickstart     xpack-8.15.0   Ready    3h
+es-quickstart     xpack-8.17.6   Ready    3h
 ```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
@@ -149,7 +149,7 @@ items:
     metadata:
       annotations:
         kubectl.kubernetes.io/last-applied-configuration: |
-          {"apiVersion":"kubedb.com/v1alpha2","kind":"Elasticsearch","metadata":{"annotations":{},"name":"es-quickstart","namespace":"demo"},"spec":{"enableSSL":true,"storageType":"Durable","topology":{"data":{"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"ingest":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"master":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}}},"version":"xpack-8.15.0"}}
+          {"apiVersion":"kubedb.com/v1alpha2","kind":"Elasticsearch","metadata":{"annotations":{},"name":"es-quickstart","namespace":"demo"},"spec":{"enableSSL":true,"storageType":"Durable","topology":{"data":{"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"ingest":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"master":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}}},"version":"xpack-8.17.6"}}
       creationTimestamp: "2024-09-18T09:46:17Z"
       generation: 1
       labels:
@@ -604,7 +604,7 @@ metadata:
   name: es-cluster
   namespace: demo
 spec:
-  version: xpack-8.15.0
+  version: xpack-8.17.6
   enableSSL: true
   replicas: 2
   storageType: Durable
@@ -696,7 +696,7 @@ At first, check if the database has gone into **`Ready`** state by the following
 ```bash
 $ kubectl get es -n demo es-cluster
 NAME            VERSION        STATUS   AGE
-es-cluster      xpack-8.15.0   Ready    6m14s
+es-cluster      xpack-8.17.6   Ready    6m14s
 ```
 
 ```bash

@@ -1,7 +1,7 @@
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: ElasticsearchVersion
 metadata:
-  name: xpack-8.11.1
+  name: xpack-8.19.9
 spec:
   authPlugin: SearchGuard
   db:

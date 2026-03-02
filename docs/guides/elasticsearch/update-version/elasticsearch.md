@@ -38,7 +38,7 @@ namespace/demo created
 
 ## Prepare Elasticsearch
 
-Now, we are going to deploy a `Elasticsearch` replicaset database with version `xpack-9.1.3`.
+Now, we are going to deploy a `Elasticsearch` replicaset database with version `xpack-9.1.4`.
 
 ### Deploy Elasticsearch
 
@@ -62,7 +62,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: xpack-9.1.3
+  version: xpack-9.1.4
  
 ```
 
@@ -78,7 +78,7 @@ Now, wait until `es-demo` created has status `Ready`. i.e,
 ```bash
 $ kubectl get es -n demo 
 NAME      VERSION        STATUS   AGE
-es-demo   xpack-9.1.3   Ready    9m10s
+es-demo   xpack-9.1.4   Ready    9m10s
 
 ```
 
@@ -86,7 +86,7 @@ We are now ready to apply the `ElasticsearchOpsRequest` CR to update.
 
 ### update Elasticsearch Version
 
-Here, we are going to update `Elasticsearch` from `xpack-9.1.3` to `xpack-9.1.4`.
+Here, we are going to update `Elasticsearch` from `xpack-9.1.4` to `xpack-9.1.4`.
 
 #### Create ElasticsearchOpsRequest:
 

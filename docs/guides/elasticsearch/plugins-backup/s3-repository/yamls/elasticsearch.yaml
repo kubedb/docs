@@ -12,7 +12,7 @@ spec:
     name: es-secure-settings
   enableSSL: true
   # we are using ElasticsearchVersion with pre-installed s3 repository plugin
-  version: xpack-8.11.1
+  version: xpack-8.19.9
   storageType: Durable
   replicas: 3
   storage:

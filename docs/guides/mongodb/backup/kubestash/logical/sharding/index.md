@@ -57,7 +57,7 @@ metadata:
   name: sample-mg-sh
   namespace: demo
 spec:
-  version: 4.2.24
+  version: 4.4.26
   shardTopology:
     configServer:
       replicas: 3
@@ -94,7 +94,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get mongodb -n demo sample-mg-sh
 NAME           VERSION   STATUS   AGE
-sample-mg-sh   4.2.24     Ready    5m39s
+sample-mg-sh   4.4.26     Ready    5m39s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -422,7 +422,7 @@ metadata:
   name: sample-mg-sh-restore
   namespace: demo
 spec:
-  version: 4.2.24
+  version: 4.4.26
   shardTopology:
     configServer:
       replicas: 3
@@ -456,7 +456,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get mg -n demo sample-mg-sh-restore
 NAME                   VERSION   STATUS   AGE
-sample-mg-sh-restore   4.2.24     Ready    7m47s
+sample-mg-sh-restore   4.4.26     Ready    7m47s
 ```
 
 Let's verify all the databases of this `sample-mg-sh-restore` by exec into its mongos pod

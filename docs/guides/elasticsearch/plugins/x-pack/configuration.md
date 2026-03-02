@@ -51,7 +51,7 @@ kubectl get elasticsearchversions 7.3.2 -o yaml
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: ElasticsearchVersion
 metadata:
-  name: xpack-8.11.1
+  name: xpack-8.19.9
 spec:
   authPlugin: X-Pack
   db:
@@ -92,7 +92,7 @@ metadata:
   name: config-elasticsearch
   namespace: demo
 spec:
-  version: xpack-8.11.1
+  version: xpack-8.19.9
   storage:
     storageClassName: "standard"
     accessModes:
@@ -143,7 +143,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Halt
-  version: xpack-8.11.1
+  version: xpack-8.19.9
 status:
   observedGeneration: 1$4210395375389091791
   phase: Running

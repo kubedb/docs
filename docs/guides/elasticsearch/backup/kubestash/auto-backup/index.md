@@ -219,7 +219,7 @@ metadata:
     blueprint.kubestash.com/name: es-quickstart-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: xpack-8.15.0
+  version: xpack-8.17.6
   enableSSL: true
   replicas: 2
   storageType: Durable
@@ -566,7 +566,7 @@ metadata:
     variables.kubestash.com/namespace: demo
     variables.kubestash.com/args: --ignoreType=template,settings
 spec:
-  version: xpack-8.15.0
+  version: xpack-8.17.6
   enableSSL: true
   replicas: 2
   storageType: Durable

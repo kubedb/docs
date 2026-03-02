@@ -33,7 +33,7 @@ spec:
   databaseRef:
     name: es
   updateVersion:
-    targetVersion: xpack-8.11.1
+    targetVersion: xpack-8.19.9
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"

@@ -55,7 +55,7 @@ standard (default)   kubernetes.io/gce-pd   Delete          Immediate           
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `Elasticsearch` combined cluster with version `xpack-8.11.1`.
+Now, we are going to deploy a `Elasticsearch` combined cluster with version `xpack-8.19.9`.
 
 ### Deploy Elasticsearch
 
@@ -69,7 +69,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: xpack-8.11.1
+  version: xpack-8.19.9
   storageType: Durable
   topology:
     master:
@@ -114,7 +114,7 @@ Now, wait until `es-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get es -n demo
 NAME         VERSION        STATUS   AGE
-es-cluster   xpack-8.11.1   Ready    22h
+es-cluster   xpack-8.19.9   Ready    22h
 
 ```
 

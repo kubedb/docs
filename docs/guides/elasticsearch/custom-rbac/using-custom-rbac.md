@@ -142,7 +142,7 @@ metadata:
   name: quick-elasticsearch
   namespace: demo
 spec:
-  version: xpack-8.11.1
+  version: xpack-8.19.9
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
@@ -193,7 +193,7 @@ metadata:
   name: minute-elasticsearch
   namespace: demo
 spec:
-  version: xpack-8.11.1
+  version: xpack-8.19.9
   storageType: Durable
   podTemplate:
     spec:
