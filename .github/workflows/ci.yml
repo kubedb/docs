@@ -84,10 +84,14 @@ jobs:
 
       - name: Check codespan schema
         run: |
+          git clone https://github.com/kubedb/installer.git
+          cd installer
+          git checkout $(git describe --tags --abbrev=0 2>/dev/null || echo master)
+          cd ..
           git clone https://github.com/kmodules/resource-metadata.git
           mv resource-metadata/hub /tmp
           rm -rf resource-metadata
-          codespan-schema-checker --content=./docs
+          codespan-schema-checker --kubedb-catalog-dir=./installer/catalog/kubedb --content=./docs
 
       - name: Check links
         run: |

@@ -48,7 +48,7 @@ metadata:
   name: mongo-sh-hid
   namespace: demo
 spec:
-  version: "percona-7.0.4"
+  version: "percona-7.0.18"
   shardTopology:
     configServer:
       replicas: 3
@@ -122,7 +122,7 @@ All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as petset
 ```bash
 $ kubectl get mg,sts,svc,pvc,pv -n demo
 NAME                              VERSION          STATUS   AGE
-mongodb.kubedb.com/mongo-sh-hid   percona-7.0.4   Ready    4m46s
+mongodb.kubedb.com/mongo-sh-hid   percona-7.0.18   Ready    4m46s
 
 NAME                                          READY   AGE
 petset.apps/mongo-sh-hid-configsvr       3/3     4m46s
@@ -163,7 +163,7 @@ kind: MongoDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-hid","namespace":"demo"},"spec":{"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"shardTopology":{"configServer":{"ephemeralStorage":{},"replicas":3},"mongos":{"replicas":2},"shard":{"ephemeralStorage":{},"replicas":3,"shards":2}},"storageEngine":"inMemory","storageType":"Ephemeral","deletionPolicy":"WipeOut","version":"percona-7.0.4"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MongoDB","metadata":{"annotations":{},"name":"mongo-sh-hid","namespace":"demo"},"spec":{"hidden":{"podTemplate":{"spec":{"resources":{"requests":{"cpu":"400m","memory":"400Mi"}}}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"}},"shardTopology":{"configServer":{"ephemeralStorage":{},"replicas":3},"mongos":{"replicas":2},"shard":{"ephemeralStorage":{},"replicas":3,"shards":2}},"storageEngine":"inMemory","storageType":"Ephemeral","deletionPolicy":"WipeOut","version":"percona-7.0.18"}}
   creationTimestamp: "2022-10-31T05:59:43Z"
   finalizers:
     - kubedb.com
@@ -252,7 +252,7 @@ spec:
   storageEngine: inMemory
   storageType: Ephemeral
   deletionPolicy: WipeOut
-  version: percona-7.0.4
+  version: percona-7.0.18
 status:
   conditions:
     - lastTransitionTime: "2022-10-31T05:59:43Z"

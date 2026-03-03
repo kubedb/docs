@@ -4,7 +4,7 @@ metadata:
   name: recovered-es
   namespace: demo
 spec:
-  version: xpack-8.11.1
+  version: xpack-8.19.9
   authSecret:
     kind: Secret
     name: instant-elasticsearch-auth

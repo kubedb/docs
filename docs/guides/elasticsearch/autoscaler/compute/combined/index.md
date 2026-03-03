@@ -45,7 +45,7 @@ Here, we are going to deploy an `Elasticsearch` in combined cluster mode using a
 
 ### Deploy Elasticsearch standalone
 
-In this section, we are going to deploy an Elasticsearch combined cluster with ElasticsearchVersion `xpack-8.11.1`.  Then, in the next section, we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy an Elasticsearch combined cluster with ElasticsearchVersion `xpack-8.19.9`.  Then, in the next section, we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1

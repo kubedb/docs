@@ -49,7 +49,7 @@ metadata:
   name: sample-es
   namespace: demo
 spec:
-  version: xpack-8.11.1
+  version: xpack-8.19.9
   storageType: Durable
   topology:
     master:
@@ -97,7 +97,7 @@ Now, wait until `sample-es` has status Ready. i.e,
 ```shell
 $ kubectl get Elasticsearch -n demo -w
 NAME        VERSION        STATUS   AGE
-sample-es   xpack-8.11.1   Ready    3m12s
+sample-es   xpack-8.19.9   Ready    3m12s
 ```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
