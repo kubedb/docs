@@ -1,0 +1,24 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: MariaDBAutoscaler
+metadata:
+  name: md-as-compute
+  namespace: demo
+spec:
+  databaseRef:
+    name: sample-mariadb
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
+  compute:
+    mariadb:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 250m
+        memory: 400Mi
+      maxAllowed:
+        cpu: 1
+        memory: 1Gi
+      containerControlledValues: "RequestsAndLimits"
+      controlledResources: ["cpu", "memory"]

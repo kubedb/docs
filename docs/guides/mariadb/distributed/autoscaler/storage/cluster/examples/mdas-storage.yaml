@@ -1,0 +1,14 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: MariaDBAutoscaler
+metadata:
+  name: md-as-st
+  namespace: demo
+spec:
+  databaseRef:
+    name: sample-mariadb
+  storage:
+    mariadb:
+      trigger: "On"
+      usageThreshold: 20
+      scalingThreshold: 20
+      expansionMode: "Online"
