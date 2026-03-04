@@ -1,19 +1,19 @@
 ---
-title: Virtual Secret Overview
+title: Virtual Secret Pgpool
 menu:
   docs_{{ .version }}:
-    identifier: pb-vs-overview
-    name: Overview
-    parent: pb-virtualsecret
-    weight: 5
+    identifier: pp-vs
+    name: Virtual Secret
+    parent: pp-pgpool-guides
+    weight: 75
 menu_name: docs_{{ .version }}
-section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Virtual Secrets For Pgbouncer: Secure Kubernetes Secrets
+# Virtual Secrets For pgpool: Secure Kubernetes Secrets
 KubeDB's Virtual Secrets feature enhances the security of your database credentials by allowing you to use external secret management systems instead of storing sensitive information directly 
-in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your Pgbouncer database in KubeDB.
+in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your pgpool database in KubeDB.
 
 ## Virtual Secrets Design
 `Virtual Secrets` extends Kubernetes by introducing a new `Secret` resource under the `virtual-secrets.dev` API group. From a user perspective, it behaves similarly to the native Kubernetes Secret
@@ -37,7 +37,7 @@ Before you begin, ensure you have the following prerequisites in place:
 - A running vault server with kubeVault operator installed. Follow the installation guide [here](https://kubevault.com/articles/how-to-use-hashicorp-vault-in-kubernetes-using-kubevault/).
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Pgbouncer](/docs/guides/Pgbouncer/concepts/Pgbouncer.md)
+    - [pgpool](/docs/guides/pgpool/concepts/pgpool.md)
 
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -113,7 +113,7 @@ Here,
 
 
 ### Create Virtual Secret
-Now, we are going to create a `Virtual Secret` resource that will store the Pgbouncer credentials in the vault server.
+Now, we are going to create a `Virtual Secret` resource that will store the pgpool credentials in the vault server.
 ```yaml
 apiVersion: virtual-secrets.dev/v1alpha1
 kind: Secret
@@ -121,7 +121,7 @@ metadata:
   name: virtual-secret
   namespace: demo
 stringData:
-  username: pgbouncer
+  username: pgpool
   password: virtual-secret
 secretStoreName: vault
 ```
@@ -155,7 +155,7 @@ kind: Secret
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"virtual-secrets.dev/v1alpha1","kind":"Secret","metadata":{"annotations":{},"name":"virtual-secret","namespace":"demo"},"secretStoreName":"vault","stringData":{"password":"virtual-secret","username":"pgbouncer"}}
+      {"apiVersion":"virtual-secrets.dev/v1alpha1","kind":"Secret","metadata":{"annotations":{},"name":"virtual-secret","namespace":"demo"},"secretStoreName":"vault","stringData":{"password":"virtual-secret","username":"pgpool"}}
   creationTimestamp: "2026-02-26T09:07:06Z"
   generation: 1
   name: virtual-secret
@@ -174,7 +174,7 @@ We will connect to the Vault by using Vault CLI. Therefore, we need to export th
 
 In one terminal port-forward the vault server service,
 ```shell
-$ kubectl port-forward -n vault-demo service/vault 8200
+$ kubectl port-forward -n demo service/vault 8200
 Forwarding from 127.0.0.1:8200 -> 8200
 Forwarding from [::1]:8200 -> 8200
 ```
@@ -206,7 +206,7 @@ We can see that the secret data is stored in the `virtual-secrets.dev/demo/virtu
 - `demo` is the namespace.
 - `virtual-secret`is the name of the secret.
 
-### Mount Virtual Secret in Pgbouncer
+### Mount Virtual Secret in pgpool
 `Secrets` are not that useful if we can not mount them to pods. We can mount the virtual secrets using [Secrets Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/) .
 
 Virtual Secrets comes with a custom provider of `Secrets Store CSI Driver`, named `secrets-store-csi-driver-provider-virtual-secrets` which leverages `virtual-secrets-server` to read secret
@@ -315,13 +315,28 @@ virtual-secret⏎
 ```
 
 The value displayed matches the username and password value for the custom secret named `virtual-secret` we created earlier.
-### Get PostgreSQL Server ready with Virtual Secrets
-### Use Virtual Secrets with Pgbouncer
-Virtual Secrets is integrated with KubeDB from the v2025.3.24 and it can be used to store KubeDB’s database credential. Now, the support has been added for `Pgbouncer`.
-We can proceed with deploying a `Pgbouncer` which will use `virtual-secrets` to create custom secret for the database authentication credential.
+
+## Get PostgreSQL Server ready 
+
+pgpool is a connection-pooling middleware for PostgreSQL. Therefore you will need to have a PostgreSQL server up and running for pgpool to connect to.
+
+Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/virtual_secret/guide.md).
+
+In this tutorial, we will use a Postgres named `pp-demo` in the `demo` namespace.
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/quickstart/pp-demo.yaml
+postgres.kubedb.com/pp-demo created
+```
+
+KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `pp-demo`. Database secret `pp-demo-auth` holds this user's username and password. Following is the yaml file for it.
+
+### Use Virtual Secrets with pgpool
+Virtual Secrets is integrated with KubeDB from the v2025.3.24 and it can be used to store KubeDB’s database credential. Now, the support has been added for `pgpool`.
+We can proceed with deploying a `pgpool` which will use `virtual-secrets` to create custom secret for the database authentication credential.
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: PgBouncer
+kind: pgpool
 metadata:
   name: pgb-vs
   namespace: demo
@@ -332,7 +347,7 @@ spec:
     syncUsers: true
     databaseName: "postgres"
     databaseRef:
-      name: "pg-demo"
+      name: "pp-demo"
       namespace: demo
   connectionPool:
     port: 5432
@@ -349,17 +364,17 @@ Here,
 - `spec.authSecret.apiGroup`- specifies that we want to use virtual secrets instead of native k8s secret.
 - `spec.authSecret.secretStoreName` - specifies the `SecretStore` resource that contains the connection information for external secret store to store the secret data.
 
-We can now apply the Pgbouncer custom resource,
+We can now apply the pgpool custom resource,
 
 ```shell
-$ kubectl apply -f virtual-secrets/Pgbouncer.yaml
-Pgbouncer.kubedb.com/pgb-vs created
+$ kubectl apply -f virtual-secrets/pgpool.yaml
+pgpool.kubedb.com/pgb-vs created
 ``` 
 Now, wait until `pgb-vs` has status `Ready`. i.e. ,
 ```shell
-$ kubectl get pb -n demo
-NAME     VERSION   STATUS   AGE
-pgb-vs   1.18.0    Ready    22h
+$ kubectl get pp -n demo
+NAME    VERSION   STATUS   AGE
+pp-vs   4.5.0     Ready    41m
 ```
 
 Now, lets go ahead and check what secret it is using,
@@ -369,35 +384,22 @@ NAME             TYPE     DATA   AGE
 virtual-secret   Opaque   2      1d
 ```
 
-We can see that the Pgbouncer user password is stored in the vault server as named ```virtual-secret``` . Now let’s go ahead and connect to the database using the password to check whether it is working or not.
+We can see that the pgpool user password is stored in the vault server as named ```virtual-secret``` . Now let’s go ahead and connect to the database using the password to check whether it is working or not.
 ```bash
-$ kubectl exec -it -n demo pgb-vs-0 -- sh
-
-/ $ psql -U pgbouncer -d pgbouncer -h localhost -p 5432
-psql (17.6, server 1.18.0/bouncer)
-WARNING: psql major version 17, server major version 1.18.
+$ export PGPASSWORD='virtual-secret'
+banusree@bonusree-datta-PC ~> psql --host=localhost --port=9999 --username=postgres postgres
+psql (16.11 (Ubuntu 16.11-0ubuntu0.24.04.1), server 18.2)
+WARNING: psql major version 16, server major version 18.
          Some psql features might not work.
 Type "help" for help.
 
-pgbouncer=# SHOW DATABASES;
-   name    |       host       | port | database  | force_user | pool_size | min_pool_size | reserve_pool | pool_mode | max_connections | current_connections | paused | disabled 
------------+------------------+------+-----------+------------+-----------+---------------+--------------+-----------+-----------------+---------------------+--------+----------
- pgbouncer |                  | 5432 | pgbouncer | pgbouncer  |         2 |             0 |            0 | statement |               0 |                   0 |      0 |        0
- postgres  | pg-demo.demo.svc | 5432 | postgres  |            |        20 |             0 |            5 |           |               0 |                   1 |      0 |        0
-(2 rows)
-
-pgbouncer=# SHOW POOLS;
- database  |   user    | cl_active | cl_waiting | cl_active_cancel_req | cl_waiting_cancel_req | sv_active | sv_active_cancel | sv_being_canceled | sv_idle | sv_used | sv_tested | sv_login | maxwait | maxwait_us | pool_mode 
------------+-----------+-----------+------------+----------------------+-----------------------+-----------+------------------+-------------------+---------+---------+-----------+----------+---------+------------+-----------
- pgbouncer | pgbouncer |         1 |          0 |                    0 |                     0 |         0 |                0 |                 0 |       0 |       0 |         0 |        0 |       0 |          0 | statement
- postgres  | postgres  |         0 |          0 |                    0 |                     0 |         0 |                0 |                 0 |       1 |       0 |         0 |        0 |       0 |          0 | session
-(2 rows)
-
-pgbouncer=# SHOW CLIENTS;
- type |   user    | database  | state  | addr | port  | local_addr | local_port |      connect_time       |      request_time       | wait | wait_us | close_needed |      ptr       | link | remote_pid | tls | application_name 
-------+-----------+-----------+--------+------+-------+------------+------------+-------------------------+-------------------------+------+---------+--------------+----------------+------+------------+-----+------------------
- C    | pgbouncer | pgbouncer | active | ::1  | 54834 | ::1        |       5432 | 2026-02-27 05:42:36 UTC | 2026-02-27 05:56:50 UTC |   27 |  168287 |            0 | 0x76c98b8147d0 |      |          0 |     | psql
-(1 row)
+postgres=# SELECT datname FROM pg_database;
+  datname  
+-----------
+ postgres
+ template1
+ template0
+(3 rows)
 
 ```
 We can see that we are able to connect to the database and create a database and a table successfully.
@@ -406,7 +408,7 @@ We can see that we are able to connect to the database and create a database and
 To clean up the resources created in this guide, run the following commands:
 ```bash
 $ kubectl delete -n demo pgb-vs
-Pgbouncer.kubedb.com "pgb-vs" deleted
+pgpool.kubedb.com "pgb-vs" deleted
 $ kubectl delete -n demo webapp,virtual-secret,secretproviderclass.virtual-secrets.dev/virtual-secret
 $ kubectl delete ns demo
 $ helm uninstall virtual-secrets-server -n kubevault
