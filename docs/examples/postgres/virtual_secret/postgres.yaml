@@ -5,6 +5,8 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: secret
+    name: pg-secret
     apiGroup: "virtual-secrets.dev"
     secretStoreName: vault
   replicas: 3
