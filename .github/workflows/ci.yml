@@ -79,13 +79,19 @@ jobs:
           kubectl create -f https://github.com/kube-slice/apis/raw/release-v2025.7.31/crd/controller.kubeslice.io_sliceconfigs.yaml
           kubectl create -f https://github.com/kubeops/petset/raw/master/crds/apps.k8s.appscode.com_placementpolicies.yaml
           kubectl create -f https://github.com/open-cluster-management-io/api/raw/main/operator/v1/0000_00_operator.open-cluster-management.io_klusterlets.crd.yaml
+          kubectl create -f https://raw.githubusercontent.com/open-cluster-management-io/api/refs/heads/main/addon/v1alpha1/0000_01_addon.open-cluster-management.io_managedclusteraddons.crd.yaml
+          
 
       - name: Check codespan schema
         run: |
+          git clone https://github.com/kubedb/installer.git
+          cd installer
+          git checkout $(git describe --tags --abbrev=0 2>/dev/null || echo master)
+          cd ..
           git clone https://github.com/kmodules/resource-metadata.git
           mv resource-metadata/hub /tmp
           rm -rf resource-metadata
-          codespan-schema-checker --content=./docs
+          codespan-schema-checker --kubedb-catalog-dir=./installer/catalog/kubedb --content=./docs
 
       - name: Check links
         run: |

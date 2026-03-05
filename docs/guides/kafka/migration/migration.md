@@ -101,7 +101,7 @@ spec:
     kind: Secret
     name: source-kafka-auth
   replicas: 2
-  version: 3.9.0
+  version: 4.0.0
   storage:
     accessModes:
       - ReadWriteOnce
@@ -279,7 +279,7 @@ spec:
   authSecret:
     kind: Secret
     name: target-kafka-auth
-  version: 3.9.0
+  version: 4.0.0
   topology:
     broker:
       replicas: 2
@@ -363,7 +363,7 @@ spec:
   authSecret:
     kind: Secret
     name: mirror-connect-auth
-  version: 3.9.0
+  version: 4.0.0
   replicas: 3
   kafkaRef:
     name: target-kafka

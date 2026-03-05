@@ -1,0 +1,31 @@
+apiVersion: apps.k8s.appscode.com/v1
+kind: PlacementPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: distributed-mariadb
+spec:
+  clusterSpreadConstraint:
+    distributionRules:
+      - clusterName: demo-controller
+        monitoring:
+          prometheus:
+            url: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        replicaIndices:
+          - 0
+          - 2
+      - clusterName: demo-worker
+        monitoring:
+          prometheus:
+            url: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        replicaIndices:
+          - 1
+    slice:
+      projectNamespace: kubeslice-demo-distributed-mariadb
+      sliceName: demo-slice
+  nodeSpreadConstraint:
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
+  zoneSpreadConstraint:
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway

@@ -82,7 +82,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 2
-  version: 3.9.0
+  version: 4.0.0
   configuration:
     secretName: kf-combined-custom-config
   storage:
@@ -181,7 +181,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `kafka-dev` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.SecretName` specifies the name of the new secret.
 
 Let's create the `KafkaOpsRequest` CR we have shown above,
 

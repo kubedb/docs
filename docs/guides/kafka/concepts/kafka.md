@@ -30,9 +30,19 @@ metadata:
   namespace: demo
 spec:
   disableSecurity: false
+  tieredStorage:
+    provider: s3
+    s3:
+      bucket: kafka
+      endpoint: <s3-endpoint>
+      region: us-east-1
+      secretName: aws-secret
+      prefix: tiered-storage-demo/
+    storageManagerClassName: io.aiven.kafka.tieredstorage.RemoteStorageManager
+    storageManagerClassPath: /opt/kafka/libs/tiered-plugins/*
   authSecret:
     kind: Secret
-    name: kafka-admin-cred
+    name: kafka-auth
   configuration:
     secretName: kafka-custom-config
     inline:
@@ -118,7 +128,7 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  version: 3.9.0
+  version: 4.0.0
 ```
 
 ### spec.version
@@ -130,6 +140,7 @@ spec:
 - `3.7.2`
 - `3.8.1`
 - `3.9.0`
+- `4.0.0`
 
 ### spec.replicas
 
@@ -215,6 +226,33 @@ configuration:
               topic.prefix=mongodb-
               connection.uri=mongodb://mongo-user:mongo-password@mongo-host:27017
       ```
+
+### spec.tieredStorage
+`spec.tieredStorage` is an optional field that specifies the tiered storage configuration for Kafka. Tiered storage allows Kafka to offload older data to cheaper storage solutions like S3, Azure Blob Storage, GCS, or local storage, while keeping recent data on faster local storage. Tiered storage helps in reducing the cost of storage and improves the performance of Kafka by keeping the frequently accessed data on local storage. Following are the fields of `spec.tieredStorage`:
+- `provider` ( `string` | `""` ) - is a field that specifies the tiered storage provider. Supported providers are `s3`, `azure`, `gcs`, and `local`.
+- `s3` ( `object` | `nil` ) - is a field that specifies the S3 tiered storage configuration. It has the following fields:
+    - `bucket` ( `string` | `""` ) - is a required field that specifies the S3 bucket name.
+    - `endpoint` ( `string` | `""` ) - is an optional field that specifies the S3 endpoint.
+    - `region` ( `string` | `""` ) - is a required field that specifies the S3 region.
+    - `secretName` ( `string` | `""` ) - is a required field that specifies the name of the secret that contains the S3 credentials.
+    - `prefix` ( `string` | `""` ) - is an optional field that specifies the prefix for the S3 objects.
+- `azure` ( `object` | `nil` ) - is a field that specifies the Azure Blob Storage tiered storage configuration. It has the following fields:
+    - `container` ( `string` | `""` ) - is a required field that specifies the Azure Blob Storage container name.
+    - `storageAccount` ( `string` | `""` ) - is a required field that specifies the Azure storage account name.
+    - `secretName` ( `string` | `""` ) - is a required field that specifies the name of the secret that contains the Azure Blob Storage credentials.
+    - `prefix` ( `string` | `""` ) - is an optional field that specifies the prefix for the Azure Blob Storage objects.
+- `gcs` ( `object` | `nil` ) - is a field that specifies the GCS tiered storage configuration. It has the following fields:
+    - `bucket` ( `string` | `""` ) - is a required field that specifies the GCS bucket name.
+    - `secretName` ( `string` | `""` ) - is a required field that specifies the name of the secret that contains the GCS credentials.
+    - `prefix` ( `string` | `""` ) - is an optional field that specifies the prefix for the GCS objects.
+- `local` ( `object` | `nil` ) - is a field that specifies the local tiered storage configuration. It has the following fields:
+    - `mountPath` ( `string` | `""` ) - is a required field that specifies the mount path for the local storage.
+    - `subPath` ( `string` | `""` ) - is an optional field that specifies the sub-path for the local storage.
+- `storageManagerClassName` ( `string` | `""` ) - is an optional field that specifies the storage manager class name for the tiered storage. Default is `io.aiven.kafka.tieredstorage.RemoteStorageManager`.
+
+- `storageManagerClassPath` ( `string` | `""` ) - is an optional field that specifies the class path where the storage manager implementation JARs are located. Example: `/opt/kafka/libs/tiered-plugins/*`.
+
+
 ### spec.topology
 
 `spec.topology` represents the topology configuration for Kafka cluster in KRaft mode.
