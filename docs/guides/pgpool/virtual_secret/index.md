@@ -146,21 +146,21 @@ virtual-secret   Opaque                     2      2d19h
 We can also get the whole definition of the `Secret`,
 
 ```shell
-$ kubectl get secrets.virtual-secrets.dev -n demo virtual-secret -oyaml
+$  kubectl get secrets.virtual-secrets.dev -n demo virtual-secret -oyaml
 apiVersion: virtual-secrets.dev/v1alpha1
 data:
   password: dmlydHVhbC1zZWNyZXQ=
-  username: cGdib3VuY2Vy
+  username: cGdwb29s
 kind: Secret
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
       {"apiVersion":"virtual-secrets.dev/v1alpha1","kind":"Secret","metadata":{"annotations":{},"name":"virtual-secret","namespace":"demo"},"secretStoreName":"vault","stringData":{"password":"virtual-secret","username":"pgpool"}}
   creationTimestamp: "2026-02-26T09:07:06Z"
-  generation: 1
+  generation: 2
   name: virtual-secret
   namespace: demo
-  resourceVersion: "58362"
+  resourceVersion: "687530"
   uid: fb756118-3dbf-46b6-ac24-fa5cded478bc
 secretStoreName: vault
 type: Opaque
@@ -217,7 +217,6 @@ Let’s go ahead and install `Secrets Store CSI Driver` and `secrets-store-csi-d
 ```shell
 $ helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
 $ helm install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system
-
 $ helm search repo appscode/secrets-store-csi-driver-provider-virtual-secrets --version=v2025.3.14
 $ helm upgrade -i secrets-store-csi-driver-provider-virtual-secrets appscode/secrets-store-csi-driver-provider-virtual-secrets -n kube-system --create-namespace --version=v2025.3.14
 ```
@@ -251,8 +250,10 @@ Here,
 - `spec.provider` - specifies the provider for Secrets Store CSI Driver to communicate and use.
 - `spec.parameters.secretName` - specifies the name of the virtual secret we want to mount.
 
-> **Note:** -We can also call the mount subresource of the virtual secret to create the SecretProviderClass for us.
--The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
+> **Note:**  We can also call the mount subresource of the virtual secret to create the SecretProviderClass for us.
+The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for.
+
+ Let’s create the SecretProviderClass,
 
 ```shell
 $ kubectl apply -f virtual-secrets/secret-provider-class.yaml 
@@ -320,7 +321,7 @@ The value displayed matches the username and password value for the custom secre
 
 pgpool is a connection-pooling middleware for PostgreSQL. Therefore you will need to have a PostgreSQL server up and running for pgpool to connect to.
 
-Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/virtual_secret/guide.md).
+Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/virtual_secret/index.md).
 
 In this tutorial, we will use a Postgres named `pp-demo` in the `demo` namespace.
 
@@ -336,24 +337,20 @@ Virtual Secrets is integrated with KubeDB from the v2025.3.24 and it can be used
 We can proceed with deploying a `pgpool` which will use `virtual-secrets` to create custom secret for the database authentication credential.
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: pgpool
+kind: Pgpool
 metadata:
-  name: pgb-vs
+  name: pp-vs
   namespace: demo
 spec:
-  version: "1.18.0"
+  version: "4.5.0"
   replicas: 1
-  database:
-    syncUsers: true
-    databaseName: "postgres"
-    databaseRef:
-      name: "pp-demo"
-      namespace: demo
-  connectionPool:
-    port: 5432
-    maxClientConnections: 20
-    reservePoolSize: 5
-  terminationPolicy: WipeOut
+  postgresRef:
+    name: pg-demo
+    namespace: demo
+  sslMode: disable
+  clientAuthMode: md5
+  syncUsers: true
+  deletionPolicy: WipeOut
   authSecret:
     apiGroup: "virtual-secrets.dev"
     secretStoreName: vault
@@ -368,9 +365,9 @@ We can now apply the pgpool custom resource,
 
 ```shell
 $ kubectl apply -f virtual-secrets/pgpool.yaml
-pgpool.kubedb.com/pgb-vs created
+pgpool.kubedb.com/pp-vs created
 ``` 
-Now, wait until `pgb-vs` has status `Ready`. i.e. ,
+Now, wait until `pp-vs` has status `Ready`. i.e. ,
 ```shell
 $ kubectl get pp -n demo
 NAME    VERSION   STATUS   AGE
@@ -407,9 +404,10 @@ We can see that we are able to connect to the database and create a database and
 ## Cleanup
 To clean up the resources created in this guide, run the following commands:
 ```bash
-$ kubectl delete -n demo pgb-vs
-pgpool.kubedb.com "pgb-vs" deleted
-$ kubectl delete -n demo webapp,virtual-secret,secretproviderclass.virtual-secrets.dev/virtual-secret
+$ kubectl delete pp -n demo pp-vs
+pgpool.kubedb.com "pp-vs" deleted
+$ kubectl delete pod webapp -n demo
+$ kubectl delete secretproviderclass -n demo virtual-secret
 $ kubectl delete ns demo
 $ helm uninstall virtual-secrets-server -n kubevault
 $ helm uninstall secrets-store-csi-driver-provider-virtual-secrets -n kube-system

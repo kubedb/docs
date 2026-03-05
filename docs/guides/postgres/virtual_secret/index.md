@@ -455,7 +455,8 @@ We can see that we are able to connect to the database and create a database and
 To clean up the resources created in this guide, run the following commands:
 ```bash
 $ kubectl delete -n demo postgres pg
-$ kubectl delete -n demo webapp,virtual-secret,secretproviderclass.virtual-secrets.dev/virtual-secret
+$ kubectl delete pod webapp -n demo
+$ kubectl delete secretproviderclass -n demo virtual-secret
 $ kubectl delete ns demo
 $ helm uninstall virtual-secrets-server -n kubevault
 $ helm uninstall secrets-store-csi-driver-provider-virtual-secrets -n kube-system
