@@ -1,0 +1,20 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: webapp
+  namespace: demo
+spec:
+  containers:
+    - image: jweissig/app:0.0.1
+      name: webapp
+      volumeMounts:
+        - name: virtual-secrets-store
+          mountPath: "/mnt/virtual-secrets"
+          readOnly: true
+  volumes:
+    - name: virtual-secrets-store
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: "virtual-secret"

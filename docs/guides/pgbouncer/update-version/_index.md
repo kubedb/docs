@@ -5,6 +5,6 @@ menu:
     identifier: pb-updating
     name: Update Version
     parent: pb-pgbouncer-guides
-    weight: 40
+    weight: 70
 menu_name: docs_{{ .version }}
 ---

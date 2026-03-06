@@ -5,6 +5,6 @@ menu:
     identifier: pb-restart
     name: Restart
     parent: pb-pgbouncer-guides
-    weight: 50
+    weight: 130
 menu_name: docs_{{ .version }}
 ---

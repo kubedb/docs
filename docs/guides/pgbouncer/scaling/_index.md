@@ -5,6 +5,6 @@ menu:
     identifier: pb-scaling
     name: Scaling
     parent: pb-pgbouncer-guides
-    weight: 43
+    weight: 80
 menu_name: docs_{{ .version }}
 ---

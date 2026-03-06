@@ -5,6 +5,6 @@ menu:
     identifier: pb-tls
     name: TLS/SSL Encryption
     parent: pb-pgbouncer-guides
-    weight: 45
+    weight: 90
 menu_name: docs_{{ .version }}
 ---
