@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: guides-mysql-rotate-auth-overview
     name: Overview
-    parent: ms-rotate-auth
+    parent: guides-mysql-rotate-auth
     weight: 5
 menu_name: docs_{{ .version }}
 section_menu_id: guides

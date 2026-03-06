@@ -140,7 +140,7 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconficure-tls/Elasticsearch-issuer.yaml
 issuer.cert-manager.io/es-issuer created
 ```
 
