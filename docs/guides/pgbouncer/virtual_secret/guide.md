@@ -325,7 +325,7 @@ The value displayed matches the username and password value for the custom secre
 
 PgBouncer is a connection-pooling middleware for PostgreSQL. Therefore you will need to have a PostgreSQL server up and running for PgBouncer to connect to.
 
-Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/virtual_secret/index.md).
+Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/virtual_secret/guide.md).
 
 In this tutorial, we will use a Postgres named `quick-postgres` in the `demo` namespace.
 
