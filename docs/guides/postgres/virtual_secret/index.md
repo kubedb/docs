@@ -330,6 +330,8 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: secret
+    name: pg-secret
     apiGroup: "virtual-secrets.dev"
     secretStoreName: vault
   replicas: 3
@@ -352,7 +354,7 @@ We can now apply the Postgres custom resource,
 
 ```shell
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/virtual_secret/postgres.yaml
-Postgres.kubedb.com/rd created
+Postgres.kubedb.com/pg created
 ``` 
 Now, wait until `pg` has status `Ready`. i.e. ,
 ```shell

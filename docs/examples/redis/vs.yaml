@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1
+kind: Redis
+metadata:
+  name: rd
+  namespace: demo
+spec:
+  version: 8.2.2
+  mode: Cluster
+  cluster:
+    shards: 3
+    replicas: 2
+  storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: 20M
+    storageClassName: local-path
+    accessModes:
+    - ReadWriteOnce
+  deletionPolicy: WipeOut
+  authSecret:
+    kind: secret
+    apiGroup: "virtual-secrets.dev"
+    secretStoreName: vault
+    name: virtual-secret

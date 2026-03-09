@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: PgBouncer
+metadata:
+  name: pgb-vs
+  namespace: demo
+spec:
+  version: "1.18.0"
+  replicas: 1
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "pg-demo"
+      namespace: demo
+  connectionPool:
+    port: 5432
+    maxClientConnections: 20
+    reservePoolSize: 5
+  terminationPolicy: WipeOut
+  authSecret:
+    apiGroup: "virtual-secrets.dev"
+    secretStoreName: vault
+    name: virtual-secret

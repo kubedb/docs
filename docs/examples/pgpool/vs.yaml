@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pp-vs
+  namespace: demo
+spec:
+  version: "4.5.0"
+  replicas: 1
+  postgresRef:
+    name: pg-demo
+    namespace: demo
+  sslMode: disable
+  clientAuthMode: md5
+  syncUsers: true
+  deletionPolicy: WipeOut
+  authSecret:
+    apiGroup: "virtual-secrets.dev"
+    secretStoreName: vault
+    name: virtual-secret

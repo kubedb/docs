@@ -101,15 +101,18 @@ metadata:
   name: vault
 spec:
   vault:
-    url: http://vault.vault-demo.svc:8200
+    url: http://vault.demo.svc:8200
     roleName: virtual-secrets-role
 ```
-
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretstore.yaml
+secretstore.config.virtual-secrets.dev/vault configured
+```
 Here,
 
 - `spec.vault` - section describes the connection information for vault.
-- `spec.url` - contains the connection url to the vault server.
-- `spec.roleName` - contains the role name we specified when binding the policy to the service account earlier.
+- `spec.vault.url` - contains the connection url to the vault server.
+- `spec.vault.roleName` - contains the role name we specified when binding the policy to the service account earlier.
 
 > **Note:** `spec.aws`, `spec.azure` and `spec.gcp` can be used to specify the connection information of the corresponding secret manager.
 
@@ -133,7 +136,8 @@ Here,
 - Other than that, everything else is similar to a core Kubernetes Secret.
 Let’s go ahead and apply the Secret,
 ```bash
-$ kubectl apply -f virtual-secrets/virtual-secret.yaml
+$ ```
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/rd_vs.yaml
 secret.virtual-secrets.dev/virtual-secret created
 ```
 
@@ -176,7 +180,7 @@ We will connect to the Vault by using Vault CLI. Therefore, we need to export th
 
 In one terminal port-forward the vault server service,
 ```shell
-$ kubectl port-forward -n vault-demo service/vault 8200
+$ kubectl port-forward -n demo service/vault 8200
 Forwarding from 127.0.0.1:8200 -> 8200
 Forwarding from [::1]:8200 -> 8200
 ```
@@ -255,7 +259,7 @@ Here,
 -The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
 
 ```shell
-$ kubectl apply -f virtual-secrets/secret-provider-class.yaml 
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretProviderClass.yaml
 secretproviderclass.secrets-store.csi.x-k8s.io/virtual-secret created
 ```
 
@@ -293,7 +297,7 @@ Here,
 Let’s create the pod,
 
 ```shell
-$ kubectl apply -f virtual-secrets/app.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/webapp.yaml
 pod/webapp created
 ```
 
@@ -341,6 +345,7 @@ spec:
     - ReadWriteOnce
   deletionPolicy: WipeOut
   authSecret:
+    kind: secret
     apiGroup: virtual-secrets.dev
     secretStoreName: vault
     name: virtual-secret
@@ -353,12 +358,12 @@ Here,
 We can now apply the redis custom resource,
 
 ```shell
-$ kubectl apply -f virtual-secrets/redis.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/rd_vs.yaml
 redis.kubedb.com/rd created
 ``` 
 Now, wait until `rd` has status `Ready`. i.e. ,
 ```shell
-$ ubectl get rd -n demo
+$ kubectl get rd -n demo
 NAME   VERSION   STATUS   AGE
 rd     8.2.2     Ready    18h
 ```
@@ -372,7 +377,7 @@ virtual-secret   Opaque   2      1d
 
 We can see that the Redis user password is stored in the vault server as named ```virtual-secret``` . Now let’s go ahead and connect to the database using the password to check whether it is working or not.
 ```bash
- kubectl exec -it rd-shard0-0 -n demo -c redis -- bash
+$ kubectl exec -it rd-shard0-0 -n demo -c redis -- bash
 redis@rd-shard0-0:/data$ redis-cli -a virtual-secret
 Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
 127.0.0.1:6379> set hello world

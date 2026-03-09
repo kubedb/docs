@@ -103,7 +103,10 @@ spec:
     url: http://vault.vault-demo.svc:8200
     roleName: virtual-secrets-role
 ```
-
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretstore.yaml
+secretstore.config.virtual-secrets.dev/vault configured
+```
 Here,
 
 - `spec.vault` - section describes the connection information for vault.
@@ -132,7 +135,7 @@ Here,
 - Other than that, everything else is similar to a core Kubernetes Secret.
 Let’s go ahead and apply the Secret,
 ```bash
-$ kubectl apply -f virtual-secrets/virtual-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/pgb_vs.yaml
 secret.virtual-secrets.dev/virtual-secret created
 ```
 
@@ -256,7 +259,7 @@ Here,
 -The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
 
 ```shell
-$ kubectl apply -f virtual-secrets/secret-provider-class.yaml 
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretProviderClass.yaml
 secretproviderclass.secrets-store.csi.x-k8s.io/virtual-secret created
 ```
 
@@ -294,7 +297,7 @@ Here,
 Let’s create the pod,
 
 ```shell
-$ kubectl apply -f virtual-secrets/app.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/webapp.yaml
 pod/webapp created
 ```
 
@@ -326,8 +329,8 @@ Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deplo
 In this tutorial, we will use a Postgres named `quick-postgres` in the `demo` namespace.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/quick-postgres.yaml
-postgres.kubedb.com/quick-postgres created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/virtual_secret/postgres.yaml
+postgres.kubedb.com/pg created
 ```
 
 KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database secret `quick-postgres-auth` holds this user's username and password. Following is the yaml file for it.
@@ -356,6 +359,8 @@ spec:
     reservePoolSize: 5
   terminationPolicy: WipeOut
   authSecret:
+    kind: secret
+    name: pb-secret
     apiGroup: "virtual-secrets.dev"
     secretStoreName: vault
     name: virtual-secret
@@ -368,7 +373,7 @@ Here,
 We can now apply the Pgbouncer custom resource,
 
 ```shell
-$ kubectl apply -f virtual-secrets/Pgbouncer.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/vs.yaml
 Pgbouncer.kubedb.com/pgb-vs created
 ``` 
 Now, wait until `pgb-vs` has status `Ready`. i.e. ,
