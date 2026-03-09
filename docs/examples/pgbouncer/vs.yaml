@@ -18,6 +18,7 @@ spec:
     reservePoolSize: 5
   terminationPolicy: WipeOut
   authSecret:
+    kind: secret
     apiGroup: "virtual-secrets.dev"
     secretStoreName: vault
     name: virtual-secret

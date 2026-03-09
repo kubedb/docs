@@ -14,6 +14,7 @@ spec:
   syncUsers: true
   deletionPolicy: WipeOut
   authSecret:
+    kind: secret
     apiGroup: "virtual-secrets.dev"
     secretStoreName: vault
     name: virtual-secret
