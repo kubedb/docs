@@ -39,7 +39,7 @@ Before you begin, ensure you have the following prerequisites in place:
 - A running vault server with kubeVault operator installed. Follow the installation guide [here](https://kubevault.com/articles/how-to-use-hashicorp-vault-in-kubernetes-using-kubevault/).
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Redis](/docs/guides/redis/concepts/redis.md)
+  - [Redis](/docs/guides/redis/concepts/redis.md)
 
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.

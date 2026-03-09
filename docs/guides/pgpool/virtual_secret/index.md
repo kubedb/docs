@@ -323,16 +323,15 @@ The value displayed matches the username and password value for the custom secre
 
 ## Get PostgreSQL Server ready 
 
-pgpool is a connection-pooling middleware for PostgreSQL. Therefore you will need to have a PostgreSQL server up and running for pgpool to connect to.
+Pgpool is a middleware for PostgreSQL. Therefore you will need to have a PostgreSQL server up and running for Pgpool to connect to.
 
-Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/virtual_secret/index.md).
+Luckily PostgreSQL is readily available in KubeDB as CRD and can easily be deployed using this guide [here](/docs/guides/postgres/quickstart/quickstart.md). But by default this will create a PostgreSQL server with `max_connections=100`, but we need more than 100 connections for our Pgpool to work as expected. 
 
-In this tutorial, we will use a Postgres named `pp-demo` in the `demo` namespace.
+Pgpool requires at least `2*num_init_children*max_pool*spec.replicas` connections in PostgreSQL server. So use [this](https://kubedb.com/docs/v2024.4.27/guides/postgres/configuration/using-config-file/) to create a PostgreSQL server with custom `max_connections`.
 
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/virtual_secret/postgres.yaml
-postgres.kubedb.com/pg created
-```
+In this tutorial, we will use a PostgreSQL named `quick-postgres` in the `demo` namespace.
+
+KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database secret `quick-postgres-auth` holds this user's username and password. Following is the yaml file for it.
 
 KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `pp-demo`. Database secret `pp-demo-auth` holds this user's username and password. Following is the yaml file for it.
 
@@ -389,7 +388,7 @@ virtual-secret   Opaque   2      1d
 We can see that the pgpool user password is stored in the vault server as named ```virtual-secret``` . Now let’s go ahead and connect to the database using the password to check whether it is working or not.
 ```bash
 $ export PGPASSWORD='virtual-secret'
-banusree@bonusree-datta-PC ~> psql --host=localhost --port=9999 --username=postgres postgres
+$ psql --host=localhost --port=9999 --username=postgres postgres
 psql (16.11 (Ubuntu 16.11-0ubuntu0.24.04.1), server 18.2)
 WARNING: psql major version 16, server major version 18.
          Some psql features might not work.
