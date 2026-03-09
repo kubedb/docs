@@ -38,7 +38,7 @@ Before you begin, ensure you have the following prerequisites in place:
 - A running vault server with kubeVault operator installed. Follow the installation guide [here](https://kubevault.com/articles/how-to-use-hashicorp-vault-in-kubernetes-using-kubevault/).
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Pgbouncer](/docs/guides/Pgbouncer/concepts/Pgbouncer.md)
+    - [Pgbouncer](/docs/guides/pgbouncer/concepts/pgbouncer.md)
 
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -324,7 +324,7 @@ The value displayed matches the username and password value for the custom secre
 
 PgBouncer is a connection-pooling middleware for PostgreSQL. Therefore you will need to have a PostgreSQL server up and running for PgBouncer to connect to.
 
-Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/virtual_secret/guide.md).
+Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/virtual_secret/index.md).
 
 In this tutorial, we will use a Postgres named `quick-postgres` in the `demo` namespace.
 
