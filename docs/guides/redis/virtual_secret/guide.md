@@ -1,20 +1,22 @@
 ---
-title: Virtual Secret PgBouncer
+title: Virtual Secret Redis
 menu:
   docs_{{ .version }}:
-    identifier: pb-virtualsecret
-    name: Virtual Secret
-    parent: pb-pgbouncer-guides
-    weight: 170
+    identifier: rd-virtual-secret
+    name: Virtual Secret redis
+    parent: rd-vs
+    weight: 10
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
+
 
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Virtual Secrets For Pgbouncer: Secure Kubernetes Secrets
+# Virtual Secrets For Redis: Secure Kubernetes Secrets
 KubeDB's Virtual Secrets feature enhances the security of your database credentials by allowing you to use external secret management systems instead of storing sensitive information directly 
-in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your Pgbouncer database in KubeDB.
+in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your Redis database in KubeDB.
 
 ## Virtual Secrets Design
 `Virtual Secrets` extends Kubernetes by introducing a new `Secret` resource under the `virtual-secrets.dev` API group. From a user perspective, it behaves similarly to the native Kubernetes Secret
@@ -38,7 +40,7 @@ Before you begin, ensure you have the following prerequisites in place:
 - A running vault server with kubeVault operator installed. Follow the installation guide [here](https://kubevault.com/articles/how-to-use-hashicorp-vault-in-kubernetes-using-kubevault/).
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Pgbouncer](/docs/guides/pgbouncer/concepts/pgbouncer.md)
+  - [Redis](/docs/guides/redis/concepts/redis.md)
 
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -100,7 +102,7 @@ metadata:
   name: vault
 spec:
   vault:
-    url: http://vault.vault-demo.svc:8200
+    url: http://vault.demo.svc:8200
     roleName: virtual-secrets-role
 ```
 ```bash
@@ -117,7 +119,7 @@ Here,
 
 
 ### Create Virtual Secret
-Now, we are going to create a `Virtual Secret` resource that will store the Pgbouncer credentials in the vault server.
+Now, we are going to create a `Virtual Secret` resource that will store the Redis credentials in the vault server.
 ```yaml
 apiVersion: virtual-secrets.dev/v1alpha1
 kind: Secret
@@ -125,7 +127,7 @@ metadata:
   name: virtual-secret
   namespace: demo
 stringData:
-  username: pgbouncer
+  username: default
   password: virtual-secret
 secretStoreName: vault
 ```
@@ -135,7 +137,8 @@ Here,
 - Other than that, everything else is similar to a core Kubernetes Secret.
 Let’s go ahead and apply the Secret,
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/pgb_vs.yaml
+$ ```
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/rd_vs.yaml
 secret.virtual-secrets.dev/virtual-secret created
 ```
 
@@ -154,18 +157,18 @@ $ kubectl get secrets.virtual-secrets.dev -n demo virtual-secret -oyaml
 apiVersion: virtual-secrets.dev/v1alpha1
 data:
   password: dmlydHVhbC1zZWNyZXQ=
-  username: cGdib3VuY2Vy
+  username: ZGVmYXVsdA==
 kind: Secret
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"virtual-secrets.dev/v1alpha1","kind":"Secret","metadata":{"annotations":{},"name":"virtual-secret","namespace":"demo"},"secretStoreName":"vault","stringData":{"password":"virtual-secret","username":"pgbouncer"}}
-  creationTimestamp: "2026-02-26T09:07:06Z"
+      {"apiVersion":"virtual-secrets.dev/v1alpha1","kind":"Secret","metadata":{"annotations":{},"name":"virtual-secret","namespace":"demo"},"secretStoreName":"vault","stringData":{"password":"virtual-secret","username":"default"}}
+  creationTimestamp: "2026-02-25T05:48:27Z"
   generation: 1
   name: virtual-secret
   namespace: demo
-  resourceVersion: "58362"
-  uid: fb756118-3dbf-46b6-ac24-fa5cded478bc
+  resourceVersion: "25163"
+  uid: f4bc8051-65e9-405d-847a-ecfa4fcab182
 secretStoreName: vault
 type: Opaque
 ```
@@ -178,7 +181,7 @@ We will connect to the Vault by using Vault CLI. Therefore, we need to export th
 
 In one terminal port-forward the vault server service,
 ```shell
-$ kubectl port-forward -n vault-demo service/vault 8200
+$ kubectl port-forward -n demo service/vault 8200
 Forwarding from 127.0.0.1:8200 -> 8200
 Forwarding from [::1]:8200 -> 8200
 ```
@@ -210,7 +213,7 @@ We can see that the secret data is stored in the `virtual-secrets.dev/demo/virtu
 - `demo` is the namespace.
 - `virtual-secret`is the name of the secret.
 
-### Mount Virtual Secret in Pgbouncer
+### Mount Virtual Secret in Redis
 `Secrets` are not that useful if we can not mount them to pods. We can mount the virtual secrets using [Secrets Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/) .
 
 Virtual Secrets comes with a custom provider of `Secrets Store CSI Driver`, named `secrets-store-csi-driver-provider-virtual-secrets` which leverages `virtual-secrets-server` to read secret
@@ -231,10 +234,8 @@ If both of them are deployed we should see two new pods in the `kube-system` nam
 ```shell
 $ kubectl get pods -n kube-system
 NAME                                                      READY   STATUS    RESTARTS      AGE
-coredns-695cbbfcb9-r6v7j                                  1/1     Running   1 (36h ago)   2d18h
-csi-secrets-store-secrets-store-csi-driver-qzq8z          3/3     Running   3 (36h ago)   2d
-local-path-provisioner-546dfc6456-lpdp4                   1/1     Running   1 (36h ago)   2d18h
-secrets-store-csi-driver-provider-virtual-secrets-mdw84   1/1     Running   1 (36h ago)   47h
+csi-secrets-store-secrets-store-csi-driver-rvpvm          3/3     Running   0             61s
+secrets-store-csi-driver-provider-virtual-secrets-m78gv   1/1     Running   0             34s
 ```
 The `Secrets Store CSI Driver` uses a custom resource named `SecretProviderClass` to mount the secret. Let’s go ahead and create that,
 
@@ -253,7 +254,7 @@ spec:
 Here,
 
 - `spec.provider` - specifies the provider for Secrets Store CSI Driver to communicate and use.
-- `spec.parameters.secretName` - specifies the name of the virtual secret we want to mount.
+- `parameters.secretName` - specifies the name of the virtual secret we want to mount.
 
 > **Note:** -We can also call the mount subresource of the virtual secret to create the SecretProviderClass for us.
 -The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
@@ -311,8 +312,8 @@ webapp              1/1     Running   0          6m45s
 Now, check the secret data written to the file system at /mnt/virtual-secrets on the webapp pod.
 
 ```shell
-$  kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/username
-pgbouncer⏎                    
+$ kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/username
+default
 
 $ kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/password
 virtual-secret⏎ 
@@ -320,48 +321,33 @@ virtual-secret⏎
 
 The value displayed matches the username and password value for the custom secret named `virtual-secret` we created earlier.
 
-## Get PostgreSQL Server ready using virtual secret
-
-PgBouncer is a connection-pooling middleware for PostgreSQL. Therefore you will need to have a PostgreSQL server up and running for PgBouncer to connect to.
-
-Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/virtual_secret/index.md).
-
-In this tutorial, we will use a Postgres named `quick-postgres` in the `demo` namespace.
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/virtual_secret/postgres.yaml
-postgres.kubedb.com/pg created
-```
-
-KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database secret `quick-postgres-auth` holds this user's username and password. Following is the yaml file for it.
-
-### Use Virtual Secrets with Pgbouncer
-Virtual Secrets is integrated with KubeDB from the v2025.3.24 and it can be used to store KubeDB’s database credential. Now, the support has been added for `Pgbouncer`.
-We can proceed with deploying a `Pgbouncer` which will use `virtual-secrets` to create custom secret for the database authentication credential.
+### Use Virtual Secrets with Redis
+Virtual Secrets is integrated with KubeDB from the v2025.3.24 and it can be used to store KubeDB’s database credential. Now, the support has been added for `Redis`.
+We can proceed with deploying a `redis` which will use `virtual-secrets` to create custom secret for the database authentication credential.
 ```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: PgBouncer
+apiVersion: kubedb.com/v1
+kind: Redis
 metadata:
-  name: pgb-vs
+  name: rd
   namespace: demo
 spec:
-  version: "1.18.0"
-  replicas: 1
-  database:
-    syncUsers: true
-    databaseName: "postgres"
-    databaseRef:
-      name: "pg-demo"
-      namespace: demo
-  connectionPool:
-    port: 5432
-    maxClientConnections: 20
-    reservePoolSize: 5
-  terminationPolicy: WipeOut
+  version: 8.2.2
+  mode: Cluster
+  cluster:
+    shards: 3
+    replicas: 2
+  storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: 20M
+    storageClassName: "Standard"
+    accessModes:
+    - ReadWriteOnce
+  deletionPolicy: WipeOut
   authSecret:
     kind: secret
-    name: pb-secret
-    apiGroup: "virtual-secrets.dev"
+    apiGroup: virtual-secrets.dev
     secretStoreName: vault
     name: virtual-secret
 ```
@@ -370,17 +356,17 @@ Here,
 - `spec.authSecret.apiGroup`- specifies that we want to use virtual secrets instead of native k8s secret.
 - `spec.authSecret.secretStoreName` - specifies the `SecretStore` resource that contains the connection information for external secret store to store the secret data.
 
-We can now apply the Pgbouncer custom resource,
+We can now apply the redis custom resource,
 
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/vs.yaml
-Pgbouncer.kubedb.com/pgb-vs created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/rd_vs.yaml
+redis.kubedb.com/rd created
 ``` 
-Now, wait until `pgb-vs` has status `Ready`. i.e. ,
+Now, wait until `rd` has status `Ready`. i.e. ,
 ```shell
-$ kubectl get pb -n demo
-NAME     VERSION   STATUS   AGE
-pgb-vs   1.18.0    Ready    22h
+$ kubectl get rd -n demo
+NAME   VERSION   STATUS   AGE
+rd     8.2.2     Ready    18h
 ```
 
 Now, lets go ahead and check what secret it is using,
@@ -390,35 +376,18 @@ NAME             TYPE     DATA   AGE
 virtual-secret   Opaque   2      1d
 ```
 
-We can see that the Pgbouncer user password is stored in the vault server as named ```virtual-secret``` . Now let’s go ahead and connect to the database using the password to check whether it is working or not.
+We can see that the Redis user password is stored in the vault server as named ```virtual-secret``` . Now let’s go ahead and connect to the database using the password to check whether it is working or not.
 ```bash
-$ kubectl exec -it -n demo pgb-vs-0 -- sh
-
-/ $ psql -U pgbouncer -d pgbouncer -h localhost -p 5432
-psql (17.6, server 1.18.0/bouncer)
-WARNING: psql major version 17, server major version 1.18.
-         Some psql features might not work.
-Type "help" for help.
-
-pgbouncer=# SHOW DATABASES;
-   name    |       host       | port | database  | force_user | pool_size | min_pool_size | reserve_pool | pool_mode | max_connections | current_connections | paused | disabled 
------------+------------------+------+-----------+------------+-----------+---------------+--------------+-----------+-----------------+---------------------+--------+----------
- pgbouncer |                  | 5432 | pgbouncer | pgbouncer  |         2 |             0 |            0 | statement |               0 |                   0 |      0 |        0
- postgres  | pg-demo.demo.svc | 5432 | postgres  |            |        20 |             0 |            5 |           |               0 |                   1 |      0 |        0
-(2 rows)
-
-pgbouncer=# SHOW POOLS;
- database  |   user    | cl_active | cl_waiting | cl_active_cancel_req | cl_waiting_cancel_req | sv_active | sv_active_cancel | sv_being_canceled | sv_idle | sv_used | sv_tested | sv_login | maxwait | maxwait_us | pool_mode 
------------+-----------+-----------+------------+----------------------+-----------------------+-----------+------------------+-------------------+---------+---------+-----------+----------+---------+------------+-----------
- pgbouncer | pgbouncer |         1 |          0 |                    0 |                     0 |         0 |                0 |                 0 |       0 |       0 |         0 |        0 |       0 |          0 | statement
- postgres  | postgres  |         0 |          0 |                    0 |                     0 |         0 |                0 |                 0 |       1 |       0 |         0 |        0 |       0 |          0 | session
-(2 rows)
-
-pgbouncer=# SHOW CLIENTS;
- type |   user    | database  | state  | addr | port  | local_addr | local_port |      connect_time       |      request_time       | wait | wait_us | close_needed |      ptr       | link | remote_pid | tls | application_name 
-------+-----------+-----------+--------+------+-------+------------+------------+-------------------------+-------------------------+------+---------+--------------+----------------+------+------------+-----+------------------
- C    | pgbouncer | pgbouncer | active | ::1  | 54834 | ::1        |       5432 | 2026-02-27 05:42:36 UTC | 2026-02-27 05:56:50 UTC |   27 |  168287 |            0 | 0x76c98b8147d0 |      |          0 |     | psql
-(1 row)
+$ kubectl exec -it rd-shard0-0 -n demo -c redis -- bash
+redis@rd-shard0-0:/data$ redis-cli -a virtual-secret
+Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
+127.0.0.1:6379> set hello world
+OK
+127.0.0.1:6379> get hello
+"world"
+127.0.0.1:6379> exit
+redis@rd-shard0-0:/data$ exit
+exit
 
 ```
 We can see that we are able to connect to the database and create a database and a table successfully.
@@ -426,8 +395,8 @@ We can see that we are able to connect to the database and create a database and
 ## Cleanup
 To clean up the resources created in this guide, run the following commands:
 ```bash
-$ kubectl delete pb -n demo pgb-vs
-pgpool.kubedb.com "pgb-vs" deleted
+$ kubectl delete rd -n demo rd
+redis.kubedb.com "rd" deleted
 $ kubectl delete pod webapp -n demo
 $ kubectl delete secretproviderclass -n demo virtual-secret
 $ kubectl delete ns demo

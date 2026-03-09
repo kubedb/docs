@@ -1,25 +1,23 @@
 ---
-title: Virtual Secret Postgres
+title: Virtual Secret Pgpool
 menu:
   docs_{{ .version }}:
-    identifier: guides-postgres-virtual-secret
-    name: Virtual Secret                            
-    parent: pg-postgres-guides
-    weight: 110
+    identifier: pp-virtualsecret
+    name: VirtualSecret Pgpool
+    parent: pp-vs
+    weight: 10
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
-
-
-
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Virtual Secrets For Postgres: Secure Kubernetes Secrets
-KubeDB's Virtual Secrets feature enhances the security of your database credentials by allowing you to use external secret management systems instead of storing sensitive information directly
-in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your Postgres database in KubeDB.
+# Virtual Secrets For pgpool: Secure Kubernetes Secrets
+KubeDB's Virtual Secrets feature enhances the security of your database credentials by allowing you to use external secret management systems instead of storing sensitive information directly 
+in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your pgpool database in KubeDB.
 
 ## Virtual Secrets Design
 `Virtual Secrets` extends Kubernetes by introducing a new `Secret` resource under the `virtual-secrets.dev` API group. From a user perspective, it behaves similarly to the native Kubernetes Secret
-resource, providing familiar workflows for managing sensitive data. Unlike standard Kubernetes Secrets, Virtual Secrets does not store secret data in `etcd`. Instead, it securely stores the
+resource, providing familiar workflows for managing sensitive data. Unlike standard Kubernetes Secrets, Virtual Secrets does not store secret data in `etcd`. Instead, it securely stores the 
 actual secret data in an `external secret manager`, ensuring enhanced security and compliance.
 
 The Virtual Secret resource is structured into two distinct components:
@@ -39,7 +37,7 @@ Before you begin, ensure you have the following prerequisites in place:
 - A running vault server with kubeVault operator installed. Follow the installation guide [here](https://kubevault.com/articles/how-to-use-hashicorp-vault-in-kubernetes-using-kubevault/).
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Postgres](/docs/guides/postgres/concepts/postgres.md)
+    - [pgpool](/docs/guides/pgpool/concepts/pgpool.md)
 
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -108,17 +106,18 @@ spec:
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretstore.yaml
 secretstore.config.virtual-secrets.dev/vault configured
 ```
+
 Here,
 
 - `spec.vault` - section describes the connection information for vault.
-- `spec.url` - contains the connection url to the vault server.
-- `spec.roleName` - contains the role name we specified when binding the policy to the service account earlier.
+- `spec.vault.url` - contains the connection url to the vault server.
+- `spec.vault.roleName` - contains the role name we specified when binding the policy to the service account earlier.
 
 > **Note:** `spec.aws`, `spec.azure` and `spec.gcp` can be used to specify the connection information of the corresponding secret manager.
 
 
 ### Create Virtual Secret
-Now, we are going to create a `Virtual Secret` resource that will store the Postgres credentials in the vault server.
+Now, we are going to create a `Virtual Secret` resource that will store the pgpool credentials in the vault server.
 ```yaml
 apiVersion: virtual-secrets.dev/v1alpha1
 kind: Secret
@@ -126,7 +125,7 @@ metadata:
   name: virtual-secret
   namespace: demo
 stringData:
-  username: appscode
+  username: pgpool
   password: virtual-secret
 secretStoreName: vault
 ```
@@ -134,9 +133,9 @@ Here,
 
 - `secretStoreName` - specifies the SecretStore we just created.
 - Other than that, everything else is similar to a core Kubernetes Secret.
-  Let’s go ahead and apply the Secret,
+Let’s go ahead and apply the Secret,
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/virtualsecret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/pp_vs.yaml
 secret.virtual-secrets.dev/virtual-secret created
 ```
 
@@ -151,22 +150,22 @@ virtual-secret   Opaque                     2      2d19h
 We can also get the whole definition of the `Secret`,
 
 ```shell
-$ kubectl get secrets.virtual-secrets.dev -n demo virtual-secret -oyaml
+$  kubectl get secrets.virtual-secrets.dev -n demo virtual-secret -oyaml
 apiVersion: virtual-secrets.dev/v1alpha1
 data:
   password: dmlydHVhbC1zZWNyZXQ=
-  username: YXBwc2NvZGU=
+  username: cGdwb29s
 kind: Secret
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"virtual-secrets.dev/v1alpha1","kind":"Secret","metadata":{"annotations":{},"name":"virtual-secret","namespace":"demo"},"secretStoreName":"vault","stringData":{"password":"virtual-secret","username":"appscode"}}
-  creationTimestamp: "2025-12-30T11:13:54Z"
-  generation: 1
+      {"apiVersion":"virtual-secrets.dev/v1alpha1","kind":"Secret","metadata":{"annotations":{},"name":"virtual-secret","namespace":"demo"},"secretStoreName":"vault","stringData":{"password":"virtual-secret","username":"pgpool"}}
+  creationTimestamp: "2026-02-26T09:07:06Z"
+  generation: 2
   name: virtual-secret
   namespace: demo
-  resourceVersion: "12922"
-  uid: c7887183-6885-4435-a3c9-c741b28130a3
+  resourceVersion: "687530"
+  uid: fb756118-3dbf-46b6-ac24-fa5cded478bc
 secretStoreName: vault
 type: Opaque
 ```
@@ -179,7 +178,7 @@ We will connect to the Vault by using Vault CLI. Therefore, we need to export th
 
 In one terminal port-forward the vault server service,
 ```shell
-$ kubectl port-forward -n vault-demo service/vault 8200
+$ kubectl port-forward -n demo service/vault 8200
 Forwarding from 127.0.0.1:8200 -> 8200
 Forwarding from [::1]:8200 -> 8200
 ```
@@ -203,7 +202,7 @@ version            1
 Key         Value
 ---         -----
 password    virtual-secret
-username    appscode
+username    default
 ```
 We can see that the secret data is stored in the `virtual-secrets.dev/demo/virtual-secret` path where,
 
@@ -211,7 +210,7 @@ We can see that the secret data is stored in the `virtual-secrets.dev/demo/virtu
 - `demo` is the namespace.
 - `virtual-secret`is the name of the secret.
 
-### Mount Virtual Secret in Postgres
+### Mount Virtual Secret in pgpool
 `Secrets` are not that useful if we can not mount them to pods. We can mount the virtual secrets using [Secrets Store CSI Driver](https://secrets-store-csi-driver.sigs.k8s.io/) .
 
 Virtual Secrets comes with a custom provider of `Secrets Store CSI Driver`, named `secrets-store-csi-driver-provider-virtual-secrets` which leverages `virtual-secrets-server` to read secret
@@ -222,7 +221,6 @@ Let’s go ahead and install `Secrets Store CSI Driver` and `secrets-store-csi-d
 ```shell
 $ helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
 $ helm install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system
-
 $ helm search repo appscode/secrets-store-csi-driver-provider-virtual-secrets --version=v2025.3.14
 $ helm upgrade -i secrets-store-csi-driver-provider-virtual-secrets appscode/secrets-store-csi-driver-provider-virtual-secrets -n kube-system --create-namespace --version=v2025.3.14
 ```
@@ -232,8 +230,10 @@ If both of them are deployed we should see two new pods in the `kube-system` nam
 ```shell
 $ kubectl get pods -n kube-system
 NAME                                                      READY   STATUS    RESTARTS      AGE
-csi-secrets-store-secrets-store-csi-driver-rvpvm          3/3     Running   0             61s
-secrets-store-csi-driver-provider-virtual-secrets-m78gv   1/1     Running   0             34s
+coredns-695cbbfcb9-r6v7j                                  1/1     Running   1 (36h ago)   2d18h
+csi-secrets-store-secrets-store-csi-driver-qzq8z          3/3     Running   3 (36h ago)   2d
+local-path-provisioner-546dfc6456-lpdp4                   1/1     Running   1 (36h ago)   2d18h
+secrets-store-csi-driver-provider-virtual-secrets-mdw84   1/1     Running   1 (36h ago)   47h
 ```
 The `Secrets Store CSI Driver` uses a custom resource named `SecretProviderClass` to mount the secret. Let’s go ahead and create that,
 
@@ -252,10 +252,12 @@ spec:
 Here,
 
 - `spec.provider` - specifies the provider for Secrets Store CSI Driver to communicate and use.
-- `parameters.secretName` - specifies the name of the virtual secret we want to mount.
+- `spec.parameters.secretName` - specifies the name of the virtual secret we want to mount.
 
-> **Note:** -We can also call the mount subresource of the virtual secret to create the SecretProviderClass for us.
--The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
+> **Note:**  We can also call the mount subresource of the virtual secret to create the SecretProviderClass for us.
+The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for.
+
+ Let’s create the SecretProviderClass,
 
 ```shell
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretProviderClass.yaml
@@ -310,8 +312,8 @@ webapp              1/1     Running   0          6m45s
 Now, check the secret data written to the file system at /mnt/virtual-secrets on the webapp pod.
 
 ```shell
-$ kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/username
-appscode⏎
+$  kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/username
+pgbouncer⏎                    
 
 $ kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/password
 virtual-secret⏎ 
@@ -319,144 +321,95 @@ virtual-secret⏎
 
 The value displayed matches the username and password value for the custom secret named `virtual-secret` we created earlier.
 
-### Use Virtual Secrets with Postgres
-Virtual Secrets is integrated with KubeDB from the v2025.3.24 and it can be used to store KubeDB’s database credential. Now, the support has been added for `Postgres`.
-We can proceed with deploying a `Postgres` which will use `virtual-secrets` to create custom secret for the database authentication credential.
+## Get PostgreSQL Server ready 
+
+Pgpool is a middleware for PostgreSQL. Therefore you will need to have a PostgreSQL server up and running for Pgpool to connect to.
+
+Luckily PostgreSQL is readily available in KubeDB as CRD and can easily be deployed using this guide [here](/docs/guides/postgres/quickstart/quickstart.md). But by default this will create a PostgreSQL server with `max_connections=100`, but we need more than 100 connections for our Pgpool to work as expected. 
+
+Pgpool requires at least `2*num_init_children*max_pool*spec.replicas` connections in PostgreSQL server. So use [this](https://kubedb.com/docs/v2024.4.27/guides/postgres/configuration/using-config-file/) to create a PostgreSQL server with custom `max_connections`.
+
+In this tutorial, we will use a PostgreSQL named `quick-postgres` in the `demo` namespace.
+
+KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database secret `quick-postgres-auth` holds this user's username and password. Following is the yaml file for it.
+
+KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `pp-demo`. Database secret `pp-demo-auth` holds this user's username and password. Following is the yaml file for it.
+
+### Use Virtual Secrets with pgpool
+Virtual Secrets is integrated with KubeDB from the v2025.3.24 and it can be used to store KubeDB’s database credential. Now, the support has been added for `pgpool`.
+We can proceed with deploying a `pgpool` which will use `virtual-secrets` to create custom secret for the database authentication credential.
 ```yaml
-apiVersion: kubedb.com/v1
-kind: Postgres
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
 metadata:
-  name: pg
+  name: pp-vs
   namespace: demo
 spec:
+  version: "4.5.0"
+  replicas: 1
+  postgresRef:
+    name: pg-demo
+    namespace: demo
+  sslMode: disable
+  clientAuthMode: md5
+  syncUsers: true
+  deletionPolicy: WipeOut
   authSecret:
     kind: secret
-    name: pg-secret
     apiGroup: "virtual-secrets.dev"
     secretStoreName: vault
-  replicas: 3
-  storage:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  storageType: Durable
-  deletionPolicy: WipeOut
-  version: "17.5"
+    name: virtual-secret
 ```
 Here,
 
 - `spec.authSecret.apiGroup`- specifies that we want to use virtual secrets instead of native k8s secret.
 - `spec.authSecret.secretStoreName` - specifies the `SecretStore` resource that contains the connection information for external secret store to store the secret data.
 
-We can now apply the Postgres custom resource,
+We can now apply the pgpool custom resource,
 
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/virtual_secret/postgres.yaml
-Postgres.kubedb.com/pg created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/pp_vs.yaml
+pgpool.kubedb.com/pp-vs created
 ``` 
-Now, wait until `pg` has status `Ready`. i.e. ,
+Now, wait until `pp-vs` has status `Ready`. i.e. ,
 ```shell
-$ kubectl get Postgres -n demo
-NAME   VERSION   STATUS   AGE
-pg     8.2.2     Ready    2m5s
+$ kubectl get pp -n demo
+NAME    VERSION   STATUS   AGE
+pp-vs   4.5.0     Ready    41m
 ```
 
 Now, lets go ahead and check what secret it is using,
 ```shell
-$ kubectl get secrets.virtual-secrets.dev -n demo 
-NAME             TYPE                       DATA   AGE
-pg-auth     kubernetes.io/basic-auth        2      1m53s
-```
-We can see that a `virtual-secret` named `pg-auth` has been created by the KubeDB operator. Let’s get the whole definition of the virtual secret,
-
-```shell
-kubectl get secrets.virtual-secrets.dev -n demo pg-auth -oyaml
-apiVersion: virtual-secrets.dev/v1alpha1
-data:
-  password: RUdKbCF0SEVHelpvWXdNaQ==
-  username: cG9zdGdyZXM=
-kind: Secret
-metadata:
-  annotations:
-    kubedb.com/auth-active-from: "2026-01-02T09:02:17Z"
-  creationTimestamp: "2026-01-02T09:02:18Z"
-  generation: 1
-  labels:
-    app.kubernetes.io/component: database
-    app.kubernetes.io/instance: pg
-    app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: postgreses.kubedb.com
-  name: pg-auth
-  namespace: demo
-  ownerReferences:
-  - apiVersion: kubedb.com/v1
-    blockOwnerDeletion: true
-    controller: true
-    kind: Postgres
-    name: pg
-    uid: def8f647-0613-43ec-8d5d-ba63e9a12113
-  resourceVersion: "90389"
-  uid: 5c3c2a39-698d-44e7-8c63-8c14593581ad
-secretStoreName: vault
-type: kubernetes.io/basic-auth
-```
-In our vault server, we can check if this data exists or not,
-```shell
-vault kv get virtual-secrets.dev/demo/pg-auth
-============ Secret Path ============
-virtual-secrets.dev/data/demo/pg-auth
-
-======= Metadata =======
-Key                Value
----                -----
-created_time       2026-01-02T09:02:17.998634474Z
-custom_metadata    <nil>
-deletion_time      n/a
-destroyed          false
-version            2
-
-====== Data ======
-Key         Value
----         -----
-password    EGJl!tHEGzZoYwMi
-username    postgres
+$ kubectl get secrets.virtual-secrets.dev -n demo
+NAME             TYPE     DATA   AGE
+virtual-secret   Opaque   2      1d
 ```
 
-
-We can see that the Postgres user password is stored in the vault server. Now let’s go ahead and connect to the database using the `psql` client to check whether it is working or not.
+We can see that the pgpool user password is stored in the vault server as named ```virtual-secret``` . Now let’s go ahead and connect to the database using the password to check whether it is working or not.
 ```bash
-kubectl exec -it -n demo pg-0 -- bash 
-Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
-pg-0:/$ PGPASSWORD='EGJl!tHEGzZoYwMi' psql -U postgres -d postgres -p 5432 -h pg.demo.svc
-psql (17.5)
+$ export PGPASSWORD='virtual-secret'
+$ psql --host=localhost --port=9999 --username=postgres postgres
+psql (16.11 (Ubuntu 16.11-0ubuntu0.24.04.1), server 18.2)
+WARNING: psql major version 16, server major version 18.
+         Some psql features might not work.
 Type "help" for help.
 
-postgres=# CREATE DATABASE my_database;
-CREATE DATABASE
-postgres=# \c my_database
-You are now connected to database "my_database" as user "postgres".
-my_database=# CREATE TABLE users (
-my_database(#     id SERIAL PRIMARY KEY,
-my_database(#     name VARCHAR(100) NOT NULL,
-my_database(#     email VARCHAR(150) UNIQUE NOT NULL,
-my_database(#     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-my_database(# );
-CREATE TABLE
-my_database=# \dt
-         List of relations
- Schema | Name  | Type  |  Owner   
---------+-------+-------+----------
- public | users | table | postgres
-(1 row)
+postgres=# SELECT datname FROM pg_database;
+  datname  
+-----------
+ postgres
+ template1
+ template0
+(3 rows)
+
 ```
 We can see that we are able to connect to the database and create a database and a table successfully.
 
 ## Cleanup
 To clean up the resources created in this guide, run the following commands:
 ```bash
-$ kubectl delete -n demo postgres pg
+$ kubectl delete pp -n demo pp-vs
+pgpool.kubedb.com "pp-vs" deleted
 $ kubectl delete pod webapp -n demo
 $ kubectl delete secretproviderclass -n demo virtual-secret
 $ kubectl delete ns demo
@@ -468,16 +421,3 @@ If you want to uninstall the `KubeVault`, run:
 ```bash
 $ helm uninstall kubevault --namespace kubevault
 ```
-## Next Steps
-
-- Learn about [backup and restore](/docs/guides/postgres/backup/stash/overview/index.md) PostgreSQL database using Stash.
-- Learn about initializing [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
-- Learn about [custom PostgresVersions](/docs/guides/postgres/custom-versions/setup.md).
-- Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
-- Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
-- Monitor your PostgreSQL database with KubeDB using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
-- Detail concepts of [Postgres object](/docs/guides/postgres/concepts/postgres.md).
-- Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy PostgreSQL with KubeDB.
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
-
-
