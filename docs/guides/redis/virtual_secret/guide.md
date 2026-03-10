@@ -264,63 +264,6 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 secretproviderclass.secrets-store.csi.x-k8s.io/virtual-secret created
 ```
 
-With the custom secret created, the authentication configured and role created, the `provider-virtual-secrets` extension installed and the `SecretProviderClass` defined it is finally time to
-create a pod that mounts the desired secret.
-
-```yaml
-kind: Pod
-apiVersion: v1
-metadata:
-  name: webapp
-  namespace: demo
-spec:
-  containers:
-    - image: jweissig/app:0.0.1
-      name: webapp
-      volumeMounts:
-        - name: virtual-secrets-store
-          mountPath: "/mnt/virtual-secrets"
-          readOnly: true
-  volumes:
-    - name: virtual-secrets-store
-      csi:
-        driver: secrets-store.csi.k8s.io
-        readOnly: true
-        volumeAttributes:
-          secretProviderClass: "virtual-secret"
-```
-Here,
-
-- In `spec.volumes[0]`, a volume with name `virtual-secrets-store` with necessary configs is specified.
-- In `spec.containers[0].volumeMounts`, the volume is referred to be mounted in the `/mnt/virtual-secrets` path.
-
-
-Let’s create the pod,
-
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/webapp.yaml
-pod/webapp created
-```
-
-If we get the pod we will see that it will get to the `Running` state after some period,
-```shell
-$ kubectl get pods -n demo
-NAME                READY   STATUS    RESTARTS   AGE
-webapp              1/1     Running   0          6m45s
-```
-
-Now, check the secret data written to the file system at /mnt/virtual-secrets on the webapp pod.
-
-```shell
-$ kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/username
-default
-
-$ kubectl exec -n demo webapp -- cat /mnt/virtual-secrets/password
-virtual-secret⏎ 
-```
-
-The value displayed matches the username and password value for the custom secret named `virtual-secret` we created earlier.
-
 ### Use Virtual Secrets with Redis
 Virtual Secrets is integrated with KubeDB from the v2025.3.24 and it can be used to store KubeDB’s database credential. Now, the support has been added for `Redis`.
 We can proceed with deploying a `redis` which will use `virtual-secrets` to create custom secret for the database authentication credential.
@@ -397,7 +340,6 @@ To clean up the resources created in this guide, run the following commands:
 ```bash
 $ kubectl delete rd -n demo rd
 redis.kubedb.com "rd" deleted
-$ kubectl delete pod webapp -n demo
 $ kubectl delete secretproviderclass -n demo virtual-secret
 $ kubectl delete ns demo
 $ helm uninstall virtual-secrets-server -n kubevault

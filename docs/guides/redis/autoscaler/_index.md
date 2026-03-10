@@ -5,6 +5,6 @@ menu:
     identifier: rd-auto-scaling
     name: Autoscaling
     parent: rd-redis-guides
-    weight: 120
+    weight: 140
 menu_name: docs_{{ .version }}
 ---

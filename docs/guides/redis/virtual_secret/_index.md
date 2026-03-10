@@ -5,6 +5,6 @@ menu:
     identifier: rd-vs
     name: Virtual Secret
     parent: rd-redis-guides
-    weight: 60
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

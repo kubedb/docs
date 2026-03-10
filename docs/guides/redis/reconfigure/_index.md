@@ -5,6 +5,6 @@ menu:
     identifier: rd-reconfigure
     name: Reconfigure
     parent: rd-redis-guides
-    weight: 100
+    weight: 90
 menu_name: docs_{{ .version }}
 ---
