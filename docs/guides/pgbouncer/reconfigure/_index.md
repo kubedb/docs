@@ -5,6 +5,6 @@ menu:
     identifier: pb-reconfigure
     name: Reconfigure
     parent: pb-pgbouncer-guides
-    weight: 120
+    weight: 100
 menu_name: docs_{{ .version }}
 ---

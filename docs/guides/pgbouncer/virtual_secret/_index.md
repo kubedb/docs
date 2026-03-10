@@ -5,6 +5,6 @@ menu:
     identifier: pb-vs
     name: Virtual Secret
     parent: pb-pgbouncer-guides
-    weight: 170
+    weight: 80
 menu_name: docs_{{ .version }}
 ---

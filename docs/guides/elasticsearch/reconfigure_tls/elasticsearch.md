@@ -67,7 +67,7 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconficure-tls/Elasticsearch.yaml
 Elasticsearch.kubedb.com/es-demo created
 ```
 
@@ -140,7 +140,7 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconficure-tls/Elasticsearch-issuer.yaml
 issuer.cert-manager.io/es-issuer created
 ```
 
@@ -184,7 +184,7 @@ Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 > **Note:** For combined Elasticsearch, you just need to refer Elasticsearch combined object in `databaseRef` field. To learn more about combined Elasticsearch, please visit [here](/docs/guides/elasticsearch/clustering/combined-cluster/index.md).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-add-tls.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconficure-tls/Elasticsearch-add-tls.yaml
 Elasticsearchopsrequest.ops.kubedb.com/add-tls created
 ```
 
@@ -393,7 +393,7 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/esops-rotate.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconficure-tls/esops-rotate.yaml
 Elasticsearchopsrequest.ops.kubedb.com/esops-rotate created
 ```
 
@@ -576,7 +576,7 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-new-issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconficure-tls/Elasticsearch-new-issuer.yaml
 issuer.cert-manager.io/es-new-issuer created
 ```
 
@@ -610,7 +610,7 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-update-tls-issuer.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconficure-tls/Elasticsearch-update-tls-issuer.yaml
 Elasticsearchpsrequest.ops.kubedb.com/esops-update-issuer created
 ```
 
@@ -838,7 +838,7 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/esops-remove.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconficure-tls/esops-remove.yaml
 Elasticsearchopsrequest.ops.kubedb.com/esops-remove created
 ```
 

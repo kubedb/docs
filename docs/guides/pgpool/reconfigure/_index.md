@@ -5,6 +5,6 @@ menu:
     identifier: pp-reconfigure
     name: Reconfigure
     parent: pp-pgpool-guides
-    weight: 120
+    weight: 110
 menu_name: docs_{{ .version }}
 ---

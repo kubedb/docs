@@ -180,7 +180,7 @@ We will connect to the Vault by using Vault CLI. Therefore, we need to export th
 
 In one terminal port-forward the vault server service,
 ```shell
-$ kubectl port-forward -n vault-demo service/vault 8200
+$ kubectl port-forward -n demo service/vault 8200
 Forwarding from 127.0.0.1:8200 -> 8200
 Forwarding from [::1]:8200 -> 8200
 ```
@@ -366,14 +366,16 @@ pg     8.2.2     Ready    2m5s
 
 Now, lets go ahead and check what secret it is using,
 ```shell
-$ kubectl get secrets.virtual-secrets.dev -n demo 
+$ kubectl get secrets.virtual-secrets.dev -n demo
 NAME             TYPE                       DATA   AGE
-pg-auth     kubernetes.io/basic-auth        2      1m53s
+virtual-secret   Opaque                     2      11d19h
+pg-secret        kubernetes.io/basic-auth   2      5m27s
+
 ```
-We can see that a `virtual-secret` named `pg-auth` has been created by the KubeDB operator. Let’s get the whole definition of the virtual secret,
+We can see that a `virtual-secret` named `pg-secret ` has been created by the KubeDB operator. Let’s get the whole definition of the virtual secret,
 
 ```shell
-kubectl get secrets.virtual-secrets.dev -n demo pg-auth -oyaml
+$ kubectl get secrets.virtual-secrets.dev -n demo pg-secret  -oyaml
 apiVersion: virtual-secrets.dev/v1alpha1
 data:
   password: RUdKbCF0SEVHelpvWXdNaQ==
@@ -389,7 +391,7 @@ metadata:
     app.kubernetes.io/instance: pg
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: postgreses.kubedb.com
-  name: pg-auth
+  name: pg-secret 
   namespace: demo
   ownerReferences:
   - apiVersion: kubedb.com/v1
@@ -405,9 +407,9 @@ type: kubernetes.io/basic-auth
 ```
 In our vault server, we can check if this data exists or not,
 ```shell
-vault kv get virtual-secrets.dev/demo/pg-auth
+$ vault kv get virtual-secrets.dev/demo/pg-secret 
 ============ Secret Path ============
-virtual-secrets.dev/data/demo/pg-auth
+virtual-secrets.dev/data/demo/pg-secret 
 
 ======= Metadata =======
 Key                Value

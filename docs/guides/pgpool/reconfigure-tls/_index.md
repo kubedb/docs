@@ -5,6 +5,6 @@ menu:
     identifier: pp-reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: pp-pgpool-guides
-    weight: 130
+    weight: 120
 menu_name: docs_{{ .version }}
 ---

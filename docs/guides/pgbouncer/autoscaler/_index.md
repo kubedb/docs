@@ -5,6 +5,6 @@ menu:
     identifier: pb-auto-scaling
     name: Autoscaling
     parent: pb-pgbouncer-guides
-    weight: 100
+    weight: 130
 menu_name: docs_{{ .version }}
 ---

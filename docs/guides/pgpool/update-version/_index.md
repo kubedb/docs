@@ -5,6 +5,6 @@ menu:
     identifier: pp-updating
     name: UpdateVersion
     parent: pp-pgpool-guides
-    weight: 70
+    weight: 140
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: pp-vs
     name: Virtual Secret
     parent: pp-pgpool-guides
-    weight: 75
+    weight: 80
 menu_name: docs_{{ .version }}
 ---

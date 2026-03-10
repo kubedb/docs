@@ -5,6 +5,6 @@ menu:
     identifier: pb-rotate-auth
     name: Rotate Authentication
     parent: pb-pgbouncer-guides
-    weight: 140
+    weight: 100
 menu_name: docs_{{ .version }}
 ---
