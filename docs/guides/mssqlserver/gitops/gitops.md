@@ -187,7 +187,7 @@ Resource Requests and Limits are updated to `700m` CPU and `2Gi` Memory. Commit 
 Now, `gitops` operator will detect the resource changes and create a `ElasticsearchOpsRequest` to update the `Mssqlserver` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ $ kubectl get kf,Mssqlserver,kfops -n demo
+$ kubectl get kf,Mssqlserver,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
 Mssqlserver.kubedb.com/Mssqlserver-prod   kubedb.com/v1   3.9.0     Ready    22h
 
@@ -577,7 +577,8 @@ Elasticsearchopsrequest.ops.kubedb.com/Mssqlserver-prod-volumeexpansion-41xthr  
 
 We can add, rotate or remove TLS configuration using `gitops`.
 
-To add tls, we are going to create an example `Issuer` that will be used to enable SSL/TLS in Mssqlserver. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
+To add tls, we are going to create an example `Issuer` that will be used to enable SSL/TLS in Mssqlserver. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`. As well as we need to install [csi-driver-cacerts](https://github.com/kubeops/csi-driver-cacerts) which will be used to add self-signed ca certificates to the OS trusted certificate store (eg, /etc/ssl/certs/ca-certificates.crt)
+
 
 - Start off by generating a ca certificates using openssl.
 
