@@ -49,7 +49,7 @@ metadata:
   name: mysql-grp
   namespace: demo
 spec:
-  version: "5.7.44"
+  version: "9.1.0"
   replicas: 3
   topology:
     mode: GroupReplication
