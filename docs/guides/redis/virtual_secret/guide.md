@@ -17,7 +17,7 @@ section_menu_id: guides
 # Virtual Secrets For Redis: Secure Kubernetes Secrets
 KubeDB's Virtual Secrets feature enhances the security of your database credentials by allowing you to use external secret management systems instead of storing sensitive information directly 
 in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your Redis database in KubeDB.
-> Currently, KubeDB does not support executing any OpsRequest using a VirtualSecret.
+> Currently, KubeDB does not support executing few OpsRequest using a VirtualSecret.
 ## Virtual Secrets Design
 `Virtual Secrets` extends Kubernetes by introducing a new `Secret` resource under the `virtual-secrets.dev` API group. From a user perspective, it behaves similarly to the native Kubernetes Secret
 resource, providing familiar workflows for managing sensitive data. Unlike standard Kubernetes Secrets, Virtual Secrets does not store secret data in `etcd`. Instead, it securely stores the 
@@ -296,6 +296,7 @@ spec:
 ```
 Here,
 
+- `spec.authSecret.name`- specifies the name we have created using  `virtual secret`.
 - `spec.authSecret.apiGroup`- specifies that we want to use virtual secrets instead of native k8s secret.
 - `spec.authSecret.secretStoreName` - specifies the `SecretStore` resource that contains the connection information for external secret store to store the secret data.
 
@@ -319,7 +320,7 @@ NAME             TYPE     DATA   AGE
 virtual-secret   Opaque   2      1d
 ```
 
-We can see that the Redis user password is stored in the vault server as named ```virtual-secret``` . Now let’s go ahead and connect to the database using the password to check whether it is working or not.
+We can see that the Redis user password is stored in the vault server as named `virtual-secret` . Now let’s go ahead and connect to the database using the password to check whether it is working or not.
 ```bash
 $ kubectl exec -it rd-shard0-0 -n demo -c redis -- bash
 redis@rd-shard0-0:/data$ redis-cli -a virtual-secret

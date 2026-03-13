@@ -16,7 +16,7 @@ section_menu_id: guides
 
 # Virtual Secrets For Postgres: Secure Kubernetes Secrets
 KubeDB's Virtual Secrets feature enhances the security of your database credentials by allowing you to use external secret management systems instead of storing sensitive information directly in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your Postgres database in KubeDB.
-> **Note:** Currently, `KubeDB` does not support executing any `OpsRequest` using a `VirtualSecret`.
+> **Note:** Currently, `KubeDB` does not support executing few `OpsRequest` using a `VirtualSecret`.
 
 ## Virtual Secrets Design
 `Virtual Secrets` extends Kubernetes by introducing a new `Secret` resource under the `virtual-secrets.dev` API group. From a user perspective, it behaves similarly to the native Kubernetes Secret
@@ -102,7 +102,7 @@ metadata:
   name: vault
 spec:
   vault:
-    url: http://vault.vault-demo.svc:8200
+    url: http://vault.demo.svc:8200
     roleName: virtual-secrets-role
 ```
 ```bash
@@ -144,7 +144,7 @@ secret.virtual-secrets.dev/virtual-secret created
 Let's  list the Secrets to see if it is created or not,
 
 ```shell
-kubectl get secrets.virtual-secrets.dev -n demo
+$ kubectl get secrets.virtual-secrets.dev -n demo
 NAME             TYPE                       DATA   AGE
 virtual-secret   Opaque                     2      2d19h
 ```
@@ -255,8 +255,8 @@ Here,
 - `spec.provider` - specifies the provider for Secrets Store CSI Driver to communicate and use.
 - `parameters.secretName` - specifies the name of the virtual secret we want to mount.
 
-> **Note:** -We can also call the mount subresource of the virtual secret to create the SecretProviderClass for us.
--The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
+> **Note:** We can also call the mount subresource of the virtual secret to create the SecretProviderClass for us.
+The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
 
 ```shell
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretProviderClass.yaml
@@ -292,7 +292,7 @@ spec:
 ```
 Here,
 
-- `spec.authSecret.name`- specifies the name we have created using virtual secret.
+- `spec.authSecret.name`- specifies the name we have created using  `virtual secret`.
 - `spec.authSecret.apiGroup`- specifies that we want to use virtual secrets instead of native k8s secret.
 - `spec.authSecret.secretStoreName` - specifies the `SecretStore` resource that contains the connection information for external secret store to store the secret data.
 
@@ -315,7 +315,8 @@ $ kubectl get secrets.virtual-secrets.dev -n demo
 NAME             TYPE                       DATA   AGE
 virtual-secret   Opaque                     2      11d19h
 ```
-We can see that a `virtual-secret` named `virtual-secret ` has been created by the KubeDB operator. Let’s get the whole definition of the virtual secret,
+
+We can see that the Postgres user password is stored in the vault server as named `virtual-secret` . Let’s get the whole definition of the virtual secret,
 
 ```shell
 $ kubectl get secrets.virtual-secrets.dev -n demo virtual-secret  -oyaml

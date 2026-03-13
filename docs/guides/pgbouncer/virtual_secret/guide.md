@@ -15,7 +15,7 @@ section_menu_id: guides
 
 # Virtual Secrets For Pgbouncer: Secure Kubernetes Secrets
 KubeDB's Virtual Secrets feature enhances the security of your database credentials by allowing you to use external secret management systems instead of storing sensitive information directly  in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your Pgbouncer database in KubeDB.
-> Currently, KubeDB does not support executing any OpsRequest using a VirtualSecret.
+> Currently, KubeDB does not support executing few OpsRequest using a VirtualSecret.
 ## Virtual Secrets Design
 `Virtual Secrets` extends Kubernetes by introducing a new `Secret` resource under the `virtual-secrets.dev` API group. From a user perspective, it behaves similarly to the native Kubernetes Secret
 resource, providing familiar workflows for managing sensitive data. Unlike standard Kubernetes Secrets, Virtual Secrets does not store secret data in `etcd`. Instead, it securely stores the 
@@ -231,9 +231,7 @@ If both of them are deployed we should see two new pods in the `kube-system` nam
 ```shell
 $ kubectl get pods -n kube-system
 NAME                                                      READY   STATUS    RESTARTS      AGE
-coredns-695cbbfcb9-r6v7j                                  1/1     Running   1 (36h ago)   2d18h
 csi-secrets-store-secrets-store-csi-driver-qzq8z          3/3     Running   3 (36h ago)   2d
-local-path-provisioner-546dfc6456-lpdp4                   1/1     Running   1 (36h ago)   2d18h
 secrets-store-csi-driver-provider-virtual-secrets-mdw84   1/1     Running   1 (36h ago)   47h
 ```
 The `Secrets Store CSI Driver` uses a custom resource named `SecretProviderClass` to mount the secret. Let’s go ahead and create that,
@@ -255,8 +253,8 @@ Here,
 - `spec.provider` - specifies the provider for Secrets Store CSI Driver to communicate and use.
 - `spec.parameters.secretName` - specifies the name of the virtual secret we want to mount.
 
-> **Note:** -We can also call the mount subresource of the virtual secret to create the SecretProviderClass for us.
--The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
+> **Note:** We can also call the mount subresource of the virtual secret to create the SecretProviderClass for us.
+The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
 
 ```shell
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretProviderClass.yaml
@@ -309,6 +307,7 @@ spec:
 ```
 Here,
 
+- `spec.authSecret.name`- specifies the name we have created using  `virtual secret`.
 - `spec.authSecret.apiGroup`- specifies that we want to use virtual secrets instead of native k8s secret.
 - `spec.authSecret.secretStoreName` - specifies the `SecretStore` resource that contains the connection information for external secret store to store the secret data.
 
