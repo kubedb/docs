@@ -5,6 +5,6 @@ menu:
     identifier: guides-pg-backup
     name: Backup & Restore
     parent: pg-postgres-guides
-    weight: 40
+    weight: 90
 menu_name: docs_{{ .version }}
 ---

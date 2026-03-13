@@ -5,6 +5,6 @@ menu:
     identifier: pg-private-registry-postgres
     name: Private Registry
     parent: pg-postgres-guides
-    weight: 35
+    weight: 120
 menu_name: docs_{{ .version }}
 ---

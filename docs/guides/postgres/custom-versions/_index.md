@@ -5,6 +5,6 @@ menu:
     identifier: pg-custom-versions-postgres
     name: Custom Versions
     parent: pg-postgres-guides
-    weight: 36
+    weight: 100
 menu_name: docs_{{ .version }}
 ---

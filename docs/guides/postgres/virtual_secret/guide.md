@@ -15,8 +15,8 @@ section_menu_id: guides
 > New to KubeDB? Please start [here](/docs/README.md).
 
 # Virtual Secrets For Postgres: Secure Kubernetes Secrets
-KubeDB's Virtual Secrets feature enhances the security of your database credentials by allowing you to use external secret management systems instead of storing sensitive information directly
-in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your Postgres database in KubeDB.
+KubeDB's Virtual Secrets feature enhances the security of your database credentials by allowing you to use external secret management systems instead of storing sensitive information directly in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your Postgres database in KubeDB.
+> **Note:** Currently, `KubeDB` does not support executing any `OpsRequest` using a `VirtualSecret`.
 
 ## Virtual Secrets Design
 `Virtual Secrets` extends Kubernetes by introducing a new `Secret` resource under the `virtual-secrets.dev` API group. From a user perspective, it behaves similarly to the native Kubernetes Secret
@@ -264,8 +264,6 @@ secretproviderclass.secrets-store.csi.x-k8s.io/virtual-secret created
 ```
 
 
-The value displayed matches the username and password value for the custom secret named `virtual-secret` we created earlier.
-
 ### Use Virtual Secrets with Postgres
 Virtual Secrets is integrated with KubeDB from the v2025.3.24 and it can be used to store KubeDB’s database credential. Now, the support has been added for `Postgres`.
 We can proceed with deploying a `Postgres` which will use `virtual-secrets` to create custom secret for the database authentication credential.
@@ -278,7 +276,7 @@ metadata:
 spec:
   authSecret:
     kind: secret
-    name: pg-secret
+    name: virtual-secret
     apiGroup: "virtual-secrets.dev"
     secretStoreName: vault
   replicas: 3
@@ -294,6 +292,7 @@ spec:
 ```
 Here,
 
+- `spec.authSecret.name`- specifies the name we have created using virtual secret.
 - `spec.authSecret.apiGroup`- specifies that we want to use virtual secrets instead of native k8s secret.
 - `spec.authSecret.secretStoreName` - specifies the `SecretStore` resource that contains the connection information for external secret store to store the secret data.
 
@@ -315,13 +314,11 @@ Now, lets go ahead and check what secret it is using,
 $ kubectl get secrets.virtual-secrets.dev -n demo
 NAME             TYPE                       DATA   AGE
 virtual-secret   Opaque                     2      11d19h
-pg-secret        kubernetes.io/basic-auth   2      5m27s
-
 ```
-We can see that a `virtual-secret` named `pg-secret ` has been created by the KubeDB operator. Let’s get the whole definition of the virtual secret,
+We can see that a `virtual-secret` named `virtual-secret ` has been created by the KubeDB operator. Let’s get the whole definition of the virtual secret,
 
 ```shell
-$ kubectl get secrets.virtual-secrets.dev -n demo pg-secret  -oyaml
+$ kubectl get secrets.virtual-secrets.dev -n demo virtual-secret  -oyaml
 apiVersion: virtual-secrets.dev/v1alpha1
 data:
   password: RUdKbCF0SEVHelpvWXdNaQ==
@@ -337,7 +334,7 @@ metadata:
     app.kubernetes.io/instance: pg
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: postgreses.kubedb.com
-  name: pg-secret 
+  name: virtual-secret 
   namespace: demo
   ownerReferences:
   - apiVersion: kubedb.com/v1
@@ -353,9 +350,9 @@ type: kubernetes.io/basic-auth
 ```
 In our vault server, we can check if this data exists or not,
 ```shell
-$ vault kv get virtual-secrets.dev/demo/pg-secret 
+$ vault kv get virtual-secrets.dev/demo/virtual-secret 
 ============ Secret Path ============
-virtual-secrets.dev/data/demo/pg-secret 
+virtual-secrets.dev/data/demo/virtual-secret 
 
 ======= Metadata =======
 Key                Value

@@ -14,9 +14,8 @@ section_menu_id: guides
 > New to KubeDB? Please start [here](/docs/README.md).
 
 # Virtual Secrets For Pgbouncer: Secure Kubernetes Secrets
-KubeDB's Virtual Secrets feature enhances the security of your database credentials by allowing you to use external secret management systems instead of storing sensitive information directly 
-in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your Pgbouncer database in KubeDB.
-
+KubeDB's Virtual Secrets feature enhances the security of your database credentials by allowing you to use external secret management systems instead of storing sensitive information directly  in Kubernetes Secrets. This guide will walk you through the steps to set up and use Virtual Secrets with your Pgbouncer database in KubeDB.
+> Currently, KubeDB does not support executing any OpsRequest using a VirtualSecret.
 ## Virtual Secrets Design
 `Virtual Secrets` extends Kubernetes by introducing a new `Secret` resource under the `virtual-secrets.dev` API group. From a user perspective, it behaves similarly to the native Kubernetes Secret
 resource, providing familiar workflows for managing sensitive data. Unlike standard Kubernetes Secrets, Virtual Secrets does not store secret data in `etcd`. Instead, it securely stores the 
@@ -304,7 +303,6 @@ spec:
   terminationPolicy: WipeOut
   authSecret:
     kind: secret
-    name: pb-secret
     apiGroup: "virtual-secrets.dev"
     secretStoreName: vault
     name: virtual-secret

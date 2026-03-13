@@ -5,6 +5,6 @@ menu:
     identifier: pg-volume-expansion
     name: Volume Expansion
     parent: pg-postgres-guides
-    weight: 43
+    weight: 200
 menu_name: docs_{{ .version }}
 ---

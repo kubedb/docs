@@ -5,6 +5,6 @@ menu:
     identifier: guides-postgres-vs
     name: Virtual Secret 
     parent: pg-postgres-guides
-    weight: 110
+    weight: 80
 menu_name: docs_{{ .version }}
 ---
