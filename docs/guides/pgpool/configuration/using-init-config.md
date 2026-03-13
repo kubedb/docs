@@ -5,7 +5,7 @@ menu:
     identifier: pp-using-init-configuration
     name: Inline Config
     parent: pp-configuration
-    weight: 20
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

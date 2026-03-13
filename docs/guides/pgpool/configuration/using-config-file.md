@@ -5,7 +5,7 @@ menu:
     identifier: pp-using-config-file-configuration
     name: Configuration Secret 
     parent: pp-configuration
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
