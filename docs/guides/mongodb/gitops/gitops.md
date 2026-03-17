@@ -1,11 +1,11 @@
 ---
-title: Elasticsearch Gitops Overview
-description: Elasticsearch Gitops Overview
+title: MongoDB Gitops 
+description: MongoDB Gitops 
 menu:
   docs_{{ .version }}:
-    identifier: es-gitops-overview
-    name: Overview
-    parent: es-gitops
+    identifier: es-gitops
+    name: MongoDB Gitops
+    parent:  mg-gitops-mongodb
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -15,9 +15,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# GitOps Elasticsearch using KubeDB GitOps Operator
+# GitOps MongoDB using KubeDB GitOps Operator
 
-This guide will show you how to use `KubeDB` GitOps operator to create Elasticsearch database and manage updates using GitOps workflow.
+This guide will show you how to use `KubeDB` GitOps operator to create MongoDB database and manage updates using GitOps workflow.
 
 ## Before You Begin
 
@@ -31,10 +31,11 @@ This guide will show you how to use `KubeDB` GitOps operator to create Elasticse
   $ kubectl create ns monitoring
   namespace/monitoring created
 
+
   $ kubectl create ns demo
   namespace/demo created
   ```
-> Note: YAML files used in this tutorial are stored in [docs/examples/Elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/Elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/MongoDB](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/MongoDB) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 We are going to use `ArgoCD` in this tutorial. You can install `ArgoCD` in your cluster by following the steps [here](https://argo-cd.readthedocs.io/en/stable/getting_started/). Also, you need to install `argocd` CLI in your local machine. You can install `argocd` CLI by following the steps [here](https://argo-cd.readthedocs.io/en/stable/cli_installation/).
 
@@ -56,86 +57,87 @@ argocd app create kubedb --repo <repo-url> --path kubedb --dest-server https://k
 argocd app create kubedb --repo <repo-url> --path kubedb --dest-server https://kubernetes.default.svc --dest-namespace <namespace> --ssh-private-key-path ~/.ssh/id_rsa
 ```
 
-## Create Elasticsearch Database using GitOps
+## Create MongoDB Database using GitOps
 
-### Create a Elasticsearch GitOps CR
+### Create a MongoDB GitOps CR
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Elasticsearch
+kind: MongoDB
 metadata:
-  name: es-gitops
+  name: mg-gitops
   namespace: demo
 spec:
-  version: xpack-8.2.3
-  enableSSL: true
+  version: "8.0.10"
+  replicaSet: 
+    name: "replicaset"
   replicas: 2
   storageType: Durable
   storage:
     storageClassName: longhorn
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: WipeOut
 ```
 
 Create a directory like below,
 ```bash
 $ tree .
 ├── kubedb
-    └── Elasticsearch.yaml
+    └── MongoDB.yaml
 1 directories, 1 files
 ```
 
-Now commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is created in your cluster.
+Now commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is created in your cluster.
 
-Our `gitops` operator will create an actual `Elasticsearch` database CR in the cluster. List the resources created by `gitops` operator in the `demo` namespace.
+Our `gitops` operator will create an actual `MongoDB` database CR in the cluster. List the resources created by `gitops` operator in the `demo` namespace.
 
-
-```bash
-$  kubectl get Elasticsearch.gitops.kubedb.com,Elasticsearch.kubedb.com -n demo
-NAME                                 AGE
-Elasticsearch.gitops.kubedb.com/Elasticsearch-prod   2m56s
-
-NAME                          TYPE            VERSION   STATUS   AGE
-Elasticsearch.kubedb.com/Elasticsearch-prod   kubedb.com/v1   3.9.0     Ready    2m56s
-```
-
-List the resources created by `kubedb` operator created for `kubedb.com/v1` Elasticsearch.
 
 ```bash
-$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=Elasticsearch-prod'
-NAME                                                 AGE
-petset.apps.k8s.appscode.com/Elasticsearch-prod-broker       4m49s
-petset.apps.k8s.appscode.com/Elasticsearch-prod-controller   4m47s
+$  kubectl get MongoDB.gitops.kubedb.com,MongoDB.kubedb.com -n demo
+NAME                                  AGE
+mongodb.gitops.kubedb.com/mg-gitops   33m
 
-NAME                          READY   STATUS    RESTARTS   AGE
-pod/Elasticsearch-prod-broker-0       1/1     Running   0          4m48s
-pod/Elasticsearch-prod-broker-1       1/1     Running   0          4m42s
-pod/Elasticsearch-prod-controller-0   1/1     Running   0          4m47s
-pod/Elasticsearch-prod-controller-1   1/1     Running   0          4m40s
+NAME                           VERSION   STATUS   AGE
+mongodb.kubedb.com/mg-gitops   8.0.10    Ready    33m
 
-NAME                     TYPE                       DATA   AGE
-secret/Elasticsearch-prod-auth   kubernetes.io/basic-auth   2      4m51s
-
-NAME                      TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                       AGE
-service/Elasticsearch-prod-pods   ClusterIP   None         <none>        9092/TCP,9093/TCP,29092/TCP   4m51s
-
-NAME                                            TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/Elasticsearch-prod   kubedb.com/Elasticsearch   3.9.0     4m47s
 ```
 
-## Update Elasticsearch Database using GitOps
+List the resources created by `kubedb` operator created for `kubedb.com/v1` MongoDB.
 
-### Scale Elasticsearch Database Resources
+```bash
+$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=mg-gitops'
+NAME                                     AGE
+petset.apps.k8s.appscode.com/mg-gitops   34m
 
-Update the `Elasticsearch.yaml` with the following,
+NAME              READY   STATUS    RESTARTS   AGE
+pod/mg-gitops-0   2/2     Running   0          34m
+pod/mg-gitops-1   2/2     Running   0          33m
+
+NAME                    TYPE                       DATA   AGE
+secret/mg-gitops-auth   kubernetes.io/basic-auth   2      34m
+secret/mg-gitops-key    Opaque                     1      34m
+
+NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+service/mg-gitops        ClusterIP   10.43.206.183   <none>        27017/TCP   34m
+service/mg-gitops-pods   ClusterIP   None            <none>        27017/TCP   34m
+
+NAME                                           TYPE                 VERSION   AGE
+appbinding.appcatalog.appscode.com/mg-gitops   kubedb.com/mongodb   8.0.10    34m
+
+```
+
+## Update MongoDB Database using GitOps
+
+### Scale MongoDB Database Resources
+
+Update the `MongoDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Elasticsearch
+kind: MongoDB
 metadata:
-  name: Elasticsearch-prod
+  name: MongoDB-prod
   namespace: demo
 spec:
   version: 3.9.0
@@ -144,7 +146,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1540Mi
@@ -163,7 +165,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1540Mi
@@ -182,25 +184,25 @@ spec:
   deletionPolicy: WipeOut
  ```
 
-Resource Requests and Limits are updated to `700m` CPU and `2Gi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Resource Requests and Limits are updated to `700m` CPU and `2Gi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the resource changes and create a `ElasticsearchOpsRequest` to update the `Elasticsearch` database. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the resource changes and create a `ElasticsearchOpsRequest` to update the `MongoDB` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ $ kubectl get kf,Elasticsearch,kfops -n demo
+$ $ kubectl get kf,MongoDB,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-Elasticsearch.kubedb.com/Elasticsearch-prod   kubedb.com/v1   3.9.0     Ready    22h
+MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    22h
 
 NAME                                 AGE
-Elasticsearch.gitops.kubedb.com/Elasticsearch-prod   22h
+MongoDB.gitops.kubedb.com/MongoDB-prod   22h
 
 NAME                                                                   TYPE              STATUS        AGE
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-verticalscaling-i0kr1l   VerticalScaling       Successful     2s
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-verticalscaling-i0kr1l   VerticalScaling       Successful     2s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
 ```bash
-$ kubectl get pod -n demo Elasticsearch-prod-broker-0 -o json | jq '.spec.containers[0].resources'
+$ kubectl get pod -n demo mg-gitops-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
     "memory": "1536Mi"
@@ -212,13 +214,13 @@ $ kubectl get pod -n demo Elasticsearch-prod-broker-0 -o json | jq '.spec.contai
 }
 ```
 
-### Scale Elasticsearch Replicas
-Update the `Elasticsearch.yaml` with the following,
+### Scale MongoDB Replicas
+Update the `MongoDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Elasticsearch
+kind: MongoDB
 metadata:
-  name: Elasticsearch-prod
+  name: MongoDB-prod
   namespace: demo
 spec:
   version: 3.9.0
@@ -227,7 +229,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1540Mi
@@ -246,7 +248,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1540Mi
@@ -265,44 +267,44 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Update the `replicas` to `3`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
-Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` ElasticsearchOpsRequest to update the `Elasticsearch` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
+Update the `replicas` to `3`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
+Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` ElasticsearchOpsRequest to update the `MongoDB` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,Elasticsearch,kfops -n demo
+$ kubectl get kf,MongoDB,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-Elasticsearch.kubedb.com/Elasticsearch-prod   kubedb.com/v1   3.9.0     Ready    22h
+MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    22h
 
 NAME                                 AGE
-Elasticsearch.gitops.kubedb.com/Elasticsearch-prod   22h
+MongoDB.gitops.kubedb.com/MongoDB-prod   22h
 
 NAME                                                                 TYPE                STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$  kubectl get pod -n demo -l 'app.kubernetes.io/instance=Elasticsearch-prod'
+$  kubectl get pod -n demo -l 'app.kubernetes.io/instance=MongoDB-prod'
 NAME                      READY   STATUS    RESTARTS   AGE
-Elasticsearch-prod-broker-0       1/1     Running   0          34m
-Elasticsearch-prod-broker-1       1/1     Running   0          33m
-Elasticsearch-prod-broker-2       1/1     Running   0          33m
-Elasticsearch-prod-controller-0   1/1     Running   0          32m
-Elasticsearch-prod-controller-1   1/1     Running   0          31m
-Elasticsearch-prod-controller-2   1/1     Running   0          31m
+mg-gitops-0       1/1     Running   0          34m
+mg-gitops-1       1/1     Running   0          33m
+mg-gitops-2       1/1     Running   0          33m
+MongoDB-prod-controller-0   1/1     Running   0          32m
+MongoDB-prod-controller-1   1/1     Running   0          31m
+MongoDB-prod-controller-2   1/1     Running   0          31m
 ```
 
 We can also scale down the replicas by updating the `replicas` fields.
 
-### Expand Elasticsearch Volume
+### Expand MongoDB Volume
 
-Update the `Elasticsearch.yaml` with the following,
+Update the `MongoDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Elasticsearch
+kind: MongoDB
 metadata:
-  name: Elasticsearch-prod
+  name: MongoDB-prod
   namespace: demo
 spec:
   version: 3.9.0
@@ -311,7 +313,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -330,7 +332,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -349,39 +351,39 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` ElasticsearchOpsRequest to update the `Elasticsearch` database volume. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` ElasticsearchOpsRequest to update the `MongoDB` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,Elasticsearch,kfops -n demo
+$ kubectl get kf,MongoDB,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-Elasticsearch.kubedb.com/Elasticsearch-prod   kubedb.com/v1   3.9.0     Ready    23m
+MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    23m
 
 NAME                                 AGE
-Elasticsearch.gitops.kubedb.com/Elasticsearch-prod   23m
+MongoDB.gitops.kubedb.com/MongoDB-prod   23m
 
 NAME                                                                 TYPE                STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-volumeexpansion-41xthr     VolumeExpansion     Successful   19m
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr     VolumeExpansion     Successful   19m
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
-$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=Elasticsearch-prod'
+$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=MongoDB-prod'
 NAME                                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-Elasticsearch-prod-data-Elasticsearch-prod-broker-0       Bound    pvc-2afd4835-5686-492b-be93-c6e040e0a6c6   2Gi        RWO            Standard       <unset>                 3h39m
-Elasticsearch-prod-data-Elasticsearch-prod-broker-1       Bound    pvc-aaf994cc-6b04-4c37-80d5-5e966dad8487   2Gi        RWO            Standard       <unset>                 3h39m
-Elasticsearch-prod-data-Elasticsearch-prod-controller-0   Bound    pvc-82d2b233-203d-4df2-a0fd-ecedbc0825b7   2Gi        RWO            Standard       <unset>                 3h39m
-Elasticsearch-prod-data-Elasticsearch-prod-controller-1   Bound    pvc-91852c29-ab1a-48ad-9255-a0b15d5a7515   2Gi        RWO            Standard       <unset>                 3h39m
+MongoDB-prod-data-mg-gitops-0       Bound    pvc-2afd4835-5686-492b-be93-c6e040e0a6c6   2Gi        RWO            Standard       <unset>                 3h39m
+MongoDB-prod-data-mg-gitops-1       Bound    pvc-aaf994cc-6b04-4c37-80d5-5e966dad8487   2Gi        RWO            Standard       <unset>                 3h39m
+MongoDB-prod-data-MongoDB-prod-controller-0   Bound    pvc-82d2b233-203d-4df2-a0fd-ecedbc0825b7   2Gi        RWO            Standard       <unset>                 3h39m
+MongoDB-prod-data-MongoDB-prod-controller-1   Bound    pvc-91852c29-ab1a-48ad-9255-a0b15d5a7515   2Gi        RWO            Standard       <unset>                 3h39m
 
 ```
 
-## Reconfigure Elasticsearch
+## Reconfigure MongoDB
 
 At first, we will create a secret containing `user.conf` file with required configuration settings.
-To know more about this configuration file, check [here](/docs/guides/Elasticsearch/configuration/Elasticsearch-combined.md)
+To know more about this configuration file, check [here](/docs/guides/MongoDB/configuration/MongoDB-combined.md)
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -399,16 +401,16 @@ Now, we will add this file to `kubedb /kf-configuration.yaml`.
 $ tree .
 ├── kubedb
 │ ├── kf-configuration.yaml
-│ └── Elasticsearch.yaml
+│ └── MongoDB.yaml
 1 directories, 2 files
 ```
 
-Update the `Elasticsearch.yaml` with the following,
+Update the `MongoDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Elasticsearch
+kind: MongoDB
 metadata:
-  name: Elasticsearch-prod
+  name: MongoDB-prod
   namespace: demo
 spec:
   configSecret:
@@ -419,7 +421,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -438,7 +440,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -457,21 +459,21 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` ElasticsearchOpsRequest to update the `Elasticsearch` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` ElasticsearchOpsRequest to update the `MongoDB` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,Elasticsearch,kfops -n demo
+$ kubectl get kf,MongoDB,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-Elasticsearch.kubedb.com/Elasticsearch-prod   kubedb.com/v1   3.9.0     Ready    74m
+MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    74m
 
 NAME                                 AGE
-Elasticsearch.gitops.kubedb.com/Elasticsearch-prod   74m
+MongoDB.gitops.kubedb.com/MongoDB-prod   74m
 
 NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-reconfigure-ukj41o       Reconfigure       Successful   24m
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   70m
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfigure-ukj41o       Reconfigure       Successful   24m
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   70m
 
 ```
 
@@ -479,7 +481,7 @@ Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-volumeexpansion-41xthr
 
 > We can also reconfigure the parameters creating another secret and reference the secret in the `configSecret` field. Also you can remove the `configSecret` field to use the default parameters.
 
-### Rotate Elasticsearch Auth
+### Rotate MongoDB Auth
 
 To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new username and password.
 
@@ -488,20 +490,20 @@ We will do that using gitops, create the file `kubedb /kf-auth.yaml` with the fo
 ```bash
 kubectl create secret generic kf-rotate-auth -n demo \
 --type=kubernetes.io/basic-auth \
---from-literal=username=Elasticsearch \
---from-literal=password=Elasticsearch-secret
+--from-literal=username=MongoDB \
+--from-literal=password=MongoDB-secret
 secret/kf-rotate-auth created
 
 ```
 
 
 
-Update the `Elasticsearch.yaml` with the following,
+Update the `MongoDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Elasticsearch
+kind: MongoDB
 metadata:
-  name: Elasticsearch-prod
+  name: MongoDB-prod
   namespace: demo
 spec:
   authSecret:
@@ -515,7 +517,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -534,7 +536,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -553,22 +555,22 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Change the `authSecret` field to `kf-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Change the `authSecret` field to `kf-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the auth changes and create a `RotateAuth` ElasticsearchOpsRequest to update the `Elasticsearch` database auth. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the auth changes and create a `RotateAuth` ElasticsearchOpsRequest to update the `MongoDB` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get kf,Elasticsearch,kfops -n demo
+$  kubectl get kf,MongoDB,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-Elasticsearch.kubedb.com/Elasticsearch-prod   kubedb.com/v1   3.9.0     Ready    7m11s
+MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    7m11s
 
 NAME                                 AGE
-Elasticsearch.gitops.kubedb.com/Elasticsearch-prod   7m11s
+MongoDB.gitops.kubedb.com/MongoDB-prod   7m11s
 
 NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-reconfigure-ukj41o       Reconfigure       Successful   17h
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-rotate-auth-43ris8       RotateAuth        Successful   28m
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   17h
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfigure-ukj41o       Reconfigure       Successful   17h
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-rotate-auth-43ris8       RotateAuth        Successful   28m
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   17h
 
 ```
 
@@ -577,7 +579,7 @@ Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-volumeexpansion-41xthr
 
 We can add, rotate or remove TLS configuration using `gitops`.
 
-To add tls, we are going to create an example `Issuer` that will be used to enable SSL/TLS in Elasticsearch. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
+To add tls, we are going to create an example `Issuer` that will be used to enable SSL/TLS in MongoDB. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
 
 - Start off by generating a ca certificates using openssl.
 
@@ -593,14 +595,14 @@ writing new private key to './ca.key'
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls Elasticsearch-ca \
+$ kubectl create secret tls MongoDB-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/Elasticsearch-ca created
+secret/MongoDB-ca created
 ```
 
-Now, Let's create an `Issuer` using the `Elasticsearch-ca` secret that we have just created. The `YAML` file looks like this:
+Now, Let's create an `Issuer` using the `MongoDB-ca` secret that we have just created. The `YAML` file looks like this:
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -610,7 +612,7 @@ metadata:
   namespace: demo
 spec:
   ca:
-    secretName: Elasticsearch-ca
+    secretName: MongoDB-ca
 ```
 
 Let's add that to our `kubedb /kf-issuer.yaml` file. File structure will look like this,
@@ -619,16 +621,16 @@ $ tree .
 ├── kubedb
 │ ├── kf-configuration.yaml
 │ ├── kf-issuer.yaml
-│ └── Elasticsearch.yaml
+│ └── MongoDB.yaml
 1 directories, 4 files
 ```
 
-Update the `Elasticsearch.yaml` with the following,
+Update the `MongoDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Elasticsearch
+kind: MongoDB
 metadata:
-  name: Elasticsearch-prod
+  name: MongoDB-prod
   namespace: demo
 spec:
   version: 3.9.0
@@ -637,7 +639,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -656,7 +658,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -675,41 +677,41 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `Elasticsearch` database tls. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `MongoDB` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get kf,Elasticsearch,kfops,pods -n demo
+$  kubectl get kf,MongoDB,kfops,pods -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-Elasticsearch.kubedb.com/Elasticsearch-prod   kubedb.com/v1   3.9.0     Ready    41m
+MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    41m
 
 NAME                                 AGE
-Elasticsearch.gitops.kubedb.com/Elasticsearch-prod   75m
+MongoDB.gitops.kubedb.com/MongoDB-prod   75m
 
 NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-reconfigure-ukj41o       Reconfigure       Successful   5d18h
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   9m18s
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-rotate-auth-43ris8       RotateAuth        Successful   5d1h
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   5d19h
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfigure-ukj41o       Reconfigure       Successful   5d18h
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   9m18s
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-rotate-auth-43ris8       RotateAuth        Successful   5d1h
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   5d19h
 
 ```
 
 
-> We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for Elasticsearch.
+> We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for MongoDB.
 
 ### Update Version
 
-List Elasticsearch versions using `kubectl get Elasticsearchversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/Elasticsearch/update-version/update-version.md).
+List MongoDB versions using `kubectl get Elasticsearchversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/MongoDB/update-version/update-version.md).
 
 Let's choose `4.0.0` in this example.
 
-Update the `Elasticsearch.yaml` with the following,
+Update the `MongoDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Elasticsearch
+kind: MongoDB
 metadata:
-  name: Elasticsearch-prod
+  name: MongoDB-prod
   namespace: demo
 spec:
   version: 4.0.0
@@ -718,7 +720,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -737,7 +739,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -756,50 +758,50 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Update the `version` field to `17.4`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Update the `version` field to `17.4`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the version changes and create a `VersionUpdate` ElasticsearchOpsRequest to update the `Elasticsearch` database version. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the version changes and create a `VersionUpdate` ElasticsearchOpsRequest to update the `MongoDB` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,Elasticsearch,kfops -n demo
+$ kubectl get kf,MongoDB,kfops -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-Elasticsearch.kubedb.com/Elasticsearch-prod   kubedb.com/v1   4.0.0     Ready    3h47m
+MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   4.0.0     Ready    3h47m
 
 NAME                                 AGE
-Elasticsearch.gitops.kubedb.com/Elasticsearch-prod   3h47m
+MongoDB.gitops.kubedb.com/MongoDB-prod   3h47m
 
 NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-reconfigure-ukj41o       Reconfigure       Successful   5d22h
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   4h16m
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-rotate-auth-43ris8       RotateAuth        Successful   5d6h
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-versionupdate-wyn2dp     UpdateVersion     Successful   3h51m
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   5d23h
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfigure-ukj41o       Reconfigure       Successful   5d22h
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   4h16m
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-rotate-auth-43ris8       RotateAuth        Successful   5d6h
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-versionupdate-wyn2dp     UpdateVersion     Successful   3h51m
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   5d23h
 ```
 
 
-Now, we are going to verify whether the `Elasticsearch`, `PetSet` and it's `Pod` have updated with new image. Let's check,
+Now, we are going to verify whether the `MongoDB`, `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
-$ kubectl get Elasticsearch -n demo Elasticsearch-prod -o=jsonpath='{.spec.version}{"\n"}'
+$ kubectl get MongoDB -n demo MongoDB-prod -o=jsonpath='{.spec.version}{"\n"}'
 4.0.0
 
-$ kubectl get petset -n demo Elasticsearch-prod-broker -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/Elasticsearch:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
+$ kubectl get petset -n demo mg-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+ghcr.io/appscode-images/MongoDB:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
 
-$  kubectl get pod -n demo Elasticsearch-prod-broker-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/Elasticsearch:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
+$  kubectl get pod -n demo mg-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+ghcr.io/appscode-images/MongoDB:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
 ```
 
 ### Enable Monitoring
 
 If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
 
-Update the `Elasticsearch.yaml` with the following,
+Update the `MongoDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Elasticsearch
+kind: MongoDB
 metadata:
-  name: Elasticsearch-prod
+  name: MongoDB-prod
   namespace: demo
 spec:
   version: 4.0.0
@@ -808,7 +810,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -827,7 +829,7 @@ spec:
       podTemplate:
         spec:
           containers:
-            - name: Elasticsearch
+            - name: MongoDB
               resources:
                 limits:
                   memory: 1536Mi
@@ -855,24 +857,24 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Add `monitor` field in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Add `monitor` field in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the monitoring changes and create a `Restart` ElasticsearchOpsRequest to add the `Elasticsearch` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the monitoring changes and create a `Restart` ElasticsearchOpsRequest to add the `MongoDB` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
 $ kubectl get Elasticsearches.gitops.kubedb.com,Elasticsearches.kubedb.com,Elasticsearchopsrequest -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-Elasticsearch.kubedb.com/Elasticsearch-prod   kubedb.com/v1   4.0.0     Ready    5h12m
+MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   4.0.0     Ready    5h12m
 
 NAME                                 AGE
-Elasticsearch.gitops.kubedb.com/Elasticsearch-prod   5h12m
+MongoDB.gitops.kubedb.com/MongoDB-prod   5h12m
 
 NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-reconfigure-ukj41o       Reconfigure       Successful   6d
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   5h42m
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-restart-ljpqih           Restart           Successful   3m51s
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-rotate-auth-43ris8       RotateAuth        Successful   5d7h
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-versionupdate-wyn2dp     UpdateVersion     Successful   5h16m
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   6d
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfigure-ukj41o       Reconfigure       Successful   6d
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   5h42m
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-restart-ljpqih           Restart           Successful   3m51s
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-rotate-auth-43ris8       RotateAuth        Successful   5d7h
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-versionupdate-wyn2dp     UpdateVersion     Successful   5h16m
+Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   6d
 
 ```
 
@@ -891,10 +893,10 @@ There are some other fields that will trigger `Restart` ops request.
 
 ## Next Steps
 
-[//]: # (- Learn Elasticsearch [GitOps]&#40;/docs/guides/Elasticsearch/concepts/Elasticsearch-gitops.md&#41;)
-- Learn Elasticsearch Scaling
-    - [Horizontal Scaling](/docs/guides/Elasticsearch/scaling/horizontal-scaling/combined.md)
-    - [Vertical Scaling](/docs/guides/Elasticsearch/scaling/vertical-scaling/combined.md)
-- Learn Version Update Ops Request and Constraints [here](/docs/guides/Elasticsearch/update-version/overview.md)
-- Monitor your ElasticsearchQL database with KubeDB using [built-in Prometheus](/docs/guides/Elasticsearch/monitoring/using-builtin-prometheus.md).
+[//]: # (- Learn MongoDB [GitOps]&#40;/docs/guides/MongoDB/concepts/MongoDB-gitops.md&#41;)
+- Learn MongoDB Scaling
+    - [Horizontal Scaling](/docs/guides/MongoDB/scaling/horizontal-scaling/combined.md)
+    - [Vertical Scaling](/docs/guides/MongoDB/scaling/vertical-scaling/combined.md)
+- Learn Version Update Ops Request and Constraints [here](/docs/guides/MongoDB/update-version/overview.md)
+- Monitor your ElasticsearchQL database with KubeDB using [built-in Prometheus](/docs/guides/MongoDB/monitoring/using-builtin-prometheus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
