@@ -289,7 +289,7 @@ spec:
   version: "4.5.0"
   replicas: 1
   postgresRef:
-    name: pg-demo
+    name: quick-postgres
     namespace: demo
   sslMode: disable
   clientAuthMode: md5
