@@ -24,29 +24,25 @@ Rotating authentication secrets in database management is vital to mitigate secu
 Let's go through a demo to see `RotateAuth` recommendations being generated. First, get the available Elasticsearch versions provided by KubeDB.
 
 ```bash
-$ kubectl get elasticsearchversions | grep xpack
-xpack-6.8.23        6.8.23    ElasticStack   ghcr.io/appscode-images/elastic:6.8.23                        17h
-xpack-7.13.4        7.13.4    ElasticStack   ghcr.io/appscode-images/elastic:7.13.4                        17h
-xpack-7.14.2        7.14.2    ElasticStack   ghcr.io/appscode-images/elastic:7.14.2                        17h
-xpack-7.16.3        7.16.3    ElasticStack   ghcr.io/appscode-images/elastic:7.16.3                        17h
-xpack-7.17.15       7.17.15   ElasticStack   ghcr.io/appscode-images/elastic:7.17.15                       17h
-xpack-7.17.23       7.17.23   ElasticStack   ghcr.io/appscode-images/elastic:7.17.23                       17h
-xpack-7.17.25       7.17.25   ElasticStack   ghcr.io/appscode-images/elastic:7.17.25                       16h
-xpack-8.11.1        8.11.1    ElasticStack   ghcr.io/appscode-images/elastic:8.11.1                        17h
-xpack-8.11.4        8.11.4    ElasticStack   ghcr.io/appscode-images/elastic:8.11.4                        17h
-xpack-8.13.4        8.13.4    ElasticStack   ghcr.io/appscode-images/elastic:8.13.4                        17h
-xpack-8.14.1        8.14.1    ElasticStack   ghcr.io/appscode-images/elastic:8.14.1                        17h
-xpack-8.14.3        8.14.3    ElasticStack   ghcr.io/appscode-images/elastic:8.14.3                        17h
-xpack-8.15.0        8.15.0    ElasticStack   ghcr.io/appscode-images/elastic:8.15.0                        17h
-xpack-8.15.4        8.15.4    ElasticStack   ghcr.io/appscode-images/elastic:8.15.4                        16h
-xpack-8.16.0        8.16.0    ElasticStack   ghcr.io/appscode-images/elastic:8.16.0                        16h
-xpack-8.2.3         8.2.3     ElasticStack   ghcr.io/appscode-images/elastic:8.2.3                         17h
-xpack-8.5.3         8.5.3     ElasticStack   ghcr.io/appscode-images/elastic:8.5.3                         17h
-xpack-8.6.2         8.6.2     ElasticStack   ghcr.io/appscode-images/elastic:8.6.2                         17h
-xpack-8.8.2         8.8.2     ElasticStack   ghcr.io/appscode-images/elastic:8.8.2                         17h
+$  kubectl get elasticsearchversions | grep xpack
+xpack-6.8.23        6.8.23    ElasticStack   ghcr.io/appscode-images/elastic:6.8.23                                  12d
+xpack-7.17.15       7.17.15   ElasticStack   ghcr.io/appscode-images/elastic:7.17.15                                 12d
+xpack-7.17.28       7.17.28   ElasticStack   ghcr.io/appscode-images/elastic:7.17.28                                 12d
+xpack-8.17.10       8.17.10   ElasticStack   ghcr.io/appscode-images/elastic:8.17.10                                 12d
+xpack-8.17.6        8.17.6    ElasticStack   ghcr.io/appscode-images/elastic:8.17.6                                  12d
+xpack-8.18.2        8.18.2    ElasticStack   ghcr.io/appscode-images/elastic:8.18.2                                  12d
+xpack-8.18.8        8.18.8    ElasticStack   ghcr.io/appscode-images/elastic:8.18.8                                  12d
+xpack-8.19.9        8.19.9    ElasticStack   ghcr.io/appscode-images/elastic:8.19.9                                  12d
+xpack-8.2.3         8.2.3     ElasticStack   ghcr.io/appscode-images/elastic:8.2.3                                   12d
+xpack-8.5.3         8.5.3     ElasticStack   ghcr.io/appscode-images/elastic:8.5.3                                   12d
+xpack-9.0.2         9.0.2     ElasticStack   ghcr.io/appscode-images/elastic:9.0.2                                   12d
+xpack-9.0.8         9.0.8     ElasticStack   ghcr.io/appscode-images/elastic:9.0.8                                   12d
+xpack-9.1.4         9.1.4     ElasticStack   ghcr.io/appscode-images/elastic:9.1.4                                   12d
+xpack-9.1.9         9.1.9     ElasticStack   ghcr.io/appscode-images/elastic:9.1.9                                   12d
+xpack-9.2.3         9.2.3     ElasticStack   ghcr.io/appscode-images/elastic:9.2.3                                   12d
 ```
 
-Let's deploy an Elasticsearch cluster with version `xpack-8.15.0`. We are going to create a cluster topology with 2 master nodes, 3 data nodes and 2 ingest node. We also have to provide an available storageclass for each of the node types.
+Let's deploy an Elasticsearch cluster with version `xpack-9.1.9`. We are going to create a cluster topology with 2 master nodes, 3 data nodes and 2 ingest node. We also have to provide an available storageclass for each of the node types.
 
 ```yaml
  apiVersion: kubedb.com/v1
@@ -55,10 +51,12 @@ Let's deploy an Elasticsearch cluster with version `xpack-8.15.0`. We are going 
    name: elastic
    namespace: es
  spec:
-   version: xpack-8.15.0
+   version: xpack-9.1.9
    storageType: Durable
    deletionPolicy: WipeOut
    authSecret:
+     kind: secret
+     name: es-auth
      rotateAfter: 1h
    topology:
      master:
@@ -95,14 +93,14 @@ Wait for a while till elasicsearch cluster gets into `Ready` state. Required tim
 ```bash
 $ kubectl get es elastic -n es -w
 NAME      VERSION        STATUS         AGE
-elastic   xpack-8.15.0   Provisioning   98s
-elastic   xpack-8.15.0   Provisioning   5m43s
-elastic   xpack-8.15.0   Provisioning   8m7s
+elastic   xpack-9.1.9   Provisioning   98s
+elastic   xpack-9.1.9   Provisioning   5m43s
+elastic   xpack-9.1.9   Provisioning   8m7s
 .
 .
 .
-elastic   xpack-8.15.0   Ready          10m
-elastic   xpack-8.15.0   Ready          10m
+elastic   xpack-9.1.9   Ready          10m
+elastic   xpack-9.1.9   Ready          10m
 ```
 
 Since, `.spec.authSecret.rotateAfter` is set as `1h`, it is expected that the recommendation engine will generate a rotate-auth recommendation at least after 40 minutes (two-third of lifespan) of the authsecret creation. Once generated you will get a similar recommendation as follows.

@@ -26,28 +26,24 @@ Let's go through a demo to see version update recommendations being generated. F
 
 ```bash
 $ kubectl get elasticsearchversions | grep xpack
-xpack-6.8.23        6.8.23    ElasticStack   ghcr.io/appscode-images/elastic:6.8.23                        17h
-xpack-7.13.4        7.13.4    ElasticStack   ghcr.io/appscode-images/elastic:7.13.4                        17h
-xpack-7.14.2        7.14.2    ElasticStack   ghcr.io/appscode-images/elastic:7.14.2                        17h
-xpack-7.16.3        7.16.3    ElasticStack   ghcr.io/appscode-images/elastic:7.16.3                        17h
-xpack-7.17.15       7.17.15   ElasticStack   ghcr.io/appscode-images/elastic:7.17.15                       17h
-xpack-7.17.23       7.17.23   ElasticStack   ghcr.io/appscode-images/elastic:7.17.23                       17h
-xpack-7.17.25       7.17.25   ElasticStack   ghcr.io/appscode-images/elastic:7.17.25                       16h
-xpack-8.11.1        8.11.1    ElasticStack   ghcr.io/appscode-images/elastic:8.11.1                        17h
-xpack-8.11.4        8.11.4    ElasticStack   ghcr.io/appscode-images/elastic:8.11.4                        17h
-xpack-8.13.4        8.13.4    ElasticStack   ghcr.io/appscode-images/elastic:8.13.4                        17h
-xpack-8.14.1        8.14.1    ElasticStack   ghcr.io/appscode-images/elastic:8.14.1                        17h
-xpack-8.14.3        8.14.3    ElasticStack   ghcr.io/appscode-images/elastic:8.14.3                        17h
-xpack-8.15.0        8.15.0    ElasticStack   ghcr.io/appscode-images/elastic:8.15.0                        17h
-xpack-8.15.4        8.15.4    ElasticStack   ghcr.io/appscode-images/elastic:8.15.4                        16h
-xpack-8.16.0        8.16.0    ElasticStack   ghcr.io/appscode-images/elastic:8.16.0                        16h
-xpack-8.2.3         8.2.3     ElasticStack   ghcr.io/appscode-images/elastic:8.2.3                         17h
-xpack-8.5.3         8.5.3     ElasticStack   ghcr.io/appscode-images/elastic:8.5.3                         17h
-xpack-8.6.2         8.6.2     ElasticStack   ghcr.io/appscode-images/elastic:8.6.2                         17h
-xpack-8.8.2         8.8.2     ElasticStack   ghcr.io/appscode-images/elastic:8.8.2                         17h
+xpack-6.8.23        6.8.23    ElasticStack   ghcr.io/appscode-images/elastic:6.8.23                                  12d
+xpack-7.17.15       7.17.15   ElasticStack   ghcr.io/appscode-images/elastic:7.17.15                                 12d
+xpack-7.17.28       7.17.28   ElasticStack   ghcr.io/appscode-images/elastic:7.17.28                                 12d
+xpack-8.17.10       8.17.10   ElasticStack   ghcr.io/appscode-images/elastic:8.17.10                                 12d
+xpack-8.17.6        8.17.6    ElasticStack   ghcr.io/appscode-images/elastic:8.17.6                                  12d
+xpack-8.18.2        8.18.2    ElasticStack   ghcr.io/appscode-images/elastic:8.18.2                                  12d
+xpack-8.18.8        8.18.8    ElasticStack   ghcr.io/appscode-images/elastic:8.18.8                                  12d
+xpack-8.19.9        8.19.9    ElasticStack   ghcr.io/appscode-images/elastic:8.19.9                                  12d
+xpack-8.2.3         8.2.3     ElasticStack   ghcr.io/appscode-images/elastic:8.2.3                                   12d
+xpack-8.5.3         8.5.3     ElasticStack   ghcr.io/appscode-images/elastic:8.5.3                                   12d
+xpack-9.0.2         9.0.2     ElasticStack   ghcr.io/appscode-images/elastic:9.0.2                                   12d
+xpack-9.0.8         9.0.8     ElasticStack   ghcr.io/appscode-images/elastic:9.0.8                                   12d
+xpack-9.1.4         9.1.4     ElasticStack   ghcr.io/appscode-images/elastic:9.1.4                                   12d
+xpack-9.1.9         9.1.9     ElasticStack   ghcr.io/appscode-images/elastic:9.1.9                                   12d
+xpack-9.2.3         9.2.3     ElasticStack   ghcr.io/appscode-images/elastic:9.2.3                                   12d
 ```
 
-Let's deploy an Elasticsearch cluster with version `xpack-8.15.0`. We are going to create a cluster topology with 2 master nodes, 3 data nodes and 2 ingest node. We also have to provide an available storageclass for each of the node types.
+Let's deploy an Elasticsearch cluster with version `xpack-9.1.9`. We are going to create a cluster topology with 2 master nodes, 3 data nodes and 2 ingest node. We also have to provide an available storageclass for each of the node types.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -56,7 +52,7 @@ metadata:
   name: elastic
   namespace: es
 spec:
-  version: xpack-8.15.0
+  version: xpack-9.1.9
   storageType: Durable
   deletionPolicy: WipeOut
   topology:
@@ -94,14 +90,14 @@ Wait for a while till elasicsearch cluster gets into `Ready` state. Required tim
 ```bash
 $ kubectl get es elastic -n es -w
 NAME      VERSION        STATUS         AGE
-elastic   xpack-8.15.0   Provisioning   98s
-elastic   xpack-8.15.0   Provisioning   5m43s
-elastic   xpack-8.15.0   Provisioning   8m7s
+elastic   xpack-9.1.9   Provisioning   98s
+elastic   xpack-9.1.9   Provisioning   5m43s
+elastic   xpack-9.1.9   Provisioning   8m7s
 .
 .
 .
-elastic   xpack-8.15.0   Ready          10m
-elastic   xpack-8.15.0   Ready          10m
+elastic   xpack-9.1.9   Ready          10m
+elastic   xpack-9.1.9   Ready          10m
 ```
 
 Once elastic instance is `Ready`, a `Recommendation` instance will be automatically generated by KubeDB `Ops-Manager` controller. Might take a few minutes to trigger an event for the database creation in the controller.
@@ -119,7 +115,7 @@ apiVersion: supervisor.appscode.com/v1alpha1
 kind: Recommendation
 metadata:
   annotations:
-    kubedb.com/recommendation-for-version: xpack-8.15.0
+    kubedb.com/recommendation-for-version: xpack-9.1.9
   creationTimestamp: "2025-01-29T12:06:43Z"
   generation: 5
   labels:
@@ -134,7 +130,7 @@ metadata:
 spec:
   backoffLimit: 5
   description: Latest Major/Minor version is available. Recommending version Update
-    from xpack-8.15.0 to xpack-8.16.0.
+    from xpack-9.1.9 to xpack-9.2.3.
   operation:
     apiVersion: ops.kubedb.com/v1alpha1
     kind: ElasticsearchOpsRequest
@@ -146,7 +142,7 @@ spec:
         name: elastic
       type: UpdateVersion
       updateVersion:
-        targetVersion: xpack-8.16.0
+        targetVersion: xpack-9.2.3
     status: {}
   recommender:
     name: kubedb-ops-manager
@@ -176,10 +172,10 @@ In the generated Recommendation you will find a description, targeted db object,
 
 ```shell
 $ kubectl get recommendation -n es elastic-x-elasticsearch-x-update-version-2juuee -o jsonpath='{.spec.description}'
-Latest Major/Minor version is available. Recommending version Update from xpack-8.15.0 to xpack-8.16.0.
+Latest Major/Minor version is available. Recommending version Update from xpack-9.1.9 to xpack-9.2.3.
 ```
 
-The recommendation says current version `xpack-8.15.0` should be upgraded to latest upgradable version `xpack-8.16.0`. You can also find the recommended operation which is a `ElasticsearchOpsRequest` of `UpdateVersion` type in this case.
+The recommendation says current version `xpack-9.1.9` should be upgraded to latest upgradable version `xpack-9.2.3`. You can also find the recommended operation which is a `ElasticsearchOpsRequest` of `UpdateVersion` type in this case.
 
 ```shell
 $ kubectl get recommendation -n es elastic-x-elasticsearch-x-update-version-2juuee -o jsonpath='{.spec.operation}' | yq -y
@@ -193,7 +189,7 @@ spec:
     name: elastic
   type: UpdateVersion
   updateVersion:
-    targetVersion: xpack-8.16.0
+    targetVersion: xpack-9.2.3
 status: {}
 ```
 
@@ -242,7 +238,7 @@ phase: InProgress
 reason: StartedExecutingOperation
 ```
 
-You will find an `ElasticsearchOpsRequest` custom resource have been created and, it is updating the `elastic` cluster version to `xpack-8.16.0` with negligible downtime. Let's wait for it to reach `Successful` status.
+You will find an `ElasticsearchOpsRequest` custom resource have been created and, it is updating the `elastic` cluster version to `xpack-9.2.3` with negligible downtime. Let's wait for it to reach `Successful` status.
 
 ```bash
 $ kubectl get elasticsearchopsrequest -n es elastic-1738155700-update-version-auto -w
@@ -262,12 +258,12 @@ NAME                                              STATUS      OUTDATED   AGE
 elastic-x-elasticsearch-x-update-version-2juuee   Succeeded   false      78m
 ```
 
-Finally, You can check `elastic` cluster version now, which should be upgraded to version `xpack-8.16.0`.
+Finally, You can check `elastic` cluster version now, which should be upgraded to version `xpack-9.2.3`.
 
 ```bash
 $ kubectl get es elastic -n es
 NAME      VERSION        STATUS   AGE
-elastic   xpack-8.16.0   Ready    85m
+elastic   xpack-9.2.3   Ready    85m
 ```
 
 You may not want to do trigger recommended operations manually. Rather, trigger them autonomously in a preferred schedule when infrastructure is idle or traffic rate is at the lowest. For this purpose, You can create a `MaintenanceWindow` custom resource where you can set your desired schedule/period for triggering these recommended operations automatically. Here's a sample one:
