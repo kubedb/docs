@@ -34,7 +34,7 @@ NAME             VERSION   DISTRIBUTION   DB_IMAGE                              
 6.0.12           6.0.12    Official       ghcr.io/appscode-images/mongo:6.0.12                 3h43m
 7.0.16           7.0.16    Official       ghcr.io/appscode-images/mongo:7.0.16                 3h43m
 7.0.5            7.0.5     Official       ghcr.io/appscode-images/mongo:7.0.5                  3h43m
-7.0.8            7.0.8     Official       ghcr.io/appscode-images/mongo:7.0.8                  3h43m
+8.0.17            8.0.17     Official       ghcr.io/appscode-images/mongo:8.0.17                  3h43m
 8.0.4            8.0.4     Official       ghcr.io/appscode-images/mongo:8.0.4                  3h43m
 percona-4.2.24   4.2.24    Percona        percona/percona-server-mongodb:4.2.24                3h43m
 percona-4.4.26   4.4.26    Percona        percona/percona-server-mongodb:4.4.26                3h43m
@@ -43,7 +43,7 @@ percona-6.0.12   6.0.12    Percona        percona/percona-server-mongodb:6.0.12 
 percona-7.0.4    7.0.4     Percona        percona/percona-server-mongodb:7.0.4                 3h43m
 ```
 
-Let's deploy an MongoDB cluster with version `7.0.8`.
+Let's deploy an MongoDB cluster with version `8.0.17`.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -120,7 +120,7 @@ spec:
         storage: 4Gi
     storageClassName: local-path
   storageType: Durable
-  version: 7.0.8
+  version: 8.0.17
 ```
 
 Wait for a while till mongodb cluster gets into `Ready` state. Required time depends on image pulling and node's physical specifications.
@@ -128,14 +128,14 @@ Wait for a while till mongodb cluster gets into `Ready` state. Required time dep
 ```bash
 $ kubectl get es mongo -n es -w
 NAME      VERSION        STATUS         AGE
-mongo     7.0.8          Provisioning   98s
-mongo     7.0.8          Provisioning   5m43s
-mongo     7.0.8          Provisioning   8m7s
+mongo     8.0.17          Provisioning   98s
+mongo     8.0.17          Provisioning   5m43s
+mongo     8.0.17          Provisioning   8m7s
 .
 .
 .
-mongo     7.0.8          Ready          10m
-mongo     7.0.8          Ready          10m
+mongo     8.0.17          Ready          10m
+mongo     8.0.17          Ready          10m
 ```
 
 Since,duration for client certificate is set as `1h20min`, it is expected that the recommendation engine will generate a rotate-auth recommendation at least after 54 minutes (two-third of lifespan) of the client certificate creation. Once generated you will get a similar recommendation as follows.
