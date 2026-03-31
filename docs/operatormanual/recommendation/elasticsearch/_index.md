@@ -3,9 +3,8 @@ title: Elasticsearch Recommendation
 menu:
   docs_{{ .version }}:
     identifier: es-recommendation-elasticsearch
-    name: Recommendation
-    parent: es-elasticsearch-om
+    name: Elasticsearch Recommendation
+    parent: recommendation
     weight: 10
 menu_name: docs_{{ .version }}
 ---
-
