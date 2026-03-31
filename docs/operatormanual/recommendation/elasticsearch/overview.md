@@ -22,21 +22,21 @@ Databases on Kubernetes in production grade infrastructure often need to go thro
 Recommendation is a custom resource definition (CRD) object which is created by KubeDB ops-manager controller and managed by supervisor. So, You need to have KubeDB and Supervisor installed first. You can simply install supervisor along with other KubeDB components using `--set supervisor.enabled=true` flag while installing KubeDB via helm chart.
 
 <p align="center">
-<img alt="Recommendation Generation"  src="/docs/operatormanual/elasticsearch/recommendation/images/recommendation-generation.png">
+<img alt="Recommendation Generation"  src="/docs/operatormanual/recommendation/elasticsearch/images/recommendation-generation.png">
 </p>
 
 KubeDB provisioner watches user provided database custom resource spec and creates/sync all the necessary DB resources. Once the Database is ready KubeDB Ops-manager watches the DB and creates Recommendation if it requires. KubeDB Supervisor then watches the Recommendation, updates status of the recommendation, creates recommended operation via OpsRequest if deadline reaches or manually triggered and watches the OpsRequest status to update accordingly in Recommendation custom resource.
 
 KubeDB provides Three types of recommendation for Elasticsearch and Opensearch.
 
-1. [Version Update Recommendation](/docs/operatormanual/elasticsearch/recommendation/version-update-recommendation.md)
-2. [TLS Certificate Rotation Recommendation](/docs/operatormanual/elasticsearch/recommendation/rotate-tls-recommendation.md)
-3. [Authentication Secret Rotation Recommendation](/docs/operatormanual/elasticsearch/recommendation/rotate-auth-recommendation.md)
+1. [Version Update Recommendation](/docs/operatormanual/recommendation/elasticsearch/version-update-recommendation.md)
+2. [TLS Certificate Rotation Recommendation](/docs/operatormanual/recommendation/elasticsearch/rotate-tls-recommendation.md)
+3. [Authentication Secret Rotation Recommendation](/docs/operatormanual/recommendation/elasticsearch/rotate-auth-recommendation.md)
 
 The next page describes these recommendations, how to approve/reject them, their generation mechanism and usability.
 
 ## Next Steps
 
-- Learn about Elasticsearch [Version Update Recommendation](/docs/operatormanual/elasticsearch/recommendation/version-update-recommendation.md).
-- Learn about Elasticsearch [TLS Certificate Rotation Recommendation](/docs/operatormanual/elasticsearch/recommendation/rotate-tls-recommendation.md)
-- Learn about Elasticsearch [Authentication Secret Rotation Recommendation](/docs/operatormanual/elasticsearch/recommendation/rotate-auth-recommendation.md)
+- Learn about Elasticsearch [Version Update Recommendation](/docs/operatormanual/recommendation/elasticsearch/version-update-recommendation.md).
+- Learn about Elasticsearch [TLS Certificate Rotation Recommendation](/docs/operatormanual/recommendation/elasticsearch/rotate-tls-recommendation.md)
+- Learn about Elasticsearch [Authentication Secret Rotation Recommendation](/docs/operatormanual/recommendation/elasticsearch/rotate-auth-recommendation.md)
