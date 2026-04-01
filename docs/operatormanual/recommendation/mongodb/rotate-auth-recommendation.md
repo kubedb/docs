@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mg-rotate-auth-recommendation
     name: Rotate Auth Recommendation
-    parent: mg-recommendation-mongodb
+    parent: kubedb-recommendation-mg
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
