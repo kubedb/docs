@@ -374,13 +374,14 @@ At first, we will create a secret containing `user.conf` file with required conf
 To know more about this configuration file, check [here](/docs/guides/Redis/configuration/Redis-combined.md)
 ```yaml
 apiVersion: v1
+stringData:
+  redis.conf: |
+    maxclients 500
 kind: Secret
 metadata:
-  name: new-rd-combined-custom-config
+  name: rd-new-configuration
   namespace: demo
-stringData:
-  server.properties: |-
-    log.retention.hours=125    
+type: Opaque
 ```
 
 Now, we will add this file to `kubedb /rd-configuration.yaml`.
@@ -401,49 +402,32 @@ metadata:
   name: rd-gitops
   namespace: demo
 spec:
-  configSecret:
-    name: new-rd-combined-custom-config
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: Redis
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: Redis
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+  version: 8.0.4
+  mode: Cluster
+  cluster:
+    shards: 3
+    replicas: 3
   storageType: Durable
+  configuration:
+    secretName: rd-new-configuration
+  storage:
+    resources:
+      requests:
+        storage: "2Gi"
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+  podTemplate:
+    spec:
+      containers:
+      - name: redis
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "500m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
   deletionPolicy: WipeOut
 ```
 
@@ -452,22 +436,18 @@ Commit the changes and push to your Git repository. Your repository is synced wi
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` RedisOpsRequest to update the `Redis` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get rd,redis,redisopsrequest -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-Redis.kubedb.com/rd-gitops   kubedb.com/v1   3.9.0     Ready    74m
+$  kubectl get rd,redis,redisopsrequest -n demo
+NAME                         VERSION   STATUS   AGE
+redis.kubedb.com/rd-gitops   8.0.4     Ready    22m
 
-NAME                                 AGE
-Redis.gitops.kubedb.com/rd-gitops   74m
+NAME                                AGE
+redis.gitops.kubedb.com/rd-gitops   22m
 
-NAME                                                               TYPE              STATUS       AGE
-Redisopsrequest.ops.kubedb.com/rd-gitops-reconfigure-ukj41o       Reconfigure       Successful   24m
-Redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   70m
-
+NAME                                                          TYPE          STATUS       AGE
+redisopsrequest.ops.kubedb.com/rd-gitops-reconfigure-5v9956   Reconfigure   Successful   15m
 ```
 
 
-
-> We can also reconfigure the parameters creating another secret and reference the secret in the `configSecret` field. Also you can remove the `configSecret` field to use the default parameters.
 
 ### Rotate Redis Auth
 
@@ -476,12 +456,11 @@ To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new use
 We will create a secret named `rd-rotate-auth ` with the following content,
 
 ```bash
-kubectl create secret generic rd-rotate-auth -n demo \
---type=kubernetes.io/basic-auth \
---from-literal=username=Redis \
---from-literal=password=Redis-secret
+$ kubectl create secret generic rd-rotate-auth -n demo \
+                                  --type=kubernetes.io/basic-auth \
+                                  --from-literal=username=redis \
+                                  --from-literal=password=redis-secret
 secret/rd-rotate-auth created
-
 ```
 
 
@@ -494,52 +473,35 @@ metadata:
   name: rd-gitops
   namespace: demo
 spec:
+  version: 8.0.4
+  mode: Cluster
+  cluster:
+    shards: 3
+    replicas: 3
+  storageType: Durable
   authSecret:
     kind: Secret
     name: rd-rotate-auth
   configuration:
-    secretName: new-rd-combined-custom-config
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: Redis
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
+    secretName: rd-new-configuration
+  storage:
+    resources:
+      requests:
+        storage: "2Gi"
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+  podTemplate:
+    spec:
+      containers:
+      - name: redis
         resources:
           requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: Redis
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-  storageType: Durable
+            memory: "500Mi"
+            cpu: "500m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
   deletionPolicy: WipeOut
 ```
 
@@ -548,18 +510,16 @@ Change the `authSecret` field to `rd-rotate-auth`. Commit the changes and push t
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` RedisOpsRequest to update the `Redis` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get rd,redis,redisopsrequest -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-Redis.kubedb.com/rd-gitops   kubedb.com/v1   3.9.0     Ready    7m11s
+$ kubectl get rd,redis,redisopsrequest -n demo
+NAME                         VERSION   STATUS   AGE
+redis.kubedb.com/rd-gitops   8.0.4     Ready    33m
 
-NAME                                 AGE
-Redis.gitops.kubedb.com/rd-gitops   7m11s
+NAME                                AGE
+redis.gitops.kubedb.com/rd-gitops   33m
 
-NAME                                                               TYPE              STATUS       AGE
-Redisopsrequest.ops.kubedb.com/rd-gitops-reconfigure-ukj41o       Reconfigure       Successful   17h
-Redisopsrequest.ops.kubedb.com/rd-gitops-rotate-auth-43ris8       RotateAuth        Successful   28m
-Redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   17h
-
+NAME                                                          TYPE          STATUS       AGE
+redisopsrequest.ops.kubedb.com/rd-gitops-reconfigure-5v9956   Reconfigure   Successful   26m
+redisopsrequest.ops.kubedb.com/rd-gitops-rotate-auth-oz83g9   RotateAuth    Successful   7m39s
 ```
 
 
@@ -583,11 +543,11 @@ writing new private key to './ca.key'
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls Redis-ca \
-     --cert=ca.crt \
-     --key=ca.key \
-     --namespace=demo
-secret/Redis-ca created
+$ kubectl create secret tls redis-ca \
+                                       --cert=ca.crt \
+                                       --key=ca.key \
+                                       --namespace=demo
+secret/redis-ca created
 ```
 
 Now, Let's create an `Issuer` using the `Redis-ca` secret that we have just created. The `YAML` file looks like this:
@@ -600,7 +560,7 @@ metadata:
   namespace: demo
 spec:
   ca:
-    secretName: Redis-ca
+    secretName: redis-ca
 ```
 
 Let's add that to our `kubedb /rd-issuer.yaml` file. File structure will look like this,
@@ -702,47 +662,35 @@ metadata:
   name: rd-gitops
   namespace: demo
 spec:
-  version: 4.0.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: Redis
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: Redis
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+  version: 8.0.4
+  mode: Cluster
+  cluster:
+    shards: 3
+    replicas: 3
   storageType: Durable
+  authSecret:
+    kind: Secret
+    name: rd-rotate-auth
+  configuration:
+    secretName: rd-new-configuration
+  storage:
+    resources:
+      requests:
+        storage: "2Gi"
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+  podTemplate:
+    spec:
+      containers:
+      - name: redis
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "500m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
   deletionPolicy: WipeOut
 ```
 
@@ -752,33 +700,16 @@ Now, `gitops` operator will detect the version changes and create a `VersionUpda
 
 ```bash
 $ kubectl get rd,redis,redisopsrequest -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-Redis.kubedb.com/rd-gitops   kubedb.com/v1   4.0.0     Ready    3h47m
+NAME                         VERSION   STATUS   AGE
+redis.kubedb.com/rd-gitops   8.0.4     Ready    14m
 
-NAME                                 AGE
-Redis.gitops.kubedb.com/rd-gitops   3h47m
+NAME                                AGE
+redis.gitops.kubedb.com/rd-gitops   14m
 
-NAME                                                               TYPE              STATUS       AGE
-Redisopsrequest.ops.kubedb.com/rd-gitops-reconfigure-ukj41o       Reconfigure       Successful   5d22h
-Redisopsrequest.ops.kubedb.com/rd-gitops-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   4h16m
-Redisopsrequest.ops.kubedb.com/rd-gitops-rotate-auth-43ris8       RotateAuth        Successful   5d6h
-Redisopsrequest.ops.kubedb.com/rd-gitops-versionupdate-wyn2dp     UpdateVersion     Successful   3h51m
-Redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   5d23h
+NAME                                                            TYPE            STATUS       AGE
+redisopsrequest.ops.kubedb.com/rd-gitops-versionupdate-xvnekk   UpdateVersion   Successful   11m
 ```
 
-
-Now, we are going to verify whether the `Redis`, `PetSet` and it's `Pod` have updated with new image. Let's check,
-
-```bash
-$ kubectl get Redis -n demo rd-gitops -o=jsonpath='{.spec.version}{"\n"}'
-4.0.0
-
-$ kubectl get petset -n demo rd-gitops-broker -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/Redis:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
-
-$  kubectl get pod -n demo rd-gitops-broker-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/Redis:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
-```
 
 ### Enable Monitoring
 
