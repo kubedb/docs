@@ -1,10 +1,10 @@
 ---
-title: Gitops Kafka
+title: Redis Gitops
 menu:
   docs_{{ .version }}:
-    identifier: kf-gitops
+    identifier: rd-gitops
     name: Gitops
-    parent: kf-kafka-guides
-    weight: 30
+    parent: rd-redis-guides
+    weight: 170
 menu_name: docs_{{ .version }}
 ---
