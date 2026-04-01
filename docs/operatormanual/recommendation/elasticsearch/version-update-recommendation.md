@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: es-version-update-recommendation
     name: Version Update Recommendation
-    parent: es-recommendation-elasticsearch
+    parent: kubedb-recommendation-es
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: es-rotate-auth-recommendation
     name: Rotate Auth Recommendation
-    parent: es-recommendation-elasticsearch
+    parent: kubedb-recommendation-es
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides

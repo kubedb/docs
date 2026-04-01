@@ -5,6 +5,6 @@ menu:
     identifier: kubedb-recommendation-mg
     name: Mongodb Recommendation
     parent: recommendation
+    weight: 20
 menu_name: docs_{{ .version }}
-section_menu_id: operatormenual
 ---
