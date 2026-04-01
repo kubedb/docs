@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: rd-gitops-guides
     name: Gitops Redis
-    parent: rd-gitops-Redis
+    parent: rd-gitops
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -80,11 +80,14 @@ spec:
   podTemplate:
     spec:
       containers:
-        - name: redis
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "100Mi"
+      - name: redis
+        resources:
+          requests:
+            memory: "300Mi"
+            cpu: "200m"
+          limits:
+            memory: "300Mi"
+            cpu: "200m"
   deletionPolicy: WipeOut
 ```
 
@@ -104,44 +107,43 @@ Our `gitops` operator will create an actual `Redis` database CR in the cluster. 
 ```bash
 $ kubectl get redis.gitops.kubedb.com,redis.kubedb.com -n demo
 NAME                                AGE
-redis.gitops.kubedb.com/rd-gitops   8m46s
+redis.gitops.kubedb.com/rd-gitops   2m19s
 
 NAME                         VERSION   STATUS   AGE
-redis.kubedb.com/rd-gitops   8.0.4     Ready    8m46s
-
+redis.kubedb.com/rd-gitops   8.0.4     Ready    2m18s
 ```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` Redis.
 
 ```bash
-$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=rd-gitops'
+$  kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=rd-gitops'
 NAME                                            AGE
-petset.apps.k8s.appscode.com/rd-gitops-shard0   9m38s
-petset.apps.k8s.appscode.com/rd-gitops-shard1   9m36s
-petset.apps.k8s.appscode.com/rd-gitops-shard2   9m34s
+petset.apps.k8s.appscode.com/rd-gitops-shard0   5m53s
+petset.apps.k8s.appscode.com/rd-gitops-shard1   5m51s
+petset.apps.k8s.appscode.com/rd-gitops-shard2   5m49s
 
 NAME                     READY   STATUS    RESTARTS   AGE
-pod/rd-gitops-shard0-0   1/1     Running   0          9m37s
-pod/rd-gitops-shard0-1   1/1     Running   0          9m14s
-pod/rd-gitops-shard1-0   1/1     Running   0          9m35s
-pod/rd-gitops-shard1-1   1/1     Running   0          9m14s
-pod/rd-gitops-shard2-0   1/1     Running   0          9m34s
-pod/rd-gitops-shard2-1   1/1     Running   0          9m14s
+pod/rd-gitops-shard0-0   1/1     Running   0          5m52s
+pod/rd-gitops-shard0-1   1/1     Running   0          5m35s
+pod/rd-gitops-shard1-0   1/1     Running   0          5m50s
+pod/rd-gitops-shard1-1   1/1     Running   0          5m31s
+pod/rd-gitops-shard2-0   1/1     Running   0          5m49s
+pod/rd-gitops-shard2-1   1/1     Running   0          5m31s
 
 NAME                      TYPE                       DATA   AGE
-secret/rd-gitops-9a6ce0   Opaque                     1      9m40s
-secret/rd-gitops-auth     kubernetes.io/basic-auth   2      65m
+secret/rd-gitops-auth     kubernetes.io/basic-auth   2      5m55s
+secret/rd-gitops-b3b686   Opaque                     1      5m55s
 
 NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)              AGE
-service/rd-gitops        ClusterIP   10.43.193.228   <none>        6379/TCP             9m40s
-service/rd-gitops-pods   ClusterIP   None            <none>        6379/TCP,16379/TCP   9m40s
+service/rd-gitops        ClusterIP   10.43.156.126   <none>        6379/TCP             5m55s
+service/rd-gitops-pods   ClusterIP   None            <none>        6379/TCP,16379/TCP   5m55s
 
 NAME                                           TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/rd-gitops   kubedb.com/redis   8.0.4     9m34s
-
+appbinding.appcatalog.appscode.com/rd-gitops   kubedb.com/redis   8.0.4     5m49s
 ```
 
 ## Update Redis Database using GitOps
+
 ### Scale Redis Replicas
 
 
@@ -156,7 +158,7 @@ spec:
   version: 8.0.4
   mode: Cluster
   cluster:
-    shards: 4
+    shards: 3
     replicas: 3
   storageType: Durable
   storage:
@@ -169,11 +171,14 @@ spec:
   podTemplate:
     spec:
       containers:
-        - name: redis
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "100Mi"
+      - name: redis
+        resources:
+          requests:
+            memory: "300Mi"
+            cpu: "200m"
+          limits:
+            memory: "300Mi"
+            cpu: "200m"
   deletionPolicy: WipeOut
  ```
 Update the `replicas` to `3`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Redis` CR is updated in your cluster.
@@ -182,33 +187,28 @@ Now, `gitops` operator will detect the replica changes and create a `HorizontalS
 ```bash
 $ kubectl get rd,redis,redisopsrequest -n demo
 NAME                         VERSION   STATUS   AGE
-redis.kubedb.com/rd-gitops   8.0.4     Ready    12m
+redis.kubedb.com/rd-gitops   8.0.4     Ready    55m
 
 NAME                                AGE
-redis.gitops.kubedb.com/rd-gitops   12m
+redis.gitops.kubedb.com/rd-gitops   55m
 
 NAME                                                                TYPE                STATUS       AGE
-redisopsrequest.ops.kubedb.com/rd-gitops-horizontalscaling-1nblpl   HorizontalScaling   Successful   10m
-
+redisopsrequest.ops.kubedb.com/rd-gitops-horizontalscaling-ule15j   HorizontalScaling   Successful   16m
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$  kubectl get pod -n demo -l 'app.kubernetes.io/instance=rd-gitops'
+$ kkubectl get pod -n demo -l 'app.kubernetes.io/instance=rd-gitops'
 NAME                 READY   STATUS    RESTARTS   AGE
-rd-gitops-shard0-0   1/1     Running   0          16m
-rd-gitops-shard0-1   1/1     Running   0          16m
-rd-gitops-shard0-2   1/1     Running   0          13m
-rd-gitops-shard1-0   1/1     Running   0          16m
-rd-gitops-shard1-1   1/1     Running   0          16m
-rd-gitops-shard1-2   1/1     Running   0          12m
-rd-gitops-shard2-0   1/1     Running   0          16m
-rd-gitops-shard2-1   1/1     Running   0          16m
-rd-gitops-shard2-2   1/1     Running   0          12m
-rd-gitops-shard3-0   1/1     Running   0          14m
-rd-gitops-shard3-1   1/1     Running   0          14m
-rd-gitops-shard3-2   1/1     Running   0          11m
-
+rd-gitops-shard0-0   1/1     Running   0          55m
+rd-gitops-shard0-1   1/1     Running   0          55m
+rd-gitops-shard0-2   1/1     Running   0          16m
+rd-gitops-shard1-0   1/1     Running   0          55m
+rd-gitops-shard1-1   1/1     Running   0          55m
+rd-gitops-shard1-2   1/1     Running   0          16m
+rd-gitops-shard2-0   1/1     Running   0          55m
+rd-gitops-shard2-1   1/1     Running   0          55m
+rd-gitops-shard2-2   1/1     Running   0          15m
 ```
 
 We can also scale down the replicas by updating the `replicas` fields.
@@ -219,12 +219,15 @@ before Ops Request becomes `Successful`, We can validate the changes by checking
 ```bash
 $ kubectl get pod -n demo rd-gitops-shard0-0 -o json | jq '.spec.containers[0].resources'
 {
+  "limits": {
+    "cpu": "200m",
+    "memory": "300Mi"
+  },
   "requests": {
-    "cpu": "100m",
-    "memory": "100Mi"
+    "cpu": "200m",
+    "memory": "300Mi"
   }
 }
-
 ```
 
 
@@ -239,7 +242,7 @@ spec:
   version: 8.0.4
   mode: Cluster
   cluster:
-    shards: 4
+    shards: 3
     replicas: 3
   storageType: Durable
   storage:
@@ -252,12 +255,16 @@ spec:
   podTemplate:
     spec:
       containers:
-        - name: redis
-          resources:
-            requests:
-              cpu: "200m"
-              memory: "200Mi"
+      - name: redis
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "500m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
   deletionPolicy: WipeOut
+ 
 ```
 
 
@@ -268,17 +275,27 @@ Now, `gitops` operator will detect the resource changes and create a `RedisOpsRe
 ```bash
 $ kubectl get rd,redis,redisopsrequest -n demo
 NAME                         VERSION   STATUS   AGE
-redis.kubedb.com/rd-gitops   8.0.4     Ready    28m
+redis.kubedb.com/rd-gitops   8.0.4     Ready    17h
 
 NAME                                AGE
-redis.gitops.kubedb.com/rd-gitops   28m
+redis.gitops.kubedb.com/rd-gitops   17h
 
 NAME                                                                TYPE                STATUS       AGE
-redisopsrequest.ops.kubedb.com/rd-gitops-horizontalscaling-1nblpl   HorizontalScaling   Successful   26m
-redisopsrequest.ops.kubedb.com/rd-gitops-verticalscaling-or3shk     VerticalScaling     Successful   10m
-
+redisopsrequest.ops.kubedb.com/rd-gitops-horizontalscaling-ule15j   HorizontalScaling   Successful   16h
+redisopsrequest.ops.kubedb.com/rd-gitops-verticalscaling-lliwo8     VerticalScaling     Successful   16h
 ```
 
+kubectl get pod -n demo rd-gitops-shard0-0 -o json | jq '.spec.containers[0].resources'
+{
+  "limits": {
+    "cpu": "500m",
+    "memory": "500Mi"
+  },
+  "requests": {
+    "cpu": "500m",
+    "memory": "500Mi"
+  }
+}
 
 
 ### Expand Redis Volume
@@ -291,47 +308,30 @@ metadata:
   name: rd-gitops
   namespace: demo
 spec:
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: Redis
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: Redis
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+  version: 8.0.4
+  mode: Cluster
+  cluster:
+    shards: 3
+    replicas: 3
   storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: "2Gi"
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+  podTemplate:
+    spec:
+      containers:
+      - name: redis
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "500m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
   deletionPolicy: WipeOut
 ```
 
@@ -341,27 +341,31 @@ Now, `gitops` operator will detect the volume changes and create a `VolumeExpans
 
 ```bash
 $ kubectl get rd,redis,redisopsrequest -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-Redis.kubedb.com/rd-gitops   kubedb.com/v1   3.9.0     Ready    23m
+NAME                         VERSION   STATUS   AGE
+redis.kubedb.com/rd-gitops   8.0.4     Ready    17h
 
-NAME                                 AGE
-Redis.gitops.kubedb.com/rd-gitops   23m
+NAME                                AGE
+redis.gitops.kubedb.com/rd-gitops   17h
 
-NAME                                                                 TYPE                STATUS       AGE
-Redisopsrequest.ops.kubedb.com/rd-gitops-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
-Redisopsrequest.ops.kubedb.com/rd-gitops-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
-Redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-41xthr     VolumeExpansion     Successful   19m
+NAME                                                                TYPE                STATUS       AGE
+redisopsrequest.ops.kubedb.com/rd-gitops-horizontalscaling-ule15j   HorizontalScaling   Successful   16h
+redisopsrequest.ops.kubedb.com/rd-gitops-verticalscaling-lliwo8     VerticalScaling     Successful   16h
+redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-3twy3x     VolumeExpansion     Successful   2m23s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
 $ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=rd-gitops'
-NAME                                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-rd-gitops-data-rd-gitops-broker-0       Bound    pvc-2afd4835-5686-492b-be93-c6e040e0a6c6   2Gi        RWO            Standard       <unset>                 3h39m
-rd-gitops-data-rd-gitops-broker-1       Bound    pvc-aaf994cc-6b04-4c37-80d5-5e966dad8487   2Gi        RWO            Standard       <unset>                 3h39m
-rd-gitops-data-rd-gitops-controller-0   Bound    pvc-82d2b233-203d-4df2-a0fd-ecedbc0825b7   2Gi        RWO            Standard       <unset>                 3h39m
-rd-gitops-data-rd-gitops-controller-1   Bound    pvc-91852c29-ab1a-48ad-9255-a0b15d5a7515   2Gi        RWO            Standard       <unset>                 3h39m
-
+NAME                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+data-rd-gitops-shard0-0   Bound    pvc-77634b30-7ccc-4391-a768-54d4e3c1907c   2Gi        RWO            longhorn       <unset>                 17h
+data-rd-gitops-shard0-1   Bound    pvc-e4b23a61-5de7-4e5c-b4b2-0722bffc7464   2Gi        RWO            longhorn       <unset>                 17h
+data-rd-gitops-shard0-2   Bound    pvc-c3ffc095-248b-4091-bfaa-a1de401e3e36   2Gi        RWO            longhorn       <unset>                 16h
+data-rd-gitops-shard1-0   Bound    pvc-62e7a6c0-ddd5-4281-8878-9ec42e68585d   2Gi        RWO            longhorn       <unset>                 17h
+data-rd-gitops-shard1-1   Bound    pvc-0e9ca41e-8b25-4ea1-865a-17aba48f619c   2Gi        RWO            longhorn       <unset>                 17h
+data-rd-gitops-shard1-2   Bound    pvc-c1e6806d-bb6c-4521-94c6-8e47ec6ad36e   2Gi        RWO            longhorn       <unset>                 16h
+data-rd-gitops-shard2-0   Bound    pvc-0954e736-e699-46f4-9dfb-33b23f65e351   2Gi        RWO            longhorn       <unset>                 17h
+data-rd-gitops-shard2-1   Bound    pvc-1fd1321a-ff04-4c81-b903-80473598ffac   2Gi        RWO            longhorn       <unset>                 17h
+data-rd-gitops-shard2-2   Bound    pvc-8458eb68-930b-4817-8577-24616079e9f7   2Gi        RWO            longhorn       <unset>                 16h
 ```
 
 ## Reconfigure Redis
