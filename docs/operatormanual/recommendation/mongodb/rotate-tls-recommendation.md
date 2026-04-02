@@ -7,7 +7,7 @@ menu:
     parent: kubedb-recommendation-mg
     weight: 30
 menu_name: docs_{{ .version }}
-section_menu_id: guides
+section_menu_id: operatormanual
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
