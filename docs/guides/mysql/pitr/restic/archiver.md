@@ -108,7 +108,7 @@ retentionpolicy.storage.kubestash.com/mysql-retention-policy created
 ```
 
 ### MySQLArchiver
-MySQLArchiver is a CR provided by KubeDB for managing the archiving of MySQL binlog files and performing physical backups
+MySQLArchiver is a CR provided by KubeDB for managing the archiving of MySQL binlog files and performing physical backups.
 
 ```yaml
 apiVersion: archiver.kubedb.com/v1alpha1
@@ -135,6 +135,11 @@ spec:
     namespace: "demo"
   fullBackup:
     driver: "Restic"
+    jobTemplate:
+      spec:
+        securityContext:
+          runAsUser: 999
+          runAsGroup: 0
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
@@ -151,7 +156,7 @@ spec:
       name: "storage"
       namespace: "demo"
 ```
-
+> In the above MySQLArchiver object, you need to provide the securityContext same as database for the full backup job to provide data directory permission. In this example, we have used `runAsUser: 999` and `runAsGroup: 0` since MySQL image uses `999` as the user id for the mysql user.
 ### EncryptionSecret
 
 ```yaml
