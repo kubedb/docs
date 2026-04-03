@@ -5,6 +5,6 @@ menu:
     identifier: kf-reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: kf-kafka-guides
-    weight: 46
+    weight: 55
 menu_name: docs_{{ .version }}
 ---

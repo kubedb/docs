@@ -1,10 +1,10 @@
 ---
-title: Restart Kafka
+title: Gitops Kafka
 menu:
   docs_{{ .version }}:
-    identifier: kf-restart
-    name: Restart
+    identifier: kf-gitops
+    name: Gitops
     parent: kf-kafka-guides
-    weight: 75
+    weight: 30
 menu_name: docs_{{ .version }}
 ---
