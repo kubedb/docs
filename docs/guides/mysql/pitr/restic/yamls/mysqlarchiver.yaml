@@ -22,6 +22,11 @@ spec:
     namespace: "demo"
   fullBackup:
     driver: "Restic"
+    jobTemplate:
+      spec:
+        securityContext:
+          runAsUser: 999
+          runAsGroup: 0
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
