@@ -5,6 +5,6 @@ menu:
     identifier: pitr-postgres
     name: Point-in-time Recovery
     parent: pg-postgres-guides
-    weight: 42
+    weight: 110
 menu_name: docs_{{ .version }}
 ---

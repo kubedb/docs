@@ -5,6 +5,6 @@ menu:
     identifier: pg-custom-rbac
     name: Custom RBAC
     parent: pg-postgres-guides
-    weight: 31
+    weight: 90
 menu_name: docs_{{ .version }}
 ---

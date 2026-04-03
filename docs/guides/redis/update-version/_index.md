@@ -5,6 +5,6 @@ menu:
     identifier: rd-update-version
     name: UpdateVersion
     parent: rd-redis-guides
-    weight: 60
+    weight: 120
 menu_name: docs_{{ .version }}
 ---

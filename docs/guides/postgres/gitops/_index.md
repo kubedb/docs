@@ -5,6 +5,6 @@ menu:
     identifier: pg-gitops-postgres
     name: GitOps
     parent: pg-postgres-guides
-    weight: 40
+    weight: 0
 menu_name: docs_{{ .version }}
 ---

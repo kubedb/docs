@@ -5,6 +5,6 @@ menu:
     identifier: rd-custom-rbac
     name: Custom RBAC
     parent: rd-redis-guides
-    weight: 31
+    weight: 40
 menu_name: docs_{{ .version }}
 ---

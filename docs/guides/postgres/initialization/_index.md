@@ -5,6 +5,6 @@ menu:
     identifier: pg-initialization-postgres
     name: Initialization
     parent: pg-postgres-guides
-    weight: 41
+    weight: 40
 menu_name: docs_{{ .version }}
 ---

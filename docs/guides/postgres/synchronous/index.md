@@ -5,7 +5,7 @@ menu:
         identifier: guides-postgres-synchronous
         name: Synchronous Replication Postgres
         parent: pg-postgres-guides
-        weight: 42
+        weight: 60
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

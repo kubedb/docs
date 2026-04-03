@@ -5,6 +5,6 @@ menu:
     identifier: pg-reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: pg-postgres-guides
-    weight: 46
+    weight: 180
 menu_name: docs_{{ .version }}
 ---

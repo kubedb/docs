@@ -5,6 +5,6 @@ menu:
     identifier: pb-sync-users
     name: Sync Users
     parent: pb-pgbouncer-guides
-    weight: 30
+    weight: 40
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: rd-sentinel-redis
     name: Sentinel
     parent: rd-redis-guides
-    weight: 25
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

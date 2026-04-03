@@ -5,6 +5,6 @@ menu:
     identifier: rd-announce
     name: External Connection
     parent: rd-redis-guides
-    weight: 31
+    weight: 45
 menu_name: docs_{{ .version }}
 ---
