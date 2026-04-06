@@ -132,72 +132,66 @@ appbinding.appcatalog.appscode.com/mg-gitops   kubedb.com/mongodb   8.0.10    34
 
 ### Scale MongoDB Database Resources
 
+Before scaling database resouces:
+
+```shell
+kubectl get pod -n demo mg-gitops-0 -o json | jq '.spec.containers[0].resources'
+{
+  "limits": {
+    "memory": "1536Mi"
+  },
+  "requests": {
+    "cpu": "800m",
+    "memory": "1536Mi"
+  }
+}
+```
 Update the `MongoDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
-  name: MongoDB-prod
+  name: mg-gitops
   namespace: demo
 spec:
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1540Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: local-path
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1540Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: local-path
+  version: "8.0.10"
+  replicaSet: 
+    name: "replicaset"
+  replicas: 2
+  podTemplate:
+   spec:
+     containers:
+     - name: mongodb
+       resources:
+         limits:
+           memory: 2Gi
+         requests:
+           cpu: 1000m
+           memory: 2Gi
   storageType: Durable
-  deletionPolicy: WipeOut
+  storage:
+    storageClassName: longhorn
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
  ```
 
-Resource Requests and Limits are updated to `700m` CPU and `2Gi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
+Resource Requests and Limits are updated from `800m` to `1000m` CPU and `2Gi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the resource changes and create a `ElasticsearchOpsRequest` to update the `MongoDB` database. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the resource changes and create a `MongoDBOpsRequest` to update the `MongoDB` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ $ kubectl get kf,MongoDB,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    22h
+$kubectl get mg,MongoDB,mgops -n demo
+NAME                           VERSION   STATUS   AGE
+mongodb.kubedb.com/mg-gitops   8.0.10    Ready    13m
 
-NAME                                 AGE
-MongoDB.gitops.kubedb.com/MongoDB-prod   22h
+NAME                                  AGE
+mongodb.gitops.kubedb.com/mg-gitops   13m
 
-NAME                                                                   TYPE              STATUS        AGE
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-verticalscaling-i0kr1l   VerticalScaling       Successful     2s
+NAME                                                                TYPE              STATUS       AGE
+mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm   VerticalScaling   Successful   4m35s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
@@ -205,13 +199,14 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 $ kubectl get pod -n demo mg-gitops-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
-    "memory": "1536Mi"
+    "memory": "2Gi"
   },
   "requests": {
-    "cpu": "500m",
-    "memory": "1536Mi"
+    "cpu": "1",
+    "memory": "2Gi"
   }
 }
+
 ```
 
 ### Scale MongoDB Replicas
@@ -220,79 +215,56 @@ Update the `MongoDB.yaml` with the following,
 apiVersion: gitops.kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
-  name: MongoDB-prod
+  name: mg-gitops
   namespace: demo
 spec:
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1540Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 3
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: local-path
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1540Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 3
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 1Gi
-        storageClassName: local-path
+  version: "8.0.10"
+  replicaSet: 
+    name: "replicaset"
+  replicas: 3
+  podTemplate:
+   spec:
+     containers:
+     - name: mongodb
+       resources:
+         limits:
+           memory: 2Gi
+         requests:
+           cpu: 1000m
+           memory: 2Gi
   storageType: Durable
-  deletionPolicy: WipeOut
+  storage:
+    storageClassName: longhorn
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
 ```
 
 Update the `replicas` to `3`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
-Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` ElasticsearchOpsRequest to update the `MongoDB` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` MongoDBOpsRequest to update the `MongoDB` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,MongoDB,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    22h
+$ kubectl get mg,MongoDB,mgops -n demo
+NAME                           VERSION   STATUS   AGE
+mongodb.kubedb.com/mg-gitops   8.0.10    Ready    18m
 
-NAME                                 AGE
-MongoDB.gitops.kubedb.com/MongoDB-prod   22h
+NAME                                  AGE
+mongodb.gitops.kubedb.com/mg-gitops   18m
 
-NAME                                                                 TYPE                STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
+NAME                                                                  TYPE                STATUS       AGE
+mongodbopsrequest.ops.kubedb.com/mg-gitops-horizontalscaling-n8xx64   HorizontalScaling   Successful   4m2s
+mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   9m5s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$  kubectl get pod -n demo -l 'app.kubernetes.io/instance=MongoDB-prod'
-NAME                      READY   STATUS    RESTARTS   AGE
-mg-gitops-0       1/1     Running   0          34m
-mg-gitops-1       1/1     Running   0          33m
-mg-gitops-2       1/1     Running   0          33m
-MongoDB-prod-controller-0   1/1     Running   0          32m
-MongoDB-prod-controller-1   1/1     Running   0          31m
-MongoDB-prod-controller-2   1/1     Running   0          31m
+$ kubectl get pod -n demo -l 'app.kubernetes.io/instance=mg-gitops'
+NAME          READY   STATUS    RESTARTS   AGE
+mg-gitops-0   2/2     Running   0          8m37s
+mg-gitops-1   2/2     Running   0          9m22s
+mg-gitops-2   2/2     Running   0          4m34s
 ```
 
 We can also scale down the replicas by updating the `replicas` fields.
@@ -304,196 +276,145 @@ Update the `MongoDB.yaml` with the following,
 apiVersion: gitops.kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
-  name: MongoDB-prod
+  name: mg-gitops
   namespace: demo
 spec:
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+  version: "8.0.10"
+  replicaSet: 
+    name: "replicaset"
+  replicas: 3
+  podTemplate:
+   spec:
+     containers:
+     - name: mongodb
+       resources:
+         limits:
+           memory: 2Gi
+         requests:
+           cpu: 1000m
+           memory: 2Gi
   storageType: Durable
-  deletionPolicy: WipeOut
+  storage:
+    storageClassName: longhorn
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
 ```
 
 Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` ElasticsearchOpsRequest to update the `MongoDB` database volume. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` MongoDBOpsRequest to update the `MongoDB` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,MongoDB,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    23m
+$ kubectl get mg,MongoDB,mgops -n demo
+NAME                           VERSION   STATUS   AGE
+mongodb.kubedb.com/mg-gitops   8.0.10    Ready    21m
 
-NAME                                 AGE
-MongoDB.gitops.kubedb.com/MongoDB-prod   23m
+NAME                                  AGE
+mongodb.gitops.kubedb.com/mg-gitops   21m
 
-NAME                                                                 TYPE                STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr     VolumeExpansion     Successful   19m
+NAME                                                                  TYPE                STATUS       AGE
+mongodbopsrequest.ops.kubedb.com/mg-gitops-horizontalscaling-n8xx64   HorizontalScaling   Successful   7m24s
+mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   12m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpansion     Successful   2m10s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
-$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=MongoDB-prod'
-NAME                                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-MongoDB-prod-data-mg-gitops-0       Bound    pvc-2afd4835-5686-492b-be93-c6e040e0a6c6   2Gi        RWO            Standard       <unset>                 3h39m
-MongoDB-prod-data-mg-gitops-1       Bound    pvc-aaf994cc-6b04-4c37-80d5-5e966dad8487   2Gi        RWO            Standard       <unset>                 3h39m
-MongoDB-prod-data-MongoDB-prod-controller-0   Bound    pvc-82d2b233-203d-4df2-a0fd-ecedbc0825b7   2Gi        RWO            Standard       <unset>                 3h39m
-MongoDB-prod-data-MongoDB-prod-controller-1   Bound    pvc-91852c29-ab1a-48ad-9255-a0b15d5a7515   2Gi        RWO            Standard       <unset>                 3h39m
-
+$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=mg-gitops'
+NAME                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+datadir-mg-gitops-0   Bound    pvc-cea7fe6a-dd75-4e81-99d3-9ab2867c6650   2Gi        RWO            longhorn       <unset>                 22m
+datadir-mg-gitops-1   Bound    pvc-bcd63bd2-b3b8-4fb8-8c35-5f6e40031f61   2Gi        RWO            longhorn       <unset>                 21m
+datadir-mg-gitops-2   Bound    pvc-2535f213-28fb-41ef-bdfd-7fbe91859c81   2Gi        RWO            longhorn       <unset>               7m56s
 ```
 
 ## Reconfigure MongoDB
 
-At first, we will create a secret containing `user.conf` file with required configuration settings.
-To know more about this configuration file, check [here](/docs/guides/MongoDB/configuration/MongoDB-combined.md)
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: new-kf-combined-custom-config
-  namespace: demo
-stringData:
-  server.properties: |-
-    log.retention.hours=125    
-```
+At first, we will create `mongod.conf` file containing required configuration settings.
 
-Now, we will add this file to `kubedb /kf-configuration.yaml`.
+```ini
+$ cat mongod.conf
+net:
+   maxIncomingConnections: 10000
+```
+Here, `maxIncomingConnections` is set to `10000`, whereas the default value is `65536`.
+
+Now, we will create a secret with this configuration file.
 
 ```bash
-$ tree .
-├── kubedb
-│ ├── kf-configuration.yaml
-│ └── MongoDB.yaml
-1 directories, 2 files
+$ kubectl create secret generic -n demo mg-custom-config --from-file=./mongod.conf
+secret/mg-custom-config created
 ```
+
 
 Update the `MongoDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
-  name: MongoDB-prod
+  name: mg-gitops
   namespace: demo
 spec:
-  configSecret:
-    name: new-kf-combined-custom-config
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+  version: "8.0.10"
+  replicaSet: 
+    name: "replicaset"
+  replicas: 3
+  podTemplate:
+   spec:
+     containers:
+     - name: mongodb
+       resources:
+         limits:
+           memory: 2Gi
+         requests:
+           cpu: 1000m
+           memory: 2Gi
   storageType: Durable
-  deletionPolicy: WipeOut
+  storage:
+    storageClassName: longhorn
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  configuration:
+    secretName: mg-custom-config
 ```
 
 Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` ElasticsearchOpsRequest to update the `MongoDB` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` MongoDBOpsRequest to update the `MongoDB` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,MongoDB,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    74m
+$  kubectl get mg,MongoDB,mgops -n demo
+NAME                           VERSION   STATUS   AGE
+mongodb.kubedb.com/mg-gitops   8.0.10    Ready    32m
 
-NAME                                 AGE
-MongoDB.gitops.kubedb.com/MongoDB-prod   74m
+NAME                                  AGE
+mongodb.gitops.kubedb.com/mg-gitops   32m
 
-NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfigure-ukj41o       Reconfigure       Successful   24m
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   70m
-
+NAME                                                                  TYPE                STATUS       AGE
+mongodbopsrequest.ops.kubedb.com/mg-gitops-horizontalscaling-n8xx64   HorizontalScaling   Successful   17m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-reconfigure-djow20         Reconfigure         Successful   6m7s
+mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   22m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpansion     Successful   12m
 ```
 
-
-
-> We can also reconfigure the parameters creating another secret and reference the secret in the `configSecret` field. Also you can remove the `configSecret` field to use the default parameters.
 
 ### Rotate MongoDB Auth
 
 To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new username and password.
 
-We will do that using gitops, create the file `kubedb /kf-auth.yaml` with the following content,
+We will do that using gitops, create the file `kubedb /mg-auth.yaml` with the following content,
 
 ```bash
-kubectl create secret generic kf-rotate-auth -n demo \
---type=kubernetes.io/basic-auth \
---from-literal=username=MongoDB \
---from-literal=password=MongoDB-secret
-secret/kf-rotate-auth created
-
+kubectl create secret generic mgauth -n demo \
+                                              --type=kubernetes.io/basic-auth \
+                                              --from-literal=username=root \
+                                              --from-literal=password=mongodb-secret
+secret/mgauth created
 ```
 
 
@@ -503,75 +424,56 @@ Update the `MongoDB.yaml` with the following,
 apiVersion: gitops.kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
-  name: MongoDB-prod
+  name: mg-gitops
   namespace: demo
 spec:
+  version: "8.0.10"
+  replicaSet: 
+    name: "replicaset"
+  replicas: 3
+  podTemplate:
+   spec:
+     containers:
+     - name: mongodb
+       resources:
+         limits:
+           memory: 2Gi
+         requests:
+           cpu: 1000m
+           memory: 2Gi
+  storageType: Durable
+  storage:
+    storageClassName: longhorn
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  configuration:
+    secretName: mg-custom-config
   authSecret:
     kind: Secret
-    name: kf-rotate-auth
-  configSecret:
-    name: new-kf-combined-custom-config
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-  storageType: Durable
-  deletionPolicy: WipeOut
+    name: mgauth
 ```
 
-Change the `authSecret` field to `kf-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
+Change the `authSecret` field to `mgauth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the auth changes and create a `RotateAuth` ElasticsearchOpsRequest to update the `MongoDB` database auth. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the auth changes and create a `RotateAuth` MongoDBOpsRequest to update the `MongoDB` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get kf,MongoDB,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    7m11s
+$ kubectl get mg,MongoDB,mgops -n demo
+NAME                           VERSION   STATUS   AGE
+mongodb.kubedb.com/mg-gitops   8.0.10    Ready    41m
 
-NAME                                 AGE
-MongoDB.gitops.kubedb.com/MongoDB-prod   7m11s
+NAME                                  AGE
+mongodb.gitops.kubedb.com/mg-gitops   41m
 
-NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfigure-ukj41o       Reconfigure       Successful   17h
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-rotate-auth-43ris8       RotateAuth        Successful   28m
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   17h
-
+NAME                                                                  TYPE                STATUS       AGE
+mongodbopsrequest.ops.kubedb.com/mg-gitops-horizontalscaling-n8xx64   HorizontalScaling   Successful   27m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-reconfigure-djow20         Reconfigure         Successful   15m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-rotate-auth-u75ihg         RotateAuth          Successful   3m10s
+mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   32m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpansion     Successful   22m
 ```
 
 
@@ -595,32 +497,32 @@ writing new private key to './ca.key'
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls MongoDB-ca \
+$ kubectl create secret tls mongo-ca\
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/MongoDB-ca created
+secret/mongo-ca  created
 ```
 
-Now, Let's create an `Issuer` using the `MongoDB-ca` secret that we have just created. The `YAML` file looks like this:
+Now, Let's create an `Issuer` using the `mongo-ca` secret that we have just created. The `YAML` file looks like this:
 
 ```yaml
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: kf-issuer
+  name: mg-issuer
   namespace: demo
 spec:
   ca:
-    secretName: MongoDB-ca
+    secretName: mongo-ca 
 ```
 
-Let's add that to our `kubedb /kf-issuer.yaml` file. File structure will look like this,
+Let's add that to our `kubedb /mg-issuer.yaml` file. File structure will look like this,
 ```bash
 $ tree .
 ├── kubedb
-│ ├── kf-configuration.yaml
-│ ├── kf-issuer.yaml
+│ ├── mg-configuration.yaml
+│ ├── mg-issuer.yaml
 │ └── MongoDB.yaml
 1 directories, 4 files
 ```
@@ -630,7 +532,7 @@ Update the `MongoDB.yaml` with the following,
 apiVersion: gitops.kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
-  name: MongoDB-prod
+  name: mg-gitops
   namespace: demo
 spec:
   version: 3.9.0
@@ -679,21 +581,21 @@ spec:
 
 Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `MongoDB` database tls. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` MongoDBOpsRequest to update the `MongoDB` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get kf,MongoDB,kfops,pods -n demo
+$  kubectl get mg,MongoDB,kfops,pods -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   3.9.0     Ready    41m
+MongoDB.kubedb.com/mg-gitops   kubedb.com/v1   3.9.0     Ready    41m
 
 NAME                                 AGE
-MongoDB.gitops.kubedb.com/MongoDB-prod   75m
+MongoDB.gitops.kubedb.com/mg-gitops   75m
 
 NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfigure-ukj41o       Reconfigure       Successful   5d18h
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   9m18s
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-rotate-auth-43ris8       RotateAuth        Successful   5d1h
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   5d19h
+Elasticsearchopsrequest.ops.kubedb.com/mg-gitops-reconfigure-ukj41o       Reconfigure       Successful   5d18h
+Elasticsearchopsrequest.ops.kubedb.com/mg-gitops-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   9m18s
+Elasticsearchopsrequest.ops.kubedb.com/mg-gitops-rotate-auth-43ris8       RotateAuth        Successful   5d1h
+Elasticsearchopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   5d19h
 
 ```
 
@@ -702,94 +604,69 @@ Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr   Vol
 
 ### Update Version
 
-List MongoDB versions using `kubectl get Elasticsearchversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/MongoDB/update-version/update-version.md).
+List MongoDB versions using `kubectl get mgversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/mongodb/update-version/update-version.md).
 
-Let's choose `4.0.0` in this example.
+Let's choose `8.0.17` in this example.
 
 Update the `MongoDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
-  name: MongoDB-prod
-  namespace: demo
+ name: mg-gitops
+ namespace: demo
 spec:
-  version: 4.0.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-  storageType: Durable
-  deletionPolicy: WipeOut
+ version: "8.0.17"
+ replicaSet:
+   name: "replicaset"
+ replicas: 3
+ podTemplate:
+   spec:
+     containers:
+     - name: mongodb
+       resources:
+         limits:
+           memory: 1Gi
+         requests:
+           cpu: "1"
+           memory: 1Gi
+ storageType: Durable
+ storage:
+   storageClassName: longhorn
+   accessModes:
+   - ReadWriteOnce
+   resources:
+     requests:
+       storage: 1Gi
 ```
 
-Update the `version` field to `17.4`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
+Update the `version` field to `8.0.17`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the version changes and create a `VersionUpdate` ElasticsearchOpsRequest to update the `MongoDB` database version. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the version changes and create a `VersionUpdate` MongoDBOpsRequest to update the `MongoDB` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,MongoDB,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   4.0.0     Ready    3h47m
+$ kubectl get mg,MongoDB,mgops -n demo
+NAME                           VERSION   STATUS   AGE
+mongodb.kubedb.com/mg-gitops   8.0.17    Ready    46m
 
-NAME                                 AGE
-MongoDB.gitops.kubedb.com/MongoDB-prod   3h47m
+NAME                                  AGE
+mongodb.gitops.kubedb.com/mg-gitops   46m
 
-NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfigure-ukj41o       Reconfigure       Successful   5d22h
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   4h16m
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-rotate-auth-43ris8       RotateAuth        Successful   5d6h
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-versionupdate-wyn2dp     UpdateVersion     Successful   3h51m
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   5d23h
+NAME                                                                  TYPE                STATUS       AGE
+mongodbopsrequest.ops.kubedb.com/mg-gitops-horizontalscaling-n8xx64   HorizontalScaling   Successful   31m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-reconfigure-djow20         Reconfigure         Successful   20m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-rotate-auth-u75ihg         RotateAuth          Successful   7m19s
+mongodbopsrequest.ops.kubedb.com/mg-gitops-versionupdate-kkc2gc       UpdateVersion       Successful   2m38s
+mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   36m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpansion     Successful   26m
 ```
 
 
 Now, we are going to verify whether the `MongoDB`, `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
-$ kubectl get MongoDB -n demo MongoDB-prod -o=jsonpath='{.spec.version}{"\n"}'
-4.0.0
-
-$ kubectl get petset -n demo mg-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/MongoDB:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
-
-$  kubectl get pod -n demo mg-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/MongoDB:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
+$ kubectl get MongoDB -n demo mg-gitops -o=jsonpath='{.spec.version}{"\n"}'
+8.0.17
 ```
 
 ### Enable Monitoring
@@ -801,81 +678,64 @@ Update the `MongoDB.yaml` with the following,
 apiVersion: gitops.kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
-  name: MongoDB-prod
+  name: mg-gitops
   namespace: demo
 spec:
-  version: 4.0.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+  version: "8.0.17"
+  replicaSet: 
+    name: "replicaset"
+  replicas: 3
+  podTemplate:
+   spec:
+     containers:
+     - name: mongodb
+       resources:
+         limits:
+           memory: 2Gi
+         requests:
+           cpu: 1000m
+           memory: 2Gi
   storageType: Durable
+  storage:
+    storageClassName: longhorn
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  configuration:
+    secretName: mg-custom-config
+  authSecret:
+    kind: Secret
+    name: mgauth
   monitor:
     agent: prometheus.io/operator
     prometheus:
-      exporter:
-        port: 9091
       serviceMonitor:
         labels:
           release: prometheus
         interval: 10s
-  deletionPolicy: WipeOut
 ```
 
 Add `monitor` field in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the monitoring changes and create a `Restart` ElasticsearchOpsRequest to add the `MongoDB` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the monitoring changes and create a `Restart` MongoDBOpsRequest to add the `MongoDB` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get Elasticsearches.gitops.kubedb.com,Elasticsearches.kubedb.com,Elasticsearchopsrequest -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-MongoDB.kubedb.com/MongoDB-prod   kubedb.com/v1   4.0.0     Ready    5h12m
+$kubectl get mg,MongoDB,mgops -n demo
+NAME                           VERSION   STATUS   AGE
+mongodb.kubedb.com/mg-gitops   8.0.17    Ready    52m
 
-NAME                                 AGE
-MongoDB.gitops.kubedb.com/MongoDB-prod   5h12m
+NAME                                  AGE
+mongodb.gitops.kubedb.com/mg-gitops   52m
 
-NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfigure-ukj41o       Reconfigure       Successful   6d
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   5h42m
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-restart-ljpqih           Restart           Successful   3m51s
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-rotate-auth-43ris8       RotateAuth        Successful   5d7h
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-versionupdate-wyn2dp     UpdateVersion     Successful   5h16m
-Elasticsearchopsrequest.ops.kubedb.com/MongoDB-prod-volumeexpansion-41xthr   VolumeExpansion   Successful   6d
-
+NAME                                                                  TYPE                STATUS       AGE
+mongodbopsrequest.ops.kubedb.com/mg-gitops-horizontalscaling-n8xx64   HorizontalScaling   Successful   38m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-reconfigure-djow20         Reconfigure         Successful   26m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-restart-ykgxj3             Restart             Successful   3m45s
+mongodbopsrequest.ops.kubedb.com/mg-gitops-rotate-auth-u75ihg         RotateAuth          Successful   13m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-versionupdate-kkc2gc       UpdateVersion       Successful   9m15s
+mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   43m
+mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpansion     Successful   32m
 ```
 
 Verify the monitoring is enabled by checking the prometheus targets.
@@ -893,10 +753,10 @@ There are some other fields that will trigger `Restart` ops request.
 
 ## Next Steps
 
-[//]: # (- Learn MongoDB [GitOps]&#40;/docs/guides/MongoDB/concepts/MongoDB-gitops.md&#41;)
+[//]: # (- Learn MongoDB [GitOps]&#40;/docs/guides/mongodb/concepts/MongoDB-gitops.md&#41;)
 - Learn MongoDB Scaling
-    - [Horizontal Scaling](/docs/guides/MongoDB/scaling/horizontal-scaling/combined.md)
-    - [Vertical Scaling](/docs/guides/MongoDB/scaling/vertical-scaling/combined.md)
-- Learn Version Update Ops Request and Constraints [here](/docs/guides/MongoDB/update-version/overview.md)
-- Monitor your ElasticsearchQL database with KubeDB using [built-in Prometheus](/docs/guides/MongoDB/monitoring/using-builtin-prometheus.md).
+    - [Horizontal Scaling](/docs/guides/mongodb/scaling/horizontal-scaling/combined.md)
+    - [Vertical Scaling](/docs/guides/mongodb/scaling/vertical-scaling/combined.md)
+- Learn Version Update Ops Request and Constraints [here](/docs/guides/mongodb/update-version/overview.md)
+- Monitor your ElasticsearchQL database with KubeDB using [built-in Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
