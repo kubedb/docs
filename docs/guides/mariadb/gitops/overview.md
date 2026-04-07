@@ -3,9 +3,9 @@ title: MariaDB Gitops Overview
 description: MariaDB Gitops Overview
 menu:
   docs_{{ .version }}:
-    identifier: es-gitops-overview
+    identifier: md-gitops-overview
     name: Overview
-    parent: es-gitops
+    parent: guides-mariadb-gitops
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

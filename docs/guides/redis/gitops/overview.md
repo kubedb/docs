@@ -21,8 +21,8 @@ managing Redis databases in Kubernetes.
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Redis](/docs/guides/redis/concepts/kafka.md)
-    - [KafkaOpsRequest](/docs/guides/redis/concepts/kafkaopsrequest.md)
+    - [Redis](/docs/guides/redis/concepts/redis.md)
+    - [KafkaOpsRequest](/docs/guides/redis/concepts/redisopsrequest.md)
 
 
 
