@@ -1,10 +1,10 @@
 ---
-title: Elasticsearch Gitops
+title: Gitops Microsoft SQL Server
 menu:
   docs_{{ .version }}:
-    identifier: es-gitops
-    name: Elasticsearch Gitops
-    parent: es-elasticsearch-guides
-    weight: 70
+    identifier: mssqlserver-gitops
+    name: Gitops
+    parent: guides-mssqlserver
+    weight: 41
 menu_name: docs_{{ .version }}
 ---
