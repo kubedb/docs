@@ -1,15 +1,15 @@
 ---
-title: Elasticsearch Gitops Overview
-description: Elasticsearch Gitops Overview
+title: Gitops overview Microsoft SQL Server
 menu:
   docs_{{ .version }}:
-    identifier: es-gitops-overview
+    identifier: ms-overview
     name: Overview
-    parent: es-gitops
+    parent: mssqlserver-gitops
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
