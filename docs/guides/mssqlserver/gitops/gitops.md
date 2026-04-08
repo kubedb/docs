@@ -331,52 +331,49 @@ $ kubectl get pod -n demo mssql-gitops-0 -o json | jq '.spec.containers[0].resou
 Update the `Mssqlserver.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Mssqlserver
+kind: MSSQLServer
 metadata:
   name: mssql-gitops
   namespace: demo
 spec:
-  version: 3.9.0
+  version: "2022-cu19"
+  replicas: 3
   topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation # Change it 
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "700m"
+            limits:
+              cpu: 2
+              memory: "2Gi"
   storageType: Durable
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
@@ -385,28 +382,26 @@ Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and
 Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` mssqlserverOpsRequest to update the `Mssqlserver` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,Mssqlserver,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-Mssqlserver.kubedb.com/mssql-gitops   kubedb.com/v1   3.9.0     Ready    23m
+$ kubectl get ms,Mssqlserver,msops -n demo
+NAME                                  VERSION     STATUS   AGE
+mssqlserver.kubedb.com/mssql-gitops   2022-cu19   Ready    20h
 
-NAME                                 AGE
-Mssqlserver.gitops.kubedb.com/mssql-gitops   23m
+NAME                                         AGE
+mssqlserver.gitops.kubedb.com/mssql-gitops   20h
 
-NAME                                                                 TYPE                STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-41xthr     VolumeExpansion     Successful   19m
+NAME                                                                         TYPE                STATUS       AGE
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-horizontalscaling-28njbi   HorizontalScaling   Successful   51m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-verticalscaling-yi3db5     VerticalScaling     Successful   30m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     VolumeExpansion     Successful   15m
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
 $ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=mssql-gitops'
-NAME                                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-mssql-gitops-data-mssql-gitops-broker-0       Bound    pvc-2afd4835-5686-492b-be93-c6e040e0a6c6   2Gi        RWO            Standard       <unset>                 3h39m
-mssql-gitops-data-mssql-gitops-broker-1       Bound    pvc-aaf994cc-6b04-4c37-80d5-5e966dad8487   2Gi        RWO            Standard       <unset>                 3h39m
-mssql-gitops-data-mssql-gitops-controller-0   Bound    pvc-82d2b233-203d-4df2-a0fd-ecedbc0825b7   2Gi        RWO            Standard       <unset>                 3h39m
-mssql-gitops-data-mssql-gitops-controller-1   Bound    pvc-91852c29-ab1a-48ad-9255-a0b15d5a7515   2Gi        RWO            Standard       <unset>                 3h39m
-
+NAME                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+data-mssql-gitops-0   Bound    pvc-481caac3-7849-422c-9d8f-704ef82b3bc6   2Gi        RWO            longhorn       <unset>                 20h
+data-mssql-gitops-1   Bound    pvc-49ea234d-e7e2-4a3b-9372-b430d72fee5e   2Gi        RWO            longhorn       <unset>                 19h
+data-mssql-gitops-2   Bound    pvc-c72d4562-81d2-405b-ae8d-52816e59767f   2Gi        RWO            longhorn       <unset>                 19h
 ```
 
 ## Reconfigure Mssqlserver
@@ -437,54 +432,51 @@ $ tree .
 Update the `Mssqlserver.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Mssqlserver
+kind: MSSQLServer
 metadata:
   name: mssql-gitops
   namespace: demo
 spec:
-  configSecret:
-    name: new-kf-combined-custom-config
-  version: 3.9.0
+  version: "2022-cu19"
+  replicas: 3
   topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation # Change it 
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "700m"
+            limits:
+              cpu: 2
+              memory: "2Gi"
+  configuration:
+    secretName: ms-custom-config
   storageType: Durable
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
@@ -493,17 +485,18 @@ Commit the changes and push to your Git repository. Your repository is synced wi
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` mssqlserverOpsRequest to update the `Mssqlserver` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,Mssqlserver,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-Mssqlserver.kubedb.com/mssql-gitops   kubedb.com/v1   3.9.0     Ready    74m
+$ kubectl get ms,Mssqlserver,msops -n demo
+NAME                                  VERSION     STATUS   AGE
+mssqlserver.kubedb.com/mssql-gitops   2022-cu19   Ready    20h
 
-NAME                                 AGE
-Mssqlserver.gitops.kubedb.com/mssql-gitops   74m
+NAME                                         AGE
+mssqlserver.gitops.kubedb.com/mssql-gitops   20h
 
-NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-reconfigure-ukj41o       Reconfigure       Successful   24m
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   70m
-
+NAME                                                                         TYPE                STATUS       AGE
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-horizontalscaling-28njbi   HorizontalScaling   Successful   71m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-reconfigure-6i2hvt         Reconfigure         Successful   6m24s
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-verticalscaling-yi3db5     VerticalScaling     Successful   50m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     VolumeExpansion     Successful   35m
 ```
 
 
@@ -517,12 +510,11 @@ To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new use
 We will do that using gitops, create the file `kubedb /kf-auth.yaml` with the following content,
 
 ```bash
-kubectl create secret generic kf-rotate-auth -n demo \
---type=kubernetes.io/basic-auth \
---from-literal=username=Mssqlserver \
---from-literal=password=Mssqlserver-secret
-secret/kf-rotate-auth created
-
+$ kubectl create secret generic mssqlserver-auth -n demo \
+  --type=kubernetes.io/basic-auth \
+  --from-literal=username=sa \
+  --from-literal=password=Mssqlserver2
+secret/mssqlserver-auth created
 ```
 
 
@@ -530,57 +522,54 @@ secret/kf-rotate-auth created
 Update the `Mssqlserver.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Mssqlserver
+kind: MSSQLServer
 metadata:
   name: mssql-gitops
   namespace: demo
 spec:
+  version: "2022-cu19"
+  replicas: 3
+  topology:
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation # Change it 
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "700m"
+            limits:
+              cpu: 2
+              memory: "2Gi"
+  configuration:
+    secretName: ms-custom-config
   authSecret:
     kind: Secret
-    name: kf-rotate-auth
-  configSecret:
-    name: new-kf-combined-custom-config
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+    name: mssqlserver-auth
   storageType: Durable
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
@@ -589,125 +578,80 @@ Change the `authSecret` field to `kf-rotate-auth`. Commit the changes and push t
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` mssqlserverOpsRequest to update the `Mssqlserver` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get kf,Mssqlserver,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-Mssqlserver.kubedb.com/mssql-gitops   kubedb.com/v1   3.9.0     Ready    7m11s
+$ kubectl get ms,Mssqlserver,msops -n demo
+NAME                                  VERSION     STATUS   AGE
+mssqlserver.kubedb.com/mssql-gitops   2022-cu19   Ready    21h
 
-NAME                                 AGE
-Mssqlserver.gitops.kubedb.com/mssql-gitops   7m11s
+NAME                                         AGE
+mssqlserver.gitops.kubedb.com/mssql-gitops   21h
 
-NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-reconfigure-ukj41o       Reconfigure       Successful   17h
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-rotate-auth-43ris8       RotateAuth        Successful   28m
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   17h
-
+NAME                                                                         TYPE                STATUS       AGE
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-horizontalscaling-28njbi   HorizontalScaling   Successful   153m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-reconfigure-6i2hvt         Reconfigure         Successful   88m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-rotate-auth-otytes         RotateAuth          Successful   77m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-verticalscaling-yi3db5     VerticalScaling     Successful   133m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     VolumeExpansion     Successful   117m
 ```
 
 
 ### TLS configuration
 
-We can add, rotate or remove TLS configuration using `gitops`.
-
-To add tls, we are going to create an example `Issuer` that will be used to enable SSL/TLS in Mssqlserver. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`. As well as we need to install [csi-driver-cacerts](https://github.com/kubeops/csi-driver-cacerts) which will be used to add self-signed ca certificates to the OS trusted certificate store (eg, /etc/ssl/certs/ca-certificates.crt)
-
-
-- Start off by generating a ca certificates using openssl.
-
-```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
-Generating a RSA private key
-................+++++
-........................+++++
-writing new private key to './ca.key'
------
-```
-
-- Now we are going to create a ca-secret using the certificate files that we have just generated.
-
-```bash
-$ kubectl create secret tls Mssqlserver-ca \
-     --cert=ca.crt \
-     --key=ca.key \
-     --namespace=demo
-secret/Mssqlserver-ca created
-```
-
-Now, Let's create an `Issuer` using the `Mssqlserver-ca` secret that we have just created. The `YAML` file looks like this:
-
-```yaml
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: kf-issuer
-  namespace: demo
-spec:
-  ca:
-    secretName: Mssqlserver-ca
-```
-
-Let's add that to our `kubedb /kf-issuer.yaml` file. File structure will look like this,
-```bash
-$ tree .
-├── kubedb
-│ ├── kf-configuration.yaml
-│ ├── kf-issuer.yaml
-│ └── Mssqlserver.yaml
-1 directories, 4 files
-```
 
 Update the `Mssqlserver.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Mssqlserver
+kind: MSSQLServer
 metadata:
   name: mssql-gitops
   namespace: demo
 spec:
-  version: 3.9.0
+  version: "2022-cu19"
+  replicas: 3
   topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: true
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation # Change it 
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "700m"
+            limits:
+              cpu: 2
+              memory: "2Gi"
+  configuration:
+    secretName: ms-custom-config
+  authSecret:
+    kind: Secret
+    name: mssqlserver-auth
   storageType: Durable
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
-Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
+Convert `spec.tls.clientTLS` to `true`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` mssqlserverOpsRequest to update the `Mssqlserver` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -739,52 +683,54 @@ Let's choose `4.0.0` in this example.
 Update the `Mssqlserver.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Mssqlserver
+kind: MSSQLServer
 metadata:
   name: mssql-gitops
   namespace: demo
 spec:
-  version: 4.0.0
+  version: "2022-cu22"
+  replicas: 3
   topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation # Change it 
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "700m"
+            limits:
+              cpu: 2
+              memory: "2Gi"
+  configuration:
+    secretName: ms-custom-config
+  authSecret:
+    kind: Secret
+    name: mssqlserver-auth
   storageType: Durable
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
@@ -793,19 +739,21 @@ Update the `version` field to `17.4`. Commit the changes and push to your Git re
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` mssqlserverOpsRequest to update the `Mssqlserver` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,Mssqlserver,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-Mssqlserver.kubedb.com/mssql-gitops   kubedb.com/v1   4.0.0     Ready    3h47m
+$ kubectl get ms,Mssqlserver,msops -n demo
+NAME                                  VERSION     STATUS   AGE
+mssqlserver.kubedb.com/mssql-gitops   2022-cu22   Ready    22h
 
-NAME                                 AGE
-Mssqlserver.gitops.kubedb.com/mssql-gitops   3h47m
+NAME                                         AGE
+mssqlserver.gitops.kubedb.com/mssql-gitops   22h
 
-NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-reconfigure-ukj41o       Reconfigure       Successful   5d22h
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   4h16m
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-rotate-auth-43ris8       RotateAuth        Successful   5d6h
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-versionupdate-wyn2dp     UpdateVersion     Successful   3h51m
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   5d23h
+NAME                                                                         TYPE                STATUS       AGE
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-horizontalscaling-28njbi   HorizontalScaling   Successful   3h21m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-reconfigure-6i2hvt         Reconfigure         Successful   136m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-rotate-auth-otytes         RotateAuth          Successful   125m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-versionupdate-mlq0kn       UpdateVersion       Successful   13m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-verticalscaling-yi3db5     VerticalScaling     Successful   3h1m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     VolumeExpansion     Successful   165m
+
 ```
 
 
@@ -813,13 +761,13 @@ Now, we are going to verify whether the `Mssqlserver`, `PetSet` and it's `Pod` h
 
 ```bash
 $ kubectl get Mssqlserver -n demo mssql-gitops -o=jsonpath='{.spec.version}{"\n"}'
-4.0.0
+2022-cu22
 
-$ kubectl get petset -n demo mssql-gitops-broker -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/Mssqlserver:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
+$ kubectl get petset -n demo mssql-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+mcr.microsoft.com/mssql/server:2022-CU22-ubuntu-22.04@sha256:db9a8fe3098b7e8bbde41106bdc7caee942e97124e5fdb71b872ca208de3092d
 
-$  kubectl get pod -n demo mssql-gitops-broker-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/Mssqlserver:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
+$ kubectl get pod -n demo mssql-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+mcr.microsoft.com/mssql/server:2022-CU22-ubuntu-22.04@sha256:db9a8fe3098b7e8bbde41106bdc7caee942e97124e5fdb71b872ca208de3092d
 ```
 
 ### Enable Monitoring
@@ -829,83 +777,92 @@ If you already don't have a Prometheus server running, deploy one following tuto
 Update the `Mssqlserver.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
-kind: Mssqlserver
+kind: MSSQLServer
 metadata:
   name: mssql-gitops
   namespace: demo
 spec:
-  version: 4.0.0
+  version: "2022-cu22"
+  replicas: 3
   topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: Mssqlserver
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+    mode: AvailabilityGroup
+    availabilityGroup:
+      databases:
+        - agdb1
+        - agdb2
+  tls:
+    issuerRef:
+      name: mssqlserver-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    clientTLS: false
+  podTemplate:
+    spec:
+      containers:
+        - name: mssql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: Evaluation # Change it 
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "700m"
+            limits:
+              cpu: 2
+              memory: "2Gi"
+  configuration:
+    secretName: ms-custom-config
+  authSecret:
+    kind: Secret
+    name: mssqlserver-auth
   storageType: Durable
-  monitor:
-    agent: prometheus.io/operator
-    prometheus:
-      exporter:
-        port: 9091
-      serviceMonitor:
-        labels:
-          release: prometheus
-        interval: 10s
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
   deletionPolicy: WipeOut
+  monitor:
+   agent: prometheus.io/operator
+   prometheus:
+     exporter:
+       port: 9399
+       securityContext:
+         allowPrivilegeEscalation: false
+         capabilities:
+           drop:
+             - ALL
+         runAsGroup: 10001
+         runAsNonRoot: true
+         runAsUser: 10001
+         seccompProfile:
+           type: RuntimeDefault
+     serviceMonitor:
+       interval: 100s
+       labels:
+         release: prometheus
 ```
 
 Add `monitor` field in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` mssqlserverOpsRequest to add the `Mssqlserver` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get Elasticsearches.gitops.kubedb.com,Elasticsearches.kubedb.com,Elasticsearchopsrequest -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-Mssqlserver.kubedb.com/mssql-gitops   kubedb.com/v1   4.0.0     Ready    5h12m
+$ kubectl get ms,msops -n demo
+NAME                                  VERSION     STATUS   AGE
+mssqlserver.kubedb.com/mssql-gitops   2022-cu22   Ready    11m
 
-NAME                                 AGE
-Mssqlserver.gitops.kubedb.com/mssql-gitops   5h12m
-
-NAME                                                               TYPE              STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-reconfigure-ukj41o       Reconfigure       Successful   6d
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   5h42m
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-restart-ljpqih           Restart           Successful   3m51s
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-rotate-auth-43ris8       RotateAuth        Successful   5d7h
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-versionupdate-wyn2dp     UpdateVersion     Successful   5h16m
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   6d
-
+NAME                                                                         TYPE                STATUS       AGE
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-horizontalscaling-28njbi   HorizontalScaling   Successful   5h9m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-reconfigure-6i2hvt         Reconfigure         Successful   4h4m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-restart-hoi536             Restart             Successful   6m8s
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-rotate-auth-otytes         RotateAuth          Successful   3h53m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-versionupdate-mlq0kn       UpdateVersion       Successful   120m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-verticalscaling-yi3db5     VerticalScaling     Successful   4h48m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     VolumeExpansion     Successful   4h33m
 ```
 
 Verify the monitoring is enabled by checking the prometheus targets.
