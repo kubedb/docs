@@ -116,40 +116,43 @@ Our `gitops` operator will create an actual `Mssqlserver` database CR in the clu
 ```bash
 $ kubectl get Mssqlserver.gitops.kubedb.com,Mssqlserver.kubedb.com -n demo
 NAME                                         AGE
-mssqlserver.gitops.kubedb.com/mssql-gitops   16m
+mssqlserver.gitops.kubedb.com/mssql-gitops   19h
 
 NAME                                  VERSION     STATUS   AGE
-mssqlserver.kubedb.com/mssql-gitops   2022-cu12   Ready    16m
+mssqlserver.kubedb.com/mssql-gitops   2022-cu19   Ready    19h
 ```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` Mssqlserver.
 
 ```bash
-$  kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=mssql-gitops'
-NAME                                        AGE
-petset.apps.k8s.appscode.com/mssql-gitops   16m
+$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=mssql-gitops'
+NAME                                                AGE
+petset.apps.k8s.appscode.com/mssql-gitops           19h
+petset.apps.k8s.appscode.com/mssql-gitops-arbiter   19h
 
-NAME                 READY   STATUS    RESTARTS   AGE
-pod/mssql-gitops-0   2/2     Running   0          16m
-pod/mssql-gitops-1   2/2     Running   0          14m
-pod/mssql-gitops-2   2/2     Running   0          14m
+NAME                         READY   STATUS    RESTARTS   AGE
+pod/mssql-gitops-0           2/2     Running   0          19h
+pod/mssql-gitops-1           2/2     Running   0          19h
+pod/mssql-gitops-2           2/2     Running   0          19h
+pod/mssql-gitops-3           2/2     Running   0          19h
+pod/mssql-gitops-arbiter-0   1/1     Running   0          19h
 
 NAME                                TYPE                       DATA   AGE
-secret/mssql-gitops-449c85          Opaque                     1      17m
-secret/mssql-gitops-auth            kubernetes.io/basic-auth   2      17m
-secret/mssql-gitops-client-cert     kubernetes.io/tls          4      17m
-secret/mssql-gitops-dbm-login       kubernetes.io/basic-auth   1      17m
-secret/mssql-gitops-endpoint-cert   kubernetes.io/tls          3      17m
-secret/mssql-gitops-master-key      kubernetes.io/basic-auth   1      17m
-secret/mssql-gitops-server-cert     kubernetes.io/tls          3      17m
+secret/mssql-gitops-218872          Opaque                     1      19h
+secret/mssql-gitops-auth            kubernetes.io/basic-auth   2      19h
+secret/mssql-gitops-client-cert     kubernetes.io/tls          4      19h
+secret/mssql-gitops-dbm-login       kubernetes.io/basic-auth   1      19h
+secret/mssql-gitops-endpoint-cert   kubernetes.io/tls          3      19h
+secret/mssql-gitops-master-key      kubernetes.io/basic-auth   1      19h
+secret/mssql-gitops-server-cert     kubernetes.io/tls          3      19h
 
-NAME                             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)             AGE
-service/mssql-gitops             ClusterIP   10.43.7.188    <none>        1433/TCP            17m
-service/mssql-gitops-pods        ClusterIP   None           <none>        1433/TCP,5022/TCP   17m
-service/mssql-gitops-secondary   ClusterIP   10.43.186.58   <none>        1433/TCP            17m
+NAME                             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+service/mssql-gitops             ClusterIP   10.43.242.226   <none>        1433/TCP            19h
+service/mssql-gitops-pods        ClusterIP   None            <none>        1433/TCP,5022/TCP   19h
+service/mssql-gitops-secondary   ClusterIP   10.43.53.184    <none>        1433/TCP            19h
 
 NAME                                              TYPE                     VERSION     AGE
-appbinding.appcatalog.appscode.com/mssql-gitops   kubedb.com/mssqlserver   2022-cu12   16m
+appbinding.appcatalog.appscode.com/mssql-gitops   kubedb.com/mssqlserver   2022-cu19   19h
 ```
 
 ## Update Mssqlserver Database using GitOps
@@ -163,8 +166,8 @@ metadata:
   name: mssql-gitops
   namespace: demo
 spec:
-  version: "2022-cu12"
-  replicas: 5
+  version: "2022-cu19"
+  replicas: 3
   topology:
     mode: AvailabilityGroup
     availabilityGroup:
@@ -193,42 +196,50 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 1Gi
   deletionPolicy: WipeOut
 ```
 
 Update the `replicas` to `5`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
-Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` ElasticsearchOpsRequest to update the `Mssqlserver` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` mssqlserverOpsRequest to update the `Mssqlserver` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,Mssqlserver,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-Mssqlserver.kubedb.com/mssql-gitops   kubedb.com/v1   3.9.0     Ready    22h
+$ kubectl get ms,Mssqlserver,msops -n demo
+NAME                                  VERSION     STATUS   AGE
+mssqlserver.kubedb.com/mssql-gitops   2022-cu19   Ready    19h
 
-NAME                                 AGE
-Mssqlserver.gitops.kubedb.com/mssql-gitops   22h
+NAME                                         AGE
+mssqlserver.gitops.kubedb.com/mssql-gitops   19h
 
-NAME                                                                 TYPE                STATUS       AGE
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
+NAME                                                                         TYPE                STATUS       AGE
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-horizontalscaling-28njbi   HorizontalScaling   Successful   15m
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$  kubectl get pod -n demo -l 'app.kubernetes.io/instance=mssql-gitops'
-NAME                      READY   STATUS    RESTARTS   AGE
-mssql-gitops-broker-0       1/1     Running   0          34m
-mssql-gitops-broker-1       1/1     Running   0          33m
-mssql-gitops-broker-2       1/1     Running   0          33m
-mssql-gitops-controller-0   1/1     Running   0          32m
-mssql-gitops-controller-1   1/1     Running   0          31m
-mssql-gitops-controller-2   1/1     Running   0          31m
+$ kubectl get pod -n demo -l 'app.kubernetes.io/instance=mssql-gitops'
+NAME             READY   STATUS    RESTARTS   AGE
+mssql-gitops-0   2/2     Running   0          19h
+mssql-gitops-1   2/2     Running   0          19h
+mssql-gitops-2   2/2     Running   0          19h
 ```
 
 We can also scale down the replicas by updating the `replicas` fields.
 
 ### Scale Mssqlserver Database Resources
 
+```bash
+$ kubectl get pod -n demo mssql-gitops-0 -o json | jq '.spec.containers[0].resources'
+{
+  "limits": {
+    "memory": "4Gi"
+  },
+  "requests": {
+    "cpu": "1500m",
+    "memory": "2Gi"
+  }
+}
+```
 Update the `Mssqlserver.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
@@ -283,32 +294,35 @@ spec:
 
 Resource Requests and Limits are updated to `700m` CPU and `2Gi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the resource changes and create a `ElasticsearchOpsRequest` to update the `Mssqlserver` database. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the resource changes and create a `mssqlserverOpsRequest` to update the `Mssqlserver` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,Mssqlserver,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-Mssqlserver.kubedb.com/mssql-gitops   kubedb.com/v1   3.9.0     Ready    22h
+$ kubectl get ms,Mssqlserver,msops -n demo
+NAME                                  VERSION     STATUS   AGE
+mssqlserver.kubedb.com/mssql-gitops   2022-cu19   Ready    19h
 
-NAME                                 AGE
-Mssqlserver.gitops.kubedb.com/mssql-gitops   22h
+NAME                                         AGE
+mssqlserver.gitops.kubedb.com/mssql-gitops   19h
 
-NAME                                                                   TYPE              STATUS        AGE
-Elasticsearchopsrequest.ops.kubedb.com/mssql-gitops-verticalscaling-i0kr1l   VerticalScaling       Successful     2s
+NAME                                                                         TYPE                STATUS       AGE
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-horizontalscaling-28njbi   HorizontalScaling   Successful   25m
+mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-verticalscaling-yi3db5     VerticalScaling     Successful   5m2s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
 ```bash
-$ kubectl get pod -n demo mssql-gitops-broker-0 -o json | jq '.spec.containers[0].resources'
+$ kubectl get pod -n demo mssql-gitops-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
-    "memory": "1536Mi"
+    "cpu": "2",
+    "memory": "2Gi"
   },
   "requests": {
-    "cpu": "500m",
-    "memory": "1536Mi"
+    "cpu": "700m",
+    "memory": "2Gi"
   }
 }
+
 ```
 
 
@@ -368,7 +382,7 @@ spec:
 
 Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` ElasticsearchOpsRequest to update the `Mssqlserver` database volume. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` mssqlserverOpsRequest to update the `Mssqlserver` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $ kubectl get kf,Mssqlserver,kfops -n demo
@@ -476,7 +490,7 @@ spec:
 
 Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` ElasticsearchOpsRequest to update the `Mssqlserver` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` mssqlserverOpsRequest to update the `Mssqlserver` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $ kubectl get kf,Mssqlserver,kfops -n demo
@@ -572,7 +586,7 @@ spec:
 
 Change the `authSecret` field to `kf-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the auth changes and create a `RotateAuth` ElasticsearchOpsRequest to update the `Mssqlserver` database auth. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the auth changes and create a `RotateAuth` mssqlserverOpsRequest to update the `Mssqlserver` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $  kubectl get kf,Mssqlserver,kfops -n demo
@@ -695,7 +709,7 @@ spec:
 
 Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `Mssqlserver` database tls. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` mssqlserverOpsRequest to update the `Mssqlserver` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $  kubectl get kf,Mssqlserver,kfops,pods -n demo
@@ -776,7 +790,7 @@ spec:
 
 Update the `version` field to `17.4`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the version changes and create a `VersionUpdate` ElasticsearchOpsRequest to update the `Mssqlserver` database version. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the version changes and create a `VersionUpdate` mssqlserverOpsRequest to update the `Mssqlserver` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $ kubectl get kf,Mssqlserver,kfops -n demo
@@ -875,7 +889,7 @@ spec:
 
 Add `monitor` field in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
 
-Now, `gitops` operator will detect the monitoring changes and create a `Restart` ElasticsearchOpsRequest to add the `Mssqlserver` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
+Now, `gitops` operator will detect the monitoring changes and create a `Restart` mssqlserverOpsRequest to add the `Mssqlserver` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
 $ kubectl get Elasticsearches.gitops.kubedb.com,Elasticsearches.kubedb.com,Elasticsearchopsrequest -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
