@@ -8,5 +8,5 @@ menu_name: docs_{{ .version }}
 section_menu_id: operatormanual
 url: /docs/{{ .version }}/operatormanual/recommendation/
 aliases:
-  - /docs/{{ .version }}/operatormanual/README/recommendation
+  - /docs/{{ .version }}/operatormanual/recommendation/README/
 ---
