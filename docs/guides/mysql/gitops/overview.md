@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: my-gitops-overview
     name: Overview
-    parent: my-gitops-MySQL
+    parent: guides-mysql-gitops
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -3,9 +3,9 @@ title: MongoDB Gitops Overview
 description: MongoDB Gitops Overview
 menu:
   docs_{{ .version }}:
-    identifier: es-gitops-overview
+    identifier: mg-gitops-overview
     name: Overview
-    parent: es-gitops
+    parent: mg-gitops-mongodb
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
