@@ -1,10 +1,10 @@
 ---
-title: GitOps PostgreSQL
+title: MySQL GitOps
 menu:
   docs_{{ .version }}:
-    identifier: pg-gitops-postgres
+    identifier: guides-mysql-gitops
     name: GitOps
-    parent: pg-postgres-guides
-    weight: 40
+    parent: guides-mysql
+    weight: 140
 menu_name: docs_{{ .version }}
 ---

@@ -139,16 +139,6 @@ $  kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[].res
     "memory": "1Gi"
   }
 }
-{
-  "limits": {
-    "memory": "256Mi"
-  },
-  "requests": {
-    "cpu": "200m",
-    "memory": "256Mi"
-  }
-}
-
 ```
 Update the `MariaDB.yaml` with the following,
 ```yaml
@@ -463,7 +453,7 @@ spec:
     name: mdauth
 ```
 
-Change the `authSecret` field to `md-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is updated in your cluster.
+Change the `authSecret` field to `mdauth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` MariaDBOpsRequest to update the `MariaDB` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -589,7 +579,7 @@ spec:
       - "127.0.0.1"
 ```
 
-Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is updated in your cluster.
+Add `requireSSL` as `true` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` MariaDBOpsRequest to update the `MariaDB` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -614,7 +604,7 @@ mariadbopsrequest.ops.kubedb.com/mariadb-gitops-volumeexpansion-01m39b     Volum
 
 List MariaDB versions using `kubectl get MariaDBversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/MariaDB/update-version/update-version.md).
 
-Let's choose `11.8.5` in this example.
+Let's choose `12.1.2` in this example.
 
 Update the `MariaDB.yaml` with the following,
 ```yaml

@@ -1,10 +1,10 @@
 ---
-title: GitOps MySQL
+title: GitOps MySQL 
 menu:
   docs_{{ .version }}:
-    identifier: my-using-gitops
+    identifier: mysql-gitops
     name: GitOps MySQL
-    parent: my-gitops-MySQL
+    parent: guides-mysql-gitops
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -63,26 +63,20 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
+  version: "9.4.0"
   replicas: 3
-  version: "16.6"
+  topology:
+    mode: GroupReplication
+    group:
+      mode: Single-Primary
   storageType: Durable
-  podTemplate:
-    spec:
-      containers:
-      - name: MySQL
-        resources:
-          limits:
-            memory: 1Gi
-          requests:
-            cpu: 500m
-            memory: 1Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
@@ -100,12 +94,12 @@ Our `gitops` operator will create an actual `MySQL` database CR in the cluster. 
 
 
 ```bash
-$  kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com -n demo
+$ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com -n demo
 NAME                                AGE
-mysql.gitops.kubedb.com/my-gitops   172m
+mysql.gitops.kubedb.com/my-gitops   76m
 
 NAME                         VERSION   STATUS   AGE
-mysql.kubedb.com/my-gitops   9.1.0     Ready    172m
+mysql.kubedb.com/my-gitops   9.4.0     Ready    76m
 ```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` MySQL.
@@ -113,28 +107,29 @@ List the resources created by `kubedb` operator created for `kubedb.com/v1` MySQ
 ```bash
 $ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=my-gitops'
 NAME                                     AGE
-petset.apps.k8s.appscode.com/my-gitops   174m
+petset.apps.k8s.appscode.com/my-gitops   78m
 
 NAME              READY   STATUS    RESTARTS   AGE
-pod/my-gitops-0   2/2     Running   0          133m
-pod/my-gitops-1   2/2     Running   0          129m
-pod/my-gitops-2   2/2     Running   0          132m
+pod/my-gitops-0   2/2     Running   0          78m
+pod/my-gitops-1   2/2     Running   0          75m
+pod/my-gitops-2   2/2     Running   0          75m
 
 NAME                    TYPE                       DATA   AGE
-secret/my-gitops-auth   kubernetes.io/basic-auth   2      174m
+secret/my-gitops-auth   kubernetes.io/basic-auth   2      78m
 
 NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-service/my-gitops           ClusterIP   10.43.39.209    <none>        3306/TCP   174m
-service/my-gitops-pods      ClusterIP   None            <none>        3306/TCP   174m
-service/my-gitops-standby   ClusterIP   10.43.212.101   <none>        3306/TCP   174m
+service/my-gitops           ClusterIP   10.43.236.155   <none>        3306/TCP   78m
+service/my-gitops-pods      ClusterIP   None            <none>        3306/TCP   78m
+service/my-gitops-standby   ClusterIP   10.43.239.55    <none>        3306/TCP   78m
 
 NAME                                           TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/my-gitops   kubedb.com/mysql   9.1.0     174m
+appbinding.appcatalog.appscode.com/my-gitops   kubedb.com/mysql   9.4.0     78m
 ```
 
 ## Update MySQL Database using GitOps
 
 ### Scale MySQL Database Resources
+
 
 Update the `MySQL.yaml` with the following, 
 ```yaml
@@ -144,21 +139,25 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
+  version: "9.4.0"
   replicas: 3
-  version: "16.6"
+  topology:
+    mode: GroupReplication
+    group:
+      mode: Single-Primary
   storageType: Durable
   podTemplate:
     spec:
       containers:
-      - name: MySQL
+      - name: mysql
         resources:
           limits:
-            memory: 2Gi
+            memory: 1.5Gi
           requests:
             cpu: 700m
-            memory: 2Gi
+            memory: 1.5Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -167,7 +166,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Resource Requests and Limits are updated to `700m` CPU and `2Gi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
+Resource Requests and Limits are updated to `700m` CPU and `1536Mi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the resource changes and create a `MySQLOpsRequest` to update the `MySQL` database. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -177,7 +176,7 @@ NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   178m
 
 NAME                         VERSION   STATUS   AGE
-mysql.kubedb.com/my-gitops   9.1.0     Ready    178m
+mysql.kubedb.com/my-gitops   9.4.0     Ready    178m
 
 NAME                                                                TYPE                STATUS       AGE
 mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-mw8s6j     VerticalScaling     Successful   144m
@@ -185,18 +184,16 @@ mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-mw8s6j     VerticalScal
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
 ```bash
-$  kubectl get pod -n demo my-gitops-0 -o json | jq '.spec.containers[0].resources'
+$ kubectl get pod -n demo my-gitops-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
-    "cpu": "1",
     "memory": "1536Mi"
   },
   "requests": {
-    "cpu": "500m",
-    "memory": "1Gi"
+    "cpu": "700m",
+    "memory": "1536Mi"
   }
 }
-
 ```
 
 ### Scale MySQL Replicas
@@ -208,21 +205,25 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
-  replicas: 5
-  version: "16.6"
+  version: "9.4.0"
+  replicas: 4
+  topology:
+    mode: GroupReplication
+    group:
+      mode: Single-Primary
   storageType: Durable
   podTemplate:
     spec:
       containers:
-      - name: MySQL
+      - name: mysql
         resources:
           limits:
-            memory: 2Gi
+            memory: 1.5Gi
           requests:
             cpu: 700m
-            memory: 2Gi
+            memory: 1.5Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -231,20 +232,20 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Update the `replicas` to `5`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
+Update the `replicas` to `4`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
 Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` MySQLOpsRequest to update the `MySQL` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+$   kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
 NAME                                AGE
-mysql.gitops.kubedb.com/my-gitops   178m
+mysql.gitops.kubedb.com/my-gitops   101m
 
 NAME                         VERSION   STATUS   AGE
-mysql.kubedb.com/my-gitops   9.1.0     Ready    178m
+mysql.kubedb.com/my-gitops   9.4.0     Ready    101m
 
 NAME                                                                TYPE                STATUS       AGE
-mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-s9lyzc   HorizontalScaling   Successful   117m
-mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-mw8s6j     VerticalScaling     Successful   144m
+mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   5m1s
+mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   19m
 
 ```
 
@@ -252,10 +253,10 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 ```bash
 $ kubectl get pod -n demo -l 'app.kubernetes.io/instance=my-gitops'
 NAME          READY   STATUS    RESTARTS   AGE
-my-gitops-0   2/2     Running   0          144m
-my-gitops-1   2/2     Running   0          140m
-my-gitops-2   2/2     Running   0          143m
-
+my-gitops-0   2/2     Running   0          15m
+my-gitops-1   2/2     Running   0          19m
+my-gitops-2   2/2     Running   0          17m
+my-gitops-3   2/2     Running   0          5m37s
 ```
 
 We can also scale down the replicas by updating the `replicas` fields.
@@ -270,56 +271,60 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
-  replicas: 5
-  version: "16.6"
+  version: "9.4.0"
+  replicas: 4
+  topology:
+    mode: GroupReplication
+    group:
+      mode: Single-Primary
   storageType: Durable
   podTemplate:
     spec:
       containers:
-      - name: MySQL
+      - name: mysql
         resources:
           limits:
-            memory: 2Gi
+            memory: 1.5Gi
           requests:
             cpu: 700m
-            memory: 2Gi
+            memory: 1.5Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
-Update the `storage.resources.requests.storage` to `10Gi`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
+Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` MySQLOpsRequest to update the `MySQL` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
-NAME                                     AGE
-MySQL.gitops.kubedb.com/my-gitops   27m
+NAME                                AGE
+mysql.gitops.kubedb.com/my-gitops   104m
 
-NAME                              VERSION   STATUS   AGE
-MySQL.kubedb.com/my-gitops   16.6      Ready    27m
+NAME                         VERSION   STATUS   AGE
+mysql.kubedb.com/my-gitops   9.4.0     Ready    104m
 
-NAME                                                                     TYPE                STATUS       AGE
-MySQLopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-wvxu5x   HorizontalScaling   Successful   6m
-MySQLopsrequest.ops.kubedb.com/my-gitops-verticalscaling-i0kr1l     VerticalScaling     Successful   13m
-MySQLopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-2j5x5g     VolumeExpansion     Progressing  2s
+NAME                                                                TYPE                STATUS       AGE
+mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   8m23s
+mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   22m
+mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   112s
+
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
 $ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=my-gitops'
-NAME                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-data-my-gitops-0   Bound    pvc-061f3622-234f-4f91-b4d1-b81aa8739503   10Gi       RWO            standard       <unset>                 30m
-data-my-gitops-1   Bound    pvc-045fc563-fb4e-416c-a9c2-b20c96532978   10Gi       RWO            standard       <unset>                 30m
-data-my-gitops-2   Bound    pvc-a0f1d8fd-a677-4407-80b1-104b9f7b4cd1   10Gi       RWO            standard       <unset>                 30m
-data-my-gitops-3   Bound    pvc-060b6fab-0c2d-4935-b31b-2866be68dd6f   10Gi       RWO            standard       <unset>                 8m58s
-data-my-gitops-4   Bound    pvc-8149b579-a40f-4cd8-ac37-6a2401fd7807   10Gi       RWO            standard       <unset>                 8m23s
+NAME               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+data-my-gitops-0   Bound    pvc-c926c69f-ff5e-4f93-be78-1fc1d39da25c   2Gi        RWO            longhorn       <unset>                 105m
+data-my-gitops-1   Bound    pvc-8bfcf4d8-37fb-4543-96c5-7a656270967a   2Gi        RWO            longhorn       <unset>                 101m
+data-my-gitops-2   Bound    pvc-238989bc-0a53-4db8-a3c2-2ce77aee4042   2Gi        RWO            longhorn       <unset>                 101m
+data-my-gitops-3   Bound    pvc-5345bc6a-baad-461a-a1fe-108e75c32a11   2Gi        RWO            longhorn       <unset>                8m41s
 ```
 
 ## Reconfigure MySQL
@@ -364,9 +369,10 @@ To know more about this configuration file, check [here](/docs/guides/MySQL/conf
 ```yaml
 apiVersion: v1
 stringData:
-  user.conf: |
-    max_connections=200
-    shared_buffers=256MB
+  user.cnf: |
+    [mysqld]
+    max_connections = 200
+    read_buffer_size = 1048575
 kind: Secret
 metadata:
   name: my-configuration
@@ -392,28 +398,32 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
+  version: "9.6.0"
+  replicas: 4
   configSecret:
-    name: my-configuration
-  replicas: 5
-  version: "16.6"
+    name: my-config
+  topology:
+    mode: GroupReplication
+    group:
+      mode: Single-Primary
   storageType: Durable
   podTemplate:
     spec:
       containers:
-      - name: MySQL
+      - name: mysql
         resources:
           limits:
-            memory: 2Gi
+            memory: 1.5Gi
           requests:
             cpu: 700m
-            memory: 2Gi
+            memory: 1.5Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
@@ -423,22 +433,23 @@ Now, `gitops` operator will detect the configuration changes and create a `Recon
 
 ```bash
 $ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
-NAME                                     AGE
-MySQL.gitops.kubedb.com/my-gitops   36m
+NAME                                AGE
+mysql.gitops.kubedb.com/my-gitops   126m
 
-NAME                              VERSION   STATUS   AGE
-MySQL.kubedb.com/my-gitops   16.6      Ready    36m
+NAME                         VERSION   STATUS   AGE
+mysql.kubedb.com/my-gitops   9.4.0     Ready    126m
 
-NAME                                                                     TYPE                STATUS        AGE
-MySQLopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-wvxu5x   HorizontalScaling   Successful    15m
-MySQLopsrequest.ops.kubedb.com/my-gitops-reconfigure-i4r23j         Reconfigure         Progressing   1s
-MySQLopsrequest.ops.kubedb.com/my-gitops-verticalscaling-i0kr1l     VerticalScaling     Successful    23m
+NAME                                                                TYPE                STATUS       AGE
+mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   30m
+mysqlopsrequest.ops.kubedb.com/my-gitops-reconfigure-yskbt5         Reconfigure         Successful   18m
+mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   44m
+mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   23m
 ```
 
 After Ops Request becomes `Succesful`, lets check these parameters,
 
 ```bash
-$  kubectl exec -it -n demo my-gitops-0 -- bash
+$ kubectl exec -it -n demo my-gitops-0 -- bash
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -466,14 +477,14 @@ mysql> show variables like 'read_buffer_size';
 +------------------+---------+
 | Variable_name    | Value   |
 +------------------+---------+
-| read_buffer_size | 1048576 |
+| read_buffer_size | 1044480 |
 +------------------+---------+
-1 row in set (0.01 sec)
+
 ```
 You can check the other pods same way.
 So we have configured custom parameters.
 
-> We can also reconfigure the parameters creating another secret and reference the secret in the `configSecret` field. Also you can remove the `configSecret` field to use the default parameters.
+> We can also reconfigure the parameters creating another secret and reference the secret in the `configuration.secretName` field. Also you can remove the `configuration` field to use the default parameters.
 
 ### Rotate MySQL Auth
 
@@ -484,11 +495,11 @@ We will do that using gitops, create the file `kubedb/my-auth.yaml` with the fol
 ```yaml
 apiVersion: v1
 data:
-  password: cGdwYXNzd29yZA==
-  username: cG9zdGdyZXM=
+  password: bXlwYXNzd29yZA==
+  username: cm9vdA==
 kind: Secret
 metadata:
-  name: my-rotate-auth
+  name: myauth
   namespace: demo
 type: kubernetes.io/basic-auth
 ```
@@ -511,69 +522,68 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
-  version: "9.1.0"
-  replicas: 3
+  version: "9.6.0"
+  replicas: 4
+  configSecret:
+    name: my-config
   authSecret:
     kind: Secret
-    name: mysql-quickstart-auth-user
-  configuration:
-    secretName: my-configuration
+    name: myauth  
   topology:
     mode: GroupReplication
     group:
       mode: Single-Primary
+  storageType: Durable
   podTemplate:
     spec:
       containers:
-        - name: mysql
-          resources:
-            limits:
-              cpu: 1000m
-              memory: 1.5Gi
-            requests:
-              cpu: 500m
-              memory: 1Gi
-  storageType: Durable
+      - name: mysql
+        resources:
+          limits:
+            memory: 1.5Gi
+          requests:
+            cpu: 700m
+            memory: 1.5Gi
   storage:
     storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
-Change the `authSecret` field to `my-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
+Change the `authSecret.name` field to `myauth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` MySQLOpsRequest to update the `MySQL` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
 NAME                                AGE
-mysql.gitops.kubedb.com/my-gitops   5h2m
+mysql.gitops.kubedb.com/my-gitops   19h
 
 NAME                         VERSION   STATUS   AGE
-mysql.kubedb.com/my-gitops   9.1.0     Ready    5h2m
+mysql.kubedb.com/my-gitops   9.4.0     Ready    19h
 
 NAME                                                                TYPE                STATUS       AGE
-mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-s9lyzc   HorizontalScaling   Successful   4h1m
-mysqlopsrequest.ops.kubedb.com/my-gitops-reconfigure-q4yrg0         Reconfigure         Successful   4h28m
-mysqlopsrequest.ops.kubedb.com/my-gitops-rotate-auth-5lg5o3         RotateAuth          Successful   10m
-mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-mw8s6j     VerticalScaling     Successful   4h28m
-
+mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   18h
+mysqlopsrequest.ops.kubedb.com/my-gitops-reconfigure-b5s92r         Reconfigure         Successful   60m
+mysqlopsrequest.ops.kubedb.com/my-gitops-rotate-auth-q2z2vf         RotateAuth          Successful   24m
+mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   18h
+mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   18h
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes connecting MySQL with new credentials.
 ```bash
 $ kubectl exec -it -n demo my-gitops-0 -c mysql -- bash
-bash-5.1$  mysql -uroot -p"Mysql2"
+bash-5.1$  mysql -uroot -p"mypassword"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 347
-Server version: 9.1.0 MySQL Community Server - GPL
+Your MySQL connection id is 808
+Server version: 9.4.0 MySQL Community Server - GPL
 
-Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
 
 Oracle is a registered trademark of Oracle Corporation and/or its
 affiliates. Other names may be trademarks of their respective
@@ -581,7 +591,7 @@ owners.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-mysql>  SHOW DATABASES;
+mysql> SHOW DATABASES;
 +--------------------+
 | Database           |
 +--------------------+
@@ -591,48 +601,49 @@ mysql>  SHOW DATABASES;
 | performance_schema |
 | sys                |
 +--------------------+
-5 rows in set (0.00 sec)
-
+5 rows in set (0.001 sec)
 ```
 
 ### TLS configuration
 
 We can add, rotate or remove TLS configuration using `gitops`.
 
-To add tls, we are going to create an example `Issuer` that will be used to enable SSL/TLS in MySQL. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
+First, we are going to create an example `Issuer` that will be used throughout the duration of this tutorial. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`. By following the below steps, we are going to create our desired issuer,
 
-- Start off by generating a ca certificates using openssl.
-
-```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
-Generating a RSA private key
-................+++++
-........................+++++
-writing new private key to './ca.key'
------
-```
-
-- Now we are going to create a ca-secret using the certificate files that we have just generated.
+- Start off by generating our ca-certificates using openssl,
 
 ```bash
-$ kubectl create secret tls mysql-ca \
-                                       --cert=ca.crt \
-                                       --key=ca.key \
-                                       --namespace=demo
-secret/mysql-ca created
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mysql/O=kubedb"
 ```
 
-Now, Let's create an `Issuer` using the `MySQL-ca` secret that we have just created. The `YAML` file looks like this:
+- create a secret using the certificate files we have just generated,
+
+```bash
+kubectl create secret tls my-ca \
+     --cert=ca.crt \
+     --key=ca.key \
+     --namespace=demo
+secret/my-ca created
+```
+
+Now, we are going to create an `Issuer` using the `my-ca` secret that hols the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
 
 ```yaml
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: my-issuer
+  name: mysql-issuer
   namespace: demo
 spec:
   ca:
-    secretName: MySQL-ca
+    secretName: my-ca
+```
+
+Let’s create the `Issuer` cr we have shown above,
+
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/tls/configure/yamls/issuer.yaml
+issuer.cert-manager.io/mysql-issuer created
 ```
 
 Let's add that to our `kubedb/my-issuer.yaml` file. File structure will look like this,
@@ -654,118 +665,74 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
-  version: "9.1.0"
-  replicas: 3
+  version: "9.4.0"
+  replicas: 4
+  configSecret:
+    name: my-config
   authSecret:
     kind: Secret
-    name: mysql-quickstart-auth-user
-  configuration:
-    secretName: my-configuration
-  topology:
-    mode: GroupReplication
-    group:
-      mode: Single-Primary
-  requireSSL: true
+    name: myauth  
   tls:
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
-      name: my-issuer
-    certificates:
-      - alias: server
-        subject:
-          organizations:
-            - kubedb:server
-        dnsNames:
-          - localhost
-        ipAddresses:
-          - "127.0.0.1"
+      name: mysql-issuer
+  topology:
+    mode: GroupReplication
+    group:
+      mode: Single-Primary
+  storageType: Durable
   podTemplate:
     spec:
       containers:
-        - name: mysql
-          resources:
-            limits:
-              cpu: 1000m
-              memory: 1.5Gi
-            requests:
-              cpu: 500m
-              memory: 1Gi
-  storageType: Durable
+      - name: mysql
+        resources:
+          limits:
+            memory: 1.5Gi
+          requests:
+            cpu: 700m
+            memory: 1.5Gi
   storage:
     storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
-Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
+Add `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` MySQLOpsRequest to update the `MySQL` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
 NAME                                AGE
-mysql.gitops.kubedb.com/my-gitops   6h7m
+mysql.gitops.kubedb.com/my-gitops   20h
 
 NAME                         VERSION   STATUS   AGE
-mysql.kubedb.com/my-gitops   9.1.0     Ready    6h7m
+mysql.kubedb.com/my-gitops   9.4.0     Ready    20h
 
 NAME                                                                TYPE                STATUS       AGE
-mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-s9lyzc   HorizontalScaling   Successful   5h6m
-mysqlopsrequest.ops.kubedb.com/my-gitops-reconfigure-q4yrg0         Reconfigure         Successful   5h33m
-mysqlopsrequest.ops.kubedb.com/my-gitops-reconfiguretls-39ir77      ReconfigureTLS      Successful   4m39s
-mysqlopsrequest.ops.kubedb.com/my-gitops-rotate-auth-5lg5o3         RotateAuth          Successful   74m
-mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-mw8s6j     VerticalScaling     Successful   5h33m
-
+mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   18h
+mysqlopsrequest.ops.kubedb.com/my-gitops-reconfigure-b5s92r         Reconfigure         Successful   74m
+mysqlopsrequest.ops.kubedb.com/my-gitops-reconfiguretls-8kwaw9      ReconfigureTLS      Successful   9m51s
+mysqlopsrequest.ops.kubedb.com/my-gitops-rotate-auth-q2z2vf         RotateAuth          Successful   38m
+mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   18h
+mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   18h
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes connecting MySQL with new credentials.
 ```bash
-$  kubectl exec -it -n demo my-gitops-0 -c mysql -- bash
-bash-5.1$  mysql -uroot -p"Mysql2"
+$ kubectl exec -it -n demo my-gitops-0 -c mysql -- bash
+bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 347
-Server version: 9.1.0 MySQL Community Server - GPL
+Your MySQL connection id is 505
+Server version: 9.4.0 MySQL Community Server - GPL
 
-Copyright (c) 2000, 2024, Oracle and/or its affiliates.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-mysql>  SHOW DATABASES;
-+--------------------+
-| Database           |
-+--------------------+
-| information_schema |
-| kubedb_system      |
-| mysql              |
-| performance_schema |
-| sys                |
-+--------------------+
-5 rows in set (0.00 sec)
-
-mysql> command terminated with exit code 137
-banusree@bonusree-datta-PC ~ [SIGKILL]> kubectl exec -it -n demo my-gitops-0 -c mysql -- bash
-bash-5.1$ ls /etc/mysql/certs/
-ca.crt	client.crt  client.key	server.crt  server.key
-bash-5.1$ mysql -u${MYSQL_ROOT_USERNAME} -p{MYSQL_ROOT_PASSWORD}
-mysql: [Warning] Using a password on the command line interface can be insecure.
-ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
-bash-5.1$  mysql -uroot -p"Mysql2"
-mysql: [Warning] Using a password on the command line interface can be insecure.
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 201
-Server version: 9.1.0 MySQL Community Server - GPL
-
-Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
 
 Oracle is a registered trademark of Oracle Corporation and/or its
 affiliates. Other names may be trademarks of their respective
@@ -816,7 +783,7 @@ mysql> SHOW VARIABLES LIKE '%ssl%';
 | ssl_session_cache_mode                            | ON                          |
 | ssl_session_cache_timeout                         | 300                         |
 +---------------------------------------------------+-----------------------------+
-38 rows in set (0.00 sec)
+38 rows in set (0.016 sec)
 
 mysql> SHOW VARIABLES LIKE '%require_secure_transport%';
 +--------------------------+-------+
@@ -824,9 +791,7 @@ mysql> SHOW VARIABLES LIKE '%require_secure_transport%';
 +--------------------------+-------+
 | require_secure_transport | OFF   |
 +--------------------------+-------+
-1 row in set (0.00 sec)
-
-
+1 row in set (0.002 sec)
 ```
 
 > We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for MySQL.
@@ -835,7 +800,7 @@ mysql> SHOW VARIABLES LIKE '%require_secure_transport%';
 
 List MySQL versions using `kubectl get MySQLversion` and choose desired version that is compatible for umyrade from current version. Check the version constraints and ops request [here](/docs/guides/MySQL/update-version/versionumyrading/index.md).
 
-Let's choose `17.4` in this example.
+Let's choose `9.6.0` in this example.
 
 Update the `MySQL.yaml` with the following, 
 ```yaml
@@ -845,68 +810,71 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
+  version: "9.6.0"
+  replicas: 4
+  configSecret:
+    name: my-config
   authSecret:
     kind: Secret
-    name: my-rotate-auth
-  configSecret:
-    name: my-configuration
-  replicas: 5
-  version: "17.4"
-  storageType: Durable
-  sslMode: verify-full
+    name: myauth  
   tls:
     issuerRef:
       apiGroup: cert-manager.io
-      name: my-issuer
       kind: Issuer
-    certificates:
-    - alias: server
-      subject:
-        organizations:
-        - kubedb:server
-      dnsNames:
-      - localhost
-      ipAddresses:
-      - "127.0.0.1"
+      name: mysql-issuer
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+  topology:
+    mode: GroupReplication
+    group:
+      mode: Single-Primary
+  storageType: Durable
   podTemplate:
     spec:
       containers:
-      - name: MySQL
+      - name: mysql
         resources:
           limits:
-            memory: 2Gi
+            memory: 1.5Gi
           requests:
             cpu: 700m
-            memory: 2Gi
+            memory: 1.5Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
-Update the `version` field to `17.4`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
+Update the `version` field to `9.6.0`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` MySQLOpsRequest to update the `MySQL` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
-NAME                                     AGE
-MySQL.gitops.kubedb.com/my-gitops   3h25m
+NAME                                AGE
+mysql.gitops.kubedb.com/my-gitops   22h
 
-NAME                              VERSION   STATUS   AGE
-MySQL.kubedb.com/my-gitops   16.6      Ready    3h25m
+NAME                         VERSION   STATUS   AGE
+mysql.kubedb.com/my-gitops   9.6.0     Ready    22h
 
-NAME                                                                     TYPE                STATUS        AGE
-MySQLopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-wvxu5x   HorizontalScaling   Successful    3h3m
-MySQLopsrequest.ops.kubedb.com/my-gitops-reconfigure-i4r23j         Reconfigure         Successful    168m
-MySQLopsrequest.ops.kubedb.com/my-gitops-reconfiguretls-91fseg      ReconfigureTLS      Successful    7m33s
-MySQLopsrequest.ops.kubedb.com/my-gitops-rotate-auth-zot83x         RotateAuth          Successful    161m
-MySQLopsrequest.ops.kubedb.com/my-gitops-versionupdate-1wxgt9       UpdateVersion       Progressing   4s
-MySQLopsrequest.ops.kubedb.com/my-gitops-verticalscaling-i0kr1l     VerticalScaling     Successful    3h11m
+NAME                                                                TYPE                STATUS       AGE
+mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   20h
+mysqlopsrequest.ops.kubedb.com/my-gitops-reconfigure-b5s92r         Reconfigure         Successful   3h40m
+mysqlopsrequest.ops.kubedb.com/my-gitops-reconfiguretls-8kwaw9      ReconfigureTLS      Successful   156m
+mysqlopsrequest.ops.kubedb.com/my-gitops-rotate-auth-q2z2vf         RotateAuth          Successful   3h5m
+mysqlopsrequest.ops.kubedb.com/my-gitops-versionupdate-bskr89       UpdateVersion       Successful   142m
+mysqlopsrequest.ops.kubedb.com/my-gitops-versionupdate-g2n3y9       UpdateVersion       Successful   132m
+mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   21h
+mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   20h
 ```
 
 
@@ -914,13 +882,11 @@ Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have up
 
 ```bash
 $ kubectl get MySQL -n demo my-gitops -o=jsonpath='{.spec.version}{"\n"}'
-17.4
-
+9.6.0
 $ kubectl get petset -n demo my-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/MySQL:17.4-alpine
-
+ghcr.io/appscode-images/mysql:9.6.0-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
 $ kubectl get pod -n demo my-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/MySQL:17.4-alpine
+ghcr.io/appscode-images/mysql:9.6.0-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
 ```
 
 ### Enable Monitoring
@@ -935,39 +901,18 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
+  version: "9.6.0"
+  replicas: 4
+  configSecret:
+    name: my-config
   authSecret:
     kind: Secret
-    name: my-rotate-auth
-  configSecret:
-    name: my-configuration
-  replicas: 5
-  version: "17.4"
-  storageType: Durable
-  sslMode: verify-full
+    name: myauth  
   tls:
     issuerRef:
       apiGroup: cert-manager.io
-      name: my-issuer
       kind: Issuer
-    certificates:
-    - alias: server
-      subject:
-        organizations:
-        - kubedb:server
-      dnsNames:
-      - localhost
-      ipAddresses:
-      - "127.0.0.1"
-  podTemplate:
-    spec:
-      containers:
-      - name: MySQL
-        resources:
-          limits:
-            memory: 2Gi
-          requests:
-            cpu: 700m
-            memory: 2Gi
+      name: mysql-issuer
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -975,13 +920,28 @@ spec:
         labels:
           release: prometheus
         interval: 10s
+  topology:
+    mode: GroupReplication
+    group:
+      mode: Single-Primary
+  storageType: Durable
+  podTemplate:
+    spec:
+      containers:
+      - name: mysql
+        resources:
+          limits:
+            memory: 1.5Gi
+          requests:
+            cpu: 700m
+            memory: 1.5Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
@@ -990,20 +950,21 @@ Add `monitor` field in the spec. Commit the changes and push to your Git reposit
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` MySQLOpsRequest to add the `MySQL` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
 $ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
-NAME                                     AGE
-MySQL.gitops.kubedb.com/my-gitops   3h34m
+NAME                                AGE
+mysql.gitops.kubedb.com/my-gitops   22h
 
-NAME                              VERSION   STATUS     AGE
-MySQL.kubedb.com/my-gitops   16.6      NotReady   3h34m
+NAME                         VERSION   STATUS   AGE
+mysql.kubedb.com/my-gitops   9.6.0     Ready    22h
 
-NAME                                                                     TYPE                STATUS       AGE
-MySQLopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-wvxu5x   HorizontalScaling   Successful   3h13m
-MySQLopsrequest.ops.kubedb.com/my-gitops-reconfigure-i4r23j         Reconfigure         Successful   177m
-MySQLopsrequest.ops.kubedb.com/my-gitops-reconfiguretls-91fseg      ReconfigureTLS      Successful   16m
-MySQLopsrequest.ops.kubedb.com/my-gitops-restart-nhjk9u             Restart             Progressing  2s
-MySQLopsrequest.ops.kubedb.com/my-gitops-rotate-auth-zot83x         RotateAuth          Successful   170m
-MySQLopsrequest.ops.kubedb.com/my-gitops-versionupdate-1wxgt9       UpdateVersion       Successful   9m30s
-MySQLopsrequest.ops.kubedb.com/my-gitops-verticalscaling-i0kr1l     VerticalScaling     Successful   3h21m
+NAME                                                                TYPE                STATUS       AGE
+mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   21h
+mysqlopsrequest.ops.kubedb.com/my-gitops-reconfigure-b5s92r         Reconfigure         Successful   3h57m
+mysqlopsrequest.ops.kubedb.com/my-gitops-reconfiguretls-8kwaw9      ReconfigureTLS      Successful   172m
+mysqlopsrequest.ops.kubedb.com/my-gitops-restart-lb1wyu             Restart             Successful   9m36s
+mysqlopsrequest.ops.kubedb.com/my-gitops-rotate-auth-q2z2vf         RotateAuth          Successful   3h21m
+mysqlopsrequest.ops.kubedb.com/my-gitops-versionupdate-bskr89       UpdateVersion       Successful   158m
+mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   21h
+mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   21h
 ```
 
 Verify the monitoring is enabled by checking the prometheus targets.
