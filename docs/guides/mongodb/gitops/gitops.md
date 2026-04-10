@@ -3,9 +3,9 @@ title: MongoDB Gitops
 description: MongoDB Gitops 
 menu:
   docs_{{ .version }}:
-    identifier: es-gitops
+    identifier: mg-gitops
     name: MongoDB Gitops
-    parent:  mg-gitops-mongodb
+    parent: mg-gitops-mongodb
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -402,6 +402,7 @@ mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalSc
 mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpansion     Successful   12m
 ```
 
+We can also reconfigure the parameters creating another secret and reference the secret in the `configuration.secretName` field. Also you can remove the `configuration` field to use the default parameters.
 
 ### Rotate MongoDB Auth
 
@@ -456,7 +457,7 @@ spec:
     name: mgauth
 ```
 
-Change the `authSecret` field to `mgauth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
+Add the secret name in `authSecret` field. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` MongoDBOpsRequest to update the `MongoDB` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -535,58 +536,48 @@ metadata:
   name: mg-gitops
   namespace: demo
 spec:
-  version: 3.9.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: MongoDB
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
+  version: "8.0.10"
+  replicaSet: 
+    name: "replicaset"
+  replicas: 3
+  podTemplate:
+   spec:
+     containers:
+     - name: mongodb
+       resources:
+         limits:
+           memory: 2Gi
+         requests:
+           cpu: 1000m
+           memory: 2Gi
   storageType: Durable
-  deletionPolicy: WipeOut
+  storage:
+    storageClassName: longhorn
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  configuration:
+    secretName: mg-custom-config
+  authSecret:
+    kind: Secret
+    name: mgauth
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: mg-issuer
 ```
 
-Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
+Add  `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` MongoDBOpsRequest to update the `MongoDB` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $  kubectl get mg,MongoDB,kfops,pods -n demo
 NAME                          TYPE            VERSION   STATUS   AGE
-MongoDB.kubedb.com/mg-gitops   kubedb.com/v1   3.9.0     Ready    41m
+MongoDB.kubedb.com/mg-gitops   kubedb.com/v1   8.0.17     Ready    41m
 
 NAME                                 AGE
 MongoDB.gitops.kubedb.com/mg-gitops   75m
@@ -686,15 +677,15 @@ spec:
     name: "replicaset"
   replicas: 3
   podTemplate:
-   spec:
-     containers:
-     - name: mongodb
-       resources:
-         limits:
-           memory: 2Gi
-         requests:
-           cpu: 1000m
-           memory: 2Gi
+    spec:
+      containers:
+      - name: mongodb
+        resources:
+          limits:
+            memory: 2Gi
+          requests:
+            cpu: 1000m
+            memory: 2Gi
   storageType: Durable
   storage:
     storageClassName: longhorn
@@ -721,7 +712,7 @@ Add `monitor` field in the spec. Commit the changes and push to your Git reposit
 
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` MongoDBOpsRequest to add the `MongoDB` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$kubectl get mg,MongoDB,mgops -n demo
+$ kubectl get mg,MongoDB,mgops -n demo
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.17    Ready    52m
 
