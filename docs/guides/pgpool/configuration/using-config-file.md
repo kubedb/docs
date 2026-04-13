@@ -3,9 +3,9 @@ title: Run Pgpool with Custom Configuration
 menu:
   docs_{{ .version }}:
     identifier: pp-using-config-file-configuration
-    name: Inline Config
+    name: Configuration Secret 
     parent: pp-configuration
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

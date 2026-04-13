@@ -5,6 +5,6 @@ menu:
     identifier: pb-reconfigure-tls
     name: Reconfigure TLS/SSL
     parent: pb-pgbouncer-guides
-    weight: 46
+    weight: 110
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: pb-private-registry-pgbouncer
     name: Private Registry
     parent: pb-pgbouncer-guides
-    weight: 35
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

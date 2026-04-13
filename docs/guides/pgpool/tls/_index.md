@@ -5,6 +5,6 @@ menu:
     identifier: pp-tls
     name: TLS/SSL Encryption
     parent: pp-pgpool-guides
-    weight: 100
+    weight: 70
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: pp-auto-scaling
     name: Autoscaling
     parent: pp-pgpool-guides
-    weight: 110
+    weight: 150
 menu_name: docs_{{ .version }}
 ---

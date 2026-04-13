@@ -5,6 +5,6 @@ menu:
     identifier: rd-configuration
     name: Custom Configuration
     parent: rd-redis-guides
-    weight: 30
+    weight: 35
 menu_name: docs_{{ .version }}
 ---

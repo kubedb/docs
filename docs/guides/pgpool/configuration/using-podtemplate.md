@@ -5,7 +5,7 @@ menu:
     identifier: using-podtemplate-configuration-pp
     name: Customize PodTemplate
     parent: pp-configuration
-    weight: 10
+    weight: 5
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

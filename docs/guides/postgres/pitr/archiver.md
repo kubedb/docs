@@ -217,7 +217,7 @@ metadata:
   labels:
     archiver: "true"
 spec:
-  version: "13.13"
+  version: "17.8"
   replicas: 3
   standbyMode: Hot
   storageType: Durable
@@ -336,6 +336,15 @@ For the demo I will use the previous time we got from `select now()`
 hi=# select now(); 
  2023-12-12 13:43:41.300216+00
 ```
+
+Lets see the repository which you have and have to use in `restore postgres` yaml.
+```
+$ kubectl get repositories -n demo
+NAME                   INTEGRITY   SNAPSHOT-COUNT   SIZE         PHASE   LAST-SUCCESSFUL-BACKUP   AGE
+demo-pg-full           true        90               83.077 KiB   Ready   2m1s                     3d16h
+demo-pg-manifest       true        90               83.073 KiB   Ready   2m1s                     3d16h
+```
+
 ### Restore PostgreSQL
 
 ```yaml
@@ -351,13 +360,13 @@ spec:
         name: encrypt-secret
         namespace: demo
       fullDBRepository:
-        name: demo-pg-repository
+        name: demo-pg-full 
         namespace: demo
       manifestRepository:
         name: demo-pg-manifest
         namespace: demo
       recoveryTimestamp: "2023-12-12T13:43:41.300216Z"
-  version: "13.13"
+  version: "17.8"
   replicas: 3
   standbyMode: Hot
   storageType: Durable
@@ -391,8 +400,8 @@ restore-pg-restoresession-2tsbv                      0/1     Completed   0      
 ```bash
 $ kubectl get pg -n demo
 NAME         VERSION   STATUS   AGE
-demo-pg      13.6      Ready    44m
-restore-pg   13.6      Ready    2m36s
+demo-pg      17.8      Ready    44m
+restore-pg   17.8      Ready    2m36s
 ```
 
 **Validating data on Restored PostgreSQL**

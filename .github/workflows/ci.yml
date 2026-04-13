@@ -80,7 +80,12 @@ jobs:
           kubectl create -f https://github.com/kubeops/petset/raw/master/crds/apps.k8s.appscode.com_placementpolicies.yaml
           kubectl create -f https://github.com/open-cluster-management-io/api/raw/main/operator/v1/0000_00_operator.open-cluster-management.io_klusterlets.crd.yaml
           kubectl create -f https://raw.githubusercontent.com/open-cluster-management-io/api/refs/heads/main/addon/v1alpha1/0000_01_addon.open-cluster-management.io_managedclusteraddons.crd.yaml
-          
+          # virtual-secrets crds
+          kubectl create -f https://raw.githubusercontent.com/kubernetes-sigs/secrets-store-csi-driver/refs/heads/main/charts/secrets-store-csi-driver/crds/secrets-store.csi.x-k8s.io_secretproviderclasses.yaml
+          kubectl create -f https://raw.githubusercontent.com/virtual-secrets/apimachinery/refs/heads/master/crds/config.virtual-secrets.dev_secretmetadatas.yaml
+          kubectl create -f https://raw.githubusercontent.com/virtual-secrets/apimachinery/refs/heads/master/crds/config.virtual-secrets.dev_secretstores.yaml
+          kubectl create -f https://raw.githubusercontent.com/virtual-secrets/apimachinery/refs/heads/master/crds/virtual-secrets.dev_secretmounts.yaml
+          kubectl create -f https://raw.githubusercontent.com/virtual-secrets/apimachinery/refs/heads/master/crds/virtual-secrets.dev_secrets.yaml
 
       - name: Check codespan schema
         run: |
