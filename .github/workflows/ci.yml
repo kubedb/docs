@@ -81,6 +81,9 @@ jobs:
           kubectl create -f https://github.com/open-cluster-management-io/api/raw/main/operator/v1/0000_00_operator.open-cluster-management.io_klusterlets.crd.yaml
           kubectl create -f https://raw.githubusercontent.com/open-cluster-management-io/api/refs/heads/main/addon/v1alpha1/0000_01_addon.open-cluster-management.io_managedclusteraddons.crd.yaml
           
+          
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
 
       - name: Check codespan schema
         run: |
