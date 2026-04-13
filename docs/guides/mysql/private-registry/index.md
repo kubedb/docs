@@ -30,7 +30,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 $ kubectl get mysqlversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,REPLICATION_MODE_DETECTOR_IMAGE:.spec.replicationModeDetector.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
 NAME            VERSION   DB_IMAGE                    EXPORTER_IMAGE                   REPLICATION_MODE_DETECTOR_IMAGE            INITCONTAINER_IMAGE                    DEPRECATED
 5.7.35-v1       5.7.35    mysql:5.7.35                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:5.7-v2               <none>
-5.7.44          5.7.44    mysql:5.7.44                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:5.7-v2               <none>
+9.1.0          9.1.0    mysql:9.1.0                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:5.7-v2               <none>
 8.0.17          8.0.17    mysql:8.0.17                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.3-v1             <none>
 9.1.0          9.1.0    mysql:9.1.0                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.26-v1            <none>
 8.0.31-innodb   9.1.0    mysql/mysql-server:9.1.0   kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.26-v1            <none>

@@ -119,7 +119,7 @@ spec:
 - `9.0.1`, `9.1.0`
 - `8.0.35`, `8.0.36`, `8.1.0`, `8.2.0`, `8.4.2`, `8.4.3`
 - `8.0.31-innodb`
-- `5.7.44`, `5.7.42-debian`
+- `9.1.0`, `5.7.42-debian`
 
 ### Handling `mbind: Operation not permitted`
 On certain platforms (e.g., when using specific security profiles), for some versions of `mysql`, you may see log messages like:   

@@ -52,7 +52,7 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 $ kubectl get mysqlversion
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED   AGE
 5.7.35-v1       5.7.35    Official       mysql:5.7.35                             13d
-5.7.44          5.7.44    Official       mysql:5.7.44                             13d
+9.1.0          9.1.0    Official       mysql:9.1.0                             13d
 8.0.17          8.0.17    Official       mysql:8.0.17                             13d
 8.0.36          8.0.36    Official       mysql:8.0.36                             13d
 8.0.31-innodb   8.0.31    MySQL          mysql/mysql-server:8.0.31                13d
@@ -337,7 +337,7 @@ Now, we are going to verify whether the `MySQL` and `PetSet` and it's `Pod` have
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-5.7.44
+9.1.0
 
 $ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
 "mysql:9.1.0"

@@ -52,9 +52,9 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 $ kubectl get mysqlversion
 NAME        VERSION   DB_IMAGE                  DEPRECATED   AGE
 5.7.25-v2   5.7.25    kubedb/mysql:5.7.25-v2                 3h55m
-5.7.44   5.7.29    kubedb/mysql:5.7.44                 3h55m
-5.7.44   5.7.31    kubedb/mysql:5.7.44                 3h55m
-5.7.44   5.7.33    kubedb/mysql:5.7.44                 3h55m
+9.1.0   5.7.29    kubedb/mysql:9.1.0                 3h55m
+9.1.0   5.7.31    kubedb/mysql:9.1.0                 3h55m
+9.1.0   5.7.33    kubedb/mysql:9.1.0                 3h55m
 8.0.14-v2   8.0.14    kubedb/mysql:8.0.14-v2                 3h55m
 8.0.20-v1   8.0.20    kubedb/mysql:8.0.20-v1                 3h55m
 9.1.0   8.0.21    kubedb/mysql:9.1.0                 3h55m

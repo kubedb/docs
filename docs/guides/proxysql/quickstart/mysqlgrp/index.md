@@ -98,7 +98,7 @@ Let's wait for the MySQL to be Ready.
 ```bash
 $ kubectl get mysql -n demo 
 NAME           VERSION   STATUS   AGE
-mysql-server   5.7.44    Ready    3m51s
+mysql-server   9.1.0    Ready    3m51s
 ```
 
 Let's first create a user in the backend mysql server and a database to test the proxy traffic .
@@ -110,7 +110,7 @@ root@mysql-server-0:/# mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 195
-Server version: 5.7.44-log MySQL Community Server (GPL)
+Server version: 9.1.0-log MySQL Community Server (GPL)
 
 Copyright (c) 2000, 2021, Oracle and/or its affiliates.
 

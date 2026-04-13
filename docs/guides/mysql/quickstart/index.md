@@ -50,7 +50,7 @@ When you have installed KubeDB, it has created `MySQLVersion` crd for all suppor
 ```bash
 $ kubectl get mysqlversions
 5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                29h
-5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                29h
+9.1.0          9.1.0    Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                29h
 8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                29h
 8.0.35          8.0.35    Official       ghcr.io/appscode-images/mysql:8.0.35-oracle                29h
 8.0.36          8.0.36    Official       ghcr.io/appscode-images/mysql:8.0.36-debian                29h

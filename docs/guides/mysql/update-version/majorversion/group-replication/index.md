@@ -52,7 +52,7 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 $ kubectl get mysqlversion 
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED   AGE
 5.7.35-v1       5.7.35    Official       mysql:5.7.35                             13d
-5.7.44          5.7.44    Official       mysql:5.7.44                             13d
+9.1.0          9.1.0    Official       mysql:9.1.0                             13d
 8.0.17          8.0.17    Official       mysql:8.0.17                             13d
 9.1.0           9.1.0     Official       mysql:9.1.0                              13d
 8.0.31-innodb   9.1.0     MySQL          mysql/mysql-server:9.1.0                 13d
@@ -65,10 +65,10 @@ The version above that does not show `DEPRECATED` true is supported by `KubeDB` 
 
 **Check update Constraints:**
 
-Database version update constraints is a constraint that shows whether it is possible or not possible to update from one version to another. Let's check the version update constraints of `MySQL` `5.7.44`,
+Database version update constraints is a constraint that shows whether it is possible or not possible to update from one version to another. Let's check the version update constraints of `MySQL` `9.1.0`,
 
 ```bash
-$ kubectl get mysqlversion 5.7.44 -o yaml | kubectl neat
+$ kubectl get mysqlversion 9.1.0 -o yaml | kubectl neat
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
@@ -83,14 +83,14 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2022.03.28
     helm.sh/chart: kubedb-catalog-v2022.03.28
-  name: 5.7.44
+  name: 9.1.0
   resourceVersion: "1092465"
   uid: 4cc87fc8-efd7-4e69-bb12-4454a2b1bf06
 spec:
   coordinator:
     image: kubedb/mysql-coordinator:v0.5.0
   db:
-    image: mysql:5.7.44
+    image: mysql:9.1.0
   distribution: Official
   exporter:
     image: kubedb/mysqld-exporter:v0.13.1
@@ -109,14 +109,14 @@ spec:
   updateConstraints:
     denylist:
       groupReplication:
-      - < 5.7.44
+      - < 9.1.0
       standalone:
-      - < 5.7.44
-  version: 5.7.44
+      - < 9.1.0
+  version: 9.1.0
 
 ```
 
-The above `spec.updateConstraints.denylist` of `5.7.44` is showing that updating below version of `5.7.44` is not possible for both group replication and standalone. That means, it is possible to update any version above `5.7.44`. Here, we are going to create a `MySQL` Group Replication using MySQL  `5.7.44`. Then we are going to update this version to `9.1.0`.
+The above `spec.updateConstraints.denylist` of `9.1.0` is showing that updating below version of `9.1.0` is not possible for both group replication and standalone. That means, it is possible to update any version above `9.1.0`. Here, we are going to create a `MySQL` Group Replication using MySQL  `9.1.0`. Then we are going to update this version to `9.1.0`.
 
 **Deploy MySQL Group Replication:**
 
@@ -160,7 +160,7 @@ Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its 
 $ watch -n 3 kubectl get my -n demo my-group
 
 NAME       VERSION      STATUS    AGE
-my-group   5.7.44    Running   5m52s
+my-group   9.1.0    Running   5m52s
 
 $ watch -n 3 kubectl get sts -n demo my-group
 
@@ -179,15 +179,15 @@ Let's verify the `MySQL`, the `PetSet` and its `Pod` image version,
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-5.7.44
+9.1.0
 
 $ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
-"kubedb/mysql:5.7.44"
+"kubedb/mysql:9.1.0"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
-"kubedb/mysql:5.7.44"
-"kubedb/mysql:5.7.44"
-"kubedb/mysql:5.7.44"
+"kubedb/mysql:9.1.0"
+"kubedb/mysql:9.1.0"
+"kubedb/mysql:9.1.0"
 ```
 
 Let's also verify that the PetSet’s pods have joined into a group replication,
@@ -215,7 +215,7 @@ We are ready to apply updating on this `MySQL` group replication.
 
 #### UpdateVesion
 
-Here, we are going to update the `MySQL` group replication from `5.7.44` to `9.1.0`.
+Here, we are going to update the `MySQL` group replication from `9.1.0` to `9.1.0`.
 
 **Create MySQLOpsRequest:**
 

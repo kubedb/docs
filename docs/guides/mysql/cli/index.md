@@ -48,7 +48,7 @@ cat mysql-demo.yaml | kubectl create -f -
 $ kubectl get mysql
 NAME         VERSION   STATUS    AGE
 mysql-demo   9.1.0    Running   5m1s
-mysql-dev    5.7.44 Running   10m1s
+mysql-dev    9.1.0 Running   10m1s
 ```
 
 To get YAML of an object, use `--output=yaml` flag.
