@@ -5,6 +5,6 @@ menu:
     identifier: guides-postgres-tls
     name: TLS/SSL Encryption
     parent: pg-postgres-guides
-    weight: 45
+    weight: 70
 menu_name: docs_{{ .version }}
 ---

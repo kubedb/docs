@@ -5,6 +5,6 @@ menu:
     identifier: pp-scaling
     name: Scaling
     parent: pp-pgpool-guides
-    weight: 80
+    weight: 100
 menu_name: docs_{{ .version }}
 ---

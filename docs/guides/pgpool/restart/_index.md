@@ -5,6 +5,6 @@ menu:
     identifier: pp-restart
     name: Restart
     parent: pp-pgpool-guides
-    weight: 140
+    weight: 90
 menu_name: docs_{{ .version }}
 ---

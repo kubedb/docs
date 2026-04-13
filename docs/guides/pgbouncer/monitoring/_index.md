@@ -5,6 +5,6 @@ menu:
     identifier: pb-monitoring-pgbouncer
     name: Monitoring
     parent: pb-pgbouncer-guides
-    weight: 100
+    weight: 160
 menu_name: docs_{{ .version }}
 ---

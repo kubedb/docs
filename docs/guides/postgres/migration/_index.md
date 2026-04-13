@@ -5,6 +5,6 @@ menu:
     identifier: pg-migration
     name: Migration
     parent: pg-postgres-guides
-    weight: 42
+    weight: 210
 menu_name: docs_{{ .version }}
 ---

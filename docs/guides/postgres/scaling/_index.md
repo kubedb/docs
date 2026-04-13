@@ -5,6 +5,6 @@ menu:
     identifier: guides-postgres-scaling
     name: Scaling Postgres
     parent: pg-postgres-guides
-    weight: 43
+    weight: 170
 menu_name: docs_{{ .version }}
 ---
