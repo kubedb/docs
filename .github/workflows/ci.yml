@@ -86,9 +86,11 @@ jobs:
         run: |
           git clone https://github.com/kubedb/installer.git
           cd installer
-          git checkout master
+          git checkout $(git describe --tags --abbrev=0 2>/dev/null || echo master)
           cd ..
           git clone https://github.com/kmodules/resource-metadata.git
+          cd resource-metadata
+          git checkout 2c05494611257ac2b96f14a6d340b024bd750e1d
           mv resource-metadata/hub /tmp
           rm -rf resource-metadata
           codespan-schema-checker --kubedb-catalog-dir=./installer/catalog/kubedb --content=./docs
