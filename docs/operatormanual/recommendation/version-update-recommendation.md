@@ -5,7 +5,7 @@ menu:
     identifier: es-version-update-recommendation
     name: Version Update Recommendation
     parent: kubedb-recommendation-es
-    weight: 20
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual
 ---
@@ -15,6 +15,9 @@ section_menu_id: operatormanual
 # Elasticsearch Version Update Recommendation
 
 Database versions often need to be updated due to several reasons. Older database versions may have vulnerabilities that hackers can exploit. New versions often include optimizations for query execution, indexing, and storage mechanisms. Modern databases frequently introduce new features, such as better data types, improved indexing methods, or advanced analytics capabilities. Database vendors release patches and updates to address these issues and introduce new features.
+
+> Note: We provide support for `Recommendation` across most database systems. Below is an example demonstrating how recommendations are applied for the `Elasticsearch` database.
+
 
 `Recommendation` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative recommendation for KubeDB managed databases like [Elasticsearch](https://www.elastic.co/products/elasticsearch) and [OpenSearch](https://opensearch.org/) in a Kubernetes native way. KubeDB generates Elasticsearch/Opensearch Version Update recommendation regarding three particular cases. 
 
@@ -314,10 +317,3 @@ $ kubectl patch Recommendation elastic-x-elasticsearch-x-update-version-2juuee \
 recommendation.supervisor.appscode.com/elastic-x-elasticsearch-x-update-version-2juuee patched
 ```
 
-## Next Steps
-
-- Learn about [backup & restore](/docs/guides/elasticsearch/backup/stash/overview/index.md) Elasticsearch database using Stash.
-- Learn how to configure [Elasticsearch Topology Cluster](/docs/guides/elasticsearch/clustering/topology-cluster/simple-dedicated-cluster/index.md).
-- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
-- Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
