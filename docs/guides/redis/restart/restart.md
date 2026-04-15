@@ -5,7 +5,7 @@ menu:
     identifier: rd-restart-redis
     name: Restart 
     parent: rd-redis-guides
-    weight: 50
+    weight: 70
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

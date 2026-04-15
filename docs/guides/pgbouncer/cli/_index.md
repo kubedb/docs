@@ -5,6 +5,6 @@ menu:
     identifier: pb-cli-pgbouncer
     name: CLI
     parent: pb-pgbouncer-guides
-    weight: 100
+    weight: 150
 menu_name: docs_{{ .version }}
 ---

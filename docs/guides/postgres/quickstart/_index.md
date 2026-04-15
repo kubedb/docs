@@ -5,6 +5,6 @@ menu:
     identifier: pg-quickstart-postgres
     name: Quickstart
     parent: pg-postgres-guides
-    weight: 15
+    weight: 10
 menu_name: docs_{{ .version }}
 ---

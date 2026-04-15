@@ -5,6 +5,6 @@ menu:
     identifier: pg-auto-scaling
     name: Autoscaling
     parent: pg-postgres-guides
-    weight: 46
+    weight: 240
 menu_name: docs_{{ .version }}
 ---

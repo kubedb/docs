@@ -5,6 +5,6 @@ menu:
     identifier: rd-private-registry-redis
     name: Private Registry
     parent: rd-redis-guides
-    weight: 35
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

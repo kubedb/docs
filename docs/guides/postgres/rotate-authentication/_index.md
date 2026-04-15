@@ -5,6 +5,6 @@ menu:
     identifier: pg-rotate-authentication
     name: Rotate Authentication
     parent: pg-postgres-guides
-    weight: 46
+    weight: 160
 menu_name: docs_{{ .version }}
 ---
