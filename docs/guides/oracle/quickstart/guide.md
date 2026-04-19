@@ -2,7 +2,7 @@
 title: Oracle Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: guides-oracle-quickstart
+    identifier: guides-oracle-quickstart-guide
     name: Quickstart
     parent: guides-oracle
     weight: 15
