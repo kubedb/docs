@@ -34,7 +34,7 @@ This guide will show you how to use `KubeDB` GitOps operator to create MariaDB d
   $ kubectl create ns demo
   namespace/demo created
   ```
-> Note: YAML files used in this tutorial are stored in [docs/examples/MariaDB](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/MariaDB) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/mariadb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mariadb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 We are going to use `ArgoCD` in this tutorial. You can install `ArgoCD` in your cluster by following the steps [here](https://argo-cd.readthedocs.io/en/stable/getting_started/). Also, you need to install `argocd` CLI in your local machine. You can install `argocd` CLI by following the steps [here](https://argo-cd.readthedocs.io/en/stable/cli_installation/).
 
