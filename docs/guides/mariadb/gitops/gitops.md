@@ -324,7 +324,7 @@ data-mariadb-gitops-4   Bound    pvc-dee1c10d-0456-4935-9306-0d86c3db54d0   2Gi 
 ## Reconfigure MariaDB
 
 At first, we will create a secret containing `user.conf` file with required configuration settings.
-To know more about this configuration file, check [here](/docs/guides/MariaDB/configuration/MariaDB-combined.md)
+To know more about this configuration file, check [here](/docs/guides/mariadb/reconfigure/overview/index.md)
 ```yaml
 apiVersion: v1
 stringData:
@@ -602,7 +602,7 @@ mariadbopsrequest.ops.kubedb.com/mariadb-gitops-volumeexpansion-01m39b     Volum
 
 ### Update Version
 
-List MariaDB versions using `kubectl get MariaDBversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/MariaDB/update-version/update-version.md).
+List MariaDB versions using `kubectl get MariaDBversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/mariadb/update-version/overview/index.md).
 
 Let's choose `12.1.2` in this example.
 
@@ -786,10 +786,9 @@ There are some other fields that will trigger `Restart` ops request.
 
 ## Next Steps
 
-[//]: # (- Learn MariaDB [GitOps]&#40;/docs/guides/MariaDB/concepts/MariaDB-gitops.md&#41;)
 - Learn MariaDB Scaling
-    - [Horizontal Scaling](/docs/guides/MariaDB/scaling/horizontal-scaling/combined.md)
-    - [Vertical Scaling](/docs/guides/MariaDB/scaling/vertical-scaling/combined.md)
-- Learn Version Update Ops Request and Constraints [here](/docs/guides/MariaDB/update-version/overview.md)
-- Monitor your MariaDBQL database with KubeDB using [built-in Prometheus](/docs/guides/MariaDB/monitoring/using-builtin-prometheus.md).
+    - [Horizontal Scaling](/docs/guides/mariadb/scaling/horizontal-scaling/overview/index.md)
+    - [Vertical Scaling](/docs/guides/mariadb/scaling/vertical-scaling/overview/index.md)
+- Learn Version Update Ops Request and Constraints [here](/docs/guides/mariadb/update-version/overview/index.md)
+- Monitor your MariaDBQL database with KubeDB using [built-in Prometheus](/docs/guides/mariadb/monitoring/prometheus-operator/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

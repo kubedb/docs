@@ -365,7 +365,7 @@ mysql> show variables like 'read_buffer_size';
 
 ```
 At first, we will create a secret containing `user.conf` file with required configuration settings.
-To know more about this configuration file, check [here](/docs/guides/MySQL/configuration/using-config-file.md)
+To know more about this configuration file, check [here](/docs/guides/mysql/configuration/using-config-file.md)
 ```yaml
 apiVersion: v1
 stringData:
@@ -798,7 +798,7 @@ mysql> SHOW VARIABLES LIKE '%require_secure_transport%';
 
 ### Update Version
 
-List MySQL versions using `kubectl get MySQLversion` and choose desired version that is compatible for umyrade from current version. Check the version constraints and ops request [here](/docs/guides/MySQL/update-version/versionumyrading/index.md).
+List MySQL versions using `kubectl get MySQLversion` and choose desired version that is compatible for umyrade from current version. Check the version constraints and ops request [here](/docs/guides/mysql/update-version/versionumyrading/index.md).
 
 Let's choose `9.6.0` in this example.
 
@@ -983,10 +983,10 @@ There are some other fields that will trigger `Restart` ops request.
 
 ## Next Steps
 
-- Learn MySQL [GitOps](/docs/guides/MySQL/concepts/MySQL-gitops.md)
+- Learn MySQL [GitOps](/docs/guides/mysql/concepts/MySQL-gitops.md)
 - Learn MySQL Scaling 
-  - [Horizontal Scaling](/docs/guides/MySQL/scaling/horizontal-scaling/overview/index.md)
-  - [Vertical Scaling](/docs/guides/MySQL/scaling/vertical-scaling/overview/index.md)
-- Learn Version Update Ops Request and Constraints [here](/docs/guides/MySQL/update-version/versionumyrading/index.md)
-- Monitor your MySQL database with KubeDB using [built-in Prometheus](/docs/guides/MySQL/monitoring/using-builtin-prometheus.md).
+  - [Horizontal Scaling](/docs/guides/mysql/scaling/horizontal-scaling/overview/index.md)
+  - [Vertical Scaling](/docs/guides/mysql/scaling/vertical-scaling/overview/index.md)
+- Learn Version Update Ops Request and Constraints [here](/docs/guides/mysql/update-version/versionumyrading/index.md)
+- Monitor your MySQL database with KubeDB using [built-in Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
