@@ -3,8 +3,8 @@ title: Elasticsearch Version Update Recommendation
 menu:
   docs_{{ .version }}:
     identifier: es-version-update-recommendation
-    name: Version Update Recommendation
-    parent: kubedb-recommendation-es
+    name: Version Update
+    parent: recommendation
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual

@@ -3,8 +3,8 @@ title: Rotate Auth Recommendation
 menu:
   docs_{{ .version }}:
     identifier: rotate-auth-recommendation
-    name: Rotate Auth Recommendation
-    parent: kubedb-recommendation
+    name: Rotate Auth
+    parent: recommendation
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual

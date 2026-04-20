@@ -3,7 +3,7 @@ title: Rotate TLS Recommendation
 menu:
   docs_{{ .version }}:
     identifier: rotate-tls-recommendation
-    name: Rotate TLS Recommendation
+    name: Rotate TLS
     parent: recommendation
     weight: 30
 menu_name: docs_{{ .version }}
