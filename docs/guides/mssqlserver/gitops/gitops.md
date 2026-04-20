@@ -88,7 +88,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation # Change it 
+              value: Evaluation 
   storageType: Durable
   storage:
     storageClassName: "longhorn"
@@ -188,7 +188,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation # Change it 
+              value: Evaluation 
   storageType: Durable
   storage:
     storageClassName: "longhorn"
@@ -227,6 +227,8 @@ mssql-gitops-2   2/2     Running   0          19h
 We can also scale down the replicas by updating the `replicas` fields.
 
 ### Scale Mssqlserver Database Resources
+
+Before the Ops Request reaches the `Successful` state, the configured memory limits are as follows:
 
 ```bash
 $ kubectl get pod -n demo mssql-gitops-0 -o json | jq '.spec.containers[0].resources'
@@ -270,7 +272,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation # Change it 
+              value: Evaluation 
           resources:
             requests:
               memory: "2Gi"
@@ -355,7 +357,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation # Change it 
+              value: Evaluation 
           resources:
             requests:
               memory: "2Gi"
@@ -449,7 +451,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation # Change it 
+              value: Evaluation 
           resources:
             requests:
               memory: "2Gi"
@@ -495,19 +497,15 @@ mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     Vol
 
 ### Rotate Mssqlserver Auth
 
-To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new username and password.
-
-We will do that using gitops, create the file `kubedb /kf-auth.yaml` with the following content,
-
-```bash
-$ kubectl create secret generic mssqlserver-auth -n demo \
-  --type=kubernetes.io/basic-auth \
-  --from-literal=username=sa \
-  --from-literal=password=Mssqlserver2
-secret/mssqlserver-auth created
+At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
+> Note: The `username` must be fixed as `sa`. The `password` must include uppercase letters, lowercase letters, and numbers
+```shell
+$ kubectl create secret generic mssqlserver-quickstart-auth-user -n demo \
+                                               --type=kubernetes.io/basic-auth \
+                                               --from-literal=username=sa \
+                                               --from-literal=password=Mssqlserver2
+secret/mssqlserver-quickstart-auth-user created
 ```
-
-
 
 Update the `Mssqlserver.yaml` ading `authsecret` as the following,
 ```yaml
@@ -539,7 +537,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation # Change it 
+              value: Evaluation 
           resources:
             requests:
               memory: "2Gi"
@@ -586,7 +584,7 @@ mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     Vol
 
 ### Update Version
 
-List Mssqlserver versions using `kubectl get Elasticsearchversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/Mssqlserver/update-version/update-version.md).
+List Mssqlserver versions using `kubectl get msversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/mssqlserver/update-version/overview.md).
 
 Let's choose `2022-cu22` in this example.
 
@@ -620,7 +618,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation # Change it 
+              value: Evaluation 
           resources:
             requests:
               memory: "2Gi"
@@ -663,7 +661,6 @@ mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-rotate-auth-otytes         Rot
 mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-versionupdate-mlq0kn       UpdateVersion       Successful   13m
 mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-verticalscaling-yi3db5     VerticalScaling     Successful   3h1m
 mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     VolumeExpansion     Successful   165m
-
 ```
 
 
@@ -714,7 +711,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation # Change it 
+              value: Evaluation 
           resources:
             requests:
               memory: "2Gi"
@@ -821,7 +818,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation # Change it 
+              value: Evaluation 
           resources:
             requests:
               memory: "2Gi"
@@ -884,10 +881,9 @@ mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     Vol
 
 ## Next Steps
 
-[//]: # (- Learn Mssqlserver [GitOps]&#40;/docs/guides/Mssqlserver/concepts/Mssqlserver-gitops.md&#41;)
 - Learn Mssqlserver Scaling
-    - [Horizontal Scaling](/docs/guides/Mssqlserver/scaling/horizontal-scaling/combined.md)
-    - [Vertical Scaling](/docs/guides/Mssqlserver/scaling/vertical-scaling/combined.md)
-- Learn Version Update Ops Request and Constraints [here](/docs/guides/Mssqlserver/update-version/overview.md)
-- Monitor your ElasticsearchQL database with KubeDB using [built-in Prometheus](/docs/guides/Mssqlserver/monitoring/using-builtin-prometheus.md).
+    - [Horizontal Scaling](/docs/guides/mssqlserver/scaling/horizontal-scaling/overview.md)
+    - [Vertical Scaling](/docs/guides/mssqlserver/scaling/vertical-scaling/overview.md)
+- Learn Version Update Ops Request and Constraints [here](/docs/guides/mssqlserver/update-version/overview.md)
+- Monitor your MSSQLServer database with KubeDB using [built-in Prometheus](/docs/guides/mssqlserver/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
