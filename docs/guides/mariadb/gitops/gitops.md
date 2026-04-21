@@ -71,7 +71,7 @@ spec:
   storageType: Durable
   deletionPolicy: WipeOut
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -129,7 +129,7 @@ appbinding.appcatalog.appscode.com/mariadb-gitops   kubedb.com/mariadb   11.8.5 
 ### Scale MariaDB Database Resources
 
 ```shell
-$  kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
     "memory": "1Gi"
@@ -148,31 +148,31 @@ metadata:
   name: mariadb-gitops
   namespace: demo
 spec:
-  version: "10.5.23"
-  replicas: 5
-  storageType: Durable
+  version: "11.8.5"
+  replicas: 3
   podTemplate:
     spec:
       containers:
       - name: mariadb
         resources:
-          limits:
-            cpu: 500m
-            memory: 1.2Gi
           requests:
-            cpu: 100m
-            memory: 1.2Gi
+            memory: "1.2Gi"
+            cpu: "0.6"
+          limits:
+            memory: "1.2Gi"
+            cpu: "0.6"
+  storageType: Durable
+  deletionPolicy: WipeOut
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: WipeOut
  ```
 
-Resource Requests and Limits are updated to `700m` CPU and `2Gi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is updated in your cluster.
+Resource Requests and Limits are updated to `600m` CPU and `1.2Gi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the resource changes and create a `MariaDBOpsRequest` to update the `MariaDB` database. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -190,16 +190,14 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 $ kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
-    "cpu": "500m",
+    "cpu": "600m",
     "memory": "1288490188800m"
   },
   "requests": {
-    "cpu": "100m",
+    "cpu": "600m",
     "memory": "1288490188800m"
   }
 }
-
-
 ```
 
 ### Scale MariaDB Replicas
@@ -227,7 +225,7 @@ spec:
   storageType: Durable
   deletionPolicy: WipeOut
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -287,7 +285,7 @@ spec:
   storageType: Durable
   deletionPolicy: WipeOut
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -314,11 +312,11 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 ```bash
 $ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=mariadb-gitops'
 NAME                    STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-data-mariadb-gitops-0   Bound    pvc-f1a49c53-d095-43a7-b62f-e91a5a9f5496   2Gi        RWO            longhorn       <unset>                 116m
-data-mariadb-gitops-1   Bound    pvc-79d99636-e0d7-413f-a6a6-559e908ed817   2Gi        RWO            longhorn       <unset>                 116m
-data-mariadb-gitops-2   Bound    pvc-f66ccf56-63b6-4ac6-a7f9-09f573466266   2Gi        RWO            longhorn       <unset>                 116m
-data-mariadb-gitops-3   Bound    pvc-b7744652-611a-4c10-a06f-c93f030fb90f   2Gi        RWO            longhorn       <unset>                 72m
-data-mariadb-gitops-4   Bound    pvc-dee1c10d-0456-4935-9306-0d86c3db54d0   2Gi        RWO            longhorn       <unset>                 71m
+data-mariadb-gitops-0   Bound    pvc-f1a49c53-d095-43a7-b62f-e91a5a9f5496   2Gi        RWO            standard       <unset>                 116m
+data-mariadb-gitops-1   Bound    pvc-79d99636-e0d7-413f-a6a6-559e908ed817   2Gi        RWO            standard       <unset>                 116m
+data-mariadb-gitops-2   Bound    pvc-f66ccf56-63b6-4ac6-a7f9-09f573466266   2Gi        RWO            standard       <unset>                 116m
+data-mariadb-gitops-3   Bound    pvc-b7744652-611a-4c10-a06f-c93f030fb90f   2Gi        RWO            standard       <unset>                 72m
+data-mariadb-gitops-4   Bound    pvc-dee1c10d-0456-4935-9306-0d86c3db54d0   2Gi        RWO            standard       <unset>                 71m
 ```
 
 ## Reconfigure MariaDB
@@ -373,7 +371,7 @@ spec:
   storageType: Durable
   deletionPolicy: WipeOut
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -440,7 +438,7 @@ spec:
   storageType: Durable
   deletionPolicy: WipeOut
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -551,7 +549,7 @@ spec:
   storageType: Durable
   deletionPolicy: WipeOut
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -630,7 +628,7 @@ spec:
   storageType: Durable
   deletionPolicy: WipeOut
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -717,7 +715,7 @@ spec:
   storageType: Durable
   deletionPolicy: WipeOut
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
