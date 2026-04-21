@@ -74,7 +74,7 @@ jobs:
           npm install
           make assets
           hugo-tools update-branch --filename=./data/products/kubedb.json --branch=${{ github.event.pull_request.head.sha }}
-          make docs-skip-assets
+          make docs-operator
           make gen-prod
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
