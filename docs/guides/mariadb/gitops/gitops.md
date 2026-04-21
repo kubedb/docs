@@ -522,7 +522,7 @@ $ tree .
 │ ├── md-configuration.yaml
 │ ├── md-issuer.yaml
 │ └── MariaDB.yaml
-1 directories, 4 files
+1 directories, 3 files
 ```
 
 Update the `MariaDB.yaml` with the following,
