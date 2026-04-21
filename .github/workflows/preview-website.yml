@@ -74,6 +74,8 @@ jobs:
           npm install
           make assets
           hugo-tools update-branch --filename=./data/products/kubedb.json --branch=${{ github.event.pull_request.head.sha }}
+          rm -rf content/docs
+          mkdir -p content/docs
           make docs-operator
           make gen-prod
 
