@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](https://kubedb.com/docs/raw/{{< param "info.version" >}}/docs/welcome/).
+> New to KubeDB? Please start [here](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/welcome/).
 
 # OpenSearch QuickStart
 
@@ -24,7 +24,7 @@ This tutorial will show you how to use KubeDB to run an OpenSearch database.
 
 * At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-* Now, install the KubeDB operator in your cluster following the steps [here](https://kubedb.com/docs/raw/{{< param "info.version" >}}/docs/setup/).
+* Now, install the KubeDB operator in your cluster following the steps [here](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/setup/).
 
 * Elasticsearch has many distributions like `ElasticStack`, `OpenSearch`, `SearchGuard`, `OpenDistro` etc. KubeDB provides all of these distribution’s support under the Elasticsearch CR of KubeDB. So, in this tutorial we will deploy OpenSearch with the help of KubeDB managed Elasticsearch CR.
 
