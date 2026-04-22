@@ -29,7 +29,7 @@ metadata:
   name: m1
   namespace: demo
 spec:
-  version: "9.1.0"
+  version: "8.4.8"
   topology:
     mode: GroupReplication
   authSecret:
@@ -116,10 +116,10 @@ spec:
 
 `spec.version` is a required field specifying the name of the [MySQLVersion](/docs/guides/mysql/concepts/catalog/index.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MySQLVersion` resources,
 
-- `9.0.1`, `9.1.0`
+- `9.0.1`, `8.4.8`
 - `8.0.35`, `8.0.36`, `8.1.0`, `8.2.0`, `8.4.2`, `8.4.3`
 - `8.0.31-innodb`
-- `9.1.0`, `5.7.42-debian`
+- `8.4.8`, `5.7.42-debian`
 
 ### Handling `mbind: Operation not permitted`
 On certain platforms (e.g., when using specific security profiles), for some versions of `mysql`, you may see log messages like:   
@@ -216,7 +216,7 @@ metadata:
   name: m1
   namespace: demo
 spec:
-  version: 9.1.0
+  version: 8.4.8
   init:
     script:
       configMap:

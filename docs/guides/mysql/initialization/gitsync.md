@@ -52,7 +52,7 @@ spec:
           - --root=/git
           # terminate after one successful sync
           - --one-time
-  version: "9.1.0"
+  version: "8.4.8"
   storage:
     accessModes:
       - ReadWriteOnce
@@ -80,7 +80,7 @@ Now, wait until `sample-mysql` has status `Ready`. i.e,
 ```bash
 $ kubectl get mysql -n demo 
 NAME           VERSION   STATUS   AGE
-sample-mysql   9.1.0     Ready    42m
+sample-mysql   8.4.8     Ready    42m
 ```
 
 Next, we will connect to the MySQL database and verify the data inserted from the `*.sql` script stored in the Git repository.
@@ -93,7 +93,7 @@ bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 156
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 8.4.8 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
@@ -198,7 +198,7 @@ spec:
         # run as git sync user 
         securityContext:
           runAsUser: 65533
-  version: "9.1.0"
+  version: "8.4.8"
   storage:
     accessModes:
       - ReadWriteOnce
@@ -252,7 +252,7 @@ spec:
         # run as git sync user 
         securityContext:
           runAsUser: 65533
-  version: "9.1.0"
+  version: "8.4.8"
   storage:
     accessModes:
       - ReadWriteOnce

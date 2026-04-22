@@ -61,7 +61,7 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 34d
 8.4.8           8.4.8     Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                 34d
 9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 34d
-9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 34d
+8.4.8           8.4.8     Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                 34d
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 34d
 9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 34d
 ```
@@ -78,7 +78,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "9.1.0"
+  version: "8.4.8"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -121,7 +121,7 @@ bash-5.1$  mysql -uroot -p"H04(Wn6AM_4r6)(k"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 169
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 8.4.8 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
@@ -286,7 +286,7 @@ bash-5.1$  mysql -uroot -p"vYBjULhCEzPwe5xo"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 49
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 8.4.8 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
@@ -488,7 +488,7 @@ bash-5.1$ mysql -uroot -p"Mysql2"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 132
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 8.4.8 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 

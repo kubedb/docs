@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1
+kind: MySQL
+metadata:
+  name: mysql
+  namespace: demo
+spec:
+  version: "9.1.0"
+  topology:
+    mode: GroupReplication
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: Delete

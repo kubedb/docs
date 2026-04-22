@@ -117,7 +117,7 @@ spec:
   authSecret:
     kind: Secret
     name: mysql-singapore-auth
-  version: "9.1.0"
+  version: "8.4.8"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -157,7 +157,7 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 ```bash
 $ kubectl get mysql -n demo
 NAME              VERSION   STATUS   AGE
-mysql-singapore   9.1.0    Ready    22h
+mysql-singapore   8.4.8    Ready    22h
 ```
 
 ### Connect with MySQL database
@@ -266,7 +266,7 @@ appbinding.appcatalog.appscode.com/mysql-singapore created
 
 $ kubectl get appbinding -n  demo
 NAME              TYPE               VERSION   AGE
-mysql-singapore   kubedb.com/mysql   9.1.0    4m17s
+mysql-singapore   kubedb.com/mysql   8.4.8    4m17s
 ```
 
 ### Create remote replica auth
@@ -302,7 +302,7 @@ spec:
     periodSeconds: 10
     timeoutSeconds: 10
     disableWriteCheck: true
-  version: "9.1.0"
+  version: "8.4.8"
   replicas: 1
   topology:
     mode: RemoteReplica
@@ -337,7 +337,7 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 ```bash
 $ kubectl get mysql -n demo 
 NAME           VERSION   STATUS   AGE
-mysql-london   9.1.0    Ready    7m17s
+mysql-london   8.4.8    Ready    7m17s
 ```
 
 ###  Validate Remote Replica
@@ -447,7 +447,7 @@ $ kubectl exec -it -n demo mysql-london-0 -c mysql -- mysql -u root --password='
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 630
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 8.4.8 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
@@ -461,9 +461,9 @@ mysql> select * from performance_schema.replication_group_members;
 +---------------------------+--------------------------------------+-------------------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                               | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
 +---------------------------+--------------------------------------+-------------------------------------------+-------------+--------------+-------------+----------------+----------------------------+
-| group_replication_applier | 84b00535-c8e6-11ef-820f-0a4f35a3c505 | mysql-london-2.mysql-london-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 9.1.0          | XCom                       |
-| group_replication_applier | 8687321f-c8e6-11ef-825f-9e5bdabf90dd | mysql-london-1.mysql-london-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 9.1.0          | XCom                       |
-| group_replication_applier | e2b50ff7-c8ce-11ef-80d4-7a5946c0f28d | mysql-london-0.mysql-london-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 9.1.0          | XCom                       |
+| group_replication_applier | 84b00535-c8e6-11ef-820f-0a4f35a3c505 | mysql-london-2.mysql-london-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.4.8          | XCom                       |
+| group_replication_applier | 8687321f-c8e6-11ef-825f-9e5bdabf90dd | mysql-london-1.mysql-london-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.4.8          | XCom                       |
+| group_replication_applier | e2b50ff7-c8ce-11ef-80d4-7a5946c0f28d | mysql-london-0.mysql-london-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.4.8          | XCom                       |
 +---------------------------+--------------------------------------+-------------------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 3 rows in set (0.00 sec)
 

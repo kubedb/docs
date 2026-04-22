@@ -52,11 +52,11 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 $ kubectl get mysqlversion 
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED   AGE
 5.7.35-v1       5.7.35    Official       mysql:5.7.35                             13d
-9.1.0          9.1.0    Official       mysql:9.1.0                             13d
+8.4.8          8.4.8    Official       mysql:8.4.8                             13d
 8.0.17          8.0.17    Official       mysql:8.0.17                             13d
-9.1.0           9.1.0     Official       mysql:9.1.0                              13d
-8.0.31-innodb   9.1.0     MySQL          mysql/mysql-server:9.1.0                 13d
-9.1.0           9.1.0     Official       mysql:9.1.0                              13d
+8.4.8           8.4.8     Official       mysql:8.4.8                              13d
+8.0.31-innodb   8.4.8     MySQL          mysql/mysql-server:8.4.8                 13d
+8.4.8           8.4.8     Official       mysql:8.4.8                              13d
 8.0.3-v4        8.0.3     Official       mysql:8.0.3                              13d
 
 ```
@@ -65,10 +65,10 @@ The version above that does not show `DEPRECATED` true is supported by `KubeDB` 
 
 **Check update Constraints:**
 
-Database version update constraints is a constraint that shows whether it is possible or not possible to update from one version to another. Let's check the version update constraints of `MySQL` `9.1.0`,
+Database version update constraints is a constraint that shows whether it is possible or not possible to update from one version to another. Let's check the version update constraints of `MySQL` `8.4.8`,
 
 ```bash
-$ kubectl get mysqlversion 9.1.0 -o yaml | kubectl neat
+$ kubectl get mysqlversion 8.4.8 -o yaml | kubectl neat
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
@@ -83,14 +83,14 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2022.03.28
     helm.sh/chart: kubedb-catalog-v2022.03.28
-  name: 9.1.0
+  name: 8.4.8
   resourceVersion: "1092465"
   uid: 4cc87fc8-efd7-4e69-bb12-4454a2b1bf06
 spec:
   coordinator:
     image: kubedb/mysql-coordinator:v0.5.0
   db:
-    image: mysql:9.1.0
+    image: mysql:8.4.8
   distribution: Official
   exporter:
     image: kubedb/mysqld-exporter:v0.13.1
@@ -109,14 +109,14 @@ spec:
   updateConstraints:
     denylist:
       groupReplication:
-      - < 9.1.0
+      - < 8.4.8
       standalone:
-      - < 9.1.0
-  version: 9.1.0
+      - < 8.4.8
+  version: 8.4.8
 
 ```
 
-The above `spec.updateConstraints.denylist` of `9.1.0` is showing that updating below version of `9.1.0` is not possible for both group replication and standalone. That means, it is possible to update any version above `9.1.0`. Here, we are going to create a `MySQL` Group Replication using MySQL  `9.1.0`. Then we are going to update this version to `9.1.0`.
+The above `spec.updateConstraints.denylist` of `8.4.8` is showing that updating below version of `8.4.8` is not possible for both group replication and standalone. That means, it is possible to update any version above `8.4.8`. Here, we are going to create a `MySQL` Group Replication using MySQL  `8.4.8`. Then we are going to update this version to `8.4.8`.
 
 **Deploy MySQL Group Replication:**
 
@@ -129,7 +129,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "9.1.0"
+  version: "8.4.8"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -160,7 +160,7 @@ Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its 
 $ watch -n 3 kubectl get my -n demo my-group
 
 NAME       VERSION      STATUS    AGE
-my-group   9.1.0    Running   5m52s
+my-group   8.4.8    Running   5m52s
 
 $ watch -n 3 kubectl get sts -n demo my-group
 
@@ -179,15 +179,15 @@ Let's verify the `MySQL`, the `PetSet` and its `Pod` image version,
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-9.1.0
+8.4.8
 
 $ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
-"kubedb/mysql:9.1.0"
+"kubedb/mysql:8.4.8"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
-"kubedb/mysql:9.1.0"
-"kubedb/mysql:9.1.0"
-"kubedb/mysql:9.1.0"
+"kubedb/mysql:8.4.8"
+"kubedb/mysql:8.4.8"
+"kubedb/mysql:8.4.8"
 ```
 
 Let's also verify that the PetSet’s pods have joined into a group replication,
@@ -215,7 +215,7 @@ We are ready to apply updating on this `MySQL` group replication.
 
 #### UpdateVesion
 
-Here, we are going to update the `MySQL` group replication from `9.1.0` to `9.1.0`.
+Here, we are going to update the `MySQL` group replication from `8.4.8` to `8.4.8`.
 
 **Create MySQLOpsRequest:**
 
@@ -239,7 +239,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `9.1.0` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `8.4.8` after updating.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 

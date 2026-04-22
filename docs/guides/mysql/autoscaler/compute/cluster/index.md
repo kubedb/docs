@@ -52,7 +52,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "9.1.0"
+  version: "8.4.8"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -90,7 +90,7 @@ Now, wait until `sample-mysql` has status `Ready`. i.e,
 ```bash
 $ kubectl get mysql -n demo
 NAME             VERSION   STATUS   AGE
-sample-mysql     9.1.0    Ready    14m
+sample-mysql     8.4.8    Ready    14m
 ```
 
 Let's check the Pod containers resources,
