@@ -388,7 +388,7 @@ spec:
 
 - `spec.enableSSL` specifies whether the HTTP layer is secured with certificates or not.
 - `spec.databaseRef.name` refers to the OpenSearch database name.
-- `spec.deletionPolicy` refers to the strategy to follow during dashboard deletion. `Wipeout` means that the database will be deleted without restrictions. It can also be `DoNotTerminate` which will cause a restriction to delete the dashboard. Learn More about these [HERE](https://kubedb.com/docs/v2022.05.24/guides/elasticsearch/concepts/elasticsearch/#specdeletionpolicy).
+- `spec.deletionPolicy` refers to the strategy to follow during dashboard deletion. `Wipeout` means that the database will be deleted without restrictions. It can also be `DoNotTerminate` which will cause a restriction to delete the dashboard. Learn More about these [HERE](https://kubedb.com/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/concepts/elasticsearch/#specdeletionpolicy).
 
 Let's deploy the above yaml by the following command:
 
