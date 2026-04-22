@@ -49,16 +49,22 @@ At first, we are going to deploy a group replication using supported that `MySQL
 When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions. Let’s check the supported `MySQL` versions,
 
 ```bash
-$ kubectl get mysqlversion 
-NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED   AGE
-5.7.35-v1       5.7.35    Official       mysql:5.7.35                             13d
-8.4.8          8.4.8    Official       mysql:8.4.8                             13d
-8.0.17          8.0.17    Official       mysql:8.0.17                             13d
-8.4.8           8.4.8     Official       mysql:8.4.8                              13d
-8.0.31-innodb   8.4.8     MySQL          mysql/mysql-server:8.4.8                 13d
-8.4.8           8.4.8     Official       mysql:8.4.8                              13d
-8.0.3-v4        8.0.3     Official       mysql:8.0.3                              13d
-
+$ kubectl get mysqlversion
+NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
+5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                45h
+5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                45h
+8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                45h
+8.0.35          8.0.35    Official       ghcr.io/appscode-images/mysql:8.0.35-oracle                45h
+8.0.36          8.0.36    Official       ghcr.io/appscode-images/mysql:8.0.36-debian                45h
+8.1.0           8.1.0     Official       ghcr.io/appscode-images/mysql:8.1.0-oracle                 45h
+8.2.0           8.2.0     Official       ghcr.io/appscode-images/mysql:8.2.0-oracle                 45h
+8.4.2           8.4.2     Official       ghcr.io/appscode-images/mysql:8.4.2-oracle                 45h
+8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 45h
+8.4.8           8.4.8     Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                 45h
+9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 45h
+9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
+9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
+9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
 ```
 
 The version above that does not show `DEPRECATED` true is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` group replication that will be possible to update from this version to another version. In the next section, we are going to verify version update constraints.
@@ -68,52 +74,75 @@ The version above that does not show `DEPRECATED` true is supported by `KubeDB` 
 Database version update constraints is a constraint that shows whether it is possible or not possible to update from one version to another. Let's check the version update constraints of `MySQL` `8.4.8`,
 
 ```bash
-$ kubectl get mysqlversion 8.4.8 -o yaml | kubectl neat
+$ kubectl get mysqlversion 8.4.8 -o yaml
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
   annotations:
-    meta.helm.sh/release-name: kubedb-catalog
+    meta.helm.sh/release-name: kubedb
     meta.helm.sh/release-namespace: kubedb
-  creationTimestamp: "2022-06-16T13:52:58Z"
+  creationTimestamp: "2026-04-20T12:13:39Z"
   generation: 1
   labels:
-    app.kubernetes.io/instance: kubedb-catalog
+    app.kubernetes.io/instance: kubedb
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kubedb-catalog
-    app.kubernetes.io/version: v2022.03.28
-    helm.sh/chart: kubedb-catalog-v2022.03.28
+    app.kubernetes.io/version: v2026.2.26
+    helm.sh/chart: kubedb-catalog-v2026.2.26
   name: 8.4.8
-  resourceVersion: "1092465"
-  uid: 4cc87fc8-efd7-4e69-bb12-4454a2b1bf06
+  resourceVersion: "1608"
+  uid: 65f58799-6f26-4105-a6f7-f5ed1d2bf7f8
 spec:
+  archiver:
+    addon:
+      name: mysql-addon
+      tasks:
+        manifestBackup:
+          name: manifest-backup
+        manifestRestore:
+          name: manifest-restore
+        volumeSnapshot:
+          name: volume-snapshot
+    walg:
+      image: ghcr.io/kubedb/mysql-archiver:v0.24.0_8.4.3
   coordinator:
-    image: kubedb/mysql-coordinator:v0.5.0
+    image: ghcr.io/kubedb/mysql-coordinator:v0.41.0
   db:
-    image: mysql:8.4.8
+    image: ghcr.io/appscode-images/mysql:8.4.8-oracle
   distribution: Official
   exporter:
-    image: kubedb/mysqld-exporter:v0.13.1
+    image: ghcr.io/kubedb/mysqld-exporter:v0.18.0
+  gitSyncer:
+    image: registry.k8s.io/git-sync/git-sync:v4.4.2
   initContainer:
-    image: kubedb/mysql-init:5.7-v2
+    image: ghcr.io/kubedb/mysql-init:8.4.2-v5
   podSecurityPolicies:
-    databasePolicyName: mysql-db
+    databasePolicyName: ""
   replicationModeDetector:
-    image: kubedb/replication-mode-detector:v0.13.0
+    image: ghcr.io/kubedb/replication-mode-detector:v0.50.0
+  securityContext:
+    runAsUser: 999
   stash:
     addon:
       backupTask:
-        name: mysql-backup-5.7.25
+        name: mysql-backup-8.0.21
       restoreTask:
-        name: mysql-restore-5.7.25
+        name: mysql-restore-8.0.21
+  ui:
+  - name: phpmyadmin
+    version: v2024.4.27
   updateConstraints:
+    allowlist:
+      groupReplication:
+      - '>= 8.4.8, <= 9.1.0'
+      standalone:
+      - '>= 8.4.8, <= 9.1.0'
     denylist:
       groupReplication:
       - < 8.4.8
       standalone:
       - < 8.4.8
   version: 8.4.8
-
 ```
 
 The above `spec.updateConstraints.denylist` of `8.4.8` is showing that updating below version of `8.4.8` is not possible for both group replication and standalone. That means, it is possible to update any version above `8.4.8`. Here, we are going to create a `MySQL` Group Replication using MySQL  `8.4.8`. Then we are going to update this version to `8.4.8`.

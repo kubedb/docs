@@ -50,16 +50,21 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 
 ```bash
 $ kubectl get mysqlversion
-NAME        VERSION   DB_IMAGE                  DEPRECATED   AGE
-5.7.25-v2   5.7.25    kubedb/mysql:5.7.25-v2                 3h55m
-8.4.8   5.7.29    kubedb/mysql:8.4.8                 3h55m
-8.4.8   5.7.31    kubedb/mysql:8.4.8                 3h55m
-8.4.8   5.7.33    kubedb/mysql:8.4.8                 3h55m
-8.0.14-v2   8.0.14    kubedb/mysql:8.0.14-v2                 3h55m
-8.0.20-v1   8.0.20    kubedb/mysql:8.0.20-v1                 3h55m
-8.4.8   8.0.21    kubedb/mysql:8.4.8                 3h55m
-8.4.8      8.4.8    kubedb/mysql:8.4.8                    3h55m
-8.0.3-v2    8.0.3     kubedb/mysql:8.0.3-v2                  3h55m
+NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
+5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                45h
+5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                45h
+8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                45h
+8.0.35          8.0.35    Official       ghcr.io/appscode-images/mysql:8.0.35-oracle                45h
+8.0.36          8.0.36    Official       ghcr.io/appscode-images/mysql:8.0.36-debian                45h
+8.1.0           8.1.0     Official       ghcr.io/appscode-images/mysql:8.1.0-oracle                 45h
+8.2.0           8.2.0     Official       ghcr.io/appscode-images/mysql:8.2.0-oracle                 45h
+8.4.2           8.4.2     Official       ghcr.io/appscode-images/mysql:8.4.2-oracle                 45h
+8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 45h
+8.4.8           8.4.8     Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                 45h
+9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 45h
+9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
+9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
+9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
 ```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a standalone using non-deprecated `MySQL`  version `8.4.8`.
