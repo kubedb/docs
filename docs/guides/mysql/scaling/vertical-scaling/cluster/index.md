@@ -50,19 +50,24 @@ When you have installed `KubeDB`, it has created `MySQLVersion` CR for all suppo
 
 ```bash
 $ kubectl get mysqlversion
-NAME            VERSION   DISTRIBUTION   DB_IMAGE                    DEPRECATED   AGE
-5.7.35-v1       5.7.35    Official       mysql:5.7.35                             4d2h
-5.7.44          5.7.44    Official       mysql:5.7.44                             4d2h
-8.0.17          8.0.17    Official       mysql:8.0.17                             4d2h
-9.1.0          9.1.0    Official       mysql:9.1.0                             4d2h
-8.0.31-innodb   9.1.0    MySQL          mysql/mysql-server:9.1.0                4d2h
-9.1.0          9.1.0    Official       mysql:9.1.0                             4d2h
-8.0.3-v4        8.0.3     Official       mysql:8.0.3                              4d2h
-9.1.0          9.1.0    Official       mysql:9.1.0                             4d2h
-8.0.31-innodb   9.1.0    MySQL          mysql/mysql-server:9.1.0                4d2h
+NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
+5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                45h
+5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                45h
+8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                45h
+8.0.35          8.0.35    Official       ghcr.io/appscode-images/mysql:8.0.35-oracle                45h
+8.0.36          8.0.36    Official       ghcr.io/appscode-images/mysql:8.0.36-debian                45h
+8.1.0           8.1.0     Official       ghcr.io/appscode-images/mysql:8.1.0-oracle                 45h
+8.2.0           8.2.0     Official       ghcr.io/appscode-images/mysql:8.2.0-oracle                 45h
+8.4.2           8.4.2     Official       ghcr.io/appscode-images/mysql:8.4.2-oracle                 45h
+8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 45h
+8.4.8           8.4.8     Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                 45h
+9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 45h
+9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
+9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
+9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `9.1.0`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `8.4.8`.
 
 **Deploy MySQL Cluster:**
 
@@ -94,7 +99,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "9.1.0"
+  version: "8.4.8"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -167,7 +172,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "9.1.0"
+  version: "8.4.8"
   replicas: 3
   topology:
     mode: SemiSync
@@ -209,7 +214,7 @@ $ watch -n 3 kubectl get my -n demo my-group
 Every 3.0s: kubectl get my -n demo my-group                     suaas-appscode: Tue Jun 30 22:43:57 2020
 
 NAME       VERSION   STATUS    AGE
-my-group   9.1.0    Running   16m
+my-group   8.4.8    Running   16m
 
 $ watch -n 3 kubectl get sts -n demo my-group
 Every 3.0s: kubectl get sts -n demo my-group                     Every 3.0s: kubectl get sts -n demo my-group                    suaas-appscode: Tue Jun 30 22:44:35 2020

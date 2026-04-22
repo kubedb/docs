@@ -8,4 +8,4 @@ spec:
     name: my-standalone
   type: UpdateVersion
   updateVersion:
-    targetVersion: "5.7.44"
+    targetVersion: "8.4.8"

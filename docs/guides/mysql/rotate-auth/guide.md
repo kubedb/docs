@@ -50,17 +50,20 @@ When you have installed KubeDB, it has created `MySQLVersion` crd for all suppor
 ```bash
 $ kubectl get mysqlversion
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
-5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                12d
-5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                12d
-8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                12d
-8.0.35          8.0.35    Official       ghcr.io/appscode-images/mysql:8.0.35-oracle                12d
-8.0.36          8.0.36    Official       ghcr.io/appscode-images/mysql:8.0.36-debian                12d
-8.1.0           8.1.0     Official       ghcr.io/appscode-images/mysql:8.1.0-oracle                 12d
-8.2.0           8.2.0     Official       ghcr.io/appscode-images/mysql:8.2.0-oracle                 12d
-8.4.2           8.4.2     Official       ghcr.io/appscode-images/mysql:8.4.2-oracle                 12d
-8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 12d
-9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 12d
-9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 12d
+5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                45h
+5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                45h
+8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                45h
+8.0.35          8.0.35    Official       ghcr.io/appscode-images/mysql:8.0.35-oracle                45h
+8.0.36          8.0.36    Official       ghcr.io/appscode-images/mysql:8.0.36-debian                45h
+8.1.0           8.1.0     Official       ghcr.io/appscode-images/mysql:8.1.0-oracle                 45h
+8.2.0           8.2.0     Official       ghcr.io/appscode-images/mysql:8.2.0-oracle                 45h
+8.4.2           8.4.2     Official       ghcr.io/appscode-images/mysql:8.4.2-oracle                 45h
+8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 45h
+8.4.8           8.4.8     Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                 45h
+9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 45h
+9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
+9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
+9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
 ```
 
 ## Create a Mysql Database
@@ -75,7 +78,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "9.1.0"
+  version: "8.4.8"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -118,7 +121,7 @@ bash-5.1$  mysql -uroot -p"H04(Wn6AM_4r6)(k"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 169
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 8.4.8 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
@@ -283,7 +286,7 @@ bash-5.1$  mysql -uroot -p"vYBjULhCEzPwe5xo"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 49
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 8.4.8 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
@@ -485,7 +488,7 @@ bash-5.1$ mysql -uroot -p"Mysql2"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 132
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 8.4.8 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
