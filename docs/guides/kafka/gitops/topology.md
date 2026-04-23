@@ -1,9 +1,9 @@
 ---
-title: Kafka GitOps Guides
+title: Topologyu
 menu:
   docs_{{ .version }}:
-    identifier: kf-gitops-guides
-    name: Gitops Kafka
+    identifier: kf-gitops-topology
+    name: Topology
     parent: kf-gitops-kafka
     weight: 20
 menu_name: docs_{{ .version }}
@@ -104,34 +104,34 @@ Our `gitops` operator will create an actual `Kafka` database CR in the cluster. 
 ```bash
 $ kubectl get kafka.gitops.kubedb.com,kafka.kubedb.com -n demo
 NAME                                        AGE
-kafka.gitops.kubedb.com/kafka-gitops-topo   62m
+kafka.gitops.kubedb.com/kafka-gitops   62m
 
 NAME                                 VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-gitops-topo   3.9.0     Ready    62m
+kafka.kubedb.com/kafka-gitops   3.9.0     Ready    62m
 ```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` Kafka.
 
 ```bash
-$  kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=kafka-gitops-topo'
+$  kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=kafka-gitops'
 NAME                                                        AGE
-petset.apps.k8s.appscode.com/kafka-gitops-topo-broker       62m
-petset.apps.k8s.appscode.com/kafka-gitops-topo-controller   62m
+petset.apps.k8s.appscode.com/kafka-gitops-broker       62m
+petset.apps.k8s.appscode.com/kafka-gitops-controller   62m
 
 NAME                                 READY   STATUS    RESTARTS   AGE
-pod/kafka-gitops-topo-broker-0       1/1     Running   0          7m42s
-pod/kafka-gitops-topo-broker-1       1/1     Running   0          6m52s
-pod/kafka-gitops-topo-controller-0   1/1     Running   0          6m3s
-pod/kafka-gitops-topo-controller-1   1/1     Running   0          5m13s
+pod/kafka-gitops-broker-0       1/1     Running   0          7m42s
+pod/kafka-gitops-broker-1       1/1     Running   0          6m52s
+pod/kafka-gitops-controller-0   1/1     Running   0          6m3s
+pod/kafka-gitops-controller-1   1/1     Running   0          5m13s
 
 NAME                            TYPE                       DATA   AGE
-secret/kafka-gitops-topo-auth   kubernetes.io/basic-auth   2      62m
+secret/kafka-gitops-auth   kubernetes.io/basic-auth   2      62m
 
 NAME                             TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                       AGE
-service/kafka-gitops-topo-pods   ClusterIP   None         <none>        9092/TCP,9093/TCP,29092/TCP   62m
+service/kafka-gitops-pods   ClusterIP   None         <none>        9092/TCP,9093/TCP,29092/TCP   62m
 
 NAME                                                   TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/kafka-gitops-topo   kubedb.com/kafka   3.9.0     62m
+appbinding.appcatalog.appscode.com/kafka-gitops   kubedb.com/kafka   3.9.0     62m
 ```
 
 ## Update Kafka Database using GitOps
@@ -197,35 +197,35 @@ Now, `gitops` operator will detect the resource changes and create a `KafkaOpsRe
 ```bash
 $ kubectl get kf,kafka,kfops -n demo
 NAME                                 VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-gitops-topo   3.9.0     Ready    64m
+kafka.kubedb.com/kafka-gitops   3.9.0     Ready    64m
 
 NAME                                        AGE
-kafka.gitops.kubedb.com/kafka-gitops-topo   64m
+kafka.gitops.kubedb.com/kafka-gitops   64m
 
 NAME                                                                      TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-topo-verticalscaling-c2ejz2   VerticalScaling   Successful   10m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-c2ejz2   VerticalScaling   Successful   10m
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
 ```bash
-$ kubectl get pod -n demo Kafka-gitops-topo-broker-0 -o json | jq '.spec.containers[0].resources'
+$ kubectl get pod -n demo Kafka-gitops-broker-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
-    "memory": "1717986918400m"
+    "memory": "1540Mi"
   },
   "requests": {
-    "cpu": "600m",
-    "memory": "1717986918400m"
+    "cpu": "500m",
+    "memory": "1536Mi"
   }
 }
-$ kubectl get pod -n demo Kafka-gitops-topo-controller-0 -o json | jq '.spec.containers[0].resources'
+banusree@bonusree-datta-PC ~> kubectl get pod -n demo Kafka-gitops-controller-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
-    "memory": "1717986918400m"
+    "memory": "1540Mi"
   },
   "requests": {
-    "cpu": "600m",
-    "memory": "1717986918400m"
+    "cpu": "500m",
+    "memory": "1536Mi"
   }
 }
 ```
@@ -374,33 +374,34 @@ Now, `gitops` operator will detect the volume changes and create a `VolumeExpans
 
 ```bash
 $ kubectl get kf,kafka,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-gitops   kubedb.com/v1   3.9.0     Ready    23m
+NAME                            VERSION   STATUS   AGE
+kafka.kubedb.com/kafka-gitops   3.9.0     Ready    6m51s
 
-NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-gitops   23m
+NAME                                   AGE
+kafka.gitops.kubedb.com/kafka-gitops   6m51s
 
-NAME                                                                 TYPE                STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-41xthr     VolumeExpansion     Successful   19m
+NAME                                                                   TYPE                STATUS       AGE
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-horizontalscaling-i7l7rn   HorizontalScaling   Successful   112m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-mwqdzx     VerticalScaling     Successful   117m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-7aweww     VolumeExpansion     Successful   4m30s
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
-$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=kafka-gitops'
-NAME                                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-kafka-gitops-data-kafka-gitops-broker-0       Bound    pvc-2afd4835-5686-492b-be93-c6e040e0a6c6   2Gi        RWO            Standard       <unset>                 3h39m
-kafka-gitops-data-kafka-gitops-broker-1       Bound    pvc-aaf994cc-6b04-4c37-80d5-5e966dad8487   2Gi        RWO            Standard       <unset>                 3h39m
-kafka-gitops-data-kafka-gitops-controller-0   Bound    pvc-82d2b233-203d-4df2-a0fd-ecedbc0825b7   2Gi        RWO            Standard       <unset>                 3h39m
-kafka-gitops-data-kafka-gitops-controller-1   Bound    pvc-91852c29-ab1a-48ad-9255-a0b15d5a7515   2Gi        RWO            Standard       <unset>                 3h39m
-
+$  kubectl get pvc -n demo -l 'app.kubernetes.io/instance=kafka-gitops'
+NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+kafka-gitops-data-kafka-gitops-broker-0       Bound    pvc-a00ef6d5-44a6-40ce-8131-680b9d24d982   2Gi        RWO            standard       <unset>                 7m20s
+kafka-gitops-data-kafka-gitops-broker-1       Bound    pvc-141798c5-9000-480f-a997-85a5743f63e2   2Gi        RWO            standard       <unset>                 7m4s
+kafka-gitops-data-kafka-gitops-broker-2       Bound    pvc-819ba56b-4fda-4361-9f3e-e18258e2de7e   2Gi        RWO            standard       <unset>                 6m46s
+kafka-gitops-data-kafka-gitops-controller-0   Bound    pvc-5a6cc06e-60ff-450a-875e-b84f75358f67   2Gi        RWO            standard       <unset>                 7m20s
+kafka-gitops-data-kafka-gitops-controller-1   Bound    pvc-7cae3a1d-0efc-48a2-8953-12f4338a9602   2Gi        RWO            standard       <unset>                 7m4s
+kafka-gitops-data-kafka-gitops-controller-2   Bound    pvc-22e0a63f-58c1-4a03-9493-e670498723db   2Gi        RWO            standard       <unset>                 6m46s
 ```
 
 ## Reconfigure Kafka
 
 At first, we will create a secret containing `user.conf` file with required configuration settings.
-To know more about this configuration file, check [here](/docs/guides/kafka/configuration/kafka-combined.md)
+To know more about this configuration file, check [here](/docs/guides/kafka/configuration/kafka-topology.md)
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -482,15 +483,17 @@ Now, `gitops` operator will detect the configuration changes and create a `Recon
 
 ```bash
 $ kubectl get kf,kafka,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-gitops   kubedb.com/v1   3.9.0     Ready    74m
+NAME                            VERSION   STATUS   AGE
+kafka.kubedb.com/kafka-gitops   3.9.0     Ready    19m
 
-NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-gitops   74m
+NAME                                   AGE
+kafka.gitops.kubedb.com/kafka-gitops   19m
 
-NAME                                                               TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfigure-ukj41o       Reconfigure       Successful   24m
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   70m
+NAME                                                                   TYPE                STATUS       AGE
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-horizontalscaling-i7l7rn   HorizontalScaling   Successful   124m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfigure-fszhk8         Reconfigure         Successful   8m44s
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-mwqdzx     VerticalScaling     Successful   130m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-7aweww     VolumeExpansion     Successful   16m
 ```
 
 
@@ -504,7 +507,7 @@ To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new use
 We will create a secret named `kf-rotate-auth ` with the following content,
 
 ```bash
-kubectl create secret generic kf-rotate-auth -n demo \
+$ kubectl create secret generic kf-rotate-auth -n demo \
 --type=kubernetes.io/basic-auth \
 --from-literal=username=kafka \
 --from-literal=password=kafka-secret
@@ -575,17 +578,19 @@ Change the `authSecret` field to `kf-rotate-auth`. Commit the changes and push t
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` KafkaOpsRequest to update the `Kafka` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get kf,kafka,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-gitops   kubedb.com/v1   3.9.0     Ready    7m11s
+$ kubectl get kf,kafka,kfops -n demo
+NAME                            VERSION   STATUS   AGE
+kafka.kubedb.com/kafka-gitops   3.9.0     Ready    17h
 
-NAME                                  AGE
-kafka.gitops.kubedb.com/kafka-gitops   7m11s
+NAME                                   AGE
+kafka.gitops.kubedb.com/kafka-gitops   17h
 
-NAME                                                               TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfigure-ukj41o       Reconfigure       Successful   17h
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-rotate-auth-43ris8       RotateAuth        Successful   28m
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   17h
+NAME                                                                   TYPE                STATUS       AGE
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-horizontalscaling-i7l7rn   HorizontalScaling   Successful   18h
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfigure-fszhk8         Reconfigure         Successful   16h
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-rotate-auth-pkb3t1         RotateAuth          Successful   13m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-mwqdzx     VerticalScaling     Successful   18h
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-7aweww     VolumeExpansion     Successful   17h
 ```
 
 
@@ -648,6 +653,17 @@ metadata:
   namespace: demo
 spec:
   version: 3.9.0
+  authSecret:
+    kind: Secret
+    name: kf-rotate-auth
+  configSecret:
+    name: kf-reconfig-topo
+  enableSSL: true
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: kf-issuer
   topology:
     broker:
       podTemplate:
@@ -656,7 +672,7 @@ spec:
             - name: kafka
               resources:
                 limits:
-                  memory: 1536Mi
+                  memory: 1540Mi
                 requests:
                   cpu: 500m
                   memory: 1536Mi
@@ -667,7 +683,7 @@ spec:
         resources:
           requests:
             storage: 2Gi
-        storageClassName: Standard
+        storageClassName: standard
     controller:
       podTemplate:
         spec:
@@ -675,7 +691,7 @@ spec:
             - name: kafka
               resources:
                 limits:
-                  memory: 1536Mi
+                  memory: 1540Mi
                 requests:
                   cpu: 500m
                   memory: 1536Mi
@@ -686,7 +702,7 @@ spec:
         resources:
           requests:
             storage: 2Gi
-        storageClassName: Standard
+        storageClassName: standard
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -696,18 +712,20 @@ Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` KafkaOpsRequest to update the `Kafka` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get kf,kafka,kfops,pods -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-gitops   kubedb.com/v1   3.9.0     Ready    41m
+$ kubectl get kf,kafka,kfops,pods -n demo
+NAME                            VERSION   STATUS   AGE
+kafka.kubedb.com/kafka-gitops   3.9.0     Ready    67m
 
 NAME                                   AGE
-kafka.gitops.kubedb.com/kafka-gitops   75m
+kafka.gitops.kubedb.com/kafka-gitops   67m
 
-NAME                                                               TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfigure-ukj41o       Reconfigure       Successful   5d18h
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   9m18s
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-rotate-auth-43ris8       RotateAuth        Successful   5d1h
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   5d19h
+NAME                                                                   TYPE                STATUS       AGE
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-horizontalscaling-rqmqe5   HorizontalScaling   Successful   27m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfigure-bqek6h         Reconfigure         Successful   27m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfiguretls-wkax2u      ReconfigureTLS      Successful   27m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-rotate-auth-y2vwx4         RotateAuth          Successful   27m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-c4llju     VerticalScaling     Successful   27m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-9e85tf     VolumeExpansion     Successful   27m
 ```
 
 
@@ -728,6 +746,17 @@ metadata:
   namespace: demo
 spec:
   version: 4.0.0
+  authSecret:
+    kind: Secret
+    name: kf-rotate-auth
+  configSecret:
+    name: kf-reconfig-topo
+  enableSSL: true
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: kf-issuer
   topology:
     broker:
       podTemplate:
@@ -736,7 +765,7 @@ spec:
             - name: kafka
               resources:
                 limits:
-                  memory: 1536Mi
+                  memory: 1540Mi
                 requests:
                   cpu: 500m
                   memory: 1536Mi
@@ -747,7 +776,7 @@ spec:
         resources:
           requests:
             storage: 2Gi
-        storageClassName: Standard
+        storageClassName: standard
     controller:
       podTemplate:
         spec:
@@ -755,7 +784,7 @@ spec:
             - name: kafka
               resources:
                 limits:
-                  memory: 1536Mi
+                  memory: 1540Mi
                 requests:
                   cpu: 500m
                   memory: 1536Mi
@@ -766,7 +795,7 @@ spec:
         resources:
           requests:
             storage: 2Gi
-        storageClassName: Standard
+        storageClassName: standard
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -776,19 +805,21 @@ Update the `version` field to `4.0.0`. Commit the changes and push to your Git r
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` KafkaOpsRequest to update the `Kafka` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get kf,kafka,kfops -n demo
-NAME                            TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-gitops   kubedb.com/v1   4.0.0     Ready    3h47m
+$ kubectl get kf,kafka,kfops,pods -n demo
+NAME                            VERSION   STATUS   AGE
+kafka.kubedb.com/kafka-gitops   4.0.0     Ready    72m
 
-NAME                                    AGE
-kafka.gitops.kubedb.com/kafka-gitops   3h47m
+NAME                                   AGE
+kafka.gitops.kubedb.com/kafka-gitops   72m
 
-NAME                                                               TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfigure-ukj41o       Reconfigure       Successful   5d22h
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   4h16m
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-rotate-auth-43ris8       RotateAuth        Successful   5d6h
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-versionupdate-wyn2dp     UpdateVersion     Successful   3h51m
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   5d23h
+NAME                                                                   TYPE                STATUS       AGE
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-horizontalscaling-rqmqe5   HorizontalScaling   Successful   32m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfigure-bqek6h         Reconfigure         Successful   32m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfiguretls-wkax2u      ReconfigureTLS      Successful   32m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-rotate-auth-y2vwx4         RotateAuth          Successful   32m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-versionupdate-6z70bp       UpdateVersion       Successful   4m16s
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-c4llju     VerticalScaling     Successful   32m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-9e85tf     VolumeExpansion     Successful   32m
 ```
 
 
@@ -797,12 +828,14 @@ Now, we are going to verify whether the `Kafka`, `PetSet` and it's `Pod` have up
 ```bash
 $ kubectl get Kafka -n demo kafka-gitops -o=jsonpath='{.spec.version}{"\n"}'
 4.0.0
-
 $ kubectl get petset -n demo kafka-gitops-broker -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/kafka:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
-
-$  kubectl get pod -n demo kafka-gitops-broker-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/kafka:4.0.0@sha256:42a79fe8f14b00b1c76d135bbbaf7605b8c66f45cf3eb749c59138f6df288b31
+ghcr.io/appscode-images/kafka:4.0.0@sha256:62fb3652bc7672a74582d8d0abb7d0090155a237b7cf21bdb3837c3dba107010
+$ kubectl get pod -n demo kafka-gitops-broker-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+ghcr.io/appscode-images/kafka:4.0.0@sha256:62fb3652bc7672a74582d8d0abb7d0090155a237b7cf21bdb3837c3dba107010
+$ kubectl get pod -n demo kafka-gitops-controller-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+ghcr.io/appscode-images/kafka:4.0.0@sha256:62fb3652bc7672a74582d8d0abb7d0090155a237b7cf21bdb3837c3dba107010
+$ kubectl get petset -n demo kafka-gitops-controller -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+ghcr.io/appscode-images/kafka:4.0.0@sha256:62fb3652bc7672a74582d8d0abb7d0090155a237b7cf21bdb3837c3dba107010
 ```
 
 ### Enable Monitoring
@@ -818,46 +851,17 @@ metadata:
   namespace: demo
 spec:
   version: 4.0.0
-  topology:
-    broker:
-      podTemplate:
-        spec:
-          containers:
-            - name: kafka
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-    controller:
-      podTemplate:
-        spec:
-          containers:
-            - name: kafka
-              resources:
-                limits:
-                  memory: 1536Mi
-                requests:
-                  cpu: 500m
-                  memory: 1536Mi
-      replicas: 2
-      storage:
-        accessModes:
-          - ReadWriteOnce
-        resources:
-          requests:
-            storage: 2Gi
-        storageClassName: Standard
-  storageType: Durable
+  authSecret:
+    kind: Secret
+    name: kf-rotate-auth
+  configSecret:
+    name: kf-reconfig-topo
+  enableSSL: true
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: kf-issuer
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -867,6 +871,46 @@ spec:
         labels:
           release: prometheus
         interval: 10s
+  topology:
+    broker:
+      podTemplate:
+        spec:
+          containers:
+            - name: kafka
+              resources:
+                limits:
+                  memory: 1540Mi
+                requests:
+                  cpu: 500m
+                  memory: 1536Mi
+      replicas: 2
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
+        storageClassName: standard
+    controller:
+      podTemplate:
+        spec:
+          containers:
+            - name: kafka
+              resources:
+                limits:
+                  memory: 1540Mi
+                requests:
+                  cpu: 500m
+                  memory: 1536Mi
+      replicas: 2
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
+        storageClassName: standard
+  storageType: Durable
   deletionPolicy: WipeOut
 ```
 
@@ -874,20 +918,22 @@ Add `monitor` field in the `spec`. Commit the changes and push to your Git repos
 
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` KafkaOpsRequest to add the `Kafka` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get Kafkaes.gitops.kubedb.com,Kafkaes.kubedb.com,Kafkaopsrequest -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-gitops   kubedb.com/v1   4.0.0     Ready    5h12m
+$ kubectl get kf,kafka,kfops -n demo
+NAME                            VERSION   STATUS   AGE
+kafka.kubedb.com/kafka-gitops   4.0.0     Ready    90m
 
-NAME                                 AGE
-kafka.gitops.kubedb.com/kafka-gitops   5h12m
+NAME                                   AGE
+kafka.gitops.kubedb.com/kafka-gitops   90m
 
-NAME                                                               TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfigure-ukj41o       Reconfigure       Successful   6d
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfiguretls-r4mx7v    ReconfigureTLS    Successful   5h42m
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-restart-ljpqih           Restart           Successful   3m51s
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-rotate-auth-43ris8       RotateAuth        Successful   5d7h
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-versionupdate-wyn2dp     UpdateVersion     Successful   5h16m
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-41xthr   VolumeExpansion   Successful   6d
+NAME                                                                   TYPE                STATUS       AGE
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-horizontalscaling-rqmqe5   HorizontalScaling   Successful   49m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfigure-bqek6h         Reconfigure         Successful   49m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-reconfiguretls-wkax2u      ReconfigureTLS      Successful   49m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-restart-kzxwxa             Restart             Successful   12m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-rotate-auth-y2vwx4         RotateAuth          Successful   49m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-versionupdate-6z70bp       UpdateVersion       Successful   22m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-c4llju     VerticalScaling     Successful   49m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-9e85tf     VolumeExpansion     Successful   49m
 ```
 
 Verify the monitoring is enabled by checking the prometheus targets.
@@ -905,10 +951,9 @@ There are some other fields that will trigger `Restart` ops request.
 
 ## Next Steps
 
-[//]: # (- Learn Kafka [GitOps]&#40;/docs/guides/kafka/concepts/Kafka-gitops.md&#41;)
 - Learn Kafka Scaling
-    - [Horizontal Scaling](/docs/guides/kafka/scaling/horizontal-scaling/combined.md)
-    - [Vertical Scaling](/docs/guides/kafka/scaling/vertical-scaling/combined.md)
+    - [Horizontal Scaling](/docs/guides/kafka/scaling/horizontal-scaling/topology.md)
+    - [Vertical Scaling](/docs/guides/kafka/scaling/vertical-scaling/topology.md)
 - Learn Version Update Ops Request and Constraints [here](/docs/guides/kafka/update-version/overview.md)
 - Monitor your KafkaQL database with KubeDB using [built-in Prometheus](/docs/guides/kafka/monitoring/using-builtin-prometheus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
