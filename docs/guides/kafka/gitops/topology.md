@@ -197,10 +197,10 @@ Now, `gitops` operator will detect the resource changes and create a `KafkaOpsRe
 ```bash
 $ kubectl get kf,kafka,kfops -n demo
 NAME                                 VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-gitops   3.9.0     Ready    64m
+kafka.kubedb.com/kafka-gitops        3.9.0     Ready    64m
 
 NAME                                        AGE
-kafka.gitops.kubedb.com/kafka-gitops   64m
+kafka.gitops.kubedb.com/kafka-gitops        64m
 
 NAME                                                                      TYPE              STATUS       AGE
 kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-c2ejz2   VerticalScaling   Successful   10m
@@ -289,7 +289,7 @@ Now, `gitops` operator will detect the replica changes and create a `HorizontalS
 
 ```bash
 $ kubectl get kf,kafka,kfops -n demo
-NAME                          TYPE            VERSION   STATUS   AGE
+NAME                            TYPE            VERSION   STATUS   AGE
 kafka.kubedb.com/kafka-gitops   kubedb.com/v1   3.9.0     Ready    22h
 
 NAME                                 AGE
@@ -337,7 +337,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -356,7 +356,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -446,7 +446,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -465,7 +465,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -542,7 +542,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -561,7 +561,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -676,7 +676,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -695,7 +695,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -769,7 +769,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -788,7 +788,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -883,7 +883,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -902,7 +902,7 @@ spec:
                 requests:
                   cpu: 500m
                   memory: 1536Mi
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
