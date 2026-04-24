@@ -71,7 +71,7 @@ spec:
       mode: Single-Primary
   storageType: Durable
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -157,7 +157,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -166,7 +166,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Resource Requests and Limits are updated to `700m` CPU and `1536Mi` Memory. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
+Resource requests have been updated to `700m` CPU and `1536Mi` memory, and the memory limits have been set to `1.5Gi`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the resource changes and create a `MySQLOpsRequest` to update the `MySQL` database. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -223,7 +223,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -289,7 +289,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -321,10 +321,10 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 ```bash
 $ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=my-gitops'
 NAME               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-data-my-gitops-0   Bound    pvc-c926c69f-ff5e-4f93-be78-1fc1d39da25c   2Gi        RWO            longhorn       <unset>                 105m
-data-my-gitops-1   Bound    pvc-8bfcf4d8-37fb-4543-96c5-7a656270967a   2Gi        RWO            longhorn       <unset>                 101m
-data-my-gitops-2   Bound    pvc-238989bc-0a53-4db8-a3c2-2ce77aee4042   2Gi        RWO            longhorn       <unset>                 101m
-data-my-gitops-3   Bound    pvc-5345bc6a-baad-461a-a1fe-108e75c32a11   2Gi        RWO            longhorn       <unset>                8m41s
+data-my-gitops-0   Bound    pvc-c926c69f-ff5e-4f93-be78-1fc1d39da25c   2Gi        RWO            standard       <unset>                 105m
+data-my-gitops-1   Bound    pvc-8bfcf4d8-37fb-4543-96c5-7a656270967a   2Gi        RWO            standard       <unset>                 101m
+data-my-gitops-2   Bound    pvc-238989bc-0a53-4db8-a3c2-2ce77aee4042   2Gi        RWO            standard       <unset>                 101m
+data-my-gitops-3   Bound    pvc-5345bc6a-baad-461a-a1fe-108e75c32a11   2Gi        RWO            standard       <unset>                8m41s
 ```
 
 ## Reconfigure MySQL
@@ -418,7 +418,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -545,7 +545,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -693,7 +693,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -845,7 +845,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -936,7 +936,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
