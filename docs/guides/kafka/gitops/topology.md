@@ -1,10 +1,10 @@
 ---
-title: Topology
+title: Topology Gitops
 menu:
   docs_{{ .version }}:
     identifier: kf-gitops-topology
     name: Topology
-    parent: kf-gitops-kafka
+    parent: kf-gitops
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
