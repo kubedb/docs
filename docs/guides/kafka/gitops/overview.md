@@ -1,6 +1,6 @@
 ---
-title: Kafka Gitops Overview
-description: Kafka Gitops Overview
+title: Kafka GitOps Overview
+description: Kafka GitOps Overview
 menu:
   docs_{{ .version }}:
     identifier: kf-gitops-overview

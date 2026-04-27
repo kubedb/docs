@@ -1,6 +1,6 @@
 ---
-title: Elasticsearch Gitops Overview
-description: Elasticsearch Gitops Overview
+title: Elasticsearch GitOps Overview
+description: Elasticsearch GitOps Overview
 menu:
   docs_{{ .version }}:
     identifier: es-gitops-overview
@@ -97,7 +97,7 @@ Our `gitops` operator will create an actual `Elasticsearch` database CR in the c
 
 
 ```bash
-$ kubectl get Elasticsearch.gitops.kubedb.com,Elasticsearch.kubedb.com -n demo
+$ kubectl get elasticsearch.gitops.kubedb.com,elasticsearch.kubedb.com -n demo
 NAME                                        AGE
 elasticsearch.gitops.kubedb.com/es-gitops   20m
 
@@ -527,7 +527,7 @@ Update the `version` field to `xpack-8.5.3`. Commit the changes and push to your
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` ElasticsearchOpsRequest to update the `Elasticsearch` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get es,Elasticsearch,esops -n demo
+$ kubectl get es,elasticsearch,esops -n demo
 NAME                                 VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-gitops   xpack-8.5.3   Ready    54m
 
@@ -610,7 +610,7 @@ Add `monitor` field in the spec. Commit the changes and push to your Git reposit
 
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` ElasticsearchOpsRequest to add the `Elasticsearch` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get es,Elasticsearch,esops -n demo
+$ kubectl get es,elasticsearch,esops -n demo
 NAME                                 VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-gitops   xpack-8.5.3   Ready    66m
 
@@ -639,6 +639,138 @@ There are some other fields that will trigger `Restart` ops request.
 - `.spec.enforceGroup`
 - `.spec.sslMode` etc.
 
+### TLS configuration
+
+We can add, rotate or remove TLS configuration using `gitops`.
+
+To add tls, we are going to create an example `Issuer` that will be used to enable SSL/TLS in Elasticsearch. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
+
+- Start off by generating a ca certificates using openssl.
+
+```bash
+$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+Generating a RSA private key
+................+++++
+........................+++++
+writing new private key to './ca.key'
+-----
+```
+
+- Now we are going to create a ca-secret using the certificate files that we have just generated.
+
+```bash
+$ kubectl create secret tls Elasticsearch-ca \
+     --cert=ca.crt \
+     --key=ca.key \
+     --namespace=demo
+secret/Elasticsearch-ca created
+```
+
+Now, Let's create an `Issuer` using the `Elasticsearch-ca` secret that we have just created. The `YAML` file looks like this:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: es-issuer
+  namespace: demo
+spec:
+  ca:
+    secretName: Elasticsearch-ca
+```
+
+Let's add that to our `kubedb /es-issuer.yaml` file. File structure will look like this,
+```bash
+$ tree .
+├── kubedb
+│ ├── es-configuration.yaml
+│ ├── es-issuer.yaml
+│ └── Elasticsearch.yaml
+1 directories, 3 files
+```
+
+Update the `Elasticsearch.yaml` with the following,
+```yaml
+apiVersion: gitops.kubedb.com/v1alpha1
+kind: Elasticsearch
+metadata:
+  name: es-gitops
+  namespace: demo
+spec:
+  version: xpack-8.5.3
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: es-issuer
+    certificates:
+    - alias: http
+      subject:
+        organizations:
+        - kubedb.com
+      emailAddresses:
+      - abc@kubedb.com
+  enableSSL: true
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  deletionPolicy: WipeOut
+  configuration:
+    secretName: es-configuration
+  authSecret:
+    kind: Secret
+    name: es-rotate-auth
+  podTemplate:
+    spec:
+      containers:
+        - name: elasticsearch
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+```
+
+Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+
+Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `Elasticsearch` database tls. List the resources created by `gitops` operator in the `demo` namespace.
+
+```bash
+$ kubectl get es,elasticsearch,esops -n demo
+NAME                                 VERSION       STATUS   AGE
+elasticsearch.kubedb.com/es-gitops   xpack-8.5.3   Ready    66m
+
+NAME                                        AGE
+elasticsearch.gitops.kubedb.com/es-gitops   66m
+
+NAME                                                                        TYPE                STATUS       AGE
+elasticsearchopsrequest.ops.kubedb.com/es-gitops-horizontalscaling-kn71nl   HorizontalScaling   Successful   61m
+elasticsearchopsrequest.ops.kubedb.com/es-gitops-reconfigure-x7ou3f         Reconfigure         Successful   40m
+elasticsearchopsrequest.ops.kubedb.com/es-gitops-restart-sd2424             Restart             Successful   4m10s
+elasticsearchopsrequest.ops.kubedb.com/es-gitops-rotate-auth-8cgx3b         RotateAuth          Successful   36m
+elasticsearchopsrequest.ops.kubedb.com/es-gitops-versionupdate-z92dz0       UpdateVersion       Successful   28m
+elasticsearchopsrequest.ops.kubedb.com/es-gitops-verticalscaling-wyjx4l     VerticalScaling     Successful   55m
+elasticsearchopsrequest.ops.kubedb.com/es-gitops-volumeexpansion-z2e3qb     VolumeExpansion     Successful   50m
+Elasticsearchopsrequest.ops.kubedb.com/es-gitops-reconfiguretls-r4mx7v      ReconfigureTLS      Successful   9m18s
+```
+
+
+> We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for Elasticsearch.
 
 
 ## Next Steps

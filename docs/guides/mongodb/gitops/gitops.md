@@ -1,10 +1,10 @@
 ---
-title: MongoDB Gitops 
-description: MongoDB Gitops 
+title: MongoDB GitOps 
+description: MongoDB GitOps 
 menu:
   docs_{{ .version }}:
     identifier: mg-gitops
-    name: MongoDB Gitops
+    name: MongoDB GitOps
     parent: mg-gitops-mongodb
     weight: 10
 menu_name: docs_{{ .version }}

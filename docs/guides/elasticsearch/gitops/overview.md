@@ -1,6 +1,6 @@
 ---
-title: Elasticsearch Gitops Overview
-description: Elasticsearch Gitops Overview
+title: Elasticsearch GitOps Overview
+description: Elasticsearch GitOps Overview
 menu:
   docs_{{ .version }}:
     identifier: es-gitops-overview

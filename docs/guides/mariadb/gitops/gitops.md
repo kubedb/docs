@@ -1,10 +1,10 @@
 ---
-title: MariaDB Gitops
-description: MariaDB Gitops Overview
+title: MariaDB GitOps
+description: MariaDB GitOps Overview
 menu:
   docs_{{ .version }}:
     identifier: md-gitops
-    name: MariaDB Gitops
+    name: MariaDB GitOps
     parent: guides-mariadb-gitops
     weight: 20
 menu_name: docs_{{ .version }}

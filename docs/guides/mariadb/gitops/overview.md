@@ -1,6 +1,6 @@
 ---
-title: MariaDB Gitops Overview
-description: MariaDB Gitops Overview
+title: MariaDB GitOps Overview
+description: MariaDB GitOps Overview
 menu:
   docs_{{ .version }}:
     identifier: md-gitops-overview

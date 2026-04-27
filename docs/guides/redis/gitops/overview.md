@@ -1,6 +1,6 @@
 ---
-title: Redis Gitops Overview
-description: Redis Gitops Overview
+title: Redis GitOps Overview
+description: Redis GitOps Overview
 menu:
   docs_{{ .version }}:
     identifier: rd-gitops-overview

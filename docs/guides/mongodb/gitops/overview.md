@@ -1,6 +1,6 @@
 ---
-title: MongoDB Gitops Overview
-description: MongoDB Gitops Overview
+title: MongoDB GitOps Overview
+description: MongoDB GitOps Overview
 menu:
   docs_{{ .version }}:
     identifier: mg-gitops-overview

@@ -1,9 +1,9 @@
 ---
-title: Gitops Microsoft SQL Server
+title: GitOps Microsoft SQL Server
 menu:
   docs_{{ .version }}:
     identifier: mssqlserver-gitops
-    name: Gitops
+    name: GitOps
     parent: guides-mssqlserver
     weight: 41
 menu_name: docs_{{ .version }}

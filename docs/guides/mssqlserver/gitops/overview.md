@@ -1,9 +1,9 @@
 ---
-title: Gitops overview Microsoft SQL Server
+title: GitOps overview Microsoft SQL Server
 menu:
   docs_{{ .version }}:
     identifier: ms-overview
-    name: Overview
+    name: Gitops overview Microsoft SQL Server
     parent: mssqlserver-gitops
     weight: 10
 menu_name: docs_{{ .version }}
@@ -43,7 +43,7 @@ The following diagram shows how the `KubeDB` GitOps Operator used to sync with y
 2. **Store in Git**: Push the CR to a Git repository.
 3. **Automated Deployment**: Use a GitOps tool (like `ArgoCD` or `FluxCD`) to monitor the Git repository and synchronize the state of the Kubernetes cluster with the desired state defined in Git.
 4. **Create Database**: The GitOps operator creates a corresponding KubeDB MSSQLServer CR in the Kubernetes cluster to deploy the database.
-5. **Handle Updates**: When you update the ElasticsearchGitOps CR, the operator generates an Ops Request to safely apply the update(e.g. `VerticalScaling`, `HorizontalScaling`, `VolumeExapnsion`, `Reconfigure`, `RotateAuth`, `ReconfigureTLS`, `VersionUpdate`, ans `Restart`.
+5. **Handle Updates**: When you update the MSSqlGitOps CR, the operator generates an Ops Request to safely apply the update(e.g. `VerticalScaling`, `HorizontalScaling`, `VolumeExapnsion`, `Reconfigure`, `RotateAuth`, `ReconfigureTLS`, `VersionUpdate`, ans `Restart`).
 
 This flow makes managing MSSQLServer databases efficient, reliable, and fully integrated with GitOps practices.
 

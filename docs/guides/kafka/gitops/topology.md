@@ -1,9 +1,9 @@
 ---
-title: Topology Gitops
+title: Topology GitOps
 menu:
   docs_{{ .version }}:
     identifier: kf-gitops-topology
-    name: Kafka Gitops
+    name: Kafka GitOps
     parent: kf-gitops
     weight: 20
 menu_name: docs_{{ .version }}
@@ -218,7 +218,7 @@ $ kubectl get pod -n demo Kafka-gitops-broker-0 -o json | jq '.spec.containers[0
     "memory": "1536Mi"
   }
 }
-banusree@bonusree-datta-PC ~> kubectl get pod -n demo Kafka-gitops-controller-0 -o json | jq '.spec.containers[0].resources'
+$ kubectl get pod -n demo Kafka-gitops-controller-0 -o json | jq '.spec.containers[0].resources'
 {
   "limits": {
     "memory": "1540Mi"
