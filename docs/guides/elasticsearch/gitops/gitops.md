@@ -480,7 +480,7 @@ elasticsearchopsrequest.ops.kubedb.com/es-gitops-volumeexpansion-z2e3qb     Volu
 ```
 ### Update Version
 
-List Elasticsearch versions using `kubectl get Elasticsearchversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/elasticsearch/update-version/update-version.md).
+List Elasticsearch versions using `kubectl get Elasticsearchversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/elasticsearch/update-version/elasticsearch.md).
 
 Let's choose `xpack-8.5.3` in this example.
 
