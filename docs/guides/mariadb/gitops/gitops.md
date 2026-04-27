@@ -128,6 +128,8 @@ appbinding.appcatalog.appscode.com/mariadb-gitops   kubedb.com/mariadb   11.8.5 
 
 ### Scale MariaDB Database Resources
 
+Before scaling database resouces:
+
 ```shell
 $ kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[0].resources'
 {

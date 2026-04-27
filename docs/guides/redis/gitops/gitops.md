@@ -193,7 +193,8 @@ We can also scale down the replicas by updating the `replicas` fields.
 
 ### Scale Redis Database Resources
 
-before Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
+Before the Ops Request reaches the `Successful` state, the configured memory limits are as follows:
+
 ```bash
 $ kubectl get pod -n demo rd-gitops-shard0-0 -o json | jq '.spec.containers[0].resources'
 {
@@ -349,7 +350,7 @@ data-rd-gitops-shard2-2   Bound    pvc-1570c37b-63da-456c-af59-b60ed544e651   2G
 
 ### Update Version
 
-List Redis versions using `kubectl get Redisversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/redis/update-version/update-version.md).
+List Redis versions using `kubectl get Redisversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/redis/update-version/cluster.md).
 
 Let's choose `7.4.1` in this example.
 
