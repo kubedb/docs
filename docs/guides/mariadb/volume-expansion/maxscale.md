@@ -53,7 +53,7 @@ standard               driver.standard.io      Delete          Immediate        
 standard-static        driver.standard.io      Delete          Immediate              true                   2m24s
 ```
 
-We can see from the output that `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install standard from [here](https://standard.io/docs/1.9.0/deploy/install/install-with-kubectl/).
+We can see from the output that `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. 
 
 Now, we are going to deploy a `MariaDB` database with `MaxScale` in replication mode.
 

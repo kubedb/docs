@@ -33,7 +33,7 @@ The following diagram shows how the `KubeDB` GitOps Operator used to sync with y
 
 <figure align="center">
 
-  <img alt="GitOps Flow" src="/docs/images/gitops/gitops.png">
+  <img alt="GitOps Flow" src="/docs/images/gitops/gitops.jpg">
 
 <figcaption align="center">Fig: GitOps process of MongoDB</figcaption>
 

@@ -53,8 +53,7 @@ standard (default)     driver.standard.io      Delete          Immediate        
 standard-static        driver.standard.io      Delete          Immediate              true                   7d21h
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install standard from [here](https://standard.io/docs/1.7.2/deploy/install/install-with-kubectl/)
-
+We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. 
 Now, we are going to deploy a `Solr` combined cluster using a supported version by the `KubeDB` operator. Then we are going to apply `SolrAutoscaler` to set up autoscaling.
 
 #### Deploy Solr Combined Cluster
