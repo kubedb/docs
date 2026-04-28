@@ -106,7 +106,7 @@ $ kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplate
 "1Gi"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-edeeff75-9823-4aeb-9189-37adad567ec7   1Gi        RWO            Delete           Bound    demo/data-es-combined-0   longhorn       <unset>                          2m21s
+pvc-edeeff75-9823-4aeb-9189-37adad567ec7   1Gi        RWO            Delete           Bound    demo/data-es-combined-0   standard       <unset>                          2m21s
 
 ```
 
@@ -343,7 +343,7 @@ $  kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplat
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-edeeff75-9823-4aeb-9189-37adad567ec7   4Gi        RWO            Delete           Bound    demo/data-es-combined-0   longhorn       <unset>                          13m
+pvc-edeeff75-9823-4aeb-9189-37adad567ec7   4Gi        RWO            Delete           Bound    demo/data-es-combined-0   standard       <unset>                          13m
 ```
 
 The above output verifies that we have successfully expanded the volume of the Elasticsearch.

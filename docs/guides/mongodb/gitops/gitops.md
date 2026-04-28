@@ -183,7 +183,7 @@ Resource Requests and Limits are updated from `800m` to `1000m` CPU and `2Gi` Me
 Now, `gitops` operator will detect the resource changes and create a `MongoDBOpsRequest` to update the `MongoDB` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$kubectl get mg,MongoDB,mgops -n demo
+$kubectl get mg,mongodb,mgops -n demo
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.10    Ready    13m
 
@@ -246,7 +246,7 @@ Update the `replicas` to `3`. Commit the changes and push to your Git repository
 Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` MongoDBOpsRequest to update the `MongoDB` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mg,MongoDB,mgops -n demo
+$ kubectl get mg,mongodb,mgops -n demo
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.10    Ready    18m
 
@@ -308,7 +308,7 @@ Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and
 Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` MongoDBOpsRequest to update the `MongoDB` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mg,MongoDB,mgops -n demo
+$ kubectl get mg,mongodb,mgops -n demo
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.10    Ready    21m
 
@@ -388,7 +388,7 @@ Commit the changes and push to your Git repository. Your repository is synced wi
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` MongoDBOpsRequest to update the `MongoDB` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get mg,MongoDB,mgops -n demo
+$  kubectl get mg,mongodb,mgops -n demo
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.10    Ready    32m
 
@@ -462,7 +462,7 @@ Add the secret name in `authSecret` field. Commit the changes and push to your G
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` MongoDBOpsRequest to update the `MongoDB` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mg,MongoDB,mgops -n demo
+$ kubectl get mg,mongodb,mgops -n demo
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.10    Ready    41m
 
@@ -520,7 +520,7 @@ Update the `version` field to `8.0.17`. Commit the changes and push to your Git 
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` MongoDBOpsRequest to update the `MongoDB` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mg,MongoDB,mgops -n demo
+$ kubectl get mg,mongodb,mgops -n demo
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.17    Ready    46m
 
@@ -600,7 +600,7 @@ Add `monitor` field in the spec. Commit the changes and push to your Git reposit
 
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` MongoDBOpsRequest to add the `MongoDB` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get mg,MongoDB,mgops -n demo
+$ kubectl get mg,mongodb,mgops -n demo
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.17    Ready    52m
 
@@ -629,6 +629,130 @@ There are some other fields that will trigger `Restart` ops request.
 - `.spec.enforceGroup`
 - `.spec.sslMode` etc.
 
+
+### TLS configuration
+
+We are going to create an example `Issuer` that will be used throughout the duration of this tutorial to enable SSL/TLS in MongoDB. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
+
+- Start off by generating you ca certificates using openssl.
+
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mongo/O=kubedb"
+```
+
+- Now create a ca-secret using the certificate files you have just generated.
+
+```bash
+kubectl create secret tls mongo-ca \
+     --cert=ca.crt \
+     --key=ca.key \
+     --namespace=demo
+```
+
+Now, create an `Issuer` using the `ca-secret` you have just created. The `YAML` file looks like this:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: mongo-ca-issuer
+  namespace: demo
+spec:
+  ca:
+    secretName: mongo-ca
+```
+
+Apply the `YAML` file:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/tls/issuer.yaml
+issuer.cert-manager.io/mongo-ca-issuer created
+```
+
+Let's add that to our `kubedb /mg-issuer.yaml` file. File structure will look like this,
+```bash
+$ tree .
+├── kubedb
+│ ├── mg-configuration.yaml
+│ ├── mg-issuer.yaml
+│ └── mongodb.yaml
+1 directories, 3 files
+```
+
+Update the `mongodb.yaml` with the following,
+
+```yaml
+apiVersion: gitops.kubedb.com/v1alpha1
+kind: MongoDB
+metadata:
+  name: mg-gitops
+  namespace: demo
+spec:
+  version: "8.0.17"
+  replicaSet: 
+    name: "replicaset"
+  replicas: 3
+  podTemplate:
+   spec:
+     containers:
+     - name: mongodb
+       resources:
+         limits:
+           memory: 2Gi
+         requests:
+           cpu: 1000m
+           memory: 2Gi
+  storageType: Durable
+  storage:
+    storageClassName: longhorn
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  configuration:
+    secretName: mg-custom-config
+  authSecret:
+    kind: Secret
+    name: mgauth
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+  tls:
+    issuerRef:
+      name: mg-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    certificates:
+      - alias: client
+        subject:
+          organizations:
+            - mongo
+          organizationalUnits:
+            - client
+```
+Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
+
+Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `MongoDB` database tls. List the resources created by `gitops` operator in the `demo` namespace.
+
+```bash
+$ kubectl get mg,mongodb,mgops -n demo
+NAME                           VERSION   STATUS   AGE
+mongodb.kubedb.com/mg-gitops   8.0.17    Ready    20m
+
+NAME                                  AGE
+mongodb.gitops.kubedb.com/mg-gitops   20m
+
+NAME                                                               TYPE             STATUS       AGE
+mongodbopsrequest.ops.kubedb.com/mg-gitops-reconfiguretls-2pzvw4   ReconfigureTLS   Successful   10m
+```
+
+
+> We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for MongoDB.
 
 ## Next Steps
 

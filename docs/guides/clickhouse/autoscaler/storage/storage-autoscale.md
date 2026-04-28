@@ -49,11 +49,11 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  6h2m
-longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   9m41s
-longhorn-static        driver.longhorn.io      Delete          Immediate              true                   9m24s
+standard (default)     driver.standard.io      Delete          Immediate              true                   9m41s
+standard-static        driver.standard.io      Delete          Immediate              true                   9m24s
 ```
 
-We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `ClickHouse` cluster using a supported version by `KubeDB` operator. Then we are going to apply `ClickHouseAutoscaler` to set up autoscaling.
 
@@ -103,7 +103,7 @@ spec:
                   cpu: 500m
                   memory: 1Gi
       storage:
-        storageClassName: "longhorn"
+        storageClassName: "standard"
         accessModes:
           - ReadWriteOnce
         resources:
@@ -136,13 +136,13 @@ Let's check volume size from petset, and from the persistent volume,
 
 ➤ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                  STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-3a1cbeb5-ed56-4c20-9e29-960c202dd2f7   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-1                     longhorn       <unset>                          3m52s
-pvc-53e703b6-b5d5-46c2-97b6-f724f684a448   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-0-0   longhorn       <unset>                          4m3s
-pvc-817d3ee6-922c-471e-889a-4529f8822ce2   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-0                     longhorn       <unset>                          4m10s
-pvc-892c1830-8521-4e84-80e8-fdd7995b0c03   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-1-1   longhorn       <unset>                          3m41s
-pvc-a8027da7-92a7-4d70-9a12-6ea5e3280d16   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-0-1   longhorn       <unset>                          3m45s
-pvc-e0722709-9674-4e41-b1be-756a6d77e330   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-2                     longhorn       <unset>                          3m33s
-pvc-f2666ae8-1f53-4d0b-869e-ac62ffde5d5e   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-1-0   longhorn       <unset>                          4m             longhorn       <unset>                          21m
+pvc-3a1cbeb5-ed56-4c20-9e29-960c202dd2f7   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-1                     standard       <unset>                          3m52s
+pvc-53e703b6-b5d5-46c2-97b6-f724f684a448   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-0-0   standard       <unset>                          4m3s
+pvc-817d3ee6-922c-471e-889a-4529f8822ce2   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-0                     standard       <unset>                          4m10s
+pvc-892c1830-8521-4e84-80e8-fdd7995b0c03   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-1-1   standard       <unset>                          3m41s
+pvc-a8027da7-92a7-4d70-9a12-6ea5e3280d16   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-0-1   standard       <unset>                          3m45s
+pvc-e0722709-9674-4e41-b1be-756a6d77e330   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-2                     standard       <unset>                          3m33s
+pvc-f2666ae8-1f53-4d0b-869e-ac62ffde5d5e   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-1-0   standard       <unset>                          4m             standard       <unset>                          21m
 ```
 
 You can see the petset has 1Gi storage, and the capacity of all the persistent volume is also 600Mi.
@@ -247,14 +247,14 @@ Let's exec into the database pod and fill the database volume(`var/lib/clickhous
 Defaulted container "clickhouse" out of: clickhouse, clickhouse-init (init)
 clickhouse@clickhouse-prod-appscode-cluster-shard-0-0:/$ df -h /var/lib/clickhouse
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/longhorn/pvc-53e703b6-b5d5-46c2-97b6-f724f684a448  974M   30M  929M   4% /var/lib/clickhouse
+/dev/standard/pvc-53e703b6-b5d5-46c2-97b6-f724f684a448  974M   30M  929M   4% /var/lib/clickhouse
 clickhouse@clickhouse-prod-appscode-cluster-shard-0-0:/$ dd if=/dev/zero of=/var/lib/clickhouse/file.img bs=500M count=1
 1+0 records in
 1+0 records out
 524288000 bytes (524 MB, 500 MiB) copied, 11.2442 s, 46.6 MB/s
 clickhouse@clickhouse-prod-appscode-cluster-shard-0-0:/$ df -h /var/lib/clickhouse
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/longhorn/pvc-53e703b6-b5d5-46c2-97b6-f724f684a448  974M  531M  428M  56% /var/lib/clickhouse
+/dev/standard/pvc-53e703b6-b5d5-46c2-97b6-f724f684a448  974M  531M  428M  56% /var/lib/clickhouse
 ```
 
 So, from the above output we can see that the storage usage is 56%, which exceeded the `usageThreshold` 40%.
@@ -434,13 +434,13 @@ Now, we are going to verify from the `Petset`, and the `Persistent Volume` wheth
 shuvo@shuvo-pc:~
 ➤ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                  STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-3a1cbeb5-ed56-4c20-9e29-960c202dd2f7   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-1                     longhorn       <unset>                          38m
-pvc-53e703b6-b5d5-46c2-97b6-f724f684a448   1462Mi     RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-0-0   longhorn       <unset>                          38m
-pvc-817d3ee6-922c-471e-889a-4529f8822ce2   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-0                     longhorn       <unset>                          38m
-pvc-892c1830-8521-4e84-80e8-fdd7995b0c03   1462Mi     RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-1-1   longhorn       <unset>                          38m
-pvc-a8027da7-92a7-4d70-9a12-6ea5e3280d16   1462Mi     RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-0-1   longhorn       <unset>                          38m
-pvc-e0722709-9674-4e41-b1be-756a6d77e330   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-2                     longhorn       <unset>                          38m
-pvc-f2666ae8-1f53-4d0b-869e-ac62ffde5d5e   1462Mi     RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-1-0   longhorn       <unset>                          38m
+pvc-3a1cbeb5-ed56-4c20-9e29-960c202dd2f7   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-1                     standard       <unset>                          38m
+pvc-53e703b6-b5d5-46c2-97b6-f724f684a448   1462Mi     RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-0-0   standard       <unset>                          38m
+pvc-817d3ee6-922c-471e-889a-4529f8822ce2   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-0                     standard       <unset>                          38m
+pvc-892c1830-8521-4e84-80e8-fdd7995b0c03   1462Mi     RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-1-1   standard       <unset>                          38m
+pvc-a8027da7-92a7-4d70-9a12-6ea5e3280d16   1462Mi     RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-0-1   standard       <unset>                          38m
+pvc-e0722709-9674-4e41-b1be-756a6d77e330   1Gi        RWO            Delete           Bound    demo/data-clickhouse-prod-keeper-2                     standard       <unset>                          38m
+pvc-f2666ae8-1f53-4d0b-869e-ac62ffde5d5e   1462Mi     RWO            Delete           Bound    demo/data-clickhouse-prod-appscode-cluster-shard-1-0   standard       <unset>                          38m
 ```
 
 The above output verifies that we have successfully autoscaled the volume of the Clickhouse replicaset database.

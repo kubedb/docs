@@ -8,5 +8,5 @@ spec:
   databaseRef:
     name: sample-postgres
   migration:
-    storageClassName: longhorn-custom
+    storageClassName: standard-custom
     oldPVReclaimPolicy: Delete

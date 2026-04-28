@@ -13,7 +13,7 @@ spec:
       enableUI: true
       storageType: Durable
       storage:
-        storageClassName: "longhorn"
+        storageClassName: "standard"
         accessModes:
           - ReadWriteOnce
         resources:
@@ -21,7 +21,7 @@ spec:
             storage: 50Mi
   storageType: Durable
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:

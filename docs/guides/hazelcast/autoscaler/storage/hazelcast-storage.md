@@ -88,7 +88,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: longhorn
+    storageClassName: standard
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -428,8 +428,8 @@ $ kubectl get statefulset -n demo hazelcast-dev -o json | jq '.spec.volumeClaimT
 "1531054080"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY      ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                           STORAGECLASS          REASON     AGE
-pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51   1462Mi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-0         longhorn              <unset>    30m5s
-pvc-f068d245-718b-4561-b452-f3130bb260f6   1462Mi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-1         longhorn              <unset>    30m1s
+pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51   1462Mi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-0         standard              <unset>    30m5s
+pvc-f068d245-718b-4561-b452-f3130bb260f6   1462Mi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-1         standard              <unset>    30m1s
 ```
 
 The above output verifies that we have successfully autoscaled the volume of the Hazelcast  cluster.

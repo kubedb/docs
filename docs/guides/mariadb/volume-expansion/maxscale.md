@@ -49,11 +49,11 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path             rancher.io/local-path   Delete          WaitForFirstConsumer   false                  46h
-longhorn               driver.longhorn.io      Delete          Immediate              true                   2m27s
-longhorn-static        driver.longhorn.io      Delete          Immediate              true                   2m24s
+standard               driver.standard.io      Delete          Immediate              true                   2m27s
+standard-static        driver.standard.io      Delete          Immediate              true                   2m24s
 ```
 
-We can see from the output that `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install longhorn from [here](https://longhorn.io/docs/1.9.0/deploy/install/install-with-kubectl/).
+We can see from the output that `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install standard from [here](https://standard.io/docs/1.9.0/deploy/install/install-with-kubectl/).
 
 Now, we are going to deploy a `MariaDB` database with `MaxScale` in replication mode.
 
@@ -78,7 +78,7 @@ spec:
       enableUI: true
       storageType: Durable
       storage:
-        storageClassName: "longhorn"
+        storageClassName: "standard"
         accessModes:
           - ReadWriteOnce
         resources:
@@ -86,7 +86,7 @@ spec:
             storage: 50Mi
   storageType: Durable
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -118,12 +118,12 @@ $ kubectl get petset -n demo md-replication-mx -o json | jq '.spec.volumeClaimTe
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-27e4f4b2-289b-44bb-97a2-729d9420f668   1Gi        RWO            Delete           Bound    demo/data-md-replication-2      longhorn       <unset>                          3m48s
-pvc-2df9a141-5d32-4c92-b0ec-a8043975c2ae   1Gi        RWO            Delete           Bound    demo/data-md-replication-1      longhorn       <unset>                          3m48s
-pvc-7609183e-f9a5-4177-b260-0d24796fb04c   1Gi        RWO            Delete           Bound    demo/data-md-replication-0      longhorn       <unset>                          3m48s
-pvc-96449ed7-305e-4857-a2b6-6eda33c99207   50Mi       RWO            Delete           Bound    demo/data-md-replication-mx-2   longhorn       <unset>                          3m51s
-pvc-c1424029-4a52-4ff4-9888-14d5e7b4fb61   50Mi       RWO            Delete           Bound    demo/data-md-replication-mx-0   longhorn       <unset>                          3m51s
-pvc-d12d301c-58bd-4c59-bd5a-d9167df2b53d   50Mi       RWO            Delete           Bound    demo/data-md-replication-mx-1   longhorn       <unset>                          3m51s
+pvc-27e4f4b2-289b-44bb-97a2-729d9420f668   1Gi        RWO            Delete           Bound    demo/data-md-replication-2      standard       <unset>                          3m48s
+pvc-2df9a141-5d32-4c92-b0ec-a8043975c2ae   1Gi        RWO            Delete           Bound    demo/data-md-replication-1      standard       <unset>                          3m48s
+pvc-7609183e-f9a5-4177-b260-0d24796fb04c   1Gi        RWO            Delete           Bound    demo/data-md-replication-0      standard       <unset>                          3m48s
+pvc-96449ed7-305e-4857-a2b6-6eda33c99207   50Mi       RWO            Delete           Bound    demo/data-md-replication-mx-2   standard       <unset>                          3m51s
+pvc-c1424029-4a52-4ff4-9888-14d5e7b4fb61   50Mi       RWO            Delete           Bound    demo/data-md-replication-mx-0   standard       <unset>                          3m51s
+pvc-d12d301c-58bd-4c59-bd5a-d9167df2b53d   50Mi       RWO            Delete           Bound    demo/data-md-replication-mx-1   standard       <unset>                          3m51s
 
 ```
 
@@ -157,7 +157,7 @@ spec:
 Here,
 - `spec.type` specifies that we are performing `VolumeExpansion` on our database.
 - `spec.databaseRef.name` specifies that we are performing volume expansion operation on `md-replication` database.
-- `spec.volumeExpansion.mode` specifies the desired volume expansion mode (`Online` or `Offline`). Storageclass `longhorn` supports `Online` volume expansion.
+- `spec.volumeExpansion.mode` specifies the desired volume expansion mode (`Online` or `Offline`). Storageclass `standard` supports `Online` volume expansion.
 - `spec.volumeExpansion.maxscale` specifies the desired volume size of maxscale server.
 
 > **Note:** If the Storageclass you are using doesn't support `Online` Volume Expansion, Try offline volume expansion by using `spec.volumeExpansion.mode:"Offline"`. The pods need to be restarted during offline volume expansion.
@@ -281,12 +281,12 @@ $ kubectl get petset -n demo md-replication-mx -o json | jq '.spec.volumeClaimTe
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-27e4f4b2-289b-44bb-97a2-729d9420f668   1Gi        RWO            Delete           Bound    demo/data-md-replication-2      longhorn       <unset>                          34m
-pvc-2df9a141-5d32-4c92-b0ec-a8043975c2ae   1Gi        RWO            Delete           Bound    demo/data-md-replication-1      longhorn       <unset>                          34m
-pvc-7609183e-f9a5-4177-b260-0d24796fb04c   1Gi        RWO            Delete           Bound    demo/data-md-replication-0      longhorn       <unset>                          34m
-pvc-96449ed7-305e-4857-a2b6-6eda33c99207   100Mi      RWO            Delete           Bound    demo/data-md-replication-mx-2   longhorn       <unset>                          34m
-pvc-c1424029-4a52-4ff4-9888-14d5e7b4fb61   100Mi      RWO            Delete           Bound    demo/data-md-replication-mx-0   longhorn       <unset>                          34m
-pvc-d12d301c-58bd-4c59-bd5a-d9167df2b53d   100Mi      RWO            Delete           Bound    demo/data-md-replication-mx-1   longhorn       <unset>                          34m
+pvc-27e4f4b2-289b-44bb-97a2-729d9420f668   1Gi        RWO            Delete           Bound    demo/data-md-replication-2      standard       <unset>                          34m
+pvc-2df9a141-5d32-4c92-b0ec-a8043975c2ae   1Gi        RWO            Delete           Bound    demo/data-md-replication-1      standard       <unset>                          34m
+pvc-7609183e-f9a5-4177-b260-0d24796fb04c   1Gi        RWO            Delete           Bound    demo/data-md-replication-0      standard       <unset>                          34m
+pvc-96449ed7-305e-4857-a2b6-6eda33c99207   100Mi      RWO            Delete           Bound    demo/data-md-replication-mx-2   standard       <unset>                          34m
+pvc-c1424029-4a52-4ff4-9888-14d5e7b4fb61   100Mi      RWO            Delete           Bound    demo/data-md-replication-mx-0   standard       <unset>                          34m
+pvc-d12d301c-58bd-4c59-bd5a-d9167df2b53d   100Mi      RWO            Delete           Bound    demo/data-md-replication-mx-1   standard       <unset>                          34m
 
 ```
 

@@ -24,7 +24,7 @@ spec:
     driver: "VolumeSnapshotter"
     task:
       params:
-        volumeSnapshotClassName: "longhorn-snapshot-vsc"
+        volumeSnapshotClassName: "standard-snapshot-vsc"
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1

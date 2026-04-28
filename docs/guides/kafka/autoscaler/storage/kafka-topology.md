@@ -120,10 +120,10 @@ $ kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.volumeCla
 "1Gi"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                                      STORAGECLASS          REASON     AGE
-pvc-128d9138-64da-4021-8a7c-7ca80823e842   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1               longhorn              <unset>    33s
-pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0                   longhorn              <unset>    51s
-pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0               longhorn              <unset>    50s
-pvc-68f86aac-33d1-423a-bc56-8a905b546db2   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1                   longhorn              <unset>    32s
+pvc-128d9138-64da-4021-8a7c-7ca80823e842   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1               standard              <unset>    33s
+pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0                   standard              <unset>    51s
+pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0               standard              <unset>    50s
+pvc-68f86aac-33d1-423a-bc56-8a905b546db2   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1                   standard              <unset>    32s
 ```
 
 You can see the petset for both broker and controller has 1GB storage, and the capacity of all the persistent volume is also 1GB.
@@ -656,10 +656,10 @@ $ kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.volumeCla
 "2041405440"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY     ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                                      STORAGECLASS          REASON     AGE
-pvc-128d9138-64da-4021-8a7c-7ca80823e842   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1               longhorn              <unset>    33s
-pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0                   longhorn              <unset>    51s
-pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0               longhorn              <unset>    50s
-pvc-68f86aac-33d1-423a-bc56-8a905b546db2   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1                   longhorn              <unset>    32s
+pvc-128d9138-64da-4021-8a7c-7ca80823e842   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1               standard              <unset>    33s
+pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0                   standard              <unset>    51s
+pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0               standard              <unset>    50s
+pvc-68f86aac-33d1-423a-bc56-8a905b546db2   1948Mi       RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1                   standard              <unset>    32s
 ```
 
 The above output verifies that we have successfully autoscaled the volume of the Kafka topology cluster for both broker and controller.

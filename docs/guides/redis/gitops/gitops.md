@@ -74,7 +74,7 @@ spec:
     resources:
       requests:
         storage: "1Gi"
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -133,6 +133,107 @@ appbinding.appcatalog.appscode.com/rd-gitops   kubedb.com/redis   8.0.4     8m53
 
 ## Update Redis Database using GitOps
 
+
+### TLS configuration
+
+
+
+We are going to create an example `Issuer` that will be used throughout the duration of this tutorial to enable SSL/TLS in Redis. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
+
+- Start off by generating you ca certificates using openssl.
+
+```bash
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=redis/O=kubedb"
+```
+
+- Now create a ca-secret using the certificate files you have just generated.
+
+```bash
+kubectl create secret tls redis-ca \
+     --cert=ca.crt \
+     --key=ca.key \
+     --namespace=demo
+```
+
+Now, create an `Issuer` using the `ca-secret` you have just created. The `YAML` file looks like this:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: redis-ca-issuer
+  namespace: demo
+spec:
+  ca:
+    secretName: redis-ca
+```
+
+Apply the `YAML` file:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/issuer.yaml
+issuer.cert-manager.io/redis-ca-issuer created
+```
+
+Let's add that to our `kubedb /rd-issuer.yaml` file. File structure will look like this,
+```bash
+$ tree .
+├── kubedb
+│ ├── rd-configuration.yaml
+│ ├── rd-issuer.yaml
+│ └── redis.yaml
+1 directories, 3 files
+```
+
+Update the `redis.yaml` with the following,
+```yaml
+apiVersion: gitops.kubedb.com/v1alpha1
+kind: Redis
+metadata:
+  name: rd-gitops
+  namespace: demo
+spec:
+  version: 7.4.1
+  mode: Cluster
+  cluster:
+    shards: 3
+    replicas: 2
+  storageType: Durable
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: rd-issuer
+  storage:
+    resources:
+      requests:
+        storage: "1Gi"
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+  deletionPolicy: WipeOut
+```
+
+Add  `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+
+Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `Elasticsearch` database tls. List the resources created by `gitops` operator in the `demo` namespace.
+
+```bash
+$ kubectl get rd,redis,redisopsrequest -n demo
+NAME                         VERSION   STATUS   AGE
+redis.kubedb.com/rd-gitops   7.4.1     Ready    15m
+
+NAME                                AGE
+redis.gitops.kubedb.com/rd-gitops   15m
+
+NAME                                                             TYPE             STATUS       AGE
+redisopsrequest.ops.kubedb.com/rd-gitops-reconfiguretls-qcdjjd   ReconfigureTLS   Successful   9m47s
+```
+
+
+> We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for Elasticsearch.
+
+
 ### Scale Redis Replicas
 
 
@@ -154,7 +255,7 @@ spec:
     resources:
       requests:
         storage: "1Gi"
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -227,7 +328,7 @@ spec:
     resources:
       requests:
         storage: "1Gi"
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -297,7 +398,7 @@ spec:
     resources:
       requests:
         storage: "2Gi"
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -336,15 +437,15 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 ```bash
 $ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=rd-gitops'
 NAME                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-data-rd-gitops-shard0-0   Bound    pvc-97afbd7c-5887-4381-bef8-4584411b4ed5   2Gi        RWO            longhorn       <unset>                 39m
-data-rd-gitops-shard0-1   Bound    pvc-461c6122-94ba-4b96-805b-1bf2619a10d4   2Gi        RWO            longhorn       <unset>                 38m
-data-rd-gitops-shard0-2   Bound    pvc-90fc4131-a272-44bd-bfa2-3ffc5c093178   2Gi        RWO            longhorn       <unset>                 24m
-data-rd-gitops-shard1-0   Bound    pvc-38855b1c-4e1f-485f-93c5-5848eed1465d   2Gi        RWO            longhorn       <unset>                 39m
-data-rd-gitops-shard1-1   Bound    pvc-14b89fe8-8681-4aba-af37-035da020c3cb   2Gi        RWO            longhorn       <unset>                 38m
-data-rd-gitops-shard1-2   Bound    pvc-6d3d1e55-689e-4884-a3cc-ed6080e48cf0   2Gi        RWO            longhorn       <unset>                 23m
-data-rd-gitops-shard2-0   Bound    pvc-e6b9fa56-40b2-45aa-8ebd-ab360522a294   2Gi        RWO            longhorn       <unset>                 39m
-data-rd-gitops-shard2-1   Bound    pvc-6fdfd395-d2b8-45df-8369-f9897e3d678c   2Gi        RWO            longhorn       <unset>                 38m
-data-rd-gitops-shard2-2   Bound    pvc-1570c37b-63da-456c-af59-b60ed544e651   2Gi        RWO            longhorn       <unset>                 23m
+data-rd-gitops-shard0-0   Bound    pvc-97afbd7c-5887-4381-bef8-4584411b4ed5   2Gi        RWO            standard       <unset>                 39m
+data-rd-gitops-shard0-1   Bound    pvc-461c6122-94ba-4b96-805b-1bf2619a10d4   2Gi        RWO            standard       <unset>                 38m
+data-rd-gitops-shard0-2   Bound    pvc-90fc4131-a272-44bd-bfa2-3ffc5c093178   2Gi        RWO            standard       <unset>                 24m
+data-rd-gitops-shard1-0   Bound    pvc-38855b1c-4e1f-485f-93c5-5848eed1465d   2Gi        RWO            standard       <unset>                 39m
+data-rd-gitops-shard1-1   Bound    pvc-14b89fe8-8681-4aba-af37-035da020c3cb   2Gi        RWO            standard       <unset>                 38m
+data-rd-gitops-shard1-2   Bound    pvc-6d3d1e55-689e-4884-a3cc-ed6080e48cf0   2Gi        RWO            standard       <unset>                 23m
+data-rd-gitops-shard2-0   Bound    pvc-e6b9fa56-40b2-45aa-8ebd-ab360522a294   2Gi        RWO            standard       <unset>                 39m
+data-rd-gitops-shard2-1   Bound    pvc-6fdfd395-d2b8-45df-8369-f9897e3d678c   2Gi        RWO            standard       <unset>                 38m
+data-rd-gitops-shard2-2   Bound    pvc-1570c37b-63da-456c-af59-b60ed544e651   2Gi        RWO            standard       <unset>                 23m
 ```
 
 
@@ -372,7 +473,7 @@ spec:
     resources:
       requests:
         storage: "2Gi"
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -453,7 +554,7 @@ spec:
     resources:
       requests:
         storage: "2Gi"
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -533,7 +634,7 @@ spec:
     resources:
       requests:
         storage: "2Gi"
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
   podTemplate:
@@ -602,7 +703,7 @@ spec:
     resources:
       requests:
         storage: "2Gi"
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut

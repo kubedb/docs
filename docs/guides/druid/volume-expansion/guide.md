@@ -51,11 +51,11 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  28h
-longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   27h
-longhorn-static        driver.longhorn.io      Delete          Immediate              true                   27h
+standard (default)     driver.standard.io      Delete          Immediate              true                   27h
+standard-static        driver.standard.io      Delete          Immediate              true                   27h
 ```
 
-We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 ### Create External Dependency (Deep Storage)
 
@@ -177,8 +177,8 @@ $ kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.vo
 
 $ kubectl get pv -n demo                                       
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                             STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-0bf49077-1c7a-4943-bb17-1dffd1626dcd   1Gi        RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      longhorn       <unset>                          10m
-pvc-59ed4914-53b3-4f18-a6aa-7699c2b738e2   1Gi        RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   longhorn       <unset>                          10m
+pvc-0bf49077-1c7a-4943-bb17-1dffd1626dcd   1Gi        RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      standard       <unset>                          10m
+pvc-59ed4914-53b3-4f18-a6aa-7699c2b738e2   1Gi        RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   standard       <unset>                          10m
 ```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.

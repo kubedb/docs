@@ -139,7 +139,7 @@ spec:
     driver: "VolumeSnapshotter"
     task:
       params:
-        volumeSnapshotClassName: "longhorn-snapshot-vsc"
+        volumeSnapshotClassName: "standard-snapshot-vsc"
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
@@ -182,16 +182,16 @@ stringData:
 ```bash
 $ kubectl get volumesnapshotclasses
 NAME                    DRIVER               DELETIONPOLICY   AGE
-longhorn-snapshot-vsc   driver.longhorn.io   Delete           7d22h
+standard-snapshot-vsc   driver.standard.io   Delete           7d22h
 
 ```
-If not any, try using `longhorn` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
+If not any, try using `standard` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
 ```yaml
 kind: VolumeSnapshotClass
 apiVersion: snapshot.storage.k8s.io/v1
 metadata:
-  name: longhorn-snapshot-vsc
-driver: driver.longhorn.io
+  name: standard-snapshot-vsc
+driver: driver.standard.io
 deletionPolicy: Delete
 parameters:
   type: snap
@@ -199,10 +199,10 @@ parameters:
 ```
 
 ```bash
-$ helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
+$ helm install standard standard/standard --namespace standard-system --create-namespace
 
 $ kubectl apply -f volumesnapshotclass.yaml
-  volumesnapshotclass.snapshot.storage.k8s.io/longhorn-snapshot-vsc unchanged
+  volumesnapshotclass.snapshot.storage.k8s.io/standard-snapshot-vsc unchanged
 ```
 
 # Deploy PostgreSQL
@@ -222,7 +222,7 @@ spec:
   standbyMode: Hot
   storageType: Durable
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
     resources:
@@ -270,7 +270,7 @@ demo-pg-backup-config-manifest-1702388088      BackupConfiguration   demo-pg-bac
 
 kubectl get volumesnapshots -n demo
 NAME                           READYTOUSE   SOURCEPVC                  SOURCESNAPSHOTCONTENT   RESTORESIZE   SNAPSHOTCLASS           SNAPSHOTCONTENT                                    CREATIONTIME   AGE
-demo-pg-1702388096             true         data-demo-pg-1                                     1Gi           longhorn-snapshot-vsc   snapcontent-735e97ad-1dfa-4b70-b416-33f7270d792c   2m5s           2m5s
+demo-pg-1702388096             true         data-demo-pg-1                                     1Gi           standard-snapshot-vsc   snapcontent-735e97ad-1dfa-4b70-b416-33f7270d792c   2m5s           2m5s
 ```
 
 ## data insert and switch wal
@@ -371,7 +371,7 @@ spec:
   standbyMode: Hot
   storageType: Durable
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
     resources:

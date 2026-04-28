@@ -138,7 +138,7 @@ spec:
     driver: "VolumeSnapshotter"
     task:
       params:
-        volumeSnapshotClassName: "longhorn-snapshot-vsc"
+        volumeSnapshotClassName: "standard-snapshot-vsc"
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
@@ -184,16 +184,16 @@ stringData:
 ```bash
 $ kubectl get volumesnapshotclasses
 NAME                    DRIVER               DELETIONPOLICY   AGE
-longhorn-snapshot-vsc   driver.longhorn.io   Delete           7d22h
+standard-snapshot-vsc   driver.standard.io   Delete           7d22h
 
 ```
-If not any, try using `longhorn` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
+If not any, try using `standard` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
 ```yaml
 kind: VolumeSnapshotClass
 apiVersion: snapshot.storage.k8s.io/v1
 metadata:
-  name: longhorn-snapshot-vsc
-driver: driver.longhorn.io
+  name: standard-snapshot-vsc
+driver: driver.standard.io
 deletionPolicy: Delete
 parameters:
   type: snap
@@ -201,13 +201,13 @@ parameters:
 ```
 
 ```bash
-$ helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
+$ helm install standard standard/standard --namespace standard-system --create-namespace
 
 $ kubectl apply -f volumesnapshotclass.yaml
-  volumesnapshotclass.snapshot.storage.k8s.io/longhorn-snapshot-vsc unchanged
+  volumesnapshotclass.snapshot.storage.k8s.io/standard-snapshot-vsc unchanged
 ```
 
-Note: Ensure that the VolumeSnapshotClass is provisioned with the same storage class driver used for provisioning your MySQL database. In our case, we are using the `longhorn` storageclass as our database provisioner, with the driver set to `driver.longhorn.io`.
+Note: Ensure that the VolumeSnapshotClass is provisioned with the same storage class driver used for provisioning your MySQL database. In our case, we are using the `standard` storageclass as our database provisioner, with the driver set to `driver.standard.io`.
 
 # Deploy MySQL
 We are now ready with the setup for continuous MySQL archiving. We will deploy a MySQL object that references the MySQL archiver object.
@@ -227,7 +227,7 @@ spec:
     mode: GroupReplication
   storageType: Durable
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -293,7 +293,7 @@ mysql-archiver-manifest-backup-1733206003      BackupConfiguration   mysql-backu
 
 kubectl get volumesnapshots -n demo
 NAME                           READYTOUSE   SOURCEPVC                  SOURCESNAPSHOTCONTENT   RESTORESIZE   SNAPSHOTCLASS           SNAPSHOTCONTENT                                    CREATIONTIME   AGE
-mysql-1702388096               true         data-mysql-1                                       1Gi           longhorn-snapshot-vsc   snapcontent-735e97ad-1dfa-4b70-b416-33f7270d792c   2m5s           2m5s
+mysql-1702388096               true         data-mysql-1                                       1Gi           standard-snapshot-vsc   snapcontent-735e97ad-1dfa-4b70-b416-33f7270d792c   2m5s           2m5s
 
 $ kubectl get repository.storage.kubestash.com -n demo 
 NAME             INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
@@ -428,7 +428,7 @@ spec:
     mode: GroupReplication
   storageType: Durable
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:

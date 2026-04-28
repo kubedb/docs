@@ -1,10 +1,10 @@
 ---
 title: MariaDB GitOps
-description: MariaDB GitOps Overview
+description: MariaDB GitOps
 menu:
   docs_{{ .version }}:
     identifier: md-gitops
-    name: MariaDB GitOps
+    name: GitOps MariaDB 
     parent: guides-mariadb-gitops
     weight: 20
 menu_name: docs_{{ .version }}
@@ -93,7 +93,7 @@ Our `gitops` operator will create an actual `MariaDB` database CR in the cluster
 
 
 ```bash
-$ kubectl get MariaDB.gitops.kubedb.com,MariaDB.kubedb.com -n demo
+$ kubectl get mariaDB.gitops.kubedb.com,mariaDB.kubedb.com -n demo
 NAME                                       AGE
 mariadb.gitops.kubedb.com/mariadb-gitops   22m
 

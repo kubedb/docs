@@ -113,7 +113,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: longhorn
+    storageClassName: standard
   storageType: Durable
   deletionPolicy: WipeOut
 ```

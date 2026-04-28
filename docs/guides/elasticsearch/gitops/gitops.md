@@ -1,10 +1,10 @@
 ---
-title: Elasticsearch GitOps Overview
-description: Elasticsearch GitOps Overview
+title: Elasticsearch GitOps Details
+description: Elasticsearch GitOps
 menu:
   docs_{{ .version }}:
-    identifier: es-gitops-overview
-    name: Overview
+    identifier: gitops-elasticsearch
+    name: GitOps Elasticsearch 
     parent: es-gitops
     weight: 20
 menu_name: docs_{{ .version }}
@@ -74,7 +74,7 @@ spec:
   replicas: 2
   storageType: Durable
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -154,7 +154,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -216,7 +216,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -283,7 +283,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -380,7 +380,7 @@ spec:
               memory: 1Gi
   storageType: Durable
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -419,7 +419,6 @@ $ kubectl create secret generic es-rotate-auth -n demo \
                                       --from-literal=username=elastic \
                                       --from-literal=password=elasticsearch-secret
 secret/es-rotate-auth created
-
 ```
 
 
@@ -453,7 +452,7 @@ spec:
               memory: 1Gi
   storageType: Durable
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -497,7 +496,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -574,7 +573,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -714,7 +713,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
@@ -746,7 +745,7 @@ spec:
         interval: 10s
 ```
 
-Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Add `enableSSL: true` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `Elasticsearch` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -766,7 +765,7 @@ elasticsearchopsrequest.ops.kubedb.com/es-gitops-rotate-auth-8cgx3b         Rota
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-versionupdate-z92dz0       UpdateVersion       Successful   28m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-verticalscaling-wyjx4l     VerticalScaling     Successful   55m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-volumeexpansion-z2e3qb     VolumeExpansion     Successful   50m
-Elasticsearchopsrequest.ops.kubedb.com/es-gitops-reconfiguretls-r4mx7v      ReconfigureTLS      Successful   9m18s
+elasticsearchopsrequest.ops.kubedb.com/es-gitops-reconfiguretls-r4mx7v      ReconfigureTLS      Successful   9m18s
 ```
 
 

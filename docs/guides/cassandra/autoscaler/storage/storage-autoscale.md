@@ -49,11 +49,11 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  6h2m
-longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   9m41s
-longhorn-static        driver.longhorn.io      Delete          Immediate              true                   9m24s
+standard (default)     driver.standard.io      Delete          Immediate              true                   9m41s
+standard-static        driver.standard.io      Delete          Immediate              true                   9m24s
 ```
 
-We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `Cassandra` cluster using a supported version by `KubeDB` operator. Then we are going to apply `CassandraAutoscaler` to set up autoscaling.
 
@@ -78,7 +78,7 @@ spec:
         replicas: 2
         storage:
           storageClassName:
-            longhorn
+            standard
           accessModes:
             - ReadWriteOnce
           resources:
@@ -124,12 +124,12 @@ $ kubectl get petset -n demo cassandra-autoscale-rack-r0 -o json | jq '.spec.vol
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                                       STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-394fefad-d4ad-4dfa-ba11-df96e015da30   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-main-config-volume-cassandra-autoscale-rack-r0-1   longhorn       <unset>                          21m
-pvc-86ece3c8-520a-4d41-834e-66108867ca36   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-1                 longhorn       <unset>                          21m
-pvc-c35bb138-9f13-4098-b2b0-cc151f013f6d   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-main-config-volume-cassandra-autoscale-rack-r0-0   longhorn       <unset>                          21m
-pvc-cc932132-de53-425f-bd31-91af255a47e8   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-0                 longhorn       <unset>                          21m
-pvc-cd57fb5f-b2f3-48de-b9d2-03059b05113f   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-1             longhorn       <unset>                          21m
-pvc-e550c573-60c7-4ec0-9e01-cf22683c502c   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-0             longhorn       <unset>                          21m
+pvc-394fefad-d4ad-4dfa-ba11-df96e015da30   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-main-config-volume-cassandra-autoscale-rack-r0-1   standard       <unset>                          21m
+pvc-86ece3c8-520a-4d41-834e-66108867ca36   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-1                 standard       <unset>                          21m
+pvc-c35bb138-9f13-4098-b2b0-cc151f013f6d   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-main-config-volume-cassandra-autoscale-rack-r0-0   standard       <unset>                          21m
+pvc-cc932132-de53-425f-bd31-91af255a47e8   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-0                 standard       <unset>                          21m
+pvc-cd57fb5f-b2f3-48de-b9d2-03059b05113f   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-1             standard       <unset>                          21m
+pvc-e550c573-60c7-4ec0-9e01-cf22683c502c   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-0             standard       <unset>                          21m
 ```
 
 You can see the petset has 600Mi storage, and the capacity of all the persistent volume is also 600Mi.
@@ -559,12 +559,12 @@ $ kubectl get petset -n demo cassandra-autoscale-rack-r0 -o json | jq '.spec.vol
 
 $  kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                                       STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-394fefad-d4ad-4dfa-ba11-df96e015da30   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-main-config-volume-cassandra-autoscale-rack-r0-1   longhorn       <unset>                          45m
-pvc-86ece3c8-520a-4d41-834e-66108867ca36   1148Mi     RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-1                 longhorn       <unset>                          45m
-pvc-c35bb138-9f13-4098-b2b0-cc151f013f6d   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-main-config-volume-cassandra-autoscale-rack-r0-0   longhorn       <unset>                          45m
-pvc-cc932132-de53-425f-bd31-91af255a47e8   1148Mi     RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-0                 longhorn       <unset>                          45m
-pvc-cd57fb5f-b2f3-48de-b9d2-03059b05113f   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-1             longhorn       <unset>                          45m
-pvc-e550c573-60c7-4ec0-9e01-cf22683c502c   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-0             longhorn       <unset>                          45m
+pvc-394fefad-d4ad-4dfa-ba11-df96e015da30   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-main-config-volume-cassandra-autoscale-rack-r0-1   standard       <unset>                          45m
+pvc-86ece3c8-520a-4d41-834e-66108867ca36   1148Mi     RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-1                 standard       <unset>                          45m
+pvc-c35bb138-9f13-4098-b2b0-cc151f013f6d   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-main-config-volume-cassandra-autoscale-rack-r0-0   standard       <unset>                          45m
+pvc-cc932132-de53-425f-bd31-91af255a47e8   1148Mi     RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-0                 standard       <unset>                          45m
+pvc-cd57fb5f-b2f3-48de-b9d2-03059b05113f   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-1             standard       <unset>                          45m
+pvc-e550c573-60c7-4ec0-9e01-cf22683c502c   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-0             standard       <unset>                          45m
 
 ```
 

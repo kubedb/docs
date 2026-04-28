@@ -62,7 +62,7 @@ spec:
     overseer:
       replicas: 1
       storage:
-        storageClassName: longhorn
+        storageClassName: standard
         accessModes:
           - ReadWriteOnce
         resources:
@@ -71,7 +71,7 @@ spec:
     data:
       replicas: 1
       storage:
-        storageClassName: longhorn
+        storageClassName: standard
         accessModes:
           - ReadWriteOnce
         resources:
@@ -79,7 +79,7 @@ spec:
             storage: 1Gi
     coordinator:
       storage:
-        storageClassName: longhorn
+        storageClassName: standard
         accessModes:
           - ReadWriteOnce
         resources:

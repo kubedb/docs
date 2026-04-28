@@ -3,7 +3,7 @@ title: Topology GitOps
 menu:
   docs_{{ .version }}:
     identifier: kf-gitops-topology
-    name: Kafka GitOps
+    name: GitOps Kafka 
     parent: kf-gitops
     weight: 20
 menu_name: docs_{{ .version }}
