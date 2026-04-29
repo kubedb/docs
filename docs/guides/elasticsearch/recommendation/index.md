@@ -37,7 +37,7 @@ Here, some sample `ElasticsearchRecommendation` CRs for different features of da
    name: elastic
    namespace: es
  spec:
-   version: xpack-8.15.0
+   version: xpack-9.1.9
    storageType: Durable
    deletionPolicy: WipeOut
    authSecret:
