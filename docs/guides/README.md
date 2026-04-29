@@ -29,6 +29,7 @@ Guides to show you how to perform tasks with KubeDB:
 - [Microsoft SQL Server](/docs/guides/mssqlserver/README.md). Shows how to manage Microsoft SQL Server using KubeDB.
 - [MongoDB](/docs/guides/mongodb/README.md). Shows how to manage MongoDB using KubeDB.
 - [MySQL](/docs/guides/mysql/README.md). Shows how to manage MySQL using KubeDB.
+- [Oracle](/docs/guides/oracle/README.md). Shows how to manage Oracle using KubeDB.
 - [Percona XtraDB](/docs/guides/percona-xtradb/README.md). Shows how to manage Percona XtraDB using KubeDB.
 - [PgBouncer](/docs/guides/pgbouncer/README.md). Shows how to manage PgBouncer using KubeDB.
 - [Pgpool](/docs/guides/pgpool/README.md). Shows how to manage Pgpool using KubeDB.

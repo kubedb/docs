@@ -20,7 +20,7 @@ spec:
         # run as git sync user
         securityContext:
           runAsUser: 65533
-  version: "9.1.0"
+  version: "8.4.8"
   storage:
     accessModes:
       - ReadWriteOnce

@@ -59,7 +59,7 @@ Read about the fields in details in [PodTemplate concept](/docs/guides/mysql/con
 
 Below is the YAML for the MySQL created in this example. Here, [`spec.podTemplate.spec.env`](/docs/guides/mysql/concepts/database/index.md#specpodtemplatespecenv) specifies environment variables and [`spec.podTemplate.spec.args`](/docs/guides/mysql/concepts/database/index.md#specpodtemplatespecargs) provides extra arguments for [MySQL Docker Image](https://hub.docker.com/_/mysql/).
 
-In this tutorial, an initial database `myDB` will be created by providing `env` `MYSQL_DATABASE` while the server character set will be set to `utf8mb4` by adding extra `args`. Note that, `character-set-server` in `MySQL 5.7.44` is `latin1`.
+In this tutorial, an initial database `myDB` will be created by providing `env` `MYSQL_DATABASE` while the server character set will be set to `utf8mb4` by adding extra `args`. Note that, `character-set-server` in `MySQL 8.4.8` is `latin1`.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -68,7 +68,7 @@ metadata:
   name: mysql-misc-config
   namespace: demo
 spec:
-  version: "5.7.44"
+  version: "8.4.8"
   storageType: "Durable"
   storage:
     storageClassName: "standard"
@@ -133,7 +133,7 @@ MySQL init process in progress...
 MySQL init process done. Ready for start up.
 ....
 2022-06-28T13:22:26.076407Z 0 [Note] mysqld: ready for connections.
-Version: '5.7.44'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server (GPL)
+Version: '8.4.8'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server (GPL)
 ....
 ```
 

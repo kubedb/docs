@@ -46,7 +46,7 @@ metadata:
   name: mysql-server
   namespace: demo
 spec:
-  version: "5.7.44"
+  version: "8.4.8"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -73,7 +73,7 @@ metadata:
   name: mysql-server
   namespace: demo
 spec:
-  version: "5.7.44"
+  version: "8.4.8"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -98,7 +98,7 @@ Let's wait for the MySQL to be Ready.
 ```bash
 $ kubectl get mysql -n demo 
 NAME           VERSION   STATUS   AGE
-mysql-server   5.7.44    Ready    3m51s
+mysql-server   8.4.8    Ready    3m51s
 ```
 
 Let's first create a user in the backend mysql server and a database to test the proxy traffic .
@@ -110,7 +110,7 @@ root@mysql-server-0:/# mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 195
-Server version: 5.7.44-log MySQL Community Server (GPL)
+Server version: 8.4.8-log MySQL Community Server (GPL)
 
 Copyright (c) 2000, 2021, Oracle and/or its affiliates.
 
@@ -237,7 +237,7 @@ $ kubectl exec -it -n demo proxy-server-0 -- bash                               
 root@proxy-mysql-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="ProxySQLAdmin > " 
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 1204
-Server version: 9.1.0 (ProxySQL Admin Module)
+Server version: 8.4.8 (ProxySQL Admin Module)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -335,7 +335,7 @@ root@ubuntu-867d4588d8-tl7hh:/# mysql -utest -ppass -hproxy-server.demo.svc -P60
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 1881
-Server version: 9.1.0 (ProxySQL)
+Server version: 8.4.8 (ProxySQL)
 
 Copyright (c) 2000, 2022, Oracle and/or its affiliates.
 

@@ -61,7 +61,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "9.1.0"
+  version: "8.4.8"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -87,7 +87,7 @@ Now, wait until sample-mysql has status `Ready` and check the `StorageClass`,
 ```bash
 $ kubectl get mysql,pvc -n demo
 NAME                            VERSION   STATUS   AGE
-mysql.kubedb.com/sample-mysql   9.1.0     Ready    101s
+mysql.kubedb.com/sample-mysql   8.4.8     Ready    101s
 
 NAME                                        STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 persistentvolumeclaim/data-sample-mysql-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   1Gi        RWO            local-path     <unset>                 96s
@@ -109,7 +109,7 @@ bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 1780
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 8.4.8 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
@@ -241,7 +241,7 @@ bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 225
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 8.4.8 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 

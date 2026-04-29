@@ -4,7 +4,7 @@ metadata:
   name: restored-mysql
   namespace: demo
 spec:
-  version: "9.1.0"
+  version: "8.4.8"
   replicas: 1
   storageType: Durable
   storage:

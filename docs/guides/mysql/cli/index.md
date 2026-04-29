@@ -47,8 +47,8 @@ cat mysql-demo.yaml | kubectl create -f -
 ```bash
 $ kubectl get mysql
 NAME         VERSION   STATUS    AGE
-mysql-demo   9.1.0    Running   5m1s
-mysql-dev    5.7.44 Running   10m1s
+mysql-demo   8.4.8    Running   5m1s
+mysql-dev    8.4.8    Running   10m1s
 ```
 
 To get YAML of an object, use `--output=yaml` flag.
@@ -112,7 +112,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Delete
-  version: 9.1.0
+  version: 8.4.8
 ```
 
 To get JSON of an object, use `--output=json` flag.
@@ -133,13 +133,13 @@ service/mysql-demo        ClusterIP   10.107.205.135   <none>        3306/TCP   
 service/mysql-demo-pods   ClusterIP   None             <none>        3306/TCP   2m17s   app.kubernetes.io/instance=mysql-demo,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com
 
 NAME                          READY   AGE     CONTAINERS   IMAGES
-petset.apps/mysql-demo   1/1     2m17s   mysql        kubedb/mysql:9.1.0
+petset.apps/mysql-demo   1/1     2m17s   mysql        kubedb/mysql:8.4.8
 
 NAME                                            TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/mysql-demo   kubedb.com/mysql   9.1.0    2m17s
+appbinding.appcatalog.appscode.com/mysql-demo   kubedb.com/mysql   8.4.8    2m17s
 
 NAME                          VERSION   STATUS   AGE
-mysql.kubedb.com/mysql-demo   9.1.0    Ready    2m17s
+mysql.kubedb.com/mysql-demo   8.4.8    Ready    2m17s
 ```
 
 Flag `--output=wide` is used to print additional information.
@@ -232,7 +232,7 @@ Auth Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-demo","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"9.1.0"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-demo","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.4.8"}}
 
     Creation Timestamp:  2021-03-15T11:53:48Z
     Labels:
@@ -256,13 +256,13 @@ AppBinding:
       Stash:
         Addon:
           Backup Task:
-            Name:  mysql-backup-9.1.0
+            Name:  mysql-backup-8.4.8
           Restore Task:
-            Name:  mysql-restore-9.1.0
+            Name:  mysql-restore-8.4.8
     Secret:
       Name:   mysql-demo-auth
     Type:     kubedb.com/mysql
-    Version:  9.1.0
+    Version:  8.4.8
 
 Events:
   Type    Reason      Age   From             Message
