@@ -20,7 +20,7 @@ section_menu_id: guides
 
 ## Elasticsearch Recommendation CRD Specifications
 
-For a detailed overview, please visit to the [documentation](/docs/operatormanual/recommendation/overview.md).
+
 
 KubeDB currently provides the following types of recommendations for database management:
 
@@ -218,3 +218,4 @@ spec:
           requests:
             storage: 1Gi
 ```
+For a detailed overview, please visit to the [documentation](/docs/operatormanual/recommendation/overview.md).
