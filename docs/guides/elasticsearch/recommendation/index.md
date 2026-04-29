@@ -5,8 +5,9 @@ menu:
     identifier: es-recommendation-elasticsearch
     name: Recommendation
     parent: es-elasticsearch-guides
-    weight: 10
+    weight: 26
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/README.md).
 
