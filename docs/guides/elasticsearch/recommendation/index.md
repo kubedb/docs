@@ -41,7 +41,9 @@ Here, some sample `ElasticsearchRecommendation` CRs for different features of da
    storageType: Durable
    deletionPolicy: WipeOut
    authSecret:
-     rotateAfter: 1h
+      kind: secret
+      name: es-auth
+      rotateAfter: 1h
    topology:
      master:
        replicas: 2
