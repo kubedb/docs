@@ -12,7 +12,7 @@ section_menu_id: operatormanual
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Version Update Recommendation
+# Authentication Rotate Recommendation
 
 Rotating authentication secrets in database management is vital to mitigate security risks, such as credential leakage or unauthorized access, and to comply with regulatory requirements. Regular rotation limits the exposure of compromised credentials, reduces the risk of insider threats, and enforces updated security policies like stronger passwords or algorithms. It also ensures operational resilience by testing the rotation process and revoking stale or unused credentials. KubeDB provides `RotateAuth` which reduces manual errors, and strengthens database security with minimal effort. KubeDB Ops-manager generates Recommendation for rotating authentication secrets via this OpsRequest.
 

@@ -160,7 +160,7 @@ elastic   xpack-9.1.9   Ready          10m
 elastic   xpack-9.1.9   Ready          10m
 ```
 
-Since,duration for client certificate is set as `1h20min`, it is expected that the recommendation engine will generate a rotate-auth recommendation at least after 54 minutes (two-third of lifespan) of the client certificate creation. Once generated you will get a similar recommendation as follows.
+Since,duration for client certificate is set as `1h20min`, it is expected that the recommendation engine will generate a reconfigure-tls recommendation at least after 54 minutes (two-third of lifespan) of the client certificate creation. Once generated you will get a similar recommendation as follows.
 
 ```bash
 $ kubectl get recommendation -n es | grep rotate-tls
