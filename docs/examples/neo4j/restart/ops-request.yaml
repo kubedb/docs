@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: neo4j-test
+  timeout: 5m
+  apply: IfReady

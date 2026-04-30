@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-horizontal-scale
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: neo4j-test
+  horizontalScaling:
+    server: 5
