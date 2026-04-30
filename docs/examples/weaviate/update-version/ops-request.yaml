@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: WeaviateOpsRequest
+metadata:
+  name: weaviate-update-version
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: weaviate-sample
+  updateVersion:
+    targetVersion: 1.34.0
