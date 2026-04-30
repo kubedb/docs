@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-vertical-scale
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: neo4j-test
+  verticalScaling:
+    server:
+      resources:
+        requests:
+          cpu: "500m"
+          memory: 2Gi
+        limits:
+          cpu: "1"
+          memory: 4Gi

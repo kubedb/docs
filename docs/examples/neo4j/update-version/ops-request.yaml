@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-update-version
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: neo4j-test
+  updateVersion:
+    targetVersion: "2025.12.0"

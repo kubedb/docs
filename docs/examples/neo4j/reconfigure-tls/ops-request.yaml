@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-reconfigure-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: neo4j-test
+  tls:
+    rotateCertificates: true

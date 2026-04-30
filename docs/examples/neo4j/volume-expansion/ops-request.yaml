@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-volume-expand
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: neo4j-test
+  volumeExpansion:
+    mode: Online
+    server: 4Gi

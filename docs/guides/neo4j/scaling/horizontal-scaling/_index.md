@@ -1,0 +1,10 @@
+---
+title: Horizontal Scaling
+menu:
+  docs_{{ .version }}:
+    identifier: neo4j-horizontal-scaling
+    name: Horizontal Scaling
+    parent: neo4j-scaling
+    weight: 10
+menu_name: docs_{{ .version }}
+---
