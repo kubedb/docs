@@ -1,0 +1,22 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: QdrantAutoscaler
+metadata:
+  name: qdrant-as-compute
+  namespace: demo
+spec:
+  databaseRef:
+    name: qdrant-sample
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
+  compute:
+    node:
+      trigger: "On"
+      minAllowed:
+        cpu: 250m
+        memory: 512Mi
+      maxAllowed:
+        cpu: "2"
+        memory: 4Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: RequestsAndLimits

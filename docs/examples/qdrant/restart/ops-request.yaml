@@ -1,0 +1,9 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: QdrantOpsRequest
+metadata:
+  name: qdrant-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: qdrant-sample
