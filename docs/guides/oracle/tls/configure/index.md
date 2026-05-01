@@ -91,20 +91,21 @@ metadata:
 spec:
   version: "21.3.0"
   replicas: 3
-  tls:
-    issuerRef:
-      apiGroup: cert-manager.io
-      name: oracle-ca-issuer
-      kind: Issuer
-    certificates:
-    - alias: server
-      subject:
-        organizations:
-        - kubedb:server
-      dnsNames:
-      - localhost
-      ipAddresses:
-      - "127.0.0.1"
+  tcpsConfig:
+    tls:
+      issuerRef:
+        apiGroup: cert-manager.io
+        name: oracle-ca-issuer
+        kind: Issuer
+      certificates:
+      - alias: server
+        subject:
+          organizations:
+          - kubedb:server
+        dnsNames:
+        - localhost
+        ipAddresses:
+        - "127.0.0.1"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -117,8 +118,8 @@ spec:
 
 Here,
 
-- `spec.tls.issuerRef` refers to the `oracle-ca-issuer` issuer.
-- `spec.tls.certificates` provides options to configure certificate renewal and keep-alive. You can find more details from [here](/docs/guides/oracle/concepts/oracle.md#tls).
+- `spec.tcpsConfig.tls.issuerRef` refers to the `oracle-ca-issuer` issuer.
+- `spec.tcpsConfig.tls.certificates` provides options to configure certificate renewal and keep-alive. You can find more details from [here](/docs/guides/oracle/concepts/oracle.md#tls).
 
 **Deploy Oracle Cluster:**
 
