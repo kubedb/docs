@@ -19,9 +19,7 @@ This tutorial will show you how to use KubeDB to run an Oracle database.
 
 <p align="center">   <img alt="lifecycle" src="/docs/images/oracle/oracle_lifecycle.png"> </p>
 
->Note: The YAML files used in this tutorial are stored in [docs/examples/oracle/quickstart](https://github.com/kubedb/docs/tree/{{
-< param "info.version" >}}/docs/examples/oracle/quickstart) folder in the GitHub repository kubedb/docs
-.
+>Note: The YAML files used in this tutorial are stored in [docs/examples/oracle/quickstart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/oracle/quickstart) folder in the GitHub repository kubedb/docs.
 
 ## Before You Begin
 
@@ -57,7 +55,7 @@ NAME     VERSION   DISTRIBUTION   DB_IMAGE                          DEPRECATED  
 
 KubeDB implements an Oracle CRD to define Oracle database specifications. Below is an example:
 
-```shell
+```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Oracle
 metadata:

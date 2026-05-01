@@ -1,5 +1,5 @@
 ---
-title: Oracle Faoilover and Disaster Recovery
+title: Oracle Failover and Disaster Recovery
 menu:
   docs_{{ .version }}:
     identifier: guides-oracle-fdr-overview
