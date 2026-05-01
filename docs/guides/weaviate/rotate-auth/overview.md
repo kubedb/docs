@@ -14,13 +14,12 @@ section_menu_id: guides
 
 # Rotate Auth for Weaviate
 
-This guide tracks rotate-auth documentation for Weaviate.
-
-This repository does not currently contain a `WeaviateOpsRequest` Go type or CRD, so there is no validated rotate-auth manifest to publish yet.
+Rotate authentication credentials for Weaviate using a `WeaviateOpsRequest` with `type: RotateAuth`.
 
 ## Before You Begin
 
 - Install KubeDB and Ops-manager from [here](/docs/setup/README.md).
+- Review [WeaviateOpsRequest](/docs/guides/weaviate/concepts/opsrequest.md) concepts.
 - Use the example files from `docs/examples/weaviate/quickstart/weaviate.yaml` and `docs/examples/weaviate/rotate-auth/ops-request.yaml`.
 
 ```bash
@@ -34,11 +33,12 @@ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}
 kubectl get weaviate -n demo weaviate-sample -w
 ```
 
-See the detailed note in [Rotate Auth for Weaviate](/docs/guides/weaviate/rotate-auth/rotateauth.md).
+Continue with the complete procedure in [Rotate Auth for Weaviate](/docs/guides/weaviate/rotate-auth/rotateauth.md).
 
 ## Verify
 
 ```bash
+kubectl get secret -n demo weaviate-sample-auth -o yaml
 kubectl describe weaviateopsrequest -n demo weaviate-rotate-auth
 ```
 

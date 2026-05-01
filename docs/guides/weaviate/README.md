@@ -17,7 +17,7 @@ aliases:
 
 # Overview
 
-KubeDB supports Weaviate through the `Weaviate` CRD.
+KubeDB supports Weaviate through the `Weaviate` and `WeaviateOpsRequest` CRDs.
 
 ## Supported Weaviate Features
 
@@ -25,11 +25,16 @@ KubeDB supports Weaviate through the `Weaviate` CRD.
 |---------------------------|:------------:|
 | Standalone provisioning   |   &#10003;   |
 | Cluster provisioning      |   &#10003;   |
-| Ops Requests              |      No      |
+| Ops Requests              |   &#10003;   |
 
 ## Supported Ops Requests
 
-This repository does not currently contain a `WeaviateOpsRequest` Go type or CRD. The existing ops pages are placeholder documentation only.
+- `Reconfigure`
+- `Restart`
+- `RotateAuth`
+- `UpdateVersion`
+- `VolumeExpansion`
+- `VerticalScaling`
 
 ## Example Weaviate Manifest
 
@@ -54,14 +59,14 @@ spec:
 
 ## User Guide
 
-- [Quickstart Weaviate](/docs/guides/weaviate/quickstart/quickstart.md) with KubeDB operator.
-- [Weaviate CRD Concept](/docs/guides/weaviate/concepts/weaviate.md).
-- [WeaviateVersion CRD Concept](/docs/guides/weaviate/concepts/catalog.md).
-- [WeaviateOpsRequest CRD Concept](/docs/guides/weaviate/concepts/opsrequest.md).
+- [Quickstart Weaviate](/docs/guides/weaviate/quickstart/quickstart.md)
+- [Weaviate CRD Concept](/docs/guides/weaviate/concepts/weaviate.md)
+- [WeaviateVersion CRD Concept](/docs/guides/weaviate/concepts/catalog.md)
+- [WeaviateOpsRequest CRD Concept](/docs/guides/weaviate/concepts/opsrequest.md)
 - [Private Registry](/docs/guides/weaviate/private-registry/using-private-registry.md)
 - [Custom RBAC](/docs/guides/weaviate/custom-rbac/using-custom-rbac.md)
 - [Custom Configuration](/docs/guides/weaviate/configuration/using-config-file.md)
-- [Ops Request](/docs/guides/weaviate/ops-request/overview.md) for current documentation status.
+- [Ops Request Overview](/docs/guides/weaviate/ops-request/overview.md)
 - [Reconfigure](/docs/guides/weaviate/reconfigure/overview.md)
 - [Restart](/docs/guides/weaviate/restart/restart.md)
 - [Rotate Auth](/docs/guides/weaviate/rotate-auth/overview.md)

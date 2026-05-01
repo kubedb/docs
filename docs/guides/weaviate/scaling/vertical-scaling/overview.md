@@ -14,13 +14,12 @@ section_menu_id: guides
 
 # Weaviate Vertical Scaling
 
-This guide tracks vertical scaling documentation for Weaviate.
-
-This repository does not currently contain a `WeaviateOpsRequest` Go type or CRD, so there is no validated vertical scaling manifest to publish yet.
+Scale Weaviate node CPU and memory resources using a `WeaviateOpsRequest` with `type: VerticalScaling`.
 
 ## Before You Begin
 
 - Ensure database is healthy and all pods are running.
+- Install KubeDB and Ops Manager.
 - Use the example files from `docs/examples/weaviate/quickstart/weaviate.yaml` and `docs/examples/weaviate/scaling/vertical-scaling/ops-request.yaml`.
 
 ```bash
@@ -34,12 +33,14 @@ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}
 kubectl get weaviate -n demo weaviate-sample -w
 ```
 
-See the detailed note in [Vertical Scaling for Weaviate](/docs/guides/weaviate/scaling/vertical-scaling/scale-vertically/).
+Continue with [Scale Weaviate Vertically](/docs/guides/weaviate/scaling/vertical-scaling/scale-vertically/).
 
 ## Verify
 
 ```bash
 kubectl describe weaviateopsrequest -n demo weaviate-vertical-scale
+kubectl get weaviate -n demo weaviate-sample
+kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
 ```
 
 ## Cleaning up

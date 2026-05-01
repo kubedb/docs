@@ -14,13 +14,12 @@ section_menu_id: guides
 
 # Volume Expansion for Weaviate
 
-This guide tracks volume expansion documentation for Weaviate.
-
-This repository does not currently contain a `WeaviateOpsRequest` Go type or CRD, so there is no validated volume expansion manifest to publish yet.
+Expand Weaviate persistent volume size using `WeaviateOpsRequest` with `type: VolumeExpansion`.
 
 ## Before You Begin
 
-- Ensure StorageClass supports volume expansion.
+- Ensure the selected StorageClass supports volume expansion.
+- Ensure the database is healthy before applying the request.
 - Use the example files from `docs/examples/weaviate/quickstart/weaviate.yaml` and `docs/examples/weaviate/volume-expansion/ops-request.yaml`.
 
 ```bash
@@ -35,12 +34,14 @@ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}
 kubectl get weaviate -n demo weaviate-sample -w
 ```
 
-See the detailed note in [Expand Weaviate Volume](/docs/guides/weaviate/volume-expansion/volume-expansion.md).
+Continue with [Expand Weaviate Volume](/docs/guides/weaviate/volume-expansion/volume-expansion.md).
 
 ## Verify
 
 ```bash
 kubectl describe weaviateopsrequest -n demo weaviate-volume-expand
+kubectl get pvc -n demo
+kubectl get weaviate -n demo weaviate-sample
 ```
 
 ## Cleaning up

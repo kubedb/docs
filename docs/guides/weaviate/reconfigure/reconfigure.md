@@ -14,22 +14,92 @@ section_menu_id: guides
 
 # Reconfigure Weaviate
 
-This repository does not currently contain a `WeaviateOpsRequest` Go type or CRD.
+This guide shows how to use `WeaviateOpsRequest` with `type: Reconfigure` to update Weaviate runtime configuration.
 
-Because of that, there is no repository-backed manifest for a Weaviate reconfiguration request yet. The example files under `docs/examples/weaviate` are placeholders and should not be treated as CRD-validated manifests until the API is added.
+## Before You Begin
 
-## What You Can Safely Do Today
+- You need a Kubernetes cluster with `kubectl` configured.
+- Install KubeDB and Ops Manager from [setup docs](/docs/setup/README.md).
+- Review [Weaviate](/docs/guides/weaviate/concepts/weaviate.md) and [WeaviateOpsRequest](/docs/guides/weaviate/concepts/opsrequest.md).
 
-- Use `spec.configuration.secretName` in `Weaviate` CRD for configuration changes.
-- Apply those changes through a normal `Weaviate` spec update workflow.
-
-## How to Confirm API Availability in Your Cluster
-
-Run the following commands to check whether your installed release has introduced the missing API:
+To keep things isolated, use a namespace named `demo`:
 
 ```bash
-kubectl get crd | grep -i weaviate
-kubectl get crd | grep -i opsrequest
+$ kubectl create ns demo
+namespace/demo created
 ```
 
-If your cluster includes `weaviateopsrequests.ops.kubedb.com`, follow your release-specific docs. Otherwise, keep using direct `Weaviate` spec updates.
+## Deploy Weaviate
+
+Apply the sample manifest:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/quickstart/weaviate.yaml
+weaviate.kubedb.com/weaviate-sample created
+```
+
+Wait for readiness:
+
+```bash
+$ kubectl get weaviate -n demo weaviate-sample -w
+NAME              VERSION   STATUS   AGE
+weaviate-sample   1.33.1    Ready    2m
+```
+
+## Apply Reconfigure OpsRequest
+
+Use the following request:
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: WeaviateOpsRequest
+metadata:
+  name: weaviate-reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: weaviate-sample
+  configuration:
+    applyConfig:
+      weaviate.yaml: |
+        LOG_LEVEL: info
+```
+
+Apply from the example file:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/reconfigure/ops-request.yaml
+weaviateopsrequest.ops.kubedb.com/weaviate-reconfigure created
+```
+
+## Verify Reconfiguration
+
+Watch request status:
+
+```bash
+$ kubectl get weaviateopsrequest -n demo weaviate-reconfigure
+NAME                  TYPE          STATUS       AGE
+weaviate-reconfigure  Reconfigure   Successful   2m
+```
+
+Inspect reconciliation details:
+
+```bash
+$ kubectl describe weaviateopsrequest -n demo weaviate-reconfigure
+```
+
+Confirm database is healthy after config rollout:
+
+```bash
+$ kubectl get weaviate -n demo weaviate-sample
+$ kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
+```
+
+## Cleaning up
+
+```bash
+kubectl delete weaviateopsrequest -n demo weaviate-reconfigure
+kubectl delete weaviate -n demo weaviate-sample
+kubectl delete ns demo
+```

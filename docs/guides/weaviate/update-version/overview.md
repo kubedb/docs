@@ -14,13 +14,12 @@ section_menu_id: guides
 
 # Updating Weaviate Version
 
-This guide tracks version update documentation for Weaviate.
-
-This repository does not currently contain a `WeaviateOpsRequest` Go type or CRD, so there is no validated update-version manifest to publish yet.
+Update Weaviate engine version using `WeaviateOpsRequest` with `type: UpdateVersion`.
 
 ## Before You Begin
 
 - Ensure Weaviate is `Ready` before submitting the update request.
+- Ensure the target `WeaviateVersion` exists in your cluster.
 - Use the example files from `docs/examples/weaviate/quickstart/weaviate.yaml` and `docs/examples/weaviate/update-version/ops-request.yaml`.
 
 ```bash
@@ -35,12 +34,13 @@ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}
 kubectl get weaviate -n demo weaviate-sample -w
 ```
 
-See the detailed note in [Upgrade Weaviate Version](/docs/guides/weaviate/update-version/versionupgrading/).
+Continue with [Upgrade Weaviate Version](/docs/guides/weaviate/update-version/versionupgrading/).
 
 ## Verify
 
 ```bash
 kubectl describe weaviateopsrequest -n demo weaviate-update-version
+kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.version}{"\n"}'
 ```
 
 ## Cleaning up

@@ -14,13 +14,12 @@ section_menu_id: guides
 
 # Reconfiguring Weaviate
 
-This guide tracks the reconfiguration workflow documentation for Weaviate.
-
-This repository does not currently contain a `WeaviateOpsRequest` Go type or CRD, so the example manifests referenced by older placeholder docs are not CRD-backed.
+Use `WeaviateOpsRequest` with type `Reconfigure` to change runtime configuration for a running Weaviate database.
 
 ## Before You Begin
 
-- Install KubeDB and Ops-manager from [here](/docs/setup/README.md).
+- Install KubeDB and Ops Manager from [here](/docs/setup/README.md).
+- Review [Weaviate](/docs/guides/weaviate/concepts/weaviate.md) and [WeaviateOpsRequest](/docs/guides/weaviate/concepts/opsrequest.md) concepts.
 - Use the example files from `docs/examples/weaviate/quickstart/weaviate.yaml` and `docs/examples/weaviate/reconfigure/ops-request.yaml`.
 
 ```bash
@@ -34,12 +33,14 @@ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}
 kubectl get weaviate -n demo weaviate-sample -w
 ```
 
-See the detailed note in [Reconfigure Weaviate](/docs/guides/weaviate/reconfigure/reconfigure.md).
+When the database is `Ready`, continue with the detailed reconfiguration workflow in [Reconfigure Weaviate](/docs/guides/weaviate/reconfigure/reconfigure.md).
 
 ## Verify
 
 ```bash
+kubectl get weaviateopsrequest -n demo weaviate-reconfigure
 kubectl describe weaviateopsrequest -n demo weaviate-reconfigure
+kubectl get weaviate -n demo weaviate-sample -o yaml
 ```
 
 ## Cleaning up
