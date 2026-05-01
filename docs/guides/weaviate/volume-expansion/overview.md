@@ -12,42 +12,38 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Volume Expansion for Weaviate
+# Weaviate Volume Expansion
 
-Expand Weaviate persistent volume size using `WeaviateOpsRequest` with `type: VolumeExpansion`.
+This guide will give an overview of how KubeDB Ops-manager expands the volume of a `Weaviate` database.
 
 ## Before You Begin
 
-- Ensure the selected StorageClass supports volume expansion.
-- Ensure the database is healthy before applying the request.
-- Use the example files from `docs/examples/weaviate/quickstart/weaviate.yaml` and `docs/examples/weaviate/volume-expansion/ops-request.yaml`.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Weaviate](/docs/guides/weaviate/concepts/weaviate.md)
+  - [WeaviateOpsRequest](/docs/guides/weaviate/concepts/opsrequest.md)
 
-```bash
-kubectl create ns demo
-kubectl get storageclass
-```
+## How Volume Expansion Works
 
-## Deploy Weaviate
+The Volume Expansion process consists of the following steps:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/quickstart/weaviate.yaml
-kubectl get weaviate -n demo weaviate-sample -w
-```
+1. At first, a user creates a `Weaviate` Custom Resource (CR).
 
-Continue with [Expand Weaviate Volume](/docs/guides/weaviate/volume-expansion/volume-expansion.md).
+2. `KubeDB-Provisioner` operator watches the `Weaviate` CR.
 
-## Verify
+3. When the operator finds a `Weaviate` CR, it creates a `StatefulSet` and related necessary stuff like pods, PVCs, secrets, services, etc.
 
-```bash
-kubectl describe weaviateopsrequest -n demo weaviate-volume-expand
-kubectl get pvc -n demo
-kubectl get weaviate -n demo weaviate-sample
-```
+4. Each StatefulSet creates a Persistent Volume according to the volume claim template. This Persistent Volume will be expanded by the `KubeDB` Ops-manager operator.
 
-## Cleaning up
+5. Then, in order to expand the volume of the `Weaviate` database, the user creates a `WeaviateOpsRequest` CR with the desired new storage size.
 
-```bash
-kubectl delete weaviateopsrequest -n demo weaviate-volume-expand
-kubectl delete weaviate -n demo weaviate-sample
-kubectl delete ns demo
-```
+6. `KubeDB` Ops-manager operator watches the `WeaviateOpsRequest` CR.
+
+7. When it finds a `WeaviateOpsRequest` CR, it pauses the `Weaviate` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Weaviate` during the volume expansion process.
+
+8. Then the `KubeDB` Ops-manager operator expands the persistent volumes to the expected size defined in the `WeaviateOpsRequest` CR.
+
+9. After the successful expansion of the volumes, the `KubeDB` Ops-manager updates the new volume size in the `Weaviate` object to reflect the updated state.
+
+10. After the successful Volume Expansion, the `KubeDB` Ops-manager resumes the `Weaviate` object so that the `KubeDB-Provisioner` resumes its usual operations.
+
+In the next doc, we are going to show a step-by-step guide on Volume Expansion of a Weaviate database using `WeaviateOpsRequest` CRD.

@@ -14,39 +14,34 @@ section_menu_id: guides
 
 # Weaviate Vertical Scaling
 
-Scale Weaviate node CPU and memory resources using a `WeaviateOpsRequest` with `type: VerticalScaling`.
+This guide will give an overview of how KubeDB Ops-manager updates the CPU and memory resources of `Weaviate` database nodes.
 
 ## Before You Begin
 
-- Ensure database is healthy and all pods are running.
-- Install KubeDB and Ops Manager.
-- Use the example files from `docs/examples/weaviate/quickstart/weaviate.yaml` and `docs/examples/weaviate/scaling/vertical-scaling/ops-request.yaml`.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Weaviate](/docs/guides/weaviate/concepts/weaviate.md)
+  - [WeaviateOpsRequest](/docs/guides/weaviate/concepts/opsrequest.md)
 
-```bash
-kubectl create ns demo
-```
+## How Vertical Scaling Works
 
-## Deploy Weaviate
+The Vertical Scaling process consists of the following steps:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/quickstart/weaviate.yaml
-kubectl get weaviate -n demo weaviate-sample -w
-```
+1. At first, a user creates a `Weaviate` CR.
 
-Continue with [Scale Weaviate Vertically](/docs/guides/weaviate/scaling/vertical-scaling/scale-vertically/).
+2. `KubeDB-Provisioner` operator watches the `Weaviate` CR.
 
-## Verify
+3. When the operator finds a `Weaviate` CR, it creates a `StatefulSet` and related necessary stuff like secrets, services, etc.
 
-```bash
-kubectl describe weaviateopsrequest -n demo weaviate-vertical-scale
-kubectl get weaviate -n demo weaviate-sample
-kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
-```
+4. Then, in order to update the CPU and memory resources of the `Weaviate` database nodes, the user creates a `WeaviateOpsRequest` CR with the desired resource specifications.
 
-## Cleaning up
+5. `KubeDB` Ops-manager operator watches the `WeaviateOpsRequest` CR.
 
-```bash
-kubectl delete weaviateopsrequest -n demo weaviate-vertical-scale
-kubectl delete weaviate -n demo weaviate-sample
-kubectl delete ns demo
-```
+6. When it finds a `WeaviateOpsRequest` CR, it pauses the `Weaviate` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Weaviate` during the scaling process.
+
+7. Then the `KubeDB` Ops-manager operator updates the resources of the `StatefulSet` pods to the desired values defined in the `WeaviateOpsRequest` CR.
+
+8. After the successful resource update of the pods, the `KubeDB` Ops-manager updates the resource specifications in the `Weaviate` object to reflect the updated state.
+
+9. After the successful Vertical Scaling, the `KubeDB` Ops-manager resumes the `Weaviate` object so that the `KubeDB-Provisioner` resumes its usual operations.
+
+In the next doc, we are going to show a step-by-step guide on Vertical Scaling of a Weaviate database using `WeaviateOpsRequest` CRD.

@@ -12,22 +12,39 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Run Weaviate with RBAC Enabled
+# RBAC Permissions for Weaviate
 
-This tutorial shows how to run Weaviate with the RBAC permissions required by KubeDB.
+If RBAC is enabled in clusters, some Weaviate-specific RBAC permissions are required. These permissions are required for the KubeDB operator to manage Weaviate pods properly.
+
+Here is the list of additional permissions required by the StatefulSet of Weaviate:
+
+| Kubernetes Resource | Resource Names     | Permission required    |
+|---------------------|--------------------|------------------------|
+| statefulsets        | `{weaviate-name}`  | get                    |
+| pods                |                    | list, patch            |
+| pods/exec           |                    | create                 |
+| weaviates           |                    | get                    |
+| configmaps          | `{weaviate-name}`  | get, update, create    |
+| secrets             |                    | get, list              |
 
 ## Before You Begin
 
-- You need a Kubernetes cluster and the `kubectl` CLI configured for that cluster.
-- Install KubeDB operator from [setup guide](/docs/setup/README.md).
-- This tutorial uses a dedicated namespace named `demo`.
+At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+
+To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
 
-## Deploy Weaviate
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/weaviate/quickstart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/weaviate/quickstart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+
+## Create a Weaviate Database
+
+Below is the `Weaviate` object created in this tutorial:
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -36,35 +53,164 @@ metadata:
   name: weaviate-rbac
   namespace: demo
 spec:
-  version: 1.33.1
+  version: "1.33.1"
   replicas: 3
-  storageType: Durable
   storage:
-    storageClassName: longhorn
+    storageClassName: "standard"
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete
 ```
 
 ```bash
-$ kubectl apply -f weaviate-rbac.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/quickstart/weaviate-rbac.yaml
 weaviate.kubedb.com/weaviate-rbac created
 ```
 
-## Verify
+When this `Weaviate` object is created, KubeDB operator creates a Role, ServiceAccount, and RoleBinding with the matching Weaviate name and uses that ServiceAccount in the corresponding StatefulSet.
 
-```bash
-$ kubectl get weaviate -n demo weaviate-rbac
-NAME            VERSION   STATUS   AGE
-weaviate-rbac   1.33.1    Ready    2m
+Let's see what KubeDB operator has created for additional RBAC permissions.
+
+### Role
+
+KubeDB operator creates a Role object `weaviate-rbac` in the same namespace as the Weaviate object:
+
+```yaml
+$ kubectl get role -n demo weaviate-rbac -o yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: weaviate-rbac
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: weaviates.kubedb.com
+  name: weaviate-rbac
+  namespace: demo
+  ownerReferences:
+  - apiVersion: kubedb.com/v1alpha2
+    blockOwnerDeletion: true
+    controller: true
+    kind: Weaviate
+    name: weaviate-rbac
+rules:
+- apiGroups:
+  - apps
+  resourceNames:
+  - weaviate-rbac
+  resources:
+  - statefulsets
+  verbs:
+  - get
+- apiGroups:
+  - kubedb.com
+  resourceNames:
+  - weaviate-rbac
+  resources:
+  - weaviates
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - pods/exec
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - get
+  - update
 ```
+
+### ServiceAccount
+
+KubeDB operator creates a ServiceAccount object `weaviate-rbac` in the same namespace as the Weaviate object:
+
+```yaml
+$ kubectl get serviceaccount -n demo weaviate-rbac -o yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: weaviate-rbac
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: weaviates.kubedb.com
+  name: weaviate-rbac
+  namespace: demo
+  ownerReferences:
+  - apiVersion: kubedb.com/v1alpha2
+    blockOwnerDeletion: true
+    controller: true
+    kind: Weaviate
+    name: weaviate-rbac
+```
+
+This ServiceAccount is used in the StatefulSet created for the Weaviate object.
+
+### RoleBinding
+
+KubeDB operator creates a RoleBinding object `weaviate-rbac` in the same namespace as the Weaviate object:
+
+```yaml
+$ kubectl get rolebinding -n demo weaviate-rbac -o yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: weaviate-rbac
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: weaviates.kubedb.com
+  name: weaviate-rbac
+  namespace: demo
+  ownerReferences:
+  - apiVersion: kubedb.com/v1alpha2
+    blockOwnerDeletion: true
+    controller: true
+    kind: Weaviate
+    name: weaviate-rbac
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: weaviate-rbac
+subjects:
+- kind: ServiceAccount
+  name: weaviate-rbac
+  namespace: demo
+```
+
+This object binds Role `weaviate-rbac` with ServiceAccount `weaviate-rbac`.
 
 ## Cleaning up
 
+To clean up the Kubernetes resources created by this tutorial, run:
+
 ```bash
-kubectl delete weaviate -n demo weaviate-rbac
+kubectl patch -n demo weaviate/weaviate-rbac -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo weaviate/weaviate-rbac
 kubectl delete ns demo
 ```

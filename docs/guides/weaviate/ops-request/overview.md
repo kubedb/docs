@@ -10,52 +10,40 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Weaviate Ops Request
+> New to KubeDB? Please start [here](/docs/README.md).
 
-This guide provides an overview of day-2 operations for Weaviate databases managed by KubeDB.
+# Weaviate Day-2 Operations
 
-A `WeaviateOpsRequest` allows you to run operational workflows in a declarative way. You submit a request, then monitor status until the operation completes.
+This guide provides an overview of the day-2 operational workflows that KubeDB supports for `Weaviate` databases via the `WeaviateOpsRequest` CRD.
 
 ## Before You Begin
 
-- Deploy Weaviate first using the [quickstart guide](/docs/guides/weaviate/quickstart/quickstart.md).
-- Install KubeDB and Ops Manager following [setup docs](/docs/setup/README.md).
-- Use a dedicated namespace for testing.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Weaviate](/docs/guides/weaviate/concepts/weaviate.md)
+  - [WeaviateOpsRequest](/docs/guides/weaviate/concepts/opsrequest.md)
 
-```bash
-kubectl create ns demo
-```
+## Supported Operations
 
-## Documented Operation Categories
+KubeDB supports the following day-2 operations for Weaviate:
 
-- [Reconfigure](/docs/guides/weaviate/reconfigure/overview.md)
-- [VerticalScaling](/docs/guides/weaviate/scaling/vertical-scaling/overview.md)
-- [VolumeExpansion](/docs/guides/weaviate/volume-expansion/overview.md)
-- [UpdateVersion](/docs/guides/weaviate/update-version/overview.md)
-- [RotateAuth](/docs/guides/weaviate/rotate-auth/overview.md)
-- [Restart](/docs/guides/weaviate/restart/restart.md)
+| Operation | Description |
+|-----------|-------------|
+| [UpdateVersion](/docs/guides/weaviate/update-version/overview.md) | Update the version of a running Weaviate database |
+| [VerticalScaling](/docs/guides/weaviate/scaling/vertical-scaling/overview.md) | Update CPU and memory resources of Weaviate nodes |
+| [VolumeExpansion](/docs/guides/weaviate/volume-expansion/overview.md) | Expand the persistent volume claim size of Weaviate nodes |
+| [Reconfigure](/docs/guides/weaviate/reconfigure/overview.md) | Reconfigure a running Weaviate database with new configuration |
+| [Restart](/docs/guides/weaviate/restart/restart.md) | Restart the Weaviate database pods in a rolling fashion |
+| [RotateAuth](/docs/guides/weaviate/rotate-auth/overview.md) | Rotate the API key credentials of a Weaviate database |
 
 ## How Ops Requests Work
 
-Every operation follows the same high-level flow:
+All day-2 operations for Weaviate are performed through the `WeaviateOpsRequest` CRD. The general workflow is:
 
-1. Deploy or identify a healthy `Weaviate` database.
-2. Apply one `WeaviateOpsRequest` manifest for a single operation type.
-3. Monitor request status and database readiness.
-4. Validate the expected outcome.
+1. The user creates a `WeaviateOpsRequest` CR with the desired operation type and parameters.
+2. `KubeDB-ops-manager` operator watches for `WeaviateOpsRequest` CRs.
+3. When it finds one, it pauses the `Weaviate` object to prevent conflicting operations.
+4. The operator performs the requested operation (e.g., updates images, scales nodes, expands volumes).
+5. After the operation completes successfully, the operator updates the `Weaviate` object and resumes it.
+6. The `WeaviateOpsRequest` status transitions to `Successful`.
 
-Use these commands for monitoring:
-
-```bash
-kubectl get weaviateopsrequest -n demo
-kubectl describe weaviateopsrequest -n demo <opsrequest-name>
-kubectl get weaviate -n demo -w
-kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
-```
-
-For best results, avoid applying multiple ops requests for the same database at the same time.
-
-## Next Steps
-
-- Choose the specific operation page that matches your intended change.
-- Apply one operation at a time and verify the request reaches `Successful` state.
+> **Note:** Only one `WeaviateOpsRequest` should be active at a time for a given `Weaviate` database. Wait for one operation to complete before starting another.

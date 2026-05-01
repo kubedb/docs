@@ -14,39 +14,34 @@ section_menu_id: guides
 
 # Reconfiguring Weaviate
 
-Use `WeaviateOpsRequest` with type `Reconfigure` to change runtime configuration for a running Weaviate database.
+This guide will give an overview of how KubeDB Ops-manager reconfigures a `Weaviate` database.
 
 ## Before You Begin
 
-- Install KubeDB and Ops Manager from [here](/docs/setup/README.md).
-- Review [Weaviate](/docs/guides/weaviate/concepts/weaviate.md) and [WeaviateOpsRequest](/docs/guides/weaviate/concepts/opsrequest.md) concepts.
-- Use the example files from `docs/examples/weaviate/quickstart/weaviate.yaml` and `docs/examples/weaviate/reconfigure/ops-request.yaml`.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Weaviate](/docs/guides/weaviate/concepts/weaviate.md)
+  - [WeaviateOpsRequest](/docs/guides/weaviate/concepts/opsrequest.md)
 
-```bash
-kubectl create ns demo
-```
+## How Reconfiguration Works
 
-## Deploy Weaviate
+The Reconfiguration process consists of the following steps:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/quickstart/weaviate.yaml
-kubectl get weaviate -n demo weaviate-sample -w
-```
+1. At first, a user creates a `Weaviate` CR.
 
-When the database is `Ready`, continue with the detailed reconfiguration workflow in [Reconfigure Weaviate](/docs/guides/weaviate/reconfigure/reconfigure.md).
+2. `KubeDB-Provisioner` operator watches the `Weaviate` CR.
 
-## Verify
+3. When the operator finds a `Weaviate` CR, it creates a `StatefulSet` and related necessary stuff like secrets, services, etc.
 
-```bash
-kubectl get weaviateopsrequest -n demo weaviate-reconfigure
-kubectl describe weaviateopsrequest -n demo weaviate-reconfigure
-kubectl get weaviate -n demo weaviate-sample -o yaml
-```
+4. Then, in order to reconfigure the `Weaviate` database, the user creates a `WeaviateOpsRequest` CR with the new configuration. The user can provide the new configuration either via a new config secret, via `applyConfig`, or by removing the custom configuration (reverting to defaults).
 
-## Cleaning up
+5. `KubeDB` Ops-manager operator watches the `WeaviateOpsRequest` CR.
 
-```bash
-kubectl delete weaviateopsrequest -n demo weaviate-reconfigure
-kubectl delete weaviate -n demo weaviate-sample
-kubectl delete ns demo
-```
+6. When it finds a `WeaviateOpsRequest` CR, it pauses the `Weaviate` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Weaviate` during the reconfiguration process.
+
+7. Then the `KubeDB` Ops-manager operator updates the configuration secret and restarts the pods in a rolling fashion to apply the new configuration.
+
+8. After the successful configuration update, the `KubeDB` Ops-manager updates the `Weaviate` object to reflect the updated configuration state.
+
+9. After the successful reconfiguration, the `KubeDB` Ops-manager resumes the `Weaviate` object so that the `KubeDB-Provisioner` resumes its usual operations.
+
+In the next doc, we are going to show a step-by-step guide on reconfiguring a Weaviate database using `WeaviateOpsRequest` CRD.

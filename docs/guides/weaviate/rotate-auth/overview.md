@@ -12,40 +12,36 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Rotate Auth for Weaviate
+# Rotating Weaviate Authentication Credentials
 
-Rotate authentication credentials for Weaviate using a `WeaviateOpsRequest` with `type: RotateAuth`.
+This guide will give an overview of how KubeDB Ops-manager rotates the authentication credentials of a `Weaviate` database.
 
 ## Before You Begin
 
-- Install KubeDB and Ops-manager from [here](/docs/setup/README.md).
-- Review [WeaviateOpsRequest](/docs/guides/weaviate/concepts/opsrequest.md) concepts.
-- Use the example files from `docs/examples/weaviate/quickstart/weaviate.yaml` and `docs/examples/weaviate/rotate-auth/ops-request.yaml`.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Weaviate](/docs/guides/weaviate/concepts/weaviate.md)
+  - [WeaviateOpsRequest](/docs/guides/weaviate/concepts/opsrequest.md)
 
-```bash
-kubectl create ns demo
-```
+## How Rotate Auth Works
 
-## Deploy Weaviate
+The Rotate Auth process consists of the following steps:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/quickstart/weaviate.yaml
-kubectl get weaviate -n demo weaviate-sample -w
-```
+1. At first, a user creates a `Weaviate` CR.
 
-Continue with the complete procedure in [Rotate Auth for Weaviate](/docs/guides/weaviate/rotate-auth/rotateauth.md).
+2. `KubeDB-Provisioner` operator watches the `Weaviate` CR.
 
-## Verify
+3. When the operator finds a `Weaviate` CR, it creates a `StatefulSet` and generates an `authSecret` containing the initial API key for the Weaviate database. This API key is injected into Weaviate pods via the `AUTHENTICATION_APIKEY_ALLOWED_KEYS` environment variable.
 
-```bash
-kubectl get secret -n demo weaviate-sample-auth -o yaml
-kubectl describe weaviateopsrequest -n demo weaviate-rotate-auth
-```
+4. Then, in order to rotate the authentication credentials, the user creates a `WeaviateOpsRequest` CR with `type: RotateAuth`. The user can optionally provide a new custom secret, or let KubeDB auto-generate a new API key.
 
-## Cleaning up
+5. `KubeDB` Ops-manager operator watches the `WeaviateOpsRequest` CR.
 
-```bash
-kubectl delete weaviateopsrequest -n demo weaviate-rotate-auth
-kubectl delete weaviate -n demo weaviate-sample
-kubectl delete ns demo
-```
+6. When it finds a `WeaviateOpsRequest` CR, it pauses the `Weaviate` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Weaviate` during the credential rotation process.
+
+7. Then the `KubeDB` Ops-manager operator generates a new API key (or uses the provided secret), updates the `authSecret`, and restarts the pods in a rolling fashion to apply the new credentials.
+
+8. After the successful credential rotation, the `KubeDB` Ops-manager updates the `Weaviate` object to reflect the updated auth state.
+
+9. After the successful Rotate Auth, the `KubeDB` Ops-manager resumes the `Weaviate` object so that the `KubeDB-Provisioner` resumes its usual operations.
+
+In the next doc, we are going to show a step-by-step guide on rotating authentication credentials of a Weaviate database using `WeaviateOpsRequest` CRD.
