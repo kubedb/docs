@@ -47,7 +47,7 @@ metadata:
   name: coreos-prom-milvus
   namespace: demo
 spec:
-  version: "2.4.0"
+  version: "2.6.11"
   storageType: Durable
   storage:
     storageClassName: "standard"

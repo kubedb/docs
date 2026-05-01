@@ -68,7 +68,7 @@ metadata:
 spec:
   db:
     image: PRIVATE_REGISTRY/milvus:2.4.0
-  version: "2.4.0"
+  version: "2.6.11"
 ```
 
 ```bash
@@ -85,7 +85,7 @@ metadata:
   name: pvt-reg-milvus
   namespace: demo
 spec:
-  version: "2.4.0"
+  version: "2.6.11"
   storageType: Durable
   storage:
     storageClassName: "standard"
