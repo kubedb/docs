@@ -69,8 +69,8 @@ metadata:
 spec:
   version: "21.3.0"
   replicas: 3
-  configSecret:
-    name: oracle-sampleuration
+  configuration:
+    secretName: oracle-configuration
   storage:
     accessModes:
       - ReadWriteOnce
@@ -149,7 +149,7 @@ oracleopsrequest.ops.kubedb.com/qdops-reconfigure-config created
 
 #### Verify the new configuration is working
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of the `Oracle` object.
+If everything goes well, `KubeDB` Enterprise operator will update the `configuration.secretName` of the `Oracle` object.
 
 Let's wait for `OracleOpsRequest` to be `Successful`:
 
@@ -235,7 +235,7 @@ NAME                       TYPE          STATUS       AGE
 qdops-reconfigure-remove   Reconfigure   Successful   2m10s
 ```
 
-After this, the `Oracle` CR will no longer reference a `configSecret` and the database will use its default configuration.
+After this, the `Oracle` CR will no longer reference a custom `configuration.secretName` and the database will use its default configuration.
 
 ## Cleaning up
 

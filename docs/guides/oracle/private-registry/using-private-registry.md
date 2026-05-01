@@ -80,8 +80,12 @@ kind: OracleVersion
 metadata:
   name: "1.17.0-private"
 spec:
+  coordinator:
+    image: PRIVATE_REGISTRY/oracle-coordinator:v0.10.0
   db:
     image: PRIVATE_REGISTRY/oracle:v1.17.0
+  exporter:
+    image: PRIVATE_REGISTRY/database/observability-exporter:2.2.1
   version: "21.3.0"
 ```
 

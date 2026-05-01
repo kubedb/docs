@@ -32,9 +32,13 @@ kind: OracleVersion
 metadata:
   name: "1.17.0"
 spec:
+  coordinator:
+    image: "ghcr.io/kubedb/oracle-coordinator:v0.10.0"
   version: "21.3.0"
   db:
     image: "oracle/oracle:v1.17.0"
+  exporter:
+    image: "container-registry.oracle.com/database/observability-exporter:2.2.1"
   deprecated: false
 ```
 

@@ -35,7 +35,7 @@ namespace/demo created
 
 Oracle allows configuring the database via a YAML configuration file named `production.yaml`. When the Oracle Docker image starts, it merges configuration from the default `config.yaml` with any `production.yaml` file present. KubeDB takes advantage of this feature to allow users to provide their custom configuration. To know more about configuring Oracle, see [here](https://oracle.tech/documentation/guides/configuration/).
 
-At first, you have to create a config file named `production.yaml` with your desired configuration. Then create a Secret with this configuration file and provide its name in `spec.configSecret.name`. The operator reads this Secret and mounts it into the Oracle pods automatically.
+At first, you have to create a config file named `production.yaml` with your desired configuration. Then create a Secret with this configuration file and provide its name in `spec.configuration.secretName`. The operator reads this Secret and mounts it into the Oracle pods automatically.
 
 In this tutorial, we will configure `log_level` and `service.max_request_size_mb` via a custom config file.
 
@@ -69,11 +69,11 @@ data:
   production.yaml: bG9nX2xldmVsOiBJTkZPCnNlcnZpY2U6CiAgbWF4X3JlcXVlc3Rfc2l6ZV9tYjogNjQK...
 kind: Secret
 metadata:
-  name: oracle-sample
+  name: oracle-config
   namespace: demo
 ```
 
-Now, create the `Oracle` CR specifying `spec.configSecret.name` field:
+Now, create the `Oracle` CR specifying `spec.configuration.secretName` field:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/configuration/oracle-configuration.yaml
@@ -91,8 +91,8 @@ metadata:
 spec:
   version: "21.3.0"
   replicas: 3
-  configSecret:
-    name: oracle-sample
+  configuration:
+    secretName: oracle-config
   storage:
     storageClassName: "standard"
     accessModes:
