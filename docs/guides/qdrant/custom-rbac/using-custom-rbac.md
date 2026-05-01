@@ -14,29 +14,61 @@ section_menu_id: guides
 
 # Using Custom RBAC Resources
 
-This tutorial shows how to run Qdrant with custom `ServiceAccount`, `Role`, and `RoleBinding` resources.
+KubeDB supports finer user control over role-based access permissions provided to a Qdrant instance. This tutorial will show you how to use KubeDB to run a Qdrant instance with custom RBAC resources.
 
 ## Before You Begin
 
-- You need a Kubernetes cluster and the `kubectl` CLI configured for that cluster.
-- Install KubeDB operator following [the setup guide](/docs/setup/README.md).
-- This tutorial uses `demo` namespace.
+- At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+
+- To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
 
-## Create Custom RBAC Resources
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/custom-rbac](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/qdrant/custom-rbac) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-Create the service account first:
+## Overview
+
+KubeDB allows users to provide custom RBAC resources, namely `ServiceAccount`, `Role`, and `RoleBinding` for Qdrant. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in the Qdrant CRD. If this field is left empty, the KubeDB operator will create a ServiceAccount matching the Qdrant name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this ServiceAccount.
+
+If a ServiceAccount name is given but there is no existing ServiceAccount by that name, the KubeDB operator will create one, and Role and RoleBinding will also be generated automatically.
+
+If a ServiceAccount name is given and there is an existing ServiceAccount by that name, the KubeDB operator will use that existing ServiceAccount. Since this ServiceAccount is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
+
+This guide will show you how to create custom `ServiceAccount`, `Role`, and `RoleBinding` for a Qdrant instance named `qdrant-custom-rbac` to provide the bare minimum access permissions.
+
+## Custom RBAC for Qdrant
+
+At first, let's create a `ServiceAccount` in the `demo` namespace:
 
 ```bash
 $ kubectl create serviceaccount -n demo my-custom-serviceaccount
 serviceaccount/my-custom-serviceaccount created
 ```
 
-Create a role with the required permissions for Qdrant Pods and related resources:
+Verify that the ServiceAccount was created:
+
+```yaml
+$ kubectl get serviceaccount -n demo my-custom-serviceaccount -o yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: my-custom-serviceaccount
+  namespace: demo
+```
+
+Now, create a Role that has the necessary access permissions for the Qdrant database named `qdrant-custom-rbac`:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/custom-rbac/qdrant-custom-role.yaml
+role.rbac.authorization.k8s.io/my-custom-role created
+```
+
+Below is the YAML for the Role we just created:
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -46,25 +78,55 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - kubedb.com
-  resources:
-  - qdrants
+  - apps
   resourceNames:
   - qdrant-custom-rbac
+  resources:
+  - statefulsets
+  verbs:
+  - get
+- apiGroups:
+  - kubedb.com
+  resourceNames:
+  - qdrant-custom-rbac
+  resources:
+  - qdrants
   verbs:
   - get
 - apiGroups:
   - ""
   resources:
   - pods
+  verbs:
+  - list
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
   - pods/exec
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - secrets
   verbs:
   - get
   - list
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
   - create
+  - get
+  - update
 ```
 
-Bind the role to the service account:
+Note that `resourceNames` like `qdrant-custom-rbac` are unique to this particular Qdrant instance. Another database instance `qdrant-custom-rbac-2` would require these `resourceNames` to be updated accordingly.
+
+Now, create a `RoleBinding` to bind this `Role` with the already created ServiceAccount:
 
 ```bash
 $ kubectl create rolebinding my-custom-rolebinding \
@@ -74,9 +136,33 @@ $ kubectl create rolebinding my-custom-rolebinding \
 rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 ```
 
-## Deploy Qdrant with Custom Service Account
+Verify the RoleBinding was created:
 
-## Deploy Qdrant with Custom Service Account
+```yaml
+$ kubectl get rolebinding -n demo my-custom-rolebinding -o yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: my-custom-rolebinding
+  namespace: demo
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: my-custom-role
+subjects:
+- kind: ServiceAccount
+  name: my-custom-serviceaccount
+  namespace: demo
+```
+
+Now, create a `Qdrant` CR specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/custom-rbac/qdrant-custom-db.yaml
+qdrant.kubedb.com/qdrant-custom-rbac created
+```
+
+Below is the YAML for the `Qdrant` CR we just created:
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -85,38 +171,40 @@ metadata:
   name: qdrant-custom-rbac
   namespace: demo
 spec:
-  version: 1.17.0
-  mode: Distributed
+  version: "1.17.0"
   replicas: 3
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
-  storageType: Durable
   storage:
+    storageClassName: "standard"
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
-        storage: 2Gi
+        storage: 1Gi
   deletionPolicy: WipeOut
 ```
 
-```bash
-$ kubectl apply -f qdrant-custom-rbac.yaml
-qdrant.kubedb.com/qdrant-custom-rbac created
-```
-
-## Verify
+Now, wait a few minutes. If everything goes well, we will see that the Qdrant pods are running with the custom ServiceAccount:
 
 ```bash
 $ kubectl get qdrant -n demo qdrant-custom-rbac
-NAME                VERSION   STATUS   AGE
-qdrant-custom-rbac  1.17.0    Ready    2m
+NAME                 VERSION   STATUS   AGE
+qdrant-custom-rbac   1.17.0    Ready    2m
 
-$ kubectl get pod -n demo -l app.kubernetes.io/instance=qdrant-custom-rbac
+$ kubectl get pod -n demo -l app.kubernetes.io/instance=qdrant-custom-rbac -o=custom-columns=NAME:.metadata.name,SERVICEACCOUNT:.spec.serviceAccountName
+NAME                   SERVICEACCOUNT
+qdrant-custom-rbac-0   my-custom-serviceaccount
+qdrant-custom-rbac-1   my-custom-serviceaccount
+qdrant-custom-rbac-2   my-custom-serviceaccount
 ```
 
+The output confirms that all Qdrant pods are running with our custom `my-custom-serviceaccount` ServiceAccount.
+
 ## Cleaning up
+
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete qdrant -n demo qdrant-custom-rbac

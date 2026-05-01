@@ -10,31 +10,42 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Qdrant Ops Request
+> New to KubeDB? Please start [here](/docs/README.md).
 
-This guide lists the Qdrant operations currently documented for KubeDB.
+# Qdrant Day-2 Operations
+
+This guide provides an overview of the day-2 operational workflows that KubeDB supports for `Qdrant` databases via the `QdrantOpsRequest` CRD.
 
 ## Before You Begin
 
-- Deploy Qdrant first using the [quickstart guide](/docs/guides/qdrant/quickstart/quickstart.md).
-- Review the operation-specific pages before applying changes in production.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
+  - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-## Supported Ops Requests
+## Supported Operations
 
-- [HorizontalScaling](/docs/guides/qdrant/scaling/horizontal-scaling/overview.md)
-- [Reconfigure](/docs/guides/qdrant/reconfigure/overview.md)
-- [ReconfigureTLS](/docs/guides/qdrant/reconfigure-tls/overview.md)
-- [Restart](/docs/guides/qdrant/restart/restart.md)
-- [RotateAuth](/docs/guides/qdrant/rotate-auth/overview.md)
-- [VerticalScaling](/docs/guides/qdrant/scaling/vertical-scaling/overview.md)
-- [VolumeExpansion](/docs/guides/qdrant/volume-expansion/overview.md)
-- [UpdateVersion](/docs/guides/qdrant/update-version/overview.md)
+KubeDB supports the following day-2 operations for Qdrant:
+
+| Operation | Description |
+|-----------|-------------|
+| [UpdateVersion](/docs/guides/qdrant/update-version/overview.md) | Update the version of a running Qdrant database |
+| [HorizontalScaling](/docs/guides/qdrant/scaling/horizontal-scaling/overview.md) | Scale the number of Qdrant nodes up or down |
+| [VerticalScaling](/docs/guides/qdrant/scaling/vertical-scaling/overview.md) | Update CPU and memory resources of Qdrant nodes |
+| [VolumeExpansion](/docs/guides/qdrant/volume-expansion/overview.md) | Expand the persistent volume claim size of Qdrant nodes |
+| [Reconfigure](/docs/guides/qdrant/reconfigure/overview.md) | Reconfigure a running Qdrant database with new configuration |
+| [ReconfigureTLS](/docs/guides/qdrant/reconfigure-tls/overview.md) | Add, rotate, or remove TLS certificates for Qdrant |
+| [Restart](/docs/guides/qdrant/restart/restart.md) | Restart the Qdrant database pods in a rolling fashion |
+| [RotateAuth](/docs/guides/qdrant/rotate-auth/overview.md) | Rotate the authentication credentials of a Qdrant database |
 
 ## How Ops Requests Work
 
-Create a `QdrantOpsRequest` for the target database, wait for the request to complete, and verify both the request object and the database status before moving to the next change.
+All day-2 operations for Qdrant are performed through the `QdrantOpsRequest` CRD. The general workflow is:
 
-## Next Steps
+1. The user creates a `QdrantOpsRequest` CR with the desired operation type and parameters.
+2. `KubeDB-ops-manager` operator watches for `QdrantOpsRequest` CRs.
+3. When it finds one, it pauses the `Qdrant` object to prevent conflicting operations.
+4. The operator performs the requested operation (e.g., updates images, scales nodes, expands volumes).
+5. After the operation completes successfully, the operator updates the `Qdrant` object and resumes it.
+6. The `QdrantOpsRequest` status transitions to `Successful`.
 
-- Choose the specific operation page that matches your intended change.
-- Apply one operation at a time and wait for completion before starting the next.
+> **Note:** Only one `QdrantOpsRequest` should be active at a time for a given `Qdrant` database. Wait for one operation to complete before starting another.

@@ -10,27 +10,40 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Qdrant Autoscaler
+> New to KubeDB? Please start [here](/docs/README.md).
 
-This guide summarizes the autoscaling documentation status for Qdrant.
+# Qdrant Autoscaling Overview
+
+This guide will give an overview of how KubeDB autoscales `Qdrant` database resources — both compute (CPU and memory) and storage.
 
 ## Before You Begin
 
-- Deploy Qdrant first using the [quickstart guide](/docs/guides/qdrant/quickstart/quickstart.md).
-- Verify feature availability in your installed KubeDB release before applying any autoscaler examples.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
+  - [QdrantAutoscaler](/docs/guides/qdrant/concepts/autoscaler.md)
+  - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-## Available Autoscaling Modes
+## How Autoscaling Works
 
-This repository does not currently contain a `QdrantAutoscaler` Go type or CRD.
+KubeDB uses the `QdrantAutoscaler` CR to configure automatic scaling of Qdrant resources. There are two types of autoscaling supported:
 
-The compute and storage autoscaler pages are retained as placeholders so the guide tree is complete, but they do not represent CRD-validated manifests in the current repo.
+### Compute Autoscaling
 
-## Related Guides
+KubeDB leverages the [Kubernetes Vertical Pod Autoscaler (VPA)](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) to recommend compute resource adjustments. The process works as follows:
 
-- [Compute Autoscaler](/docs/guides/qdrant/autoscaler/compute/overview.md)
-- [Storage Autoscaler](/docs/guides/qdrant/autoscaler/storage/overview.md)
+1. The user creates a `QdrantAutoscaler` CR with `spec.compute` configured.
+2. KubeDB creates a VPA resource for the `Qdrant` StatefulSet.
+3. The VPA monitors resource usage and provides recommendations.
+4. When the recommendation differs from the current resources by more than `resourceDiffPercentage`, KubeDB creates a `QdrantOpsRequest` with `type: VerticalScaling` to apply the recommended resources.
+5. After the OpsRequest completes, the pods are running with the updated resource requests and limits.
 
-## Next Steps
+### Storage Autoscaling
 
-- Start with conservative limits and thresholds.
-- Review autoscaler recommendations before enabling broad production rollouts.
+KubeDB monitors PVC usage to automatically expand storage. The process works as follows:
+
+1. The user creates a `QdrantAutoscaler` CR with `spec.storage` configured.
+2. KubeDB monitors the PVC storage usage of the Qdrant pods.
+3. When the disk usage exceeds the `usageThreshold` percentage, KubeDB creates a `QdrantOpsRequest` with `type: VolumeExpansion` to expand the storage by `scalingThreshold` percent.
+4. After the OpsRequest completes, the PVCs are expanded to the new size.
+
+In the next docs, we are going to show step-by-step guides on compute and storage autoscaling for Qdrant databases.

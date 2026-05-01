@@ -14,42 +14,34 @@ section_menu_id: guides
 
 # Updating Qdrant Version
 
-This guide shows how to update Qdrant to a supported target version.
+This guide will give you an overview of how KubeDB Ops-manager updates the version of a `Qdrant` database.
 
 ## Before You Begin
 
-- Ensure Qdrant is `Ready` before submitting the update request.
-- Use the example files from `docs/examples/qdrant/quickstart/distributed.yaml` and `docs/examples/qdrant/update-version/ops-request.yaml`.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
+  - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-```bash
-kubectl create ns demo
-kubectl get qdrantversions
-```
+## How the Update Process Works
 
-## Deploy Qdrant
+The updating process consists of the following steps:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/quickstart/distributed.yaml
-kubectl get qdrant -n demo qdrant-sample -w
-```
+1. At first, a user creates a `Qdrant` CR.
 
-## Apply UpdateVersion OpsRequest
+2. `KubeDB-Provisioner` operator watches for the `Qdrant` CR.
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/update-version/ops-request.yaml
-kubectl get qdrantopsrequest -n demo qdrant-update-version
-```
+3. When it finds one, it creates a `StatefulSet` and related necessary stuff like secrets, services, etc.
 
-## Verify
+4. Then, in order to update the version of the `Qdrant` database, the user creates a `QdrantOpsRequest` CR with the desired target version.
 
-```bash
-kubectl describe qdrantopsrequest -n demo qdrant-update-version
-```
+5. `KubeDB-ops-manager` operator watches for `QdrantOpsRequest`.
 
-## Cleaning up
+6. When it finds one, it pauses the `Qdrant` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Qdrant` during the updating process.
 
-```bash
-kubectl delete qdrantopsrequest -n demo qdrant-update-version
-kubectl delete qdrant -n demo qdrant-sample
-kubectl delete ns demo
-```
+7. By looking at the target version from the `QdrantOpsRequest` CR, the `KubeDB-ops-manager` operator updates the images of the `StatefulSet` for the new version.
+
+8. After successful update of the `StatefulSet` and its Pod images, the `KubeDB-ops-manager` updates the image of the `Qdrant` object to reflect the updated cluster state.
+
+9. After successful update of the `Qdrant` object, the `KubeDB` Ops-manager resumes the `Qdrant` object so that the `KubeDB-Provisioner` can resume its usual operations.
+
+In the next doc, we are going to show a step-by-step guide on updating a Qdrant database using the `UpdateVersion` operation.
