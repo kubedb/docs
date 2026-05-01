@@ -31,6 +31,7 @@ spec:
   version: "2.6.11"
   db:
     image: "kubedb/milvus:2.6.11"
+  etcdVersion: v3.5.21
   deprecated: false
 ```
 

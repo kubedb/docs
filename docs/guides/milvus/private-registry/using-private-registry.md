@@ -64,10 +64,11 @@ Create a MilvusVersion CRD specifying images from your private registry. Replace
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MilvusVersion
 metadata:
-  name: "2.4.0"
+  name: "2.6.11"
 spec:
   db:
-    image: PRIVATE_REGISTRY/milvus:2.4.0
+    image: PRIVATE_REGISTRY/milvus:2.6.11
+  etcdVersion: v3.5.21
   version: "2.6.11"
 ```
 
@@ -86,6 +87,9 @@ metadata:
   namespace: demo
 spec:
   version: "2.6.11"
+  objectStorage:
+    configSecret:
+      name: my-release-minio
   storageType: Durable
   storage:
     storageClassName: "standard"

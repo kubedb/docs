@@ -36,6 +36,7 @@ apiVersion: kubedb.com/v1alpha2
 kind: Milvus
 metadata:
   name: milvus-cluster
+  namespace: demo
 spec:
   version: "2.6.11"
   objectStorage:

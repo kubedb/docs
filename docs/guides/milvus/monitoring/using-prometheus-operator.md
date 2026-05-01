@@ -48,6 +48,9 @@ metadata:
   namespace: demo
 spec:
   version: "2.6.11"
+  objectStorage:
+    configSecret:
+      name: my-release-minio
   storageType: Durable
   storage:
     storageClassName: "standard"
