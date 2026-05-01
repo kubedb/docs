@@ -38,10 +38,7 @@ You need to push the required images from KubeDB's [Docker hub account](https://
 ```bash
 $ kubectl get oracleversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,DEPRECATED:.spec.deprecated
 NAME      VERSION   DB_IMAGE                    DEPRECATED
-1.7.4     1.7.4     oracle/oracle:v1.7.4        <none>
-1.10.0    1.10.0    oracle/oracle:v1.10.0       <none>
-1.14.0    1.14.0    oracle/oracle:v1.14.0       <none>
-1.17.0    1.17.0    oracle/oracle:v1.17.0       <none>
+21.3.0    21.3.0    container-registry.oracle.com/database/enterprise:21.3.0.0    <none>
 ```
 
 Docker hub repository:
@@ -78,12 +75,12 @@ Here is an example of a `OracleVersion` CRD. Replace `PRIVATE_REGISTRY` with you
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: OracleVersion
 metadata:
-  name: "1.17.0-private"
+  name: "21.3.0-private"
 spec:
   coordinator:
     image: PRIVATE_REGISTRY/oracle-coordinator:v0.10.0
   db:
-    image: PRIVATE_REGISTRY/oracle:v1.17.0
+    image: PRIVATE_REGISTRY/database/enterprise:21.3.0.0
   exporter:
     image: PRIVATE_REGISTRY/database/observability-exporter:2.2.1
   version: "21.3.0"
@@ -91,12 +88,12 @@ spec:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/private-registry/oracleversion.yaml
-oracleversion.catalog.kubedb.com/1.17.0-private created
+oracleversion.catalog.kubedb.com/21.3.0-private created
 ```
 
 ## Deploy Oracle from Private Registry
 
-While deploying `Oracle` from private registry, you have to add `myregistrykey` secret in `spec.podTemplate.spec.imagePullSecrets` and specify `1.17.0-private` in `spec.version` field.
+While deploying `Oracle` from private registry, you have to add `myregistrykey` secret in `spec.podTemplate.spec.imagePullSecrets` and specify `21.3.0-private` in `spec.version` field.
 
 Below is the YAML for Oracle crd we are going to create:
 
@@ -107,7 +104,7 @@ metadata:
   name: pvt-reg-oracle
   namespace: demo
 spec:
-  version: "21.3.0"
+  version: "21.3.0-private"
   replicas: 3
   storage:
     storageClassName: "standard"
@@ -135,8 +132,8 @@ To check if the images pulled successfully from the registry, wait for the Oracl
 ```bash
 $ kubectl get oracle -n demo pvt-reg-oracle -w
 NAME             VERSION          STATUS         AGE
-pvt-reg-oracle   1.17.0-private   Provisioning   5s
-pvt-reg-oracle   1.17.0-private   Ready          1m
+pvt-reg-oracle   21.3.0-private   Provisioning   5s
+pvt-reg-oracle   21.3.0-private   Ready          1m
 ```
 
 ## Cleaning up

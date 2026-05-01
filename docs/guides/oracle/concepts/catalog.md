@@ -30,13 +30,13 @@ As with all other Kubernetes objects, a `OracleVersion` needs `apiVersion`, `kin
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: OracleVersion
 metadata:
-  name: "1.17.0"
+  name: "21.3.0"
 spec:
   coordinator:
     image: "ghcr.io/kubedb/oracle-coordinator:v0.10.0"
   version: "21.3.0"
   db:
-    image: "oracle/oracle:v1.17.0"
+    image: "container-registry.oracle.com/database/enterprise:21.3.0.0"
   exporter:
     image: "container-registry.oracle.com/database/observability-exporter:2.2.1"
   deprecated: false
@@ -65,10 +65,7 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 ```bash
 $ kubectl get oracleversions
 NAME      VERSION   DB_IMAGE                    DEPRECATED   AGE
-1.7.4     1.7.4     oracle/oracle:v1.7.4                     3d
-1.10.0    1.10.0    oracle/oracle:v1.10.0                    3d
-1.14.0    1.14.0    oracle/oracle:v1.14.0                    3d
-1.17.0    1.17.0    oracle/oracle:v1.17.0                    3d
+21.3.0    21.3.0    container-registry.oracle.com/database/enterprise:21.3.0.0    3d
 ```
 
 ## Next Steps
