@@ -89,7 +89,7 @@ metadata:
   name: weaviate-sample
   namespace: demo
 spec:
-  version: "1.26.4"
+  version: "1.33.1"
   replicas: 3
   tls:
     issuerRef:
@@ -136,7 +136,7 @@ Now, watch `Weaviate` going to `Running` state and also watch `PetSet` and its p
 ```bash
 $ watch kubectl get weaviate -n demo weaviate-sample
 NAME              VERSION   STATUS   AGE
-weaviate-sample   1.26.4    Ready    62s
+weaviate-sample   1.33.1    Ready    62s
 
 $ watch -n 3 kubectl get petset -n demo weaviate-sample
 NAME              READY   AGE

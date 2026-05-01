@@ -78,7 +78,7 @@ Here is an example of a `WeaviateVersion` CRD. Replace `PRIVATE_REGISTRY` with y
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: WeaviateVersion
 metadata:
-  name: "1.33.1-private"
+  name: "1.33.1"
 spec:
   db:
     image: PRIVATE_REGISTRY/weaviate:1.33.1
@@ -87,12 +87,12 @@ spec:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/private-registry/weaviateversion.yaml
-weaviateversion.catalog.kubedb.com/1.33.1-private created
+weaviateversion.catalog.kubedb.com/1.33.1 created
 ```
 
 ## Deploy Weaviate from Private Registry
 
-While deploying `Weaviate` from private registry, you have to add `myregistrykey` secret in `spec.podTemplate.spec.imagePullSecrets` and specify `1.33.1-private` in `spec.version` field.
+While deploying `Weaviate` from private registry, you have to add `myregistrykey` secret in `spec.podTemplate.spec.imagePullSecrets` and specify `1.33.1` in `spec.version` field.
 
 Below is the YAML for Weaviate crd we are going to create:
 
@@ -103,7 +103,7 @@ metadata:
   name: pvt-reg-weaviate
   namespace: demo
 spec:
-  version: "1.33.1-private"
+  version: "1.33.1"
   replicas: 3
   storage:
     storageClassName: "standard"
@@ -131,8 +131,8 @@ To check if the images pulled successfully from the registry, wait for the Weavi
 ```bash
 $ kubectl get weaviate -n demo pvt-reg-weaviate -w
 NAME               VERSION          STATUS         AGE
-pvt-reg-weaviate   1.33.1-private   Provisioning   5s
-pvt-reg-weaviate   1.33.1-private   Ready          1m
+pvt-reg-weaviate   1.33.1           Provisioning   5s
+pvt-reg-weaviate   1.33.1           Ready          1m
 ```
 
 ## Cleaning up

@@ -85,7 +85,7 @@ metadata:
   name: coreos-prom-weaviate
   namespace: demo
 spec:
-  version: "1.26.4"
+  version: "1.33.1"
   replicas: 3
   storage:
     storageClassName: "standard"
@@ -122,7 +122,7 @@ Now, wait for the database to go into `Ready` state:
 ```bash
 $ kubectl get weaviate -n demo coreos-prom-weaviate
 NAME                    VERSION   STATUS   AGE
-coreos-prom-weaviate    1.26.4    Ready    1m
+coreos-prom-weaviate    1.33.1    Ready    1m
 ```
 
 KubeDB will create a `ServiceMonitor` object for this `Weaviate` database:

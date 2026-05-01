@@ -43,6 +43,7 @@ apiVersion: kubedb.com/v1alpha2
 kind: Weaviate
 metadata:
   name: weaviate-sample
+  namespace: demo
 spec:
   version: 1.33.1
   replicas: 3

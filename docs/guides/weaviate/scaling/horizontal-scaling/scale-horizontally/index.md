@@ -55,7 +55,7 @@ metadata:
   name: weaviate-sample
   namespace: demo
 spec:
-  version: "1.26.4"
+  version: "1.33.1"
   replicas: 3
   storage:
     storageClassName: "standard"
@@ -85,7 +85,7 @@ $ watch -n 3 kubectl get weaviate -n demo weaviate-sample
 Every 3.0s: kubectl get weaviate -n demo weaviate-sample
 
 NAME              VERSION   STATUS   AGE
-weaviate-sample   1.26.4    Ready    4m40m
+weaviate-sample   1.33.1    Ready    4m40m
 
 
 $ watch -n 3 kubectl get petset -n demo weaviate-sample

@@ -53,7 +53,7 @@ metadata:
   name: weaviate-sample
   namespace: demo
 spec:
-  version: "1.26.4"
+  version: "1.33.1"
   replicas: 3
   storage:
     accessModes:
@@ -76,7 +76,7 @@ Now, wait until `weaviate-sample` has status `Ready`:
 ```bash
 $ kubectl get weaviate -n demo
 NAME              VERSION   STATUS   AGE
-weaviate-sample   1.26.4    Ready    3m22s
+weaviate-sample   1.33.1    Ready    3m22s
 ```
 
 ### Create Issuer

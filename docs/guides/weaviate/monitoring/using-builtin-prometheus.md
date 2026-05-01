@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-weaviate
   namespace: demo
 spec:
-  version: "1.26.4"
+  version: "1.33.1"
   replicas: 3
   storage:
     storageClassName: "standard"
@@ -79,7 +79,7 @@ Now, wait for the database to go into `Ready` state:
 ```bash
 $ kubectl get weaviate -n demo builtin-prom-weaviate
 NAME                     VERSION   STATUS   AGE
-builtin-prom-weaviate    1.26.4    Ready    1m
+builtin-prom-weaviate    1.33.1    Ready    1m
 ```
 
 KubeDB will create a separate stats service with name `{Weaviate cr name}-stats` for monitoring purpose.

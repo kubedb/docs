@@ -57,7 +57,7 @@ Now, we are going to deploy a `Weaviate` cluster using a supported version by `K
 
 ### Deploy Weaviate Cluster
 
-In this section, we are going to deploy a Weaviate cluster database with version `1.26.4`. Then, in the next section we will set up autoscaling for this database using `WeaviateAutoscaler` CRD. Below is the YAML of the `Weaviate` CR that we are going to create:
+In this section, we are going to deploy a Weaviate cluster database with version `1.33.1`. Then, in the next section we will set up autoscaling for this database using `WeaviateAutoscaler` CRD. Below is the YAML of the `Weaviate` CR that we are going to create:
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -66,7 +66,7 @@ metadata:
   name: weaviate-sample
   namespace: demo
 spec:
-  version: "1.26.4"
+  version: "1.33.1"
   replicas: 3
   storageType: Durable
   storage:
@@ -91,7 +91,7 @@ Now, wait until `weaviate-sample` has status `Ready`:
 ```bash
 $ kubectl get weaviate -n demo
 NAME              VERSION   STATUS   AGE
-weaviate-sample   1.26.4    Ready    3m46s
+weaviate-sample   1.33.1    Ready    3m46s
 ```
 
 Let's check the volume size from the StatefulSet and from the persistent volumes:
