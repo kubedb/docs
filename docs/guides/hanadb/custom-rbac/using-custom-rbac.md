@@ -116,7 +116,7 @@ metadata:
   name: quick-hanadb
   namespace: demo
 spec:
-  version: "2.0"
+  version: "2.0.82"
   replicas: 1
   storageType: Durable
   podTemplate:

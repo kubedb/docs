@@ -68,7 +68,7 @@ metadata:
 spec:
   db:
     image: PRIVATE_REGISTRY/hanadb:2.0
-  version: "2.0"
+  version: "2.0.82"
 ```
 
 ```bash
@@ -85,7 +85,7 @@ metadata:
   name: pvt-reg-hanadb
   namespace: demo
 spec:
-  version: "2.0"
+  version: "2.0.82"
   replicas: 1
   storageType: Durable
   storage:
