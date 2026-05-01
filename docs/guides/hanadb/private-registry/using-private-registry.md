@@ -66,8 +66,12 @@ kind: HanaDBVersion
 metadata:
   name: "2.0"
 spec:
+  coordinator:
+    image: PRIVATE_REGISTRY/hanadb-coordinator:v0.4.0
   db:
     image: PRIVATE_REGISTRY/hanadb:2.0
+  exporter:
+    image: PRIVATE_REGISTRY/hanadb-exporter:1.0.0
   version: "2.0.82"
 ```
 

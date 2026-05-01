@@ -28,9 +28,13 @@ kind: HanaDBVersion
 metadata:
   name: "2.0.82"
 spec:
-  version: "2.0.82"
+  coordinator:
+    image: ghcr.io/kubedb/hanadb-coordinator:v0.4.0
   db:
     image: "kubedb/hanadb:2.0.82"
+  exporter:
+    image: ghcr.io/kubedb/hanadb-exporter:1.0.0
+  version: "2.0.82"
   deprecated: false
 ```
 
@@ -38,7 +42,9 @@ spec:
 
 - `metadata.name` is the value used in `HanaDB.spec.version`.
 - `spec.version` is the HanaDB engine version.
+- `spec.coordinator.image` points to the coordinator sidecar image.
 - `spec.db.image` points to the image used for database pods.
+- `spec.exporter.image` points to the metrics exporter image.
 - `spec.deprecated` marks versions that are not recommended for new use.
 
 ## Next Steps
