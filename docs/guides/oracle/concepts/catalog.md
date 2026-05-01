@@ -32,7 +32,7 @@ kind: OracleVersion
 metadata:
   name: "1.17.0"
 spec:
-  version: "1.17.0"
+  version: "21.3.0"
   db:
     image: "oracle/oracle:v1.17.0"
   deprecated: false

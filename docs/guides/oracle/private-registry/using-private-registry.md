@@ -82,7 +82,7 @@ metadata:
 spec:
   db:
     image: PRIVATE_REGISTRY/oracle:v1.17.0
-  version: "1.17.0"
+  version: "21.3.0"
 ```
 
 ```bash
@@ -103,7 +103,7 @@ metadata:
   name: pvt-reg-oracle
   namespace: demo
 spec:
-  version: "1.17.0-private"
+  version: "21.3.0"
   replicas: 3
   storage:
     storageClassName: "standard"

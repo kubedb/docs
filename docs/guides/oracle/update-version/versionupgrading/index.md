@@ -86,7 +86,7 @@ metadata:
 spec:
   db:
     image: oracle/oracle:v1.17.0
-  version: "1.17.0"
+  version: "21.3.0"
 ```
 
 **Deploy Oracle Instance:**
@@ -100,7 +100,7 @@ metadata:
   name: oracle-sample
   namespace: demo
 spec:
-  version: "1.17.0"
+  version: "21.3.0"
   replicas: 3
   storage:
     accessModes:
