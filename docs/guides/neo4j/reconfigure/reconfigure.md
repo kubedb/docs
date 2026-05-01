@@ -35,7 +35,7 @@ metadata:
   name: neo4j-prod
   namespace: demo
 spec:
-  version: "2025.11.2"
+  version: "2025.12.1"
   replicas: 3
   configuration:
     secretName: neo4j-config

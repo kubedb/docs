@@ -28,7 +28,7 @@ kind: Neo4jVersion
 metadata:
   name: "2025.11.2"
 spec:
-  version: "2025.11.2"
+  version: "2025.12.1"
   db:
     image: "kubedb/neo4j:2025.11.2"
   deprecated: false
