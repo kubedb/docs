@@ -10,30 +10,29 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Qdrant Monitoring
+> New to KubeDB? Please start [here](/docs/README.md).
 
-This guide shows how to enable and verify monitoring for Qdrant.
+# Qdrant Monitoring Overview
+
+This guide will give an overview of how KubeDB supports monitoring for `Qdrant` databases.
 
 ## Before You Begin
 
-- Deploy Qdrant first using the [quickstart guide](/docs/guides/qdrant/quickstart/quickstart.md).
-- Install Prometheus Operator or another compatible metrics stack.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
 
-## Enable Monitoring
+## How KubeDB Monitoring Works
 
-Qdrant monitoring can be configured through `spec.monitor`.
+KubeDB uses Prometheus to monitor `Qdrant` databases. KubeDB operator watches the `Qdrant` CR and sets up monitoring as follows:
 
-- Enable metric scraping and verify health endpoints.
-- Track shard status and node health in distributed mode.
+1. When a `Qdrant` database is deployed with `spec.monitor` configured, KubeDB creates a dedicated `stats` service (or uses the existing service) with the appropriate annotations for Prometheus scraping.
 
-## Verify
+2. KubeDB supports two monitoring approaches:
+   - **Builtin Prometheus** — uses Prometheus' built-in auto-discovery mechanism (`prometheus.io/scrape` annotations on the stats service).
+   - **Prometheus Operator** — creates a `ServiceMonitor` CR that is picked up by the Prometheus Operator.
 
-```bash
-kubectl get qdrant -n demo qdrant-sample -o yaml
-kubectl get servicemonitor -A
-```
+3. The Qdrant stats service exposes Prometheus-compatible metrics at the `/metrics` endpoint, including metrics about collections, vectors, memory usage, and gRPC/REST request performance.
 
-## Next Steps
+4. Prometheus scrapes the metrics from the stats service and makes them available for alerting and dashboards.
 
-- Add dashboards for shard balance, request latency, and storage growth.
-- Recheck metrics after scaling or version updates.
+In the next docs, we are going to show step-by-step guides on monitoring a Qdrant database using Builtin Prometheus and Prometheus Operator.

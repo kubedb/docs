@@ -16,11 +16,13 @@ section_menu_id: guides
 
 ## What is QdrantAutoscaler
 
-`QdrantAutoscaler` is documented here as a planned resource, but this repository does not currently contain the matching Go type or CRD.
+`QdrantAutoscaler` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for automatic scaling of [Qdrant](https://qdrant.tech/) compute resources (CPU, memory) and storage in a Kubernetes native way.
 
-As a result, the sample shown below is illustrative only and should not be treated as a repository-backed manifest for the current release.
+## QdrantAutoscaler CRD Specifications
 
-## Sample QdrantAutoscaler
+Like any official Kubernetes resource, a `QdrantAutoscaler` has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.
+
+**Sample `QdrantAutoscaler` for compute autoscaling:**
 
 ```yaml
 apiVersion: autoscaling.kubedb.com/v1alpha1
@@ -31,25 +33,82 @@ metadata:
 spec:
   databaseRef:
     name: qdrant-sample
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
   compute:
     node:
       trigger: "On"
+      podLifeTimeThreshold: 10m
+      resourceDiffPercentage: 20
       minAllowed:
-        cpu: 250m
-        memory: 512Mi
+        cpu: 400m
+        memory: 400Mi
       maxAllowed:
-        cpu: "2"
-        memory: 4Gi
+        cpu: 1
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"
 ```
 
-## Key fields
+**Sample `QdrantAutoscaler` for storage autoscaling:**
 
-- `spec.databaseRef.name` points to the target `Qdrant` database.
-- `spec.compute` controls CPU and memory autoscaling behavior.
-- `spec.storage` controls volume expansion thresholds and bounds.
-- `spec.opsRequestOptions` configures generated ops request behavior.
+```yaml
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: QdrantAutoscaler
+metadata:
+  name: qdrant-as-storage
+  namespace: demo
+spec:
+  databaseRef:
+    name: qdrant-sample
+  storage:
+    node:
+      trigger: "On"
+      usageThreshold: 20
+      scalingThreshold: 20
+      expansionMode: "Online"
+```
+
+### QdrantAutoscaler `Spec`
+
+A `QdrantAutoscaler` object has the following fields in the `spec` section:
+
+#### spec.databaseRef
+
+`spec.databaseRef` is a required field that points to the [Qdrant](/docs/guides/qdrant/concepts/qdrant.md) object for which autoscaling will be performed. It contains:
+
+- `spec.databaseRef.name` — the name of the target Qdrant database (required).
+
+#### spec.compute
+
+`spec.compute` specifies the compute (CPU and memory) autoscaling configuration. It contains a `node` sub-section with the following fields:
+
+- `spec.compute.node.trigger` — enables (`On`) or disables (`Off`) compute autoscaling.
+- `spec.compute.node.podLifeTimeThreshold` — the minimum age of a pod before VPA can recommend resource updates.
+- `spec.compute.node.resourceDiffPercentage` — the minimum percentage difference required before applying a recommendation.
+- `spec.compute.node.minAllowed` — the minimum allowed CPU and memory resources.
+- `spec.compute.node.maxAllowed` — the maximum allowed CPU and memory resources.
+- `spec.compute.node.controlledResources` — the list of resources to be controlled (e.g., `["cpu", "memory"]`).
+- `spec.compute.node.containerControlledValues` — specifies whether to control `RequestsAndLimits` or `RequestsOnly`.
+
+#### spec.storage
+
+`spec.storage` specifies the storage autoscaling configuration. It contains a `node` sub-section with the following fields:
+
+- `spec.storage.node.trigger` — enables (`On`) or disables (`Off`) storage autoscaling.
+- `spec.storage.node.usageThreshold` — the storage usage threshold (percentage) that triggers autoscaling.
+- `spec.storage.node.scalingThreshold` — the percentage by which storage will be scaled when triggered.
+- `spec.storage.node.expansionMode` — the volume expansion mode (`Online` or `Offline`).
+
+#### spec.opsRequestOptions
+
+`spec.opsRequestOptions` specifies the options for the `QdrantOpsRequest` created by the autoscaler. It contains:
+
+- `spec.opsRequestOptions.timeout` — the timeout for the generated ops request.
+- `spec.opsRequestOptions.apply` — when to apply the ops request. Can be `Always` or `IfReady`.
 
 ## Next Steps
 
-- Read [Qdrant autoscaler overview](/docs/guides/qdrant/autoscaler/overview.md).
-- See [compute autoscaler guide](/docs/guides/qdrant/autoscaler/compute/overview.md) and [storage autoscaler guide](/docs/guides/qdrant/autoscaler/storage/overview.md).
+- Read the [Qdrant autoscaler overview](/docs/guides/qdrant/autoscaler/overview.md).
+- See the [compute autoscaler guide](/docs/guides/qdrant/autoscaler/compute/cluster.md) and [storage autoscaler guide](/docs/guides/qdrant/autoscaler/storage/cluster.md).

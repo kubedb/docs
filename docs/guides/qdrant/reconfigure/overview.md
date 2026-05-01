@@ -14,41 +14,34 @@ section_menu_id: guides
 
 # Reconfiguring Qdrant
 
-This guide shows how to update runtime configuration of Qdrant using `QdrantOpsRequest`.
+This guide will give an overview of how KubeDB Ops-manager reconfigures a `Qdrant` database.
 
 ## Before You Begin
 
-- Ensure KubeDB and Ops-manager are installed.
-- Use the example files from `docs/examples/qdrant/quickstart/distributed.yaml` and `docs/examples/qdrant/reconfigure/ops-request.yaml`.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
+  - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-```bash
-kubectl create ns demo
-```
+## How Reconfiguration Works
 
-## Deploy Qdrant
+The Reconfiguration process consists of the following steps:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/quickstart/distributed.yaml
-kubectl get qdrant -n demo qdrant-sample -w
-```
+1. At first, a user creates a `Qdrant` CR.
 
-## Apply Reconfigure OpsRequest
+2. `KubeDB-Provisioner` operator watches the `Qdrant` CR.
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/ops-request.yaml
-kubectl get qdrantopsrequest -n demo qdrant-reconfigure
-```
+3. When the operator finds a `Qdrant` CR, it creates a `StatefulSet` and related necessary stuff like secrets, services, etc.
 
-## Verify
+4. Then, in order to reconfigure the `Qdrant` database, the user creates a `QdrantOpsRequest` CR with the new configuration. The user can provide the new configuration either via a new config secret, via `applyConfig`, or by removing the custom configuration (reverting to defaults).
 
-```bash
-kubectl describe qdrantopsrequest -n demo qdrant-reconfigure
-```
+5. `KubeDB` Ops-manager operator watches the `QdrantOpsRequest` CR.
 
-## Cleaning up
+6. When it finds a `QdrantOpsRequest` CR, it pauses the `Qdrant` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Qdrant` during the reconfiguration process.
 
-```bash
-kubectl delete qdrantopsrequest -n demo qdrant-reconfigure
-kubectl delete qdrant -n demo qdrant-sample
-kubectl delete ns demo
-```
+7. Then the `KubeDB` Ops-manager operator updates the configuration secret and restarts the pods in a rolling fashion to apply the new configuration.
+
+8. After the successful configuration update, the `KubeDB` Ops-manager updates the `Qdrant` object to reflect the updated configuration state.
+
+9. After the successful reconfiguration, the `KubeDB` Ops-manager resumes the `Qdrant` object so that the `KubeDB-Provisioner` resumes its usual operations.
+
+In the next doc, we are going to show a step-by-step guide on reconfiguring a Qdrant database using `QdrantOpsRequest` CRD.

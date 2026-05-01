@@ -12,44 +12,38 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Volume Expansion for Qdrant
+# Qdrant Volume Expansion
 
-This guide shows how to increase PVC size of Qdrant data volumes.
+This guide will give an overview of how KubeDB Ops-manager expands the volume of a `Qdrant` database.
 
 ## Before You Begin
 
-- Ensure your StorageClass supports volume expansion.
-- Use the example files from `docs/examples/qdrant/quickstart/distributed.yaml` and `docs/examples/qdrant/volume-expansion/ops-request.yaml`.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
+  - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-```bash
-kubectl create ns demo
-kubectl get storageclass
-```
+## How Volume Expansion Works
 
-## Deploy Qdrant
+The Volume Expansion process consists of the following steps:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/quickstart/distributed.yaml
-kubectl get qdrant -n demo qdrant-sample -w
-```
+1. At first, a user creates a `Qdrant` Custom Resource (CR).
 
-## Apply VolumeExpansion OpsRequest
+2. `KubeDB-Provisioner` operator watches the `Qdrant` CR.
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/volume-expansion/ops-request.yaml
-kubectl get qdrantopsrequest -n demo qdrant-volume-expand
-```
+3. When the operator finds a `Qdrant` CR, it creates a `StatefulSet` and related necessary stuff like pods, PVCs, secrets, services, etc.
 
-## Verify
+4. Each StatefulSet creates a Persistent Volume according to the volume claim template. This Persistent Volume will be expanded by the `KubeDB` Ops-manager operator.
 
-```bash
-kubectl describe qdrantopsrequest -n demo qdrant-volume-expand
-```
+5. Then, in order to expand the volume of the `Qdrant` database, the user creates a `QdrantOpsRequest` CR with the desired new storage size.
 
-## Cleaning up
+6. `KubeDB` Ops-manager operator watches the `QdrantOpsRequest` CR.
 
-```bash
-kubectl delete qdrantopsrequest -n demo qdrant-volume-expand
-kubectl delete qdrant -n demo qdrant-sample
-kubectl delete ns demo
-```
+7. When it finds a `QdrantOpsRequest` CR, it pauses the `Qdrant` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Qdrant` during the volume expansion process.
+
+8. Then the `KubeDB` Ops-manager operator expands the persistent volumes to the expected size defined in the `QdrantOpsRequest` CR.
+
+9. After the successful expansion of the volumes, the `KubeDB` Ops-manager updates the new volume size in the `Qdrant` object to reflect the updated state.
+
+10. After the successful Volume Expansion, the `KubeDB` Ops-manager resumes the `Qdrant` object so that the `KubeDB-Provisioner` resumes its usual operations.
+
+In the next doc, we are going to show a step-by-step guide on Volume Expansion of a Qdrant database using `QdrantOpsRequest` CRD.

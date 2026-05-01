@@ -10,66 +10,49 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Qdrant Backup
+> New to KubeDB? Please start [here](/docs/README.md).
 
-This guide summarizes backup approaches for Qdrant and follows the same step-by-step flow as the operations guides.
+# Qdrant Backup Overview
+
+This guide will give an overview of how KubeDB supports backup and restore for `Qdrant` databases using [KubeStash](https://kubestash.com).
 
 ## Before You Begin
 
-- Install KubeDB, KubeStash, and a CSI snapshot-capable storage plugin if you plan to use volume snapshots.
-- Deploy a Qdrant database in namespace `demo`.
-- A single example file is not included under `docs/examples/qdrant/backup` because the exact `BackupConfiguration`, storage backend, and snapshot resources depend on your environment.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
+- You should be familiar with the following `KubeStash` concepts:
+  - [BackupStorage](https://kubestash.com/docs/latest/concepts/crds/backupstorage/)
+  - [BackupConfiguration](https://kubestash.com/docs/latest/concepts/crds/backupconfiguration/)
+  - [BackupSession](https://kubestash.com/docs/latest/concepts/crds/backupsession/)
+  - [RestoreSession](https://kubestash.com/docs/latest/concepts/crds/restoresession/)
+  - [RetentionPolicy](https://kubestash.com/docs/latest/concepts/crds/retentionpolicy/)
 
-```bash
-kubectl create ns demo
-```
+## How Backup Works
 
-## Deploy Qdrant
+KubeStash uses a sidecar-based approach to backup Qdrant databases. The backup process consists of the following steps:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/quickstart/distributed.yaml
-kubectl get qdrant -n demo qdrant-sample -w
-```
+1. At first, a user creates a `BackupStorage` CR that defines the backend storage location (e.g., S3, GCS, Azure Blob).
 
-## Apply Backup Resources
+2. Then, the user creates a `RetentionPolicy` CR that defines how long backup snapshots will be retained.
 
-## Logical Backup (Restic Plugin)
+3. Then, the user creates a `BackupConfiguration` CR that references the target `Qdrant` database, the `BackupStorage`, and the `RetentionPolicy`. A backup schedule (cron expression) can be defined.
 
-Use KubeStash with restic backend for object-level backup workflows.
+4. When a `BackupConfiguration` CR is created, KubeStash creates a `CronJob` to trigger backup sessions at the scheduled time.
 
-Typical resources:
+5. On each scheduled time, a `BackupSession` CR is created. KubeStash executes the backup in a temporary job that connects to the Qdrant database and writes a snapshot to the backend storage.
 
-- `BackupStorage`
-- `RetentionPolicy`
-- `BackupConfiguration`
-- `RestoreSession`
+6. The backup snapshot is stored in the backend storage and a `Snapshot` CR is created to track the backup metadata.
 
-Create backend-specific backup resources that point to your Qdrant database and storage backend.
+## How Restore Works
 
-## Volume Snapshot Backup
+The restore process consists of the following steps:
 
-Use CSI snapshot compatible storage with snapshot classes for PVC level backup and restore.
+1. At first, the user creates a target `Qdrant` database (or uses an existing one).
 
-Typical resources:
+2. Then, the user creates a `RestoreSession` CR referencing the `Snapshot` to restore and the target `Qdrant` database.
 
-- `VolumeSnapshotClass`
-- `BackupConfiguration`
-- `RestoreSession`
+3. KubeStash executes the restore in a temporary job that reads the snapshot from the backend storage and restores the data to the target Qdrant database.
 
-Use a snapshot-capable `StorageClass` and matching `VolumeSnapshotClass` for the PVCs created by your Qdrant deployment.
+4. After the restore completes, the `RestoreSession` status transitions to `Succeeded`.
 
-## Verify
-
-```bash
-kubectl get backupconfiguration -n demo
-kubectl get restoresession -n demo
-```
-
-## Cleaning up
-
-```bash
-kubectl delete backupconfiguration -n demo --all
-kubectl delete restoresession -n demo --all
-kubectl delete qdrant -n demo qdrant-sample
-kubectl delete ns demo
-```
+In the next docs, we are going to show step-by-step guides on backup and restore of Qdrant databases using KubeStash.

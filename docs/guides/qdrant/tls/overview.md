@@ -10,30 +10,40 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Qdrant TLS
+> New to KubeDB? Please start [here](/docs/README.md).
 
-This guide shows the key TLS considerations for Qdrant.
+# Qdrant TLS/SSL Encryption
+
+This guide will give an overview of how KubeDB supports TLS/SSL encryption for `Qdrant` databases.
 
 ## Before You Begin
 
-- Install `cert-manager` in your cluster.
-- Deploy Qdrant first using the [quickstart guide](/docs/guides/qdrant/quickstart/quickstart.md).
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
+  - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-## Configure TLS
+## How TLS Works for Qdrant
 
-Qdrant TLS configuration is available via `spec.tls`.
+KubeDB uses `cert-manager` to manage TLS certificates for Qdrant databases. The TLS configuration process consists of the following steps:
 
-- Enable client and p2p certificate handling.
-- Manage cert issuance using cert-manager issuer references.
+1. At first, a user creates a `ClusterIssuer` or `Issuer` using `cert-manager`.
 
-## Verify
+2. The user then creates a `Qdrant` CR with the `spec.tls` field configured, pointing to the `Issuer` or `ClusterIssuer`.
 
-```bash
-kubectl get qdrant -n demo qdrant-sample -o yaml
-kubectl get secret -n demo
-```
+3. `KubeDB-Provisioner` operator watches the `Qdrant` CR.
 
-## Next Steps
+4. When the operator finds a `Qdrant` CR with `spec.tls` configured, it requests TLS certificates from `cert-manager` using the specified issuer.
 
-- Test both client and peer communication after enabling TLS.
-- Use the dedicated [Reconfigure TLS guide](/docs/guides/qdrant/reconfigure-tls/overview.md) for certificate rotation.
+5. `cert-manager` creates the certificates and stores them in a `Secret`.
+
+6. `KubeDB-Provisioner` operator creates the `StatefulSet` with the TLS secrets mounted, enabling encrypted communication.
+
+7. The `Qdrant` database nodes use these certificates for encrypted client-to-server and peer-to-peer communication.
+
+KubeDB supports the following TLS configurations for Qdrant:
+
+- **Add TLS** — Enable TLS on an existing non-TLS Qdrant database using a `QdrantOpsRequest`.
+- **Rotate TLS** — Rotate the existing TLS certificates to refresh expiring certificates.
+- **Remove TLS** — Remove TLS from an existing TLS-enabled Qdrant database.
+
+In the next doc, we are going to show a step-by-step guide on configuring TLS for a Qdrant database.

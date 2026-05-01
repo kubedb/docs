@@ -10,8 +10,231 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Qdrant Compute Autoscaler
+> New to KubeDB? Please start [here](/docs/README.md).
 
-This repository does not currently contain a `QdrantAutoscaler` Go type or CRD.
+# Autoscaling the Compute Resource of a Qdrant Cluster
 
-Because of that, there is no repository-backed compute autoscaler manifest to publish for Qdrant at this time.
+This guide will show you how to use `KubeDB` to auto-scale compute resources i.e. CPU and memory of a Qdrant cluster database.
+
+## Before You Begin
+
+- At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+
+- Install `KubeDB` Community, Ops-Manager and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
+
+- Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation).
+
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
+  - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
+  - [Compute Resource Autoscaling Overview](/docs/guides/qdrant/autoscaler/overview.md)
+
+To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
+
+```bash
+$ kubectl create ns demo
+namespace/demo created
+```
+
+## Autoscaling of Cluster Database
+
+Here, we are going to deploy a `Qdrant` cluster using a supported version by `KubeDB` operator. Then we are going to apply `QdrantAutoscaler` to set up autoscaling.
+
+### Deploy Qdrant Cluster
+
+In this section, we are going to deploy a Qdrant cluster with version `1.17.0`. Then, in the next section we will set up autoscaling for this database using `QdrantAutoscaler` CRD. Below is the YAML of the `Qdrant` CR that we are going to create:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Qdrant
+metadata:
+  name: qdrant-cluster
+  namespace: demo
+spec:
+  version: "1.17.0"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  podTemplate:
+    spec:
+      containers:
+      - name: qdrant
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "512Mi"
+          limits:
+            cpu: "200m"
+            memory: "512Mi"
+  deletionPolicy: WipeOut
+```
+
+Let's create the `Qdrant` CR we have shown above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/compute/qdrant-cluster.yaml
+qdrant.kubedb.com/qdrant-cluster created
+```
+
+Now, wait until `qdrant-cluster` has status `Ready`:
+
+```bash
+$ kubectl get qdrant -n demo
+NAME             VERSION   STATUS   AGE
+qdrant-cluster   1.17.0    Ready    4m
+```
+
+Let's check the Pod container resources:
+
+```bash
+$ kubectl get pod -n demo qdrant-cluster-0 -o json | jq '.spec.containers[].resources'
+{
+  "limits": {
+    "cpu": "200m",
+    "memory": "512Mi"
+  },
+  "requests": {
+    "cpu": "200m",
+    "memory": "512Mi"
+  }
+}
+```
+
+We are now ready to apply the `QdrantAutoscaler` CRD to set up autoscaling for this database.
+
+### Compute Resource Autoscaling
+
+Here, we are going to set up compute resource autoscaling using a `QdrantAutoscaler` Object.
+
+#### Create QdrantAutoscaler Object
+
+In order to set up compute resource autoscaling for this database cluster, we have to create a `QdrantAutoscaler` CR with our desired configuration. Below is the YAML of the `QdrantAutoscaler` object that we are going to create:
+
+```yaml
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: QdrantAutoscaler
+metadata:
+  name: qdrant-as-compute
+  namespace: demo
+spec:
+  databaseRef:
+    name: qdrant-cluster
+  opsRequestOptions:
+    timeout: 3m
+    apply: IfReady
+  compute:
+    node:
+      trigger: "On"
+      podLifeTimeThreshold: 10m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 400m
+        memory: 400Mi
+      maxAllowed:
+        cpu: 1
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"
+```
+
+Here,
+
+- `spec.databaseRef.name` specifies that we are performing compute autoscaling on `qdrant-cluster` database.
+- `spec.compute.node.trigger` specifies that compute resource autoscaling is enabled for the Qdrant nodes.
+- `spec.compute.node.podLifeTimeThreshold` specifies the minimum age of a Pod before the `VerticalPodAutoscaler` can recommend a resource update.
+- `spec.compute.node.resourceDiffPercentage` specifies the minimum percentage change needed before applying a new resource recommendation.
+- `spec.compute.node.minAllowed` specifies the minimum allowed resources for the Qdrant nodes.
+- `spec.compute.node.maxAllowed` specifies the maximum allowed resources for the Qdrant nodes.
+- `spec.compute.node.controlledResources` specifies the resource types that will be auto-scaled.
+- `spec.compute.node.containerControlledValues` specifies which resource values should be controlled, here both requests and limits.
+
+Let's create the `QdrantAutoscaler` CR we have shown above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/compute/qdrant-as-compute.yaml
+qdrantautoscaler.autoscaling.kubedb.com/qdrant-as-compute created
+```
+
+#### Verify Autoscaler is set up successfully
+
+Let's check that the `QdrantAutoscaler` resource is created successfully:
+
+```bash
+$ kubectl get qdrantautoscaler -n demo
+NAME                AGE
+qdrant-as-compute   5s
+
+$ kubectl describe qdrantautoscaler qdrant-as-compute -n demo
+Name:         qdrant-as-compute
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  autoscaling.kubedb.com/v1alpha1
+Kind:         QdrantAutoscaler
+Spec:
+  Compute:
+    Node:
+      Container Controlled Values:  RequestsAndLimits
+      Controlled Resources:
+        cpu
+        memory
+      Max Allowed:
+        Cpu:     1
+        Memory:  2Gi
+      Min Allowed:
+        Cpu:     400m
+        Memory:  400Mi
+      Pod Life Time Threshold:      10m0s
+      Resource Diff Percentage:     20
+      Trigger:                      On
+  Database Ref:
+    Name:  qdrant-cluster
+  Ops Request Options:
+    Apply:    IfReady
+    Timeout:  3m0s
+Events:       <none>
+```
+
+So, the `QdrantAutoscaler` resource is created successfully. The operator will now watch the resource usage of the Qdrant pods and create `QdrantOpsRequest` resources to scale the cluster when needed.
+
+After some time, you can observe that the autoscaler has created a `QdrantOpsRequest` with type `VerticalScaling`:
+
+```bash
+$ kubectl get qdrantopsrequest -n demo
+NAME                              TYPE              STATUS       AGE
+qdops-qdrant-cluster-xxxxxxxx     VerticalScaling   Successful   5m
+```
+
+You can then verify the updated resources on the pods:
+
+```bash
+$ kubectl get pod -n demo qdrant-cluster-0 -o json | jq '.spec.containers[].resources'
+{
+  "limits": {
+    "cpu": "400m",
+    "memory": "512Mi"
+  },
+  "requests": {
+    "cpu": "400m",
+    "memory": "512Mi"
+  }
+}
+```
+
+The above output verifies that we have successfully autoscaled the resources of the Qdrant cluster database.
+
+## Cleaning Up
+
+To clean up the Kubernetes resources created by this tutorial, run:
+
+```bash
+kubectl delete qdrant -n demo qdrant-cluster
+kubectl delete qdrantautoscaler -n demo qdrant-as-compute
+kubectl delete ns demo
+```

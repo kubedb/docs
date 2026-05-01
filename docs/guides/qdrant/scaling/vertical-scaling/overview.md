@@ -14,41 +14,34 @@ section_menu_id: guides
 
 # Qdrant Vertical Scaling
 
-This guide shows how to update CPU and memory resources of Qdrant nodes.
+This guide will give an overview of how KubeDB Ops-manager updates the CPU and memory resources of `Qdrant` database nodes.
 
 ## Before You Begin
 
-- Ensure database is healthy and all pods are running.
-- Use the example files from `docs/examples/qdrant/quickstart/distributed.yaml` and `docs/examples/qdrant/scaling/vertical-scaling/ops-request.yaml`.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
+  - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-```bash
-kubectl create ns demo
-```
+## How Vertical Scaling Works
 
-## Deploy Qdrant
+The Vertical Scaling process consists of the following steps:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/quickstart/distributed.yaml
-kubectl get qdrant -n demo qdrant-sample -w
-```
+1. At first, a user creates a `Qdrant` CR.
 
-## Apply VerticalScaling OpsRequest
+2. `KubeDB-Provisioner` operator watches the `Qdrant` CR.
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/vertical-scaling/ops-request.yaml
-kubectl get qdrantopsrequest -n demo qdrant-vertical-scale
-```
+3. When the operator finds a `Qdrant` CR, it creates a `StatefulSet` and related necessary stuff like secrets, services, etc.
 
-## Verify
+4. Then, in order to update the CPU and memory resources of the `Qdrant` database nodes, the user creates a `QdrantOpsRequest` CR with the desired resource specifications.
 
-```bash
-kubectl describe qdrantopsrequest -n demo qdrant-vertical-scale
-```
+5. `KubeDB` Ops-manager operator watches the `QdrantOpsRequest` CR.
 
-## Cleaning up
+6. When it finds a `QdrantOpsRequest` CR, it pauses the `Qdrant` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Qdrant` during the scaling process.
 
-```bash
-kubectl delete qdrantopsrequest -n demo qdrant-vertical-scale
-kubectl delete qdrant -n demo qdrant-sample
-kubectl delete ns demo
-```
+7. Then the `KubeDB` Ops-manager operator updates the resources of the `StatefulSet` pods to the desired values defined in the `QdrantOpsRequest` CR.
+
+8. After the successful resource update of the pods, the `KubeDB` Ops-manager updates the resource specifications in the `Qdrant` object to reflect the updated state.
+
+9. After the successful Vertical Scaling, the `KubeDB` Ops-manager resumes the `Qdrant` object so that the `KubeDB-Provisioner` resumes its usual operations.
+
+In the next doc, we are going to show a step-by-step guide on Vertical Scaling of a Qdrant database using `QdrantOpsRequest` CRD.
