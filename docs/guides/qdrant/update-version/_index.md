@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-update-version
     name: Update Version
     parent: qdrant-guides
-    weight: 35
+    weight: 100
 menu_name: docs_{{ .version }}
 ---

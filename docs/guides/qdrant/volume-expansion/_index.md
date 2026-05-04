@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-volume-expansion
     name: Volume Expansion
     parent: qdrant-guides
-    weight: 36
+    weight: 110
 menu_name: docs_{{ .version }}
 ---

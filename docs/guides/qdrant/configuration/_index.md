@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-configuration
     name: Custom Configuration
     parent: qdrant-guides
-    weight: 130
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

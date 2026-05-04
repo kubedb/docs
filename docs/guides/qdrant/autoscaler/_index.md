@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-autoscaler
     name: Autoscaler
     parent: qdrant-guides
-    weight: 40
+    weight: 130
 menu_name: docs_{{ .version }}
 ---

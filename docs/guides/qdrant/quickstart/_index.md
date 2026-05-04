@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-quickstart
     name: Quickstart
     parent: qdrant-guides
-    weight: 15
+    weight: 10
 menu_name: docs_{{ .version }}
 ---
