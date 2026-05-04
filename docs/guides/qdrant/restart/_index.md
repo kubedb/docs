@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-restart
     name: Restart
     parent: qdrant-guides
-    weight: 80
+    weight: 90
 menu_name: docs_{{ .version }}
 ---
