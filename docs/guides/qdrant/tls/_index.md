@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-tls
     name: TLS
     parent: qdrant-guides
-    weight: 40
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

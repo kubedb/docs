@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-scaling
     name: Scaling
     parent: qdrant-guides
-    weight: 120
+    weight: 130
 menu_name: docs_{{ .version }}
 ---

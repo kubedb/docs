@@ -49,17 +49,11 @@ When you install KubeDB, it creates `QdrantVersion` CRDs for all supported Qdran
 
 ```bash
 $ kubectl get qdrantversions
-NAME      VERSION   DB_IMAGE                              DEPRECATED   AGE
-1.7.4     1.7.4     qdrant/qdrant:v1.7.4                              3d
-1.8.4     1.8.4     qdrant/qdrant:v1.8.4                              3d
-1.10.0    1.10.0    qdrant/qdrant:v1.10.0                             3d
-1.11.0    1.11.0    qdrant/qdrant:v1.11.0                             3d
-1.12.0    1.12.0    qdrant/qdrant:v1.12.0                             3d
-1.13.0    1.13.0    qdrant/qdrant:v1.13.0                             3d
-1.14.0    1.14.0    qdrant/qdrant:v1.14.0                             3d
-1.15.0    1.15.0    qdrant/qdrant:v1.15.0                             3d
-1.16.0    1.16.0    qdrant/qdrant:v1.16.0                             3d
-1.17.0    1.17.0    qdrant/qdrant:v1.17.0                             3d
+NAME     VERSION   DB_IMAGE                                       DEPRECATED   AGE
+1.15.4   1.15.4    docker.io/qdrant/qdrant:v1.15.4-unprivileged                13d
+1.16.2   1.16.2    docker.io/qdrant/qdrant:v1.16.2-unprivileged                13d
+1.17.0   1.17.0    docker.io/qdrant/qdrant:v1.17.0-unprivileged                13d
+
 ```
 
 Notice the `DEPRECATED` column. `true` means that QdrantVersion is deprecated for the current KubeDB version and KubeDB will not work for that version.
@@ -80,7 +74,7 @@ metadata:
   namespace: demo
 spec:
   version: "1.17.0"
-  replicas: 3
+  mode: "standalone"
   storage:
     storageClassName: "standard"
     accessModes:

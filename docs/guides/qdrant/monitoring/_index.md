@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-monitoring
     name: Monitoring
     parent: qdrant-guides
-    weight: 140
+    weight: 150
 menu_name: docs_{{ .version }}
 ---

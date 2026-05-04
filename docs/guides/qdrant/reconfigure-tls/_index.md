@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-reconfigure-tls
     name: Reconfigure TLS
     parent: qdrant-guides
-    weight: 70
+    weight: 80
 menu_name: docs_{{ .version }}
 ---
