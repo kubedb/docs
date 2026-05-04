@@ -23,16 +23,6 @@ KubeStash allows you to backup and restore `Qdrant` databases logically. This gu
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
 - If you are not familiar with how KubeStash backup and restore Qdrant databases, please check the following guide [here](/docs/guides/qdrant/backup/overview/index.md).
 
-You should be familiar with the following `KubeStash` concepts:
-
-- [BackupStorage](https://kubestash.com/docs/latest/concepts/crds/backupstorage/)
-- [BackupConfiguration](https://kubestash.com/docs/latest/concepts/crds/backupconfiguration/)
-- [BackupSession](https://kubestash.com/docs/latest/concepts/crds/backupsession/)
-- [RestoreSession](https://kubestash.com/docs/latest/concepts/crds/restoresession/)
-- [Addon](https://kubestash.com/docs/latest/concepts/crds/addon/)
-- [Function](https://kubestash.com/docs/latest/concepts/crds/function/)
-- [Task](https://kubestash.com/docs/latest/concepts/crds/addon/#task-specification)
-
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
@@ -40,7 +30,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/qdrant/backup/logical/examples](docs/guides/qdrant/backup/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/qdrant/backup/logical/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Backup Qdrant
 
@@ -79,7 +69,7 @@ spec:
 Create the above `Qdrant` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/sample-qdrant.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/qdrant.yaml
 qdrant.kubedb.com/sample-qdrant created
 ```
 
@@ -177,7 +167,7 @@ minio-xxxxxxxxxx-xxxxx   1/1     Running   0          2m
 Create a secret with credentials to access the MinIO storage:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/aws-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/storage-secret.yaml
 secret/aws-secret created
 ```
 
@@ -417,7 +407,7 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/restored-qdrant.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/qdrant-restored.yaml
 qdrant.kubedb.com/restored-qdrant created
 ```
 

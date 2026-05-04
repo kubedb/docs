@@ -1,9 +1,9 @@
 ---
-title: Qdrant Storage Autoscaler Cluster
+title: Qdrant Storage Autoscaler
 menu:
   docs_{{ .version }}:
-    identifier: qdrant-autoscaler-storage-cluster
-    name: Cluster
+    identifier: qdrant-autoscaler-storage-database
+    name: Database
     parent: qdrant-autoscaler-storage
     weight: 20
 menu_name: docs_{{ .version }}
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Storage Autoscaling of a Qdrant Cluster
+# Storage Autoscaling of a Qdrant Database
 
-This guide will show you how to use `KubeDB` to autoscale the storage of a Qdrant cluster database.
+This guide will show you how to use `KubeDB` to autoscale the storage of a Qdrant database.
 
 ## Before You Begin
 
@@ -29,7 +29,7 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Qdran
 - You must have a `StorageClass` that supports volume expansion.
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
+  - [Qdrant](/docs/guides/qdrant/concepts/)
   - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
   - [Storage Autoscaling Overview](/docs/guides/qdrant/autoscaler/overview.md)
 
@@ -40,7 +40,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-## Storage Autoscaling of Cluster Database
+## Storage Autoscaling of Database
 
 At first, verify that your cluster has a storage class that supports volume expansion:
 
@@ -53,17 +53,17 @@ topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsum
 
 We can see from the output that `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` set to `true`. We will use it for this tutorial. You can install topolvm from [here](https://github.com/topolvm/topolvm).
 
-Now, we are going to deploy a `Qdrant` cluster using a supported version by `KubeDB` operator. Then we are going to apply `QdrantAutoscaler` to set up autoscaling.
+Now, we are going to deploy a `Qdrant` database using a supported version by `KubeDB` operator. Then we are going to apply `QdrantAutoscaler` to set up autoscaling.
 
-### Deploy Qdrant Cluster
+### Deploy Qdrant Database
 
-In this section, we are going to deploy a Qdrant cluster database with version `1.17.0`. Then, in the next section we will set up autoscaling for this database using `QdrantAutoscaler` CRD. Below is the YAML of the `Qdrant` CR that we are going to create:
+In this section, we are going to deploy a Qdrant database with version `1.17.0`. Then, in the next section we will set up autoscaling for this database using `QdrantAutoscaler` CRD. Below is the YAML of the `Qdrant` CR that we are going to create:
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Qdrant
 metadata:
-  name: qdrant-cluster
+  name: qdrant-db
   namespace: demo
 spec:
   version: "1.17.0"
@@ -82,29 +82,29 @@ spec:
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/storage/qdrant-cluster.yaml
-qdrant.kubedb.com/qdrant-cluster created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/storage/qdrant-db.yaml
+qdrant.kubedb.com/qdrant-db created
 ```
 
-Now, wait until `qdrant-cluster` has status `Ready`:
+Now, wait until `qdrant-db` has status `Ready`:
 
 ```bash
 $ kubectl get qdrant -n demo
 NAME             VERSION   STATUS   AGE
-qdrant-cluster   1.17.0    Ready    3m46s
+qdrant-db        1.17.0    Ready    3m46s
 ```
 
 Let's check the volume size from the StatefulSet and from the persistent volumes:
 
 ```bash
-$ kubectl get sts -n demo qdrant-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get sts -n demo qdrant-db -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                              STORAGECLASS          REASON   AGE
-pvc-43266d76-f280-4cca-bd78-d13660a84db9   1Gi        RWO            Delete           Bound    demo/data-qdrant-cluster-2         topolvm-provisioner            57s
-pvc-4a509b05-774b-42d9-b36d-599c9056af37   1Gi        RWO            Delete           Bound    demo/data-qdrant-cluster-0         topolvm-provisioner            58s
-pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1Gi        RWO            Delete           Bound    demo/data-qdrant-cluster-1         topolvm-provisioner            57s
+pvc-43266d76-f280-4cca-bd78-d13660a84db9   1Gi        RWO            Delete           Bound    demo/data-qdrant-db-2         topolvm-provisioner            57s
+pvc-4a509b05-774b-42d9-b36d-599c9056af37   1Gi        RWO            Delete           Bound    demo/data-qdrant-db-0         topolvm-provisioner            58s
+pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1Gi        RWO            Delete           Bound    demo/data-qdrant-db-1         topolvm-provisioner            57s
 ```
 
 You can see the StatefulSet has 1GB storage and the capacity of all the persistent volumes is also 1GB.
@@ -117,7 +117,7 @@ Here, we are going to set up storage autoscaling using a `QdrantAutoscaler` Obje
 
 #### Create QdrantAutoscaler Object
 
-In order to set up storage autoscaling for this cluster database, we have to create a `QdrantAutoscaler` CR with our desired configuration. Below is the YAML of the `QdrantAutoscaler` object that we are going to create:
+In order to set up storage autoscaling for this database, we have to create a `QdrantAutoscaler` CR with our desired configuration. Below is the YAML of the `QdrantAutoscaler` object that we are going to create:
 
 ```yaml
 apiVersion: autoscaling.kubedb.com/v1alpha1
@@ -127,7 +127,7 @@ metadata:
   namespace: demo
 spec:
   databaseRef:
-    name: qdrant-cluster
+    name: qdrant-db
   storage:
     node:
       trigger: "On"
@@ -138,7 +138,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing storage autoscaling on `qdrant-cluster` database.
+- `spec.databaseRef.name` specifies that we are performing storage autoscaling on `qdrant-db` database.
 - `spec.storage.node.trigger` specifies that storage autoscaling is enabled for the Qdrant nodes.
 - `spec.storage.node.usageThreshold` specifies the storage usage threshold — if storage usage exceeds `20%`, storage autoscaling will be triggered.
 - `spec.storage.node.scalingThreshold` specifies the scaling threshold — storage will be scaled to `20%` of the current amount.
@@ -169,7 +169,7 @@ API Version:  autoscaling.kubedb.com/v1alpha1
 Kind:         QdrantAutoscaler
 Spec:
   Database Ref:
-    Name:  qdrant-cluster
+    Name:  qdrant-db
   Storage:
     Node:
       Expansion Mode:   Online
@@ -184,15 +184,15 @@ So, the `QdrantAutoscaler` resource is created successfully. The operator will n
 Now, for this demo, we are going to manually fill up the persistent volume to exceed the `usageThreshold` using the `dd` command to see if storage autoscaling is working:
 
 ```bash
-$ kubectl exec -it -n demo qdrant-cluster-0 -- bash
-root@qdrant-cluster-0:/qdrant/storage# df -h /qdrant/storage
+$ kubectl exec -it -n demo qdrant-db-0 -- bash
+root@qdrant-db-0:/qdrant/storage# df -h /qdrant/storage
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/57cd4330-784f-42c1-bf8e-e743241df164 1014M   32M  983M   4% /qdrant/storage
-root@qdrant-cluster-0:/qdrant/storage# dd if=/dev/zero of=/qdrant/storage/file.img bs=800M count=1
+root@qdrant-db-0:/qdrant/storage# dd if=/dev/zero of=/qdrant/storage/file.img bs=800M count=1
 1+0 records in
 1+0 records out
 838860800 bytes (839 MB, 800 MiB) copied, 6.47 s, 130 MB/s
-root@qdrant-cluster-0:/qdrant/storage# df -h /qdrant/storage
+root@qdrant-db-0:/qdrant/storage# df -h /qdrant/storage
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/57cd4330-784f-42c1-bf8e-e743241df164 1014M  832M  183M  82% /qdrant/storage
 ```
@@ -202,8 +202,8 @@ Now let's watch the `QdrantOpsRequest` in the demo namespace:
 ```bash
 $ kubectl get qdrantopsrequest -n demo -w
 NAME                                    TYPE              STATUS        AGE
-qdops-qdrant-cluster-xxxxxxxx           VolumeExpansion   Progressing   10s
-qdops-qdrant-cluster-xxxxxxxx           VolumeExpansion   Successful    2m
+qdops-qdrant-db-xxxxxxxx           VolumeExpansion   Progressing   10s
+qdops-qdrant-db-xxxxxxxx           VolumeExpansion   Successful    2m
 ```
 
 After the `QdrantOpsRequest` completes successfully, let's check the updated storage:
@@ -211,9 +211,9 @@ After the `QdrantOpsRequest` completes successfully, let's check the updated sto
 ```bash
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                              STORAGECLASS          REASON   AGE
-pvc-43266d76-f280-4cca-bd78-d13660a84db9   1217Mi     RWO            Delete           Bound    demo/data-qdrant-cluster-2         topolvm-provisioner            15m
-pvc-4a509b05-774b-42d9-b36d-599c9056af37   1217Mi     RWO            Delete           Bound    demo/data-qdrant-cluster-0         topolvm-provisioner            15m
-pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1217Mi     RWO            Delete           Bound    demo/data-qdrant-cluster-1         topolvm-provisioner            15m
+pvc-43266d76-f280-4cca-bd78-d13660a84db9   1217Mi     RWO            Delete           Bound    demo/data-qdrant-db-2         topolvm-provisioner            15m
+pvc-4a509b05-774b-42d9-b36d-599c9056af37   1217Mi     RWO            Delete           Bound    demo/data-qdrant-db-0         topolvm-provisioner            15m
+pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1217Mi     RWO            Delete           Bound    demo/data-qdrant-db-1         topolvm-provisioner            15m
 ```
 
 The storage has been automatically scaled from 1Gi to ~1.2Gi (120% of 1Gi) as we specified a `scalingThreshold` of 20%.
@@ -223,7 +223,7 @@ The storage has been automatically scaled from 1Gi to ~1.2Gi (120% of 1Gi) as we
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete qdrant -n demo qdrant-cluster
+kubectl delete qdrant -n demo qdrant-db
 kubectl delete qdrantautoscaler -n demo qdrant-as-storage
 kubectl delete ns demo
 ```
