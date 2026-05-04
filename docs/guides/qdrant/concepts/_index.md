@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-concepts
     name: Concepts
     parent: qdrant-guides
-    weight: 15
+    weight: 20
 menu_name: docs_{{ .version }}
 ---

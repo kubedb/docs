@@ -5,6 +5,6 @@ menu:
     identifier: qdrant-rotate-auth
     name: Rotate Auth
     parent: qdrant-guides
-    weight: 34
+    weight: 90
 menu_name: docs_{{ .version }}
 ---
