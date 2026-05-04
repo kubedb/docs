@@ -40,7 +40,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/qdrant/backup/volumesnapshot/examples](docs/guides/qdrant/backup/volumesnapshot/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/qdrant/backup/volumesnapshot/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/qdrant/backup/volumesnapshot/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Prepare Backup Infrastructure
 
@@ -115,7 +115,7 @@ backupstorage.storage.kubestash.com/minio-storage created
 Create a secret with credentials to access the storage:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/volumesnapshot/examples/aws-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/volumesnapshot/examples/storage-secret.yaml
 secret/aws-secret created
 ```
 
@@ -188,7 +188,7 @@ spec:
 Create the above `Qdrant` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/volumesnapshot/examples/sample-qdrant.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/volumesnapshot/examples/qdrant.yaml
 qdrant.kubedb.com/sample-qdrant created
 ```
 
@@ -369,7 +369,7 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/volumesnapshot/examples/restored-qdrant.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/volumesnapshot/examples/qdrant-restored.yaml
 qdrant.kubedb.com/restored-qdrant created
 ```
 

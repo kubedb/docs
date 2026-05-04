@@ -76,7 +76,7 @@ A `QdrantAutoscaler` object has the following fields in the `spec` section:
 
 #### spec.databaseRef
 
-`spec.databaseRef` is a required field that points to the [Qdrant](/docs/guides/qdrant/concepts/qdrant.md) object for which autoscaling will be performed. It contains:
+`spec.databaseRef` is a required field that points to the [Qdrant](/docs/guides/qdrant/concepts/) object for which autoscaling will be performed. It contains:
 
 - `spec.databaseRef.name` — the name of the target Qdrant database (required).
 
@@ -111,4 +111,4 @@ A `QdrantAutoscaler` object has the following fields in the `spec` section:
 ## Next Steps
 
 - Read the [Qdrant autoscaler overview](/docs/guides/qdrant/autoscaler/overview.md).
-- See the [compute autoscaler guide](/docs/guides/qdrant/autoscaler/compute/cluster.md) and [storage autoscaler guide](/docs/guides/qdrant/autoscaler/storage/cluster.md).
+- See the [compute autoscaler guide](/docs/guides/qdrant/autoscaler/compute/database.md) and [storage autoscaler guide](/docs/guides/qdrant/autoscaler/storage/database.md).

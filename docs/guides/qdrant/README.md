@@ -43,5 +43,6 @@ KubeDB supports Qdrant vector databases through the `Qdrant` CRD.
 ## User Guide
 
 - [Quickstart Qdrant](/docs/guides/qdrant/quickstart/quickstart.md) with KubeDB operator.
-- Detail concepts of [Qdrant Object](/docs/guides/qdrant/concepts/qdrant.md).
+- Deploy [Distributed Qdrant](/docs/guides/qdrant/distributed-deployment/overview.md) cluster.
+- Detail concepts of [Qdrant Object](/docs/guides/qdrant/concepts/).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
