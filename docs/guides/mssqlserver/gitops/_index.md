@@ -5,6 +5,6 @@ menu:
     identifier: mssqlserver-gitops
     name: GitOps
     parent: guides-mssqlserver
-    weight: 41
+    weight: 180
 menu_name: docs_{{ .version }}
 ---

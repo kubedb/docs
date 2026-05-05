@@ -3,7 +3,7 @@ title: GitOps MySQL
 menu:
   docs_{{ .version }}:
     identifier: mysql-gitops
-    name: GitOps MySQL
+    name: Guide
     parent: guides-mysql-gitops
     weight: 15
 menu_name: docs_{{ .version }}

@@ -4,7 +4,7 @@ description: MongoDB GitOps
 menu:
   docs_{{ .version }}:
     identifier: mg-gitops
-    name: MongoDB GitOps
+    name: Guide
     parent: mg-gitops-mongodb
     weight: 15
 menu_name: docs_{{ .version }}

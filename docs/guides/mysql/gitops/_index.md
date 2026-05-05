@@ -5,6 +5,6 @@ menu:
     identifier: guides-mysql-gitops
     name: GitOps
     parent: guides-mysql
-    weight: 140
+    weight: 180
 menu_name: docs_{{ .version }}
 ---

@@ -4,7 +4,7 @@ description: Elasticsearch GitOps
 menu:
   docs_{{ .version }}:
     identifier: gitops-elasticsearch
-    name: GitOps Elasticsearch 
+    name: Guides
     parent: es-gitops
     weight: 20
 menu_name: docs_{{ .version }}

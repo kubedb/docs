@@ -4,7 +4,7 @@ description: MariaDB GitOps
 menu:
   docs_{{ .version }}:
     identifier: md-gitops
-    name: GitOps MariaDB 
+    name: Guide
     parent: guides-mariadb-gitops
     weight: 20
 menu_name: docs_{{ .version }}

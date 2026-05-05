@@ -4,7 +4,7 @@ description: Mssqlserver GitOps
 menu:
   docs_{{ .version }}:
     identifier: mssql-gitops
-    name: GitOps Microsoft SQL Server
+    name: Guide
     parent: mssqlserver-gitops
     weight: 15
 menu_name: docs_{{ .version }}

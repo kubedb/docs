@@ -3,7 +3,7 @@ title: Redis GitOps Guides
 menu:
   docs_{{ .version }}:
     identifier: rd-gitops-guides
-    name: GitOps Redis
+    name: Guide
     parent: rd-gitops
     weight: 20
 menu_name: docs_{{ .version }}
