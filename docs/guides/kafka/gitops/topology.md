@@ -104,10 +104,10 @@ Our `gitops` operator will create an actual `Kafka` database CR in the cluster. 
 ```bash
 $ kubectl get kafka.gitops.kubedb.com,kafka.kubedb.com -n demo
 NAME                                        AGE
-kafka.gitops.kubedb.com/kafka-gitops   62m
+kafka.gitops.kubedb.com/kafka-gitops        62m
 
 NAME                                 VERSION   STATUS   AGE
-kafka.kubedb.com/kafka-gitops   3.9.0     Ready    62m
+kafka.kubedb.com/kafka-gitops         3.9.0     Ready    62m
 ```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` Kafka.
@@ -115,23 +115,23 @@ List the resources created by `kubedb` operator created for `kubedb.com/v1` Kafk
 ```bash
 $  kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=kafka-gitops'
 NAME                                                        AGE
-petset.apps.k8s.appscode.com/kafka-gitops-broker       62m
-petset.apps.k8s.appscode.com/kafka-gitops-controller   62m
+petset.apps.k8s.appscode.com/kafka-gitops-broker            62m
+petset.apps.k8s.appscode.com/kafka-gitops-controller        62m
 
 NAME                                 READY   STATUS    RESTARTS   AGE
-pod/kafka-gitops-broker-0       1/1     Running   0          7m42s
-pod/kafka-gitops-broker-1       1/1     Running   0          6m52s
-pod/kafka-gitops-controller-0   1/1     Running   0          6m3s
-pod/kafka-gitops-controller-1   1/1     Running   0          5m13s
+pod/kafka-gitops-broker-0            1/1     Running   0          7m42s
+pod/kafka-gitops-broker-1            1/1     Running   0          6m52s
+pod/kafka-gitops-controller-0        1/1     Running   0          6m3s
+pod/kafka-gitops-controller-1        1/1     Running   0          5m13s
 
 NAME                            TYPE                       DATA   AGE
-secret/kafka-gitops-auth   kubernetes.io/basic-auth   2      62m
+secret/kafka-gitops-auth   kubernetes.io/basic-auth        2      62m
 
-NAME                             TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                       AGE
-service/kafka-gitops-pods   ClusterIP   None         <none>        9092/TCP,9093/TCP,29092/TCP   62m
+NAME                             TYPE        CLUSTER-IP   EXTERNAL-IP     PORT(S)                       AGE
+service/kafka-gitops-pods       ClusterIP     None         <none>        9092/TCP,9093/TCP,29092/TCP   62m
 
 NAME                                                   TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/kafka-gitops   kubedb.com/kafka   3.9.0     62m
+appbinding.appcatalog.appscode.com/kafka-gitops   kubedb.com/kafka        3.9.0     62m
 ```
 
 ## Update Kafka Database using GitOps
@@ -203,7 +203,7 @@ NAME                                        AGE
 kafka.gitops.kubedb.com/kafka-gitops        64m
 
 NAME                                                                      TYPE              STATUS       AGE
-kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-c2ejz2   VerticalScaling   Successful   10m
+kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-c2ejz2   VerticalScaling        Successful   10m
 ```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
@@ -292,10 +292,10 @@ $ kubectl get kf,kafka,kfops -n demo
 NAME                            TYPE            VERSION   STATUS   AGE
 kafka.kubedb.com/kafka-gitops   kubedb.com/v1   3.9.0     Ready    22h
 
-NAME                                 AGE
+NAME                                   AGE
 kafka.gitops.kubedb.com/kafka-gitops   22h
 
-NAME                                                                 TYPE                STATUS       AGE
+NAME                                                                    TYPE                STATUS       AGE
 kafkaopsrequest.ops.kubedb.com/kafka-gitops-horizontalscaling-j0wni6   HorizontalScaling   Successful   13m
 kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-tfkvi8     VerticalScaling     Successful   8m29s
 ```
@@ -303,7 +303,7 @@ kafkaopsrequest.ops.kubedb.com/kafka-gitops-verticalscaling-tfkvi8     VerticalS
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
 $  kubectl get pod -n demo -l 'app.kubernetes.io/instance=kafka-gitops'
-NAME                      READY   STATUS    RESTARTS   AGE
+NAME                      READY     STATUS    RESTARTS   AGE
 kafka-gitops-broker-0       1/1     Running   0          34m
 kafka-gitops-broker-1       1/1     Running   0          33m
 kafka-gitops-broker-2       1/1     Running   0          33m
