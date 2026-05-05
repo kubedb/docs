@@ -27,15 +27,16 @@ metadata:
 spec:
   type: VerticalScaling
   databaseRef:
-    name: neo4j-prod
+    name: neo4j-test
   verticalScaling:
     server:
-      requests:
-        cpu: "500m"
-        memory: "1Gi"
-      limits:
-        cpu: "1"
-        memory: "2Gi"
+      resources:
+        limits:
+          cpu: 1500m
+          memory: 4Gi
+        requests:
+          cpu: 700m
+          memory: 4Gi
 ```
 
 ```bash

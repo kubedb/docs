@@ -8,5 +8,5 @@ spec:
   databaseRef:
     name: neo4j-test
   volumeExpansion:
-    mode: Online
+    mode: "Online"
     server: 4Gi

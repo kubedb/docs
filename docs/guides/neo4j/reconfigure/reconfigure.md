@@ -32,7 +32,7 @@ $ kubectl create ns demo
 apiVersion: kubedb.com/v1alpha2
 kind: Neo4j
 metadata:
-  name: neo4j-prod
+  name: neo4j-test
   namespace: demo
 spec:
   version: "2025.12.1"
@@ -61,10 +61,36 @@ metadata:
 spec:
   type: Reconfigure
   databaseRef:
-    name: neo4j-prod
+    name: neo4j-test
   configuration:
     configSecret:
-      name: neo4j-config-updated
+      name: new-custom-config
+    removeCustomConfig: true
+    applyConfig:
+      server.metrics.csv.interval: "40s"
+  timeout: 5m
+  apply: IfReady
+```
+
+You can also apply inline configuration changes without removing the existing custom Secret:
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-reconfigure-apply
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: neo4j-test
+  configuration:
+    configSecret:
+      name: new-custom-config
+    applyConfig:
+      server.metrics.enabled: "false"
+  timeout: 5m
+  apply: IfReady
 ```
 
 ```bash
@@ -84,7 +110,7 @@ neo4j-reconfigure   Reconfigure   Successful   3m
 
 ```bash
 kubectl delete neo4jopsrequest -n demo neo4j-reconfigure
-kubectl patch -n demo neo4j/neo4j-prod -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo neo4j/neo4j-prod
+kubectl patch -n demo neo4j/neo4j-test -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo neo4j/neo4j-test
 kubectl delete ns demo
 ```

@@ -27,9 +27,12 @@ metadata:
 spec:
   type: HorizontalScaling
   databaseRef:
-    name: neo4j-prod
+    name: neo4j-test
   horizontalScaling:
-    server: 3
+    server: 5
+    reallocate:
+      strategy: "incremental"
+      batchSize: 1
 ```
 
 ```bash
@@ -37,16 +40,18 @@ $ kubectl apply -f neo4j-horizontal-scale.yaml
 neo4jopsrequest.ops.kubedb.com/neo4j-horizontal-scale created
 ```
 
+The `horizontalScaling.reallocate` block controls how KubeDB performs post-scaling data reallocation.
+
 ## Verify
 
 ```bash
-$ kubectl get neo4j -n demo neo4j-prod
+$ kubectl get neo4j -n demo neo4j-test
 NAME         VERSION   STATUS   AGE
-neo4j-prod   2025.11.2 Ready    10m
+neo4j-test   2025.12.1 Ready    10m
 
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-prod
+$ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
 NAME           READY   STATUS    RESTARTS   AGE
-neo4j-prod-0   1/1     Running   0          10m
-neo4j-prod-1   1/1     Running   0          4m
-neo4j-prod-2   1/1     Running   0          4m
+neo4j-test-0   1/1     Running   0          10m
+neo4j-test-1   1/1     Running   0          4m
+neo4j-test-2   1/1     Running   0          4m
 ```

@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: neo4j-test
   timeout: 5m
-  apply: IfReady
+  apply: Always

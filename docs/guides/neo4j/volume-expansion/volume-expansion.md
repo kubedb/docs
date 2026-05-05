@@ -27,9 +27,10 @@ metadata:
 spec:
   type: VolumeExpansion
   databaseRef:
-    name: neo4j-prod
+    name: neo4j-test
   volumeExpansion:
-    server: 20Gi
+    mode: "Online"
+    server: 4Gi
 ```
 
 ```bash

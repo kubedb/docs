@@ -20,18 +20,20 @@ This guide shows how to rotate or update TLS materials of a Neo4j database.
 
 - Install `cert-manager` in your cluster.
 - Install KubeDB and Ops-manager from [here](/docs/setup/README.md).
-- Use the example files from `docs/examples/neo4j/quickstart/neo4j.yaml` and `docs/examples/neo4j/reconfigure-tls/ops-request.yaml`.
+- Deploy a TLS-enabled Neo4j database first by following the [Configure TLS guide](/docs/guides/neo4j/tls/configure/).
+- Use the example file `docs/examples/neo4j/reconfigure-tls/ops-request.yaml` for the OpsRequest.
 - Use namespace `demo` for isolation.
 
 ```bash
 kubectl create ns demo
 ```
 
-## Deploy Neo4j
+## Deploy a TLS-enabled Neo4j
+
+After following the TLS configuration guide, make sure the `tls-neo4j` database is ready before applying the OpsRequest.
 
 ```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
-kubectl get neo4j -n demo neo4j-test -w
+kubectl get neo4j -n demo tls-neo4j -w
 ```
 
 ## Apply ReconfigureTLS OpsRequest
@@ -51,6 +53,6 @@ kubectl describe neo4jopsrequest -n demo neo4j-reconfigure-tls
 
 ```bash
 kubectl delete neo4jopsrequest -n demo neo4j-reconfigure-tls
-kubectl delete neo4j -n demo neo4j-test
+kubectl delete neo4j -n demo tls-neo4j
 kubectl delete ns demo
 ```

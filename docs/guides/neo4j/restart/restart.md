@@ -36,6 +36,22 @@ kubectl get neo4j -n demo neo4j-test -w
 
 ## Apply Restart OpsRequest
 
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: neo4j-test
+  timeout: 5m
+  apply: Always
+```
+
+`apply: Always` tells KubeDB to execute the restart even if the database is not currently in the ready state.
+
 ```bash
 kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/restart/ops-request.yaml
 ```

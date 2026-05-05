@@ -9,3 +9,6 @@ spec:
     name: neo4j-test
   horizontalScaling:
     server: 5
+    reallocate:
+      strategy: "incremental"
+      batchSize: 1

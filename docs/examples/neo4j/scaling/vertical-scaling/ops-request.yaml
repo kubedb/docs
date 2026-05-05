@@ -10,9 +10,9 @@ spec:
   verticalScaling:
     server:
       resources:
-        requests:
-          cpu: "500m"
-          memory: 2Gi
         limits:
-          cpu: "1"
+          cpu: 1500m
+          memory: 4Gi
+        requests:
+          cpu: 700m
           memory: 4Gi

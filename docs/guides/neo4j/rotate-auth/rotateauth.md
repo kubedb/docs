@@ -18,6 +18,8 @@ This guide shows how to rotate database authentication secrets for Neo4j using `
 
 ## Rotate Credentials
 
+Rotate credentials using the Secret managed by KubeDB:
+
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
@@ -27,7 +29,29 @@ metadata:
 spec:
   type: RotateAuth
   databaseRef:
-    name: neo4j-prod
+    name: neo4j-test
+  timeout: 5m
+  apply: IfReady
+```
+
+Rotate credentials using a user-provided Secret:
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: neo4j-test
+  authentication:
+    secretRef:
+      kind: Secret
+      name: external-neo4j-auth
+  timeout: 5m
+  apply: IfReady
 ```
 
 ```bash

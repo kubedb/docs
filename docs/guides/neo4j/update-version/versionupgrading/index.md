@@ -22,17 +22,17 @@ This guide shows how to upgrade Neo4j using `Neo4jOpsRequest`.
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: neo4j-version-upgrade
+  name: neo4j-update-version
   namespace: demo
 spec:
   type: UpdateVersion
   databaseRef:
-    name: neo4j-prod
+    name: neo4j-test
   updateVersion:
-    targetVersion: "2025.11.3"
+    targetVersion: "2025.12.1"
 ```
 
 ```bash
-$ kubectl apply -f neo4j-version-upgrade.yaml
-neo4jopsrequest.ops.kubedb.com/neo4j-version-upgrade created
+$ kubectl apply -f neo4j-update-version.yaml
+neo4jopsrequest.ops.kubedb.com/neo4j-update-version created
 ```

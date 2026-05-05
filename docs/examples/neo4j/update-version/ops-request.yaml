@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: neo4j-test
   updateVersion:
-    targetVersion: "2025.12.0"
+    targetVersion: "2025.12.1"

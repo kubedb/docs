@@ -26,12 +26,13 @@ The value of `Neo4j.spec.version` must correspond to a valid `Neo4jVersion` reso
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: Neo4jVersion
 metadata:
-  name: "2025.11.2"
+  name: 2025.11.2
 spec:
-  version: "2025.12.1"
   db:
-    image: "kubedb/neo4j:2025.11.2"
-  deprecated: false
+    image: docker.io/library/neo4j:2025.11.2-enterprise
+  securityContext:
+    runAsUser: 7474
+  version: 2025.11.2-enterprise
 ```
 
 ## Key fields
