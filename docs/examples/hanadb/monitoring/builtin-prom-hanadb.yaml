@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: builtin-prom-hanadb
+  name: hanadb-builtin-prometheus
   namespace: demo
 spec:
   version: "2.0.82"

@@ -92,7 +92,7 @@ hanadbversion.catalog.kubedb.com/2.0.82-private created
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: pvt-reg-hanadb
+  name: hanadb-private-registry
   namespace: demo
 spec:
   version: "2.0.82-private"
@@ -114,15 +114,15 @@ spec:
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/private-registry/pvt-reg-hanadb.yaml
-hanadb.kubedb.com/pvt-reg-hanadb created
+hanadb.kubedb.com/hanadb-private-registry created
 ```
 
 Check that the HanaDB pod is running:
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=pvt-reg-hanadb"
-NAME                READY   STATUS    RESTARTS   AGE
-pvt-reg-hanadb-0    1/1     Running   0          3m
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hanadb-private-registry"
+NAME                         READY   STATUS    RESTARTS   AGE
+hanadb-private-registry-0    1/1     Running   0          3m
 ```
 
 ## Cleaning up
@@ -130,8 +130,8 @@ pvt-reg-hanadb-0    1/1     Running   0          3m
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo hanadb/pvt-reg-hanadb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo hanadb/pvt-reg-hanadb
+kubectl patch -n demo hanadb/hanadb-private-registry -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo hanadb/hanadb-private-registry
 
 kubectl delete ns demo
 ```

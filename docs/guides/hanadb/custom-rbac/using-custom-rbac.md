@@ -44,7 +44,7 @@ $ kubectl create serviceaccount -n demo my-custom-serviceaccount
 serviceaccount/my-custom-serviceaccount created
 ```
 
-Create a `Role` with the namespace-scoped permissions required by the HanaDB instance named `quick-hanadb`.
+Create a `Role` with the namespace-scoped permissions required by the HanaDB instance named `hanadb-custom-rbac`.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -181,7 +181,7 @@ Create a HanaDB object with `spec.podTemplate.spec.serviceAccountName` set to `m
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: quick-hanadb
+  name: hanadb-custom-rbac
   namespace: demo
 spec:
   version: "2.0.82"
@@ -202,15 +202,15 @@ spec:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/custom-rbac/hanadb-custom-db.yaml
-hanadb.kubedb.com/quick-hanadb created
+hanadb.kubedb.com/hanadb-custom-rbac created
 ```
 
 Check that the pod is running:
 
 ```bash
-$ kubectl get pod -n demo quick-hanadb-0
-NAME              READY   STATUS    RESTARTS   AGE
-quick-hanadb-0    1/1     Running   0          5m
+$ kubectl get pod -n demo hanadb-custom-rbac-0
+NAME                   READY   STATUS    RESTARTS   AGE
+hanadb-custom-rbac-0   1/1     Running   0          5m
 ```
 
 ## Cleaning up
@@ -218,8 +218,8 @@ quick-hanadb-0    1/1     Running   0          5m
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo hanadb/quick-hanadb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo hanadb/quick-hanadb
+kubectl patch -n demo hanadb/hanadb-custom-rbac -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo hanadb/hanadb-custom-rbac
 
 kubectl delete -n demo serviceaccount my-custom-serviceaccount
 kubectl delete -n demo role my-custom-role

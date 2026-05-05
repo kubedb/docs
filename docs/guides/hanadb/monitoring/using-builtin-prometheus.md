@@ -46,7 +46,7 @@ Deploy a HanaDB instance with monitoring enabled. The manifest is shown below.
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: builtin-prom-hanadb
+  name: hanadb-builtin-prometheus
   namespace: demo
 spec:
   version: "2.0.82"
@@ -73,40 +73,40 @@ Create the HanaDB object:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/monitoring/builtin-prom-hanadb.yaml
-hanadb.kubedb.com/builtin-prom-hanadb created
+hanadb.kubedb.com/hanadb-builtin-prometheus created
 ```
 
 Wait for the database to reach the `Ready` state.
 
 ```bash
-$ kubectl get hanadb -n demo builtin-prom-hanadb
-NAME                  VERSION   STATUS   AGE
-builtin-prom-hanadb   2.0.82    Ready    2m
+$ kubectl get hanadb -n demo hanadb-builtin-prometheus
+NAME                         VERSION   STATUS   AGE
+hanadb-builtin-prometheus   2.0.82    Ready    2m
 ```
 
 KubeDB creates a separate stats service named `{hanadb-name}-stats` for metrics scraping.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-hanadb"
-NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-builtin-prom-hanadb          ClusterIP   10.96.100.10    <none>        39017/TCP   2m
-builtin-prom-hanadb-stats    ClusterIP   10.96.100.11    <none>        9668/TCP    90s
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=hanadb-builtin-prometheus"
+NAME                              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+hanadb-builtin-prometheus          ClusterIP   10.96.100.10    <none>        39017/TCP   2m
+hanadb-builtin-prometheus-stats    ClusterIP   10.96.100.11    <none>        9668/TCP    90s
 ```
 
-The `builtin-prom-hanadb-stats` service exposes the exporter endpoint. Describe the service:
+The `hanadb-builtin-prometheus-stats` service exposes the exporter endpoint. Describe the service:
 
 ```bash
-$ kubectl describe svc -n demo builtin-prom-hanadb-stats
-Name:              builtin-prom-hanadb-stats
+$ kubectl describe svc -n demo hanadb-builtin-prometheus-stats
+Name:              hanadb-builtin-prometheus-stats
 Namespace:         demo
 Labels:            app.kubernetes.io/name=hanadbs.kubedb.com
-                   app.kubernetes.io/instance=builtin-prom-hanadb
+                   app.kubernetes.io/instance=hanadb-builtin-prometheus
 Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
                    prometheus.io/path: /metrics
                    prometheus.io/port: 9668
                    prometheus.io/scheme: http
                    prometheus.io/scrape: true
-Selector:          app.kubernetes.io/name=hanadbs.kubedb.com,app.kubernetes.io/instance=builtin-prom-hanadb
+Selector:          app.kubernetes.io/name=hanadbs.kubedb.com,app.kubernetes.io/instance=hanadb-builtin-prometheus
 Type:              ClusterIP
 Port:              metrics  9668/TCP
 ```
@@ -174,8 +174,8 @@ You should see the HanaDB metrics in the Prometheus dashboard under the `kubedb-
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo hanadb/builtin-prom-hanadb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo hanadb/builtin-prom-hanadb
+kubectl patch -n demo hanadb/hanadb-builtin-prometheus -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo hanadb/hanadb-builtin-prometheus
 
 kubectl delete ns demo
 kubectl delete ns monitoring

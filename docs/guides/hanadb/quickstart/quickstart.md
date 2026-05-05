@@ -49,7 +49,7 @@ kubectl get hanadbversions
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: hana-cluster
+  name: hanadb-cluster
   namespace: demo
 spec:
   version: "2.0.82"
@@ -70,14 +70,14 @@ spec:
 
 ```bash
 kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/quickstart/system-replication.yaml
-kubectl get hanadb -n demo hana-cluster -w
+kubectl get hanadb -n demo hanadb-cluster -w
 ```
 
 ## Verify the Cluster
 
 ```bash
 kubectl get hanadb -n demo
-kubectl describe hanadb -n demo hana-cluster
+kubectl describe hanadb -n demo hanadb-cluster
 ```
 
 When `status.phase` becomes `Ready`, the HanaDB deployment is ready for application traffic.
@@ -85,6 +85,6 @@ When `status.phase` becomes `Ready`, the HanaDB deployment is ready for applicat
 ## Cleaning up
 
 ```bash
-kubectl delete hanadb -n demo hana-cluster
+kubectl delete hanadb -n demo hanadb-cluster
 kubectl delete ns demo
 ```

@@ -28,27 +28,27 @@ An `AppBinding` object created by KubeDB for a HanaDB instance looks like this:
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  name: hana-cluster
+  name: hanadb-cluster
   namespace: demo
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: hana-cluster
+    app.kubernetes.io/instance: hanadb-cluster
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: hanadbs.kubedb.com
 spec:
   appRef:
     apiGroup: kubedb.com
     kind: HanaDB
-    name: hana-cluster
+    name: hanadb-cluster
     namespace: demo
   clientConfig:
     service:
-      name: hana-cluster
+      name: hanadb-cluster
       path: /
       port: 39017
       scheme: tcp
   secret:
-    name: hana-cluster-auth
+    name: hanadb-cluster-auth
   type: kubedb.com/hanadb
   version: "2.0.82"
 ```

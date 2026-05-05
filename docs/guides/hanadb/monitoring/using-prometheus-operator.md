@@ -46,7 +46,7 @@ Deploy a HanaDB instance with monitoring enabled using Prometheus Operator.
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: coreos-prom-hanadb
+  name: hanadb-prometheus-operator
   namespace: demo
 spec:
   version: "2.0.82"
@@ -82,39 +82,39 @@ Create the HanaDB object:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/monitoring/coreos-prom-hanadb.yaml
-hanadb.kubedb.com/coreos-prom-hanadb created
+hanadb.kubedb.com/hanadb-prometheus-operator created
 ```
 
 Wait for the database to reach the `Ready` state.
 
 ```bash
-$ kubectl get hanadb -n demo coreos-prom-hanadb
-NAME                 VERSION   STATUS   AGE
-coreos-prom-hanadb   2.0.82    Ready    2m
+$ kubectl get hanadb -n demo hanadb-prometheus-operator
+NAME                         VERSION   STATUS   AGE
+hanadb-prometheus-operator   2.0.82    Ready    2m
 ```
 
 KubeDB will create a ServiceMonitor and stats service for this HanaDB instance.
 
 ```bash
 $ kubectl get servicemonitor -n demo
-NAME                        AGE
-coreos-prom-hanadb-stats    2m
+NAME                              AGE
+hanadb-prometheus-operator-stats    2m
 ```
 
 Verify the `ServiceMonitor`:
 
 ```yaml
-$ kubectl get servicemonitor -n demo coreos-prom-hanadb-stats -o yaml
+$ kubectl get servicemonitor -n demo hanadb-prometheus-operator-stats -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: coreos-prom-hanadb
+    app.kubernetes.io/instance: hanadb-prometheus-operator
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: hanadbs.kubedb.com
     release: prometheus
-  name: coreos-prom-hanadb-stats
+  name: hanadb-prometheus-operator-stats
   namespace: demo
 spec:
   endpoints:
@@ -128,7 +128,7 @@ spec:
     - demo
   selector:
     matchLabels:
-      app.kubernetes.io/instance: coreos-prom-hanadb
+      app.kubernetes.io/instance: hanadb-prometheus-operator
       app.kubernetes.io/name: hanadbs.kubedb.com
 ```
 
@@ -142,15 +142,15 @@ To verify, port-forward the Prometheus service and visit `http://localhost:9090/
 $ kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090
 ```
 
-You should see `demo/coreos-prom-hanadb-stats` target in an UP state.
+You should see `demo/hanadb-prometheus-operator-stats` target in an UP state.
 
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo hanadb/coreos-prom-hanadb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo hanadb/coreos-prom-hanadb
+kubectl patch -n demo hanadb/hanadb-prometheus-operator -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo hanadb/hanadb-prometheus-operator
 
 kubectl delete ns demo
 kubectl delete ns monitoring

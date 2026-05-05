@@ -45,7 +45,7 @@ HanaDB monitoring is configured via `spec.monitor`.
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: coreos-prom-hanadb
+  name: hanadb-prometheus-operator
   namespace: demo
 spec:
   version: "2.0.82"

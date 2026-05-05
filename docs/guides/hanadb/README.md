@@ -43,7 +43,7 @@ KubeDB supports the following SAP HANA version:
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: hana-cluster
+  name: hanadb-cluster
   namespace: demo
 spec:
   version: "2.0.82"

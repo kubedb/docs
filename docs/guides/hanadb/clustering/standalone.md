@@ -37,7 +37,7 @@ The following manifest creates a standalone HanaDB instance. If `spec.topology` 
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: hana-standalone
+  name: hanadb-standalone
   namespace: demo
 spec:
   version: "2.0.82"
@@ -57,20 +57,20 @@ Create the database:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/clustering/standalone.yaml
-hanadb.kubedb.com/hana-standalone created
+hanadb.kubedb.com/hanadb-standalone created
 ```
 
 Wait for the database to become ready:
 
 ```bash
-$ kubectl get hanadb -n demo hana-standalone
-NAME              VERSION   STATUS   AGE
-hana-standalone   2.0.82    Ready    5m
+$ kubectl get hanadb -n demo hanadb-standalone
+NAME               VERSION   STATUS   AGE
+hanadb-standalone   2.0.82    Ready    5m
 ```
 
 ## Cleaning up
 
 ```bash
-kubectl delete hanadb -n demo hana-standalone
+kubectl delete hanadb -n demo hanadb-standalone
 kubectl delete ns demo
 ```

@@ -51,7 +51,7 @@ The following manifest creates the HanaDB instance used in this tutorial.
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: quick-hanadb
+  name: hanadb-quickstart
   namespace: demo
 spec:
   version: "2.0.82"
@@ -71,7 +71,7 @@ Create the HanaDB object:
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/quickstart/quick-hanadb.yaml
-hanadb.kubedb.com/quick-hanadb created
+hanadb.kubedb.com/hanadb-quickstart created
 ```
 
 When the HanaDB object is created, the KubeDB operator creates a `Role`, `ServiceAccount`, `RoleBinding`, `ClusterRole`, and `ClusterRoleBinding` with the matching HanaDB name.
@@ -79,16 +79,16 @@ When the HanaDB object is created, the KubeDB operator creates a `Role`, `Servic
 ### Role
 
 ```bash
-$ kubectl get role -n demo quick-hanadb -o yaml
+$ kubectl get role -n demo hanadb-quickstart -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: quick-hanadb
+    app.kubernetes.io/instance: hanadb-quickstart
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: hanadbs.kubedb.com
-  name: quick-hanadb
+  name: hanadb-quickstart
   namespace: demo
 rules:
 - apiGroups:
@@ -148,51 +148,51 @@ rules:
 ### ServiceAccount
 
 ```bash
-$ kubectl get serviceaccount -n demo quick-hanadb -o yaml
+$ kubectl get serviceaccount -n demo hanadb-quickstart -o yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: quick-hanadb
+    app.kubernetes.io/instance: hanadb-quickstart
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: hanadbs.kubedb.com
-  name: quick-hanadb
+  name: hanadb-quickstart
   namespace: demo
 ```
 
 ### RoleBinding
 
 ```bash
-$ kubectl get rolebinding -n demo quick-hanadb -o yaml
+$ kubectl get rolebinding -n demo hanadb-quickstart -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: quick-hanadb
+    app.kubernetes.io/instance: hanadb-quickstart
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: hanadbs.kubedb.com
-  name: quick-hanadb
+  name: hanadb-quickstart
   namespace: demo
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: quick-hanadb
+  name: hanadb-quickstart
 subjects:
 - kind: ServiceAccount
-  name: quick-hanadb
+  name: hanadb-quickstart
   namespace: demo
 ```
 
 ### ClusterRole
 
 ```bash
-$ kubectl get clusterrole quick-hanadb -o yaml
+$ kubectl get clusterrole hanadb-quickstart -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: quick-hanadb
+  name: hanadb-quickstart
 rules:
 - apiGroups:
   - catalog.kubedb.com
@@ -215,23 +215,23 @@ rules:
 ### ClusterRoleBinding
 
 ```bash
-$ kubectl get clusterrolebinding quick-hanadb -o yaml
+$ kubectl get clusterrolebinding hanadb-quickstart -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: quick-hanadb
+    app.kubernetes.io/instance: hanadb-quickstart
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: hanadbs.kubedb.com
-  name: quick-hanadb
+  name: hanadb-quickstart
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: quick-hanadb
+  name: hanadb-quickstart
 subjects:
 - kind: ServiceAccount
-  name: quick-hanadb
+  name: hanadb-quickstart
   namespace: demo
 ```
 
@@ -240,10 +240,10 @@ subjects:
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo hanadb/quick-hanadb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo hanadb/quick-hanadb
+kubectl patch -n demo hanadb/hanadb-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo hanadb/hanadb-quickstart
 
-kubectl delete clusterrolebinding quick-hanadb
-kubectl delete clusterrole quick-hanadb
+kubectl delete clusterrolebinding hanadb-quickstart
+kubectl delete clusterrole hanadb-quickstart
 kubectl delete ns demo
 ```

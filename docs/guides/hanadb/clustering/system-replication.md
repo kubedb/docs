@@ -63,12 +63,13 @@ System replication behavior is controlled by two fields under `spec.topology.sys
 ### Operation Mode
 
 `operationMode` controls how the secondary receives and replays data.
+For every system replication cluster, KubeDB creates the primary service and governing headless service. The operation mode determines whether KubeDB also creates a secondary read service.
 
-| Mode | Read access | Service behavior |
-|------|-------------|------------------|
-| `logreplay` | Disabled | KubeDB creates the primary service and governing headless service. This is the default when `operationMode` is omitted. |
-| `delta_datashipping` | Disabled | KubeDB creates the primary service and governing headless service. |
-| `logreplay_readaccess` | Enabled | KubeDB creates the primary service, secondary service, and governing headless service. |
+| Mode | Read access | Secondary service |
+|------|-------------|-------------------|
+| `logreplay` | Disabled | Not created. This is the default when `operationMode` is omitted. |
+| `delta_datashipping` | Disabled | Not created. |
+| `logreplay_readaccess` | Enabled | Created as `secondary-<hanadb-name>`. |
 
 Read access is enabled only by setting:
 
@@ -102,7 +103,7 @@ topology:
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: hana-cluster
+  name: hanadb-cluster
   namespace: demo
 spec:
   version: "2.0.82"
@@ -127,15 +128,15 @@ Create the database:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/clustering/system-replication.yaml
-hanadb.kubedb.com/hana-cluster created
+hanadb.kubedb.com/hanadb-cluster created
 ```
 
 Wait for the cluster to become ready:
 
 ```bash
-$ kubectl get hanadb -n demo hana-cluster
-NAME           VERSION   STATUS   AGE
-hana-cluster   2.0.82    Ready    8m
+$ kubectl get hanadb -n demo hanadb-cluster
+NAME             VERSION   STATUS   AGE
+hanadb-cluster   2.0.82    Ready    8m
 ```
 
 ## Verify System Replication Resources
@@ -143,41 +144,41 @@ hana-cluster   2.0.82    Ready    8m
 Check the pods. Each HanaDB pod should have the database container and the coordinator sidecar running.
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hana-cluster"
-NAME             READY   STATUS    RESTARTS   AGE
-hana-cluster-0   2/2     Running   0          8m
-hana-cluster-1   2/2     Running   0          8m
-hana-cluster-2   2/2     Running   0          8m
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hanadb-cluster"
+NAME               READY   STATUS    RESTARTS   AGE
+hanadb-cluster-0   2/2     Running   0          8m
+hanadb-cluster-1   2/2     Running   0          8m
+hanadb-cluster-2   2/2     Running   0          8m
 ```
 
 Check the services created for the cluster:
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=hana-cluster"
-NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)              AGE
-hana-cluster             ClusterIP   10.96.100.10    <none>        39017/TCP            8m
-secondary-hana-cluster   ClusterIP   10.96.100.11    <none>        39017/TCP            8m
-hana-cluster-pods        ClusterIP   None            <none>        39001/TCP,39017/TCP  8m
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=hanadb-cluster"
+NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)              AGE
+hanadb-cluster             ClusterIP   10.96.100.10    <none>        39017/TCP            8m
+secondary-hanadb-cluster   ClusterIP   10.96.100.11    <none>        39017/TCP            8m
+hanadb-cluster-pods        ClusterIP   None            <none>        39001/TCP,39017/TCP  8m
 ```
 
 The services have the following roles:
 
 | Service | Use |
 |---------|-----|
-| `hana-cluster` | Primary service. Applications should use this service for write traffic. |
-| `secondary-hana-cluster` | Secondary service. Created when `operationMode` is `logreplay_readaccess`; applications can use it for read traffic. |
-| `hana-cluster-pods` | Headless governing service used for pod DNS and internal cluster coordination. |
+| `hanadb-cluster` | Primary service. Applications should use this service for write traffic. |
+| `secondary-hanadb-cluster` | Secondary service. Created when `operationMode` is `logreplay_readaccess`; applications can use it for read traffic. |
+| `hanadb-cluster-pods` | Headless governing service used for pod DNS and internal cluster coordination. |
 
-If you use `operationMode: logreplay` or `operationMode: delta_datashipping`, the `secondary-hana-cluster` service is not created because secondary read access is disabled.
+If you use `operationMode: logreplay` or `operationMode: delta_datashipping`, the `secondary-hanadb-cluster` service is not created because secondary read access is disabled.
 
 You can also inspect the endpoints to see which pods each service currently selects:
 
 ```bash
-$ kubectl get endpoints -n demo hana-cluster secondary-hana-cluster hana-cluster-pods
-NAME                     ENDPOINTS                                      AGE
-hana-cluster             10.244.0.12:39017                              8m
-secondary-hana-cluster   10.244.0.13:39017,10.244.0.14:39017            8m
-hana-cluster-pods        10.244.0.12:39017,10.244.0.13:39017 + 4 more   8m
+$ kubectl get endpoints -n demo hanadb-cluster secondary-hanadb-cluster hanadb-cluster-pods
+NAME                       ENDPOINTS                                      AGE
+hanadb-cluster             10.244.0.12:39017                              8m
+secondary-hanadb-cluster   10.244.0.13:39017,10.244.0.14:39017            8m
+hanadb-cluster-pods        10.244.0.12:39017,10.244.0.13:39017 + 4 more   8m
 ```
 
 ## Verify Replication Status
@@ -187,13 +188,13 @@ KubeDB checks SAP HANA system replication by querying `SYS.M_SERVICE_REPLICATION
 First, read the generated SYSTEM user password:
 
 ```bash
-$ export HANA_PASSWORD=$(kubectl get secret -n demo hana-cluster-auth -o jsonpath='{.data.password}' | base64 -d)
+$ export HANA_PASSWORD=$(kubectl get secret -n demo hanadb-cluster-auth -o jsonpath='{.data.password}' | base64 -d)
 ```
 
 Then query the replication status from the primary pod:
 
 ```bash
-$ kubectl exec -it -n demo hana-cluster-0 -c hanadb -- hdbsql \
+$ kubectl exec -it -n demo hanadb-cluster-0 -c hanadb -- hdbsql \
   -u SYSTEM -p "$HANA_PASSWORD" -d SYSTEMDB \
   "SELECT REPLICATION_STATUS, REPLICATION_STATUS_DETAILS, (LAST_LOG_POSITION - REPLAYED_LOG_POSITION) AS REPLAY_BACKLOG FROM SYS.M_SERVICE_REPLICATION"
 REPLICATION_STATUS   REPLICATION_STATUS_DETAILS   REPLAY_BACKLOG
@@ -208,18 +209,18 @@ The cluster is healthy when every secondary reports `ACTIVE` and the replay back
 Applications should connect to the primary service for writes:
 
 ```bash
-hana-cluster.demo.svc:39017
+hanadb-cluster.demo.svc:39017
 ```
 
 If you selected `operationMode: logreplay_readaccess`, read-only clients can connect to the secondary service:
 
 ```bash
-secondary-hana-cluster.demo.svc:39017
+secondary-hanadb-cluster.demo.svc:39017
 ```
 
 ## Cleaning up
 
 ```bash
-kubectl delete hanadb -n demo hana-cluster
+kubectl delete hanadb -n demo hanadb-cluster
 kubectl delete ns demo
 ```

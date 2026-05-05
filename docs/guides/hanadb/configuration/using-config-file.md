@@ -79,7 +79,7 @@ Create a HanaDB object with `spec.configuration.secretName` set to the Secret na
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: custom-hanadb
+  name: hanadb-custom-config
   namespace: demo
 spec:
   version: "2.0.82"
@@ -99,29 +99,29 @@ spec:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/configuration/custom-hanadb.yaml
-hanadb.kubedb.com/custom-hanadb created
+hanadb.kubedb.com/hanadb-custom-config created
 ```
 
 Wait for the HanaDB instance to become ready.
 
 ```bash
-$ kubectl get hanadb -n demo custom-hanadb
-NAME            VERSION   STATUS   AGE
-custom-hanadb   2.0.82    Ready    5m
+$ kubectl get hanadb -n demo hanadb-custom-config
+NAME                   VERSION   STATUS   AGE
+hanadb-custom-config   2.0.82    Ready    5m
 ```
 
 Check that the pod is running:
 
 ```bash
-$ kubectl get pod -n demo custom-hanadb-0
-NAME              READY   STATUS    RESTARTS   AGE
-custom-hanadb-0   1/1     Running   0          5m
+$ kubectl get pod -n demo hanadb-custom-config-0
+NAME                     READY   STATUS    RESTARTS   AGE
+hanadb-custom-config-0   1/1     Running   0          5m
 ```
 
 Check whether the database started with the custom configuration by running `hdbsql` inside the pod.
 
 ```bash
-$ kubectl exec -it -n demo custom-hanadb-0 -- hdbsql \
+$ kubectl exec -it -n demo hanadb-custom-config-0 -- hdbsql \
   -u SYSTEM -p <password> \
   "SELECT KEY, VALUE FROM SYS.M_INIFILE_CONTENTS WHERE FILE_NAME = 'global.ini' AND KEY = 'global_allocation_limit'"
 KEY                       VALUE
@@ -135,8 +135,8 @@ This guide covers initial custom configuration during provisioning.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo hanadb/custom-hanadb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo hanadb/custom-hanadb
+kubectl patch -n demo hanadb/hanadb-custom-config -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo hanadb/hanadb-custom-config
 
 kubectl delete -n demo secret hanadb-configuration
 kubectl delete ns demo
