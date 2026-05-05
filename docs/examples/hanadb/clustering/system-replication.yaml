@@ -14,8 +14,9 @@ spec:
       operationMode: logreplay_readaccess
   storage:
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 64Gi
     storageClassName: local-path
+  deletionPolicy: WipeOut

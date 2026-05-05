@@ -5,6 +5,6 @@ menu:
     identifier: hanadb-monitoring
     name: Monitoring
     parent: hanadb-guides
-    weight: 20
+    weight: 90
 menu_name: docs_{{ .version }}
 ---

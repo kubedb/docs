@@ -5,6 +5,6 @@ menu:
     identifier: hanadb-private-registry
     name: Private Registry
     parent: hanadb-guides
-    weight: 120
+    weight: 40
 menu_name: docs_{{ .version }}
 ---

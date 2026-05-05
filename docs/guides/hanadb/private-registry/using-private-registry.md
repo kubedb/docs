@@ -14,11 +14,11 @@ section_menu_id: guides
 
 # Using Private Docker Registry
 
-KubeDB supports using private Docker registries. This tutorial will show you how to run KubeDB managed HanaDB database using private Docker images.
+KubeDB supports private Docker registries. This tutorial shows how to run a KubeDB-managed HanaDB instance using private images.
 
 ## Before You Begin
 
-At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+Prepare a Kubernetes cluster and configure `kubectl` to communicate with it. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -29,14 +29,14 @@ namespace/demo created
 
 ## Prepare Private Docker Registry
 
-- You will also need a docker private [registry](https://docs.docker.com/registry/) or [private repository](https://docs.docker.com/docker-hub/repos/#private-repositories).
+- Prepare a private Docker [registry](https://docs.docker.com/registry/) or [private repository](https://docs.docker.com/docker-hub/repos/#private-repositories).
 
-- Push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For HanaDB, push the `DB_IMAGE` of the following HanaDBVersions, where `deprecated` is not true, to your private registry.
+- Push the required HanaDB images into your private registry. For HanaDB, push the database, coordinator, and exporter images from the active `HanaDBVersion` entries.
 
   ```bash
-  $ kubectl get hanadbversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,DEPRECATED:.spec.deprecated
-  NAME    VERSION   DB_IMAGE                   DEPRECATED
-  2.0     2.0       kubedb/hanadb:2.0          <none>
+  $ kubectl get hanadbversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,COORDINATOR_IMAGE:.spec.coordinator.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
+  NAME     VERSION   DB_IMAGE                                               COORDINATOR_IMAGE                          EXPORTER_IMAGE                           DEPRECATED
+  2.0.82   2.0.82    docker.io/saplabs/hanaexpress:2.00.082.00.20250528.1   ghcr.io/kubedb/hanadb-coordinator:v0.4.0   ghcr.io/kubedb/hanadb-exporter:1.0.0     <none>
   ```
 
 ## Create ImagePullSecret
@@ -52,32 +52,38 @@ $ kubectl create secret docker-registry -n demo myregistrykey \
 secret/myregistrykey created
 ```
 
-## Install KubeDB Operator
+## Install the KubeDB Operator
 
-Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in cluster so that it points to the DOCKER_REGISTRY you wish to pull images from.
+Install the [KubeDB operator](/docs/setup/README.md) in your cluster and configure it to use the private registry that hosts the required images.
 
-## Create HanaDBVersion CRD
+## Create a HanaDBVersion
 
-Create a HanaDBVersion CRD specifying images from your private registry. Replace `PRIVATE_REGISTRY` with your private registry.
+Create a `HanaDBVersion` object that points to images in your private registry. Replace `PRIVATE_REGISTRY` with your registry address.
 
 ```yaml
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: HanaDBVersion
 metadata:
-  name: "2.0"
+  name: "2.0.82-private"
 spec:
   coordinator:
     image: PRIVATE_REGISTRY/hanadb-coordinator:v0.4.0
   db:
-    image: PRIVATE_REGISTRY/hanadb:2.0
+    image: PRIVATE_REGISTRY/hanaexpress:2.00.082.00.20250528.1
   exporter:
     image: PRIVATE_REGISTRY/hanadb-exporter:1.0.0
+  securityContext:
+    runAsGroup: 79
+    runAsUser: 12000
+  updateConstraints:
+    allowlist:
+    - 2.0.82-private
   version: "2.0.82"
 ```
 
 ```bash
-$ kubectl apply -f pvt-hanadbversion.yaml
-hanadbversion.catalog.kubedb.com/2.0 created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/private-registry/pvt-hanadbversion.yaml
+hanadbversion.catalog.kubedb.com/2.0.82-private created
 ```
 
 ## Deploy HanaDB from Private Registry
@@ -89,16 +95,16 @@ metadata:
   name: pvt-reg-hanadb
   namespace: demo
 spec:
-  version: "2.0.82"
+  version: "2.0.82-private"
   replicas: 1
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: local-path
     accessModes:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 64Gi
   podTemplate:
     spec:
       imagePullSecrets:
@@ -111,7 +117,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 hanadb.kubedb.com/pvt-reg-hanadb created
 ```
 
-Check that the HanaDB is in Running state:
+Check that the HanaDB pod is running:
 
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=pvt-reg-hanadb"
@@ -121,7 +127,7 @@ pvt-reg-hanadb-0    1/1     Running   0          3m
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl patch -n demo hanadb/pvt-reg-hanadb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"

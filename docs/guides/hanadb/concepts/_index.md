@@ -5,6 +5,6 @@ menu:
     identifier: hanadb-concepts
     name: Concepts
     parent: hanadb-guides
-    weight: 15
+    weight: 20
 menu_name: docs_{{ .version }}
 ---

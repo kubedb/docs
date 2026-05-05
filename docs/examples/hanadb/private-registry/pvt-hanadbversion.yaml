@@ -1,0 +1,18 @@
+apiVersion: catalog.kubedb.com/v1alpha1
+kind: HanaDBVersion
+metadata:
+  name: "2.0.82-private"
+spec:
+  coordinator:
+    image: PRIVATE_REGISTRY/hanadb-coordinator:v0.4.0
+  db:
+    image: PRIVATE_REGISTRY/hanaexpress:2.00.082.00.20250528.1
+  exporter:
+    image: PRIVATE_REGISTRY/hanadb-exporter:1.0.0
+  securityContext:
+    runAsGroup: 79
+    runAsUser: 12000
+  updateConstraints:
+    allowlist:
+    - 2.0.82-private
+  version: "2.0.82"

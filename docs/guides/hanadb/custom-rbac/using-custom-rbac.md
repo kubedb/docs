@@ -1,5 +1,5 @@
 ---
-title: Run HanaDB with Custom RBAC resources
+title: Run HanaDB with Custom RBAC Resources
 menu:
   docs_{{ .version }}:
     identifier: hanadb-custom-rbac-quickstart
@@ -14,13 +14,13 @@ section_menu_id: guides
 
 # Using Custom RBAC Resources
 
-KubeDB supports finer user control over role based access permissions provided to a HanaDB instance. This tutorial will show you how to use KubeDB to run HanaDB instance with custom RBAC resources.
+KubeDB supports user-managed role-based access permissions for HanaDB. This tutorial shows how to run a HanaDB instance with custom RBAC resources.
 
 ## Before You Begin
 
-At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+Prepare a Kubernetes cluster and configure `kubectl` to communicate with it. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+Install the KubeDB CLI on your workstation and the KubeDB operator in your cluster by following the steps [here](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -31,20 +31,20 @@ namespace/demo created
 
 ## Overview
 
-KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for HanaDB. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in HanaDB CRD. If this field is left empty, the KubeDB operator will create a service account name matching the HanaDB CRD name.
+KubeDB allows users to provide custom RBAC resources for HanaDB: `ServiceAccount`, `Role`, `RoleBinding`, `ClusterRole`, and `ClusterRoleBinding`. Configure the service account through `spec.podTemplate.spec.serviceAccountName`. If this field is empty, the KubeDB operator creates a service account whose name matches the HanaDB object.
 
-If a service account name is given with an existing service account, the KubeDB operator will use that existing service account. Users are responsible for providing necessary access permissions manually.
+If you reference an existing service account, the KubeDB operator uses it. You are responsible for granting the required permissions.
 
 ## Custom RBAC for HanaDB
 
-At first, let's create a `Service Account` in `demo` namespace.
+Create a `ServiceAccount` in the `demo` namespace.
 
 ```bash
 $ kubectl create serviceaccount -n demo my-custom-serviceaccount
 serviceaccount/my-custom-serviceaccount created
 ```
 
-Now, we need to create a role that has necessary access permissions for the HanaDB database named `quick-hanadb`.
+Create a `Role` with the namespace-scoped permissions required by the HanaDB instance named `quick-hanadb`.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -54,34 +54,49 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - apps
-  resourceNames:
-  - quick-hanadb
-  resources:
-  - petsets
-  verbs:
-  - get
-- apiGroups:
-  - kubedb.com
-  resourceNames:
-  - quick-hanadb
-  resources:
-  - hanadbs
-  verbs:
-  - get
-- apiGroups:
   - ""
   resources:
   - pods
   verbs:
-  - list
-  - patch
+  - "*"
 - apiGroups:
   - ""
   resources:
   - pods/exec
   verbs:
   - create
+- apiGroups:
+  - kubedb.com
+  resources:
+  - hanadbs
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+- apiGroups:
+  - kubedb.com
+  resources:
+  - hanadbs/status
+  verbs:
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - create
+  - update
+- apiGroups:
+  - apps.k8s.appscode.com
+  resources:
+  - petsets
+  verbs:
+  - get
+  - list
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -97,7 +112,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
-Now create a `RoleBinding` to bind this `Role` with the already created service account.
+Create a `RoleBinding` to bind this `Role` to the custom service account.
 
 ```bash
 $ kubectl create rolebinding my-custom-rolebinding \
@@ -107,7 +122,60 @@ $ kubectl create rolebinding my-custom-rolebinding \
 rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 ```
 
-Now, create a HanaDB CRD specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
+Create the cluster-scoped permissions required by the HanaDB pod.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: my-custom-clusterrole
+rules:
+- apiGroups:
+  - catalog.kubedb.com
+  resources:
+  - hanadbversions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - kubedb.com
+  resources:
+  - hanadbs
+  verbs:
+  - get
+  - list
+  - watch
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/custom-rbac/hanadb-custom-clusterrole.yaml
+clusterrole.rbac.authorization.k8s.io/my-custom-clusterrole created
+```
+
+Bind the `ClusterRole` with the custom service account.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: my-custom-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: my-custom-clusterrole
+subjects:
+- kind: ServiceAccount
+  name: my-custom-serviceaccount
+  namespace: demo
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/custom-rbac/hanadb-custom-clusterrolebinding.yaml
+clusterrolebinding.rbac.authorization.k8s.io/my-custom-clusterrolebinding created
+```
+
+Create a HanaDB object with `spec.podTemplate.spec.serviceAccountName` set to `my-custom-serviceaccount`.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -123,12 +191,12 @@ spec:
     spec:
       serviceAccountName: my-custom-serviceaccount
   storage:
-    storageClassName: "standard"
+    storageClassName: local-path
     accessModes:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 64Gi
   deletionPolicy: WipeOut
 ```
 
@@ -147,7 +215,7 @@ quick-hanadb-0    1/1     Running   0          5m
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl patch -n demo hanadb/quick-hanadb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
@@ -156,5 +224,7 @@ kubectl delete -n demo hanadb/quick-hanadb
 kubectl delete -n demo serviceaccount my-custom-serviceaccount
 kubectl delete -n demo role my-custom-role
 kubectl delete -n demo rolebinding my-custom-rolebinding
+kubectl delete clusterrole my-custom-clusterrole
+kubectl delete clusterrolebinding my-custom-clusterrolebinding
 kubectl delete ns demo
 ```

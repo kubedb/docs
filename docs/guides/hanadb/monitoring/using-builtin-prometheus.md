@@ -1,9 +1,9 @@
 ---
-title: Monitor HanaDB using Builtin Prometheus Discovery
+title: Monitor HanaDB using Built-in Prometheus Discovery
 menu:
   docs_{{ .version }}:
     identifier: hanadb-using-builtin-prometheus-monitoring
-    name: Builtin Prometheus
+    name: Built-in Prometheus
     parent: hanadb-monitoring
     weight: 20
 menu_name: docs_{{ .version }}
@@ -12,13 +12,13 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Monitoring HanaDB with Builtin Prometheus
+# Monitoring HanaDB with Built-in Prometheus
 
-This tutorial will show you how to monitor HanaDB database using builtin [Prometheus](https://github.com/prometheus/prometheus) scraper.
+This tutorial shows how to monitor a HanaDB instance using the built-in [Prometheus](https://github.com/prometheus/prometheus) scraper.
 
 ## Before You Begin
 
-- At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+- Prepare a Kubernetes cluster and configure `kubectl` to communicate with it. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
 - Install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
@@ -26,7 +26,7 @@ This tutorial will show you how to monitor HanaDB database using builtin [Promet
 
 - To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/hanadb/monitoring/overview.md).
 
-- To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy the database in `demo` namespace.
+- This tutorial deploys Prometheus resources in the `monitoring` namespace and the database in the `demo` namespace.
 
   ```bash
   $ kubectl create ns monitoring
@@ -36,11 +36,11 @@ This tutorial will show you how to monitor HanaDB database using builtin [Promet
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/hanadb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/hanadb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/hanadb/monitoring](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/hanadb/monitoring) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy HanaDB with Monitoring Enabled
 
-At first, let's deploy a HanaDB database with monitoring enabled. Below is the HanaDB object that we are going to create.
+Deploy a HanaDB instance with monitoring enabled. The manifest is shown below.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -53,44 +53,47 @@ spec:
   replicas: 1
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: local-path
     accessModes:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 64Gi
   deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/builtin
+    prometheus:
+      exporter:
+        port: 9668
 ```
 
-Here, `spec.monitor.agent: prometheus.io/builtin` specifies that we are going to monitor this server using builtin Prometheus scraper.
+Here, `spec.monitor.agent: prometheus.io/builtin` tells KubeDB to use Prometheus annotation-based discovery. `spec.monitor.prometheus.exporter.port` specifies the exporter port. If omitted, KubeDB defaults it to `9668`.
 
-Let's create the HanaDB CR we have shown above.
+Create the HanaDB object:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/monitoring/builtin-prom-hanadb.yaml
 hanadb.kubedb.com/builtin-prom-hanadb created
 ```
 
-Now, wait for the database to go into `Ready` state.
+Wait for the database to reach the `Ready` state.
 
 ```bash
 $ kubectl get hanadb -n demo builtin-prom-hanadb
 NAME                  VERSION   STATUS   AGE
-builtin-prom-hanadb   2.0       Ready    2m
+builtin-prom-hanadb   2.0.82    Ready    2m
 ```
 
-KubeDB will create a separate stats service with name `{HanaDB crd name}-stats` for monitoring purpose.
+KubeDB creates a separate stats service named `{hanadb-name}-stats` for metrics scraping.
 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-hanadb"
 NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 builtin-prom-hanadb          ClusterIP   10.96.100.10    <none>        39017/TCP   2m
-builtin-prom-hanadb-stats    ClusterIP   10.96.100.11    <none>        56790/TCP   90s
+builtin-prom-hanadb-stats    ClusterIP   10.96.100.11    <none>        9668/TCP    90s
 ```
 
-Here, `builtin-prom-hanadb-stats` service has been created for monitoring purpose. Let's describe the service.
+The `builtin-prom-hanadb-stats` service exposes the exporter endpoint. Describe the service:
 
 ```bash
 $ kubectl describe svc -n demo builtin-prom-hanadb-stats
@@ -100,24 +103,26 @@ Labels:            app.kubernetes.io/name=hanadbs.kubedb.com
                    app.kubernetes.io/instance=builtin-prom-hanadb
 Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
                    prometheus.io/path: /metrics
-                   prometheus.io/port: 56790
+                   prometheus.io/port: 9668
+                   prometheus.io/scheme: http
                    prometheus.io/scrape: true
 Selector:          app.kubernetes.io/name=hanadbs.kubedb.com,app.kubernetes.io/instance=builtin-prom-hanadb
 Type:              ClusterIP
-Port:              prom-http  56790/TCP
+Port:              metrics  9668/TCP
 ```
 
-You can see that the service contains the following annotations, which are used by builtin Prometheus to discover the endpoint:
+The service contains the following annotations, which are used by Prometheus to discover the endpoint:
 
 ```
 prometheus.io/path: /metrics
-prometheus.io/port: 56790
+prometheus.io/port: 9668
+prometheus.io/scheme: http
 prometheus.io/scrape: true
 ```
 
 ## Configure Prometheus
 
-Now we need to configure Prometheus to scrape metrics from this service. Add the following `scrape_config` to your Prometheus configuration:
+Configure Prometheus to scrape metrics from this service. Add the following `scrape_config` to your Prometheus configuration:
 
 ```yaml
 scrape_configs:
@@ -166,7 +171,7 @@ You should see the HanaDB metrics in the Prometheus dashboard under the `kubedb-
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl patch -n demo hanadb/builtin-prom-hanadb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"

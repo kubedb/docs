@@ -14,13 +14,13 @@ section_menu_id: guides
 
 # Using Custom Configuration File
 
-KubeDB supports providing custom configuration for HanaDB. This tutorial will show you how to use KubeDB to run HanaDB with custom configuration.
+KubeDB supports user-provided SAP HANA configuration. This tutorial shows how to run HanaDB with a custom `global.ini` file.
 
 ## Before You Begin
 
-- At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+- Prepare a Kubernetes cluster and configure `kubectl` to communicate with it. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install the KubeDB CLI on your workstation and the KubeDB operator in your cluster by following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -29,33 +29,34 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/hanadb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/hanadb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/hanadb/configuration](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/hanadb/configuration) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
-SAP HANA allows configuration via the `global.ini` and `indexserver.ini` configuration files. KubeDB takes advantage of the `spec.configuration.secretName` field to allow users to provide their custom configuration without mounting any volume into the Pod.
+KubeDB supports custom HanaDB configuration through a user-provided `global.ini` file. The `spec.configuration.secretName` field lets you provide this configuration without manually mounting any volume into the pod.
 
 To apply custom configuration, you create a Kubernetes Secret containing your custom config file and provide its name in `spec.configuration.secretName`. The operator reads this Secret internally and applies the configuration automatically.
 
-In this tutorial, we will configure `indexserver.ini` with a custom `max_memory` parameter.
+In this tutorial, you configure `global.ini` with a custom memory allocation limit.
 
 ## Custom Configuration
 
-At first, let's create a custom `global.ini` file:
+Create a Secret that contains a custom `global.ini` file:
 
-```ini
-[system]
-usage = development
-
-[memorymanager]
-alloclimit = 16384
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hanadb-configuration
+  namespace: demo
+stringData:
+  global.ini: |
+    [memorymanager]
+    global_allocation_limit = 8589934592
 ```
 
-Now, create a Secret with this configuration file.
-
 ```bash
-$ kubectl create secret generic -n demo hanadb-configuration \
-  --from-file=global.ini=./global.ini
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/configuration/hanadb-configuration.yaml
 secret/hanadb-configuration created
 ```
 
@@ -72,7 +73,7 @@ metadata:
   namespace: demo
 ```
 
-Now, create HanaDB CRD specifying `spec.configuration.secretName` field.
+Create a HanaDB object with `spec.configuration.secretName` set to the Secret name.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -87,26 +88,26 @@ spec:
     secretName: hanadb-configuration
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: local-path
     accessModes:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 10Gi
+        storage: 64Gi
   deletionPolicy: WipeOut
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/configuration/hanadb-configuration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/configuration/custom-hanadb.yaml
 hanadb.kubedb.com/custom-hanadb created
 ```
 
-Now, wait for the HanaDB to be ready.
+Wait for the HanaDB instance to become ready.
 
 ```bash
 $ kubectl get hanadb -n demo custom-hanadb
 NAME            VERSION   STATUS   AGE
-custom-hanadb   2.0       Ready    5m
+custom-hanadb   2.0.82    Ready    5m
 ```
 
 Check that the pod is running:
@@ -117,23 +118,21 @@ NAME              READY   STATUS    RESTARTS   AGE
 custom-hanadb-0   1/1     Running   0          5m
 ```
 
-Now, we will check if the database has started with the custom configuration we have provided. We will `exec` into the pod and use the HDB CLI to check the configuration.
+Check whether the database started with the custom configuration by running `hdbsql` inside the pod.
 
 ```bash
 $ kubectl exec -it -n demo custom-hanadb-0 -- hdbsql \
   -u SYSTEM -p <password> \
-  "SELECT KEY, VALUE FROM SYS.M_INIFILE_CONTENTS WHERE FILE_NAME = 'global.ini' AND KEY = 'alloclimit'"
-KEY          VALUE
-alloclimit   16384
+  "SELECT KEY, VALUE FROM SYS.M_INIFILE_CONTENTS WHERE FILE_NAME = 'global.ini' AND KEY = 'global_allocation_limit'"
+KEY                       VALUE
+global_allocation_limit   8589934592
 ```
 
-## Reconfiguring
-
-If you want to change the configuration, you can update the Secret and then trigger a reconfigure OpsRequest. For more details, see the [Reconfigure](/docs/guides/hanadb/ops-request/overview.md) section.
+This guide covers initial custom configuration during provisioning.
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl patch -n demo hanadb/custom-hanadb -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"

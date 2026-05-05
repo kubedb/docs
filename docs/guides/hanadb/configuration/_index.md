@@ -5,6 +5,6 @@ menu:
     identifier: hanadb-configuration
     name: Custom Configuration
     parent: hanadb-guides
-    weight: 130
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

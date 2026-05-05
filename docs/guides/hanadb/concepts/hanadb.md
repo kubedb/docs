@@ -14,9 +14,9 @@ section_menu_id: guides
 
 # HanaDB
 
-## What is HanaDB
+## What is HanaDB?
 
-`HanaDB` is a Kubernetes `CustomResourceDefinition` (CRD) in KubeDB to run SAP HANA databases in a Kubernetes-native way.
+`HanaDB` is a KubeDB custom resource for running SAP HANA databases in Kubernetes.
 
 ## HanaDB Spec
 
@@ -28,7 +28,7 @@ metadata:
   namespace: demo
 spec:
   version: "2.0.82"
-  replicas: 2
+  replicas: 3
   storageType: "Durable"
   topology:
     mode: SystemReplication
@@ -46,8 +46,8 @@ spec:
 ### Key fields
 
 - `spec.version` refers to a `HanaDBVersion`.
-- `spec.replicas` controls number of database instances.
-- `spec.topology.mode` supports `Standalone` and `SystemReplication`.
+- `spec.replicas` controls the number of database instances.
+- `spec.topology.mode` supports `Standalone` and `SystemReplication`. If `topology` is omitted, KubeDB runs a standalone instance.
 - `spec.topology.systemReplication` configures replication and operation mode.
 - `spec.storageType` and `spec.storage` define persistent data configuration.
 - `spec.authSecret`, `spec.configuration`, `spec.podTemplate`, and `spec.monitor` are optional tuning controls.

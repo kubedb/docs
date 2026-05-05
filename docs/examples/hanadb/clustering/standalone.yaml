@@ -1,21 +1,17 @@
 apiVersion: kubedb.com/v1alpha2
 kind: HanaDB
 metadata:
-  name: hana-cluster
+  name: hana-standalone
   namespace: demo
 spec:
   version: "2.0.82"
-  replicas: 3
+  replicas: 1
   storageType: Durable
-  topology:
-    mode: SystemReplication
-    systemReplication:
-      replicationMode: fullsync
-      operationMode: logreplay_readaccess
   storage:
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 64Gi
     storageClassName: local-path
+  deletionPolicy: WipeOut

@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: hanadb-catalog-concepts
     name: HanaDBVersion
-    parent: hanadb-concepts-hanadb
+    parent: hanadb-concepts
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -14,9 +14,9 @@ section_menu_id: guides
 
 # HanaDBVersion
 
-## What is HanaDBVersion
+## What is HanaDBVersion?
 
-`HanaDBVersion` is the catalog CRD that maps a HanaDB version string to the container images and metadata used by KubeDB.
+`HanaDBVersion` is the catalog custom resource that maps a HanaDB version string to the container images and metadata used by KubeDB.
 
 KubeDB resolves `HanaDB.spec.version` through this catalog.
 
@@ -31,11 +31,16 @@ spec:
   coordinator:
     image: ghcr.io/kubedb/hanadb-coordinator:v0.4.0
   db:
-    image: "kubedb/hanadb:2.0.82"
+    image: docker.io/saplabs/hanaexpress:2.00.082.00.20250528.1
   exporter:
     image: ghcr.io/kubedb/hanadb-exporter:1.0.0
+  securityContext:
+    runAsGroup: 79
+    runAsUser: 12000
+  updateConstraints:
+    allowlist:
+    - 2.0.82
   version: "2.0.82"
-  deprecated: false
 ```
 
 ## Key fields
@@ -45,9 +50,11 @@ spec:
 - `spec.coordinator.image` points to the coordinator sidecar image.
 - `spec.db.image` points to the image used for database pods.
 - `spec.exporter.image` points to the metrics exporter image.
+- `spec.securityContext` provides the default user and group used by database containers.
+- `spec.updateConstraints.allowlist` lists the versions this catalog entry can update to.
 - `spec.deprecated` marks versions that are not recommended for new use.
 
 ## Next Steps
 
-- Read the [HanaDB CRD concept](/docs/guides/hanadb/concepts/hanadb.md).
+- Read the [HanaDB CRD](/docs/guides/hanadb/concepts/hanadb.md).
 - Run the [HanaDB quickstart](/docs/guides/hanadb/quickstart/quickstart.md).

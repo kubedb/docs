@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Running HanaDB
 
-This tutorial shows how to run a HanaDB database with KubeDB.
+This tutorial shows how to run a SAP HANA database with KubeDB.
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/hanadb/quickstart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/hanadb/quickstart).
 
@@ -35,13 +35,15 @@ kubectl create ns demo
 kubectl get storageclass
 ```
 
+The example manifests use `storageClassName: local-path` and request `64Gi` storage for each HanaDB pod. Update the storage class if your cluster uses a different provisioner.
+
 ## Check Available HanaDBVersion
 
 ```bash
 kubectl get hanadbversions
 ```
 
-## Create a HanaDB Database
+## Create a HanaDB Cluster
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -51,7 +53,7 @@ metadata:
   namespace: demo
 spec:
   version: "2.0.82"
-  replicas: 2
+  replicas: 3
   storageType: "Durable"
   topology:
     mode: SystemReplication
@@ -71,7 +73,7 @@ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}
 kubectl get hanadb -n demo hana-cluster -w
 ```
 
-## Verify HanaDB Database
+## Verify the Cluster
 
 ```bash
 kubectl get hanadb -n demo
