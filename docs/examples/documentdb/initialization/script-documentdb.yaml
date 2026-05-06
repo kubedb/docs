@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: DocumentDB
+metadata:
+  name: script-documentdb
+  namespace: demo
+spec:
+  version: "pg17-0.109.0"
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
+  init:
+    script:
+      configMap:
+        name: documentdb-init-script
+
