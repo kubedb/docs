@@ -68,7 +68,7 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
-> This document provides a high-level overview with illustrative examples. To fully understand and apply these recommendations in your database, follow the linked guides and the [Recommendation Overview](/docs/operatormanual/recommendation/index.md)
+> This document provides a high-level overview with illustrative examples. To fully understand and apply these recommendations in your database, follow the linked guides and the [Recommendation Overview](/docs/operatormanual/recommendation/overview.md)
 ---
 
 ## Recommendation Types
