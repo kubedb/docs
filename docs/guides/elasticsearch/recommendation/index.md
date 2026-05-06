@@ -5,7 +5,7 @@ menu:
     identifier: es-recommendation-elasticsearch
     name: Recommendation
     parent: es-elasticsearch-guides
-    weight: 26
+    weight: 130
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -68,7 +68,7 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
-> This document provides a high-level overview with illustrative examples. To fully understand and apply these recommendations in your database, follow the linked guides and the Recommendation Overview
+> This document provides a high-level overview with illustrative examples. To fully understand and apply these recommendations in your database, follow the linked guides and the [Recommendation Overview](/docs/operatormanual/recommendation/overview.md)
 ---
 
 ## Recommendation Types
