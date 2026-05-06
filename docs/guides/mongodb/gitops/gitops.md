@@ -73,7 +73,7 @@ spec:
   replicas: 2
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
     - ReadWriteOnce
     resources:
@@ -170,7 +170,7 @@ spec:
            memory: 2Gi
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
     - ReadWriteOnce
     resources:
@@ -234,7 +234,7 @@ spec:
            memory: 2Gi
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
     - ReadWriteOnce
     resources:
@@ -295,7 +295,7 @@ spec:
            memory: 2Gi
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
     - ReadWriteOnce
     resources:
@@ -325,9 +325,9 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 ```bash
 $ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=mg-gitops'
 NAME                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-datadir-mg-gitops-0   Bound    pvc-cea7fe6a-dd75-4e81-99d3-9ab2867c6650   2Gi        RWO            standard       <unset>                 22m
-datadir-mg-gitops-1   Bound    pvc-bcd63bd2-b3b8-4fb8-8c35-5f6e40031f61   2Gi        RWO            standard       <unset>                 21m
-datadir-mg-gitops-2   Bound    pvc-2535f213-28fb-41ef-bdfd-7fbe91859c81   2Gi        RWO            standard       <unset>               7m56s
+datadir-mg-gitops-0   Bound    pvc-cea7fe6a-dd75-4e81-99d3-9ab2867c6650   2Gi        RWO            longhorn       <unset>                 22m
+datadir-mg-gitops-1   Bound    pvc-bcd63bd2-b3b8-4fb8-8c35-5f6e40031f61   2Gi        RWO            longhorn       <unset>                 21m
+datadir-mg-gitops-2   Bound    pvc-2535f213-28fb-41ef-bdfd-7fbe91859c81   2Gi        RWO            longhorn       <unset>               7m56s
 ```
 
 ## Reconfigure MongoDB
@@ -373,7 +373,7 @@ spec:
            memory: 2Gi
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
     - ReadWriteOnce
     resources:
@@ -444,7 +444,7 @@ spec:
            memory: 2Gi
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
     - ReadWriteOnce
     resources:
@@ -507,7 +507,7 @@ spec:
            memory: 1Gi
  storageType: Durable
  storage:
-   storageClassName: standard
+   storageClassName: longhorn
    accessModes:
    - ReadWriteOnce
    resources:
@@ -576,7 +576,7 @@ spec:
             memory: 2Gi
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
     - ReadWriteOnce
     resources:

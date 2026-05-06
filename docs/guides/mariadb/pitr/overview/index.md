@@ -138,7 +138,7 @@ spec:
     driver: "VolumeSnapshotter"
     task:
       params:
-        volumeSnapshotClassName: "standard-snapshot-vsc"
+        volumeSnapshotClassName: "longhorn-snapshot-vsc"
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
@@ -181,16 +181,16 @@ stringData:
 ```bash
 $ kubectl get volumesnapshotclasses
 NAME                    DRIVER               DELETIONPOLICY   AGE
-standard-snapshot-vsc   driver.standard.io   Delete           7d22h
+longhorn-snapshot-vsc   driver.longhorn.io   Delete           7d22h
 
 ```
-If not any, try using `standard` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
+If not any, try using `longhorn` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
 ```yaml
 kind: VolumeSnapshotClass
 apiVersion: snapshot.storage.k8s.io/v1
 metadata:
-  name: standard-snapshot-vsc
-driver: driver.standard.io
+  name: longhorn-snapshot-vsc
+driver: driver.longhorn.io
 deletionPolicy: Delete
 parameters:
   type: snap
@@ -198,10 +198,10 @@ parameters:
 ```
 
 ```bash
-$ helm install standard standard/standard --namespace standard-system --create-namespace
+$ helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
 
 $ kubectl apply -f volumesnapshotclass.yaml
-  volumesnapshotclass.snapshot.storage.k8s.io/standard-snapshot-vsc unchanged
+  volumesnapshotclass.snapshot.storage.k8s.io/longhorn-snapshot-vsc unchanged
 ```
 
 # Deploy MariaDB
@@ -220,7 +220,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -277,7 +277,7 @@ mariadb-backup-manifest-backup-1726549703      BackupConfiguration   mariadb-bac
 
 kubectl get volumesnapshots -n demo
 NAME                    READYTOUSE   SOURCEPVC        SOURCESNAPSHOTCONTENT   RESTORESIZE   SNAPSHOTCLASS           SNAPSHOTCONTENT                                    CREATIONTIME   AGE
-mariadb-1726549985      true         data-mariadb-0                           10Gi          standard-snapshot-vsc   snapcontent-317aaac9-ae4f-438b-9763-4eb81ff828af    11m            11m
+mariadb-1726549985      true         data-mariadb-0                           10Gi          longhorn-snapshot-vsc   snapcontent-317aaac9-ae4f-438b-9763-4eb81ff828af    11m            11m
 ```
 
 ## Data Insert and Switch Binlog File
@@ -377,7 +377,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:

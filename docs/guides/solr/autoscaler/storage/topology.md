@@ -49,12 +49,12 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get sc
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  11d
-standard (default)     driver.standard.io      Delete          Immediate              true                   7d22h
-standard-static        driver.standard.io      Delete          Immediate              true                   7d22h
+longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   7d22h
+longhorn-static        driver.longhorn.io      Delete          Immediate              true                   7d22h
 
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
 
 Now, we are going to deploy a `Solr` topology cluster using a supported version by the `KubeDB` operator. Then we are going to apply `SolrAutoscaler` to set up autoscaling.
 
@@ -77,7 +77,7 @@ spec:
     overseer:
       replicas: 1
       storage:
-        storageClassName: standard
+        storageClassName: longhorn
         accessModes:
           - ReadWriteOnce
         resources:
@@ -86,7 +86,7 @@ spec:
     data:
       replicas: 1
       storage:
-        storageClassName: standard
+        storageClassName: longhorn
         accessModes:
           - ReadWriteOnce
         resources:
@@ -94,7 +94,7 @@ spec:
             storage: 1Gi
     coordinator:
       storage:
-        storageClassName: standard
+        storageClassName: longhorn
         accessModes:
           - ReadWriteOnce
         resources:
@@ -131,9 +131,9 @@ $ kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.volumeClaimTe
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-24431af2-8df5-4ad2-a6cd-795dcbdc6355   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   standard       <unset>                          2m15s
-pvc-5e3430da-545c-4234-a891-3385b100401d   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      standard       <unset>                          2m17s
-pvc-aa75a15f-94cd-475a-a7ad-498023830020   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          standard       <unset>                          2m19s
+pvc-24431af2-8df5-4ad2-a6cd-795dcbdc6355   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   longhorn       <unset>                          2m15s
+pvc-5e3430da-545c-4234-a891-3385b100401d   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      longhorn       <unset>                          2m17s
+pvc-aa75a15f-94cd-475a-a7ad-498023830020   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          longhorn       <unset>                          2m19s
 
 ```
 
@@ -240,14 +240,14 @@ Let's exec into the data nodes and fill the database volume using the following 
 Defaulted container "solr" out of: solr, init-solr (init)
 solr@solr-combined-0:/opt/solr-9.6.1$ df -h /var/solr/data
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61  7.1G  601M  6.5G   9% /var/solr/data
+/dev/longhorn/pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61  7.1G  601M  6.5G   9% /var/solr/data
 solr@solr-cluster-data-0:/opt/solr-9.6.1$ dd if=/dev/zero of=/var/solr/data/file.img bs=300M count=2
 2+0 records in
 2+0 records out
 629145600 bytes (629 MB, 600 MiB) copied, 1.95395 s, 322 MB/s
 solr@solr-cluster-data-0:/opt/solr-9.6.1$ df -h /var/solr/data
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-aa75a15f-94cd-475a-a7ad-498023830020  974M  601M  358M  63% /var/solr/data
+/dev/longhorn/pvc-aa75a15f-94cd-475a-a7ad-498023830020  974M  601M  358M  63% /var/solr/data
 
 ```
 
@@ -422,15 +422,15 @@ $ kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.volumeClaimTe
 
 $ kubectl get pvc -n demo 
 NAME                                           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-solr-cluster-data-solr-cluster-coordinator-0   Bound    pvc-24431af2-8df5-4ad2-a6cd-795dcbdc6355   1Gi        RWO            standard       <unset>                 18m
-solr-cluster-data-solr-cluster-data-0          Bound    pvc-aa75a15f-94cd-475a-a7ad-498023830020   1948Mi     RWO            standard       <unset>                 18m
-solr-cluster-data-solr-cluster-overseer-0      Bound    pvc-5e3430da-545c-4234-a891-3385b100401d   1Gi        RWO            standard       <unset>                 18m
+solr-cluster-data-solr-cluster-coordinator-0   Bound    pvc-24431af2-8df5-4ad2-a6cd-795dcbdc6355   1Gi        RWO            longhorn       <unset>                 18m
+solr-cluster-data-solr-cluster-data-0          Bound    pvc-aa75a15f-94cd-475a-a7ad-498023830020   1948Mi     RWO            longhorn       <unset>                 18m
+solr-cluster-data-solr-cluster-overseer-0      Bound    pvc-5e3430da-545c-4234-a891-3385b100401d   1Gi        RWO            longhorn       <unset>                 18m
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-24431af2-8df5-4ad2-a6cd-795dcbdc6355   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   standard       <unset>                          18m
-pvc-5e3430da-545c-4234-a891-3385b100401d   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      standard       <unset>                          18m
-pvc-aa75a15f-94cd-475a-a7ad-498023830020   1948Mi     RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          standard       <unset>                          18m
+pvc-24431af2-8df5-4ad2-a6cd-795dcbdc6355   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   longhorn       <unset>                          18m
+pvc-5e3430da-545c-4234-a891-3385b100401d   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      longhorn       <unset>                          18m
+pvc-aa75a15f-94cd-475a-a7ad-498023830020   1948Mi     RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          longhorn       <unset>                          18m
 ```
 
 The above output verifies that we have successfully autoscaler the volume of the data nodes of this Solr topology cluster.

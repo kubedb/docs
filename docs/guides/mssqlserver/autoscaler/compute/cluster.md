@@ -120,7 +120,7 @@ spec:
               memory: "1.6Gi"
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:

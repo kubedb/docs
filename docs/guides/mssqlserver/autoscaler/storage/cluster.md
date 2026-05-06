@@ -51,11 +51,11 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  4d21h
-standard (default)     driver.standard.io      Delete          Immediate              true                   2d20h
-standard-static        driver.standard.io      Delete          Immediate              true                   2d20h
+longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   2d20h
+longhorn-static        driver.longhorn.io      Delete          Immediate              true                   2d20h
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `MSSQLServer` cluster using a supported version by `KubeDB` operator. Then we are going to apply `MSSQLServerAutoscaler` to set up autoscaling.
 
@@ -138,7 +138,7 @@ spec:
               memory: "1.6Gi"
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -170,9 +170,9 @@ $ kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeCl
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-1497dd6d-9cbd-467a-8e0c-c3963ce09e1b   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   standard       <unset>                          8m
-pvc-37a7bc8d-2c04-4eb4-8e53-e610fd1daaf5   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   standard       <unset>                          8m
-pvc-817866af-5277-4d51-8d81-434e8ec1c442   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   standard       <unset>                          8m
+pvc-1497dd6d-9cbd-467a-8e0c-c3963ce09e1b   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn       <unset>                          8m
+pvc-37a7bc8d-2c04-4eb4-8e53-e610fd1daaf5   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn       <unset>                          8m
+pvc-817866af-5277-4d51-8d81-434e8ec1c442   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn       <unset>                          8m
 ```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
@@ -211,7 +211,7 @@ Here,
 - `spec.storage.mssqlserver.trigger` specifies that storage autoscaling is enabled for this database.
 - `spec.storage.mssqlserver.usageThreshold` specifies storage usage threshold, if storage usage exceeds `60%` then storage autoscaling will be triggered.
 - `spec.storage.mssqlserver.scalingThreshold` specifies the scaling threshold. Storage will be scaled to `50%` of the current amount.
-- `spec.storage.mssqlserver.expansionMode` specifies the expansion mode of volume expansion `MSSQLServerOpsRequest` created by `MSSQLServerAutoscaler`, `standard` supports offline volume expansion so here `expansionMode` is set as "Offline".
+- `spec.storage.mssqlserver.expansionMode` specifies the expansion mode of volume expansion `MSSQLServerOpsRequest` created by `MSSQLServerAutoscaler`, `longhorn` supports offline volume expansion so here `expansionMode` is set as "Offline".
 
 Let's create the `MSSQLServerAutoscaler` CR we have shown above,
 
@@ -270,7 +270,7 @@ Lets exec into the database pod and fill the database volume(`/var/opt/mssql/`) 
 $ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
 mssql@mssqlserver-ag-cluster-0:/$ df -h /var/opt/mssql
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-37a7bc8d-2c04-4eb4-8e53-e610fd1daaf5  974M  274M  685M  29% /var/opt/mssql
+/dev/longhorn/pvc-37a7bc8d-2c04-4eb4-8e53-e610fd1daaf5  974M  274M  685M  29% /var/opt/mssql
 
 mssql@mssqlserver-ag-cluster-0:/$ dd if=/dev/zero of=/var/opt/mssql/file.img bs=120M count=5
 5+0 records in
@@ -278,7 +278,7 @@ mssql@mssqlserver-ag-cluster-0:/$ dd if=/dev/zero of=/var/opt/mssql/file.img bs=
 629145600 bytes (629 MB, 600 MiB) copied, 6.09315 s, 103 MB/s
 mssql@mssqlserver-ag-cluster-0:/$ df -h /var/opt/mssql
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-37a7bc8d-2c04-4eb4-8e53-e610fd1daaf5  974M  874M   85M  92% /var/opt/mssql
+/dev/longhorn/pvc-37a7bc8d-2c04-4eb4-8e53-e610fd1daaf5  974M  874M   85M  92% /var/opt/mssql
 ```
 
 So, from the above output we can see that the storage usage is 92%, which exceeded the `usageThreshold` 60%.
@@ -432,9 +432,9 @@ $ kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeCl
 "1531054080"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-2ff83356-1bbc-44ab-99f1-025e3690a471   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   standard       <unset>                          15m
-pvc-a5cc0ae9-2c8d-456c-ace2-fc4fafc6784f   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   standard       <unset>                          16m
-pvc-e8ab47a4-17a6-45fb-9f39-e71a03498ab5   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   standard       <unset>                          16m
+pvc-2ff83356-1bbc-44ab-99f1-025e3690a471   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn       <unset>                          15m
+pvc-a5cc0ae9-2c8d-456c-ace2-fc4fafc6784f   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn       <unset>                          16m
+pvc-e8ab47a4-17a6-45fb-9f39-e71a03498ab5   1462Mi     RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn       <unset>                          16m
 ```
 
 The above output verifies that we have successfully autoscaled the volume of the MSSQLServer cluster database.

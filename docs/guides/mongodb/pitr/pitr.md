@@ -124,16 +124,16 @@ retentionpolicy.storage.kubestash.com/mongodb-retention-policy created
 ```bash
 kubectl get volumesnapshotclasses
 NAME                    DRIVER               DELETIONPOLICY   AGE
-standard-snapshot-vsc   driver.standard.io   Delete           7d22h
+longhorn-snapshot-vsc   driver.longhorn.io   Delete           7d22h
 
 ```
-If not any, try using `standard` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
+If not any, try using `longhorn` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
 
 ```bash
-$ helm install standard standard/standard --namespace standard-system --create-namespace
+$ helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
   ...
   ...
-  kubectl get pod -n standard-system
+  kubectl get pod -n longhorn-system
 ````
 
 
@@ -141,8 +141,8 @@ $ helm install standard standard/standard --namespace standard-system --create-n
 kind: VolumeSnapshotClass
 apiVersion: snapshot.storage.k8s.io/v1
 metadata:
-  name: standard-snapshot-vsc
-driver: driver.standard.io
+  name: longhorn-snapshot-vsc
+driver: driver.longhorn.io
 deletionPolicy: Delete
 parameters:
   type: snap

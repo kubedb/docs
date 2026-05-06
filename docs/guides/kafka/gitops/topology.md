@@ -166,7 +166,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
     controller:
       podTemplate:
         spec:
@@ -185,7 +185,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
   storageType: Durable
   deletionPolicy: WipeOut
  ```
@@ -260,7 +260,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
     controller:
       podTemplate:
         spec:
@@ -279,7 +279,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -390,12 +390,12 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 ```bash
 $  kubectl get pvc -n demo -l 'app.kubernetes.io/instance=kafka-gitops'
 NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-kafka-gitops-data-kafka-gitops-broker-0       Bound    pvc-a00ef6d5-44a6-40ce-8131-680b9d24d982   2Gi        RWO            standard       <unset>                 7m20s
-kafka-gitops-data-kafka-gitops-broker-1       Bound    pvc-141798c5-9000-480f-a997-85a5743f63e2   2Gi        RWO            standard       <unset>                 7m4s
-kafka-gitops-data-kafka-gitops-broker-2       Bound    pvc-819ba56b-4fda-4361-9f3e-e18258e2de7e   2Gi        RWO            standard       <unset>                 6m46s
-kafka-gitops-data-kafka-gitops-controller-0   Bound    pvc-5a6cc06e-60ff-450a-875e-b84f75358f67   2Gi        RWO            standard       <unset>                 7m20s
-kafka-gitops-data-kafka-gitops-controller-1   Bound    pvc-7cae3a1d-0efc-48a2-8953-12f4338a9602   2Gi        RWO            standard       <unset>                 7m4s
-kafka-gitops-data-kafka-gitops-controller-2   Bound    pvc-22e0a63f-58c1-4a03-9493-e670498723db   2Gi        RWO            standard       <unset>                 6m46s
+kafka-gitops-data-kafka-gitops-broker-0       Bound    pvc-a00ef6d5-44a6-40ce-8131-680b9d24d982   2Gi        RWO            longhorn       <unset>                 7m20s
+kafka-gitops-data-kafka-gitops-broker-1       Bound    pvc-141798c5-9000-480f-a997-85a5743f63e2   2Gi        RWO            longhorn       <unset>                 7m4s
+kafka-gitops-data-kafka-gitops-broker-2       Bound    pvc-819ba56b-4fda-4361-9f3e-e18258e2de7e   2Gi        RWO            longhorn       <unset>                 6m46s
+kafka-gitops-data-kafka-gitops-controller-0   Bound    pvc-5a6cc06e-60ff-450a-875e-b84f75358f67   2Gi        RWO            longhorn       <unset>                 7m20s
+kafka-gitops-data-kafka-gitops-controller-1   Bound    pvc-7cae3a1d-0efc-48a2-8953-12f4338a9602   2Gi        RWO            longhorn       <unset>                 7m4s
+kafka-gitops-data-kafka-gitops-controller-2   Bound    pvc-22e0a63f-58c1-4a03-9493-e670498723db   2Gi        RWO            longhorn       <unset>                 6m46s
 ```
 
 ## Reconfigure Kafka
@@ -683,7 +683,7 @@ spec:
         resources:
           requests:
             storage: 2Gi
-        storageClassName: standard
+        storageClassName: longhorn
     controller:
       podTemplate:
         spec:
@@ -702,7 +702,7 @@ spec:
         resources:
           requests:
             storage: 2Gi
-        storageClassName: standard
+        storageClassName: longhorn
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -776,7 +776,7 @@ spec:
         resources:
           requests:
             storage: 2Gi
-        storageClassName: standard
+        storageClassName: longhorn
     controller:
       podTemplate:
         spec:
@@ -795,7 +795,7 @@ spec:
         resources:
           requests:
             storage: 2Gi
-        storageClassName: standard
+        storageClassName: longhorn
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -890,7 +890,7 @@ spec:
         resources:
           requests:
             storage: 2Gi
-        storageClassName: standard
+        storageClassName: longhorn
     controller:
       podTemplate:
         spec:
@@ -909,7 +909,7 @@ spec:
         resources:
           requests:
             storage: 2Gi
-        storageClassName: standard
+        storageClassName: longhorn
   storageType: Durable
   deletionPolicy: WipeOut
 ```

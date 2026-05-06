@@ -42,16 +42,16 @@ Continuous archiving involves making regular copies (or "archives") of the Maria
 ```bash
 $ kubectl get volumesnapshotclasses
 NAME                    DRIVER               DELETIONPOLICY   AGE
-standard-snapshot-vsc   driver.standard.io   Delete           7d22h
+longhorn-snapshot-vsc   driver.longhorn.io   Delete           7d22h
 
 ```
-If not any, try using `standard` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
+If not any, try using `longhorn` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
 ### Install Longhorn
 Longhorn is a distributed block storage system for Kubernetes that manages persistent storage.
 
 Add Longhorn chart repository.
 
-`helm repo add standard https://charts.standard.io`
+`helm repo add longhorn https://charts.longhorn.io`
 
 Update local Longhorn chart information from chart repository.
 
@@ -59,22 +59,22 @@ Update local Longhorn chart information from chart repository.
 
 Install Longhorn chart.
 
-With Helm 2, the following command will create the standard-system namespace and install the Longhorn chart together.
+With Helm 2, the following command will create the longhorn-system namespace and install the Longhorn chart together.
 
-`helm install standard/standard --name standard --namespace standard-system`
+`helm install longhorn/longhorn --name longhorn --namespace longhorn-system`
 
-With Helm 3, the following commands will create the standard-system namespace first, then install the Longhorn chart.
+With Helm 3, the following commands will create the longhorn-system namespace first, then install the Longhorn chart.
 ```bash 
-kubectl create namespace standard-system
-helm install standard standard/standard --namespace standard-system
+kubectl create namespace longhorn-system
+helm install longhorn longhorn/longhorn --namespace longhorn-system
 ```
-Create volumesnapshot class using standard
+Create volumesnapshot class using longhorn
 ```yaml
 kind: VolumeSnapshotClass
 apiVersion: snapshot.storage.k8s.io/v1
 metadata:
-  name: standard-snapshot-vsc
-driver: driver.standard.io
+  name: longhorn-snapshot-vsc
+driver: driver.longhorn.io
 deletionPolicy: Delete
 parameters:
   type: snap
@@ -82,7 +82,7 @@ parameters:
 
 ```bash
 $ kubectl apply -f volumesnapshotclass.yaml
-  volumesnapshotclass.snapshot.storage.k8s.io/standard-snapshot-vsc unchanged
+  volumesnapshotclass.snapshot.storage.k8s.io/longhorn-snapshot-vsc unchanged
 ```
 
 ### Install CSI driver for NFS
@@ -311,7 +311,7 @@ spec:
     driver: "VolumeSnapshotter"
     task:
       params:
-        volumeSnapshotClassName: "standard-snapshot-vsc"
+        volumeSnapshotClassName: "longhorn-snapshot-vsc"
     scheduler:
       successfulJobsHistoryLimit: 1
       failedJobsHistoryLimit: 1
@@ -359,7 +359,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -416,7 +416,7 @@ mariadb-backup-manifest-backup-1726549703      BackupConfiguration   mariadb-bac
 
 kubectl get volumesnapshots -n demo
 NAME                    READYTOUSE   SOURCEPVC        SOURCESNAPSHOTCONTENT   RESTORESIZE   SNAPSHOTCLASS           SNAPSHOTCONTENT                                    CREATIONTIME   AGE
-mariadb-1726549985      true         data-mariadb-0                           10Gi          standard-snapshot-vsc   snapcontent-317aaac9-ae4f-438b-9763-4eb81ff828af    11m            11m
+mariadb-1726549985      true         data-mariadb-0                           10Gi          longhorn-snapshot-vsc   snapcontent-317aaac9-ae4f-438b-9763-4eb81ff828af    11m            11m
 ```
 
 ## Data Insert and Switch Binlog File
@@ -516,7 +516,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:

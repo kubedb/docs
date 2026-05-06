@@ -49,11 +49,11 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get sc
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  11d
-standard (default)     driver.standard.io      Delete          Immediate              true                   7d21h
-standard-static        driver.standard.io      Delete          Immediate              true                   7d21h
+longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   7d21h
+longhorn-static        driver.longhorn.io      Delete          Immediate              true                   7d21h
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. 
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. 
 Now, we are going to deploy a `Solr` combined cluster using a supported version by the `KubeDB` operator. Then we are going to apply `SolrAutoscaler` to set up autoscaling.
 
 #### Deploy Solr Combined Cluster
@@ -78,7 +78,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: standard
+    storageClassName: longhorn
 ```
 
 Let's create the `Solr` CRD we have shown above,
@@ -110,8 +110,8 @@ $ kubectl get petset -n demo solr-combined -o json | jq '.spec.volumeClaimTempla
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-ceee299c-5c50-4f5c-83d5-97e2423bf286   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-1   standard       <unset>                          19m
-pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-0   standard       <unset>                          19m
+pvc-ceee299c-5c50-4f5c-83d5-97e2423bf286   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-1   longhorn       <unset>                          19m
+pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-0   longhorn       <unset>                          19m
 ```
 
 You can see the PetSet has 1GB storage, and the capacity of the persistent volume is also 1GB.
@@ -222,7 +222,7 @@ $ kubectl exec -it -n demo solr-combined-0 -- bash
 Defaulted container "solr" out of: solr, init-solr (init)
 solr@solr-combined-0:/opt/solr-9.6.1$ df -h /var/solr/data
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61  7.1G  601M  6.5G   9% /var/solr/data
+/dev/longhorn/pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61  7.1G  601M  6.5G   9% /var/solr/data
 
 [root@es-combined-0 Solr]# dd if=/dev/zero of=/var/solrdata/file.img bs=300M count=2
 1+0 records in
@@ -231,7 +231,7 @@ Filesystem                                              Size  Used Avail Use% Mo
 
 [root@es-combined-0 Solr]# df -h /usr/share/Solr/data
 Filesystem                                         Size  Used Avail Use% Mounted on
-/dev/standard/pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61  7.1G  601M  6.5G 63% /var/solr/data
+/dev/longhorn/pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61  7.1G  601M  6.5G 63% /var/solr/data
 ```
 
 So, from the above output, we can see that the storage usage is 64%, which exceeded the `usageThreshold` 60%.
@@ -395,8 +395,8 @@ $ kubectl get petset -n demo solr-combined -o json | jq '.spec.volumeClaimTempla
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-ceee299c-5c50-4f5c-83d5-97e2423bf286   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-1   standard       <unset>                          26m
-pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-0   standard       <unset>
+pvc-ceee299c-5c50-4f5c-83d5-97e2423bf286   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-1   longhorn       <unset>                          26m
+pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-0   longhorn       <unset>
 ```
 
 The above output verifies that we have successfully autoscaler the volume of the Solr combined cluster.
