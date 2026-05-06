@@ -3,7 +3,7 @@ title: Run DB2 using Private Registry
 menu:
   docs_{{ .version }}:
     identifier: db2-using-private-registry
-    name: Quickstart
+    name: Using Private Registry
     parent: db2-private-registry
     weight: 10
 menu_name: docs_{{ .version }}
@@ -25,25 +25,34 @@ To keep things isolated, this tutorial uses a separate namespace called `demo` t
 ```bash
 $ kubectl create ns demo
 namespace/demo created
+
+$ kubectl get ns demo
+NAME    STATUS  AGE
+demo    Active  5s
 ```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/db2](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/db2) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Prepare Private Docker Registry
 
-- You will also need a docker private [registry](https://docs.docker.com/registry/) or [private repository](https://docs.docker.com/docker-hub/repos/#private-repositories). In this tutorial we will use private repository of [docker hub](https://hub.docker.com/).
+You need to have a private Docker registry to host the DB2 images. You can use:
 
-- You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For DB2, push `DB_IMAGE` of the following DB2Versions, where `deprecated` is not true, to your private registry.
+- A private repository in [Docker Hub](https://docs.docker.com/docker-hub/repos/#private-repositories)
+- A self-hosted [Docker Registry](https://docs.docker.com/registry/)
+- A cloud provider's container registry (AWS ECR, Google GCR, etc.)
 
-  ```bash
-  $ kubectl get db2versions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,DEPRECATED:.spec.deprecated
-  NAME         VERSION   DB_IMAGE                   DEPRECATED
-  11.5.9       11.5.9    kubedb/db2:11.5.9          <none>
-  ```
+You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For DB2, push the `DB_IMAGE` and `COORDINATOR_IMAGE` of the following DB2Versions (where `deprecated` is not true) to your private registry.
 
-  Docker hub repositories:
+```bash
+$ kubectl get db2versions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,COORDINATOR_IMAGE:.spec.coordinator.image,DEPRECATED:.spec.deprecated
+NAME         VERSION   DB_IMAGE                 COORDINATOR_IMAGE                          DEPRECATED
+11.5.9       11.5.9    kubedb/db2:11.5.9        ghcr.io/kubedb/db2-coordinator:v0.5.0-ubi  <none>
+```
+
+Docker Hub repositories:
 
 - [kubedb/db2](https://hub.docker.com/r/kubedb/db2)
+- [kubedb/db2-coordinator](https://github.com/orgs/kubedb/packages/container/db2-coordinator)
 
 ## Create ImagePullSecret
 
@@ -62,16 +71,23 @@ secret/myregistrykey created
 
 If you wish to follow other ways to pull private images see [official docs](https://kubernetes.io/docs/concepts/containers/images/) of Kubernetes.
 
+Verify the image pull secret is created:
+
+```bash
+$ kubectl get secret -n demo myregistrykey
+NAME             TYPE                             DATA   AGE
+myregistrykey    kubernetes.io/dockercfg         1      5m
+```
+
 ## Install KubeDB Operator
 
-When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate values.
-Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in cluster so that it points to the DOCKER_REGISTRY you wish to pull images from.
+When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate values. Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in cluster so that it points to the DOCKER_REGISTRY you wish to pull images from.
 
 ## Create DB2Version CRD
 
-KubeDB uses images specified in DB2Version CRD for database and exporting prometheus metrics. You have to create a DB2Version CRD specifying images from your private registry. Then, you have to point this DB2Version CRD in `spec.version` field of DB2 object. For more details about DB2Version CRD, please visit [here](/docs/guides/db2/concepts/catalog.md).
+KubeDB uses images specified in DB2Version CRD for the database container and the coordinator container for health checking. You have to create a DB2Version CRD specifying images from your private registry. Then, you have to point this DB2Version CRD in `spec.version` field of DB2 object. For more details about DB2Version CRD, please visit [here](/docs/guides/db2/concepts/catalog.md).
 
-Here, is an example of DB2Version CRD. Replace `PRIVATE_REGISTRY` with your private registry.
+Here is an example of DB2Version CRD. Replace `PRIVATE_REGISTRY` with your private registry.
 
 ```yaml
 apiVersion: catalog.kubedb.com/v1alpha1
@@ -79,9 +95,12 @@ kind: DB2Version
 metadata:
   name: "11.5.9"
 spec:
+  version: "11.5.9"
   db:
     image: PRIVATE_REGISTRY/db2:11.5.9
-  version: "11.5.9"
+  coordinator:
+    image: PRIVATE_REGISTRY/db2-coordinator:v0.5.0-ubi
+  deprecated: false
 ```
 
 Now, create the DB2Version CRD:
@@ -89,6 +108,14 @@ Now, create the DB2Version CRD:
 ```bash
 $ kubectl apply -f pvt-db2version.yaml
 db2version.catalog.kubedb.com/11.5.9 created
+```
+
+Verify the DB2Version is created:
+
+```bash
+$ kubectl get db2version
+NAME        VERSION   DB_IMAGE                           COORDINATOR_IMAGE                               DEPRECATED
+11.5.9      11.5.9    PRIVATE_REGISTRY/db2:11.5.9        PRIVATE_REGISTRY/db2-coordinator:v0.5.0-ubi     false
 ```
 
 ## Deploy DB2 from Private Registry
@@ -112,12 +139,12 @@ spec:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 10Gi
   podTemplate:
     spec:
       imagePullSecrets:
       - name: myregistrykey
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete
 ```
 
 Now run the command to create this DB2 object:
@@ -135,13 +162,48 @@ NAME             READY     STATUS    RESTARTS   AGE
 pvt-reg-db2-0    1/1       Running   0          3m
 ```
 
+Wait for the DB2 instance to be ready:
+
+```bash
+$ kubectl get db2 -n demo pvt-reg-db2
+NAME           VERSION   STATUS    AGE
+pvt-reg-db2    11.5.9    Running   3m
+```
+
+Check the pod logs to verify the database is ready:
+
+## Verify Image Pull
+
+To verify that KubeDB has successfully pulled the private images from your registry, you can inspect the pod events:
+
+```bash
+$ kubectl describe pod -n demo pvt-reg-db2-0
+```
+
+Look for events like:
+```
+Successfully pulled image "PRIVATE_REGISTRY/db2:11.5.9" in XXms
+Successfully pulled image "PRIVATE_REGISTRY/db2-coordinator:v0.5.0-ubi" in XXms
+```
+
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo db2/pvt-reg-db2 -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo db2/pvt-reg-db2
+$ kubectl patch -n demo db2/pvt-reg-db2 -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete -n demo db2/pvt-reg-db2
 
-kubectl delete ns demo
+$ kubectl delete -n demo db2version 11.5.9
+
+$ kubectl delete secret -n demo myregistrykey
+
+$ kubectl delete ns demo
 ```
+
+## Next Steps
+
+- Learn how to use KubeDB to run DB2 [here](/docs/guides/db2/README.md).
+- Learn about [custom RBAC](/docs/guides/db2/custom-rbac/using-custom-rbac.md) for DB2.
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
