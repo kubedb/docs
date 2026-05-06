@@ -12,45 +12,26 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Reconfiguring Neo4j
+# Reconfiguring Neo4j Overview
 
-This guide shows how to reconfigure Neo4j using `Neo4jOpsRequest`.
+This page explains how KubeDB Ops-manager applies configuration changes to Neo4j using `Neo4jOpsRequest`.
 
 ## Before You Begin
 
-- Be familiar with [Neo4j](/docs/guides/neo4j/concepts/neo4j.md).
-- Install KubeDB and Ops-manager from [here](/docs/setup/README.md).
-- Use the example files from `docs/examples/neo4j/quickstart/neo4j.yaml` and `docs/examples/neo4j/reconfigure/ops-request.yaml`.
-- Create namespace:
+- You should be familiar with [Neo4j](/docs/guides/neo4j/concepts/neo4j.md).
+- You should be familiar with [Neo4jOpsRequest](/docs/guides/neo4j/concepts/opsrequest.md).
 
-```bash
-kubectl create ns demo
-```
+## How Reconfigure Works
 
-## Deploy Neo4j
+For a `Neo4jOpsRequest` with `spec.type: Reconfigure`, KubeDB Ops-manager:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
-kubectl get neo4j -n demo neo4j-test -w
-```
+1. Validates configuration inputs from `spec.configuration`.
+2. Resolves custom config secret and inline `applyConfig` values.
+3. Pauses conflicting reconciliations.
+4. Merges or replaces Neo4j config based on request fields.
+5. Restarts relevant pods to apply new configuration.
+6. Verifies pod/database health and marks the request `Successful`.
 
-## Apply Reconfigure OpsRequest
+## Next Step
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/reconfigure/ops-request.yaml
-```
-
-## Verify
-
-```bash
-kubectl get neo4jopsrequest -n demo neo4j-reconfigure
-kubectl describe neo4jopsrequest -n demo neo4j-reconfigure
-```
-
-## Cleaning up
-
-```bash
-kubectl delete neo4jopsrequest -n demo neo4j-reconfigure
-kubectl delete neo4j -n demo neo4j-test
-kubectl delete ns demo
-```
+Follow the detailed guide: [Reconfigure Neo4j Cluster](/docs/guides/neo4j/reconfigure/reconfigure.md).

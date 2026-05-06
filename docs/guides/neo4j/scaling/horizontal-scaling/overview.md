@@ -1,5 +1,5 @@
 ---
-title: Neo4j Horizontal Scaling Overview
+title: Neo4j Horizontal Scaling
 menu:
   docs_{{ .version }}:
     identifier: neo4j-horizontal-scaling-overview
@@ -12,45 +12,31 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Neo4j Horizontal Scaling
+# Neo4j Horizontal Scaling Overview
 
-This guide shows how to scale Neo4j cluster members horizontally.
+This page explains how KubeDB Ops-manager performs horizontal scaling for Neo4j using `Neo4jOpsRequest`.
 
 ## Before You Begin
 
-- Ensure database is healthy (`status.phase=Ready`).
-- Use odd replica counts for quorum-sensitive deployments.
-- Use the example files from `docs/examples/neo4j/quickstart/neo4j.yaml` and `docs/examples/neo4j/scaling/horizontal-scaling/ops-request.yaml`.
+- You should be familiar with [Neo4j](/docs/guides/neo4j/concepts/neo4j.md).
+- You should be familiar with [Neo4jOpsRequest](/docs/guides/neo4j/concepts/opsrequest.md).
 
-```bash
-kubectl create ns demo
-```
+## How Horizontal Scaling Works
 
-## Deploy Neo4j
+For a `Neo4jOpsRequest` with `spec.type: HorizontalScaling`, KubeDB Ops-manager:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
-kubectl get neo4j -n demo neo4j-test -w
-```
+1. Validates the requested server count in `spec.horizontalScaling.server`.
+2. Pauses conflicting reconciliations for safe scale execution.
+3. Updates the target Neo4j server replica count.
+4. Applies reallocation policy from `spec.horizontalScaling.reallocate`.
+5. Waits for members and database hosting to reach a healthy state.
+6. Marks the operation `Successful` and resumes normal reconciliation.
 
-## Apply HorizontalScaling OpsRequest
+Use Cypher views to verify topology and allocation after scaling:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/scaling/horizontal-scaling/ops-request.yaml
-kubectl get neo4jopsrequest -n demo neo4j-horizontal-scale
-```
+- `SHOW DATABASE <name>` for allocation status.
+- `SHOW SERVERS` for hosting distribution.
 
-## Verify
+## Next Step
 
-```bash
-kubectl describe neo4jopsrequest -n demo neo4j-horizontal-scale
-kubectl get neo4j -n demo neo4j-test -o yaml
-```
-
-## Cleaning up
-
-```bash
-kubectl delete neo4jopsrequest -n demo neo4j-horizontal-scale
-kubectl delete neo4j -n demo neo4j-test
-kubectl delete ns demo
-```
+Follow the detailed guide: [Scale Neo4j Horizontally](/docs/guides/neo4j/scaling/horizontal-scaling/scale-horizontally/index.md).

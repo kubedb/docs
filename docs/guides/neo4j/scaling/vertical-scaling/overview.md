@@ -12,44 +12,26 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Neo4j Vertical Scaling
+# Neo4j Vertical Scaling Overview
 
-This guide shows how to update CPU and memory for Neo4j pods.
+This page explains how KubeDB Ops-manager updates Neo4j pod resources using `Neo4jOpsRequest`.
 
 ## Before You Begin
 
-- Ensure database is healthy and all pods are running.
-- Use the example files from `docs/examples/neo4j/quickstart/neo4j.yaml` and `docs/examples/neo4j/scaling/vertical-scaling/ops-request.yaml`.
+- You should be familiar with [Neo4j](/docs/guides/neo4j/concepts/neo4j.md).
+- You should be familiar with [Neo4jOpsRequest](/docs/guides/neo4j/concepts/opsrequest.md).
 
-```bash
-kubectl create ns demo
-```
+## How Vertical Scaling Works
 
-## Deploy Neo4j
+For a `Neo4jOpsRequest` with `spec.type: VerticalScaling`, KubeDB Ops-manager:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
-kubectl get neo4j -n demo neo4j-test -w
-```
+1. Validates CPU/memory values from `spec.verticalScaling.server.resources`.
+2. Pauses conflicting reconciliations.
+3. Applies updated requests/limits to Neo4j server pods.
+4. Performs controlled restarts where necessary.
+5. Waits for pods to become healthy with new resources.
+6. Marks the request `Successful` after reconciliation.
 
-## Apply VerticalScaling OpsRequest
+## Next Step
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/scaling/vertical-scaling/ops-request.yaml
-kubectl get neo4jopsrequest -n demo neo4j-vertical-scale
-```
-
-## Verify
-
-```bash
-kubectl describe neo4jopsrequest -n demo neo4j-vertical-scale
-kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
-```
-
-## Cleaning up
-
-```bash
-kubectl delete neo4jopsrequest -n demo neo4j-vertical-scale
-kubectl delete neo4j -n demo neo4j-test
-kubectl delete ns demo
-```
+Follow the detailed guide: [Scale Neo4j Vertically](/docs/guides/neo4j/scaling/vertical-scaling/scale-vertically/index.md).

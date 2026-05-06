@@ -12,44 +12,27 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Rotate Auth for Neo4j
+# Rotate Auth for Neo4j Overview
 
-This guide shows how to rotate Neo4j credentials with `Neo4jOpsRequest`.
+This page explains how KubeDB Ops-manager rotates Neo4j credentials using `Neo4jOpsRequest`.
 
 ## Before You Begin
 
-- Install KubeDB and Ops-manager from [here](/docs/setup/README.md).
-- Use the example files from `docs/examples/neo4j/quickstart/neo4j.yaml` and `docs/examples/neo4j/rotate-auth/ops-request.yaml`.
+- You should be familiar with [Neo4j](/docs/guides/neo4j/concepts/neo4j.md).
+- You should be familiar with [Neo4jOpsRequest](/docs/guides/neo4j/concepts/opsrequest.md).
 
-```bash
-kubectl create ns demo
-```
+## How RotateAuth Works
 
-## Deploy Neo4j
+For a `Neo4jOpsRequest` with `spec.type: RotateAuth`, KubeDB Ops-manager:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
-kubectl get neo4j -n demo neo4j-test -w
-```
+1. Validates rotate-auth request and target database.
+2. Uses one of the supported credential sources:
+   - operator-managed generated secret,
+   - user-provided secret from `spec.authentication.secretRef`.
+3. Rotates credentials in Neo4j and updates auth secret state.
+4. Ensures database authentication remains healthy.
+5. Marks the request `Successful` when rotation completes.
 
-## Apply RotateAuth OpsRequest
+## Next Step
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/rotate-auth/ops-request.yaml
-kubectl get neo4jopsrequest -n demo neo4j-rotate-auth
-```
-
-## Verify
-
-```bash
-kubectl describe neo4jopsrequest -n demo neo4j-rotate-auth
-kubectl get secret -n demo neo4j-test-auth -o yaml
-```
-
-## Cleaning up
-
-```bash
-kubectl delete neo4jopsrequest -n demo neo4j-rotate-auth
-kubectl delete neo4j -n demo neo4j-test
-kubectl delete ns demo
-```
+Follow the detailed guide: [Rotate Auth for Neo4j](/docs/guides/neo4j/rotate-auth/rotateauth.md).

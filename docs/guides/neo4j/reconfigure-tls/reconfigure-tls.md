@@ -18,7 +18,7 @@ This guide shows how to rotate or reconfigure TLS certificates of a Neo4j databa
 
 ## Apply TLS Reconfiguration
 
-Rotate TLS certificates and update the Bolt protocol mode:
+### Rotate TLS certificates and update the Bolt protocol mode:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -36,7 +36,29 @@ spec:
       mode: mTLS
 ```
 
-Remove TLS from the database:
+```bash
+$ cat <<'EOF' | kubectl apply -f -
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-reconfigure-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: tls-neo4j
+  tls:
+    rotateCertificates: true
+    bolt:
+      mode: mTLS
+EOF
+neo4jopsrequest.ops.kubedb.com/neo4j-reconfigure-tls created
+
+$ kubectl wait --for=jsonpath='{.status.phase}'=Successful neo4jopsrequest/neo4j-reconfigure-tls -n demo --timeout=600s
+neo4jopsrequest.ops.kubedb.com/neo4j-reconfigure-tls condition met
+```
+
+### Remove TLS from the database:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -52,7 +74,27 @@ spec:
     remove: true
 ```
 
-Add or replace TLS configuration using a cert-manager issuer:
+```bash
+$ cat <<'EOF' | kubectl apply -f -
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-remove-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: tls-neo4j
+  tls:
+    remove: true
+EOF
+neo4jopsrequest.ops.kubedb.com/neo4j-remove-tls created
+
+$ kubectl wait --for=jsonpath='{.status.phase}'=Successful neo4jopsrequest/neo4j-remove-tls -n demo --timeout=600s
+neo4jopsrequest.ops.kubedb.com/neo4j-remove-tls condition met
+```
+
+### Add or replace TLS configuration using a cert-manager issuer:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -72,8 +114,26 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f neo4j-reconfigure-tls.yaml
-neo4jopsrequest.ops.kubedb.com/neo4j-reconfigure-tls created
+$ cat <<'EOF' | kubectl apply -f -
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: tls-neo4j
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: neo4j-ca-issuer
+EOF
+neo4jopsrequest.ops.kubedb.com/neo4j-add-tls created
+
+$ kubectl wait --for=jsonpath='{.status.phase}'=Successful neo4jopsrequest/neo4j-add-tls -n demo --timeout=600s
+neo4jopsrequest.ops.kubedb.com/neo4j-add-tls condition met
 ```
 
 ## Verify
@@ -82,4 +142,12 @@ neo4jopsrequest.ops.kubedb.com/neo4j-reconfigure-tls created
 $ kubectl get neo4jopsrequest -n demo neo4j-reconfigure-tls
 NAME                    TYPE             STATUS       AGE
 neo4j-reconfigure-tls   ReconfigureTLS   Successful   2m
+
+$ kubectl get neo4jopsrequest -n demo neo4j-remove-tls
+NAME               TYPE             STATUS       AGE
+neo4j-remove-tls   ReconfigureTLS   Successful   1m
+
+$ kubectl get neo4jopsrequest -n demo neo4j-add-tls
+NAME            TYPE             STATUS       AGE
+neo4j-add-tls   ReconfigureTLS   Successful   1m
 ```

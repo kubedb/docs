@@ -16,6 +16,10 @@ section_menu_id: guides
 
 This tutorial shows how to run Neo4j with KubeDB.
 
+<p align="center">
+  <img alt="lifecycle"  src="/docs/images/neo4j/lifecycle.png">
+</p>
+
 > Note: YAML files used in this tutorial are stored in [docs/examples/neo4j/quickstart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/neo4j/quickstart).
 
 ## Before You Begin
@@ -27,18 +31,26 @@ This tutorial shows how to run Neo4j with KubeDB.
 
 ```bash
 kubectl create ns demo
+namespace/demo created
 ```
 
 ## Check Available StorageClass
 
 ```bash
 kubectl get storageclass
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  12d
 ```
 
 ## Check Available Neo4jVersion
 
 ```bash
 kubectl get neo4jversions
+NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE
+2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                12d
+2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                12d
+2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                12d
+
 ```
 
 ## Create a Neo4j Database

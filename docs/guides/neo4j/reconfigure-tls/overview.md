@@ -12,47 +12,29 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Reconfiguring Neo4j TLS
+# Reconfiguring Neo4j TLS Overview
 
-This guide shows how to rotate or update TLS materials of a Neo4j database.
+This page explains how KubeDB Ops-manager manages TLS updates for Neo4j using `Neo4jOpsRequest`.
 
 ## Before You Begin
 
-- Install `cert-manager` in your cluster.
-- Install KubeDB and Ops-manager from [here](/docs/setup/README.md).
-- Deploy a TLS-enabled Neo4j database first by following the [Configure TLS guide](/docs/guides/neo4j/tls/configure/).
-- Use the example file `docs/examples/neo4j/reconfigure-tls/ops-request.yaml` for the OpsRequest.
-- Use namespace `demo` for isolation.
+- You should be familiar with [Neo4j](/docs/guides/neo4j/concepts/neo4j.md).
+- You should be familiar with [Neo4jOpsRequest](/docs/guides/neo4j/concepts/opsrequest.md).
 
-```bash
-kubectl create ns demo
-```
+## How ReconfigureTLS Works
 
-## Deploy a TLS-enabled Neo4j
+For a `Neo4jOpsRequest` with `spec.type: ReconfigureTLS`, KubeDB Ops-manager:
 
-After following the TLS configuration guide, make sure the `tls-neo4j` database is ready before applying the OpsRequest.
+1. Validates TLS operation fields under `spec.tls`.
+2. Handles one of the supported actions:
+   - rotate certificates (`rotateCertificates`),
+   - remove TLS (`remove`),
+   - issue/re-issue TLS from `issuerRef`.
+3. Pauses conflicting reconciliations.
+4. Updates secrets/config and restarts affected members as required.
+5. Verifies connectivity and pod health.
+6. Marks the request `Successful` after reconciliation.
 
-```bash
-kubectl get neo4j -n demo tls-neo4j -w
-```
+## Next Step
 
-## Apply ReconfigureTLS OpsRequest
-
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/reconfigure-tls/ops-request.yaml
-kubectl get neo4jopsrequest -n demo neo4j-reconfigure-tls
-```
-
-## Verify
-
-```bash
-kubectl describe neo4jopsrequest -n demo neo4j-reconfigure-tls
-```
-
-## Cleaning up
-
-```bash
-kubectl delete neo4jopsrequest -n demo neo4j-reconfigure-tls
-kubectl delete neo4j -n demo tls-neo4j
-kubectl delete ns demo
-```
+Follow the detailed guide: [Reconfigure TLS in Neo4j](/docs/guides/neo4j/reconfigure-tls/reconfigure-tls.md).

@@ -12,45 +12,27 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Volume Expansion for Neo4j
+# Neo4j Volume Expansion Overview
 
-This guide shows how to expand Neo4j persistent storage.
+This page explains how KubeDB Ops-manager expands Neo4j data volumes using `Neo4jOpsRequest`.
 
 ## Before You Begin
 
-- Ensure StorageClass supports `allowVolumeExpansion: true`.
-- Use the example files from `docs/examples/neo4j/quickstart/neo4j.yaml` and `docs/examples/neo4j/volume-expansion/ops-request.yaml`.
+- You should be familiar with [Neo4j](/docs/guides/neo4j/concepts/neo4j.md).
+- You should be familiar with [Neo4jOpsRequest](/docs/guides/neo4j/concepts/opsrequest.md).
+- Your StorageClass must support `allowVolumeExpansion: true`.
 
-```bash
-kubectl create ns demo
-kubectl get storageclass
-```
+## How Volume Expansion Works
 
-## Deploy Neo4j
+For a `Neo4jOpsRequest` with `spec.type: VolumeExpansion`, KubeDB Ops-manager:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
-kubectl get neo4j -n demo neo4j-test -w
-```
+1. Validates requested size from `spec.volumeExpansion.server`.
+2. Validates expansion mode from `spec.volumeExpansion.mode`.
+3. Pauses conflicting reconciliations.
+4. Expands the target PVCs to the requested size.
+5. Reconciles Neo4j state based on online/offline mode requirements.
+6. Marks request `Successful` after PVC and pod health checks.
 
-## Apply VolumeExpansion OpsRequest
+## Next Step
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/volume-expansion/ops-request.yaml
-kubectl get neo4jopsrequest -n demo neo4j-volume-expand
-```
-
-## Verify
-
-```bash
-kubectl describe neo4jopsrequest -n demo neo4j-volume-expand
-kubectl get pvc -n demo
-```
-
-## Cleaning up
-
-```bash
-kubectl delete neo4jopsrequest -n demo neo4j-volume-expand
-kubectl delete neo4j -n demo neo4j-test
-kubectl delete ns demo
-```
+Follow the detailed guide: [Expand Neo4j Volume](/docs/guides/neo4j/volume-expansion/volume-expansion.md).

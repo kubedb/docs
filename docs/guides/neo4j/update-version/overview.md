@@ -12,46 +12,26 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Updating Neo4j Version
+# Neo4j Update Version Overview
 
-This guide shows how to update Neo4j version using `Neo4jOpsRequest`.
+This page explains how KubeDB Ops-manager upgrades Neo4j using `Neo4jOpsRequest`.
 
 ## Before You Begin
 
-- Ensure Neo4j database is `Ready`.
-- Ensure target version exists in `Neo4jVersion`.
-- Use the example files from `docs/examples/neo4j/quickstart/neo4j.yaml` and `docs/examples/neo4j/update-version/ops-request.yaml`.
+- You should be familiar with [Neo4j](/docs/guides/neo4j/concepts/neo4j.md).
+- You should be familiar with [Neo4jOpsRequest](/docs/guides/neo4j/concepts/opsrequest.md).
 
-```bash
-kubectl create ns demo
-kubectl get neo4jversions
-```
+## How Update Version Works
 
-## Deploy Neo4j
+For a `Neo4jOpsRequest` with `spec.type: UpdateVersion`, KubeDB Ops-manager:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
-kubectl get neo4j -n demo neo4j-test -w
-```
+1. Validates target version from `spec.updateVersion.targetVersion`.
+2. Pauses conflicting reconciliations for safe upgrade.
+3. Updates Neo4j image/version references.
+4. Performs controlled rolling update of Neo4j members.
+5. Waits for all pods and cluster status to become healthy.
+6. Marks the request `Successful` and resumes reconciliation.
 
-## Apply UpdateVersion OpsRequest
+## Next Step
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/update-version/ops-request.yaml
-kubectl get neo4jopsrequest -n demo neo4j-update-version
-kubectl describe neo4jopsrequest -n demo neo4j-update-version
-```
-
-## Verify
-
-```bash
-kubectl get neo4j -n demo neo4j-test -o jsonpath='{.spec.version}{"\n"}'
-```
-
-## Cleaning up
-
-```bash
-kubectl delete neo4jopsrequest -n demo neo4j-update-version
-kubectl delete neo4j -n demo neo4j-test
-kubectl delete ns demo
-```
+Follow the detailed guide: [Upgrade Neo4j Version](/docs/guides/neo4j/update-version/versionupgrading/index.md).

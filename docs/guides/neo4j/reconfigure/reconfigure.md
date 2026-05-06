@@ -23,7 +23,7 @@ This guide shows how to reconfigure a Neo4j database using `Neo4jOpsRequest`.
 - Review [Neo4j](/docs/guides/neo4j/concepts/neo4j.md), [OpsRequest](/docs/guides/neo4j/concepts/opsrequest.md), and [Reconfigure Overview](/docs/guides/neo4j/reconfigure/overview.md).
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
 ```
 
 ## Prepare Database
@@ -50,35 +50,48 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Create an updated config secret and apply a `Neo4jOpsRequest`:
+## Create Custom Configuration Secret
+
+Use a Secret like this for `spec.configuration.configSecret.name`:
 
 ```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: Neo4jOpsRequest
+apiVersion: v1
+kind: Secret
 metadata:
-  name: neo4j-reconfigure
+  name: custom-config
   namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: neo4j-test
-  configuration:
-    configSecret:
-      name: new-custom-config
-    removeCustomConfig: true
-    applyConfig:
-      server.metrics.csv.interval: "40s"
-  timeout: 5m
-  apply: IfReady
+stringData:
+  dbms.logs.query.enabled: "INFO"
+  dbms.logs.query.parameter_logging: "true"
+  server.jvm.additional: |-
+    -XX:+UseG1GC
+    -XX:-OmitStackTraceInFastThrow
+    -XX:+AlwaysPreTouch
+    -XX:+UnlockExperimentalVMOptions
+    -XX:+TrustFinalNonStaticFields
+    -XX:+DisableExplicitGC
+    -Djdk.nio.maxCachedBufferSize=1024
+    -Dio.netty.tryReflectionSetAccessible=true
+    -Djdk.tls.ephemeralDHKeySize=2048
+    -Djdk.tls.rejectClientInitiatedRenegotiation=true
+    -XX:FlightRecorderOptions=stackdepth=256
+    -XX:+UnlockDiagnosticVMOptions
+    -XX:+DebugNonSafepoints
+    --add-opens=java.base/java.nio=ALL-UNNAMED
+    --add-opens=java.base/java.io=ALL-UNNAMED
+    --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+    -Dlog4j2.disable.jmx=true
 ```
 
-You can also apply inline configuration changes without removing the existing custom Secret:
+## Reconfigure Request
+
+Apply a `Neo4jOpsRequest` with `configSecret` and inline `applyConfig`:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: neo4j-reconfigure-apply
+  name: reconfigure
   namespace: demo
 spec:
   type: Reconfigure
@@ -86,7 +99,7 @@ spec:
     name: neo4j-test
   configuration:
     configSecret:
-      name: new-custom-config
+      name: custom-config
     applyConfig:
       server.metrics.enabled: "false"
   timeout: 5m
@@ -94,22 +107,55 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f neo4j-reconfigure.yaml
-neo4jopsrequest.ops.kubedb.com/neo4j-reconfigure created
+$ cat <<'EOF' | kubectl apply -f -
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: neo4j-test
+  configuration:
+    configSecret:
+      name: custom-config
+    applyConfig:
+      server.metrics.enabled: "false"
+  timeout: 5m
+  apply: IfReady
+EOF
+neo4jopsrequest.ops.kubedb.com/reconfigure created
+
+$ kubectl wait --for=jsonpath='{.status.phase}'=Successful neo4jopsrequest/reconfigure -n demo --timeout=600s
+neo4jopsrequest.ops.kubedb.com/reconfigure condition met
 ```
 
 ## Verify Reconfiguration
 
+This request was applied successfully:
+
 ```bash
-$ kubectl get neo4jopsrequest -n demo neo4j-reconfigure
-NAME                TYPE          STATUS       AGE
-neo4j-reconfigure   Reconfigure   Successful   3m
+$ kubectl get neo4jopsrequest -n demo reconfigure
+NAME          TYPE          STATUS       AGE
+reconfigure   Reconfigure   Successful   2m5s
+```
+
+Check that the updated configuration is visible from Neo4j using `cypher-shell`:
+
+```bash
+$ PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+$ kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" "SHOW SETTINGS YIELD name, value WHERE name STARTS WITH 'server.metrics' RETURN name, value ORDER BY name LIMIT 3;"
+name, value
+"server.metrics.enabled", "false"
+"server.metrics.csv.enabled", "false"
+"server.metrics.csv.interval", "5000"
 ```
 
 ## Cleaning up
 
 ```bash
-kubectl delete neo4jopsrequest -n demo neo4j-reconfigure
+kubectl delete neo4jopsrequest -n demo reconfigure
 kubectl patch -n demo neo4j/neo4j-test -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo neo4j/neo4j-test
 kubectl delete ns demo

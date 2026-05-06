@@ -20,7 +20,6 @@ This guide shows how to restart Neo4j pods using `Neo4jOpsRequest`.
 
 - You need a Kubernetes cluster and `kubectl` configured.
 - Install KubeDB and Ops-manager from [here](/docs/setup/README.md).
-- Use the example files from `docs/examples/neo4j/quickstart/neo4j.yaml` and `docs/examples/neo4j/restart/ops-request.yaml`.
 - Create an isolated namespace:
 
 ```bash
@@ -29,9 +28,40 @@ kubectl create ns demo
 
 ## Deploy Neo4j
 
+Save this as `neo4j.yaml`:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: neo4j-test
+  namespace: demo
+spec:
+  version: "2025.10.1"
+  replicas: 3
+  storage:
+    resources:
+      requests:
+        storage: 2Gi
+    storageClassName: standard
+    accessModes:
+      - ReadWriteOnce
+  deletionPolicy: WipeOut
+```
+
+Apply it and wait for the cluster to become ready:
+
 ```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
+kubectl apply -f neo4j.yaml
+
 kubectl get neo4j -n demo neo4j-test -w
+```
+
+Wait until `STATUS` shows `Ready` before proceeding.
+
+```
+NAME         VERSION     STATUS   AGE
+neo4j-test   2025.10.1   Ready    3m
 ```
 
 ## Apply Restart OpsRequest
@@ -53,14 +83,48 @@ spec:
 `apply: Always` tells KubeDB to execute the restart even if the database is not currently in the ready state.
 
 ```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/restart/ops-request.yaml
+$ cat <<'EOF' | kubectl apply -f -
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: neo4j-test
+  timeout: 5m
+  apply: Always
+EOF
+neo4jopsrequest.ops.kubedb.com/neo4j-restart created
+
+$ kubectl wait --for=jsonpath='{.status.phase}'=Successful neo4jopsrequest/neo4j-restart -n demo --timeout=600s
+neo4jopsrequest.ops.kubedb.com/neo4j-restart condition met
 ```
 
 ## Verify
 
 ```bash
-kubectl get neo4jopsrequest -n demo neo4j-restart
-kubectl describe neo4jopsrequest -n demo neo4j-restart
+$ kubectl get neo4jopsrequest -n demo neo4j-restart
+NAME            TYPE      STATUS       AGE
+neo4j-restart   Restart   Successful   1m
+
+$ kubectl describe neo4jopsrequest -n demo neo4j-restart
+Name:         neo4j-restart
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         Neo4jOpsRequest
+Metadata:
+  ...
+Spec:
+  Type:  Restart
+  Database Ref:
+    Name:  neo4j-test
+  Apply:  Always
+Status:
+  Phase:  Successful
 ```
 
 ## Cleaning up

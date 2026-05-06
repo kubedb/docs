@@ -10,31 +10,39 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
+> New to KubeDB? Please start [here](/docs/README.md).
+
 # Neo4j Ops Request
 
-This guide lists the Neo4j operations currently documented for KubeDB.
+This page gives an overview of how KubeDB Ops-manager handles day-2 operations for Neo4j through `Neo4jOpsRequest`.
 
 ## Before You Begin
 
 - Deploy Neo4j first using the [quickstart guide](/docs/guides/neo4j/quickstart/quickstart.md).
-- Review the operation-specific pages before applying changes in production.
+- Be familiar with [Neo4jOpsRequest](/docs/guides/neo4j/concepts/opsrequest.md).
+
+## How the Operator Processes `Neo4jOpsRequest`
+
+When you create a `Neo4jOpsRequest`, KubeDB Ops-manager performs the operation in phases:
+
+1. Validates `spec.type` and operation-specific fields.
+2. Resolves the target database from `spec.databaseRef`.
+3. Pauses conflicting reconciliations for safe execution.
+4. Applies the requested operation (for example scaling, restart, reconfigure, TLS update).
+5. Updates status conditions and marks `.status.phase` as `Successful` or `Failed`.
+6. Resumes normal reconciliation after operation completion.
 
 ## Supported Ops Requests
 
-- [Reconfigure](/docs/guides/neo4j/reconfigure/overview.md)
-- [HorizontalScaling](/docs/guides/neo4j/scaling/horizontal-scaling/overview.md)
-- [VerticalScaling](/docs/guides/neo4j/scaling/vertical-scaling/overview.md)
-- [VolumeExpansion](/docs/guides/neo4j/volume-expansion/overview.md)
-- [UpdateVersion](/docs/guides/neo4j/update-version/overview.md)
-- [ReconfigureTLS](/docs/guides/neo4j/reconfigure-tls/overview.md)
-- [RotateAuth](/docs/guides/neo4j/rotate-auth/overview.md)
-- [Restart](/docs/guides/neo4j/restart/restart.md)
+- [Reconfigure](/docs/guides/neo4j/reconfigure/overview.md): Update Neo4j configuration values or custom config secret references.
+- [Horizontal Scaling](/docs/guides/neo4j/scaling/horizontal-scaling/overview.md): Add or remove Neo4j server members.
+- [Vertical Scaling](/docs/guides/neo4j/scaling/vertical-scaling/overview.md): Update CPU and memory requests/limits.
+- [Volume Expansion](/docs/guides/neo4j/volume-expansion/overview.md): Expand PVC size for Neo4j data volumes.
+- [Update Version](/docs/guides/neo4j/update-version/overview.md): Upgrade Neo4j to a target `Neo4jVersion`.
+- [Reconfigure TLS](/docs/guides/neo4j/reconfigure-tls/overview.md): Rotate, remove, or re-issue TLS configuration.
+- [Rotate Auth](/docs/guides/neo4j/rotate-auth/overview.md): Rotate database credentials using generated or user-provided secrets.
+- [Restart](/docs/guides/neo4j/restart/restart.md): Restart Neo4j pods in a controlled way.
 
-## How Ops Requests Work
+## Next Step
 
-Create a `Neo4jOpsRequest` for the target database, wait for the request status to move through validation and execution phases, and then verify both the `Neo4jOpsRequest` and the `Neo4j` resources.
-
-## Next Steps
-
-- Choose the specific operation page that matches your intended change.
-- Apply one operation at a time and wait for completion before starting the next.
+Choose the operation-specific guide for the step-by-step manifest and verification workflow.
