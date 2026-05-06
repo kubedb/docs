@@ -50,12 +50,12 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  5d22h
-standard (default)     driver.standard.io      Delete          Immediate              true                   6s
-standard-static        driver.standard.io      Delete          Immediate              true                   3s
+longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   6s
+longhorn-static        driver.longhorn.io      Delete          Immediate              true                   3s
 
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `Cassandra` combined cluster with version `5.0.3`.
 
@@ -77,7 +77,7 @@ spec:
         replicas: 2
         storage:
           storageClassName:
-            standard
+            longhorn
           accessModes:
             - ReadWriteOnce
           resources:
@@ -126,12 +126,12 @@ $ kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.volumeCl
 
 $  kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                              STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-623e4d80-f508-4bb1-a4cb-4ebdbcbd8495   1Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-0                 standard       <unset>                          82s
-pvc-76b5a0a7-d234-426c-a4cc-ec740d6456ba   1Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-1                 standard       <unset>                          64s
-pvc-84588238-9fea-4ac3-9cfa-f7b04640697c   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-0             standard       <unset>                          82s
-pvc-849d404c-d078-4802-a28f-6834d8c81998   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-1             standard       <unset>                          64s
-pvc-85a6902d-a596-45db-94f9-1ce355600323   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-1   standard       <unset>                          64s
-pvc-88d6586e-b502-481d-91fc-dd6381d9b1c0   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-0   standard       <unset>                          82s
+pvc-623e4d80-f508-4bb1-a4cb-4ebdbcbd8495   1Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-0                 longhorn       <unset>                          82s
+pvc-76b5a0a7-d234-426c-a4cc-ec740d6456ba   1Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-1                 longhorn       <unset>                          64s
+pvc-84588238-9fea-4ac3-9cfa-f7b04640697c   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-0             longhorn       <unset>                          82s
+pvc-849d404c-d078-4802-a28f-6834d8c81998   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-1             longhorn       <unset>                          64s
+pvc-85a6902d-a596-45db-94f9-1ce355600323   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-1   longhorn       <unset>                          64s
+pvc-88d6586e-b502-481d-91fc-dd6381d9b1c0   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-0   longhorn       <unset>                          82s
 ```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
@@ -343,12 +343,12 @@ $ kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.volumeCl
 
 $  kubectl get pv -n demo 
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                              STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-7efa007f-5fb2-4e64-aea0-233ec456703f   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-1   standard       <unset>                          11m
-pvc-88f8ec55-ae5b-48dd-9b3a-0dc113cdaa43   2Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-1                 standard       <unset>                          11m
-pvc-c455344e-0f17-42d2-8fd9-062fa2f1b0a1   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-0   standard       <unset>                          11m
-pvc-d19d62ac-b37b-406e-a7d6-a10f4f74d929   2Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-0                 standard       <unset>                          11m
-pvc-df152a7a-12ea-4690-b64e-ccb2decce8cd   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-1             standard       <unset>                          11m
-pvc-f8420d54-05f8-4ea2-b70c-11a3737e04e4   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-0             standard       <unset>                          11m
+pvc-7efa007f-5fb2-4e64-aea0-233ec456703f   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-1   longhorn       <unset>                          11m
+pvc-88f8ec55-ae5b-48dd-9b3a-0dc113cdaa43   2Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-1                 longhorn       <unset>                          11m
+pvc-c455344e-0f17-42d2-8fd9-062fa2f1b0a1   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-0   longhorn       <unset>                          11m
+pvc-d19d62ac-b37b-406e-a7d6-a10f4f74d929   2Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-0                 longhorn       <unset>                          11m
+pvc-df152a7a-12ea-4690-b64e-ccb2decce8cd   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-1             longhorn       <unset>                          11m
+pvc-f8420d54-05f8-4ea2-b70c-11a3737e04e4   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-0             longhorn       <unset>                          11m
 ```
 
 The above output verifies that we have successfully expanded the data related volume of the Cassandra.

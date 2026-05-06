@@ -51,11 +51,11 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  28h
-standard (default)     driver.standard.io      Delete          Immediate              true                   28h
-standard-static        driver.standard.io      Delete          Immediate              true                   28h
+longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   28h
+longhorn-static        driver.longhorn.io      Delete          Immediate              true                   28h
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `Druid` topology using a supported version by `KubeDB` operator. Then we are going to apply `DruidAutoscaler` to set up autoscaling.
 
@@ -182,8 +182,8 @@ $ kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.vo
 "1Gi"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                             STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a   1Gi        RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   standard       <unset>                          95s
-pvc-5f4cea5f-e0c8-4339-b67c-9cb8b02ba49d   1Gi        RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      standard       <unset>                          96s
+pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a   1Gi        RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   longhorn       <unset>                          95s
+pvc-5f4cea5f-e0c8-4339-b67c-9cb8b02ba49d   1Gi        RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      longhorn       <unset>                          96s
 ```
 
 You can see the petset for both historicals and middleManagers has 1GB storage, and the capacity of all the persistent volume is also 1GB.
@@ -337,7 +337,7 @@ We are autoscaling volume for both historicals and middleManagers. So we need to
 $ kubectl exec -it -n demo druid-cluster-historicals-0 -- bash
 bash-5.1$ df -h /druid/data/segments
 Filesystem                                                Size       Used     Available   Use%  Mounted on
-/dev/standard/pvc-d4ef15ef-b1af-4a1f-ad25-ad9bc990a2fb    973.4M     92.0K    957.3M      0%    /druid/data/segment
+/dev/longhorn/pvc-d4ef15ef-b1af-4a1f-ad25-ad9bc990a2fb    973.4M     92.0K    957.3M      0%    /druid/data/segment
 
 bash-5.1$ dd if=/dev/zero of=/druid/data/segments/file.img bs=600M count=1                                           
 1+0 records in                                                                                                       
@@ -346,7 +346,7 @@ bash-5.1$ dd if=/dev/zero of=/druid/data/segments/file.img bs=600M count=1
 
 bash-5.1$ df -h /druid/data/segments                                      
 Filesystem                                                 Size      Used      Available   Use%    Mounted on
-/dev/standard/pvc-d4ef15ef-b1af-4a1f-ad25-ad9bc990a2fb     973.4M    600.1M    357.3M      63%     /druid/data/segments
+/dev/longhorn/pvc-d4ef15ef-b1af-4a1f-ad25-ad9bc990a2fb     973.4M    600.1M    357.3M      63%     /druid/data/segments
 ```
 
 2. Let's exec into the middleManagers pod and fill the cluster volume using the following commands:
@@ -355,14 +355,14 @@ Filesystem                                                 Size      Used      A
 $ kubectl exec -it -n demo druid-cluster-middleManagers-0 -- bash
 druid@druid-cluster-middleManagers-0:~$ df -h /var/druid/task
 Filesystem                                              Size       Used     Available   Use%    Mounted on
-/dev/standard/pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a  973.4M     24.0K    957.4M      0%      /var/druid/task
+/dev/longhorn/pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a  973.4M     24.0K    957.4M      0%      /var/druid/task
 druid@druid-cluster-middleManagers-0:~$ dd if=/dev/zero of=/var/druid/task/file.img bs=600M count=1
 1+0 records in
 1+0 records out
 629145600 bytes (629 MB, 600 MiB) copied, 3.39618 s, 185 MB/s
 druid@druid-cluster-middleManagers-0:~$ df -h /var/druid/task
 Filesystem                                              Size      Used      Available   Use%  Mounted on
-/dev/standard/pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a  973.4M    600.0M    357.4M      63%   /var/druid/task
+/dev/longhorn/pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a  973.4M    600.0M    357.4M      63%   /var/druid/task
 ```
 
 So, from the above output we can see that the storage usage is 63% for both nodes, which exceeded the `usageThreshold` 60%.
@@ -870,8 +870,8 @@ $ kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.vo
 "2041405440"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                             STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a   1948Mi     RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   standard       <unset>                          19m
-pvc-5f4cea5f-e0c8-4339-b67c-9cb8b02ba49d   1948Mi     RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      standard       <unset>                          19m
+pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a   1948Mi     RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   longhorn       <unset>                          19m
+pvc-5f4cea5f-e0c8-4339-b67c-9cb8b02ba49d   1948Mi     RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      longhorn       <unset>                          19m
 ```
 
 The above output verifies that we have successfully autoscaled the volume of the Druid topology cluster for both historicals and middleManagers.

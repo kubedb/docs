@@ -74,7 +74,7 @@ spec:
   replicas: 2
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -154,7 +154,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -216,7 +216,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -283,7 +283,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -380,7 +380,7 @@ spec:
               memory: 1Gi
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -452,7 +452,7 @@ spec:
               memory: 1Gi
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -496,7 +496,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -573,7 +573,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -630,13 +630,7 @@ Verify the monitoring is enabled by checking the prometheus targets.
 
 There are some other fields that will trigger `Restart` ops request.
 - `.spec.monitor`
-- `.spec.spec.archiver`
-- `.spec.remoteReplica`
-- `spec.replication`
-- `.spec.standbyMode`
-- `.spec.streamingMode`
-- `.spec.enforceGroup`
-- `.spec.sslMode` etc.
+- `.spec.enableSSL` etc.
 
 ### TLS configuration
 
@@ -713,7 +707,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:

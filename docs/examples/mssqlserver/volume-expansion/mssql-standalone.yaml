@@ -29,7 +29,7 @@ spec:
             limits:
               memory: "2Gi"
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:

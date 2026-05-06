@@ -12,7 +12,7 @@ spec:
         replicas: 2
         storage:
           storageClassName:
-            standard
+            longhorn
           accessModes:
             - ReadWriteOnce
           resources:

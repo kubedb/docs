@@ -29,7 +29,7 @@ spec:
               value: Evaluation # Change it 
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:

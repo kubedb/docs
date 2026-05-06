@@ -49,8 +49,8 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  6h2m
-standard (default)     driver.standard.io      Delete          Immediate              true                   9m41s
-standard-static        driver.standard.io      Delete          Immediate              true                   9m24s
+standard (default)     driver.longhorn.io      Delete          Immediate              true                   9m41s
+longhorn-static        driver.longhorn.io      Delete          Immediate              true                   9m24s
 ```
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.

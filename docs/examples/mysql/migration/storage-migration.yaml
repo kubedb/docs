@@ -8,6 +8,6 @@ spec:
   databaseRef:
     name: sample-mysql
   migration:
-    storageClassName: standard-custom
+    storageClassName: longhorn-custom
     oldPVReclaimPolicy: Delete
   
