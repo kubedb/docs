@@ -383,7 +383,7 @@ spec:
     secretName: md-configuration
 ```
 
-Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is updated in your cluster.
+Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD`, the reconfiguration file is created the `MariaDB` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` MariaDBOpsRequest to update the `MariaDB` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -467,7 +467,8 @@ spec:
     name: mdauth
 ```
 
-Change the `authSecret` field to `mdauth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is updated in your cluster.
+Change the `authSecret` field to `mdauth`. Commit the changes and push to your Git repository. Your repository has been successfully synchronized with ArgoCD. The `MariaDB` CR has been updated, and the authentication file has been created in the cluster.
+
 
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` MariaDBOpsRequest to update the `MariaDB` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -514,14 +515,15 @@ secret/md-ca created
 Now, we are going to create an `Issuer` using the `md-ca` secret that hols the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
 
 ```yaml
-apiVersion: cert-manager.io/v1
-kind: Issuer
+apiVersion: v1
+kind: Secret
 metadata:
-  name: md-issuer
+  name: md-ca
   namespace: demo
-spec:
-  ca:
-    secretName: md-ca
+type: kubernetes.io/tls
+data:
+  tls.crt: <base64-encoded-ca.crt>
+  tls.key: <base64-encoded-ca.key>
 ```
 
 Let’s create the `Issuer` cr we have shown above,
@@ -537,9 +539,10 @@ $ tree .
 ├── kubedb
 │ ├── md-configuration.yaml
 │ ├── md-auth.yaml
+│ ├── md-secret.yaml
 │ ├── md-issuer.yaml
 │ └── MariaDB.yaml
-1 directories, 4 files
+1 directories, 5 files
 ```
 
 Update the `MariaDB.yaml` with the following,
@@ -594,7 +597,7 @@ spec:
       - "127.0.0.1"
 ```
 
-Add `requireSSL` as `true` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is updated in your cluster.
+Add `requireSSL` as `true` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository has been successfully synchronized with ArgoCD. The `MariaDB` CR has been updated, and both the `issuer` and the corresponding `secret` have been created in the cluster.
 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` MariaDBOpsRequest to update the `MariaDB` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 

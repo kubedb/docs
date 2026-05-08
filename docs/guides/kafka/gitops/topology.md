@@ -477,7 +477,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is updated in your cluster.
+Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD`, the reconfiguration file is created and  the `Kafka` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` KafkaOpsRequest to update the `Kafka` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -518,6 +518,17 @@ stringData:
   password: kafka-secret
 ```
 
+
+Now, we will add this file to `kubedb/kf-rotateauth.yaml`.
+
+```bash
+$ tree .
+├── kubedb
+│ ├── kf-configuration.yaml
+│ ├── kf-rotateauth.yaml
+│ └── Kafka.yaml
+1 directories, 3 files
+```
 
 
 Update the `Kafka.yaml` with the following,
@@ -577,7 +588,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Change the `authSecret` field to `kf-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is updated in your cluster.
+Change the `authSecret` field to `kf-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD`, the authentication file is created and  the `Kafka` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` KafkaOpsRequest to update the `Kafka` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -615,14 +626,18 @@ writing new private key to './ca.key'
 -----
 ```
 
-- Now we are going to create a ca-secret using the certificate files that we have just generated.
+Now we are going to create a `ca-secret` using the certificate files that we have just generated.
 
-```bash
-$ kubectl create secret tls kafka-ca \
-     --cert=ca.crt \
-     --key=ca.key \
-     --namespace=demo
-secret/Kafka-ca created
+```yaml 
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kafka-ca
+  namespace: demo
+type: kubernetes.io/tls
+data:
+  tls.crt: <base64-encoded-ca.crt>
+  tls.key: <base64-encoded-ca.key>
 ```
 
 Now, Let's create an `Issuer` using the `Kafka-ca` secret that we have just created. The `YAML` file looks like this:
@@ -638,14 +653,16 @@ spec:
     secretName: kafka-ca
 ```
 
-Let's add that to our `kubedb/kf-issuer.yaml` file. File structure will look like this,
+Let's add that to our `kubedb/kf-issuer.yaml` and kubedb/kf-secret.yaml` file. File structure will look like this,
 ```bash
 $ tree .
 ├── kubedb
 │ ├── kf-configuration.yaml
+│ ├── kf-rotateauth.yaml
+│ ├── kf-secret.yaml
 │ ├── kf-issuer.yaml
 │ └── Kafka.yaml
-1 directories, 3 files
+1 directories, 5 files
 ```
 
 Update the `Kafka.yaml` with the following,
@@ -711,7 +728,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Kafka` CR is updated in your cluster.
+Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository has been successfully synchronized with ArgoCD. The `Kafka` CR has been updated, and both the `issuer` and the corresponding `secret` have been created in the cluster.
 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` KafkaOpsRequest to update the `Kafka` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -942,8 +959,6 @@ kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-9e85tf     VolumeExp
 
 Verify the monitoring is enabled by checking the prometheus targets.
 
-There are some other fields that will trigger `Restart` ops request.
-- `.spec.monitor` etc.
 
 
 ## Next Steps

@@ -148,11 +148,16 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 
 - Now create a ca-secret using the certificate files you have just generated.
 
-```bash
-kubectl create secret tls redis-ca \
-     --cert=ca.crt \
-     --key=ca.key \
-     --namespace=demo
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-ca
+  namespace: demo
+type: kubernetes.io/tls
+data:
+  tls.crt: <base64-encoded-ca.crt>
+  tls.key: <base64-encoded-ca.key>
 ```
 
 Now, create an `Issuer` using the `ca-secret` you have just created. The `YAML` file looks like this:
@@ -180,6 +185,7 @@ Let's add that to our `kubedb /rd-issuer.yaml` file. File structure will look li
 $ tree .
 ├── kubedb
 │ ├── rd-issuer.yaml
+│ ├── rd-secret.yaml
 │ └── redis.yaml
 1 directories, 3 files
 ```
@@ -213,9 +219,10 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Add  `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Add  `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository has been successfully synchronized with ArgoCD. The `Redis` CR has been updated, and both the `issuer` and the corresponding `secret` have been created in the cluster.
 
-Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `Elasticsearch` database tls. List the resources created by `gitops` operator in the `demo` namespace.
+
+Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` RedisOpsRequest to update the `Redis` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $ kubectl get rd,redis,redisopsrequest -n demo
@@ -230,7 +237,7 @@ redisopsrequest.ops.kubedb.com/rd-gitops-reconfiguretls-qcdjjd   ReconfigureTLS 
 ```
 
 
-> We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for Elasticsearch.
+> We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for Redis.
 
 
 ### Scale Redis Replicas
@@ -530,8 +537,10 @@ Let's add that to  `kubedb/rd_conf.yaml` file. File structure will look like thi
 $ tree .
 ├── kubedb
 │ ├── rd-config.yaml
+│ ├── rd-issuer.yaml
+│ ├── rd-secret.yaml
 │ └── redis.yaml
-1 directories, 2 files
+1 directories, 4 files
 ```
 
 
@@ -573,7 +582,7 @@ spec:
             cpu: "1000m"
 ```
 
-Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Redis` CR is updated in your cluster.
+Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD`. The reconfiguration file is created the `Redis` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` RedisOpsRequest to update the `Redis` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -619,10 +628,12 @@ Let's add that to our `kubedb/rdauth.yaml` file. File structure will look like t
 ```bash
 $ tree .
 ├── kubedb
-│ ├── rd-config.yaml
 │ ├── rd-auth.yaml
+│ ├── rd-config.yaml
+│ ├── rd-issuer.yaml
+│ ├── rd-secret.yaml
 │ └── redis.yaml
-1 directories, 3 files
+1 directories, 5 files
 ```
 
 Update the `Redis.yaml` with the following,

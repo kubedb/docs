@@ -334,19 +334,20 @@ datadir-mg-gitops-2   Bound    pvc-2535f213-28fb-41ef-bdfd-7fbe91859c81   2Gi   
 
 At first, we will create `mongod.conf` file containing required configuration settings.
 
-```ini
-$ cat mongod.conf
-net:
-   maxIncomingConnections: 10000
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mg-custom-config
+  namespace: demo
+type: Opaque
+stringData:
+  mongod.conf: |
+    net:
+      maxIncomingConnections: 10000
 ```
-Here, `maxIncomingConnections` is set to `10000`, whereas the default value is `65536`.
 
-Now, we will create a secret with this configuration file.
-
-```bash
-$ kubectl create secret generic -n demo mg-custom-config --from-file=./mongod.conf
-secret/mg-custom-config created
-```
+Add this file to `Kubedb\reconfig.yaml` repository.
 
 
 Update the `MongoDB.yaml` with the following,
@@ -471,7 +472,7 @@ spec:
     name: mgauth
 ```
 
-Add the secret name in `authSecret` field. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
+Add the secret name in `authSecret` field. Commit the changes and push to your Git repository. Your repository has been successfully synchronized with ArgoCD. The `MongoDB` CR has been updated, and  the authentication file have been created in the cluster.
 
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` MongoDBOpsRequest to update the `MongoDB` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -648,10 +649,15 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 - Now create a ca-secret using the certificate files you have just generated.
 
 ```bash
-kubectl create secret tls mongo-ca \
-     --cert=ca.crt \
-     --key=ca.key \
-     --namespace=demo
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongo-ca
+  namespace: demo
+type: kubernetes.io/tls
+data:
+  tls.crt: <base64-encoded-ca.crt>
+  tls.key: <base64-encoded-ca.key>
 ```
 
 Now, create an `Issuer` using the `ca-secret` you have just created. The `YAML` file looks like this:
@@ -681,8 +687,9 @@ $ tree .
 │ ├── mg-configuration.yaml
 │ ├── mg-auth.yaml
 │ ├── mg-issuer.yaml
+│ ├── mg-secret.yaml
 │ └── mongodb.yaml
-1 directories, 4 files
+1 directories, 5 files
 ```
 
 Update the `mongodb.yaml` with the following,
@@ -741,7 +748,7 @@ spec:
           organizationalUnits:
             - client
 ```
-Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is updated in your cluster.
+Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository has been successfully synchronized with ArgoCD. The `MongoDB` CR has been updated, and both the `issuer` and the corresponding `secret` have been created in the cluster.
 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `MongoDB` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 

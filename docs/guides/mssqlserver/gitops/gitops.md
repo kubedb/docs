@@ -626,7 +626,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Add the `authSecret.kind` and `authSecret.name` field to `mssqlserver-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
+Add the `authSecret.kind` and `authSecret.name` field to `mssqlserver-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster and the authentication file is created in you cluster.
 
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` mssqlserverOpsRequest to update the `Mssqlserver` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -839,9 +839,6 @@ mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     Vol
 
 Verify the monitoring is enabled by checking the prometheus targets.
 
-There are some other fields that will trigger `Restart` ops request.
-- `.spec.monitor` etc.
-
 
 ### TLS configuration
 
@@ -914,7 +911,7 @@ spec:
          release: prometheus
 ```
 
-Convert `spec.tls.clientTLS` to `true`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is updated in your cluster.
+Convert `spec.tls.clientTLS` to `true`. Commit the changes and push to your Git repository. Your repository has been successfully synchronized with ArgoCD. The `MSSQLserver` CR has been updated in the cluster.
 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` mssqlserverOpsRequest to update the `Mssqlserver` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 

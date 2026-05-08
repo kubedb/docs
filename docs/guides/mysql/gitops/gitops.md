@@ -427,7 +427,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
+Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster and the configuration file is created in your cluster. 
 
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` MySQLOpsRequest to update the `MySQL` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -554,8 +554,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Change the `authSecret.name` field to `myauth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
-
+Change the `authSecret.name` field to `myauth`. Commit the changes and push to your Git repository.  Your repository has been successfully synchronized with ArgoCD. The `MySQL` CR has been updated, and the authentication file  has been created in the cluster.
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` MySQLOpsRequest to update the `MySQL` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
@@ -619,11 +618,15 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 - create a secret using the certificate files we have just generated,
 
 ```bash
-kubectl create secret tls my-ca \
-     --cert=ca.crt \
-     --key=ca.key \
-     --namespace=demo
-secret/my-ca created
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-ca
+  namespace: demo
+type: kubernetes.io/tls
+data:
+  tls.crt: <base64-encoded-ca.crt>
+  tls.key: <base64-encoded-ca.key>
 ```
 
 Now, we are going to create an `Issuer` using the `my-ca` secret that hols the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
@@ -652,9 +655,10 @@ $ tree .
 ├── kubedb
 │ ├── my-auth.yaml
 │ ├── my-configuration.yaml
+│ ├── my-secret.yaml
 │ ├── my-issuer.yaml
 │ └── MySQL.yaml
-1 directories, 4 files
+1 directories, 5 files
 ```
 
 Update the `MySQL.yaml` with the following, 
@@ -702,7 +706,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Add `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
+Add `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository has been successfully synchronized with ArgoCD. The `MySQL` CR has been updated, and both the `issuer` and the corresponding `secret` have been created in the cluster.
 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` MySQLOpsRequest to update the `MySQL` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 

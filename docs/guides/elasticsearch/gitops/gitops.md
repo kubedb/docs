@@ -389,7 +389,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD`. THe reconfig file is created and  the `Elasticsearch` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` ElasticsearchOpsRequest to update the `Elasticsearch` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -475,7 +475,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Change the `authSecret` field to `es-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Change the `authSecret` field to `es-rotate-auth`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD`, the authentication file is created  the `Elasticsearch` CR is updated and the authentication file is created in your cluster.
 
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` ElasticsearchOpsRequest to update the `Elasticsearch` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -665,12 +665,16 @@ writing new private key to './ca.key'
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
-```bash
-$ kubectl create secret tls Elasticsearch-ca \
-     --cert=ca.crt \
-     --key=ca.key \
-     --namespace=demo
-secret/Elasticsearch-ca created
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: Elasticsearch-ca
+  namespace: demo
+type: kubernetes.io/tls
+data:
+  tls.crt: <base64-encoded-ca.crt>
+  tls.key: <base64-encoded-ca.key>
 ```
 
 Now, Let's create an `Issuer` using the `Elasticsearch-ca` secret that we have just created. The `YAML` file looks like this:
@@ -692,9 +696,10 @@ $ tree .
 ├── kubedb
 │ ├── es-configuration.yaml
 │ ├── es-rotateauth.yaml
+│ ├── es-secret.yaml
 │ ├── es-issuer.yaml
 │ └── Elasticsearch.yaml
-1 directories, 4 files
+1 directories, 5 files
 ```
 
 Update the `Elasticsearch.yaml` with the following,
@@ -754,7 +759,8 @@ spec:
         interval: 10s
 ```
 
-Add `enableSSL: true` and `tls` fields in the spec. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Add `enableSSL: true` and `tls` fields in the spec.
+ Commit the changes and push to your Git repository. Your repository has been successfully synchronized with ArgoCD. The `Elasticsearch` CR has been updated, and both the `issuer` and the corresponding `secret` have been created in the cluster.
 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `Elasticsearch` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
