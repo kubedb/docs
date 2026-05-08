@@ -84,12 +84,12 @@ spec:
  ca:
    secretName: mssqlserver-ca
 ```
-
-Let’s create the `Issuer` CR we have shown above,
+Create a directory like below,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
-```
+$ tree .
+├── kubedb
+    └── ms-issuer.yaml
+1 directories, 1 files
 
 Now, we are going to deploy a `MSSQLServer` availability group with version `2022-cu12`.
 
@@ -127,7 +127,7 @@ spec:
               value: Evaluation 
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -137,11 +137,14 @@ spec:
 ```
 
 Create a directory like below,
+
 ```bash
 $ tree .
 ├── kubedb
-    └── mssqlserver.yaml
-1 directories, 1 files
+│ ├──ms-issuer.yaml
+│ ├──mssql.yaml
+1 directories, 2 files
+```
 ```
 
 Now commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Mssqlserver` CR is created in your cluster.
@@ -227,7 +230,7 @@ spec:
               value: Evaluation 
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -318,7 +321,7 @@ spec:
               memory: "2Gi"
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -403,7 +406,7 @@ spec:
               memory: "2Gi"
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -434,27 +437,37 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 ```bash
 $ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=mssql-gitops'
 NAME                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-data-mssql-gitops-0   Bound    pvc-481caac3-7849-422c-9d8f-704ef82b3bc6   2Gi        RWO            standard       <unset>                 20h
-data-mssql-gitops-1   Bound    pvc-49ea234d-e7e2-4a3b-9372-b430d72fee5e   2Gi        RWO            standard       <unset>                 19h
-data-mssql-gitops-2   Bound    pvc-c72d4562-81d2-405b-ae8d-52816e59767f   2Gi        RWO            standard       <unset>                 19h
+data-mssql-gitops-0   Bound    pvc-481caac3-7849-422c-9d8f-704ef82b3bc6   2Gi        RWO            longhorn       <unset>                 20h
+data-mssql-gitops-1   Bound    pvc-49ea234d-e7e2-4a3b-9372-b430d72fee5e   2Gi        RWO            longhorn       <unset>                 19h
+data-mssql-gitops-2   Bound    pvc-c72d4562-81d2-405b-ae8d-52816e59767f   2Gi        RWO            longhorn       <unset>                 19h
 ```
 
 ## Reconfigure Mssqlserver
 
-Now, we will create `mssql.conf` file containing required configuration settings.
-
-```ini
-$ cat mssql.conf
-[memory]
-memorylimitmb = 2048
+At first, we create a configuration file 
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ms-custom-config
+  namespace: demo
+type: Opaque
+stringData:
+  mssql.conf: |
+    [memory]
+    memorylimitmb = 2048
 ```
-Here, `memorylimitmb` is set to `2048`, whereas the default value is `12280`.
 
-Now, we will create a secret with this configuration file.
+
+Now, we will add this file to `kubedb/ms-configuration.yaml`.
 
 ```bash
-$ kubectl create secret generic -n demo ms-custom-config --from-file=./mssql.conf
-secret/ms-custom-config created
+$ tree .
+├── kubedb
+│ ├──ms-issuer.yaml
+│ ├──ms-configuration.yaml
+│ └──mssql.yaml
+1 directories, 3 files
 ```
 
 Update the `mssqlserver.yaml` with `spec.configuration.secretName` as the following,
@@ -499,7 +512,7 @@ spec:
     secretName: ms-custom-config
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -535,15 +548,31 @@ mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     Vol
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 > Note: The `username` must be fixed as `sa`. The `password` must include uppercase letters, lowercase letters, and numbers
-```shell
-$ kubectl create secret generic mssqlserver-quickstart-auth-user -n demo \
-                                               --type=kubernetes.io/basic-auth \
-                                               --from-literal=username=sa \
-                                               --from-literal=password=Mssqlserver2
-secret/mssqlserver-quickstart-auth-user created
+We will do that using gitops, create the file `kubedb/ms-auth.yaml` with the following content,
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mssqlserver-quickstart-auth-user
+  namespace: demo
+type: kubernetes.io/basic-auth
+stringData:
+  username: sa
+  password: Mssqlserver2
+```
+Let's add that to our `kubedb/md-auth.yaml` file. File structure will look like this,
+```bash
+$ tree .
+├── kubedb
+│ ├──ms-issuer.yaml
+│ ├── ms-configuration.yaml
+│ ├── ms-auth.yaml
+│ └── mssql.yaml
+1 directories, 4 files
 ```
 
-Update the `mssqlserver.yaml` ading `authsecret` as the following,
+Update the `mssql.yaml` ading `authsecret` as the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
 kind: MSSQLServer
@@ -588,7 +617,7 @@ spec:
     name: mssqlserver-auth
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -669,7 +698,7 @@ spec:
     name: mssqlserver-auth
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -762,7 +791,7 @@ spec:
     name: mssqlserver-auth
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -811,19 +840,12 @@ mssqlserveropsrequest.ops.kubedb.com/mssql-gitops-volumeexpansion-rsa80j     Vol
 Verify the monitoring is enabled by checking the prometheus targets.
 
 There are some other fields that will trigger `Restart` ops request.
-- `.spec.monitor`
-- `.spec.spec.archiver`
-- `.spec.remoteReplica`
-- `spec.replication`
-- `.spec.standbyMode`
-- `.spec.streamingMode`
-- `.spec.enforceGroup`
-- `.spec.sslMode` etc.
+- `.spec.monitor` etc.
 
 
 ### TLS configuration
 
-
+First install [csi-driver-cacerts](https://github.com/kubeops/csi-driver-cacerts) which will be used to add self-signed ca certificates to the OS trusted certificate store (eg, /etc/ssl/certs/ca-certificates.crt)
 Update the `mssqlserver.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
@@ -864,7 +886,7 @@ spec:
               memory: "2Gi"
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:

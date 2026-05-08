@@ -77,7 +77,7 @@ spec:
             cpu: 500m
             memory: 1Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -158,7 +158,7 @@ spec:
             cpu: 700m
             memory: 2Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -220,7 +220,7 @@ spec:
             cpu: 700m
             memory: 2Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -282,7 +282,7 @@ spec:
             cpu: 700m
             memory: 2Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -313,11 +313,11 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 ```bash
 $ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=ha-postgres'
 NAME                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-data-ha-postgres-0   Bound    pvc-061f3622-234f-4f91-b4d1-b81aa8739503   10Gi       RWO            standard       <unset>                 30m
-data-ha-postgres-1   Bound    pvc-045fc563-fb4e-416c-a9c2-b20c96532978   10Gi       RWO            standard       <unset>                 30m
-data-ha-postgres-2   Bound    pvc-a0f1d8fd-a677-4407-80b1-104b9f7b4cd1   10Gi       RWO            standard       <unset>                 30m
-data-ha-postgres-3   Bound    pvc-060b6fab-0c2d-4935-b31b-2866be68dd6f   10Gi       RWO            standard       <unset>                 8m58s
-data-ha-postgres-4   Bound    pvc-8149b579-a40f-4cd8-ac37-6a2401fd7807   10Gi       RWO            standard       <unset>                 8m23s
+data-ha-postgres-0   Bound    pvc-061f3622-234f-4f91-b4d1-b81aa8739503   10Gi       RWO            longhorn       <unset>                 30m
+data-ha-postgres-1   Bound    pvc-045fc563-fb4e-416c-a9c2-b20c96532978   10Gi       RWO            longhorn       <unset>                 30m
+data-ha-postgres-2   Bound    pvc-a0f1d8fd-a677-4407-80b1-104b9f7b4cd1   10Gi       RWO            longhorn       <unset>                 30m
+data-ha-postgres-3   Bound    pvc-060b6fab-0c2d-4935-b31b-2866be68dd6f   10Gi       RWO            longhorn       <unset>                 8m58s
+data-ha-postgres-4   Bound    pvc-8149b579-a40f-4cd8-ac37-6a2401fd7807   10Gi       RWO            longhorn       <unset>                 8m23s
 ```
 
 ## Reconfigure Postgres
@@ -371,7 +371,7 @@ spec:
             cpu: 700m
             memory: 2Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -479,7 +479,7 @@ spec:
             cpu: 700m
             memory: 2Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -516,7 +516,6 @@ Password: <new-password>
 psql (16.6)
 Type "help" for help.
 
-postgres=# 
 ```
 
 ### TLS configuration
@@ -612,7 +611,7 @@ spec:
             cpu: 700m
             memory: 2Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -649,8 +648,6 @@ ha-postgres-0:/$ psql -h ha-postgres.demo.svc -U postgres -d "sslmode=verify-ful
 psql (13.13)
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 Type "help" for help.
-
-postgres=# 
 ```
 
 > We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for postgres.
@@ -703,7 +700,7 @@ spec:
             cpu: 700m
             memory: 2Gi
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -800,7 +797,7 @@ spec:
           release: prometheus
         interval: 10s
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:

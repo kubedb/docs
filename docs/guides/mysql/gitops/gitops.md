@@ -31,7 +31,7 @@ This guide will show you how to use `KubeDB` GitOps operator to create MySQL dat
   $ kubectl create ns demo
   namespace/demo created
   ```
-> Note: YAML files used in this tutorial are stored in [docs/examples/MySQL](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/MySQL) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 We are going to use `ArgoCD` in this tutorial. You can install `ArgoCD` in your cluster by following the steps [here](https://argo-cd.readthedocs.io/en/stable/getting_started/). Also, you need to install `argocd` CLI in your local machine. You can install `argocd` CLI by following the steps [here](https://argo-cd.readthedocs.io/en/stable/cli_installation/).
 
@@ -71,7 +71,7 @@ spec:
       mode: Single-Primary
   storageType: Durable
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -157,7 +157,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -223,7 +223,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -289,7 +289,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -321,10 +321,10 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 ```bash
 $ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=my-gitops'
 NAME               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-data-my-gitops-0   Bound    pvc-c926c69f-ff5e-4f93-be78-1fc1d39da25c   2Gi        RWO            standard       <unset>                 105m
-data-my-gitops-1   Bound    pvc-8bfcf4d8-37fb-4543-96c5-7a656270967a   2Gi        RWO            standard       <unset>                 101m
-data-my-gitops-2   Bound    pvc-238989bc-0a53-4db8-a3c2-2ce77aee4042   2Gi        RWO            standard       <unset>                 101m
-data-my-gitops-3   Bound    pvc-5345bc6a-baad-461a-a1fe-108e75c32a11   2Gi        RWO            standard       <unset>                8m41s
+data-my-gitops-0   Bound    pvc-c926c69f-ff5e-4f93-be78-1fc1d39da25c   2Gi        RWO            longhorn       <unset>                 105m
+data-my-gitops-1   Bound    pvc-8bfcf4d8-37fb-4543-96c5-7a656270967a   2Gi        RWO            longhorn       <unset>                 101m
+data-my-gitops-2   Bound    pvc-238989bc-0a53-4db8-a3c2-2ce77aee4042   2Gi        RWO            longhorn       <unset>                 101m
+data-my-gitops-3   Bound    pvc-5345bc6a-baad-461a-a1fe-108e75c32a11   2Gi        RWO            longhorn       <unset>                8m41s
 ```
 
 ## Reconfigure MySQL
@@ -418,7 +418,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -545,7 +545,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -693,7 +693,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -845,7 +845,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -936,7 +936,7 @@ spec:
             cpu: 700m
             memory: 1.5Gi
   storage:
-    storageClassName: standard
+    storageClassName: longhorn
     accessModes:
       - ReadWriteOnce
     resources:
@@ -968,17 +968,6 @@ mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpans
 ```
 
 Verify the monitoring is enabled by checking the prometheus targets.
-
-There are some other fields that will trigger `Restart` ops request.
-- `.spec.monitor`
-- `.spec.spec.archiver`
-- `.spec.remoteReplica`
-- `.spec.leaderElection`
-- `spec.replication`
-- `.spec.standbyMode`
-- `.spec.streamingMode`
-- `.spec.enforceGroup`
-- `.spec.sslMode` etc.
 
 
 ## Next Steps

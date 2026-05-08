@@ -339,13 +339,13 @@ metadata:
 type: Opaque
 ```
 
-Now, we will add this file to `kubedb /md-configuration.yaml`.
+Now, we will add this file to `kubedb/md-configuration.yaml`.
 
 ```bash
 $ tree .
 ├── kubedb
 │ ├── md-configuration.yaml
-│ └── MariaDB.yaml
+│ └── mariadb.yaml
 1 directories, 2 files
 ```
 
@@ -404,14 +404,28 @@ mariadbopsrequest.ops.kubedb.com/mariadb-gitops-volumeexpansion-01m39b     Volum
 
 To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new username and password.
 
-We will do that using gitops, create the file `kubedb /md-auth.yaml` with the following content,
+We will do that using gitops, create the file `kubedb/md-auth.yaml` with the following content,
 
 ```bash
-$ kubectl create secret generic mdauth -n demo \
-                                  --type=kubernetes.io/basic-auth \
-                                  --from-literal=username=root \
-                                  --from-literal=password=md-secret
-secret/mdauth created
+$ apiVersion: v1
+kind: Secret
+metadata:
+  name: mdauth
+  namespace: demo
+type: kubernetes.io/basic-auth
+stringData:
+  username: root
+  password: md-secret
+```
+
+Let's add that to our `kubedb/md-auth.yaml` file. File structure will look like this,
+```bash
+$ tree .
+├── kubedb
+│ ├── md-configuration.yaml
+│ ├── md-auth.yaml
+│ └── MariaDB.yaml
+1 directories, 3 files
 ```
 
 
@@ -517,14 +531,15 @@ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}
 issuer.cert-manager.io/md-issuer created
 ```
 
-Let's add that to our `kubedb /md-issuer.yaml` file. File structure will look like this,
+Let's add that to our `kubedb/md-issuer.yaml` file. File structure will look like this,
 ```bash
 $ tree .
 ├── kubedb
 │ ├── md-configuration.yaml
+│ ├── md-auth.yaml
 │ ├── md-issuer.yaml
 │ └── MariaDB.yaml
-1 directories, 3 files
+1 directories, 4 files
 ```
 
 Update the `MariaDB.yaml` with the following,
@@ -773,15 +788,6 @@ mariadbopsrequest.ops.kubedb.com/mariadb-gitops-volumeexpansion-01m39b     Volum
 
 Verify the monitoring is enabled by checking the prometheus targets.
 
-There are some other fields that will trigger `Restart` ops request.
-- `.spec.monitor`
-- `.spec.spec.archiver`
-- `.spec.remoteReplica`
-- `spec.replication`
-- `.spec.standbyMode`
-- `.spec.streamingMode`
-- `.spec.enforceGroup`
-- `.spec.sslMode` etc.
 
 
 ## Next Steps

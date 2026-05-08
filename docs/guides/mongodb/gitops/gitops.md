@@ -408,14 +408,28 @@ We can also reconfigure the parameters creating another secret and reference the
 
 To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new username and password.
 
-We will do that using gitops, create the file `kubedb /mg-auth.yaml` with the following content,
+We will do that using gitops, create the file `kubedb/mg-auth.yaml` with the following content,
 
 ```bash
-kubectl create secret generic mgauth -n demo \
-                                              --type=kubernetes.io/basic-auth \
-                                              --from-literal=username=root \
-                                              --from-literal=password=mongodb-secret
-secret/mgauth created
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mgauth
+  namespace: demo
+type: kubernetes.io/basic-auth
+stringData:
+  username: root
+  password: mongodb-secret
+```
+
+Let's add that to our `kubedb/mg-auth.yaml` file. File structure will look like this,
+```bash
+$ tree .
+├── kubedb
+│ ├── mg-configuration.yaml
+│ ├── mg-auth.yaml
+│ └── mongodb.yaml
+1 directories, 3 files
 ```
 
 
@@ -619,15 +633,6 @@ mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpa
 
 Verify the monitoring is enabled by checking the prometheus targets.
 
-There are some other fields that will trigger `Restart` ops request.
-- `.spec.monitor`
-- `.spec.spec.archiver`
-- `.spec.remoteReplica`
-- `spec.replication`
-- `.spec.standbyMode`
-- `.spec.streamingMode`
-- `.spec.enforceGroup`
-- `.spec.sslMode` etc.
 
 
 ### TLS configuration
@@ -669,14 +674,15 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 issuer.cert-manager.io/mongo-ca-issuer created
 ```
 
-Let's add that to our `kubedb /mg-issuer.yaml` file. File structure will look like this,
+Let's add that to our `kubedb/mg-issuer.yaml` file. File structure will look like this,
 ```bash
 $ tree .
 ├── kubedb
 │ ├── mg-configuration.yaml
+│ ├── mg-auth.yaml
 │ ├── mg-issuer.yaml
 │ └── mongodb.yaml
-1 directories, 3 files
+1 directories, 4 files
 ```
 
 Update the `mongodb.yaml` with the following,

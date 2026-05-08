@@ -74,7 +74,7 @@ spec:
     resources:
       requests:
         storage: "1Gi"
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -179,7 +179,6 @@ Let's add that to our `kubedb /rd-issuer.yaml` file. File structure will look li
 ```bash
 $ tree .
 ├── kubedb
-│ ├── rd-configuration.yaml
 │ ├── rd-issuer.yaml
 │ └── redis.yaml
 1 directories, 3 files
@@ -208,7 +207,7 @@ spec:
     resources:
       requests:
         storage: "1Gi"
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -255,7 +254,7 @@ spec:
     resources:
       requests:
         storage: "1Gi"
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -328,7 +327,7 @@ spec:
     resources:
       requests:
         storage: "1Gi"
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -398,7 +397,7 @@ spec:
     resources:
       requests:
         storage: "2Gi"
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -437,15 +436,15 @@ After Ops Request becomes `Successful`, We can validate the changes by checking 
 ```bash
 $ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=rd-gitops'
 NAME                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-data-rd-gitops-shard0-0   Bound    pvc-97afbd7c-5887-4381-bef8-4584411b4ed5   2Gi        RWO            standard       <unset>                 39m
-data-rd-gitops-shard0-1   Bound    pvc-461c6122-94ba-4b96-805b-1bf2619a10d4   2Gi        RWO            standard       <unset>                 38m
-data-rd-gitops-shard0-2   Bound    pvc-90fc4131-a272-44bd-bfa2-3ffc5c093178   2Gi        RWO            standard       <unset>                 24m
-data-rd-gitops-shard1-0   Bound    pvc-38855b1c-4e1f-485f-93c5-5848eed1465d   2Gi        RWO            standard       <unset>                 39m
-data-rd-gitops-shard1-1   Bound    pvc-14b89fe8-8681-4aba-af37-035da020c3cb   2Gi        RWO            standard       <unset>                 38m
-data-rd-gitops-shard1-2   Bound    pvc-6d3d1e55-689e-4884-a3cc-ed6080e48cf0   2Gi        RWO            standard       <unset>                 23m
-data-rd-gitops-shard2-0   Bound    pvc-e6b9fa56-40b2-45aa-8ebd-ab360522a294   2Gi        RWO            standard       <unset>                 39m
-data-rd-gitops-shard2-1   Bound    pvc-6fdfd395-d2b8-45df-8369-f9897e3d678c   2Gi        RWO            standard       <unset>                 38m
-data-rd-gitops-shard2-2   Bound    pvc-1570c37b-63da-456c-af59-b60ed544e651   2Gi        RWO            standard       <unset>                 23m
+data-rd-gitops-shard0-0   Bound    pvc-97afbd7c-5887-4381-bef8-4584411b4ed5   2Gi        RWO            longhorn       <unset>                 39m
+data-rd-gitops-shard0-1   Bound    pvc-461c6122-94ba-4b96-805b-1bf2619a10d4   2Gi        RWO            longhorn       <unset>                 38m
+data-rd-gitops-shard0-2   Bound    pvc-90fc4131-a272-44bd-bfa2-3ffc5c093178   2Gi        RWO            longhorn       <unset>                 24m
+data-rd-gitops-shard1-0   Bound    pvc-38855b1c-4e1f-485f-93c5-5848eed1465d   2Gi        RWO            longhorn       <unset>                 39m
+data-rd-gitops-shard1-1   Bound    pvc-14b89fe8-8681-4aba-af37-035da020c3cb   2Gi        RWO            longhorn       <unset>                 38m
+data-rd-gitops-shard1-2   Bound    pvc-6d3d1e55-689e-4884-a3cc-ed6080e48cf0   2Gi        RWO            longhorn       <unset>                 23m
+data-rd-gitops-shard2-0   Bound    pvc-e6b9fa56-40b2-45aa-8ebd-ab360522a294   2Gi        RWO            longhorn       <unset>                 39m
+data-rd-gitops-shard2-1   Bound    pvc-6fdfd395-d2b8-45df-8369-f9897e3d678c   2Gi        RWO            longhorn       <unset>                 38m
+data-rd-gitops-shard2-2   Bound    pvc-1570c37b-63da-456c-af59-b60ed544e651   2Gi        RWO            longhorn       <unset>                 23m
 ```
 
 
@@ -473,7 +472,7 @@ spec:
     resources:
       requests:
         storage: "2Gi"
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -511,27 +510,30 @@ redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-0ubdaw     VolumeExpans
 ## Reconfigure Redis
 
 
-At first, we will create `redis.conf` file containing required configuration settings.
+At first, we will create a secret with this configuration file.
 
-```ini
-$ cat redis.conf
-maxclients 2000
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ms-custom-config
+  namespace: demo
+type: Opaque
+stringData:
+  mssql.conf: |
+    [memory]
+    memorylimitmb = 2048
 ```
-Here, `maxclients` is set to `500`, whereas the default value is `10000`.
 
-Now, we will create a secret with this configuration file.
-
+Let's add that to  `kubedb/rd_conf.yaml` file. File structure will look like this,
 ```bash
-$ kubectl create secret generic -n demo rd-custom-config --from-file=./redis.conf
-secret/rd-custom-config created
+$ tree .
+├── kubedb
+│ ├── rd-config.yaml
+│ └── redis.yaml
+1 directories, 2 files
 ```
 
-Now, we will create a secret with this configuration file.
-
-```bash
-$ kubectl create secret generic -n demo mg-custom-config --from-file=./mongod.conf
-secret/mg-custom-config created
-```
 
 
 Update the `Redis.yaml` with the following,
@@ -554,7 +556,7 @@ spec:
     resources:
       requests:
         storage: "2Gi"
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -599,17 +601,29 @@ We can also reconfigure the parameters creating another secret and reference the
 
 To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new username and password.
 
-We will create a secret named `rd-rotate-auth ` with the following content,
+ We will do that using gitops, create the file `kubedb/rd-auth.yaml` with the following content,
 
 ```bash
-$ kubectl create secret generic rd-rotate-auth -n demo \
-        --type=kubernetes.io/basic-auth \
-        --from-literal=username=redis \
-        --from-literal=password=redis-secret
-secret/rd-rotate-auth created
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rd-rotate-auth
+  namespace: demo
+type: kubernetes.io/basic-auth
+stringData:
+  username: redis
+  password: redis-secret
 ```
 
-
+Let's add that to our `kubedb/rdauth.yaml` file. File structure will look like this,
+```bash
+$ tree .
+├── kubedb
+│ ├── rd-config.yaml
+│ ├── rd-auth.yaml
+│ └── redis.yaml
+1 directories, 3 files
+```
 
 Update the `Redis.yaml` with the following,
 ```yaml
@@ -634,7 +648,7 @@ spec:
     resources:
       requests:
         storage: "2Gi"
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
   podTemplate:
@@ -694,16 +708,11 @@ spec:
     name: rd-rotate-auth
   configuration:
     secretName: rd-custom-config
-  # tls:
-  #   issuerRef:
-  #     apiGroup: "cert-manager.io"
-  #     kind: Issuer
-  #     name: redis-ca-issuer
   storage:
     resources:
       requests:
         storage: "2Gi"
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut
@@ -750,15 +759,6 @@ redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-0ubdaw     VolumeExpans
 
 Verify the monitoring is enabled by checking the prometheus targets.
 
-There are some other fields that will trigger `Restart` ops request.
-- `.spec.monitor`
-- `.spec.spec.archiver`
-- `.spec.remoteReplica`
-- `spec.replication`
-- `.spec.standbyMode`
-- `.spec.streamingMode`
-- `.spec.enforceGroup`
-- `.spec.sslMode` etc.
 
 
 ## Next Steps

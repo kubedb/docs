@@ -413,7 +413,7 @@ stringData:
     log.retention.hours=125    
 ```
 
-Now, we will add this file to `kubedb /kf-configuration.yaml`.
+Now, we will add this file to `kubedb/kf-configuration.yaml`.
 
 ```bash
 $ tree .
@@ -507,11 +507,15 @@ To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new use
 We will create a secret named `kf-rotate-auth ` with the following content,
 
 ```bash
-$ kubectl create secret generic kf-rotate-auth -n demo \
---type=kubernetes.io/basic-auth \
---from-literal=username=kafka \
---from-literal=password=kafka-secret
-secret/kf-rotate-auth created
+$ apiVersion: v1
+kind: Secret
+metadata:
+  name: kf-rotate-auth
+  namespace: demo
+type: kubernetes.io/basic-auth
+stringData:
+  username: kafka
+  password: kafka-secret
 ```
 
 
@@ -634,7 +638,7 @@ spec:
     secretName: kafka-ca
 ```
 
-Let's add that to our `kubedb /kf-issuer.yaml` file. File structure will look like this,
+Let's add that to our `kubedb/kf-issuer.yaml` file. File structure will look like this,
 ```bash
 $ tree .
 ├── kubedb
@@ -939,14 +943,7 @@ kafkaopsrequest.ops.kubedb.com/kafka-gitops-volumeexpansion-9e85tf     VolumeExp
 Verify the monitoring is enabled by checking the prometheus targets.
 
 There are some other fields that will trigger `Restart` ops request.
-- `.spec.monitor`
-- `.spec.spec.archiver`
-- `.spec.remoteReplica`
-- `spec.replication`
-- `.spec.standbyMode`
-- `.spec.streamingMode`
-- `.spec.enforceGroup`
-- `.spec.sslMode` etc.
+- `.spec.monitor` etc.
 
 
 ## Next Steps

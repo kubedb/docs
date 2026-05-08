@@ -344,7 +344,7 @@ metadata:
 type: Opaque
 ```
 
-Now, we will add this file to `kubedb /es-configuration.yaml`.
+Now, we will add this file to `kubedb/es-configuration.yaml`.
 
 ```bash
 $ tree .
@@ -413,15 +413,29 @@ To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new use
 
 We will generate a secret named `es-rotate-auth` with the following content,
 
-```bash
-$ kubectl create secret generic es-rotate-auth -n demo \
-                                      --type=kubernetes.io/basic-auth \
-                                      --from-literal=username=elastic \
-                                      --from-literal=password=elasticsearch-secret
-secret/es-rotate-auth created
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: es-rotate-auth
+  namespace: demo
+type: kubernetes.io/basic-auth
+stringData:
+  username: elastic
+  password: elasticsearch-secret
 ```
 
 
+Now, we will add this file to `kubedb/es-rotateauth.yaml`.
+
+```bash
+$ tree .
+├── kubedb
+│ ├── es-configuration.yaml
+│ ├── es-rotateauth.yaml
+│ └── Elasticsearch.yaml
+1 directories, 3 files
+```
 
 Update the `Elasticsearch.yaml` with the following,
 ```yaml
@@ -672,14 +686,15 @@ spec:
     secretName: Elasticsearch-ca
 ```
 
-Let's add that to our `kubedb /es-issuer.yaml` file. File structure will look like this,
+Let's add that to our `kubedb/es-issuer.yaml` file. File structure will look like this,
 ```bash
 $ tree .
 ├── kubedb
 │ ├── es-configuration.yaml
+│ ├── es-rotateauth.yaml
 │ ├── es-issuer.yaml
 │ └── Elasticsearch.yaml
-1 directories, 3 files
+1 directories, 4 files
 ```
 
 Update the `Elasticsearch.yaml` with the following,
