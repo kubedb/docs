@@ -37,13 +37,9 @@ namespace/demo created
 
   ```bash
   $ kubectl get documentdbversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,DEPRECATED:.spec.deprecated
-  NAME      VERSION   DB_IMAGE                       DEPRECATED
-  5.0.6     5.0.6     kubedb/documentdb:5.0.6        <none>
+  NAME           VERSION          DB_IMAGE                       DEPRECATED
+  pg17-0.109.0     pg17-0.109.0    kubedb/documentdb:5.0.6        <none>
   ```
-
-  Docker hub repositories:
-
-- [kubedb/documentdb](https://hub.docker.com/r/kubedb/documentdb)
 
 ## Create ImagePullSecret
 
@@ -73,18 +69,18 @@ Here, is an example of DocumentDBVersion CRD. Replace `PRIVATE_REGISTRY` with yo
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: DocumentDBVersion
 metadata:
-  name: "5.0.6"
+  name: "pg17-0.109.0"
 spec:
   db:
     image: PRIVATE_REGISTRY/documentdb:5.0.6
-  version: "5.0.6"
+  version: "pg17-0.109.0"
 ```
 
 Now, create the DocumentDBVersion CRD:
 
 ```bash
 $ kubectl apply -f pvt-documentdbversion.yaml
-documentdbversion.catalog.kubedb.com/5.0.6 created
+documentdbversion.catalog.kubedb.com/pg17-0.109.0 created
 ```
 
 ## Deploy DocumentDB from Private Registry
@@ -100,7 +96,7 @@ metadata:
   name: pvt-reg-docdb
   namespace: demo
 spec:
-  version: "5.0.6"
+  version: "pg17-0.109.0"
   storageType: Durable
   storage:
     storageClassName: "standard"

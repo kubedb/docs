@@ -91,14 +91,10 @@ spec:
         port: 27017
   deletionPolicy: Delete
   healthChecker:
-    periodSeconds: 10
-    timeoutSeconds: 10
-    failureThreshold: 3
-    disableWriteCheck: false
 ```
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [DocumentDBVersion](/docs/guides/documentdb/concepts/documentdbversion.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `documentdb` resources,
+`spec.version` is a required field specifying the name of the [DocumentDBVersion](/docs/guides/documentdb/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `documentdb` resources,
 
 - `pg17-0.109.0`
 
@@ -169,7 +165,7 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for Postgres database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for DocumentDB database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -257,7 +253,7 @@ The `spec.podTemplate.spec.containers[].name` field used to specify the name of 
 
 ##### spec.podTemplate.spec.containers[].resources
 
-`spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
+`spec.podTemplate.spec.containers[].resources` is an optional field. This can be used to request compute resources required by containers of the database pods. To learn more, visit [here](https://kubernetes.io/docs/concepts/storage/).
 
 ### spec.deletionPolicy
 
@@ -272,14 +268,6 @@ When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validation
 
 > For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
 
-## spec.healthChecker
-It defines the attributes for the health checker.
-- `spec.healthChecker.periodSeconds` specifies how often to perform the health check.
-- `spec.healthChecker.timeoutSeconds` specifies the number of seconds after which the probe times out.
-- `spec.healthChecker.failureThreshold` specifies minimum consecutive failures for the healthChecker to be considered failed.
-- `spec.healthChecker.disableWriteCheck` specifies whether to disable the writeCheck or not.
-
-Know details about KubeDB Health checking from this [blog post](https://appscode.com/blog/post/kubedb-health-checker/).
 
 ## Next Steps
 

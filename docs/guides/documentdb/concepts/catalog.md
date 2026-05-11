@@ -65,4 +65,4 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 ## Next Steps
 
 - Learn about DocumentDB CRD [here](/docs/guides/documentdb/concepts/documentdb.md).
-- Deploy your first DocumentDB database with KubeDB by following the guide [here](/docs/guides/documentdb/quickstart/guide/index.md).
+- Deploy your first DocumentDB database with KubeDB by following the guide [here](/docs/guides/documentdb/quickstart/guides/index.md).
