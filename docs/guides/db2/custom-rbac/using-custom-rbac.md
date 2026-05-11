@@ -61,7 +61,7 @@ $ kubectl get serviceaccount -n demo my-custom-serviceaccount -o yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: "2019-05-30T04:23:39Z"
+  creationTimestamp: "2026-05-30T04:23:39Z"
   name: my-custom-serviceaccount
   namespace: demo
   resourceVersion: "21657"
@@ -142,7 +142,7 @@ $ kubectl get rolebinding -n demo my-custom-rolebinding -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: "2019-05-30T04:54:56Z"
+  creationTimestamp: "2026-05-30T04:54:56Z"
   name: my-custom-rolebinding
   namespace: demo
   resourceVersion: "23944"
@@ -177,7 +177,7 @@ metadata:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: quick-db2
 spec:
-  version: "11.5.9"
+  version: "11.5.8.0"
   storageType: Durable
   podTemplate:
     spec:
@@ -290,7 +290,7 @@ metadata:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: second-db2
 spec:
-  version: "11.5.9"
+  version: "11.5.8.0"
   storageType: Durable
   podTemplate:
     spec:
@@ -343,7 +343,5 @@ kubectl delete ns demo
 If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
-
-- Learn about initializing [DB2 with Script](/docs/guides/db2/initialization/script_source.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

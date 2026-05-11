@@ -46,7 +46,7 @@ You have to push the required images from KubeDB's [Docker hub account](https://
 ```bash
 $ kubectl get db2versions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,COORDINATOR_IMAGE:.spec.coordinator.image,DEPRECATED:.spec.deprecated
 NAME         VERSION   DB_IMAGE                 COORDINATOR_IMAGE                          DEPRECATED
-11.5.9       11.5.9    kubedb/db2:11.5.9        ghcr.io/kubedb/db2-coordinator:v0.5.0-ubi  <none>
+11.5.8.0       11.5.8.0    kubedb/db2:11.5.8.0        ghcr.io/kubedb/db2-coordinator:v0.5.0-ubi  <none>
 ```
 
 Docker Hub repositories:
@@ -93,9 +93,9 @@ Here is an example of DB2Version CRD. Replace `PRIVATE_REGISTRY` with your priva
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: DB2Version
 metadata:
-  name: "11.5.9"
+  name: "11.5.8.0"
 spec:
-  version: "11.5.9"
+  version: "11.5.8.0"
   db:
     image: PRIVATE_REGISTRY/db2:11.5.9
   coordinator:
@@ -115,7 +115,7 @@ Verify the DB2Version is created:
 ```bash
 $ kubectl get db2version
 NAME        VERSION   DB_IMAGE                           COORDINATOR_IMAGE                               DEPRECATED
-11.5.9      11.5.9    PRIVATE_REGISTRY/db2:11.5.9        PRIVATE_REGISTRY/db2-coordinator:v0.5.0-ubi     false
+11.5.8.0      11.5.8.0    PRIVATE_REGISTRY/db2:11.5.8.0        PRIVATE_REGISTRY/db2-coordinator:v0.5.0-ubi     false
 ```
 
 ## Deploy DB2 from Private Registry
@@ -131,7 +131,7 @@ metadata:
   name: pvt-reg-db2
   namespace: demo
 spec:
-  version: "11.5.9"
+  version: "11.5.8.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -167,7 +167,7 @@ Wait for the DB2 instance to be ready:
 ```bash
 $ kubectl get db2 -n demo pvt-reg-db2
 NAME           VERSION   STATUS    AGE
-pvt-reg-db2    11.5.9    Running   3m
+pvt-reg-db2    11.5.8.0    Running   3m
 ```
 
 Check the pod logs to verify the database is ready:
@@ -194,7 +194,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 $ kubectl patch -n demo db2/pvt-reg-db2 -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo db2/pvt-reg-db2
 
-$ kubectl delete -n demo db2version 11.5.9
+$ kubectl delete -n demo db2version 11.5.8.0
 
 $ kubectl delete secret -n demo myregistrykey
 

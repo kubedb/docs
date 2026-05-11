@@ -55,7 +55,7 @@ List all available DB2 versions that can be deployed with KubeDB:
 ```bash
 $ kubectl get db2versions
 NAME    VERSION   DB_IMAGE              COORDINATOR_IMAGE                    DEPRECATED
-11.5.9  11.5.8.0   kubedb/db2:11.5.8.0    ghcr.io/kubedb/db2-coordinator:...   false
+11.5.8.0  11.5.8.0   kubedb/db2:11.5.8.0    ghcr.io/kubedb/db2-coordinator:...   false
 ```
 
 ## Create a DB2 Database

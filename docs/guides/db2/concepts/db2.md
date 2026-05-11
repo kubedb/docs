@@ -90,11 +90,6 @@ spec:
       - name: db2
         port: 50000
   deletionPolicy: Delete
-  healthChecker:
-    periodSeconds: 10
-    timeoutSeconds: 10
-    failureThreshold: 3
-    disableWriteCheck: false
 ```
 
 ### spec.version
@@ -232,15 +227,6 @@ KubeDB allows following fields to set in `spec.serviceTemplates`:
 - Delete
 
 When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes to prevent deletion of the database as long as the policy is set to `DoNotTerminate`.
-
-### spec.healthChecker
-
-`spec.healthChecker` defines the attributes for the health checker that monitors the DB2 instance.
-
-- `spec.healthChecker.periodSeconds` specifies how often to perform the health check (in seconds)
-- `spec.healthChecker.timeoutSeconds` specifies the number of seconds after which the health check probe times out
-- `spec.healthChecker.failureThreshold` specifies minimum consecutive failures for the health check to be considered failed
-- `spec.healthChecker.disableWriteCheck` specifies whether to disable the write check or not
 
 ## Next Steps
 
