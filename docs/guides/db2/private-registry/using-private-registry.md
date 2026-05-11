@@ -49,11 +49,6 @@ NAME         VERSION   DB_IMAGE                 COORDINATOR_IMAGE               
 11.5.8.0       11.5.8.0    kubedb/db2:11.5.8.0        ghcr.io/kubedb/db2-coordinator:v0.5.0-ubi  <none>
 ```
 
-Docker Hub repositories:
-
-- [kubedb/db2](https://hub.docker.com/r/kubedb/db2)
-- [kubedb/db2-coordinator](https://github.com/orgs/kubedb/packages/container/db2-coordinator)
-
 ## Create ImagePullSecret
 
 ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull private images from a Docker registry. It allows you to specify the url of the docker registry, credentials for logging in and the image name of your private docker image.
