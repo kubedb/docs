@@ -74,7 +74,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
-Below is the YAML for the Role we just created.
+Below is the YAML for the Role we just created. This role grants the minimum permissions needed for DocumentDB health checker to operate.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -84,28 +84,13 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - apps
-  resourceNames:
-  - quick-docdb
-  resources:
-  - petsets
-  verbs:
-  - get
-- apiGroups:
-  - kubedb.com
-  resourceNames:
-  - quick-docdb
-  resources:
-  - documentdbs
-  verbs:
-  - get
-- apiGroups:
   - ""
   resources:
   - pods
   verbs:
+  - get
   - list
-  - patch
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -115,14 +100,31 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - configmaps
+  - secrets
   verbs:
-  - create
   - get
-  - update
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - list
 ```
 
-Please note that resourceName `quick-docdb` is unique to `quick-docdb` DocumentDB instance. Another database `quick-docdb-2`, for example, will require the resourceName to be `quick-docdb-2`.
+These permissions allow the DocumentDB health checker to:
+- **pods (get, list, watch)**: Monitor pod status and changes
+- **pods/exec (create)**: Execute health check commands inside the pod
+- **secrets (get)**: Access authentication credentials
+- **services (get, list)**: Discover service endpoints
+- **endpoints (get, list)**: Monitor endpoint availability
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
@@ -184,7 +186,7 @@ spec:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 5Gi
+        storage: 10Gi
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-docdb-0` has been created.
@@ -197,10 +199,13 @@ NAME             READY   STATUS    RESTARTS   AGE
 quick-docdb-0    1/1     Running   0          3m
 ```
 
-Check the pod's log to see if the database is ready
+Check the pod's log to see if the database is ready:
+
 ```bash
-```bash
-$ kubectl logs -f -n demo second-docdb-0
+$ kubectl logs -f -n demo quick-docdb-0
+2025-05-30 04:25:31.456 UTC [1] LOG:  starting DocumentDB
+2025-05-30 04:25:31.789 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 27017
+2025-05-30 04:25:32.123 UTC [1] LOG:  database system is ready to accept connections
 ```
 
 Once we see `database system is ready to accept connections` in the log, the database is ready.
@@ -216,7 +221,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 role.rbac.authorization.k8s.io/my-custom-role-two created
 ```
 
-Below is the YAML for the Role we just created.
+Below is the YAML for the Role we just created. This role grants the minimum permissions needed for the second DocumentDB instance.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -226,28 +231,13 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - apps
-  resourceNames:
-  - second-docdb
-  resources:
-  - petsets
-  verbs:
-  - get
-- apiGroups:
-  - kubedb.com
-  resourceNames:
-  - second-docdb
-  resources:
-  - documentdbs
-  verbs:
-  - get
-- apiGroups:
   - ""
   resources:
   - pods
   verbs:
+  - get
   - list
-  - patch
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -257,11 +247,23 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - configmaps
+  - secrets
   verbs:
-  - create
   - get
-  - update
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - endpoints
+  verbs:
+  - get
+  - list
 ```
 
 Now create a `RoleBinding` to bind `my-custom-role-two` with the already created `my-custom-serviceaccount`.
@@ -301,7 +303,7 @@ spec:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 5Gi
+        storage: 10Gi
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `second-docdb-0` has been created.
@@ -314,10 +316,13 @@ NAME             READY   STATUS    RESTARTS   AGE
 second-docdb-0   1/1     Running   0          3m
 ```
 
-Check the pod's log to see if the database is ready
+Check the pod's log to see if the database is ready:
 
 ```bash
 $ kubectl logs -f -n demo second-docdb-0
+2025-05-30 04:30:15.456 UTC [1] LOG:  starting DocumentDB
+2025-05-30 04:30:15.789 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 27017
+2025-05-30 04:30:16.123 UTC [1] LOG:  database system is ready to accept connections
 ```
 
 `database system is ready to accept connections` in the log signifies that the database is running successfully.
@@ -347,5 +352,8 @@ kubectl delete ns demo
 If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
+
+- Learn about [DocumentDB CRD](/docs/guides/documentdb/concepts/documentdb.md).
+- Learn about [DocumentDBVersion CRD](/docs/guides/documentdb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
