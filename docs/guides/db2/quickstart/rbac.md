@@ -20,22 +20,16 @@ This tutorial explains what permissions are granted and how to verify them.
 
 ## Required Permissions
 
-Here is the list of additional permissions required by the PetSet of DB2:
+Here is the list of permissions required by the DB2 coordinator for health checking and monitoring:
 
-| Kubernetes Resource | Resource Names    | Permissions |
-|---------------------|-------------------|-------------|
-| petsets             | `{db2-name}`      | get         |
-| pods                |                   | list, patch |
-| pods/exec           |                   | create      |
-| db2s                |                   | get         |
-| configmaps          |                   | create, get, update |
+| Kubernetes Resource | Permissions     |
+|---------------------|-----------------|
+| pods                | get, list       |
+| pods/exec           | create          |
 
-These permissions allow the DB2 instance to:
-- Access its own PetSet configuration
-- List and modify pods for health checking and management
-- Execute commands within pods for operational tasks
-- Access its DB2 CRD configuration
-- Manage configuration stored in ConfigMaps
+These permissions allow the DB2 coordinator to:
+- **pods (get, list)**: Monitor pod status and list pods in the namespace
+- **pods/exec (create)**: Execute health check commands within the pod
 
 ## Before You Begin
 
@@ -135,46 +129,21 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - apps
-  resourceNames:
-  - quick-db2
-  resources:
-  - petsets
-  verbs:
-  - get
-- apiGroups:
-  - kubedb.com
-  resourceNames:
-  - quick-db2
-  resources:
-  - db2s
-  verbs:
-  - get
-- apiGroups:
   - ""
   resources:
   - pods
   verbs:
   - get
   - list
-  - patch
 - apiGroups:
   - ""
   resources:
   - pods/exec
   verbs:
   - create
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - create
-  - get
-  - update
 ```
 
-This Role grants minimal permissions required for the DB2 instance to function properly. Note that permissions are scoped to the specific DB2 instance name (`quick-db2`).
+This Role grants the minimum permissions required for the DB2 coordinator to monitor the database health and execute health check commands within the pod.
 
 ### Verify RoleBinding
 
@@ -202,7 +171,7 @@ subjects:
   namespace: demo
 ```
 
-This object binds the Role `quick-db2` with the ServiceAccount `quick-db2`, granting the defined permissions to the ServiceAccount.
+This object binds the Role `quick-db2` with the ServiceAccount `quick-db2`, granting the coordinator the necessary permissions to perform health checks.
 
 ## Verify DB2 is Running
 

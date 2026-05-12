@@ -78,7 +78,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
-Below is the YAML for the Role we just created.
+Below is the YAML for the Role we just created. This role grants the minimum permissions needed for DB2 coordinator health checking.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -88,45 +88,23 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - apps
-  resourceNames:
-  - quick-db2
-  resources:
-  - petsets
-  verbs:
-  - get
-- apiGroups:
-  - kubedb.com
-  resourceNames:
-  - quick-db2
-  resources:
-  - db2s
-  verbs:
-  - get
-- apiGroups:
   - ""
   resources:
   - pods
   verbs:
+  - get
   - list
-  - patch
 - apiGroups:
   - ""
   resources:
   - pods/exec
   verbs:
   - create
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - create
-  - get
-  - update
 ```
 
-Please note that resourceName `quick-db2` is unique to `quick-db2` DB2 instance. Another database `quick-db2-2`, for example, will require the resourceName to be `quick-db2-2`.
+These permissions allow the DB2 coordinator to:
+- **pods (get, list)**: Monitor pod status and list pods for health checking
+- **pods/exec (create)**: Execute health check commands within the pod
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
@@ -201,7 +179,14 @@ NAME           READY   STATUS    RESTARTS   AGE
 quick-db2-0    1/1     Running   0          3m
 ```
 
-Check the pod's log to see if the database is ready
+Check the pod's log to see if the database is ready:
+
+```bash
+$ kubectl logs -f -n demo quick-db2-0
+2026-05-30 04:25:31.456 UTC [1] LOG:  starting DB2
+2026-05-30 04:25:31.789 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 50000
+2026-05-30 04:25:32.123 UTC [1] LOG:  database system is ready to accept connections
+```
 
 Once we see `database system is ready to accept connections` in the log, the database is ready.
 
@@ -216,7 +201,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 role.rbac.authorization.k8s.io/my-custom-role-two created
 ```
 
-Below is the YAML for the Role we just created.
+Below is the YAML for the Role we just created. This role grants the minimum permissions needed for the second DB2 instance.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -226,42 +211,18 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - apps
-  resourceNames:
-  - second-db2
-  resources:
-  - petsets
-  verbs:
-  - get
-- apiGroups:
-  - kubedb.com
-  resourceNames:
-  - second-db2
-  resources:
-  - db2s
-  verbs:
-  - get
-- apiGroups:
   - ""
   resources:
   - pods
   verbs:
+  - get
   - list
-  - patch
 - apiGroups:
   - ""
   resources:
   - pods/exec
   verbs:
   - create
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - create
-  - get
-  - update
 ```
 
 Now create a `RoleBinding` to bind `my-custom-role-two` with the already created `my-custom-serviceaccount`.
@@ -314,7 +275,14 @@ NAME           READY   STATUS    RESTARTS   AGE
 second-db2-0   1/1     Running   0          3m
 ```
 
-Check the pod's log to see if the database is ready
+Check the pod's log to see if the database is ready:
+
+```bash
+$ kubectl logs -f -n demo second-db2-0
+2026-05-30 04:30:15.456 UTC [1] LOG:  starting DB2
+2026-05-30 04:30:15.789 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 50000
+2026-05-30 04:30:16.123 UTC [1] LOG:  database system is ready to accept connections
+```
 
 `database system is ready to accept connections` in the log signifies that the database is running successfully.
 
@@ -343,5 +311,9 @@ kubectl delete ns demo
 If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
+
+- Learn about [DB2 CRD](/docs/guides/db2/concepts/db2.md).
+- Learn about [DB2Version CRD](/docs/guides/db2/concepts/catalog.md).
+- Learn about [using private registries](/docs/guides/db2/private-registry/using-private-registry.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
