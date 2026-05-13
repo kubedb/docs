@@ -2,10 +2,10 @@
 title: Update Qdrant Version
 menu:
   docs_{{ .version }}:
-    identifier: qdrant-version-upgrading
-    name: Version Upgrading
+    identifier: qdrant-update-version-ops
+    name: Update Version
     parent: qdrant-update-version
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

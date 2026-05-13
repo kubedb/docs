@@ -2,10 +2,10 @@
 title: Scale Qdrant Horizontally
 menu:
   docs_{{ .version }}:
-    identifier: qdrant-scale-horizontally
+    identifier: qdrant-horizontal-scaling-ops
     name: Scale Horizontally
     parent: qdrant-horizontal-scaling
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

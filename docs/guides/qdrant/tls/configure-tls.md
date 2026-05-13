@@ -2,10 +2,10 @@
 title: Configure TLS in Qdrant
 menu:
   docs_{{ .version }}:
-    identifier: qdrant-tls-configure
+    identifier: qdrant-tls-description
     name: Configure TLS
     parent: qdrant-tls
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
