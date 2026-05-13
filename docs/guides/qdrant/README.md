@@ -17,7 +17,7 @@ aliases:
 
 # Overview
 
-KubeDB supports Qdrant vector databases through the `Qdrant` CRD.
+Qdrant is a high-performance open-source vector database designed for similarity search and AI-powered applications. KubeDB supports provisioning and management of Qdrant clusters directly inside Kubernetes, enabling scalable and production-ready vector search infrastructure with minimal operational overhead. Deploy Qdrant in distributed mode to achieve horizontal scalability, replication, and high availability for large-scale embedding workloads. KubeDB automates cluster lifecycle management tasks such as deployment, scaling, monitoring, backups, and version upgrades, simplifying operations for machine learning and semantic search applications. With seamless Kubernetes integration, users can efficiently run and manage resilient Qdrant deployments for modern AI and retrieval-augmented generation (RAG) workloads.
 
 ## Supported Qdrant Features
 
@@ -32,6 +32,12 @@ KubeDB supports Qdrant vector databases through the `Qdrant` CRD.
 | Ops Requests             |   &#10003;   |
 | Autoscaler               |   &#10003;   |
 
+## Supported Microsoft SQL Server Versions
+
+KubeDB supports the following Microsoft SQL Server Version.
+- `1.15.4`
+- `1.16.2`
+- `1.17.0`
 
 ## Life Cycle of a Qdrant Object
 

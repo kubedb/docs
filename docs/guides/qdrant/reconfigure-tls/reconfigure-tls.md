@@ -146,6 +146,8 @@ spec:
       - localhost
       ipAddresses:
       - "127.0.0.1"
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -154,6 +156,8 @@ Here,
 - `spec.type` specifies that we are performing `ReconfigureTLS` on our database.
 - `spec.tls.issuerRef` specifies the issuer to use for signing certificates.
 - `spec.tls.certificates` specifies the certificate configuration.
+- `spec.timeout` specifies the timeout for the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#spectimeout)).
+- `spec.apply` specifies when to apply the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#specapply)).
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/reconfigure-tls/yamls/add-tls.yaml
@@ -239,6 +243,12 @@ $ kubectl get qdrantopsrequest -n demo qdops-remove-tls
 NAME               TYPE             STATUS       AGE
 qdops-remove-tls   ReconfigureTLS   Successful   4m20s
 ```
+
+## Next Steps
+
+- Learn about [backup and restore](/docs/guides/qdrant/backup/overview/index.md) Qdrant using KubeStash.
+- Detail concepts of [Qdrant object](/docs/guides/qdrant/concepts/qdrant.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
 ## Cleaning up
 

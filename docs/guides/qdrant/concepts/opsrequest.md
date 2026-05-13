@@ -159,6 +159,56 @@ A `QdrantOpsRequest` object has the following fields in the `spec` section:
 
 `spec.apply` is an optional field that specifies when the OpsRequest will be applied. Possible values are `Always` and `IfReady`. The default is `IfReady`, which means the OpsRequest will only be applied when the target database is in `Ready` state.
 
+### QdrantOpsRequest `Status`
+
+`.status` describes the current state and progress of the `QdrantOpsRequest` operation. It has the following fields:
+
+#### status.phase
+
+`status.phase` indicates the overall phase of the operation for this `QdrantOpsRequest`. It can have the following values:
+
+| Phase       | Meaning                                                                         |
+|-------------|---------------------------------------------------------------------------------|
+| Successful  | KubeDB has successfully performed the operation requested in the QdrantOpsRequest |
+| Progressing | KubeDB has started the execution of the applied QdrantOpsRequest                  |
+| Failed      | KubeDB has failed the operation requested in the QdrantOpsRequest                 |
+| Denied      | KubeDB has denied the operation requested in the QdrantOpsRequest                 |
+| Skipped     | KubeDB has skipped the operation requested in the QdrantOpsRequest                |
+
+Ops-manager Operator can skip an opsRequest only if its execution has not been started yet and there is a newer opsRequest applied in the cluster. `spec.type` has to be the same as the skipped one, in this case.
+
+#### status.observedGeneration
+
+`status.observedGeneration` shows the most recent generation observed by the `QdrantOpsRequest` controller.
+
+#### status.conditions
+
+`status.conditions` is an array that specifies the conditions of different steps of `QdrantOpsRequest` processing. Each condition entry has the following fields:
+
+- `type` specifies the type of the condition. QdrantOpsRequest has the following types of conditions:
+
+| Type                | Meaning                                                                          |
+|---------------------|----------------------------------------------------------------------------------|
+| `Progressing`       | Specifies that the operation is now progressing                                  |
+| `Successful`        | Specifies that the operation on the database has been successful                 |
+| `HaltDatabase`      | Specifies that the database is halted by the operator                            |
+| `ResumeDatabase`    | Specifies that the database is resumed by the operator                           |
+| `Failed`            | Specifies that the operation on the database has failed                          |
+| `Scaling`           | Specifies that the scaling operation on the database has started                 |
+| `VerticalScaling`   | Specifies that vertical scaling has performed successfully on the database       |
+| `HorizontalScaling` | Specifies that horizontal scaling has performed successfully on the database     |
+| `Updating`          | Specifies that the database updating operation has started                       |
+| `UpdateVersion`     | Specifies that version updating on the database has performed successfully       |
+
+- The `status` field is a string, with possible values `"True"`, `"False"`, and `"Unknown"`.
+    - `status` will be `"True"` if the current transition is succeeded.
+    - `status` will be `"False"` if the current transition is failed.
+    - `status` will be `"Unknown"` if the current transition is denied.
+- The `message` field is a human-readable message indicating details about the condition.
+- The `reason` field is a unique, one-word, CamelCase reason for the condition's last transition.
+- The `lastTransitionTime` field provides a timestamp for when the operation last transitioned from one state to another.
+- The `observedGeneration` shows the most recent condition transition generation observed by the controller.
+
 ## Next Steps
 
 - See [Qdrant ops request overview](/docs/guides/qdrant/ops-request/overview.md) for operation links.

@@ -239,6 +239,12 @@ qdrant-sample-qdrant-sample-2 Bound    pvc-c3d4e5f6-a7b8-9012-cdef-012345678902 
 
 The above output verifies that we have successfully expanded the volume of the Qdrant database.
 
+## Next Steps
+
+- Learn about [backup and restore](/docs/guides/qdrant/backup/overview/index.md) Qdrant using KubeStash.
+- Detail concepts of [Qdrant object](/docs/guides/qdrant/concepts/qdrant.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:

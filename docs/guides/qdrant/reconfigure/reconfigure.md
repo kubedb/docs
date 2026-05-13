@@ -132,6 +132,8 @@ spec:
   configuration:
     configSecret:
       name: new-qdrant-configuration
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -139,6 +141,8 @@ Here,
 - `spec.databaseRef.name` specifies that we are reconfiguring `qdrant-sample` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.configuration.configSecret.name` specifies the name of the new configuration secret.
+- `spec.timeout` specifies the timeout for the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#spectimeout)).
+- `spec.apply` specifies when to apply the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#specapply)).
 
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
@@ -181,7 +185,7 @@ spec:
             max_search_threads: 6
 ```
 
-> **Note:** You can modify multiple fields of your current configuration using `applyConfig`. If you don't have any existing config secret, `applyConfig` will create a new secret for you.
+> **Note:** You can modify multiple fields of your current configuration using `applyConfig`. If you don't have any existing config secret, `applyConfig` will create a new secret for you. If a config secret already exists, `applyConfig` will merge the new configuration with the existing one.
 
 Here,
 
@@ -236,6 +240,12 @@ qdops-reconfigure-remove   Reconfigure   Successful   2m10s
 ```
 
 After this, the `Qdrant` CR will no longer reference a `configSecret` and the database will use its default configuration.
+
+## Next Steps
+
+- Learn about [backup and restore](/docs/guides/qdrant/backup/overview/index.md) Qdrant using KubeStash.
+- Detail concepts of [Qdrant object](/docs/guides/qdrant/concepts/qdrant.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
 ## Cleaning up
 

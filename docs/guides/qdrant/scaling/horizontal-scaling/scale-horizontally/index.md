@@ -131,6 +131,8 @@ spec:
     name: qdrant-sample
   horizontalScaling:
     node: 5
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -138,6 +140,8 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling on `qdrant-sample` Qdrant database.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our database.
 - `spec.horizontalScaling.node` specifies the desired number of nodes after scaling.
+- `spec.timeout` specifies the timeout for the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#spectimeout)).
+- `spec.apply` specifies when to apply the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#specapply)).
 
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
@@ -223,6 +227,12 @@ qdrant-sample-3     1/1     Running   0          6m
 ```
 
 We have successfully performed horizontal scaling on the Qdrant cluster.
+
+## Next Steps
+
+- Learn about [backup and restore](/docs/guides/qdrant/backup/overview/index.md) Qdrant using KubeStash.
+- Detail concepts of [Qdrant object](/docs/guides/qdrant/concepts/qdrant.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
 ## Cleaning Up
 

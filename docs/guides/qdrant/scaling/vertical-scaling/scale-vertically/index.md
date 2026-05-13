@@ -134,6 +134,8 @@ spec:
         limits:
           cpu: "1"
           memory: "2Gi"
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -141,6 +143,8 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling on `qdrant-sample` Qdrant database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.verticalScaling.node.resources` specifies the desired CPU and memory resources for the Qdrant nodes.
+- `spec.timeout` specifies the timeout for the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#spectimeout)).
+- `spec.apply` specifies when to apply the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#specapply)).
 
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
@@ -180,6 +184,12 @@ $ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[0].reso
 ```
 
 You can see from the above output that the resources of the `qdrant-sample-0` pod have been updated successfully. All pods in the cluster will have the same updated resource configuration.
+
+## Next Steps
+
+- Learn about [backup and restore](/docs/guides/qdrant/backup/overview/index.md) Qdrant using KubeStash.
+- Detail concepts of [Qdrant object](/docs/guides/qdrant/concepts/qdrant.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
 ## Cleaning Up
 

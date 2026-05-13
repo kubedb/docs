@@ -23,6 +23,16 @@ KubeStash allows you to backup and restore `Qdrant` databases logically. This gu
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
 - If you are not familiar with how KubeStash backup and restore Qdrant databases, please check the following guide [here](/docs/guides/qdrant/backup/overview/index.md).
 
+You should be familiar with the following `KubeStash` concepts:
+
+- [BackupStorage](https://kubestash.com/docs/latest/concepts/crds/backupstorage/)
+- [BackupConfiguration](https://kubestash.com/docs/latest/concepts/crds/backupconfiguration/)
+- [BackupSession](https://kubestash.com/docs/latest/concepts/crds/backupsession/)
+- [RestoreSession](https://kubestash.com/docs/latest/concepts/crds/restoresession/)
+- [Addon](https://kubestash.com/docs/latest/concepts/crds/addon/)
+- [Function](https://kubestash.com/docs/latest/concepts/crds/function/)
+- [Task](https://kubestash.com/docs/latest/concepts/crds/addon/#task-specification)
+
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
@@ -291,6 +301,11 @@ spec:
             params:
               collections: "my_collection"
 ```
+
+Here,
+- `.spec.sessions[*].schedule` specifies that we want to backup the database at `5 minutes` interval.
+- `.spec.target` refers to the targeted `sample-qdrant` Qdrant database that we created earlier.
+- `.spec.sessions[*].addon.tasks[*].name` specifies that the `logical-backup` task will be executed. The `params.collections` field can be used to specify which collection(s) to backup.
 
 Let's create the `BackupConfiguration` CR that we have shown above,
 

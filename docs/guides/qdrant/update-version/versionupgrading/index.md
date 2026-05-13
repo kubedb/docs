@@ -181,6 +181,8 @@ spec:
     targetVersion: "1.18.0"
   databaseRef:
     name: qdrant-sample
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
@@ -188,6 +190,8 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `qdrant-sample` Qdrant database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
 - `spec.updateVersion.targetVersion` specifies the expected version `1.18.0` after updating.
+- `spec.timeout` specifies the timeout for the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#spectimeout)).
+- `spec.apply` specifies when to apply the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#specapply)).
 
 Let's create the `QdrantOpsRequest` cr we have shown above:
 
@@ -282,6 +286,12 @@ qdrant/qdrant:v1.18.0
 
 You can see above that our `Qdrant` has been updated with the new version. It verifies that we have successfully updated our Qdrant instance.
 
+## Next Steps
+
+- Learn about [backup and restore](/docs/guides/qdrant/backup/overview/index.md) Qdrant using KubeStash.
+- Detail concepts of [Qdrant object](/docs/guides/qdrant/concepts/qdrant.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
@@ -289,4 +299,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl delete qdrant -n demo qdrant-sample
 kubectl delete QdrantOpsRequest -n demo qdops-update-version
+kubectl delete ns demo
 ```
