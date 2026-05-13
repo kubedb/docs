@@ -16,6 +16,10 @@ section_menu_id: guides
 
 KubeDB supports rotating authentication credentials (API key) for Qdrant via a `QdrantOpsRequest`. This tutorial will show you how to use KubeDB to rotate authentication credentials.
 
+KubeDB supports two methods for rotating credentials:
+- **Operator Generated** — KubeDB generates a new API key automatically.
+- **User Defined** — You provide a custom secret with a new API key.
+
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
@@ -93,12 +97,16 @@ spec:
   type: RotateAuth
   databaseRef:
     name: qdrant-sample
+  timeout: 5m
+  apply: IfReady
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are rotating auth credentials for `qdrant-sample` Qdrant database.
 - `spec.type` specifies that we are performing `RotateAuth` on our database.
+- `spec.timeout` specifies the timeout for the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#spectimeout)).
+- `spec.apply` specifies when to apply the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#specapply)).
 
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
@@ -154,12 +162,19 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 qdrantopsrequest.ops.kubedb.com/qdops-rotate-auth-custom created
 ```
 
+## Next Steps
+
+- Learn about [backup and restore](/docs/guides/qdrant/backup/overview/index.md) Qdrant using KubeStash.
+- Detail concepts of [Qdrant object](/docs/guides/qdrant/concepts/qdrant.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete qdrantopsrequest -n demo qdops-rotate-auth qdops-rotate-auth-custom
+kubectl delete secret -n demo my-custom-auth-secret
 kubectl delete qdrant -n demo qdrant-sample
 kubectl delete ns demo
 ```

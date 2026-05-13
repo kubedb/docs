@@ -154,6 +154,12 @@ status:
   phase: Successful
 ```
 
+## Next Steps
+
+- Learn about [backup and restore](/docs/guides/qdrant/backup/overview/index.md) Qdrant using KubeStash.
+- Detail concepts of [Qdrant object](/docs/guides/qdrant/concepts/qdrant.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:

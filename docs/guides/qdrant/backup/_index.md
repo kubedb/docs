@@ -7,4 +7,5 @@ menu:
     parent: qdrant-guides
     weight: 60
 menu_name: docs_{{ .version }}
+section_menu_id: guides
 ---

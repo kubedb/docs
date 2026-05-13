@@ -117,7 +117,10 @@ spec:
 
 Here,
 
-- `spec.tls.issuerRef` refers to the `qdrant-ca-issuer` issuer.
+- `spec.tls.issuerRef` refers to the `qdrant-ca-issuer` issuer. It has the following sub-fields:
+  - `apiGroup` — the API group of the issuer (e.g., `cert-manager.io`).
+  - `kind` — the kind of issuer (`Issuer` or `ClusterIssuer`).
+  - `name` — the name of the issuer.
 - `spec.tls.certificates` provides options to configure certificate renewal and keep-alive. You can find more details from [here](/docs/guides/qdrant/concepts/qdrant.md#tls).
 
 **Deploy Qdrant Cluster:**
@@ -160,6 +163,12 @@ qdrant-tls-client-cert   kubernetes.io/tls   3      3m
 ```
 
 The TLS certificates have been created and the Qdrant cluster is now configured to use TLS/SSL for both client connections and peer-to-peer communication.
+
+## Next Steps
+
+- Learn about [backup and restore](/docs/guides/qdrant/backup/overview/index.md) Qdrant using KubeStash.
+- Detail concepts of [Qdrant object](/docs/guides/qdrant/concepts/qdrant.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
 ## Cleaning up
 

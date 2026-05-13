@@ -153,6 +153,8 @@ Here,
 - `spec.compute.node.maxAllowed` specifies the maximum allowed resources for the Qdrant nodes.
 - `spec.compute.node.controlledResources` specifies the resource types that will be auto-scaled.
 - `spec.compute.node.containerControlledValues` specifies which resource values should be controlled, here both requests and limits.
+- `spec.opsRequestOptions.apply` has two supported values: `IfReady` and `Always`. Use `IfReady` to process the ops request only when the database is Ready. Use `Always` to process the execution irrespective of the database state.
+- `spec.opsRequestOptions.timeout` specifies the maximum time for each step of the ops request. If a step doesn't finish within the specified timeout, the ops request will result in failure.
 
 Let's create the `QdrantAutoscaler` CR we have shown above:
 

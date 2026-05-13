@@ -32,6 +32,7 @@ You should be familiar with the following `KubeStash` concepts:
 - [RestoreSession](https://kubestash.com/docs/latest/concepts/crds/restoresession/)
 - [Addon](https://kubestash.com/docs/latest/concepts/crds/addon/)
 - [Function](https://kubestash.com/docs/latest/concepts/crds/function/)
+- [Task](https://kubestash.com/docs/latest/concepts/crds/addon/#task-specification)
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -281,6 +282,11 @@ spec:
             params:
               volumeSnapshotClassName: "longhorn-snapshot-vsc"
 ```
+
+Here,
+- `.spec.sessions[*].schedule` specifies that we want to backup the database at `5 minutes` interval.
+- `.spec.target` refers to the targeted `sample-qdrant` Qdrant database that we created earlier.
+- `.spec.sessions[*].addon.tasks[*].params[*].volumeSnapshotClassName` specifies the `VolumeSnapshotClass` to use for creating volume snapshots.
 
 Let's create the `BackupConfiguration` CR that we have shown above,
 

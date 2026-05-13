@@ -10,6 +10,8 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
+> New to KubeDB? Please start [here](/docs/README.md).
+
 # Qdrant Storage Autoscaler
 
 This guide shows how to configure storage autoscaling for Qdrant.

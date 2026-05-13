@@ -18,11 +18,11 @@ This tutorial will show you how to use KubeDB to run a Qdrant database.
 
 ## Before You Begin
 
-At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+- At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md)  and make sure install with helm command including `--set global.featureGates.Qdrant=true` to ensure MSSQLServer CRD installation.
 
-To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
+- To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
 $ kubectl create ns demo
@@ -53,7 +53,6 @@ NAME     VERSION   DB_IMAGE                                       DEPRECATED   A
 1.15.4   1.15.4    docker.io/qdrant/qdrant:v1.15.4-unprivileged                13d
 1.16.2   1.16.2    docker.io/qdrant/qdrant:v1.16.2-unprivileged                13d
 1.17.0   1.17.0    docker.io/qdrant/qdrant:v1.17.0-unprivileged                13d
-
 ```
 
 Notice the `DEPRECATED` column. `true` means that QdrantVersion is deprecated for the current KubeDB version and KubeDB will not work for that version.
@@ -74,7 +73,7 @@ metadata:
   namespace: demo
 spec:
   version: "1.17.0"
-  mode: "standalone"
+  mode: "Standalone"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -82,7 +81,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: DoNotTerminate
+  deletionPolicy: WipeOut
 ```
 
 ```bash
@@ -93,7 +92,7 @@ qdrant.kubedb.com/qdrant-sample created
 Here,
 
 - `spec.version` is the name of the QdrantVersion CR where Docker images are specified. In this tutorial, a Qdrant `1.17.0` cluster is created.
-- `spec.replicas` specifies the number of Qdrant nodes in the cluster.
+- `spec.mode` specifies the Qdrant deployment mode `Standalone` or `Distributed`.
 - `spec.storage` specifies the size and StorageClass of the PVC that will be dynamically allocated to store data for each Qdrant pod. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user tries to delete the `Qdrant` CR. Deletion policy `DoNotTerminate` prevents deletion of this object if the admission webhook is enabled.
 
@@ -167,6 +166,126 @@ Status:
   Phase:  Ready
 ```
 
+## Find Underlying Kubernetes Resources
+
+KubeDB operator creates a StatefulSet, PVCs, PVs, and Services for the Qdrant database. Let's check them:
+
+```bash
+$ kubectl get statefulset -n demo qdrant-sample
+NAME            READY   AGE
+qdrant-sample   3/3     15m
+
+$ kubectl get pvc -n demo
+NAME                              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+data-qdrant-sample-0              Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f12   1Gi        RWO            standard       15m
+data-qdrant-sample-1              Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f13   1Gi        RWO            standard       15m
+data-qdrant-sample-2              Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f14   1Gi        RWO            standard       15m
+
+$ kubectl get pv -n demo
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   REASON   AGE
+pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f12   1Gi        RWO            Delete           Bound    demo/data-qdrant-sample-0       standard                15m
+pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f13   1Gi        RWO            Delete           Bound    demo/data-qdrant-sample-1       standard                15m
+pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f14   1Gi        RWO            Delete           Bound    demo/data-qdrant-sample-2       standard                15m
+
+$ kubectl get service -n demo
+NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+qdrant-sample         ClusterIP   10.96.128.61   <none>        6333/TCP   15m
+qdrant-sample-pods    ClusterIP   None           <none>        6333/TCP   15m
+```
+
+## Verify Qdrant YAML Output
+
+KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created and is able to accept client connections. Run the following command to see the modified Qdrant object:
+
+```bash
+$ kubectl get qdrant -n demo qdrant-sample -o yaml
+```
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Qdrant
+metadata:
+  creationTimestamp: "2025-06-01T10:00:00Z"
+  finalizers:
+    - kubedb.com
+  generation: 2
+  name: qdrant-sample
+  namespace: demo
+  resourceVersion: "225923"
+  uid: e5c9292b-f3a3-4dbf-95c8-1b544096e1d4
+spec:
+  authSecret:
+    kind: Secret
+    name: qdrant-sample-auth
+  deletionPolicy: DoNotTerminate
+  healthChecker:
+    failureThreshold: 1
+    periodSeconds: 10
+    timeoutSeconds: 10
+  podTemplate:
+    controller: {}
+    spec:
+      containers:
+        - name: qdrant
+          resources:
+            limits:
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 2Gi
+      initContainers:
+        - name: qdrant-init
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 512Mi
+  replicas: 3
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
+  storageType: Durable
+  version: "1.17.0"
+status:
+  conditions:
+    - lastTransitionTime: "2025-06-01T10:00:00Z"
+      message: 'The KubeDB operator has started the provisioning of Qdrant: demo/qdrant-sample'
+      observedGeneration: 2
+      reason: DatabaseProvisioningStartedSuccessfully
+      status: "True"
+      type: ProvisioningStarted
+    - lastTransitionTime: "2025-06-01T10:01:30Z"
+      message: All replicas are ready for Qdrant demo/qdrant-sample
+      observedGeneration: 2
+      reason: AllReplicasReady
+      status: "True"
+      type: ReplicaReady
+    - lastTransitionTime: "2025-06-01T10:02:00Z"
+      message: database demo/qdrant-sample is accepting connection
+      observedGeneration: 2
+      reason: AcceptingConnection
+      status: "True"
+      type: AcceptingConnection
+    - lastTransitionTime: "2025-06-01T10:02:00Z"
+      message: database demo/qdrant-sample is ready
+      observedGeneration: 2
+      reason: AllReplicasReady
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2025-06-01T10:02:00Z"
+      message: 'The Qdrant: demo/qdrant-sample is successfully provisioned.'
+      observedGeneration: 2
+      reason: DatabaseSuccessfullyProvisioned
+      status: "True"
+      type: Provisioned
+  phase: Ready
+```
+
 ## Connect to Qdrant
 
 KubeDB creates a Secret containing authentication credentials for the Qdrant cluster. Let's check it:
@@ -193,14 +312,127 @@ $ curl -H "api-key: $QDRANT_API_KEY" http://localhost:6333/collections
 {"result":{"collections":[]},"status":"ok","time":0.001}
 ```
 
+## AppBinding
+
+KubeDB creates an [AppBinding](/docs/guides/qdrant/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
+
+```bash
+$ kubectl get appbinding -n demo -o yaml
+```
+
+```yaml
+apiVersion: v1
+items:
+  - apiVersion: appcatalog.appscode.com/v1alpha1
+    kind: AppBinding
+    metadata:
+      creationTimestamp: "2025-06-01T10:00:30Z"
+      generation: 1
+      labels:
+        app.kubernetes.io/component: database
+        app.kubernetes.io/instance: qdrant-sample
+        app.kubernetes.io/managed-by: kubedb.com
+        app.kubernetes.io/name: qdrants.kubedb.com
+      name: qdrant-sample
+      namespace: demo
+      ownerReferences:
+        - apiVersion: kubedb.com/v1alpha2
+          blockOwnerDeletion: true
+          controller: true
+          kind: Qdrant
+          name: qdrant-sample
+          uid: e5c9292b-f3a3-4dbf-95c8-1b544096e1d4
+      resourceVersion: "225711"
+      uid: 4d111a65-cf3d-4a74-a77e-24f2dee690df
+    spec:
+      appRef:
+        apiGroup: kubedb.com
+        kind: Qdrant
+        name: qdrant-sample
+        namespace: demo
+      clientConfig:
+        service:
+          name: qdrant-sample
+          path: /
+          port: 6333
+          scheme: http
+      secret:
+        name: qdrant-sample-auth
+      type: kubedb.com/qdrant
+      version: "1.17"
+kind: List
+metadata:
+  resourceVersion: ""
+```
+
+You can use this AppBinding to connect with the Qdrant cluster from external applications.
+
 ## Database DeletionPolicy
 
-This tutorial has set `deletionPolicy: DoNotTerminate`. This will prevent you from deleting the database. If you try to delete it, you will get an error. Once you are done experimenting, change the `deletionPolicy` to `WipeOut` before deleting the Qdrant CR:
+This field regulates the deletion process of the related resources when the `Qdrant` object is deleted. The available options are:
+
+**DoNotTerminate:**
+
+When `deletionPolicy` is set to `DoNotTerminate`, KubeDB prevents deletion of the database using admission webhooks. If you try to delete it, you will get an error:
+
+```bash
+$ kubectl patch -n demo qdrant/qdrant-sample -p '{"spec":{"deletionPolicy":"DoNotTerminate"}}' --type="merge"
+qdrant.kubedb.com/qdrant-sample patched
+
+$ kubectl delete qdrant -n demo qdrant-sample
+The Qdrant "qdrant-sample" is invalid: spec.deletionPolicy: Invalid value: "qdrant-sample": Can not delete as deletionPolicy is set to "DoNotTerminate"
+```
+
+**Halt:**
+
+When `deletionPolicy` is set to `Halt`, KubeDB deletes the `Qdrant` object and its pods but keeps the `PVCs`, `Secrets`, and backup snapshots intact. This allows you to recreate the database later using the same data.
+
+At first, set the `deletionPolicy` to `Halt` and then delete the database:
+
+```bash
+$ kubectl patch -n demo qdrant/qdrant-sample -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
+qdrant.kubedb.com/qdrant-sample patched
+
+$ kubectl delete qdrant -n demo qdrant-sample
+qdrant.kubedb.com "qdrant-sample" deleted
+```
+
+Now, check that the PVCs and Secrets still exist:
+
+```bash
+$ kubectl get secret,pvc -n demo
+NAME                        TYPE     DATA   AGE
+secret/qdrant-sample-auth   Opaque   2      30m
+
+NAME                                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-qdrant-sample-0   Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f12   1Gi        RWO            standard       29m
+persistentvolumeclaim/data-qdrant-sample-1   Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f13   1Gi        RWO            standard       29m
+persistentvolumeclaim/data-qdrant-sample-2   Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f14   1Gi        RWO            standard       29m
+```
+
+You can recreate your Qdrant database later using these PVCs and Secrets.
+
+**Delete:**
+
+When `deletionPolicy` is set to `Delete`, KubeDB deletes the `Qdrant` object, pods, and `PVCs` but keeps the `Secrets` and backup snapshots. This allows you to restore the database from a previously taken backup.
+
+**WipeOut:**
+
+When `deletionPolicy` is set to `WipeOut`, KubeDB deletes all resources of this database (pods, PVCs, Secrets, snapshots, etc.). There is no option to recreate the database once deleted with this policy.
 
 ```bash
 $ kubectl patch -n demo qdrant/qdrant-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 qdrant.kubedb.com/qdrant-sample patched
 ```
+
+> Be careful when using `WipeOut` — there is no way to recover the database after deletion.
+
+## Next Steps
+
+- Learn about [backup and restore](/docs/guides/qdrant/backup/overview/index.md) Qdrant using KubeStash.
+- Want to set up distributed Qdrant deployment? Check [Distributed Deployment](/docs/guides/qdrant/distributed-deployment/overview.md).
+- Detail concepts of [Qdrant object](/docs/guides/qdrant/concepts/qdrant.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
 ## Cleaning up
 
