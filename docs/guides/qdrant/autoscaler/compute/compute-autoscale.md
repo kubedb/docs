@@ -2,8 +2,8 @@
 title: Qdrant Compute Autoscaler
 menu:
   docs_{{ .version }}:
-    identifier: qdrant-autoscaler-compute-database
-    name: Database
+    identifier: qdrant-autoscaler-compute-description
+    name: Autoscale Compute Resources
     parent: qdrant-autoscaler-compute
     weight: 20
 menu_name: docs_{{ .version }}

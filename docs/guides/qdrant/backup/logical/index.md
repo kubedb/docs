@@ -40,7 +40,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/qdrant/backup/logical/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/backup/logical/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Backup Qdrant
 
@@ -79,7 +79,7 @@ spec:
 Create the above `Qdrant` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/qdrant.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/qdrant.yaml
 qdrant.kubedb.com/sample-qdrant created
 ```
 
@@ -158,7 +158,7 @@ We are going to store our backed up data into a MinIO bucket. We have to create 
 Let's deploy MinIO in the `demo` namespace:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/minio.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/minio.yaml
 deployment.apps/minio created
 service/minio created
 job.batch/minio-setup created
@@ -177,7 +177,7 @@ minio-xxxxxxxxxx-xxxxx   1/1     Running   0          2m
 Create a secret with credentials to access the MinIO storage:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/storage-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/storage-secret.yaml
 secret/aws-secret created
 ```
 
@@ -211,7 +211,7 @@ spec:
 Apply the BackupStorage:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/backupstorage.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/backupstorage.yaml
 backupstorage.storage.kubestash.com/minio-storage created
 ```
 
@@ -249,7 +249,7 @@ spec:
 Let's create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/retentionpolicy.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/retentionpolicy.yaml
 retentionpolicy.storage.kubestash.com/demo-retention created
 ```
 
@@ -310,7 +310,7 @@ Here,
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/backupconfiguration.yaml
 backupconfiguration.core.kubestash.com/sample-qdrant-backup created
 ```
 
@@ -422,7 +422,7 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/qdrant-restored.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/qdrant-restored.yaml
 qdrant.kubedb.com/restored-qdrant created
 ```
 
@@ -467,7 +467,7 @@ spec:
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/backup/logical/examples/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/restoresession.yaml
 restoresession.core.kubestash.com/restore-sample-qdrant created
 ```
 

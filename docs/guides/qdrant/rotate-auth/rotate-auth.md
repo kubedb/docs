@@ -2,10 +2,10 @@
 title: Rotate Auth of Qdrant
 menu:
   docs_{{ .version }}:
-    identifier: qdrant-rotate-auth-cluster
-    name: Cluster
+    identifier: qdrant-rotate-auth-description
+    name: Rotate Auth
     parent: qdrant-rotate-auth
-    weight: 30
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

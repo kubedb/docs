@@ -2,10 +2,10 @@
 title: Scale Qdrant Vertically
 menu:
   docs_{{ .version }}:
-    identifier: qdrant-scale-vertically
+    identifier: qdrant-vertical-scaling-ops
     name: Scale Vertically
     parent: qdrant-vertical-scaling
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

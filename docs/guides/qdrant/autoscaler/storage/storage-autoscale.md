@@ -2,8 +2,8 @@
 title: Qdrant Storage Autoscaler
 menu:
   docs_{{ .version }}:
-    identifier: qdrant-autoscaler-storage-database
-    name: Database
+    identifier: qdrant-autoscaler-storage-description
+    name: Autoscale Storage
     parent: qdrant-autoscaler-storage
     weight: 20
 menu_name: docs_{{ .version }}
