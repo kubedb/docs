@@ -1,18 +1,18 @@
 ---
-title: Configure TLS/SSL in Neo4j
+title: TLS/SSL (Transport Encryption)
 menu:
   docs_{{ .version }}:
     identifier: neo4j-tls-configure
-    name: Configure TLS
+    name: Neo4j TLS/SSL Configuration
     parent: neo4j-tls
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Configure TLS in Neo4j
+# Configure TLS/SSL in Neo4j
 
 This guide will show you how to use KubeDB to configure TLS for Neo4j.
 
@@ -51,7 +51,11 @@ spec:
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
-      name: neo4j-issuer
+      name: neo4j-ca-issuer
+    bolt:
+      mode: mTLS
+    cluster:
+      mode: mTLS
   deletionPolicy: WipeOut
 ```
 

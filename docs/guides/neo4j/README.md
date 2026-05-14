@@ -64,6 +64,7 @@ spec:
 ## User Guide
 
 - [Quickstart Neo4j](/docs/guides/neo4j/quickstart/quickstart.md) with KubeDB operator.
+- [Cluster Architecture Overview](/docs/guides/neo4j/clustering/architecture-overview.md)
 - [Neo4j CRD Concept](/docs/guides/neo4j/concepts/neo4j.md).
 - [Neo4jVersion CRD Concept](/docs/guides/neo4j/concepts/catalog.md).
 - [Neo4jOpsRequest CRD Concept](/docs/guides/neo4j/concepts/opsrequest.md).
@@ -73,7 +74,7 @@ spec:
 - [Monitoring](/docs/guides/neo4j/monitoring/overview.md) for metrics collection guidance.
 - [Builtin Prometheus Monitoring](/docs/guides/neo4j/monitoring/using-builtin-prometheus.md)
 - [Prometheus Operator Monitoring](/docs/guides/neo4j/monitoring/using-prometheus-operator.md)
-- [TLS](/docs/guides/neo4j/tls/overview.md) for protocol-level TLS guidance.
+- [TLS](/docs/guides/neo4j/tls/overview/) for protocol-level TLS guidance.
 - [Configure TLS](/docs/guides/neo4j/tls/configure/)
 - [Ops Request](/docs/guides/neo4j/ops-request/overview.md) for supported operational changes.
 - [Reconfigure](/docs/guides/neo4j/reconfigure/overview.md)

@@ -294,6 +294,69 @@ spec:
 - `spec.timeout` sets the timeout for each step of the operation.
 - `spec.apply` controls when KubeDB should execute the OpsRequest, and `spec.maxRetries` controls how many times the operator retries a failed step.
 
+### Neo4jOpsRequest `Status`
+
+`.status` describes the current state and progress of the `Neo4jOpsRequest` operation. It has the following fields:
+
+#### status.phase
+
+`status.phase` indicates the overall phase of the operation for this `Neo4jOpsRequest`.
+
+| Phase        | Meaning                                                                           |
+|--------------|-----------------------------------------------------------------------------------|
+| `Progressing` | KubeDB has started processing the requested operation                            |
+| `Successful` | KubeDB has successfully completed the requested operation                         |
+| `Failed`     | KubeDB has failed to complete the requested operation                             |
+| `Denied`     | KubeDB has denied the requested operation                                         |
+
+#### status.observedGeneration
+
+`status.observedGeneration` shows the most recent generation observed by the `Neo4jOpsRequest` controller.
+
+#### status.conditions
+
+`status.conditions` is an array that tracks step-by-step state transitions during `Neo4jOpsRequest` processing. Each condition entry includes:
+
+- `type`: category of the condition transition.
+- `status`: one of `True`, `False`, or `Unknown`.
+- `reason`: machine-readable reason for the latest transition.
+- `message`: human-readable details for the transition.
+- `lastTransitionTime`: timestamp for the latest state transition.
+- `observedGeneration`: generation observed for that condition update.
+
+Common `type` values:
+
+| Type                  | Meaning                                                                 |
+|-----------------------|-------------------------------------------------------------------------|
+| `Progressing`         | Operation processing is in progress                                     |
+| `Successful`          | Operation has completed successfully                                    |
+| `Failure`             | Operation has failed                                                    |
+| `UpdateVersion`       | Version update step has completed                                       |
+| `VerticalScaling`     | Vertical scaling step has completed                                     |
+| `HorizontalScaling`   | Horizontal scaling step has completed                                   |
+| `VolumeExpansion`     | Volume expansion step has completed                                     |
+| `Reconfigure`         | Reconfiguration step has completed                                      |
+| `ReconfigureTLS`      | TLS reconfiguration step has completed                                  |
+| `Restart`             | Restart step has completed                                              |
+| `RotateAuth`          | Auth rotation step has completed                                        |
+
+Common `reason` values:
+
+| Reason                                  | Meaning                                                                 |
+|-----------------------------------------|-------------------------------------------------------------------------|
+| `OpsRequestProgressingStarted`          | Operator has started processing the OpsRequest                          |
+| `OpsRequestFailedToProgressing`         | Operator failed to start processing                                     |
+| `OpsRequestProcessedSuccessfully`       | Operator has completed the requested operation                          |
+| `DatabaseVersionUpdatingStarted`        | Version update has started                                              |
+| `SuccessfullyUpdatedDatabaseVersion`    | Version update has completed successfully                               |
+| `FailedToUpdateDatabaseVersion`         | Version update has failed                                               |
+| `VerticalScalingStarted`                | Vertical scaling has started                                            |
+| `SuccessfullyPerformedVerticalScaling`  | Vertical scaling has completed successfully                             |
+| `FailedToPerformVerticalScaling`        | Vertical scaling has failed                                             |
+| `HorizontalScalingStarted`              | Horizontal scaling has started                                          |
+| `SuccessfullyPerformedHorizontalScaling`| Horizontal scaling has completed successfully                           |
+| `FailedToPerformHorizontalScaling`      | Horizontal scaling has failed                                           |
+
 ## Next Steps
 
 - See [Neo4j ops overview](/docs/guides/neo4j/ops-request/overview.md) for operation links.

@@ -16,9 +16,13 @@ section_menu_id: guides
 
 ## What is Neo4j
 
-`Neo4j` is a KubeDB CRD that provides declarative management for Neo4j graph databases in Kubernetes.
+`Neo4j` is a Kubernetes `CustomResourceDefinition` (CRD) managed by KubeDB. It provides declarative configuration for Neo4j in a Kubernetes-native way. You define the desired state in a `Neo4j` object, and KubeDB provisions and reconciles the database resources.
 
 ## Neo4j Spec
+
+As with all other Kubernetes objects, a Neo4j needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section.
+
+Below is an example Neo4j object.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -27,10 +31,9 @@ metadata:
   name: neo4j-test
   namespace: demo
 spec:
+  version: "2025.12.1"
   replicas: 3
-  deletionPolicy: WipeOut
-  storageType: "Durable"
-  version: "2025.11.2"
+  storageType: Durable
   configuration:
     secretName: neo4j-custom-config
   monitor:
@@ -42,9 +45,18 @@ spec:
         interval: 10s
   tls:
     issuerRef:
-      apiGroup: "cert-manager.io"
+      apiGroup: cert-manager.io
       kind: Issuer
       name: neo4j-ca-issuer
+    bolt:
+      mode: mTLS
+    cluster:
+      mode: mTLS
+  podTemplate:
+    spec:
+      serviceAccountName: neo4j-test
+      imagePullSecrets:
+        - name: myregistrykey
   storage:
     storageClassName: local-path
     accessModes:
@@ -52,15 +64,101 @@ spec:
     resources:
       requests:
         storage: 2Gi
+  deletionPolicy: WipeOut
 ```
 
-### Key fields
+### spec.version
 
-- `spec.version` selects the `Neo4jVersion` to run.
-- `spec.replicas` sets the number of Neo4j instances in the cluster.
-- `spec.deletionPolicy` defines what KubeDB does with database resources when the `Neo4j` object is deleted.
-- `spec.storageType` specifies the persistence mode. With `Durable`, you should provide `spec.storage`.
-- `spec.storage` defines the persistent volume claim settings, such as `storageClassName`, `accessModes`, and requested storage size.
-- `spec.configuration.secretName` references a Secret containing a custom `neo4j.conf`.
-- `spec.monitor` enables monitoring integration. In this example, KubeDB creates a `ServiceMonitor` for Prometheus Operator.
-- `spec.tls.issuerRef` tells KubeDB which cert-manager issuer to use for generating Neo4j TLS certificates.
+`spec.version` is a required field that specifies the name of the [Neo4jVersion](/docs/guides/neo4j/concepts/catalog.md) CRD where database image and version metadata are defined.
+
+To see available versions in your cluster:
+
+```bash
+$ kubectl get neo4jversions
+NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE
+2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                12d
+2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                12d
+2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                12d
+```
+
+### spec.replicas
+
+`spec.replicas` specifies the number of Neo4j server pods in the cluster.
+
+For production deployments, use multiple replicas so the cluster can continue serving traffic during node or pod disruptions.
+
+### spec.storageType
+
+`spec.storageType` is an optional field that specifies the storage mode. It can be `Durable` or `Ephemeral`.
+
+- `Durable`: Uses persistent volumes and keeps data across pod restarts.
+- `Ephemeral`: Uses temporary storage and is mainly suitable for testing.
+
+### spec.storage
+
+If `spec.storageType` is `Durable` (or not explicitly set), `spec.storage` is required. This field defines PVC settings used by Neo4j pods.
+
+- `spec.storage.storageClassName` is the StorageClass used to provision PVCs.
+- `spec.storage.accessModes` defines how volumes are mounted (for example, `ReadWriteOnce`).
+- `spec.storage.resources.requests.storage` defines the requested volume size.
+
+To check available StorageClass resources:
+
+```bash
+$ kubectl get storageclass
+```
+
+### spec.configuration
+
+`spec.configuration` is an optional field used to provide custom Neo4j configuration.
+
+- `spec.configuration.secretName` references a Secret containing Neo4j key-value settings.
+
+KubeDB merges the provided settings into Neo4j configuration and reconciles the cluster accordingly. See the [configuration guide](/docs/guides/neo4j/configuration/using-config-file.md).
+
+### spec.monitor
+
+`spec.monitor` is an optional field that enables monitoring integration for Neo4j.
+
+In the example above, KubeDB is configured for Prometheus Operator (`prometheus.io/operator`) with a `ServiceMonitor` definition.
+
+See [monitoring overview](/docs/guides/neo4j/monitoring/overview.md) for setup and verification.
+
+### spec.tls
+
+`spec.tls` is an optional field for enabling and configuring TLS for Neo4j protocols.
+
+- `spec.tls.issuerRef` tells KubeDB which cert-manager issuer to use for certificates.
+- Protocol-specific TLS behavior (for example Bolt/HTTP) is configured under `spec.tls`.
+
+See [TLS overview](/docs/guides/neo4j/tls/overview/) and [Reconfigure TLS](/docs/guides/neo4j/reconfigure-tls/overview.md).
+
+### spec.podTemplate
+
+`spec.podTemplate` is an optional field for customizing Neo4j pods.
+
+Common examples:
+
+- `spec.podTemplate.spec.serviceAccountName` to use custom RBAC resources.
+- `spec.podTemplate.spec.imagePullSecrets` to pull images from a private registry.
+- `spec.podTemplate.spec.resources` to set CPU and memory requests/limits.
+
+To learn more:
+
+- [Custom RBAC for Neo4j](/docs/guides/neo4j/custom-rbac/using-custom-rbac.md)
+- [Private Registry for Neo4j](/docs/guides/neo4j/private-registry/using-private-registry.md)
+
+### spec.deletionPolicy
+
+`spec.deletionPolicy` controls what KubeDB does when a `Neo4j` object is deleted.
+
+KubeDB supports standard database termination policies such as `DoNotTerminate`, `Halt`, `Delete`, and `WipeOut`.
+
+Use `WipeOut` when you want full cleanup, including data and generated secrets. Use safer policies in production when you need to preserve data for recovery.
+
+## Next Steps
+
+- Learn about [Neo4jVersion CRD](/docs/guides/neo4j/concepts/catalog.md).
+- Learn about [AppBinding CRD](/docs/guides/neo4j/concepts/appbinding.md).
+- Explore [Neo4j OpsRequest](/docs/guides/neo4j/concepts/opsrequest.md) for day-2 operations.
+- Follow the [Neo4j quickstart](/docs/guides/neo4j/quickstart/quickstart.md)
