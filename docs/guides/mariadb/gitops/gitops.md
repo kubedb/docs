@@ -50,10 +50,21 @@ argocd app create kubedb --repo <repo-url> --path kubedb --dest-server https://k
 ```bash
 argocd app create kubedb --repo <repo-url> --path kubedb --dest-server https://kubernetes.default.svc --dest-namespace <namespace> --username <username> --password <github-token>
 ```
-
 #### Using SSH
+
+Registering a Git repository in Argo CD using SSH authentication
+
 ```bash
-argocd app create kubedb --repo <repo-url> --path kubedb --dest-server https://kubernetes.default.svc --dest-namespace <namespace> --ssh-private-key-path ~/.ssh/id_rsa
+argocd repo add <ssh-repo-url> \
+  --ssh-private-key-path <path-to-private-key>
+```
+Creating an Argo CD Application to deploy resources from the repository into a Kubernetes cluster
+```bash
+argocd app create <application-name> \
+  --repo <repository-url> \
+  --path <repository-path> \
+  --dest-server <kubernetes-api-server> \
+  --dest-namespace <target-namespace>
 ```
 
 ## Create MariaDB Database using GitOps
